@@ -43,6 +43,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.UserId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -205,6 +206,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				//
 				.dateCreated(TimeUtil.asLocalDateTime(schemaBreakRecord.getCreated()))
+				.createdById(UserId.ofRepoIdOrNull(schemaBreakRecord.getCreatedBy()))
 				.hasChanges(false)
 				.build();
 	}

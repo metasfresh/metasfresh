@@ -34,9 +34,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 
 import com.google.common.collect.ImmutableSet;
@@ -58,6 +57,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -75,11 +75,11 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		if (ppCostCollectorBL.isMaterialReceipt(cc, true)) // considerCoProductsAsReceipt=true
+		if (ppCostCollectorBL.isMaterialReceiptOrCoProduct(cc))
 		{
 			reverseCostCollector_Receipt(cc);
 		}
-		else if (ppCostCollectorBL.isMaterialIssue(cc, false)) // considerCoProductsAsIssue=false
+		else if (ppCostCollectorBL.isAnyComponentIssue(cc))
 		{
 			reverseCostCollector_Issue(cc);
 		}
@@ -103,7 +103,6 @@ public class PP_Cost_Collector
 	private final void reverseCostCollector_Receipt(final I_PP_Cost_Collector cc)
 	{
 		// services
-		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
@@ -119,11 +118,12 @@ public class PP_Cost_Collector
 		//
 		// Get cost collector receipt infos.
 		// We will validate the assigned top level HUs against these informations.
-		final I_M_Product receiptProduct = cc.getM_Product();
-		final I_M_Locator receiptLocator = cc.getM_Locator();
+		final ProductId receiptProductId = ProductId.ofRepoId(cc.getM_Product_ID());
+		final int receiptLocatorId = cc.getM_Locator_ID();
 		final I_C_UOM receiptQtyUOM = cc.getC_UOM();
 		final BigDecimal receiptQty;
-		if (ppCostCollectorBL.isCoOrByProductReceipt(cc))
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+		if (costCollectorType.isCoOrByProductReceipt())
 		{
 			// NOTE: because a co/by product receipt is actually a negative issue, we need to negate the CC's MovementQty, in order to get a positive value.
 			receiptQty = cc.getMovementQty().negate();
@@ -142,10 +142,10 @@ public class PP_Cost_Collector
 					for (final I_M_HU hu : hus)
 					{
 						// Make sure the HU is on the same locator where we received it
-						if (hu.getM_Locator_ID() != receiptLocator.getM_Locator_ID())
+						if (hu.getM_Locator_ID() != receiptLocatorId)
 						{
 							throw new HUException("@NotMatched@ @M_Locator_ID@"
-									+ "\n @Expected@: " + receiptLocator
+									+ "\n @Expected@: " + receiptLocatorId
 									+ "\n @Actual@: " + hu.getM_Locator()
 									+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
 						}
@@ -164,11 +164,12 @@ public class PP_Cost_Collector
 							}
 
 							// Make sure we have HU stoarges only about our received product
-							if (productStorage.getProductId().getRepoId() != receiptProduct.getM_Product_ID())
+							if (!ProductId.equals(productStorage.getProductId(), receiptProductId))
 							{
+								final IProductBL productsService = Services.get(IProductBL.class);
 								throw new HUException("@NotMatched@ @M_M_Product_ID@"
-										+ "\n @Expected@: " + receiptProduct
-										+ "\n @Actual@: " + Services.get(IProductBL.class).getProductValueAndName(productStorage.getProductId())
+										+ "\n @Expected@: " + productsService.getProductValueAndName(receiptProductId)
+										+ "\n @Actual@: " + productsService.getProductValueAndName(productStorage.getProductId())
 										+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
 							}
 

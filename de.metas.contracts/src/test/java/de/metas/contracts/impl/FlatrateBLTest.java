@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Properties;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.service.OrgId;
@@ -70,7 +71,6 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 import mockit.Expectations;

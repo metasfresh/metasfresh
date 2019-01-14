@@ -1,5 +1,7 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,22 +33,26 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
-import org.compiere.model.MProductCategoryAcct;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -70,6 +76,12 @@ public final class ProductBL implements IProductBL
 	@Override
 	public int getUOMPrecision(final int productId)
 	{
+		return getUOMPrecision(ProductId.ofRepoId(productId));
+	}
+
+	@Override
+	public int getUOMPrecision(@NonNull final ProductId productId)
+	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getUOMPrecision(product);
 	}
@@ -84,6 +96,14 @@ public final class ProductBL implements IProductBL
 			policy = Services.get(IClientDAO.class).retriveClient(Env.getCtx()).getMMPolicy();
 		}
 		return policy;
+	}
+
+	@Override
+	public String getMMPolicy(final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return getMMPolicy(product);
 	}
 
 	@Override
@@ -277,56 +297,70 @@ public final class ProductBL implements IProductBL
 	}	// get
 
 	@Override
-	public String getCostingLevel(final I_M_Product product, final I_C_AcctSchema as)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final I_M_Product_Category_Acct pca = MProductCategoryAcct.get(ctx, product.getM_Product_Category_ID(), as.getC_AcctSchema_ID(), trxName);
-
-		// 07393
-		// pca may be null. In this case, we take the costing level from the accounting schema
-
-		String costingLevel = null;
-
-		if (pca != null)
-		{
-			costingLevel = pca.getCostingLevel();
-		}
-
-		if (costingLevel == null)
-		{
-			costingLevel = as.getCostingLevel();
-		}
-
-		return costingLevel;
-	}
-
-	@Override
-	public String getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final I_M_Product_Category_Acct pca = MProductCategoryAcct.get(ctx, product.getM_Product_Category_ID(), as.getC_AcctSchema_ID(), trxName);
-
-		String costingMethod = null;
-
-		if (pca != null)
-		{
-			costingMethod = pca.getCostingMethod();
-		}
-		if (costingMethod == null)
-		{
-			costingMethod = as.getCostingMethod();
-		}
-		return costingMethod;
-	}
-
-	@Override
 	public boolean isTradingProduct(final I_M_Product product)
 	{
 		Check.assumeNotNull(product, "product not null");
 		return product.isPurchased()
 				&& product.isSold();
+	}
+
+	@Override
+	public boolean isASIMandatory(@NonNull final I_M_Product product, final boolean isSOTrx)
+	{
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+
+		final ClientId adClientId = ClientId.ofRepoId(product.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
+
+		//
+		// If CostingLevel is BatchLot ASI is always mandatory - check all client acct schemas
+		for (final AcctSchema as : acctSchemasRepo.getAllByClient(adClientId))
+		{
+			if (as.isDisallowPostingForOrg(adOrgId))
+			{
+				continue;
+			}
+
+			final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, as);
+			if (CostingLevel.BatchLot == costingLevel)
+			{
+				return true;
+			}
+		}
+
+		//
+		// Check Attribute Set settings
+		final AttributeSetId attributeSetId = getAttributeSetId(product);
+		if (!attributeSetId.isNone())
+		{
+			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
+			if (mas == null || !mas.isInstanceAttribute())
+			{
+				return false;
+			}
+			// Outgoing transaction
+			else if (isSOTrx)
+			{
+				return mas.isMandatory();
+			}
+			// Incoming transaction
+			else
+			{
+				// isSOTrx == false
+				return mas.isMandatoryAlways();
+			}
+		}
+		//
+		// Default not mandatory
+		return false;
+	}
+
+	@Override
+	public boolean isASIMandatory(@NonNull final ProductId productId, final boolean isSOTrx)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return isASIMandatory(product, isSOTrx);
 	}
 
 	@Override

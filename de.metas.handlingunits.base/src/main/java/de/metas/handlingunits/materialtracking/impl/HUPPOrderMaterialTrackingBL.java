@@ -23,6 +23,7 @@ package de.metas.handlingunits.materialtracking.impl;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.eevolution.api.IPPOrderDAO;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -64,7 +65,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		if (ppOrder.getM_Material_Tracking_ID() <= 0)
 		{
 			ppOrder.setM_Material_Tracking(materialTracking);
-			InterfaceWrapperHelper.save(ppOrder);
+			Services.get(IPPOrderDAO.class).save(ppOrder);
 		}
 		else
 		{

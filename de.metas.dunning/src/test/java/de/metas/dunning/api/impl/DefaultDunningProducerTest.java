@@ -23,6 +23,8 @@ package de.metas.dunning.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +33,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningProducer;
@@ -42,6 +50,12 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ShutdownListener.class,
+		DunningDocDocumentHandlerProvider.class
+})
 public class DefaultDunningProducerTest extends DunningTestBase
 {
 	private I_C_DunningLevel dunningLevel1;
@@ -59,7 +73,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 	@Test
 	public void test_OneDocumentForEachCandidate()
 	{
-		final Date candidateDunningDate = TimeUtil.getDay(2013, 01, 01);
+		final LocalDate candidateDunningDate = LocalDate.of(2013, Month.JANUARY, 1);
 
 		// NOTE: if we are using null execution DunningDate, the DunningDate from candidate shall be used
 		// final Date executionDunningDate = TimeUtil.getDay(2013, 02, 01);
@@ -81,7 +95,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		assertDunningDocValid(context, candidate2);
 	}
 
-	private I_C_Dunning_Candidate createCandidate(final Date dunningDate, final I_C_DunningLevel dunningLevel)
+	private I_C_Dunning_Candidate createCandidate(final LocalDate dunningDate, final I_C_DunningLevel dunningLevel)
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		candidate.setAD_Org_ID(1);

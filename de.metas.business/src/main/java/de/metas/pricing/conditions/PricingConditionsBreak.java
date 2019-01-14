@@ -1,15 +1,18 @@
 package de.metas.pricing.conditions;
 
+import static org.compiere.util.Util.coalesce;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.user.UserId;
+
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -63,6 +66,9 @@ public class PricingConditionsBreak
 	BigDecimal qualityDiscountPercentage;
 
 	LocalDateTime dateCreated;
+
+	UserId createdById;
+
 	boolean hasChanges;
 
 	@Builder(toBuilder = true)
@@ -78,6 +84,7 @@ public class PricingConditionsBreak
 			@Nullable final PaymentTermId derivedPaymentTermIdOrNull,
 			final BigDecimal qualityDiscountPercentage,
 			final LocalDateTime dateCreated,
+			final UserId createdById,
 			final boolean hasChanges)
 	{
 		this.id = id;
@@ -93,6 +100,8 @@ public class PricingConditionsBreak
 		this.derivedPaymentTermIdOrNull = derivedPaymentTermIdOrNull;
 
 		this.dateCreated = dateCreated;
+		this.createdById = createdById;
+
 		this.hasChanges = hasChanges;
 	}
 
@@ -115,10 +124,10 @@ public class PricingConditionsBreak
 		}
 
 		return Objects.equals(priceOverride, reference.priceOverride)
-				&& Objects.equals(discount, reference.discount)
-				&& Objects.equals(bpartnerFlatDiscount, reference.bpartnerFlatDiscount)
+				&& Objects.equals(coalesce(discount, Percent.ZERO), coalesce(reference.discount, Percent.ZERO))
+				&& Objects.equals(coalesce(bpartnerFlatDiscount, Percent.ZERO), coalesce(reference.bpartnerFlatDiscount, Percent.ZERO))
 				&& Objects.equals(paymentTermIdOrNull, reference.paymentTermIdOrNull)
-				&& Objects.equals(paymentDiscountOverrideOrNull, reference.paymentDiscountOverrideOrNull)
+				&& Objects.equals(coalesce(paymentDiscountOverrideOrNull, Percent.ZERO), coalesce(reference.paymentDiscountOverrideOrNull, Percent.ZERO))
 				&& Objects.equals(derivedPaymentTermIdOrNull, reference.derivedPaymentTermIdOrNull);
 	}
 
@@ -137,7 +146,7 @@ public class PricingConditionsBreak
 		return toBuilder().id(null).build();
 	}
 
-	public PricingConditionsBreak toTemporaryPricingConditionsBreakIfPriceRelevantFieldsChanged(final PricingConditionsBreak reference)
+	public PricingConditionsBreak toTemporaryPricingConditionsBreakIfPriceRelevantFieldsChanged(@NonNull final PricingConditionsBreak reference)
 	{
 		if (isTemporaryPricingConditionsBreak())
 		{

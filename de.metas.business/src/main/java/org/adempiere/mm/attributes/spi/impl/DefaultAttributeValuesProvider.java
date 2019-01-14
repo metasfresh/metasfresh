@@ -1,11 +1,11 @@
 package org.adempiere.mm.attributes.spi.impl;
 
-import javax.annotation.concurrent.Immutable;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -98,7 +98,8 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		final String value = av.getValue();
 		final String name = av.getName();
-		final ValueNamePair vnp = new ValueNamePair(value, name);
+		final String description = av.getDescription();
+		final ValueNamePair vnp = ValueNamePair.of(value, name, description);
 		return vnp;
 	}
 

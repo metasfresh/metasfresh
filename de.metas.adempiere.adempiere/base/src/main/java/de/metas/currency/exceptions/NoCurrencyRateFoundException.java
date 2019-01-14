@@ -13,18 +13,19 @@ package de.metas.currency.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.CurrencyId;
 
 /**
  * Exception thrown when there was no currency rate found.
@@ -39,12 +40,18 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	 */
 	private static final long serialVersionUID = -5532453717919181505L;
 
-	public NoCurrencyRateFoundException(final ICurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	public NoCurrencyRateFoundException(final CurrencyConversionContext conversionCtx, final CurrencyId currencyFromId, final CurrencyId currencyToId)
 	{
 		super(buildMsg(conversionCtx, currencyFromId, currencyToId));
 	}
 
-	private static String buildMsg(final ICurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	@Deprecated
+	public NoCurrencyRateFoundException(final CurrencyConversionContext conversionCtx, final int currencyFromId, final int currencyToId)
+	{
+		this(conversionCtx, CurrencyId.ofRepoIdOrNull(currencyFromId), CurrencyId.ofRepoIdOrNull(currencyToId));
+	}
+
+	private static String buildMsg(final CurrencyConversionContext conversionCtx, final CurrencyId currencyFromId, final CurrencyId currencyToId)
 	{
 		return "@NotFound@ @C_Conversion_Rate_ID@"
 				+ "\n @Context@: " + conversionCtx

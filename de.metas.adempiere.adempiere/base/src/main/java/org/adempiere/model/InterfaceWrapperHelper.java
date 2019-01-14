@@ -79,7 +79,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -100,7 +99,11 @@ public class InterfaceWrapperHelper
 			.addFactory(new GridTabInterfaceWrapperHelper())
 			.addFactory(new POJOInterfaceWrapperHelper());
 
-	private static final String COLUMNNAME_IsActive = "IsActive";
+	public static final String COLUMNNAME_IsActive = "IsActive";
+	public static final String COLUMNNAME_Value = "Value";
+	public static final String COLUMNNAME_Name = "Name";
+	public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	public static final String COLUMNNAME_Description = "Description";
 
 	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{

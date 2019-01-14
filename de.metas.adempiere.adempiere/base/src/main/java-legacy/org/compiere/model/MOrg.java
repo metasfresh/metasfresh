@@ -26,6 +26,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.util.Services;
 
 /**
@@ -144,9 +145,8 @@ public class MOrg extends X_AD_Org
 		if (newRecord)
 		{
 			//	Info
-			final I_AD_OrgInfo info = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class, this);
-			info.setDUNS ("?");
-			info.setTaxID ("?");
+			final I_AD_OrgInfo info = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+			info.setAD_Org_ID(this.getAD_Org_ID());
 			InterfaceWrapperHelper.saveRecord(info);
 
 			//	TreeNode

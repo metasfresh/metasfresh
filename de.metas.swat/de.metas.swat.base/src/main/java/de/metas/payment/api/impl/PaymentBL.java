@@ -55,9 +55,10 @@ import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -252,7 +253,7 @@ public class PaymentBL implements IPaymentBL
 		final I_C_Currency currency = payment.getC_Currency();
 		final int C_Currency_Invoice_ID = fetchC_Currency_Invoice_ID(payment);
 		final Timestamp ConvDate = payment.getDateTrx();
-		final int C_ConversionType_ID = payment.getC_ConversionType_ID();
+		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final int AD_Client_ID = payment.getAD_Client_ID();
 		final int AD_Org_ID = payment.getAD_Org_ID();
 
@@ -261,10 +262,15 @@ public class PaymentBL implements IPaymentBL
 		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
 		{
 			log.debug("InvCurrency={}, PayCurrency={}, Date={}, Type={}"
-					, new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, C_ConversionType_ID });
+					, new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, conversionTypeId });
 
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-			CurrencyRate = currencyBL.getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+			CurrencyRate = currencyBL.getRate(
+					C_Currency_Invoice_ID, 
+					C_Currency_ID, ConvDate, 
+					CurrencyConversionTypeId.toRepoId(conversionTypeId), 
+					AD_Client_ID, 
+					AD_Org_ID);
 			if (Check.isEmpty(CurrencyRate))
 			{
 				if (C_Currency_Invoice_ID <= 0)
@@ -272,7 +278,7 @@ public class PaymentBL implements IPaymentBL
 					return; // no error message when no invoice is selected
 				}
 
-				final ICurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
 				throw new NoCurrencyRateFoundException(conversionCtx, C_Currency_Invoice_ID, C_Currency_ID);
 			}
 

@@ -92,7 +92,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		// FRESH-334 only the BP_Products of the given org or of the org 0 are eligible
 
-		queryFilters.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
+		queryFilters.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 
 		if (Vendor_ID != null)
 		{

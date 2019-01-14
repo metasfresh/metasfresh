@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
@@ -126,7 +127,7 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public String getComponentType()
+	public BOMComponentType getComponentType()
 	{
 		return null;
 	}

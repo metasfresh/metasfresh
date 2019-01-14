@@ -1,6 +1,5 @@
 package de.metas.bpartner.service;
 
-
 import static de.metas.util.Check.errorIf;
 import static de.metas.util.Check.isEmpty;
 
@@ -71,6 +70,8 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner getById(final BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
+
+	I_C_BPartner getByIdInTrx(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
@@ -326,6 +327,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
+	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
+
 	@Value
 	@Builder
 	public static class BPartnerLocationQuery
@@ -343,7 +346,4 @@ public interface IBPartnerDAO extends ISingletonService
 
 		boolean alsoTryRelation;
 	}
-
-	ImmutableSet<BPartnerId> retrieveAllCustomerIDs();
-
 }

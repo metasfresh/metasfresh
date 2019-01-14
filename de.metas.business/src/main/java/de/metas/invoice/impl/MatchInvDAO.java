@@ -13,15 +13,14 @@ package de.metas.invoice.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,6 +41,12 @@ import de.metas.util.Services;
 
 public class MatchInvDAO implements IMatchInvDAO
 {
+	@Override
+	public I_M_MatchInv getById(final int matchInvId)
+	{
+		Check.assumeGreaterThanZero(matchInvId, "matchInvId");
+		return InterfaceWrapperHelper.load(matchInvId, I_M_MatchInv.class);
+	}
 
 	@Override
 	public List<I_M_MatchInv> retrieveForInvoiceLine(final I_C_InvoiceLine il)
@@ -62,8 +67,8 @@ public class MatchInvDAO implements IMatchInvDAO
 				.orderBy()
 				.addColumn(I_M_MatchInv.COLUMN_M_MatchInv_ID)
 				.endOrderBy()
-				//
-				;
+		//
+		;
 	}
 
 	@Override

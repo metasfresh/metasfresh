@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -17,8 +18,10 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -52,6 +55,8 @@ public class DistributeAndMoveReceiptCreatorTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
 	}

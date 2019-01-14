@@ -19,19 +19,17 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *  Asset Model
@@ -151,7 +149,9 @@ public class MAsset extends X_A_Asset
 		//	Line
 		MProduct product = shipLine.getProduct();
 		setM_Product_ID(product.getM_Product_ID());
-		setA_Asset_Group_ID(product.getA_Asset_Group_ID());
+		
+		final MProductCategory pc = MProductCategory.get(getCtx(), product.getM_Product_Category_ID());
+		setA_Asset_Group_ID(pc.getA_Asset_Group_ID());
 		//	Guarantee & Version
 		//setGuaranteeDate(TimeUtil.addDays(shipment.getMovementDate(), product.getGuaranteeDays())); // metas-tsa: M_Product.GuaranteeDays is not a field anymore 
 		setVersionNo(product.getVersionNo());
@@ -187,7 +187,7 @@ public class MAsset extends X_A_Asset
 		int deliveryCount)
 	{
 		MProduct product = line.getProduct(); 
-		MBPartner partner = shipment.getBPartner();
+		I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(shipment.getC_BPartner_ID());
 		setValueNameDescription(shipment, deliveryCount, product, partner);
 	}	//	setValueNameDescription
 	
@@ -199,7 +199,7 @@ public class MAsset extends X_A_Asset
 	 *	@param partner partner
 	 */
 	public void setValueNameDescription (MInOut shipment,  
-		int deliveryCount, MProduct product, MBPartner partner)
+		int deliveryCount, MProduct product, I_C_BPartner partner)
 	{
 		String documentNo = "_" + shipment.getDocumentNo();
 		if (deliveryCount > 1)
@@ -267,7 +267,7 @@ public class MAsset extends X_A_Asset
 	 */
 	public MAssetDelivery[] getDeliveries()
 	{
-		ArrayList<MAssetDelivery> list = new ArrayList<MAssetDelivery>();
+		ArrayList<MAssetDelivery> list = new ArrayList<>();
 
 		String sql = "SELECT * FROM A_Asset_Delivery WHERE A_Asset_ID=? ORDER BY Created DESC";
 		PreparedStatement pstmt = null;
@@ -305,34 +305,6 @@ public class MAsset extends X_A_Asset
 		return DB.getSQLValue(get_TrxName(),
 			sql, getA_Asset_ID());
 	}	//	getDeliveries
-
-	
-	/**************************************************************************
-	 * 	Can we download.
-	 * 	Based on guarantee date and availability of download
-	 * 	@return true if downloadable
-	 */
-	public boolean isDownloadable()
-	{
-		if (!isActive())
-			return false;
-			
-		//	Guarantee Date
-		Timestamp guarantee = getGuaranteeDate();
-		if (guarantee == null)
-			return false;
-		guarantee = TimeUtil.getDay(guarantee);
-		Timestamp now = TimeUtil.getDay(System.currentTimeMillis());
-		//	valid
-		if (!now.after(guarantee))	//	not after guarantee date
-		{
-			getProduct();
-			return m_product != null
-				&& m_product.hasDownloads();
-		}
-		//
-		return false;
-	}	//	isDownloadable
 	
 	/**************************************************************************
 	 * 	Get Product Version No
@@ -362,66 +334,7 @@ public class MAsset extends X_A_Asset
 			m_product = MProduct.get (getCtx(), getM_Product_ID()); 
 		return m_product;
 	}	//	getProductInfo
-
-	/**
-	 * 	Get Active Addl. Product Downloads
-	 *	@return array of downloads
-	 */
-	public MProductDownload[] getProductDownloads()
-	{
-		if (m_product == null)
-			getProduct();
-		if (m_product != null)
-			return m_product.getProductDownloads(false);
-		return null;
-	}	//	getProductDownloads
 	
-	/**
-	 * 	Get Additional Download Names
-	 *	@return names
-	 */
-	public String[] getDownloadNames()
-	{
-		MProductDownload[] dls = getProductDownloads();
-		if (dls != null && dls.length > 0)
-		{
-			String[] retValue = new String[dls.length];
-			for (int i = 0; i < retValue.length; i++)
-				retValue[i] = dls[i].getName();
-			log.debug("#" + dls.length);
-			return retValue;
-		}
-		return new String[]{};
-	}	//	addlDownloadNames
-	
-	/**
-	 * 	Get Additional Download URLs
-	 *	@return URLs
-	 */
-	public String[] getDownloadURLs()
-	{
-		MProductDownload[] dls = getProductDownloads();
-		if (dls != null && dls.length > 0)
-		{
-			String[] retValue = new String[dls.length];
-			for (int i = 0; i < retValue.length; i++)
-			{
-				String url = dls[i].getDownloadURL();
-				int pos = Math.max(url.lastIndexOf('/'), url.lastIndexOf('\\'));
-				if (pos != -1)
-					url = url.substring(pos+1);
-				retValue[i] = url;
-			}
-			return retValue;
-		}
-		return new String[]{};
-	}	//	addlDownloadURLs
-	
-	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
-	 */
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{

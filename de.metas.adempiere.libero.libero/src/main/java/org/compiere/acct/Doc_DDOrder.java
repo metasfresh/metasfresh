@@ -13,24 +13,26 @@ package org.compiere.acct;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.List;
 
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MDocType;
 import org.eevolution.model.I_DD_Order;
 
-public class Doc_DDOrder extends Doc
+import com.google.common.collect.ImmutableList;
+
+import de.metas.acct.api.AcctSchema;
+
+public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
 {
 
 	public Doc_DDOrder(final IDocBuilder docBuilder)
@@ -42,9 +44,9 @@ public class Doc_DDOrder extends Doc
 	}
 
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
-		return null;
+		// nothing
 	}
 
 	@Override
@@ -54,12 +56,9 @@ public class Doc_DDOrder extends Doc
 	}
 
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		// NOTHING
-
-		final ArrayList<Fact> facts = new ArrayList<Fact>();
-		return facts;
+		return ImmutableList.of();
 	}
 
 }

@@ -67,7 +67,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
 	}
 
-	public static final ITranslatableString singleLanguage(final String adLanguage, final String value)
+	public static final ITranslatableString singleLanguage(@Nullable final String adLanguage, @Nullable final String value)
 	{
 		if (Check.isEmpty(adLanguage, true))
 		{
@@ -78,7 +78,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 		return new ImmutableTranslatableString(ImmutableMap.of(adLanguage, valueNorm), valueNorm);
 	}
 
-	public static final ITranslatableString constant(final String value)
+	public static final ITranslatableString constant(@Nullable final String value)
 	{
 		return ConstantTranslatableString.of(value);
 	}
@@ -161,7 +161,7 @@ public final class ImmutableTranslatableString implements ITranslatableString
 			return false;
 		}
 	}
-	
+
 	public static boolean isEmpty(final ITranslatableString trl)
 	{
 		if (trl == null)

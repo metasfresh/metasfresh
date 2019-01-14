@@ -27,19 +27,24 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MTax;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 
-public class DocLine_Invoice extends DocLine
+public class DocLine_Invoice extends DocLine<Doc_Invoice>
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(DocLine_Invoice.class);
 	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -47,16 +52,15 @@ public class DocLine_Invoice extends DocLine
 	private BigDecimal _includedTaxAmt = BigDecimal.ZERO;
 	private BigDecimal _qtyReceived = null;
 
-	public DocLine_Invoice(final MInvoiceLine invoiceLine, final Doc_Invoice doc)
+	public DocLine_Invoice(final I_C_InvoiceLine invoiceLine, final Doc_Invoice doc)
 	{
-		super(invoiceLine, doc);
+		super(InterfaceWrapperHelper.getPO(invoiceLine), doc);
 
 		setIsTaxIncluded(invoiceBL.isTaxIncluded(invoiceLine));
 
 		// Qty
-		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
-		final boolean isCreditMemo = doc.isCreditMemo();
-		setQty(isCreditMemo ? qtyInvoiced.negate() : qtyInvoiced, doc.isSOTrx());
+		final Quantity qtyInvoiced = Quantity.of(invoiceLine.getQtyInvoiced(), getProductStockingUOM());
+		setQty(qtyInvoiced.negateIf(doc.isCreditMemo()), doc.isSOTrx());
 
 		//
 		BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
@@ -66,12 +70,12 @@ public class DocLine_Invoice extends DocLine
 		final int C_Tax_ID = getC_Tax_ID();
 		if (isTaxIncluded() && C_Tax_ID > 0)
 		{
-			final MTax tax = MTax.get(getCtx(), C_Tax_ID);
+			final MTax tax = MTax.get(Env.getCtx(), C_Tax_ID);
 			if (!tax.isZeroTax())
 			{
 				final int taxPrecision = doc.getStdPrecision();
 				final BigDecimal lineTaxAmt = taxBL.calculateTax(tax, lineNetAmt, true, taxPrecision);
-				log.debug("LineNetAmt={} - LineTaxAmt={}", new Object[] { lineNetAmt, lineTaxAmt });
+				logger.debug("LineNetAmt={} - LineTaxAmt={}", lineNetAmt, lineTaxAmt);
 				lineNetAmt = lineNetAmt.subtract(lineTaxAmt);
 
 				final BigDecimal priceListTax = taxBL.calculateTax(tax, priceList, true, taxPrecision);
@@ -81,18 +85,12 @@ public class DocLine_Invoice extends DocLine
 			}
 		}	// correct included Tax
 
-		setAmount(lineNetAmt, priceList, qtyInvoiced);	// qty for discount calc
+		setAmount(lineNetAmt, priceList, qtyInvoiced.getAsBigDecimal());	// qty for discount calc
 	}
 
 	public final I_C_InvoiceLine getC_InvoiceLine()
 	{
 		return getModel(I_C_InvoiceLine.class);
-	}
-
-	@Override
-	protected Doc_Invoice getDoc()
-	{
-		return (Doc_Invoice)super.getDoc();
 	}
 
 	/**

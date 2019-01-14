@@ -30,11 +30,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -60,7 +63,8 @@ import de.metas.util.Services;
 	@Override
 	public I_M_Product getM_Product()
 	{
-		return ppOrder.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		return Services.get(IProductDAO.class).getById(productId);
 	}
 
 	@Override
@@ -119,7 +123,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public String getComponentType()
+	public BOMComponentType getComponentType()
 	{
 		return null;
 	}

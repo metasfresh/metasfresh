@@ -784,12 +784,12 @@ public class VLookup extends JComponent
 				if (m_value instanceof Integer)
 				{
 					final int id = (Integer)m_value;
-					pp = new KeyNamePair(id, m_lastDisplay);
+					pp = KeyNamePair.of(id, m_lastDisplay);
 				}
 				else
 				{
 					final String valueStr = m_value == null ? "" : m_value.toString();
-					pp = new ValueNamePair(valueStr, m_lastDisplay);
+					pp = ValueNamePair.of(valueStr, m_lastDisplay);
 				}
 
 				m_combo.addItem(pp);

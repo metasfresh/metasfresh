@@ -37,6 +37,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
@@ -246,14 +247,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-		final int productId = orderLine.getM_Product_ID();
-		final int orgId = orderLine.getAD_Org_ID();
-		final int asiId = orderLine.getM_AttributeSetInstance_ID();
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoId(orderLine.getAD_Org_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
 				.orgId(orgId)
-				.productId(ProductId.ofRepoId(productId))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(asiId))
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);

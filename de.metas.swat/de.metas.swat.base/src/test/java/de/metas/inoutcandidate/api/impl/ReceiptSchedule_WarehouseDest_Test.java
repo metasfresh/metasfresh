@@ -3,13 +3,14 @@ package de.metas.inoutcandidate.api.impl;
 import java.util.Collections;
 import java.util.List;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -25,24 +26,23 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.product.IProductActivityProvider;
 import de.metas.util.Services;
 
 public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 {
-	private org.adempiere.warehouse.model.I_M_Warehouse warehouseForIssues;
-	private I_M_Locator locatorForIssues;
 
 	@Override
 	public void setup()
 	{
-		warehouseForIssues = InterfaceWrapperHelper.create(ctx, org.adempiere.warehouse.model.I_M_Warehouse.class, ITrx.TRXNAME_None);
+		final I_M_Warehouse warehouseForIssues = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, ITrx.TRXNAME_None);
 		warehouseForIssues.setIsIssueWarehouse(true);
 		warehouseForIssues.setName("Warehouse for Issues");
 		warehouseForIssues.setValue("Warehouse for Issues");
 		InterfaceWrapperHelper.save(warehouseForIssues);
-
-		locatorForIssues = createLocator(warehouseForIssues);
-
+		createLocator(warehouseForIssues);
+		
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
 	/**

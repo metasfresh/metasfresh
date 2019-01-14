@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -29,6 +30,7 @@ import org.compiere.util.Ini;
 import de.metas.cache.CCache;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Services;
 
 /**
  * Unit Of Measure Model
@@ -95,6 +97,7 @@ public class MUOM extends X_C_UOM
 	 * @param C_UOM_ID ID
 	 * @return UOM
 	 */
+	@Deprecated
 	public static MUOM get(Properties ctx, int C_UOM_ID)
 	{
 		if (s_cache.size() == 0)
@@ -116,10 +119,14 @@ public class MUOM extends X_C_UOM
 	 * @param C_UOM_ID ID
 	 * @return Precision
 	 */
+	@Deprecated
 	public static int getPrecision(Properties ctx, int C_UOM_ID)
 	{
-		MUOM uom = get(ctx, C_UOM_ID);
-		return uom.getStdPrecision();
+		if(C_UOM_ID <= 0)
+		{
+			return 2;
+		}
+		return Services.get(IUOMDAO.class).getStandardPrecision(C_UOM_ID);
 	}	// getPrecision
 
 	/**
@@ -139,17 +146,10 @@ public class MUOM extends X_C_UOM
 		}
 	}	// loadUOMs
 
-	/**************************************************************************
-	 * Constructor.
-	 *
-	 * @param ctx context
-	 * @param C_UOM_ID UOM ID
-	 * @param trxName transaction
-	 */
 	public MUOM(Properties ctx, int C_UOM_ID, String trxName)
 	{
 		super(ctx, C_UOM_ID, trxName);
-		if (C_UOM_ID == 0)
+		if (is_new())
 		{
 			// setName (null);
 			// setX12DE355 (null);
@@ -159,30 +159,8 @@ public class MUOM extends X_C_UOM
 		}
 	}	// UOM
 
-	/**
-	 * Load Constructor.
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MUOM(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	// UOM
-
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
-	@Override
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer("UOM[");
-		sb.append("ID=").append(get_ID())
-				.append(", Name=").append(getName()).append("]");
-		return sb.toString();
-	}	// toString
-
 }	// MUOM

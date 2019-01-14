@@ -12,8 +12,28 @@ Here come the actual release notes:
 
 # metasfresh 5.87
 # Features
+* metasfresh
+  * [#4798](https://github.com/metasfresh/metasfresh/issues/4798) AD_RefList Description shall be shown in webui
+  * [#4863](https://github.com/metasfresh/metasfresh/issues/4863) Add created/ updated to asynch workpackage and filter for created
+  * [#4857](https://github.com/metasfresh/metasfresh/issues/4857) Add PK column AD_OrgInfo_ID
+
+* metasfresh-webui-api
+  * [#1119](https://github.com/metasfresh/metasfresh-webui-api/issues/1119) Max rows loaded in a included tab shall be configurable
 
 # Fixes
+* metasfresh 
+  * [#4862](https://github.com/metasfresh/metasfresh/issues/4862) When deleting a AD_Tab, the AD_Field and AD_Element_Link records shall be deleted
+
+* metasfresh-webui-frontend
+  * [#2119](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2119) Screen turns grey for 1 sec sometimes
+  * [#2120](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2120) Tab not always working correctly
+  * [#2122](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2122) Quick actions dropdown covered by pagination in modals
+  * [#2124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2124) Webcam Foto not working anymore since last chrome update
+  * [#2130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2130) Header/subheader not working correctly on mobile
+  * [#2133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2133) Display value description when hovering over field
+  * [#2135](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2135) sync all contract specs - add contracted vendor and discount schema
+  * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
+  * [#2134](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2134) string field is reset in mid-typing
 
 # metasfresh 5.86
 # Features

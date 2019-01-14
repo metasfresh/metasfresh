@@ -1,9 +1,5 @@
 package de.metas.util;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.util
@@ -35,7 +31,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
+
+import lombok.NonNull;
 
 /**
  *
@@ -60,7 +60,7 @@ public final class Check
 	 *
 	 * @param clazz
 	 */
-	public static void setDefaultExClass(final Class<? extends RuntimeException> clazz)
+	public static void setDefaultExClass(@NonNull final Class<? extends RuntimeException> clazz)
 	{
 		defaultExClazz = clazz;
 	}
@@ -156,6 +156,11 @@ public final class Check
 	public static void assume(final boolean cond, final String errMsg, final Object... params)
 	{
 		assume(cond, defaultExClazz, errMsg, params);
+	}
+	
+	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
+	{
+		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
 	}
 
 	/**
@@ -599,6 +604,12 @@ public final class Check
 			final RuntimeException ex = mkEx(exceptionClass, errMsgFormated);
 			return ex;
 		};
+	}
+	
+	public static RuntimeException newException(final String errMsg, final Object... params)
+	{
+		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+		return mkEx(defaultExClazz, errMsgFormated);
 	}
 
 	public static boolean isEmpty(@Nullable final Object value)

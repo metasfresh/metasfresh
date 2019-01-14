@@ -29,6 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -41,7 +42,7 @@ public class ProductBOMLineBuilder
 {
 	private ProductBOMBuilder _parent;
 	//
-	private String componentType = X_PP_Product_BOMLine.COMPONENTTYPE_Component;
+	private BOMComponentType _componentType = BOMComponentType.Component;
 	private I_M_Product _product;
 	private I_C_UOM _uom;
 	private boolean _isQtyPercentage;
@@ -83,7 +84,7 @@ public class ProductBOMLineBuilder
 		bomLine.setC_UOM(getC_UOM());
 
 		bomLine.setIsCritical(false);
-		bomLine.setComponentType(componentType);
+		bomLine.setComponentType(_componentType != null ? _componentType.getCode() : null);
 		bomLine.setIssueMethod(_issueMethod);
 
 		bomLine.setIsQtyPercentage(_isQtyPercentage);
@@ -218,10 +219,10 @@ public class ProductBOMLineBuilder
 		this._issueMethod = issueMethod;
 		return this;
 	}
-	
-	public ProductBOMLineBuilder componentType(@NonNull final String componentType)
+
+	public ProductBOMLineBuilder componentType(@NonNull final BOMComponentType componentType)
 	{
-		this.componentType = componentType;
+		this._componentType = componentType;
 		return this;
 	}
 }

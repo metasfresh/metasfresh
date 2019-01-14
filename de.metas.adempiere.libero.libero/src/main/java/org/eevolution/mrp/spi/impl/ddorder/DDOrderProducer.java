@@ -27,6 +27,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -135,7 +136,8 @@ public class DDOrderProducer
 
 		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
-		InterfaceWrapperHelper.save(ddOrderRecord);
+		final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
+		ddOrdersRepo.save(ddOrderRecord);
 
 		for (final DDOrderLine linePojo : pojo.getLines())
 		{
@@ -198,7 +200,7 @@ public class DDOrderProducer
 
 			//
 			// Save DD Order Line
-			InterfaceWrapperHelper.save(ddOrderline);
+			ddOrdersRepo.save(ddOrderline);
 
 			final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
@@ -228,7 +230,7 @@ public class DDOrderProducer
 				{
 					mrp.setDateStartSchedule(supplyDateStartSchedule);
 					mrp.setDateFinishSchedule(supplyDateFinishSchedule);
-					InterfaceWrapperHelper.save(mrp);
+					mrpDAO.save(mrp);
 				}
 			}
 		}
@@ -257,7 +259,8 @@ public class DDOrderProducer
 		ddOrderLineAlt.setQtyDelivered(BigDecimal.ZERO);
 		ddOrderLineAlt.setQtyInTransit(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.save(ddOrderLineAlt);
+		final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
+		ddOrdersRepo.save(ddOrderLineAlt);
 	}
 
 	private int getC_DocType_ID(final int orgId)

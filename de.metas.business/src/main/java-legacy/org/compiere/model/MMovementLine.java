@@ -27,10 +27,11 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.eevolution.model.MDDOrderLine;
 
+import de.metas.lang.SOTrx;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -63,10 +64,10 @@ public class MMovementLine extends X_M_MovementLine
 		//	setLine (0);	
 		//	setM_Product_ID (0);
 			setM_AttributeSetInstance_ID(0);	//	ID
-			setMovementQty (Env.ZERO);	// 1
-			setTargetQty (Env.ZERO);	// 0
-			setScrappedQty(Env.ZERO);
-			setConfirmedQty(Env.ZERO);
+			setMovementQty (BigDecimal.ZERO);	// 1
+			setTargetQty (BigDecimal.ZERO);	// 0
+			setScrappedQty(BigDecimal.ZERO);
+			setConfirmedQty(BigDecimal.ZERO);
 			setProcessed (false);
 		}	
 	}	//	MMovementLine
@@ -224,24 +225,27 @@ public class MMovementLine extends X_M_MovementLine
 			setMovementQty(getMovementQty());
 		
 		//      Mandatory Instance
-		MProduct product = getProduct();
-		if (getM_AttributeSetInstance_ID() == 0)
+		if (getM_AttributeSetInstance_ID() <= 0)
 		{
-			if (product != null && product.isASIMandatory(false))
+			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+			if(Services.get(IProductBL.class).isASIMandatory(productId, SOTrx.PURCHASE.toBoolean()))
 			{
 				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstance_ID);
 			}
 		}
-		if (getM_AttributeSetInstanceTo_ID() == 0)
+		if (getM_AttributeSetInstanceTo_ID() <= 0)
 		{
 			//instance id default to same for movement between locator 
 			if (getM_Locator_ID() != getM_LocatorTo_ID())
 			{
-				if (getM_AttributeSetInstance_ID() != 0)        //set to from
+				if (getM_AttributeSetInstance_ID() > 0)        //set to from
+				{
 					setM_AttributeSetInstanceTo_ID(getM_AttributeSetInstance_ID());
+				}
 			}
 			
-			if (product != null && product.isASIMandatory(true) && getM_AttributeSetInstanceTo_ID() == 0)
+			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+			if(Services.get(IProductBL.class).isASIMandatory(productId, SOTrx.SALES.toBoolean()) && getM_AttributeSetInstanceTo_ID() <= 0)
 			{
 				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstanceTo_ID);
 			}

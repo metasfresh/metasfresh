@@ -25,6 +25,9 @@ import java.util.Properties;
 
 import org.compiere.util.DB;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
+
 /**
  *	Dunning Run Model
  *	
@@ -201,7 +204,7 @@ public class MDunningRun extends X_C_DunningRun
 		}
 		//	New Entry
 		MDunningRunEntry entry = new MDunningRunEntry (this);
-		MBPartner bp = new MBPartner (getCtx(), C_BPartnerRelated_ID, get_TrxName());
+		I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartnerRelated_ID);
 		entry.setBPartner(bp, true);	//	AR hardcoded
 		//
 		if (entry.getSalesRep_ID() == 0)

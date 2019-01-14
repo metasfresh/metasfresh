@@ -99,4 +99,9 @@ public class PPOrderLine
 
 		this.issueOrReceiveDate = issueOrReceiveDate;
 	}
+
+	public PPOrderLine withQtyRequired(final BigDecimal qtyRequired)
+	{
+		return toBuilder().qtyRequired(qtyRequired).build();
+	}
 }

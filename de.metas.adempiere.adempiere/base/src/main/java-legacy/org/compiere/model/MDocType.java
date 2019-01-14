@@ -53,7 +53,7 @@ public class MDocType extends X_C_DocType
 	 */
 	static public int getDocType(String DocBaseType)
 	{
-		MDocType[] doc = MDocType.getOfDocBaseType(Env.getCtx(), DocBaseType);
+		MDocType[] doc = getOfDocBaseType(Env.getCtx(), DocBaseType);
 		return doc.length > 0 ? doc[0].get_ID() : 0;
 	}
 

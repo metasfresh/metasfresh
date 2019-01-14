@@ -225,7 +225,7 @@ public class CreateDraftIssuesCommand
 		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
 				.switchToSourceIfMorePrecise();
 		candidate.setQty(qtyToIssue.getAsBigDecimal());
-		candidate.setC_UOM(qtyToIssue.getUOM());
+		candidate.setC_UOM_ID(qtyToIssue.getUOMId());
 
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);

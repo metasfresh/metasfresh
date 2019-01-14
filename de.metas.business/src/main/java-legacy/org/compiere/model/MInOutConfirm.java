@@ -80,8 +80,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 
 		MInOutConfirm confirm = new MInOutConfirm (ship, confirmType);
 		confirm.saveEx();
-		MInOutLine[] shipLines = ship.getLines();
-		for (MInOutLine sLine : shipLines)
+		for (MInOutLine sLine : ship.getLines())
 		{
 			MInOutLineConfirm cLine = new MInOutLineConfirm (confirm);
 			cLine.setInOutLine(sLine);

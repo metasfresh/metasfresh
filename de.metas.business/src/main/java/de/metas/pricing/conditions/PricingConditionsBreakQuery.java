@@ -3,6 +3,9 @@ package de.metas.pricing.conditions;
 import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_OrderLine;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import lombok.Builder;
@@ -38,7 +41,18 @@ public class PricingConditionsBreakQuery
 	ImmutableAttributeSet attributes;
 	BigDecimal qty;
 	BigDecimal price;
+
 	BigDecimal amt;
+
+	/** Please keep in sync with the field of this class. */
+	public static ImmutableSet<String> getRelevantOrderLineColumns()
+	{
+		return ImmutableSet.of(
+				I_C_OrderLine.COLUMNNAME_M_Product_ID,
+				I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID,
+				I_C_OrderLine.COLUMNNAME_QtyOrdered,
+				I_C_OrderLine.COLUMNNAME_PriceEntered);
+	}
 
 	@Builder
 	private PricingConditionsBreakQuery(

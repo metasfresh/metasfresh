@@ -2,7 +2,6 @@ package org.adempiere.location;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -27,11 +26,10 @@ import lombok.Value;
  * #L%
  */
 
+/** C_Location_ID */
 @Value
 public class LocationId implements RepoIdAware
 {
-	int repoId;
-
 	public static LocationId ofRepoId(final int repoId)
 	{
 		return new LocationId(repoId);
@@ -39,16 +37,19 @@ public class LocationId implements RepoIdAware
 
 	public static LocationId ofRepoIdOrNull(final int repoId)
 	{
-		if (repoId <= 0)
-		{
-			return null;
-		}
-		return new LocationId(repoId);
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
+
+	int repoId;
 
 	private LocationId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Location_ID");
+	}
+
+	public static int toRepoId(LocationId locationId)
+	{
+		return toRepoIdOr(locationId, -1);
 	}
 
 	public static int toRepoIdOr(final LocationId locationId, final int defaultValue)

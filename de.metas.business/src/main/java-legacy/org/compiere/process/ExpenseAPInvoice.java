@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MTimeExpense;
@@ -31,6 +31,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
@@ -124,7 +125,8 @@ public class ExpenseAPInvoice extends JavaProcess
 				if (te.getC_BPartner_ID() != old_BPartner_ID)
 				{
 					completeInvoice (invoice);
-					MBPartner bp = new MBPartner (getCtx(), te.getC_BPartner_ID(), get_TrxName());
+					
+					final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(te.getC_BPartner_ID());
 					//
 					log.info("New Invoice for " + bp);
 					invoice = new MInvoice (getCtx(), 0, null);

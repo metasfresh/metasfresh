@@ -26,7 +26,6 @@ package de.metas.banking.service.impl;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -39,6 +38,7 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
@@ -46,8 +46,9 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -180,9 +181,9 @@ public class BankStatementBL implements IBankStatementBL
 				Check.assume(refLine.getC_Invoice_ID() > 0, "@NotFound@ @C_Invoice_ID@");
 				final I_C_Invoice inv = refLine.getC_Invoice();
 
-				final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						bsl.getDateAcct(), // ConvDate,
-						inv.getC_ConversionType_ID(), // ConversionType_ID,
+						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
 						bsl.getAD_Client_ID(), // AD_Client_ID
 						bsl.getAD_Org_ID() // AD_Org_ID
 						);

@@ -1,6 +1,7 @@
 package de.metas.notification;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.UserId;
 
 import de.metas.util.Check;
 import lombok.Builder;
@@ -48,6 +49,15 @@ public class Recipient
 				.userId(userId)
 				.build();
 	}
+	
+	public static Recipient user(@NonNull final UserId userId)
+	{
+		return _builder()
+				.type(RecipientType.User)
+				.userId(userId.getRepoId())
+				.build();
+	}
+
 
 	public static Recipient userAndRole(final int userId, final int roleId)
 	{

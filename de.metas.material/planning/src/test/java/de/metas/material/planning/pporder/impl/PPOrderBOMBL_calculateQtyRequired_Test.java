@@ -30,15 +30,16 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 
 /**
  * Test {@link PPOrderBOMBL#calculateQtyRequiredProjected(I_PP_Order_BOMLine)}.
@@ -94,7 +95,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		// Component
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
+		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
 		ppOrderBOMLine.setC_UOM(uomMm);
 		ppOrderBOMLine.setQtyRequiered(null);
@@ -117,7 +118,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredProjected(ppOrderBOMLine),
+				calculateQtyRequiredProjected(ppOrderBOMLine).getAsBigDecimal(),
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
 	}
@@ -138,15 +139,44 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequired(ppOrderBOMBL.fromRecord(ppOrderBOMLine), ppOrder.getQtyOrdered()),
+				ppOrderBOMBL.calculateQtyRequired(ppOrderBOMBL.fromRecord(ppOrderBOMLine), ppOrder.getQtyOrdered()).getAsBigDecimal(),
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyRequiredProjected(ppOrderBOMLine),
+				calculateQtyRequiredProjected(ppOrderBOMLine).getAsBigDecimal(),
 				// Expected: 200(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("57200")));
 	}
+	
+	/**
+	 * Calculates how much qty is required for given BOM Line considering the actual quantity required of finished good.<br/>
+	 * In other words, how much will be required considering that the delivered finish goods could be more then planned initially.<br/>
+	 * By "actual quantity required of finished good" we mean the maximum between the "quantity required of finished good" and "quantity delivered of finished good".<br/>
+	 * <br/>
+	 * Example:<br/>
+	 * Consider a manufacturing order with 100 finished goods ordered. Quantity that was actually produced is 100 finished goods.<br/>
+	 * We have a component which needs 350mm for each finished good.<br/>
+	 * So the total standard quantity required of that component, to produce 100 finish good items is 100 x 350mm = 35000mm.<br/>
+	 * Same will be projected quantity required.<br/>
+	 * <br/>
+	 * Now, consider that quantity of finished goods produced is 110 (more then ordered).<br/>
+	 * In this case projected quantity required will consider the quantity actually produced instead of quantity ordered, because it's bigger.<br/>
+	 * So the result will be 110(quantity produced) x 350mm.<br/>
+	 *
+	 * @param orderBOMLine
+	 * @return projected quantity required.
+	 */
+	private Quantity calculateQtyRequiredProjected(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		final I_PP_Order ppOrder = orderBOMLine.getPP_Order();
+		final BigDecimal qtyRequired_FinishedGood = ppOrder.getQtyOrdered();
+		final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
+		final BigDecimal qtyRequiredActual_FinishedGood = qtyRequired_FinishedGood.max(qtyDelivered_FinishedGood);
+
+		return ppOrderBOMBL.calculateQtyRequired(ppOrderBOMBL.fromRecord(orderBOMLine), qtyRequiredActual_FinishedGood);
+	}
+
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29

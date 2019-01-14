@@ -6,7 +6,6 @@ import org.compiere.util.Env;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -107,5 +106,10 @@ public class OrgId implements RepoIdAware
 	public boolean isAny()
 	{
 		return repoId == Env.CTXVALUE_AD_Org_ID_Any;
+	}
+
+	public boolean isRegular()
+	{
+		return !isAny();
 	}
 }

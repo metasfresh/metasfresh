@@ -115,8 +115,7 @@ public class CalloutMovement extends CalloutEngine
 	private void checkQtyAvailable(Properties ctx, GridTab mTab, int WindowNo, int M_Product_ID, BigDecimal MovementQty) {
 		// Begin Armen 2006/10/01
 		if (M_Product_ID != 0) {
-			MProduct product = MProduct.get(ctx, M_Product_ID);
-			if (Services.get(IProductBL.class).isStocked(product)) {
+			if (Services.get(IProductBL.class).isStocked(M_Product_ID)) {
 				if (MovementQty == null)
 					MovementQty = (BigDecimal) mTab.getValue("MovementQty");
 				int M_Locator_ID = Env.getContextAsInt(ctx, WindowNo, "M_Locator_ID");

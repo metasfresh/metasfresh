@@ -3055,16 +3055,8 @@ public abstract class PO
 	 */
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		/**
-		 * Prevents saving
-		 * log.error("Error", Msg.parseTranslation(getCtx(), "@C_Currency_ID@ = @C_Currency_ID@"));
-		 * log.error("FillMandatory", Msg.getElement(getCtx(), "PriceEntered"));
-		 * /** Issues message
-		 * log.saveWarning(AD_Message, message);
-		 * log.saveInfo (AD_Message, message);
-		 **/
 		return true;
-	}	// beforeSave
+	}
 
 	/**
 	 * Called after Save for Post-Save Operation

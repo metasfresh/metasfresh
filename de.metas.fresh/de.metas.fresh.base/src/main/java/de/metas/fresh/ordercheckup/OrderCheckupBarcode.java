@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.order.OrderLineId;
 import lombok.EqualsAndHashCode;
 
 /*
@@ -123,11 +124,11 @@ public final class OrderCheckupBarcode
 		return version + SEPARATOR + adTableId + SEPARATOR + recordId;
 	}
 
-	public int getC_OrderLine_ID()
+	public OrderLineId getOrderLineId()
 	{
 		if (adTableId == C_OrderLine_Table_ID)
 		{
-			return recordId;
+			return OrderLineId.ofRepoId(recordId);
 		}
 		else
 		{

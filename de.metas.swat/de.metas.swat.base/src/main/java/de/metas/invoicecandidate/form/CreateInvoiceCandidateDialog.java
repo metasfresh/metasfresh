@@ -45,6 +45,7 @@ import java.util.Properties;
 
 import javax.swing.JLabel;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -89,7 +90,6 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;

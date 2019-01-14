@@ -158,12 +158,12 @@ public class AssignmentToRefundCandidateRepository
 				.createCompositeQueryFilter(I_C_Invoice_Candidate_Assignment.class)
 				.setJoinOr();
 
-		final InvoiceCandidateId removeForContractCandidateId = request.getRemoveForRefundCandidateId();
-		if (removeForContractCandidateId != null)
+		final InvoiceCandidateId removeForRefundCandidateId = request.getRemoveForRefundCandidateId();
+		if (removeForRefundCandidateId != null)
 		{
 			invoiceCandidateIDsOrFilter.addEqualsFilter(
 					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID,
-					removeForContractCandidateId.getRepoId());
+					removeForRefundCandidateId.getRepoId());
 		}
 		final InvoiceCandidateId removeForAssignedCandidateId = request.getRemoveForAssignedCandidateId();
 		if (removeForAssignedCandidateId != null)
@@ -175,7 +175,7 @@ public class AssignmentToRefundCandidateRepository
 
 		if (!request.getRefundConfigIds().isEmpty())
 		{
-			invoiceCandidateIDsOrFilter.addInArrayFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, request.getRefundConfigIds());
+			queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, request.getRefundConfigIds());
 		}
 
 		queryBuilder

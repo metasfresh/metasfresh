@@ -65,7 +65,6 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -219,7 +218,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 				loadModuleActivatorClass(adClient, className);
 			}
-
 
 			// Load from Spring context
 			for (final Object modelInterceptor : getSpringInterceptors())
@@ -784,7 +782,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		executeInTrx(trxName, changeType, () -> fireModelChange0(po, changeType, interceptorsSystem, interceptorsClient, scriptValidators));
 	}	// fireModelChange
 
-	private final void executeInTrx(final String trxName, final int changeTypeOrDocTiming, final Runnable runnable)
+	private final void executeInTrx(final String trxName, final int changeTypeOrDocTiming, @NonNull final Runnable runnable)
 	{
 		final boolean runInTrx = changeTypeOrDocTiming != ModelValidator.TYPE_BEFORE_SAVE_TRX;
 
@@ -793,19 +791,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// NOTE: we are wrapping it to a transaction (savepoint) because we also want to make sure Thread TrxName is set
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+			if (trxManager.isNull(trxName))
+			{
+				throw new AdempiereException("trxName shall not be null");
+			}
+
 			final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
 					.setTrxPropagation(TrxPropagation.NESTED) // we expect to run into a transaction at this point
 					.setOnRunnableSuccess(OnRunnableSuccess.DONT_COMMIT)
 					.setOnRunnableFail(OnRunnableFail.DONT_ROLLBACK) // OnRunnableFail: don't rollback => no savepoint shall be created (avoid HUGE performance issues)
 					.build();
-			trxManager.run(trxName, trxRunConfig, new TrxRunnableAdapter()
-			{
-				@Override
-				public void run(String localTrxName) throws Exception
-				{
-					runnable.run();
-				}
-			});
+			trxManager.run(trxName, trxRunConfig, localTrxName -> runnable.run());
 		}
 		//
 		// Execute without wrapping to a particular transaction

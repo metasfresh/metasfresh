@@ -28,12 +28,12 @@ import java.util.List;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -43,6 +43,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -60,9 +61,9 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final transient IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-	private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -108,7 +109,7 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 		//
 		// Unclose PP_Order's Qty
 		ppOrderBL.uncloseQtyOrdered(ppOrder);
-		InterfaceWrapperHelper.save(ppOrder);
+		ppOrdersRepo.save(ppOrder);
 
 		//
 		// Unclose PP_Order BOM Line's quantities
@@ -117,7 +118,6 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 		{
 			ppOrderBOMBL.unclose(line);
 		}
-		ppOrderBOMBL.reserveStock(lines);
 
 		// firing this before having updated the docstatus. This is how the *real* DocActions like MInvoice do it too.
 		ModelValidationEngine.get().fireDocValidate(ppOrder, ModelValidator.TIMING_AFTER_UNCLOSE);
@@ -126,16 +126,17 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 		// Update DocStatus
 		ppOrder.setDocStatus(IDocument.STATUS_Completed);
 		ppOrder.setDocAction(IDocument.ACTION_Close);
-		InterfaceWrapperHelper.save(ppOrder);
+		ppOrdersRepo.save(ppOrder);
 
 		//
 		// Reverse ALL cost collectors
-		reverseAllCostCollectors(ppOrder);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		reverseAllCostCollectors(ppOrderId);
 	}
 
-	private final void reverseAllCostCollectors(final I_PP_Order ppOrder)
+	private final void reverseAllCostCollectors(final PPOrderId ppOrderId)
 	{
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppOrder);
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.getByOrderId(ppOrderId);
 
 		// Sort the cost collectors in reverse order of their creation,
 		// just to make sure we are reversing the effect from last one to first one.
@@ -149,7 +150,8 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 			}
 
 			// Reversing activity controls is not supported atm, so we are skipping them.
-			if (ppCostCollectorBL.isActivityControl(cc))
+			final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+			if (costCollectorType.isActivityControl())
 			{
 				continue;
 			}
@@ -157,7 +159,7 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 			if (docActionBL.isDocumentStatusOneOf(cc, IDocument.STATUS_Closed))
 			{
 				cc.setDocStatus(IDocument.STATUS_Completed);
-				InterfaceWrapperHelper.save(cc);
+				Services.get(IPPCostCollectorDAO.class).save(cc);
 			}
 
 			docActionBL.processEx(cc, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);

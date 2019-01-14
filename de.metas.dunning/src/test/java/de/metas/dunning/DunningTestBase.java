@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -55,6 +54,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.acct.api.IPostingService;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -277,7 +277,7 @@ public class DunningTestBase
 		level.setDaysBetweenDunning(DaysBetweenDunning);
 		level.setDaysAfterDue(BigDecimal.valueOf(DaysAfterDue));
 		level.setInterestPercent(BigDecimal.valueOf(InterestPercent));
-		level.setFeeAmt(Env.ZERO);
+		level.setFeeAmt(BigDecimal.ZERO);
 		level.setIsWriteOff(false);
 
 		dao.save(level);

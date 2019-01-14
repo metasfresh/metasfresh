@@ -177,33 +177,33 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return ii.intValue();
 	}
 
-	/** 
-	 * ComponentType AD_Reference_ID=53225
-	 * Reference name: PP_ComponentType
-	 */
-	public static final int COMPONENTTYPE_AD_Reference_ID=53225;
-	/** By-Product = BY */
-	public static final String COMPONENTTYPE_By_Product = "BY";
-	/** Component = CO */
-	public static final String COMPONENTTYPE_Component = "CO";
-	/** Phantom = PH */
-	public static final String COMPONENTTYPE_Phantom = "PH";
-	/** Packing = PK */
-	public static final String COMPONENTTYPE_Packing = "PK";
-	/** Planning = PL */
-	public static final String COMPONENTTYPE_Planning = "PL";
-	/** Tools = TL */
-	public static final String COMPONENTTYPE_Tools = "TL";
-	/** Option = OP */
-	public static final String COMPONENTTYPE_Option = "OP";
-	/** Variant = VA */
-	public static final String COMPONENTTYPE_Variant = "VA";
-	/** Co-Product = CP */
-	public static final String COMPONENTTYPE_Co_Product = "CP";
-	/** Scrap = SC */
-	public static final String COMPONENTTYPE_Scrap = "SC";
-	/** Product = PR */
-	public static final String COMPONENTTYPE_Product = "PR";
+//	/** 
+//	 * ComponentType AD_Reference_ID=53225
+//	 * Reference name: PP_ComponentType
+//	 */
+//	public static final int COMPONENTTYPE_AD_Reference_ID=53225;
+//	/** By-Product = BY */
+//	public static final String COMPONENTTYPE_By_Product = "BY";
+//	/** Component = CO */
+//	public static final String COMPONENTTYPE_Component = "CO";
+//	/** Phantom = PH */
+//	public static final String COMPONENTTYPE_Phantom = "PH";
+//	/** Packing = PK */
+//	public static final String COMPONENTTYPE_Packing = "PK";
+//	/** Planning = PL */
+//	public static final String COMPONENTTYPE_Planning = "PL";
+//	/** Tools = TL */
+//	public static final String COMPONENTTYPE_Tools = "TL";
+//	/** Option = OP */
+//	public static final String COMPONENTTYPE_Option = "OP";
+//	/** Variant = VA */
+//	public static final String COMPONENTTYPE_Variant = "VA";
+//	/** Co-Product = CP */
+//	public static final String COMPONENTTYPE_Co_Product = "CP";
+//	/** Scrap = SC */
+//	public static final String COMPONENTTYPE_Scrap = "SC";
+//	/** Product = PR */
+//	public static final String COMPONENTTYPE_Product = "PR";
 	/** Set Component Type.
 		@param ComponentType 
 		Component Type for a Bill of Material or Formula

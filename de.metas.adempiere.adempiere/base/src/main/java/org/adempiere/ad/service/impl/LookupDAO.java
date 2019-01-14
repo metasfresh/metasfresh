@@ -26,7 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -799,17 +798,18 @@ public class LookupDAO implements ILookupDAO
 		{
 			final boolean isActive = isActive(rs) && isDisplayedInUI(rs);
 			final String name = getDisplayName(rs, isActive);
+			final String description = rs.getString(MLookupFactory.COLUMNINDEX_Description);
 
 			final NamePair item;
 			if (numericKey)
 			{
 				final int key = rs.getInt(MLookupFactory.COLUMNINDEX_Key);
-				item = new KeyNamePair(key, name);
+				item = KeyNamePair.of(key, name, description);
 			}
 			else
 			{
 				final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-				item = new ValueNamePair(value, name);
+				item = ValueNamePair.of(value, name, description);
 			}
 
 			lastItemActive = isActive;
@@ -1002,11 +1002,10 @@ public class LookupDAO implements ILookupDAO
 			@CacheAllowMutable final MLookupInfo lookupInfo,
 			@CacheAllowMutable final Object key)
 	{
-		// Nothing to query
 		final String sqlQueryDirect = lookupInfo.getSqlQueryDirect();
 		if (key == null || Check.isEmpty(sqlQueryDirect, true))
 		{
-			return null;
+			return null; // Nothing to query
 		}
 
 		final boolean isNumber = lookupInfo.isNumericKey();
@@ -1071,16 +1070,17 @@ public class LookupDAO implements ILookupDAO
 				}
 
 				final String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
+				final String description = rs.getString(MLookupFactory.COLUMNINDEX_Description);
 				final NamePair item;
 				if (isNumber)
 				{
 					final int itemId = rs.getInt(MLookupFactory.COLUMNINDEX_Key);
-					item = new KeyNamePair(itemId, name);
+					item = KeyNamePair.of(itemId, name, description);
 				}
 				else
 				{
 					final String itemValue = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-					item = new ValueNamePair(itemValue, name);
+					item = ValueNamePair.of(itemValue, name, description);
 				}
 
 				// 04617: apply java validation rules
@@ -1095,7 +1095,10 @@ public class LookupDAO implements ILookupDAO
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql, Arrays.asList(key));
+			throw DBException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("sql", sql)
+					.setParameter("param", key);
 		}
 		finally
 		{

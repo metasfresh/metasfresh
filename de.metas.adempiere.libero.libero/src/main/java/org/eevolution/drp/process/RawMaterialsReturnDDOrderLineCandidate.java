@@ -53,6 +53,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -111,7 +112,7 @@ import lombok.NonNull;
 		this.ctx = ctx;
 
 		this.attributeSetInstanceAware = attributeSetInstanceAware;
-		this.uom = productBL.getStockingUOM(attributeSetInstanceAware.getM_Product());
+		this.uom = productBL.getStockingUOM(attributeSetInstanceAware.getM_Product_ID());
 
 		this.locator = locator;
 
@@ -158,9 +159,9 @@ import lombok.NonNull;
 		// Retrieve Product Planning
 		final ProductPlanningQuery query = ProductPlanningQuery
 				.builder()
-				.orgId(warehouse.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.plantId(warehousePlant == null ? 0 : warehousePlant.getS_Resource_ID())
+				.plantId(warehousePlant != null ? ResourceId.ofRepoId(warehousePlant.getS_Resource_ID()) : null)
 				.productId(ProductId.ofRepoId(attributeSetInstanceAware.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceAware.getM_AttributeSetInstance_ID()))
 				.build();

@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -27,6 +29,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
@@ -36,7 +39,6 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -328,12 +330,15 @@ class OrderLinePriceCalculator
 		{
 			return request.getPricingConditionsBreakOverride();
 		}
-
 		final I_C_OrderLine orderLine = request.getOrderLine();
-		if (orderLine.getM_DiscountSchema_ID() > 0 && orderLine.getM_DiscountSchemaBreak_ID() > 0)
+
+		final boolean lineHasDiscountSchemaBreak = orderLine.getM_DiscountSchema_ID() > 0 && orderLine.getM_DiscountSchemaBreak_ID() > 0;
+		final boolean discountNeedsRevalidation = isValueChanged(orderLine, PricingConditionsBreakQuery.getRelevantOrderLineColumns());
+		if (lineHasDiscountSchemaBreak && !discountNeedsRevalidation)
 		{
 			final PricingConditionsBreakId pricingConditionsBreakId = PricingConditionsBreakId.of(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
 			final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsBreakId.getPricingConditionsId());
+
 			return pricingConditions.getBreakById(pricingConditionsBreakId);
 		}
 
@@ -425,7 +430,7 @@ class OrderLinePriceCalculator
 		}
 	}
 
-	private boolean isAllowChangingDiscount(final SOTrx soTrx)
+	private boolean isAllowChangingDiscount(@NonNull final SOTrx soTrx)
 	{
 		if (soTrx.isPurchase())
 		{
@@ -448,7 +453,8 @@ class OrderLinePriceCalculator
 
 	public int computeTaxCategoryId()
 	{
-		final IPricingContext pricingCtx = createPricingContext();
+		final IPricingContext pricingCtx = createPricingContext()
+				.setDisallowDiscount(true); // don't bother computing discounts; we know that the tax category is not related to them.
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())

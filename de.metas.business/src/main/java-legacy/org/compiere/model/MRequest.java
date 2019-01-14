@@ -42,6 +42,8 @@ import org.springframework.core.io.FileSystemResource;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -51,8 +53,8 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
-import de.metas.util.Services;
 import de.metas.notification.UserNotificationsConfig;
+import de.metas.util.Services;
 
 /**
  * Request Model
@@ -358,7 +360,8 @@ public class MRequest extends X_R_Request
 		//
 		if (getBPartner() != null)
 		{
-			MBPGroup bpg = MBPGroup.get(getCtx(), getBPartner().getC_BP_Group_ID());
+			final BPGroupId bpGroupId = BPGroupId.ofRepoId(getBPartner().getC_BP_Group_ID());
+			final I_C_BP_Group bpg = Services.get(IBPGroupDAO.class).getById(bpGroupId);
 			String prioBase = bpg.getPriorityBase();
 			if (prioBase != null && !prioBase.equals(X_C_BP_Group.PRIORITYBASE_Same))
 			{

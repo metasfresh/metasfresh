@@ -41,7 +41,7 @@ import org.compiere.util.ValueNamePair;
 import de.metas.util.Services;
 
 /**
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @author based on initial version of Low Heng Sin, Idalica
  *
@@ -59,12 +59,12 @@ public class TranslationController
 	{
 		final List<KeyNamePair> list = new ArrayList<>();
 
-		list.add(new KeyNamePair(-1, ""));
+		list.add(new KeyNamePair(-1, "", null/* help */));
 
 		Services.get(IClientDAO.class).retrieveAllClients(Env.getCtx())
 				.stream()
 				.filter(I_AD_Client::isActive)
-				.map(adClient -> KeyNamePair.of(adClient.getAD_Client_ID(), adClient.getName()))
+				.map(adClient -> KeyNamePair.of(adClient.getAD_Client_ID(), adClient.getName(), adClient.getDescription()))
 				.forEach(list::add);
 
 		return list;
@@ -77,7 +77,7 @@ public class TranslationController
 
 	protected List<ValueNamePair> getTableList()
 	{
-		final String sql = "SELECT Name, TableName "
+		final String sql = "SELECT Name, TableName, Description "
 				+ " FROM AD_Table "
 				+ " WHERE TableName LIKE '%_Trl' AND TableName<>'AD_Column_Trl' "
 				+ " ORDER BY Name";
@@ -89,11 +89,14 @@ public class TranslationController
 			rs = pstmt.executeQuery();
 
 			final List<ValueNamePair> list = new ArrayList<>();
-			list.add(new ValueNamePair("", ""));
+			list.add(new ValueNamePair("", "", null/* help */));
 
 			while (rs.next())
 			{
-				final ValueNamePair vp = new ValueNamePair(rs.getString(2), rs.getString(1));
+				final ValueNamePair vp = new ValueNamePair(
+						rs.getString("TableName"),
+						rs.getString("Name"),
+						rs.getString("Description")/*help*/);
 				list.add(vp);
 			}
 

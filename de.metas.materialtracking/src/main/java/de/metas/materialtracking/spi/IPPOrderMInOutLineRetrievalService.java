@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.util.ISingletonService;
 
@@ -51,10 +51,7 @@ public interface IPPOrderMInOutLineRetrievalService extends ISingletonService
 
 	/**
 	 * Retrieve issued quantities and the <code>M_InOutLine_ID</code> of the material receipts from where the issued qtys came.
-	 *
-	 * @param ppOrder
-	 * @return
 	 */
-	Map<Integer, BigDecimal> retrieveIolAndQty(I_PP_Order ppOrder);
+	Map<Integer, BigDecimal> retrieveIolAndQty(PPOrderId ppOrderId);
 
 }

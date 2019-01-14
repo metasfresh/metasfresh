@@ -1,12 +1,5 @@
 package de.metas.bpartner.service;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 import java.util.Comparator;
 
 /*
@@ -34,6 +27,8 @@ import java.util.Comparator;
 import java.util.Properties;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.user.User;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -47,10 +42,16 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
 	public String getBPartnerValue(final BPartnerId bpartnerId);
+
+	public String getBPartnerName(final BPartnerId bpartnerId);
 
 	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
@@ -130,11 +131,11 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * Gets BPartner's Language
 	 *
-	 * @param ctx
+	 * @param ctx_NOTUSED
 	 * @param bpartnerId
 	 * @return {@link Language} or <code>null</code>
 	 */
-	Language getLanguage(Properties ctx, int bpartnerId);
+	Language getLanguage(Properties ctx_NOTUSED, int bpartnerId);
 
 	/**
 	 * Get the language of the given model's C_BPartner, if it has a <code>C_BPartner_ID</code> column and if the BPartner is set.
