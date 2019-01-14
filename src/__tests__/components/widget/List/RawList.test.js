@@ -246,7 +246,7 @@ describe('RawList component', () => {
         }
       });
 
-      it.skip('focused list blurs on tab', () => {
+      it('focused list blurs on tab', () => {
         const onCloseDropdownSpy = jest.fn();
         const onBlurSpy = jest.fn();
         const props = createDummyProps(

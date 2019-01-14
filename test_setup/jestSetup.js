@@ -23,9 +23,3 @@ global.config = {
   WS_URL: 'http://ws.test.url',
 };
 global.PLUGINS = [];
-
-Object.defineProperty(document, 'activeElement', {
-  value: function() {
-    return { nodeName: 'FOO' };
-  },
-});
