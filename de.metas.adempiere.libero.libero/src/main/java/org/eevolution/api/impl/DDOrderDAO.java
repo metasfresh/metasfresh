@@ -1,5 +1,7 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -34,6 +36,7 @@ import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_Order;
@@ -45,6 +48,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class DDOrderDAO implements IDDOrderDAO
 {
@@ -215,5 +219,27 @@ public class DDOrderDAO implements IDDOrderDAO
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
 	}
 
+	@Override
+	public void save(@NonNull final I_DD_Order ddOrder)
+	{
+		saveRecord(ddOrder);
+	}
 
+	@Override
+	public void save(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		saveRecord(ddOrderLine);
+	}
+
+	@Override
+	public void save(@NonNull final I_DD_OrderLine_Alternative ddOrderLineAlternative)
+	{
+		saveRecord(ddOrderLineAlternative);
+	}
+
+	@Override
+	public void save(@NonNull final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative)
+	{
+		saveRecord(ddOrderLineOrAlternative);
+	}
 }

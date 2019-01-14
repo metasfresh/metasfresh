@@ -1,111 +1,136 @@
 /**
- * 
+ *
  */
 package org.compiere.acct;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.acct.api.ProductAcctType;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCostElement;
-import org.compiere.model.PO;
-import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_PP_Cost_Collector;
 
-import de.metas.material.planning.pporder.LiberoException;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostElementType;
+import de.metas.costing.AggregatedCostAmount;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
  *
  */
-public class DocLine_CostCollector extends DocLine
+public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 {
-	public DocLine_CostCollector(PO po, Doc doc)
+	public DocLine_CostCollector(final I_PP_Cost_Collector cc, final Doc_PPCostCollector doc)
 	{
-		super(po, doc);
+		super(InterfaceWrapperHelper.getPO(cc), doc);
+
+		setQty(Quantity.of(cc.getMovementQty(), getProductStockingUOM()), false);
+		setReversalLine_ID(cc.getReversal_ID());
 	}
-	
-	public MAccount getAccount(MAcctSchema as, MCostElement element)
+
+	public MAccount getAccountForCostElement(final AcctSchema as, final CostElement costElement)
 	{
-		String costElementType = element.getCostElementType();
-		final ProductAcctType acctType;
-		if (MCostElement.COSTELEMENTTYPE_Material.equals(costElementType))
-		{
-			acctType = ProductCost.ACCTTYPE_P_Asset;
-		}
-		else if (MCostElement.COSTELEMENTTYPE_Resource.equals(costElementType))
-		{
-			acctType = ProductCost.ACCTTYPE_P_Labor;
-		}
-		else if (MCostElement.COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType))
-		{
-			acctType = ProductCost.ACCTTYPE_P_Burden;
-		}
-		else if (MCostElement.COSTELEMENTTYPE_Overhead.equals(costElementType))
-		{
-			acctType = ProductCost.ACCTTYPE_P_Overhead;
-		}
-		else if (MCostElement.COSTELEMENTTYPE_OutsideProcessing.equals(costElementType))
-		{
-			acctType = ProductCost.ACCTTYPE_P_OutsideProcessing;
-		}
-		else
-		{
-			throw new LiberoException("@NotSupported@ "+element);
-		}
+		final ProductAcctType acctType = getProductAcctTypeByCostElement(costElement);
 		return getAccount(acctType, as);
 	}
 
-	@Override
-	public MAccount getAccount(final ProductAcctType AcctType, final MAcctSchema as)
+	private ProductAcctType getProductAcctTypeByCostElement(final CostElement costElement)
 	{
-		final String acctName = AcctType == null ? null : AcctType.getColumnName();
-		if (getM_Product_ID() <= 0 || acctName == null)
+		final CostElementType costElementType = costElement.getCostElementType();
+		if (CostElementType.Material.equals(costElementType))
 		{
-			return super.getAccount(AcctType, as);
+			return ProductAcctType.Asset;
 		}
-		return getAccount(acctName, as);
+		else if (CostElementType.Resource.equals(costElementType))
+		{
+			return ProductAcctType.Labor;
+		}
+		else if (CostElementType.BurdenMOverhead.equals(costElementType))
+		{
+			return ProductAcctType.Burden;
+		}
+		else if (CostElementType.Overhead.equals(costElementType))
+		{
+			return ProductAcctType.Overhead;
+		}
+		else if (CostElementType.OutsideProcessing.equals(costElementType))
+		{
+			return ProductAcctType.OutsideProcessing;
+		}
+		else
+		{
+			throw newPostingException().setDetailMessage("@NotSupported@ " + costElement);
+		}
 	}
-	
-	public MAccount getAccount(String acctName, MAcctSchema as)
+
+	@Override
+	public MAccount getAccount(final ProductAcctType acctType, final AcctSchema as)
 	{
-		final String sql = 
-			 " SELECT "
-			+" COALESCE(pa."+acctName+",pca."+acctName+",asd."+acctName+")"
-			+" FROM M_Product p" 
-			+" INNER JOIN M_Product_Acct pa ON (pa.M_Product_ID=p.M_Product_ID)"
-			+" INNER JOIN M_Product_Category_Acct pca ON (pca.M_Product_Category_ID=p.M_Product_Category_ID AND pca.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
-			+" INNER JOIN C_AcctSchema_Default asd ON (asd.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
-			+" WHERE pa.M_Product_ID=? AND pa.C_AcctSchema_ID=?";
-		int validCombination_ID = DB.getSQLValueEx(null, sql, getM_Product_ID(), as.get_ID());
-		if (validCombination_ID  <= 0)
+		final ProductId productId = getProductId();
+		if (productId == null)
+		{
+			return super.getAccount(acctType, as);
+		}
+
+		final String acctColumnName = acctType.getColumnName();
+		final String sql = " SELECT "
+				+ " COALESCE(pa." + acctColumnName + ",pca." + acctColumnName + ",asd." + acctColumnName + ")"
+				+ " FROM M_Product p"
+				+ " INNER JOIN M_Product_Acct pa ON (pa.M_Product_ID=p.M_Product_ID)"
+				+ " INNER JOIN M_Product_Category_Acct pca ON (pca.M_Product_Category_ID=p.M_Product_Category_ID AND pca.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
+				+ " INNER JOIN C_AcctSchema_Default asd ON (asd.C_AcctSchema_ID=pa.C_AcctSchema_ID)"
+				+ " WHERE pa.M_Product_ID=? AND pa.C_AcctSchema_ID=?";
+		final int validCombinationId = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, productId, as.getId());
+		if (validCombinationId <= 0)
 		{
 			return null;
 		}
-		return MAccount.get(as.getCtx(), validCombination_ID);
+
+		return Services.get(IAccountDAO.class).getById(validCombinationId);
 	}
-	
-	
+
+	public AggregatedCostAmount getCreateCosts(final AcctSchema as)
+	{
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+
+		final AcctSchemaId acctSchemaId = as.getId();
+		
+		if (isReversalLine())
+		{
+			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(acctSchemaId)
+					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
+					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.build());
+		}
+		else
+		{
+			return costDetailService.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(acctSchemaId)
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
+							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+							.qty(getQty())
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.build());
+		}
+	}
 }

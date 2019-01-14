@@ -1,5 +1,10 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.time.LocalDateTime;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -23,22 +28,25 @@ package org.eevolution.api.impl;
  */
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.Query;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
-import org.eevolution.model.X_PP_Order_BOM;
 
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -57,13 +65,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public I_PP_Order retrieveMakeToOrderForOrderLine(final I_C_OrderLine line)
+	public List<I_PP_Order> getByIds(final Set<PPOrderId> orderIds)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, line)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_MTO_ID, line.getC_OrderLine_ID())
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, line.getM_Product_ID())
-				.create()
-				.firstOnly(I_PP_Order.class);
+		return loadByRepoIdAwares(orderIds, I_PP_Order.class);
 	}
 
 	@Override
@@ -77,33 +81,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public List<I_PP_Order> retrieveMakeToOrderForInOut(final I_M_InOut inout)
+	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inout);
-
-		final String whereClause = "C_OrderLine_ID IS NOT NULL"
-				+ " AND EXISTS (SELECT 1 FROM M_InOutLine iol"
-				+ " WHERE iol.M_InOut_ID=? AND PP_Order.C_OrderLine_MTO_ID = iol.C_OrderLine_ID) AND "
-				+ I_PP_Order.COLUMNNAME_DocStatus + " =? "
-				+ " AND EXISTS (SELECT 1 FROM PP_Order_BOM "
-				+ " WHERE PP_Order_BOM.PP_Order_ID=PP_Order.PP_Order_ID AND PP_Order_BOM.BOMType IN (?, ?))";
-
-		final List<I_PP_Order> orders = new Query(ctx, I_PP_Order.Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { inout.getM_InOut_ID(),
-						X_PP_Order.DOCSTATUS_InProgress,
-						X_PP_Order_BOM.BOMTYPE_Make_To_Kit,
-						X_PP_Order_BOM.BOMTYPE_Make_To_Order
-				})
-				.list(I_PP_Order.class);
-
-		return orders;
-	}
-
-	@Override
-	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final Properties ctx, final int warehouseId)
-	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_PP_Order.class)
 				// For Warehouse
 				.addEqualsFilter(I_PP_Order.COLUMN_M_Warehouse_ID, warehouseId)
 				// Only Releases Manufacturing orders
@@ -122,13 +102,48 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
-	public int retrievePPOrderIdByOrderLineId(final int orderLineId)
+	public PPOrderId retrievePPOrderIdByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order.class)
 				.addEqualsFilter(I_PP_Order.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstIdOnly();
+				.firstIdOnly(PPOrderId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public Stream<I_PP_Order> streamOpenPPOrderIdsOrderedByDatePromised(@Nullable final ResourceId plantId)
+	{
+		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_PP_Order.COLUMN_DocStatus, X_PP_Order.DOCSTATUS_InProgress, X_PP_Order.DOCSTATUS_Completed)
+				.orderBy(I_PP_Order.COLUMNNAME_DatePromised);
+
+		if (plantId != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_S_Resource_ID, plantId);
+		}
+
+		return queryBuilder.create().iterateAndStream();
+	}
+
+	@Override
+	public void changeOrderScheduling(
+			@NonNull final PPOrderId orderId,
+			@NonNull final LocalDateTime scheduledStartDate,
+			@NonNull final LocalDateTime scheduledFinishDate)
+	{
+		final I_PP_Order order = getById(orderId);
+		order.setDateStartSchedule(TimeUtil.asTimestamp(scheduledStartDate));
+		order.setDateFinishSchedule(TimeUtil.asTimestamp(scheduledFinishDate));
+		save(order);
+	}
+
+	@Override
+	public void save(final I_PP_Order order)
+	{
+		saveRecord(order);
 	}
 }

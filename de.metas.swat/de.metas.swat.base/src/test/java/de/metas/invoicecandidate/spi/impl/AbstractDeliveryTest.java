@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -54,7 +55,6 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 import mockit.Expectations;

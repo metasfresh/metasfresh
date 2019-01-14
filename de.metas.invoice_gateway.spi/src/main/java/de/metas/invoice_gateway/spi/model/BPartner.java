@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-invoice_gateway.spi
@@ -37,7 +35,4 @@ public class BPartner
 
 	@NonNull
 	EAN ean;
-
-	@Nullable
-	String vatNumber;
 }

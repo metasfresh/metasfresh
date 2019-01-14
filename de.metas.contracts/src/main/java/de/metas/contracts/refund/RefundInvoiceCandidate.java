@@ -16,8 +16,10 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -43,7 +45,7 @@ import lombok.Value;
  */
 
 /**
- * Represents the invoice candidate that will end up as "refund" invoice line.
+ * Represents the invoice candidate that will end up as "refund" invoice line, based on a refund contract.
  * Also see {@link AssignableInvoiceCandidate}.
  */
 @Value
@@ -66,9 +68,8 @@ public class RefundInvoiceCandidate
 	/**
 	 * If {@link RefundMode} is {@link RefundMode#APPLY_TO_EXCEEDING_QTY}, then there is one config per candidate; if it is {@link RefundMode#APPLY_TO_ALL_QTIES}, then there is one or many.
 	 */
-	// @NonNull
-	// RefundConfig refundConfig;
 	@NonNull
+	@Singular
 	List<RefundConfig> refundConfigs;
 
 	@NonNull
@@ -101,5 +102,28 @@ public class RefundInvoiceCandidate
 				.subtract(getAssignedQuantity())
 				.subtract(ONE)
 				.max(Quantity.zero(uomRecord));
+	}
+
+	public RefundInvoiceCandidate subtractAssignment(@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
+	{
+		Check.assume(assignmentToRefundCandidate.getRefundInvoiceCandidate().getId().equals(getId()),
+				"The given assignmentToRefundCandidate needs to be an assignment to this refund candidate; this={}, assignmentToRefundCandidate={}",
+				this, assignmentToRefundCandidate);
+
+		final RefundInvoiceCandidateBuilder builder = toBuilder();
+
+		final Money moneySubtrahent = assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate();
+		final Money newMoneyAmount = getMoney().subtract(moneySubtrahent);
+		builder.money(newMoneyAmount);
+
+		if (assignmentToRefundCandidate.isUseAssignedQtyInSum())
+		{
+			final Quantity assignedQuantitySubtrahent = assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate();
+			final Quantity newQuantity = getAssignedQuantity().subtract(assignedQuantitySubtrahent);
+
+			builder.assignedQuantity(newQuantity);
+		}
+
+		return builder.build();
 	}
 }

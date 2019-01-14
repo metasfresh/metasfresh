@@ -23,13 +23,13 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
@@ -154,44 +154,44 @@ public class FinStatement extends JavaProcess
 		//	Optional Account_ID
 		if (p_Account_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Account, p_Account_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.Account, p_Account_ID));
 		//	Optional Org
 		if (p_AD_Org_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Organization, p_AD_Org_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.Organization, p_AD_Org_ID));
 		//	Optional BPartner
 		if (p_C_BPartner_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_BPartner, p_C_BPartner_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.BPartner, p_C_BPartner_ID));
 		//	Optional Product
 		if (p_M_Product_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Product, p_M_Product_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.Product, p_M_Product_ID));
 		//	Optional Project
 		if (p_C_Project_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Project, p_C_Project_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.Project, p_C_Project_ID));
 		//	Optional Activity
 		if (p_C_Activity_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_Activity, p_C_Activity_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.Activity, p_C_Activity_ID));
 		//	Optional Campaign
 		if (p_C_Campaign_ID != 0)
 			m_parameterWhere.append(" AND C_Campaign_ID=").append(p_C_Campaign_ID);
 		//	m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-		//		MAcctSchemaElement.ELEMENTTYPE_Campaign, p_C_Campaign_ID));
+		//		AcctSchemaElementType.Campaign, p_C_Campaign_ID));
 		//	Optional Sales Region
 		if (p_C_SalesRegion_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_SalesRegion, p_C_SalesRegion_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.SalesRegion, p_C_SalesRegion_ID));
 		//	Optional User1_ID
 		if (p_User1_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_UserList1, p_User1_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.UserList1, p_User1_ID));
 		//  Optional User2_ID
 		if (p_User2_ID != 0)
 			m_parameterWhere.append(" AND ").append(MReportTree.getWhereClause(getCtx(), 
-				p_PA_Hierarchy_ID, MAcctSchemaElement.ELEMENTTYPE_UserList2, p_User2_ID));
+				p_PA_Hierarchy_ID, AcctSchemaElementType.UserList2, p_User2_ID));
 		//	Optional UserElement1_ID
 		if (p_UserElement1_ID != 0)
 			m_parameterWhere.append(" AND UserElement1_ID=").append(p_UserElement1_ID);

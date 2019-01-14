@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_DocType;
@@ -50,7 +51,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_Requisition;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MDocType;
@@ -65,6 +65,7 @@ import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.api.impl.TextTemplateBL;
@@ -305,7 +306,7 @@ public class LettersValidator implements ModelValidator
 		final String trxName = InterfaceWrapperHelper.getTrxName(dre);
 
 		final I_C_DunningLevel dl = dre.getC_DunningLevel();
-		final MBPartner bp = MBPartner.get(ctx, dre.getC_BPartner_ID());
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(dre.getC_BPartner_ID());
 		final String adLanguage = bp.getAD_Language();
 		final String text;
 		if (adLanguage != null)

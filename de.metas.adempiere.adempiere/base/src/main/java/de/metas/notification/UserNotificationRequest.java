@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
 
@@ -191,6 +192,12 @@ public class UserNotificationRequest
 		{
 			return recipient(Recipient.user(userId));
 		}
+		
+		public UserNotificationRequestBuilder recipientUserId(@NonNull final UserId userId)
+		{
+			return recipient(Recipient.user(userId));
+		}
+
 
 		public UserNotificationRequestBuilder topic(final Topic topic)
 		{

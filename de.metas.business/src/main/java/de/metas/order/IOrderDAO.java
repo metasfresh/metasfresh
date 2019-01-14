@@ -2,6 +2,7 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 /*
@@ -37,6 +38,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -148,4 +150,11 @@ public interface IOrderDAO extends ISingletonService
 	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
 
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
+
+	/**
+	 * Get Not Invoiced Shipments
+	 *
+	 * @return value in accounting currency
+	 */
+	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
 }

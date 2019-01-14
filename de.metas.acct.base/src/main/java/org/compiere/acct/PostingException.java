@@ -1,10 +1,10 @@
 package org.compiere.acct;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.AcctSchema;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -16,35 +16,31 @@ import de.metas.util.Check;
  * @author tsa
  *
  */
+@SuppressWarnings("serial")
 public final class PostingException extends AdempiereException
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1591542147723525989L;
-
 	//
-	private Doc _document;
-	private DocLine _docLine;
+	private Doc<?> _document;
+	private DocLine<?> _docLine;
 	private PostingStatus _postingStatus;
-	private I_C_AcctSchema _acctSchema;
+	private AcctSchema _acctSchema;
 	private Fact _fact;
 	private I_Fact_Acct _factLine;
-	private String _detailMessage;
+	private ITranslatableString _detailMessage = ImmutableTranslatableString.empty();
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
 
-	public PostingException(final Doc document)
+	public PostingException(final Doc<?> document)
 	{
 		this(document, (Throwable)null);
 	}
 
-	public PostingException(final Doc document, final Throwable cause)
+	public PostingException(final Doc<?> document, final Throwable cause)
 	{
 		super(cause);
 
 		setDocument(document);
-		setDetailMessage(cause == null ? null : cause.getLocalizedMessage());
+		setDetailMessage(cause == null ? null : extractMessageTrl(cause));
 	}
 
 	public PostingException(final String message)
@@ -59,8 +55,8 @@ public final class PostingException extends AdempiereException
 		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 
 		// Error message
-		final String detailMessage = getDetailMessage();
-		if (Check.isEmpty(detailMessage, true))
+		final ITranslatableString detailMessage = getDetailMessage();
+		if (ImmutableTranslatableString.isEmpty(detailMessage))
 		{
 			message.append("Posting error");
 		}
@@ -77,12 +73,12 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Document
-		final Doc document = getDocument();
+		final Doc<?> document = getDocument();
 		if (document != null)
 		{
 			message.append("\n @Document@: ").append(document.toString());
 		}
-		final DocLine documentLine = getDocLine();
+		final DocLine<?> documentLine = getDocLine();
 		if (documentLine != null)
 		{
 			message.append("\n @Line@: ").append(documentLine.toString());
@@ -102,7 +98,7 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Account Schema
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
+		final AcctSchema acctSchema = getAcctSchema();
 		if (acctSchema != null)
 		{
 			message.append("\n @C_AcctSchema_ID@: ").append(acctSchema.toString());
@@ -116,13 +112,13 @@ public final class PostingException extends AdempiereException
 		return message.build();
 	}
 
-	public PostingException setDocument(final Doc document)
+	public PostingException setDocument(final Doc<?> document)
 	{
 		this._document = document;
 		return this;
 	}
 
-	public Doc getDocument()
+	public Doc<?> getDocument()
 	{
 		return _document;
 	}
@@ -148,29 +144,29 @@ public final class PostingException extends AdempiereException
 		return this;
 	}
 
-	public I_C_AcctSchema getC_AcctSchema()
+	public AcctSchema getAcctSchema()
 	{
 		if (_acctSchema != null)
 		{
 			return _acctSchema;
 		}
-		
+
 		if (_fact != null)
 		{
 			return _fact.getAcctSchema();
 		}
-		
+
 		return null;
 	}
 
-	public PostingException setC_AcctSchema(final I_C_AcctSchema acctSchema)
+	public PostingException setAcctSchema(final AcctSchema acctSchema)
 	{
 		_acctSchema = acctSchema;
 		resetMessageBuilt();
 		return this;
 	}
 
-	public String getDetailMessage()
+	public ITranslatableString getDetailMessage()
 	{
 		return _detailMessage;
 	}
@@ -183,11 +179,16 @@ public final class PostingException extends AdempiereException
 	 * @param detailMessage
 	 * @see #addDetailMessage(String)
 	 */
-	public PostingException setDetailMessage(final String detailMessage)
+	public PostingException setDetailMessage(final ITranslatableString detailMessage)
 	{
-		_detailMessage = detailMessage;
+		_detailMessage = detailMessage != null ? detailMessage : ImmutableTranslatableString.empty();
 		resetMessageBuilt();
 		return this;
+	}
+
+	public PostingException setDetailMessage(final String detailMessage)
+	{
+		return setDetailMessage(ImmutableTranslatableString.anyLanguage(detailMessage));
 	}
 
 	/**
@@ -206,13 +207,13 @@ public final class PostingException extends AdempiereException
 
 		//
 		// Set append the detail message
-		if (Check.isEmpty(_detailMessage, true))
+		if (ImmutableTranslatableString.isEmpty(_detailMessage))
 		{
-			_detailMessage = detailMessageToAppend;
+			_detailMessage = ImmutableTranslatableString.anyLanguage(detailMessageToAppend);
 		}
 		else
 		{
-			_detailMessage += "\n" + detailMessageToAppend;
+			_detailMessage = ITranslatableString.compose("\n", _detailMessage, detailMessageToAppend);
 		}
 
 		resetMessageBuilt();
@@ -261,14 +262,14 @@ public final class PostingException extends AdempiereException
 		return this;
 	}
 
-	public PostingException setDocLine(final DocLine docLine)
+	public PostingException setDocLine(final DocLine<?> docLine)
 	{
 		_docLine = docLine;
 		resetMessageBuilt();
 		return this;
 	}
 
-	public DocLine getDocLine()
+	public DocLine<?> getDocLine()
 	{
 		return _docLine;
 	}

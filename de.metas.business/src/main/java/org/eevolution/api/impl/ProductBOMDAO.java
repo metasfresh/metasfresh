@@ -1,5 +1,8 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -39,6 +42,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -49,8 +53,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ProductBOMDAO implements IProductBOMDAO
 {
@@ -112,6 +119,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	public int getDefaultProductBOMIdByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return retrieveDefaultBOMId(product);
+	}
+
+	@Override
 	public I_PP_Product_BOM retrieveDefaultBOM(final I_M_Product product)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
@@ -144,8 +158,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	public I_PP_Product_BOM getById(final int productBomId)
+	{
+		return retrieveById(Env.getCtx(), productBomId);
+	}
+
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#" + I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
-	public I_PP_Product_BOM retrieveBOMById(@CacheCtx final Properties ctx, final int productBomId)
+	public I_PP_Product_BOM retrieveById(@CacheCtx final Properties ctx, final int productBomId)
 	{
 		if (productBomId <= 0)
 		{
@@ -170,6 +189,13 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	public I_PP_Product_BOMLine getBOMLineById(int productBOMLineId)
+	{
+		Check.assumeGreaterThanZero(productBOMLineId, "productBOMLineId");
+		return loadOutOfTrx(productBOMLineId, I_PP_Product_BOMLine.class);
+	}
+
+	@Override
 	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(final Properties ctx, final int productId, final String trxName)
 	{
 		return Services.get(IQueryBL.class)
@@ -178,6 +204,16 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create();
+	}
+
+	@Override
+	public int retrieveLastLineNo(final int ppProductBOMId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, ppProductBOMId)
+				.create()
+				.maxInt(I_PP_Product_BOMLine.COLUMNNAME_Line);
 	}
 
 	@Override
@@ -244,5 +280,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 			sql.append("}");
 			return sql.toString();
 		}
+	}
+
+	@Override
+	public void save(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		saveRecord(bomLine);
 	}
 }

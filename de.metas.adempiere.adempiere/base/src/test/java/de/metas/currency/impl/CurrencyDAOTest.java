@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
 
 /*
@@ -35,11 +36,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,9 +54,9 @@ public class CurrencyDAOTest
 	@Rule
 	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private I_C_ConversionType conversionType_Spot;
-	private I_C_ConversionType conversionType_Company;
-	private I_C_ConversionType conversionType_PeriodEnd;
+	private CurrencyConversionTypeId conversionTypeId_Spot;
+	private CurrencyConversionTypeId conversionTypeId_Company;
+	private CurrencyConversionTypeId conversionTypeId_PeriodEnd;
 
 	@Before
 	public void init()
@@ -67,31 +68,31 @@ public class CurrencyDAOTest
 
 		currencyDAO = Services.get(ICurrencyDAO.class);
 
-		conversionType_Spot = currencyDAO.retrieveConversionType(ctx, ConversionType.Spot);
-		conversionType_Company = currencyDAO.retrieveConversionType(ctx, ConversionType.Company);
-		conversionType_PeriodEnd = currencyDAO.retrieveConversionType(ctx, ConversionType.PeriodEnd);
+		conversionTypeId_Spot = currencyDAO.getConversionTypeId(ConversionType.Spot);
+		conversionTypeId_Company = currencyDAO.getConversionTypeId(ConversionType.Company);
+		conversionTypeId_PeriodEnd = currencyDAO.getConversionTypeId(ConversionType.PeriodEnd);
 	}
 
 	@Test
 	public void test()
 	{
 		clearConversionTypeDefaults();
-		createConversionTypeDefault(conversionType_Spot, TimeUtil.getDay(1970, 1, 1));
-		createConversionTypeDefault(conversionType_Company, TimeUtil.getDay(2016, 1, 1));
-		createConversionTypeDefault(conversionType_PeriodEnd, TimeUtil.getDay(2017, 1, 1));
+		createConversionTypeDefault(conversionTypeId_Spot, TimeUtil.getDay(1970, 1, 1));
+		createConversionTypeDefault(conversionTypeId_Company, TimeUtil.getDay(2016, 1, 1));
+		createConversionTypeDefault(conversionTypeId_PeriodEnd, TimeUtil.getDay(2017, 1, 1));
 
 		assertNoDefaultConversionType(TimeUtil.getDay(1969, 12, 31));
 
-		assertDefaultConversionType(conversionType_Spot, TimeUtil.getDay(1970, 1, 1));
-		assertDefaultConversionType(conversionType_Spot, TimeUtil.getDay(2015, 1, 1));
-		assertDefaultConversionType(conversionType_Spot, TimeUtil.getDay(2015, 12, 31));
+		assertDefaultConversionType(conversionTypeId_Spot, TimeUtil.getDay(1970, 1, 1));
+		assertDefaultConversionType(conversionTypeId_Spot, TimeUtil.getDay(2015, 1, 1));
+		assertDefaultConversionType(conversionTypeId_Spot, TimeUtil.getDay(2015, 12, 31));
 
-		assertDefaultConversionType(conversionType_Company, TimeUtil.getDay(2016, 1, 1));
-		assertDefaultConversionType(conversionType_Company, TimeUtil.getDay(2016, 5, 1));
-		assertDefaultConversionType(conversionType_Company, TimeUtil.getDay(2016, 12, 31));
+		assertDefaultConversionType(conversionTypeId_Company, TimeUtil.getDay(2016, 1, 1));
+		assertDefaultConversionType(conversionTypeId_Company, TimeUtil.getDay(2016, 5, 1));
+		assertDefaultConversionType(conversionTypeId_Company, TimeUtil.getDay(2016, 12, 31));
 
-		assertDefaultConversionType(conversionType_PeriodEnd, TimeUtil.getDay(2017, 1, 1));
-		assertDefaultConversionType(conversionType_PeriodEnd, TimeUtil.getDay(2020, 1, 1));
+		assertDefaultConversionType(conversionTypeId_PeriodEnd, TimeUtil.getDay(2017, 1, 1));
+		assertDefaultConversionType(conversionTypeId_PeriodEnd, TimeUtil.getDay(2020, 1, 1));
 	}
 
 	private final void clearConversionTypeDefaults()
@@ -102,31 +103,29 @@ public class CurrencyDAOTest
 				.deleteDirectly();
 	}
 
-	private final I_C_ConversionType createConversionTypeDefault(final I_C_ConversionType conversionType, final Date validFrom)
+	private final void createConversionTypeDefault(final CurrencyConversionTypeId conversionTypeId, final Date validFrom)
 	{
 		final I_C_ConversionType_Default conversionTypeDefault = InterfaceWrapperHelper.create(ctx, I_C_ConversionType_Default.class, ITrx.TRXNAME_None);
-		conversionTypeDefault.setC_ConversionType(conversionType);
+		conversionTypeDefault.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		conversionTypeDefault.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		InterfaceWrapperHelper.save(conversionTypeDefault);
-
-		return conversionType;
 	}
 
-	private final void assertDefaultConversionType(final I_C_ConversionType expectedConversionType, final Date date)
+	private final void assertDefaultConversionType(final CurrencyConversionTypeId expectedConversionTypeId, final Date date)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final I_C_ConversionType actualConversionType = currencyDAO.retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
+		final CurrencyConversionTypeId actualConversionTypeId = currencyDAO.getDefaultConversionTypeId(adClientId, adOrgId, date);
 
 		final String info = "AD_Client_ID=" + adClientId + ", AD_Org_ID=" + adOrgId
 				+ ", date=" + date
-				+ ", expectedConversionType=" + (expectedConversionType == null ? null : expectedConversionType.getValue())
-				+ ", actualConversionType=" + (actualConversionType == null ? null : actualConversionType.getValue())
+				+ ", expectedConversionType=" + expectedConversionTypeId
+				+ ", actualConversionType=" + actualConversionTypeId
 		//
 		;
 
-		Assert.assertEquals("Invalid conversion type -- " + info, expectedConversionType.getC_ConversionType_ID(), actualConversionType.getC_ConversionType_ID());
+		Assert.assertEquals("Invalid conversion type -- " + info, expectedConversionTypeId, actualConversionTypeId);
 	}
 
 	private final void assertNoDefaultConversionType(final Date date)

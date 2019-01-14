@@ -89,10 +89,8 @@ public class InOutCreateInvoice extends JavaProcess
 			invoice.setDocumentNo(p_InvoiceDocumentNo);
 		if (!invoice.save())
 			throw new IllegalArgumentException("Cannot save Invoice");
-		MInOutLine[] shipLines = ship.getLines(true);
-		for (int i = 0; i < shipLines.length; i++)
+		for (final MInOutLine sLine : ship.getLines())
 		{
-			MInOutLine sLine = shipLines[i];
 			MInvoiceLine line = new MInvoiceLine(invoice);
 			line.setShipLine(sLine);
 			if (sLine.sameOrderLineUOM())

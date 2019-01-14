@@ -3,8 +3,6 @@ package de.metas.invoice.export;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -52,6 +50,7 @@ import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -246,14 +245,11 @@ public class InvoiceToExportFactory
 				invoiceRecord);
 
 		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
-		final String vatTaxId = bPartnerRecord.getVATaxID();
-
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
 
 		final BPartner recipient = BPartner.builder()
 				.id(bPartnerId)
 				.ean(EAN.of(gln))
-				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
 	}
@@ -279,13 +275,9 @@ public class InvoiceToExportFactory
 		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), InvoiceNotExportableException.class,
 				"The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
 
-		final String vatTaxId = Check.assumeNotEmpty(orgBPartner.getVATaxID(), InvoiceNotExportableException.class,
-				"The given invoice's orgBPartner needs to have a VATaxID; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
-
 		final BPartner recipient = BPartner.builder()
 				.id(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()))
 				.ean(EAN.of(gln))
-				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
 	}
@@ -297,6 +289,7 @@ public class InvoiceToExportFactory
 		public InvoiceNotExportableException(@NonNull final String msg)
 		{
 			super(msg);
+			this.markAsUserValidationError(); // propagate error to the user
 		}
 	}
 }

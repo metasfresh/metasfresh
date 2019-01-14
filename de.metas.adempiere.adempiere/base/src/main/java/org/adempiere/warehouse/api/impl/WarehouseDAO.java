@@ -8,8 +8,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 
 /*
@@ -40,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
@@ -55,6 +54,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.model.I_M_Warehouse_Type;
+import org.compiere.util.DB;
 import org.eevolution.model.I_M_Warehouse_Routing;
 import org.slf4j.Logger;
 
@@ -68,6 +68,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
@@ -87,7 +88,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	public <T extends I_M_Warehouse> T getById(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
 	{
 		final T outOfTrxWarehouseRecord = loadOutOfTrx(warehouseId, modelType);
-		if(outOfTrxWarehouseRecord != null)
+		if (outOfTrxWarehouseRecord != null)
 		{
 			return outOfTrxWarehouseRecord; // with is almost always the case
 		}
@@ -439,6 +440,18 @@ public class WarehouseDAO implements IWarehouseDAO
 		{
 			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
 		}
+	}
+
+	@Override
+	public OrgId retrieveOrgIdByLocatorId(final int locatorId)
+	{
+		final String sql = "SELECT AD_Org_ID FROM M_Locator WHERE M_Locator_ID=?";
+		final int orgIdInt = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, locatorId);
+		if (orgIdInt < 0)
+		{
+			throw new AdempiereException("No Org found for locatorId=" + locatorId);
+		}
+		return OrgId.ofRepoId(orgIdInt);
 	}
 
 	@Override

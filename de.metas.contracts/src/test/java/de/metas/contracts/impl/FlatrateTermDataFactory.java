@@ -7,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -28,6 +27,7 @@ import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
@@ -336,11 +336,11 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "productAcctNew")
-	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final I_C_AcctSchema acctSchema)
+	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final AcctSchemaId acctSchemaId)
 	{
 		final I_M_Product_Acct productAcct = newInstance(I_M_Product_Acct.class);
 		productAcct.setM_Product(product);
-		productAcct.setC_AcctSchema(acctSchema);
+		productAcct.setC_AcctSchema_ID(AcctSchemaId.toRepoId(acctSchemaId));
 		productAcct.setC_Activity(createActivity());
 		save(productAcct);
 		return productAcct;

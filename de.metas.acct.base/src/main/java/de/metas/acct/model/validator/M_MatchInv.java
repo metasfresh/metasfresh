@@ -25,7 +25,6 @@ package de.metas.acct.model.validator;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,6 +36,7 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.util.Services;
 
 @Interceptor(I_M_MatchInv.class)

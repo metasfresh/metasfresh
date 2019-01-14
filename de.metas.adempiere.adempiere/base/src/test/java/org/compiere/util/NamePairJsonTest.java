@@ -17,12 +17,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,14 +44,14 @@ public class NamePairJsonTest
 	public void test_KeyNamePair() throws Exception
 	{
 		testJsonIdentical(KeyNamePair.EMPTY, KeyNamePair.class);
-		testJsonEquals(new KeyNamePair(1, "test 1"), KeyNamePair.class);
+		testJsonEquals(KeyNamePair.of(1, "test-name-1", "test-description-1"), KeyNamePair.class);
 	}
 
 	@Test
 	public void test_ValueNamePair() throws Exception
 	{
 		testJsonIdentical(ValueNamePair.EMPTY, ValueNamePair.class);
-		testJsonEquals(new ValueNamePair("1", "test 1"), ValueNamePair.class);
+		testJsonEquals(ValueNamePair.of("1", "test-name-1", "test-description-1"), ValueNamePair.class);
 	}
 
 	private <T> void testJsonEquals(final T value, final Class<T> type) throws Exception

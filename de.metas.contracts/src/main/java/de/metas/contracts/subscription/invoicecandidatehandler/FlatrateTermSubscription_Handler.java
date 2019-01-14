@@ -125,7 +125,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	}
 
 	@Override
-	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
+	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
 	{
 		return defaultImplementation;
 	}

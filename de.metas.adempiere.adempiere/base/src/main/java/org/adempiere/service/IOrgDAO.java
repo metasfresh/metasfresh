@@ -39,6 +39,8 @@ public interface IOrgDAO extends ISingletonService
 {
 	void save(I_AD_Org orgRecord);
 
+	void save(I_AD_OrgInfo orgInfoRecord);
+
 	Optional<OrgId> getOrgIdByValue(String value);
 
 	I_AD_Org retrieveOrg(Properties ctx, int adOrgId);

@@ -1,9 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,6 +28,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,7 +41,6 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +58,7 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
@@ -77,7 +75,13 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public String getBPartnerValue(final BPartnerId bpartnerId)
 	{
-		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue());
+		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getValue);
+	}
+
+	@Override
+	public String getBPartnerName(final BPartnerId bpartnerId)
+	{
+		return toBPartnerDisplayName(bpartnerId, I_C_BPartner::getName);
 	}
 
 	@Override
@@ -343,11 +347,11 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Language getLanguage(final Properties ctx, final int bpartnerId)
+	public Language getLanguage(final Properties ctx_NOTUSED, final int bpartnerId)
 	{
 		if (bpartnerId > 0)
 		{
-			final MBPartner bp = MBPartner.get(ctx, bpartnerId);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 			if (null != bp)
 			{
 				final String lang = bp.getAD_Language();

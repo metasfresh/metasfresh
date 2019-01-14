@@ -1,6 +1,7 @@
 package de.metas.bpartner.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -137,6 +138,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
+	}
+
+	@Override
+	public I_C_BPartner getByIdInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return load(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override

@@ -84,27 +84,20 @@ public class RefundInvoiceCandidateServiceTest
 
 		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
-		refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
-		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
-
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
-
-		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+		refundContractRepository = refundInvoiceCandidateRepository.getRefundContractRepository();
 
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
 
 		refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
-				refundInvoiceCandidateFactory,
-				moneyService,
-				assignmentAggregateService);
+				moneyService);
 
 		conditionsId = ConditionsId.ofRepoId(20);
 		refundConfigRecords = createAndVerifyBaseRefundconfigs(conditionsId);
 
-		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(new AssignableInvoiceCandidateFactory());
+		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(AssignableInvoiceCandidateFactory.newForUnitTesting());
 
 		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
 
@@ -184,7 +177,6 @@ public class RefundInvoiceCandidateServiceTest
 
 		assertThat(refundCandidate.getRefundContract().getId()).isEqualTo(contractId);
 
-
 		// the assignable qty of 15 spans the first *two* refund configs.
 		// final RefundConfig resultConfig = extractSingleConfig(refundCandidate);
 		final List<RefundConfig> refundConfigs = refundCandidate.getRefundConfigs();
@@ -200,7 +192,6 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(refundConfigs.get(1).getConditionsId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(refundConfigs.get(1).getMinQty()).isEqualByComparingTo(firstConfigRecord.getMinQty());
 		assertThat(refundConfigs.get(1).getPercent().getValue()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
-
 
 		return refundCandidate;
 	}

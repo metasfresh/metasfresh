@@ -60,6 +60,8 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -229,8 +231,10 @@ public class OrderLineBL implements IOrderLineBL
 			return orderLine.getC_Charge().getC_TaxCategory_ID();
 		}
 
+		final OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);
+
 		return OrderLinePriceCalculator.builder()
-				.request(OrderLinePriceUpdateRequest.ofOrderLine(orderLine))
+				.request(request)
 				.orderLineBL(this)
 				.build()
 				.computeTaxCategoryId();
@@ -518,7 +522,7 @@ public class OrderLineBL implements IOrderLineBL
 			return qtyEntered;
 		}
 
-		final int qtyUOMId = qtyEntered.getUOM().getC_UOM_ID();
+		final int qtyUOMId = qtyEntered.getUOMId();
 		if (qtyUOMId == priceUOM.getC_UOM_ID())
 		{
 			return qtyEntered;
@@ -601,7 +605,42 @@ public class OrderLineBL implements IOrderLineBL
 				line.setM_Product_ID(counterProductId.getRepoId());
 			}
 		}
+	}
 
+	@Override
+	public Money getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+
+		final BigDecimal poCostPrice = orderLine.getPriceCost();
+		if (poCostPrice != null && poCostPrice.signum() != 0)
+		{
+			return Money.of(poCostPrice, currencyId);
+		}
+
+		BigDecimal priceActual = orderLine.getPriceActual();
+		if (!isTaxIncluded(orderLine))
+		{
+			return Money.of(priceActual, currencyId);
+		}
+
+		final int taxId = orderLine.getC_Tax_ID();
+		if (taxId <= 0)
+		{
+			// shall not happen
+			return Money.of(priceActual, currencyId);
+		}
+
+		final MTax tax = MTax.get(Env.getCtx(), taxId);
+		if (tax.isZeroTax())
+		{
+			return Money.of(priceActual, currencyId);
+		}
+
+		final int stdPrecision = getPrecision(orderLine);
+		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, stdPrecision);
+		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
+		return Money.of(priceActualWithoutTax, currencyId);
 	}
 
 	@Override

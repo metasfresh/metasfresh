@@ -41,6 +41,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -141,7 +142,8 @@ import lombok.NonNull;
 			return Collections.emptyList(); // nothing to do here
 		}
 
-		if (!wasAnythingIssued(ppOrder))
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		if (!wasAnythingIssued(ppOrderId))
 		{
 			// fresh-216: if we don't skip there will be problems later, because if nothing was issued, then we won't find a material receipt either.
 			final String msg = "Skip invoice candidates creation because nothing was acutally issued to ppOrder={}.";
@@ -256,14 +258,14 @@ import lombok.NonNull;
 		return result;
 	}
 
-	private boolean wasAnythingIssued(final I_PP_Order ppOrder)
+	private boolean wasAnythingIssued(final PPOrderId ppOrderId)
 	{
 		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
-		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveNotReversedForOrder(ppOrder))
+		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.getCompletedOrClosedByOrderId(ppOrderId))
 		{
-			if (ppCostCollectorBL.isMaterialIssue(cc, true) && cc.getMovementQty().signum() > 0)
+			if (ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc) && cc.getMovementQty().signum() > 0)
 			{
 				return true;
 			}

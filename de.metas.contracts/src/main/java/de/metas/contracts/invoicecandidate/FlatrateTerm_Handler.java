@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -203,13 +204,14 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	public void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		handler
-				.getSetInvoiceScheduleImplementation(super::setInvoiceSchedule)
+		final Consumer<I_C_Invoice_Candidate> defaultImplementation = super::setInvoiceScheduleAndDateToInvoice;
+
+		handler.getInvoiceScheduleSetterFunction(defaultImplementation)
 				.accept(ic);
 	}
 

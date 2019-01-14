@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
+import de.metas.acct.api.AccountDimension;
 import de.metas.util.ISingletonService;
 
 /*
@@ -41,7 +42,7 @@ public interface IGLDistributionDAO extends ISingletonService
 	 * @param C_DocType_ID
 	 * @return
 	 */
-	List<I_GL_Distribution> retrieve(Properties ctx, IAccountDimension dimension, String PostingType, int C_DocType_ID);
+	List<I_GL_Distribution> retrieve(Properties ctx, AccountDimension dimension, String PostingType, int C_DocType_ID);
 
 	/**
 	 * Retrieves {@link I_GL_DistributionLine}s of given {@link I_GL_Distribution}.

@@ -17,21 +17,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 import org.compiere.model.MElementValue;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *  Create Charge from Accounts
@@ -51,16 +54,14 @@ public class Charge
 //	/**	FormFrame			*/
 //	private FormFrame 	m_frame;
 
+	private AcctSchema acctSchema = null;
 	/** Account Element     */
 	public int         m_C_Element_ID = 0;
-	/** AccountSchema       */
-	private int         m_C_AcctSchema_ID = 0;
 	/** Default Charge Tax Category */
 	private int         m_C_TaxCategory_ID = 0;
 	private int         m_AD_Client_ID = 0;
 	private int         m_AD_Org_ID = 0;
 	private int         m_CreatedBy = 0;
-	private MAcctSchema  m_acctSchema = null;
 	/**	Logger			*/
 	public static Logger log = LogManager.getLogger(Charge.class);
 
@@ -112,28 +113,16 @@ public class Charge
      */
     public void findChargeElementID()
     {
-    	m_C_AcctSchema_ID = Env.getContextAsInt(Env.getCtx(), "$C_AcctSchema_ID");
-        //  get Element
-        String sql = "SELECT C_Element_ID "
-            + "FROM C_AcctSchema_Element "
-            + "WHERE ElementType='AC' AND C_AcctSchema_ID=?";
-
-        try
-        {
-            PreparedStatement pstmt = DB.prepareStatement(sql, null);
-            pstmt.setInt(1, m_C_AcctSchema_ID);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next())
-            {
-            	m_C_Element_ID = rs.getInt(1);
-            }
-            rs.close();
-            pstmt.close();
-        }
-        catch (SQLException exception)
-        {
-            log.error(sql, exception);
-        }
+    	AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(Env.getContextAsInt(Env.getCtx(), "$C_AcctSchema_ID"));
+    	if(acctSchemaId == null)
+    	{
+    		return;
+    	}
+    	
+    	acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+    	
+    	final AcctSchemaElement accountElement = acctSchema.getSchemaElementByType(AcctSchemaElementType.Account);
+    	m_C_Element_ID = accountElement != null ? accountElement.getElementId() : 0;
     }
 	
 	public Vector<String> getColumnNames()
@@ -232,7 +221,6 @@ public class Charge
             return 0;
         }
 
-        refreshAccountSchema();
         if (!isAccountSchemaValid())
         {
             return 0;
@@ -276,16 +264,7 @@ public class Charge
      */
     private boolean isAccountSchemaValid()
     {
-        if (m_acctSchema  == null)
-        {
-            return false;
-        }
-        else if (m_acctSchema.getC_AcctSchema_ID() == 0)
-        {
-            return false;
-        }
-
-        return true;
+    	return acctSchema != null;
     }
 
 
@@ -302,25 +281,9 @@ public class Charge
         sql.append("SET CH_Expense_Acct=").append(account.getC_ValidCombination_ID());
         sql.append(", CH_Revenue_Acct=").append(account.getC_ValidCombination_ID());
         sql.append(" WHERE C_Charge_ID=").append(charge.getC_Charge_ID());
-        sql.append(" AND C_AcctSchema_ID=").append(m_C_AcctSchema_ID);
+        sql.append(" AND C_AcctSchema_ID=").append(acctSchema.getId().getRepoId());
 
         return sql;
-    }
-
-
-    /**
-     * Refreshes the current account schema.
-     *
-     */
-    private void refreshAccountSchema()
-    {
-        //  Get AcctSchama
-        if (m_acctSchema == null)
-        {
-            m_acctSchema = new MAcctSchema(Env.getCtx(), m_C_AcctSchema_ID, null);
-        }
-
-        return;
     }
 
 
@@ -333,11 +296,11 @@ public class Charge
      */
     private MAccount getAccount(int elementValueId, MCharge charge)
     {
-        MAccount defaultAccount = MAccount.getDefault(m_acctSchema, true); //  optional null
+        MAccount defaultAccount = MAccount.getDefault(acctSchema, true); //  optional null
         MAccount account = MAccount.get(Env.getCtx(),
             charge.getAD_Client_ID(),
             charge.getAD_Org_ID(),
-            m_acctSchema.getC_AcctSchema_ID(),
+            acctSchema.getId(),
             elementValueId,
             defaultAccount.getC_SubAcct_ID(),
             defaultAccount.getM_Product_ID(),

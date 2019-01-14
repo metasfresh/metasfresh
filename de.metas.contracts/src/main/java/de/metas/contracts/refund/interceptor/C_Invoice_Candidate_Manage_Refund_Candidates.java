@@ -2,8 +2,6 @@ package de.metas.contracts.refund.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -26,6 +24,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L

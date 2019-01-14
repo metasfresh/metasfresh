@@ -1,5 +1,7 @@
 package org.adempiere.service;
 
+import java.util.Objects;
+
 import org.compiere.util.Env;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -9,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -84,13 +85,6 @@ public class ClientId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
-	}
-
 	private ClientId()
 	{
 		this.repoId = Env.CTXVALUE_AD_Client_ID_System;
@@ -99,5 +93,17 @@ public class ClientId implements RepoIdAware
 	public boolean isSystem()
 	{
 		return repoId == Env.CTXVALUE_AD_Client_ID_System;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static boolean equals(final ClientId id1, final ClientId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

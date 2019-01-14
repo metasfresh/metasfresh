@@ -25,10 +25,10 @@ package org.adempiere.acct.api;
 
 import java.util.Properties;
 
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -58,7 +58,7 @@ public interface ITaxAcctBL extends ISingletonService
 	 * @param acctType see ACCTTYPE_*
 	 * @return Account
 	 */
-	public abstract MAccount getAccount(final Properties ctx, final int taxId, final I_C_AcctSchema as, final int acctType);
+	public abstract MAccount getAccount(Properties ctx, int taxId, AcctSchemaId acctSchemaId, int acctType);
 
 	/**
 	 * Get Account (Valid Combination)
@@ -68,6 +68,6 @@ public interface ITaxAcctBL extends ISingletonService
 	 * @param acctType see ACCTTYPE_*
 	 * @return Account
 	 */
-	public abstract I_C_ValidCombination getC_ValidCombination(final Properties ctx, final int taxId, final I_C_AcctSchema as, final int acctType);
+	public abstract I_C_ValidCombination getC_ValidCombination(Properties ctx, int taxId, AcctSchemaId acctSchemaId, int acctType);
 
 }

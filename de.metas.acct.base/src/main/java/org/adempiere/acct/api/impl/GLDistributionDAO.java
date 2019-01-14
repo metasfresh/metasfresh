@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IGLDistributionDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -16,6 +15,8 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.util.Check;
@@ -63,7 +64,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 	}
 
 	@Override
-	public List<I_GL_Distribution> retrieve(final Properties ctx, final IAccountDimension dimension, final String PostingType, final int C_DocType_ID)
+	public List<I_GL_Distribution> retrieve(final Properties ctx, final AccountDimension dimension, final String PostingType, final int C_DocType_ID)
 	{
 		Check.assumeNotNull(dimension, "dimension not null");
 
@@ -76,7 +77,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 			}
 
 			// Mandatory Acct Schema
-			if (glDistribution.getC_AcctSchema_ID() != dimension.getC_AcctSchema_ID())
+			if (glDistribution.getC_AcctSchema_ID() != AcctSchemaId.toRepoId(dimension.getAcctSchemaId()))
 			{
 				continue;
 			}

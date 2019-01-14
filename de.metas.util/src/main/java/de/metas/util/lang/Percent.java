@@ -35,10 +35,15 @@ import lombok.Value;
 @Value
 public class Percent
 {
+	public static Percent of(@NonNull final String value)
+	{
+		return of(new BigDecimal(value));
+	}
+
 	/**
 	 * @param value 100 based percent
 	 */
-	public static Percent of(final BigDecimal value)
+	public static Percent of(@NonNull final BigDecimal value)
 	{
 		if (value.signum() == 0)
 		{
@@ -146,6 +151,11 @@ public class Percent
 		return value;
 	}
 
+	public int toInt()
+	{
+		return value.intValue();
+	}
+
 	public boolean isZero()
 	{
 		return value.signum() == 0;
@@ -186,6 +196,22 @@ public class Percent
 		return of(this.value.subtract(percent.value));
 	}
 
+	public Percent multiply(@NonNull final Percent percent, int precision)
+	{
+		if (isOneHundred())
+		{
+			return percent;
+		}
+		else if (percent.isOneHundred())
+		{
+			return this;
+		}
+		else
+		{
+			return of(this.value.multiply(percent.value).divide(ONE_HUNDRED_VALUE, precision, RoundingMode.UP));
+		}
+	}
+
 	/**
 	 * @param precision scale of the result; may be less than the scale of the given {@code base}
 	 */
@@ -211,6 +237,31 @@ public class Percent
 					.setScale(precision + 2, RoundingMode.HALF_UP)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.HALF_UP)
 					.multiply(value)
+					.setScale(precision, RoundingMode.HALF_UP);
+		}
+	}
+
+	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision)
+	{
+		Check.assumeGreaterOrEqualToZero(precision, "precision");
+
+		if (base.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		else if (isZero())
+		{
+			return base.setScale(precision, RoundingMode.HALF_UP);
+		}
+		else
+		{
+			// make sure the base we work with does not have more digits than we expect from the given precision.
+			final BigDecimal baseToUse = base.setScale(precision, RoundingMode.HALF_UP);
+
+			return baseToUse
+					.setScale(precision + 2)
+					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
+					.multiply(ONE_HUNDRED_VALUE.add(value))
 					.setScale(precision, RoundingMode.HALF_UP);
 		}
 	}

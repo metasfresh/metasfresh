@@ -114,7 +114,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
-				.acctSchema(getAcctSchema())
+				.acctSchemaId(getAcctSchemaId())
 				.build();
 
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
@@ -182,7 +182,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
-				.acctSchema(getAcctSchema())
+				.acctSchemaId(getAcctSchemaId())
 				.build();
 
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()

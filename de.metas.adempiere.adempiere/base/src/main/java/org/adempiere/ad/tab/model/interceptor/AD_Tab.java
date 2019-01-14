@@ -1,7 +1,5 @@
 package org.adempiere.ad.tab.model.interceptor;
 
-import java.sql.SQLException;
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -56,7 +54,7 @@ public class AD_Tab
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Tab.COLUMNNAME_AD_Element_ID)
-	public void onElementIDChanged(final I_AD_Tab tab) throws SQLException
+	public void onElementIDChanged(final I_AD_Tab tab)
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
@@ -87,16 +85,20 @@ public class AD_Tab
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
-
-	public void onTabDelete(final I_AD_Tab tab) throws SQLException
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void onBeforeTabDelete(final I_AD_Tab tab)
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-
 		final AdTabId adTabId = AdTabId.ofRepoId(tab.getAD_Tab_ID());
+		adWindowDAO.deleteFieldsByTabId(adTabId);
+	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void onAfterTabDeleted(final I_AD_Tab tab)
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		final AdTabId adTabId = AdTabId.ofRepoId(tab.getAD_Tab_ID());
 		adWindowDAO.deleteExistingADElementLinkForTabId(adTabId);
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)

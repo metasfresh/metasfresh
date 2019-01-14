@@ -75,8 +75,6 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	@Override
 	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, @NonNull final PPOrderId fromPPOrderId)
 	{
-		final I_PP_Order fromPPOrder = Services.get(IPPOrderDAO.class).getById(fromPPOrderId);
-
 		// Skip it if there are no HUs to update
 		if (husToUpdate.isEmpty())
 		{
@@ -87,6 +85,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		//
 		// Fetch PP_Order's attributes that shall be propagated to HUs
+		final I_PP_Order fromPPOrder = Services.get(IPPOrderDAO.class).getById(fromPPOrderId);
 		final AttributesMap attributesMap = getAttributesMap(fromPPOrder);
 		if (attributesMap.isEmpty())
 		{
@@ -107,7 +106,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		// Make sure the HUs of the already existing receipt are also updated.
 		// TODO: consider doing this when some new PP_Order_ProductAttributes where added/changed
 		{
-			final Collection<I_M_HU> husAlreadyReceived = getAllReceivedHUs(fromPPOrder, huIdsUpdated); // exclude those which were already updated above
+			final Collection<I_M_HU> husAlreadyReceived = getAllReceivedHUs(fromPPOrderId, huIdsUpdated); // exclude those which were already updated above
 			husAlreadyReceived.forEach(hu -> {
 				updateHUAttributesFromAttributesMap(hu, attributesMap);
 				huIdsUpdated.add(hu.getM_HU_ID());
@@ -202,12 +201,12 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		return attributesSetInPPOrder;
 	}
 
-	private static final Collection<I_M_HU> getAllReceivedHUs(final I_PP_Order ppOrder, final Set<Integer> excludeHUIds)
+	private static final Collection<I_M_HU> getAllReceivedHUs(final PPOrderId ppOrderId, final Set<Integer> excludeHUIds)
 	{
 		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final Map<Integer, I_M_HU> receivedHUs = new HashMap<>();
-		final List<I_PP_Cost_Collector> existingReceipts = ppCostCollectorDAO.retrieveExistingReceiptCostCollector(ppOrder);
+		final List<I_PP_Cost_Collector> existingReceipts = ppCostCollectorDAO.getReceiptsByOrderId(ppOrderId);
 		for (final I_PP_Cost_Collector receiptCollector : existingReceipts)
 		{
 			// Need assignments to take the created HUs

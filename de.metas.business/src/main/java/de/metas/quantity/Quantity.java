@@ -35,6 +35,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /**
@@ -52,12 +53,17 @@ import lombok.NonNull;
  */
 public final class Quantity implements Comparable<Quantity>
 {
-	public static final Quantity of(final BigDecimal qty, final I_C_UOM uom)
+	public static final Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uom)
+	{
+		return of(new BigDecimal(qty), uom);
+	}
+
+	public static final Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
 		return new Quantity(qty, uom);
 	}
 
-	public static final Quantity of(final int qty, final I_C_UOM uom)
+	public static final Quantity of(final int qty, @NonNull final I_C_UOM uom)
 	{
 		return of(BigDecimal.valueOf(qty), uom);
 	}
@@ -120,7 +126,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * @param qty
 	 * @param uom
 	 */
-	public Quantity(final BigDecimal qty, final I_C_UOM uom)
+	public Quantity(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
 		this(qty, uom, qty, uom);
 	}
@@ -246,19 +252,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * @param qty
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setQty(final BigDecimal qty)
-	{
-		if (this.qty == qty)
-		{
-			return this;
-		}
-		return new Quantity(qty, this.uom, this.sourceQty, this.sourceUom);
-	}
-
-	/**
 	 *
 	 * @return true if quantity value is infinite
 	 */
@@ -290,39 +283,11 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
-	 * @param uom
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setUOM(final I_C_UOM uom)
-	{
-		if (this.uom == uom)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, uom, this.sourceQty, this.sourceUom);
-	}
-
-	/**
 	 * @return source quantity; never null
 	 */
 	public BigDecimal getSourceQty()
 	{
 		return sourceQty;
-	}
-
-	/**
-	 *
-	 * @param sourceQty
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setSourceQty(final BigDecimal sourceQty)
-	{
-		if (this.sourceQty == sourceQty)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, this.uom, sourceQty, this.sourceUom);
 	}
 
 	/**
@@ -340,20 +305,6 @@ public final class Quantity implements Comparable<Quantity>
 	public final int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
-	}
-
-	/**
-	 *
-	 * @param sourceUom
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setSourceUOM(final I_C_UOM sourceUom)
-	{
-		if (this.sourceUom == sourceUom)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, this.uom, this.sourceQty, sourceUom);
 	}
 
 	/**
@@ -406,8 +357,12 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity negate()
 	{
-		return setQty(getQty().negate())
-				.setSourceQty(getSourceQty().negate());
+		if(isZero())
+		{
+			return this;
+		}
+		
+		return new Quantity(qty.negate(), uom, sourceQty.negate(), sourceUom);
 	}
 
 	/**
@@ -417,12 +372,12 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity negateIf(final boolean condition)
 	{
-		if (!condition)
-		{
-			return this;
-		}
+		return condition ? negate() : this;
+	}
 
-		return negate();
+	public Quantity negateIfNot(final boolean condition)
+	{
+		return !condition ? negate() : this;
 	}
 
 	/**
@@ -467,7 +422,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * Interchange the Qty/UOM with source Qty/UOM if the source is more precise.
 	 * Source is considered more precise if it's numeric value is bigger.
-	 * 
+	 *
 	 * This method is usually used before persisting to database where we want to persist the most precise amount,
 	 * because else, when we will load it back we won't get the same figures.
 	 */
@@ -586,6 +541,20 @@ public final class Quantity implements Comparable<Quantity>
 		return add(of(qtyToAdd, uom));
 	}
 
+	public Quantity add(@NonNull final Percent percent)
+	{
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		return new Quantity(
+				percent.addToBase(this.qty, this.uom.getStdPrecision()),
+				this.uom,
+				percent.addToBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				this.sourceUom);
+	}
+
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
 	{
 		if (qtyToSubtract.isZero())
@@ -642,6 +611,15 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		final Quantity diff = this.subtract(quantity);
 		return diff.signum();
+	}
+
+	public Quantity divide(final BigDecimal divisor, final int scale, final RoundingMode roundingMode)
+	{
+		return new Quantity(
+				qty.divide(divisor, scale, roundingMode),
+				uom,
+				sourceQty.divide(divisor, scale, roundingMode),
+				sourceUom);
 	}
 
 	public Quantity multiply(final int multiplicand)

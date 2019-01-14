@@ -3,7 +3,10 @@
  */
 package de.metas.currency.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +18,10 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ConversionType;
@@ -25,12 +31,16 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,11 +55,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -61,6 +71,16 @@ import de.metas.util.Services;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
+	private final CCache<ConversionType, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionType, CurrencyConversionTypeId> builder()
+			.tableName(I_C_ConversionType.Table_Name)
+			.build();
+
+	@Override
+	public I_C_Currency getById(@NonNull final CurrencyId currencyId)
+	{
+		return loadOutOfTrx(currencyId, I_C_Currency.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_C_Currency.Table_Name)
 	public I_C_Currency retrieveCurrency(@CacheCtx final Properties ctx, final int currencyId)
@@ -91,11 +111,11 @@ public class CurrencyDAO implements ICurrencyDAO
 	@Override
 	public String getISO_Code(Properties ctx, int C_Currency_ID)
 	{
-		if(C_Currency_ID <= 0)
+		if (C_Currency_ID <= 0)
 		{
 			return null;
 		}
-		
+
 		final I_C_Currency currency = retrieveCurrency(ctx, C_Currency_ID);
 		if (currency == null)
 		{
@@ -110,7 +130,7 @@ public class CurrencyDAO implements ICurrencyDAO
 		final I_C_Currency c = retrieveCurrency(ctx, C_Currency_ID);
 		if (c == null || c.getC_Currency_ID() <= 0)
 		{
-			return 2; // default
+			return DEFAULT_PRECISION; // default
 		}
 		return c.getStdPrecision();
 	}
@@ -145,18 +165,26 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_ConversionType.Table_Name + "#by#" + I_C_ConversionType.COLUMNNAME_Value)
-	public I_C_ConversionType retrieveConversionType(@CacheCtx final Properties ctx, final ConversionType type)
+	public CurrencyConversionTypeId getConversionTypeId(@NonNull final ConversionType type)
 	{
-		Check.assumeNotNull(type, "type not null");
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_ConversionType.class, ctx, ITrx.TRXNAME_None)
+		return conversionTypeIdsByType.getOrLoad(type, this::retrieveConversionTypeId);
+	}
+
+	private CurrencyConversionTypeId retrieveConversionTypeId(@NonNull final ConversionType type)
+	{
+		final CurrencyConversionTypeId conversionTypeId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_ConversionType.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
 				.addEqualsFilter(I_C_ConversionType.COLUMN_Value, type.getCode())
 				//
 				.create()
-				.firstOnlyNotNull(I_C_ConversionType.class);
+				.firstIdOnly(CurrencyConversionTypeId::ofRepoIdOrNull);
+		if (conversionTypeId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_ConversionType_ID@: " + type);
+		}
+
+		return conversionTypeId;
 	}
 
 	/**
@@ -165,11 +193,11 @@ public class CurrencyDAO implements ICurrencyDAO
 	 * @param CurTo_ID
 	 * @return query which is finding the best matching {@link I_C_Conversion_Rate} for given parameters.
 	 */
-	protected final IQueryBuilder<I_C_Conversion_Rate> retrieveRateQuery(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	protected final IQueryBuilder<I_C_Conversion_Rate> retrieveRateQuery(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		final Properties ctx = Env.getCtx();
-		final int conversionTypeId = conversionCtx.getC_ConversionType_ID();
-		final Date conversionDate = conversionCtx.getConversionDate();
+		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
+		final LocalDate conversionDate = conversionCtx.getConversionDate();
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Conversion_Rate.class, ctx, ITrx.TRXNAME_None)
@@ -178,8 +206,8 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
 				.addCompareFilter(I_C_Conversion_Rate.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, conversionDate)
 				.addCompareFilter(I_C_Conversion_Rate.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, conversionDate)
-				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Client_ID, 0, conversionCtx.getAD_Client_ID())
-				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Org_ID, 0, conversionCtx.getAD_Org_ID())
+				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Client_ID, ClientId.SYSTEM, conversionCtx.getClientId())
+				.addInArrayOrAllFilter(I_C_Conversion_Rate.COLUMN_AD_Org_ID, OrgId.ANY, conversionCtx.getOrgId())
 				//
 				.orderBy()
 				.addColumn(I_C_Conversion_Rate.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)
@@ -192,7 +220,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
-	public BigDecimal retrieveRateOrNull(final ICurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
+	public BigDecimal retrieveRateOrNull(final CurrencyConversionContext conversionCtx, final int CurFrom_ID, final int CurTo_ID)
 	{
 		final List<Map<String, Object>> result = retrieveRateQuery(conversionCtx, CurFrom_ID, CurTo_ID)
 				.setLimit(1)

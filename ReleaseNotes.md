@@ -10,10 +10,40 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.86
+# metasfresh 5.87
 # Features
+* metasfresh
+  * [#4863](https://github.com/metasfresh/metasfresh/issues/4863) Add created/ updated to asynch workpackage and filter for created
 
 # Fixes
+* metasfresh-webui-frontend
+  * [#2119](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2119) Screen turns grey for 1 sec sometimes
+  * [#2120](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2140) Tab not always working correctly
+  * [#2122](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2122) Quick actions dropdown covered by pagination in modals
+  * [#2124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2124) Webcam Foto not working anymore since last chrome update
+  * [#2130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2130) Header/subheader not working correctly on mobile
+  * [#2133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2133) Display value description when hovering over field
+  * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
+  * [#2134](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2134) string field is reset in mid-typing
+
+# metasfresh 5.86
+# Features
+* metasfresh
+  * [#4310](https://github.com/metasfresh/metasfresh/issues/4310) WebUI: add Manufacturer field in Pricing Conditions
+  * [#4820](https://github.com/metasfresh/metasfresh/issues/4820) Categorize Business Partners as "Neukunde", "Stammkunde"
+  * [#4840](https://github.com/metasfresh/metasfresh/pull/4840) ITableRefInfo - rename "name" to "identifier" and make it more verbose
+  * [#4842](https://github.com/metasfresh/metasfresh/issues/4842) Implement Excel Open XML format support
+  * [#4848](https://github.com/metasfresh/metasfresh/issues/4848) mass-invoicing improvements
+
+# Fixes
+* metasfresh
+  * [#4843](https://github.com/metasfresh/metasfresh/issues/4843) InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class) returns null
+  * [#4846](https://github.com/metasfresh/metasfresh/issues/4846) Contract extension does not set date correctly
+
+* metasfresh-webui-api
+  * [#968](https://github.com/metasfresh/metasfresh-webui-api/issues/968) Error msg missing when trying to create flatrate term from bpartner window in case of no bpartner location
+  * [#1113](https://github.com/metasfresh/metasfresh-webui-api/issues/1113) Generate PO from Sales order not working anymore
+
 * metasfresh-webui-frontend
   * [#2075](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2075) Deselecting lines does not work when clicking everywhere outside of table
     * Improvement of the deselection Handling of Grid Table Rows. Now it's possible to deseclect by clicking any areas outside table.
@@ -21,8 +51,14 @@ Here come the actual release notes:
     * Shows an error now, when Pricelist Name is not unique.
   * [#2111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2111) Additional Dropdown in menu search in latest Chrome
     * Removes the Google Chrome Search result proposal.
+  * [#2112](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2112) Overlays open in narrow window on latest Chrome
+  * [#2116](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2116) Fix specs in cypress/integration/contracts
   * [#2117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2117) Barcode scanner looks bad in filters
-    * Improvement of the Barcode Scanner Look&Fell in Filter Menu entry.
+    * Improvement of the Barcode Scanner Look&Feel in Filter Menu entry.
+  * [#2128](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2128) View: select all no longer works
+
+* metasfresh-dist
+  * [#55](https://github.com/metasfresh/metasfresh-dist/pull/55) introduce a parameter to set the DB seed's URL
 
 # metasfresh 5.85
 # Features

@@ -8,8 +8,6 @@ import java.math.RoundingMode;
 
 import org.junit.Test;
 
-import de.metas.util.lang.Percent;
-
 /*
  * #%L
  * de.metas.util
@@ -85,8 +83,31 @@ public class PercentTest
 	}
 
 	@Test
+	public void addToBase()
+	{
+		test_addToBase(0, 0, 0);
+		test_addToBase(0, 50, 0);
+		test_addToBase(0, 100, 0);
+
+		test_addToBase(100, 0, 100);
+		test_addToBase(100, 45, 145);
+		test_addToBase(100, 100, 200);
+	}
+
+	private void test_addToBase(final int base, final int percentInt, final int expectedResult)
+	{
+		final Percent percent = Percent.of(percentInt);
+		final int precision = 2;
+		assertThat(percent.addToBase(BigDecimal.valueOf(base), precision)).isEqualByComparingTo(BigDecimal.valueOf(expectedResult));
+	}
+
+	@Test
 	public void subtractFromBase()
 	{
+		test_subtractFromBase(0, 0, 0);
+		test_subtractFromBase(0, 50, 0);
+		test_subtractFromBase(0, 100, 0);
+
 		test_subtractFromBase(100, 0, 100);
 		test_subtractFromBase(100, 45, 55);
 		test_subtractFromBase(100, 100, 0);

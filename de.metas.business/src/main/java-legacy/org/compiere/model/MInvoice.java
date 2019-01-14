@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,6 +53,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CCache;
@@ -64,7 +66,10 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
@@ -335,7 +340,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setDocumentNo(line.getDocumentNo());
 		//
 		setIsSOTrx(batch.isSOTrx());
-		final MBPartner bp = new MBPartner(line.getCtx(), line.getC_BPartner_ID(), line.get_TrxName());
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(line.getC_BPartner_ID());
 		setBPartner(bp);	// defaults
 		//
 		setIsTaxIncluded(line.isTaxIncluded());
@@ -402,7 +407,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(final MBPartner bp)
+	public void setBPartner(final I_C_BPartner bp)
 	{
 		if (bp == null)
 		{
@@ -430,10 +435,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 
 		// Set Locations
-		final MBPartnerLocation[] locs = bp.getLocations(false);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final List<I_C_BPartner_Location> locs = bpartnersRepo.retrieveBPartnerLocations(bp);
 		if (locs != null)
 		{
-			for (final MBPartnerLocation loc : locs)
+			for (final I_C_BPartner_Location loc : locs)
 			{
 				if ((loc.isBillTo() && isSOTrx())
 						|| (loc.isPayFrom() && !isSOTrx()))
@@ -442,18 +448,18 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				}
 			}
 			// set to first
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			if (getC_BPartner_Location_ID() <= 0 && !locs.isEmpty())
 			{
-				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+				setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
 			}
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_Location_ID() <= 0)
 		{
 			log.error(new BPartnerNoAddressException(bp).getLocalizedMessage()); // TODO: throw exception?
 		}
 
 		// Set Contact
-		final List<I_AD_User> contacts = bp.getContacts(false);
+		final List<I_AD_User> contacts = bpartnersRepo.retrieveContacts(bp);
 		if (contacts != null && contacts.size() > 0) 	// get first User
 		{
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
@@ -484,7 +490,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		setIsSOTrx(ship.isSOTrx());
 		//
-		final MBPartner bp = new MBPartner(getCtx(), ship.getC_BPartner_ID(), null);
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(ship.getC_BPartner_ID());
 		setBPartner(bp);
 		//
 		setAD_User_ID(ship.getAD_User_ID());
@@ -827,13 +833,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		log.debug("");
 		// No Partner Info - set Template
-		if (getC_BPartner_ID() == 0)
+		if (getC_BPartner_ID() <= 0)
 		{
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
+			throw new FillMandatoryException(I_C_Invoice.COLUMNNAME_C_BPartner_ID);
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), null));
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID());
+			setBPartner(bpartner);
 		}
 
 		// Price List
@@ -1758,8 +1765,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				{
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					final BigDecimal matchQty = line.getQtyInvoiced();
-					final MMatchPO po = MMatchPO.create(line, null, getDateInvoiced(), matchQty);
-					po.saveEx(get_TrxName());
+					Services.get(IMatchPOBL.class).create(line, null, getDateInvoiced(), matchQty);
 					matchPO++;
 				}
 			}
@@ -1935,19 +1941,19 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// Org Must be linked to BPartner
 		final MOrg org = MOrg.get(getCtx(), getAD_Org_ID());
 		final int counterC_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
-		if (counterC_BPartner_ID == 0)
+		if (counterC_BPartner_ID <= 0)
 		{
 			return null;
 		}
 		// Business Partner needs to be linked to Org
-		final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName()); // metas: load BP in transaction
-		final int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID());
+		final int counterAD_Org_ID = bp.getAD_OrgBP_ID();
 		if (counterAD_Org_ID == 0)
 		{
 			return null;
 		}
 
-		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, get_TrxName()); // metas: load BP in transaction
+		final I_C_BPartner counterBP = Services.get(IBPartnerDAO.class).getById(counterC_BPartner_ID);
 		// MOrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID);
 		log.debug("Counter BP=" + counterBP.getName());
 
@@ -2164,17 +2170,17 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			// for (int i = 0; i < mInv.length; i++)
 			// mInv[i].delete(true);
 
-			final MMatchPO[] mPO = MMatchPO.getInvoice(getCtx(), getC_Invoice_ID(), get_TrxName());
-			for (final MMatchPO element : mPO)
+			for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByInvoiceId(InvoiceId.ofRepoId(getC_Invoice_ID())))
 			{
-				if (element.getM_InOutLine_ID() == 0)
+				if (matchPO.getM_InOutLine_ID() <= 0)
 				{
-					element.delete(true);
+					matchPO.setProcessed(false);
+					InterfaceWrapperHelper.delete(matchPO);
 				}
 				else
 				{
-					element.setC_InvoiceLine(null);
-					element.saveEx(get_TrxName()); // metas: tsa: always use saveEx
+					matchPO.setC_InvoiceLine_ID(-1);
+					InterfaceWrapperHelper.save(matchPO);
 				}
 			}
 		}

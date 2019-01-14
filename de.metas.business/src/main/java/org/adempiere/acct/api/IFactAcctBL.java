@@ -31,6 +31,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.report.core.RColumn;
 
+import de.metas.acct.api.AccountDimension;
 import de.metas.util.ISingletonService;
 
 public interface IFactAcctBL extends ISingletonService
@@ -52,7 +53,7 @@ public interface IFactAcctBL extends ISingletonService
 	 */
 	MAccount getAccount(I_Fact_Acct factAcct);
 
-	void updateFactLineFromDimension(I_Fact_Acct fa, IAccountDimension dim);
+	void updateFactLineFromDimension(I_Fact_Acct fa, AccountDimension dim);
 
-	IAccountDimension createAccountDimension(I_Fact_Acct fa);
+	AccountDimension createAccountDimension(I_Fact_Acct fa);
 }

@@ -48,6 +48,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_DocType_Sequence;
@@ -74,12 +75,12 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
-import de.metas.cache.CacheMgt;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
-import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
@@ -221,6 +222,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
 		cachingService.addTableCacheConfigIfAbsent(I_M_PriceList.class);
+		
+		cachingService.addTableCacheConfigIfAbsent(I_C_ConversionType.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache
 		cachingService.createTableCacheConfigBuilder(I_M_Product.class)

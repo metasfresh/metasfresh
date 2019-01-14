@@ -30,16 +30,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import de.metas.product.ProductId;
+import lombok.NonNull;
 
 public class UOMTestHelper
 {
 	private final Properties ctx;
 
-	public UOMTestHelper(final Properties ctx)
+	public UOMTestHelper()
 	{
-		super();
+		this(Env.getCtx());
+	}
+
+	public UOMTestHelper(@NonNull final Properties ctx)
+	{
 		this.ctx = ctx;
 	}
 

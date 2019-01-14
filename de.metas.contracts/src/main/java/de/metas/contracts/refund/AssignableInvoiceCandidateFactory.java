@@ -1,9 +1,12 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -11,13 +14,17 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,6 +51,27 @@ import de.metas.quantity.Quantity;
 @Service
 public class AssignableInvoiceCandidateFactory
 {
+	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+
+	@VisibleForTesting
+	public static AssignableInvoiceCandidateFactory newForUnitTesting()
+	{
+		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(invoiceScheduleRepository);
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
+
+		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository);
+	}
+
+	public AssignableInvoiceCandidateFactory(@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+	{
+		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
+	}
+
 	/** Note: does not load&include {@link AssignmentToRefundCandidate}s; those need to be retrieved using {@link AssignmentToRefundCandidateRepository}. */
 	public AssignableInvoiceCandidate ofRecord(@Nullable final I_C_Invoice_Candidate assignableRecord)
 	{
@@ -57,23 +85,33 @@ public class AssignableInvoiceCandidateFactory
 		final I_C_Currency currencyRecord = assignableRecord.getC_Currency();
 		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 		final int precision = currencyRecord.getStdPrecision();
+		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
 
-		final Money money = Money.of(moneyAmount, currencyId);
+		final Quantity quantity = extractQuantity(assignableRecord);
+		final Quantity quantityOld = extractQuantity(createOld(assignableRecord, I_C_Invoice_Candidate.class));
 
-		final Quantity quantity = Quantity.of(
-				assignableRecord.getQtyToInvoice().add(assignableRecord.getQtyInvoiced()),
-				assignableRecord.getM_Product().getC_UOM());
+		final List<AssignmentToRefundCandidate> assignments = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(invoiceCandidateId);
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
-				.repoId(invoiceCandidateId)
+				.id(invoiceCandidateId)
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.precision(precision)
 				.quantity(quantity)
+				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
+				.assignmentsToRefundCandidates(assignments)
 				.build();
 
 		return invoiceCandidate;
+	}
+
+	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)
+	{
+		final Quantity quantity = Quantity.of(
+				assignableRecord.getQtyToInvoice().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoiced())),
+				assignableRecord.getM_Product().getC_UOM());
+		return quantity;
 	}
 }

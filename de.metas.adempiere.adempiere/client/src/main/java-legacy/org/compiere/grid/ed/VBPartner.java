@@ -23,6 +23,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
@@ -32,9 +33,12 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -50,7 +54,9 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
@@ -311,7 +317,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	{
 		log.info("C_BPartner_ID=" + C_BPartner_ID);
 		// New bpartner
-		if (C_BPartner_ID == 0)
+		if (C_BPartner_ID <= 0)
 		{
 			m_partner = null;
 			m_pLocation = null;
@@ -319,12 +325,7 @@ public final class VBPartner extends CDialog implements ActionListener
 			return true;
 		}
 
-		m_partner = new MBPartner(Env.getCtx(), C_BPartner_ID, null);
-		if (m_partner.get_ID() == 0)
-		{
-			ADialog.error(m_WindowNo, this, "BPartnerNotFound");
-			return false;
-		}
+		m_partner = LegacyAdapters.convertToPO(Services.get(IBPartnerDAO.class).getById(C_BPartner_ID));
 
 		// BPartner - Load values
 		fValue.setText(m_partner.getValue());
@@ -432,7 +433,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (m_partner == null)
 		{
 			int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-			m_partner = MBPartner.getTemplate(Env.getCtx(), AD_Client_ID);
+			m_partner = LegacyAdapters.convertToPO(createNewTemplateBPartner(AD_Client_ID));
 			m_partner.setAD_Org_ID(Env.getAD_Org_ID(Env.getCtx())); // Elaine 2009/07/03
 			boolean isSOTrx = !"N".equals(Env.getContext(Env.getCtx(), m_WindowNo, "IsSOTrx"));
 			m_partner.setIsCustomer(isSOTrx);
@@ -541,5 +542,51 @@ public final class VBPartner extends CDialog implements ActionListener
 		}
 		return m_partner.getC_BPartner_ID();
 	}	// getBPartner_ID
+	
+	/**
+	 * @return Template Business Partner or null
+	 */
+	private static I_C_BPartner createNewTemplateBPartner(final int clientId)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_BPartner.class);
+		
+		final I_C_BPartner template = getBPartnerCashTrx(clientId);
+		if (template != null)
+		{
+			InterfaceWrapperHelper.copyValues(bpartner, bpartner);
+		}
+		
+		// Reset
+		bpartner.setValue("");
+		bpartner.setName("");
+		bpartner.setName2(null);
+		bpartner.setDUNS("");
+		bpartner.setFirstSale(null);
+		//
+
+		bpartner.setPotentialLifeTimeValue(BigDecimal.ZERO);
+		bpartner.setAcqusitionCost(BigDecimal.ZERO);
+		bpartner.setShareOfCustomer(0);
+		bpartner.setSalesVolume(0);
+		
+		return bpartner;
+	} // getTemplate
+
+	/**
+	 * @return Cash Trx Business Partner or null
+	 */
+	private static I_C_BPartner getBPartnerCashTrx(final int clientId)
+	{
+		final IClientDAO clientDAO = Services.get(IClientDAO.class);
+		final I_AD_ClientInfo clientInfo = clientDAO.retrieveClientInfo(Env.getCtx(), clientId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(clientInfo.getC_BPartnerCashTrx_ID());
+		if(bpartnerId == null)
+		{
+			return null;
+		}
+		
+		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
+	} // getBPartnerCashTrx
+
 
 }	// VBPartner

@@ -13,24 +13,19 @@ package org.adempiere.acct.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Constructor;
-import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -39,22 +34,25 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.IDocBuilder;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.acct.api.AcctSchema;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 public class DocFactory implements IDocFactory
 {
@@ -62,34 +60,26 @@ public class DocFactory implements IDocFactory
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Map of AD_Table_ID to {@link IDocMetaInfo} */
-	private transient Map<Integer, IDocMetaInfo> _tableId2docMetaInfo = null;
+	private transient ImmutableMap<Integer, IDocMetaInfo> _tableId2docMetaInfo = null;
 
 	/** {@link Doc} instance builder */
+	@ToString
 	private final class DocBuilder implements IDocBuilder
 	{
 		private Object documentModel;
-		private MAcctSchema[] acctSchemas;
+		private ImmutableList<AcctSchema> acctSchemas;
 		private IDocMetaInfo docMetaInfo;
 
-		public DocBuilder()
-		{
-			super();
-		}
-
 		@Override
-		public String toString()
+		public Doc<?> build()
 		{
-			return ObjectUtils.toString(this);
-		}
+			Check.assumeNotEmpty(acctSchemas, "acctSchemas is not empty");
 
-		@Override
-		public Doc build()
-		{
 			try
 			{
 				final IDocMetaInfo docMetaInfo = getDocMetaInfo();
 				// Get the accountable document instance
-				final Doc doc = docMetaInfo.getDocConstructor().newInstance(this);
+				final Doc<?> doc = docMetaInfo.getDocConstructor().newInstance(this);
 
 				// Return it
 				return doc;
@@ -102,15 +92,15 @@ public class DocFactory implements IDocFactory
 		}
 
 		@Override
-		public MAcctSchema[] getAcctSchemas()
+		public ImmutableList<AcctSchema> getAcctSchemas()
 		{
 			return acctSchemas;
 		}
 
 		@Override
-		public DocBuilder setAcctSchemas(final MAcctSchema[] acctSchemas)
+		public DocBuilder setAcctSchemas(final List<AcctSchema> acctSchemas)
 		{
-			this.acctSchemas = acctSchemas;
+			this.acctSchemas = ImmutableList.copyOf(acctSchemas);
 			return this;
 		}
 
@@ -153,11 +143,13 @@ public class DocFactory implements IDocFactory
 	}
 
 	@Override
-	public Doc getOrNull(final Properties ctx, final MAcctSchema[] ass, @NonNull final TableRecordReference documentRef)
+	public Doc<?> getOrNull(final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
 	{
+		Check.assumeNotEmpty(acctSchemas, "acctSchemas is not empty");
+
 		final int adTableId = documentRef.getAD_Table_ID();
 		final int recordId = documentRef.getRecord_ID();
-		
+
 		final IDocMetaInfo docMetaInfo = getDocMetaInfoOrNull(adTableId);
 		if (docMetaInfo == null)
 		{
@@ -167,56 +159,40 @@ public class DocFactory implements IDocFactory
 		}
 
 		final String tableName = docMetaInfo.getTableName();
-		final PO documentModel = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
+		final PO documentModel = TableModelLoader.instance.getPO(Env.getCtx(), tableName, recordId, ITrx.TRXNAME_ThreadInherited);
 		if (documentModel == null)
 		{
-			logger.error("Not Found: " + tableName + "_ID=" + recordId + " (Processed=Y)");
+			logger.error("Not Found: {}_ID={} (Processed=Y)", tableName, recordId);
 			return null;
 		}
 
 		return new DocBuilder()
 				.setDocMetaInfo(docMetaInfo)
 				.setDocumentModel(documentModel)
-				.setAcctSchemas(ass)
+				.setAcctSchemas(acctSchemas)
 				.build();
 	}
 
-	@Override
-	public final Doc get(final Properties ctx, final IDocMetaInfo docMetaInfo, final MAcctSchema[] ass, final ResultSet rs, final String trxName)
+	private final synchronized ImmutableMap<Integer, IDocMetaInfo> getDocMetaInfoMap()
 	{
-		Check.assumeNotNull(docMetaInfo, "docMetaInfo not null");
-
-		try
+		ImmutableMap<Integer, IDocMetaInfo> tableId2docMetaInfo = _tableId2docMetaInfo;
+		if (tableId2docMetaInfo == null)
 		{
-
-			final String tableName = docMetaInfo.getTableName();
-			final PO documentModel = TableModelLoader.instance.getPO(ctx, tableName, rs, trxName);
-
-			return new DocBuilder()
-					.setDocMetaInfo(docMetaInfo)
-					.setAcctSchemas(ass)
-					.setDocumentModel(documentModel)
-					.build();
+			tableId2docMetaInfo = _tableId2docMetaInfo = loadDocMetaInfo();
 		}
-		catch (final Exception e)
-		{
-			throw PostingExecutionException.wrapIfNeeded(e);
-		}
-	}
-
-	private final synchronized Map<Integer, IDocMetaInfo> getDocMetaInfoMap()
-	{
-		if (_tableId2docMetaInfo == null)
-		{
-			_tableId2docMetaInfo = Collections.synchronizedMap(loadDocMetaInfo());
-		}
-		return _tableId2docMetaInfo;
+		return tableId2docMetaInfo;
 	}
 
 	@Override
 	public List<IDocMetaInfo> getDocMetaInfoList()
 	{
 		return new ArrayList<>(getDocMetaInfoMap().values());
+	}
+
+	@Override
+	public Set<Integer> getDocTableIds()
+	{
+		return getDocMetaInfoMap().keySet();
 	}
 
 	/** @return accountable document meta-info for given AD_Table_ID */
@@ -226,12 +202,12 @@ public class DocFactory implements IDocFactory
 	}
 
 	/** Retries all accountable document meta-info from system */
-	private final Map<Integer, IDocMetaInfo> loadDocMetaInfo()
+	private final ImmutableMap<Integer, IDocMetaInfo> loadDocMetaInfo()
 	{
 		//
 		// Finds all AD_Table_IDs for tables which are not Views and have a column called "Posted"
 		final List<Integer> tableIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Column.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Column.COLUMN_ColumnName, "Posted")
 				.andCollect(I_AD_Column.COLUMN_AD_Table_ID)
@@ -240,7 +216,7 @@ public class DocFactory implements IDocFactory
 				.create()
 				.listIds();
 
-		final Map<Integer, IDocMetaInfo> tableId2docMetaInfo = new HashMap<>(tableIds.size());
+		final ImmutableMap.Builder<Integer, IDocMetaInfo> tableId2docMetaInfo = ImmutableMap.builder();
 		for (final int adTableId : tableIds)
 		{
 			final IDocMetaInfo docMetaData = createDocMetaInfoOrNull(adTableId);
@@ -252,7 +228,7 @@ public class DocFactory implements IDocFactory
 			tableId2docMetaInfo.put(adTableId, docMetaData);
 		}
 
-		return tableId2docMetaInfo;
+		return tableId2docMetaInfo.build();
 	}
 
 	/**
@@ -294,8 +270,8 @@ public class DocFactory implements IDocFactory
 			}
 
 			@SuppressWarnings("unchecked")
-			final Class<? extends Doc> docClass = (Class<? extends Doc>)classLoader.loadClass(className);
-			final Constructor<? extends Doc> docConstructor = docClass.getConstructor(new Class[] { IDocBuilder.class });
+			final Class<? extends Doc<?>> docClass = (Class<? extends Doc<?>>)classLoader.loadClass(className);
+			final Constructor<? extends Doc<?>> docConstructor = docClass.getConstructor(new Class[] { IDocBuilder.class });
 			docConstructor.setAccessible(true);
 
 			final DocMetaInfo docMetaInfo = new DocMetaInfo(adTableId, tableName, docClass, docConstructor);

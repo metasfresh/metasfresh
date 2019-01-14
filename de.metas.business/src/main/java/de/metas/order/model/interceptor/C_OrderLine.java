@@ -277,7 +277,7 @@ public class C_OrderLine
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyEntered)
 	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
 	{
-		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false;
+		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false; // i.e. always update them
 
 		// make the BL revalidates the discounts..the new QtyEntered might also mean a new discount schema break
 		orderLine.setM_DiscountSchemaBreak(null);

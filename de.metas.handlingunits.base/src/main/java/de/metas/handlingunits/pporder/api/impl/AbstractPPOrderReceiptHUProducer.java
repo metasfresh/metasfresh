@@ -297,7 +297,7 @@ import lombok.NonNull;
 		candidate.setM_HU_ID(request.getTopLevelHUId());
 		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 		candidate.setQty(request.getQty().getAsBigDecimal());
-		candidate.setC_UOM(request.getQty().getUOM());
+		candidate.setC_UOM_ID(request.getQty().getUOMId());
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);
 		huPPOrderQtyDAO.save(candidate);

@@ -40,31 +40,12 @@ import org.compiere.util.Env;
 import org.compiere.wf.ADWorkflowConstants;
 import org.compiere.wf.MWorkflow;
 import org.compiere.wf.api.IADWorkflowBL;
-import org.compiere.wf.exceptions.WorkflowNotValidException;
 
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ADWorkflowBL implements IADWorkflowBL
 {
-	@Override
-	public boolean isValidFromTo(final I_AD_Workflow workflow, final Date date)
-	{
-		final Date validFrom = workflow.getValidFrom();
-
-		if (validFrom != null && date.before(validFrom))
-		{
-			return false;
-		}
-
-		final Date validTo = workflow.getValidTo();
-		if (validTo != null && date.after(validTo))
-		{
-			return false;
-		}
-		return true;
-	}
-
 	@Override
 	public boolean isValidFromTo(final I_AD_WF_Node node, final Date date)
 	{
@@ -83,7 +64,7 @@ public class ADWorkflowBL implements IADWorkflowBL
 	}
 
 	@Override
-	public void validate(final I_AD_Workflow workflow)
+	public String validateAndGetErrorMsg(@NonNull final I_AD_Workflow workflow)
 	{
 		final StringBuilder errors = new StringBuilder();
 		//
@@ -104,9 +85,13 @@ public class ADWorkflowBL implements IADWorkflowBL
 		// final
 		final boolean valid = errors.length() == 0;
 		workflow.setIsValid(valid);
-		if (!valid)
+		if (valid)
 		{
-			throw new WorkflowNotValidException(workflow, errors.toString());
+			return null;
+		}
+		else
+		{
+			return errors.toString();
 		}
 	}
 
@@ -171,7 +156,7 @@ public class ADWorkflowBL implements IADWorkflowBL
 		// set this node as the start node in the workflow
 		documentWorkflow.setAD_WF_Node_ID(startWorkflowNode.getAD_WF_Node_ID());
 		InterfaceWrapperHelper.save(documentWorkflow);
-		
+
 		// Create DocAuto Workflow Node
 		final I_AD_WF_Node docAutoWorkflowNode = createWorkflowNode(documentWorkflow, ADWorkflowConstants.WF_NODE_DocAuto_Name, X_AD_WF_Node.ACTION_DocumentAction, X_AD_WF_Node.DOCACTION_None);
 

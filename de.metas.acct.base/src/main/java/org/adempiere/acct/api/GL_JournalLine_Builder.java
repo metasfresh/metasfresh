@@ -11,6 +11,10 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.X_GL_JournalLine;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -27,11 +31,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -72,7 +76,7 @@ public class GL_JournalLine_Builder
 		InterfaceWrapperHelper.save(glJournalLine);
 		return glJournalLine;
 	}
-	
+
 	public GL_Journal_Builder endLine()
 	{
 		return glJournalBuilder;
@@ -89,10 +93,16 @@ public class GL_JournalLine_Builder
 		setAccountDR(vc);
 		return this;
 	}
-	
+
 	public GL_JournalLine_Builder setAccountDR(final I_C_ValidCombination vc)
 	{
 		glJournalLine.setAccount_DR(vc);
+		return this;
+	}
+
+	public GL_JournalLine_Builder setAccountDR(final AccountId accountId)
+	{
+		glJournalLine.setAccount_DR_ID(accountId.getRepoId());
 		return this;
 	}
 
@@ -109,6 +119,12 @@ public class GL_JournalLine_Builder
 		return this;
 	}
 
+	public GL_JournalLine_Builder setAccountCR(final AccountId accountId)
+	{
+		glJournalLine.setAccount_CR_ID(accountId.getRepoId());
+		return this;
+	}
+
 	public GL_JournalLine_Builder setAmount(final BigDecimal amount)
 	{
 		glJournalLine.setAmtSourceDr(amount);
@@ -120,7 +136,8 @@ public class GL_JournalLine_Builder
 	private final I_C_ValidCombination createValidCombination(final I_C_ElementValue ev)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ev);
-		final IAccountDimension dim = accountBL.createAccountDimension(ev, getGL_Journal().getC_AcctSchema_ID());
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getGL_Journal().getC_AcctSchema_ID());
+		final AccountDimension dim = accountBL.createAccountDimension(ev, acctSchemaId);
 		return MAccount.get(ctx, dim);
 	}
 }

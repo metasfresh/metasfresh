@@ -3,6 +3,7 @@ package de.metas.contracts.refund;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -29,6 +30,7 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class AssignmentToRefundCandidate
 {
 	@NonNull
@@ -51,33 +53,6 @@ public class AssignmentToRefundCandidate
 	Quantity quantityAssigendToRefundCandidate;
 
 	boolean useAssignedQtyInSum;
-
-	public AssignmentToRefundCandidate withSubtractedAssignedMoneyAndQuantity()
-	{
-		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();
-		final Money newMoneyAmount = refundInvoiceCandidate
-				.getMoney()
-				.subtract(moneySubtrahent);
-
-		final Quantity assignedQuantitySubtrahent = getQuantityAssigendToRefundCandidate();
-		final Quantity newQuantity = refundInvoiceCandidate
-				.getAssignedQuantity()
-				.subtract(assignedQuantitySubtrahent);
-
-		final RefundInvoiceCandidate newRefundCandidate = refundInvoiceCandidate.toBuilder()
-				.money(newMoneyAmount)
-				.assignedQuantity(newQuantity)
-				.build();
-
-		return new AssignmentToRefundCandidate(
-				refundConfigId,
-				assignableInvoiceCandidateId,
-				newRefundCandidate,
-				moneyBase,
-				moneyAssignedToRefundCandidate.toZero(),
-				quantityAssigendToRefundCandidate.toZero(),
-				useAssignedQtyInSum);
-	}
 
 	public AssignmentToRefundCandidate withRefundInvoiceCandidate(@NonNull final RefundInvoiceCandidate refundInvoiceCandidate)
 	{

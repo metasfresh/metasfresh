@@ -13,15 +13,14 @@ package de.metas.dunning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -29,19 +28,36 @@ import java.util.Properties;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.dunning.api.IDunningUtil;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
 
 public class DunningUtil implements IDunningUtil
 {
 	@Override
-	public BigDecimal currencyConvert(Properties ctx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, int C_ConversionType_ID, int AD_Client_ID, int AD_Org_ID)
+	public BigDecimal currencyConvert(
+			Properties ctx,
+			BigDecimal Amt,
+			int CurFrom_ID,
+			int CurTo_ID,
+			Timestamp ConvDate,
+			CurrencyConversionTypeId conversionTypeId,
+			int AD_Client_ID,
+			int AD_Org_ID)
 	{
-		return Services.get(ICurrencyBL.class).convert(ctx, Amt, CurFrom_ID, CurTo_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+		return Services.get(ICurrencyBL.class).convert(
+				ctx,
+				Amt,
+				CurFrom_ID,
+				CurTo_ID,
+				ConvDate,
+				CurrencyConversionTypeId.toRepoId(conversionTypeId),
+				AD_Client_ID,
+				AD_Org_ID);
 	}
 
 	@Override
-	public int getDefaultCurrencyConvertionTypeId()
+	public CurrencyConversionTypeId getDefaultCurrencyConvertionTypeId()
 	{
-		return ICurrencyBL.DEFAULT_ConversionType_ID;
+		return null;
 	}
 }

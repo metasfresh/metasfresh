@@ -20,7 +20,6 @@ package de.metas.acct.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_ActivityChangeRequest
  *  @author Adempiere (generated) 
@@ -152,7 +151,7 @@ public class X_Fact_Acct_ActivityChangeRequest extends org.compiere.model.PO imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -174,7 +173,7 @@ public class X_Fact_Acct_ActivityChangeRequest extends org.compiere.model.PO imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -196,7 +195,7 @@ public class X_Fact_Acct_ActivityChangeRequest extends org.compiere.model.PO imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -220,21 +219,21 @@ public class X_Fact_Acct_ActivityChangeRequest extends org.compiere.model.PO imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
-
-	@Override
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
-	}
+//	@Override
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+//	}
+//
+//	@Override
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+//	}
 
 	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 
@@ -813,7 +812,7 @@ public class X_Fact_Acct_ActivityChangeRequest extends org.compiere.model.PO imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

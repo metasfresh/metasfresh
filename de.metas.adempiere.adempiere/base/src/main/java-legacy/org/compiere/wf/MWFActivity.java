@@ -46,7 +46,6 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node_Para;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MNote;
@@ -63,6 +62,8 @@ import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -1808,12 +1809,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		index = po.get_ColumnIndex("C_BPartner_ID");
 		if (index != -1)
 		{
-			Integer bp = (Integer)po.get_Value(index);
-			if (bp != null)
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(po.get_ValueAsInt(index));
+			if (bpartnerId != null)
 			{
-				MBPartner partner = MBPartner.get(getCtx(), bp.intValue());
-				if (partner != null)
-					sb.append(partner.getName()).append(" ");
+				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerName(bpartnerId);
+				sb.append(bpartnerName).append(" ");
 			}
 		}
 		return sb.toString();

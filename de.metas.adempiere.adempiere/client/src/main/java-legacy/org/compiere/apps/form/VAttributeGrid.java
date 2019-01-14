@@ -73,7 +73,7 @@ import de.metas.product.ProductId;
 /**
  * Product Attribute Table.
  * Select one or two attributes for view/etc.
- * 
+ *
  * @author Jorg Janke
  * @version $Id: VAttributeGrid.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
@@ -81,13 +81,13 @@ public class VAttributeGrid extends CPanel
 		implements FormPanel, ChangeListener, ActionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3207678550566202041L;
 
 	/**
 	 * Init
-	 * 
+	 *
 	 * @param WindowNo
 	 * @param frame
 	 */
@@ -108,7 +108,7 @@ public class VAttributeGrid extends CPanel
 		selectPanel.add(attributeLabel1, new ALayoutConstraint(0, 0));
 		m_attributes = retrieveAttributes(Env.getCtx(), true, true);
 		Vector<KeyNamePair> vector = new Vector<>();
-		vector.add(new KeyNamePair(0, ""));
+		vector.add(new KeyNamePair(0, "", null/* help */));
 		for (int i = 0; i < m_attributes.length; i++)
 			vector.add(toKeyNamePair(m_attributes[i]));
 		attributeCombo1 = new CComboBox(vector);
@@ -134,7 +134,7 @@ public class VAttributeGrid extends CPanel
 
 	private static KeyNamePair toKeyNamePair(final I_M_Attribute attribute)
 	{
-		return KeyNamePair.of(attribute.getM_Attribute_ID(), attribute.getName());
+		return KeyNamePair.of(attribute.getM_Attribute_ID(), attribute.getName(), attribute.getDescription());
 	}
 
 	/** Window No */
@@ -201,9 +201,10 @@ public class VAttributeGrid extends CPanel
 	{
 		// Price List
 		String sql = "SELECT M_PriceList_Version.M_PriceList_Version_ID,"
-				+ " M_PriceList_Version.Name || ' (' || c.Iso_Code || ')' AS ValueName "
-				+ "FROM M_PriceList_Version, M_PriceList pl, C_Currency c "
-				+ "WHERE M_PriceList_Version.M_PriceList_ID=pl.M_PriceList_ID"
+				+ " M_PriceList_Version.Name || ' (' || c.Iso_Code || ')' AS ValueName, "
+				+ " COALESCE(M_PriceList_Version.Description, M_PriceList.Description) AS Description"
+				+ " FROM M_PriceList_Version, M_PriceList pl, C_Currency c "
+				+ " WHERE M_PriceList_Version.M_PriceList_ID=pl.M_PriceList_ID"
 				+ " AND pl.C_Currency_ID=c.C_Currency_ID"
 				+ " AND M_PriceList_Version.IsActive='Y' AND pl.IsActive='Y'";
 		// Add Access & Order
@@ -211,30 +212,33 @@ public class VAttributeGrid extends CPanel
 				+ " ORDER BY M_PriceList_Version.Name";
 		try
 		{
-			pickPriceList.addItem(new KeyNamePair(0, ""));
+			pickPriceList.addItem(new KeyNamePair(0, "", null/* help */));
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				KeyNamePair kn = new KeyNamePair(rs.getInt(1), rs.getString(2));
+				KeyNamePair kn = new KeyNamePair(rs.getInt(1), rs.getString(2), rs.getString(3));
 				pickPriceList.addItem(kn);
 			}
 			rs.close();
 			pstmt.close();
 
 			// Warehouse
-			sql = "SELECT M_Warehouse_ID, Value || ' - ' || Name AS ValueName "
+			sql = "SELECT M_Warehouse_ID, Value || ' - ' || Name AS ValueName, Description"
 					+ "FROM M_Warehouse "
 					+ "WHERE IsActive='Y'";
 			sql = Env.getUserRolePermissions().addAccessSQL(sql,
 					"M_Warehouse", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO)
 					+ " ORDER BY Value";
-			pickWarehouse.addItem(new KeyNamePair(0, ""));
+			pickWarehouse.addItem(new KeyNamePair(0, "", null/* help */));
 			pstmt = DB.prepareStatement(sql, null);
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				KeyNamePair kn = new KeyNamePair(rs.getInt("M_Warehouse_ID"), rs.getString("ValueName"));
+				KeyNamePair kn = new KeyNamePair(
+						rs.getInt("M_Warehouse_ID"),
+						rs.getString("ValueName"),
+						rs.getString("Description"));
 				pickWarehouse.addItem(kn);
 			}
 			rs.close();
@@ -248,7 +252,7 @@ public class VAttributeGrid extends CPanel
 
 	/**
 	 * Change Listener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -262,7 +266,7 @@ public class VAttributeGrid extends CPanel
 
 	/**
 	 * Action Performed
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -419,7 +423,7 @@ public class VAttributeGrid extends CPanel
 
 	/**
 	 * Get Grid Element
-	 * 
+	 *
 	 * @param xValue X value
 	 * @param yValue Y value
 	 * @return Panel with Info
@@ -501,7 +505,7 @@ public class VAttributeGrid extends CPanel
 
 	/**
 	 * Add Product
-	 * 
+	 *
 	 * @param element panel
 	 * @param product product
 	 */

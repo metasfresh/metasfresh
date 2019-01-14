@@ -17,10 +17,15 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.eevolution.model.MHRConcept;
 import org.eevolution.model.MHRMovement;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.util.Services;
 
 /**
  *  Payroll Line
@@ -28,7 +33,7 @@ import org.eevolution.model.MHRMovement;
  *  @author Jorg Janke
  *  @version  $Id: DocLine_Payroll.java,v 1.4 2005/10/17 23:43:52 jjanke Exp $
  */
-public class DocLine_Payroll extends DocLine
+public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 {
 	/**
 	 *  Constructor
@@ -39,12 +44,12 @@ public class DocLine_Payroll extends DocLine
 	{
 		super (line, doc);
 		int C_BPartner_ID = line.getC_BPartner_ID();
-		MBPartner   bpartner = new MBPartner(Env.getCtx(),C_BPartner_ID,null);     
+		I_C_BPartner   bpartner = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);     
 		MHRConcept  concept  = MHRConcept.get(Env.getCtx(), line.getHR_Concept_ID()); 
 		//
 		m_HR_Concept_ID    = concept.getHR_Concept_ID();
 		m_HR_Process_ID    = line.getHR_Process_ID();
-		m_C_BPartner_ID    = C_BPartner_ID;
+		m_C_BPartner_ID    = BPartnerId.ofRepoId(C_BPartner_ID);
 		m_HR_Department_ID = line.getHR_Department_ID();
 		m_C_BP_Group_ID    = bpartner.getC_BP_Group_ID();
 		m_AccountSign      = concept.getAccountSign();
@@ -55,10 +60,10 @@ public class DocLine_Payroll extends DocLine
 	//  References
 	private int m_HR_Process_ID  = 0;
 	private int m_HR_Concept_ID  = 0;
-	private int m_C_BPartner_ID  = 0;
-	private int m_C_Activity_ID  = 0;
+	private BPartnerId m_C_BPartner_ID;
+	private ActivityId m_C_Activity_ID;
 	private String m_AccountSign = "";
-	private BigDecimal m_Amount  = Env.ZERO;
+	private BigDecimal m_Amount  = BigDecimal.ZERO;
 	private int m_HR_Department_ID = 0;
 	private int m_C_BP_Group_ID = 0;
 	
@@ -74,11 +79,13 @@ public class DocLine_Payroll extends DocLine
 		return m_AccountSign;
 	}
 	
-	public int getC_BPartner_ID(){
+	@Override
+	public BPartnerId getBPartnerId(){
 		return m_C_BPartner_ID;
 	}
 	
-	public int getC_Activity_ID(){
+	@Override
+	public ActivityId getActivityId() {
 		return m_C_Activity_ID;
 	}  
 

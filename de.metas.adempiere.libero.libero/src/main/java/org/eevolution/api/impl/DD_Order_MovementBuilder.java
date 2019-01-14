@@ -28,6 +28,7 @@ import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
+import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
@@ -61,6 +62,7 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	private final IMovementDAO movementsRepo = Services.get(IMovementDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	// parameters
@@ -187,7 +189,8 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		movement.setUser1_ID(order.getUser1_ID());
 		movement.setUser2_ID(order.getUser2_ID());
 
-		InterfaceWrapperHelper.save(movement);
+		movementsRepo.save(movement);
+		
 		return movement;
 	}
 
@@ -303,7 +306,7 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		movementLine.setM_LocatorTo_ID(locatorToId);
 
 		movementBL.setMovementQty(movementLine, movementQtySrc, movementQtyUOM);
-		InterfaceWrapperHelper.save(movementLine);
+		movementsRepo.save(movementLine);
 
 		//
 		// Set the activity from the warehouse of locator To

@@ -25,9 +25,10 @@ package org.adempiere.acct.api;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
+
+import de.metas.acct.api.AcctSchemaId;
 
 /**
  * Accountable tax record.
@@ -43,7 +44,7 @@ public interface ITaxAccountable
 	/** @return true if tax account is on Credit */
 	boolean isAccountSignCR();
 
-	I_C_AcctSchema getC_AcctSchema();
+	AcctSchemaId getAcctSchemaId();
 
 	int getPrecision();
 

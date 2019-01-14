@@ -26,6 +26,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.util.Services;
 
 /**

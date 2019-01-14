@@ -3,16 +3,16 @@ package de.metas.acct.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
@@ -109,14 +109,9 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 
 	private void enqueueDocument(final int adTableId, final int recordId)
 	{
-		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-		final int adClientId = getAD_Client_ID();
-
 		postingService.newPostingRequest()
 				// Post it in same context and transaction as the process
-				.setContext(ctx, trxName)
-				.setAD_Client_ID(adClientId)
+				.setClientId(ClientId.ofRepoId(getAD_Client_ID()))
 				.setDocument(adTableId, recordId) // the document to be posted
 				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 				.setPostImmediate(PostImmediate.No) // no, just enqueue it

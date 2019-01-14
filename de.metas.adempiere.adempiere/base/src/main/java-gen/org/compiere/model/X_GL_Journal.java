@@ -17,9 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import static org.compiere.model.I_GL_Journal.COLUMNNAME_IsApproved;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for GL_Journal
@@ -92,17 +95,17 @@ public class X_GL_Journal extends org.compiere.model.PO implements I_GL_Journal,
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
-
-	@Override
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
-	}
+//	@Override
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+//	}
+//
+//	@Override
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+//	}
 
 	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 

@@ -47,7 +47,6 @@ import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
-import org.eevolution.model.wrapper.AbstractPOWrapper;
 
 
 /**
@@ -173,10 +172,6 @@ public class ZoomMenuAction extends PopupAction {
 			
 			po = (PO)tn.getUserObject();
 		}
-		else if(tn.getUserObject() instanceof AbstractPOWrapper) {
-			
-			po = ((AbstractPOWrapper)tn.getUserObject()).get();
-		}
 		else {
 			
 			return -1;
@@ -193,10 +188,6 @@ public class ZoomMenuAction extends PopupAction {
 		if(tn.getUserObject() instanceof PO) {
 			
 			po = (PO)tn.getUserObject();
-		}
-		else if(tn.getUserObject() instanceof AbstractPOWrapper) {
-			
-			po = ((AbstractPOWrapper)tn.getUserObject()).get();
 		}
 		
 		return po == null ? -1 : po.get_ID();

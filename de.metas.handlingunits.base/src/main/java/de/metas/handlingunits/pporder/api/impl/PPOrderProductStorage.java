@@ -84,7 +84,7 @@ public class PPOrderProductStorage extends AbstractProductStorage
 	{
 		checkStaled();
 
-		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(ppOrder);
+		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(ppOrder).getAsBigDecimal();
 
 		return qtyToReceive;
 	}

@@ -1,5 +1,7 @@
 package de.metas.contracts.refund;
 
+import static org.compiere.util.Util.coalesce;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -40,15 +42,17 @@ import lombok.Value;
  * #L%
  */
 
-/** Represents an invoice candidate that matches a refund contract and can therefore be assigned to a {@link RefundInvoiceCandidate}. */
+/**
+ * Represents a "normal" invoice candidate (e.g. from a purchase order line) that matches a refund contract and can therefore be assigned to one or more {@link RefundInvoiceCandidate}(s).
+ */
 @Value
 public class AssignableInvoiceCandidate
 {
 	/**
 	 * <li>May be {@code null} if this instance was not persisted.
-	 * <li>The result of {@link #splitQuantity(BigDecimal)} can contain multiple instances that have the same repoId
+	 * <li>The result of {@link #splitQuantity(BigDecimal)} can contain multiple instances that have the same id
 	 */
-	InvoiceCandidateId repoId;
+	InvoiceCandidateId id;
 
 	BPartnerId bpartnerId;
 	ProductId productId;
@@ -59,29 +63,35 @@ public class AssignableInvoiceCandidate
 	/** needed when splitting assignable candidates. */
 	int precision;
 
+	/** the underlying record's {@code QtyToInvoice} plus {@code QtyInvoiced}. */
 	Quantity quantity;
+
+	/** Like {@link #getQuantity()}, but contains the old quantity, if the underlying record was just changed. */
+	Quantity quantityOld;
 
 	/** i there is more than one, they are ordered by their refund candidates' configs' minQty, ascending. */
 	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
-			@Nullable final InvoiceCandidateId repoId,
+			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
 			final int precision,
 			@NonNull final Quantity quantity,
+			@Nullable final Quantity quantityOld,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
-		this.repoId = repoId;
+		this.id = id;
 		this.bpartnerId = bpartnerId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;
 		this.precision = Check.assumeGreaterOrEqualToZero(precision, "precision");
 		this.quantity = quantity;
+		this.quantityOld = coalesce(quantityOld, quantity);
 
 		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}
@@ -108,7 +118,7 @@ public class AssignableInvoiceCandidate
 		final Quantity remainderQuantity = quantity.subtract(qtyToSplit);
 
 		final BigDecimal newFraction = qtyToSplit
-				.setScale(precision*2, RoundingMode.HALF_UP)
+				.setScale(precision * 2, RoundingMode.HALF_UP)
 				.divide(quantity.getAsBigDecimal(), RoundingMode.HALF_UP);
 
 		final BigDecimal newMoneyValue = money
@@ -125,7 +135,7 @@ public class AssignableInvoiceCandidate
 				.build();
 
 		final AssignableInvoiceCandidate newCandidate = toBuilder()
-				.repoId(repoId)
+				.id(id)
 				.quantity(newQuantity)
 				.money(newMoney)
 				.build();

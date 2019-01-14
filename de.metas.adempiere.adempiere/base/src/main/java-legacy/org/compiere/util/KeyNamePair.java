@@ -18,6 +18,7 @@ package org.compiere.util;
 
 import java.util.Objects;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,20 +36,42 @@ import de.metas.util.lang.RepoIdAware;
 @Immutable
 public final class KeyNamePair extends NamePair
 {
+
+	public static final KeyNamePair of(
+			@Nullable final RepoIdAware key,
+			@Nullable final String name)
+	{
+		final int keyInt = key != null ? key.getRepoId() : EMPTY.getKey();
+		return of(keyInt, name, null/* description */);
+	}
+
+	public static final KeyNamePair of(
+			@Nullable final int key,
+			@Nullable final String name)
+	{
+		return of(key, name, null/* description */);
+	}
+
+	public static final KeyNamePair of(
+			@Nullable final RepoIdAware key,
+			@Nullable final String name,
+			@Nullable final String description)
+	{
+		final int keyInt = key != null ? key.getRepoId() : EMPTY.getKey();
+		return of(keyInt, name, description);
+	}
+
 	@JsonCreator
-	public static final KeyNamePair of(@JsonProperty("k") final int key, @JsonProperty("n") final String name)
+	public static final KeyNamePair of(
+			@JsonProperty("k") final int key,
+			@JsonProperty("n") final String name,
+			@JsonProperty("description") final String description)
 	{
 		if (key == EMPTY.getKey() && Objects.equals(name, EMPTY.getName()))
 		{
 			return EMPTY;
 		}
-		return new KeyNamePair(key, name);
-	}
-
-	public static final KeyNamePair of(final RepoIdAware key, final String name)
-	{
-		final int keyInt = key != null ? key.getRepoId() : EMPTY.getKey();
-		return of(keyInt, name);
+		return new KeyNamePair(key, name, description);
 	}
 
 	public static final KeyNamePair of(final int key)
@@ -57,31 +80,43 @@ public final class KeyNamePair extends NamePair
 		{
 			return EMPTY;
 		}
-		return new KeyNamePair(key, "<" + key + ">");
+		return new KeyNamePair(key, "<" + key + ">", null/* help */);
 	}
 
 	private static final long serialVersionUID = 6347385376010388473L;
 
-	public static final KeyNamePair EMPTY = new KeyNamePair(-1, "");
+	public static final KeyNamePair EMPTY = new KeyNamePair(-1, "", null/* description */);
+
+	/**
+	 * @deprecated please use the static creator methods instead.
+	 */
+	@Deprecated
+	public KeyNamePair(final int key, final String name)
+	{
+		super(name, null/* description */);
+		this.m_key = key;
+	}
 
 	/**
 	 * Constructor KeyValue Pair -
-	 * 
+	 *
 	 * @param key Key (-1 is considered as null)
 	 * @param name string representation
+	 * @deprecated please use the static creator methods instead.
 	 */
-	public KeyNamePair(final int key, final String name)
+	@Deprecated
+	public KeyNamePair(final int key, @Nullable final String name, @Nullable final String description)
 	{
-		super(name);
+		super(name, description);
 		this.m_key = key;
-	}   // KeyNamePair
+	}
 
 	/** The Key */
 	private final int m_key;
 
 	/**
 	 * Get Key
-	 * 
+	 *
 	 * @return key
 	 */
 	@JsonProperty("k")
@@ -106,7 +141,7 @@ public final class KeyNamePair extends NamePair
 
 	/**
 	 * Equals
-	 * 
+	 *
 	 * @param obj object
 	 * @return true if equal
 	 */

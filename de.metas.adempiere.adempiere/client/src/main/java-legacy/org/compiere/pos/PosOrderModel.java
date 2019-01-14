@@ -30,8 +30,6 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.document.engine.IDocument;
-import de.metas.order.IOrderBL;
-import de.metas.util.Services;
 
 /**
  * Wrapper for standard order
@@ -42,49 +40,13 @@ import de.metas.util.Services;
 public class PosOrderModel extends MOrder {
 
 	private static final long serialVersionUID = 5253837037827124425L;
-	
+
 	private MPOS m_pos;
-	
+
 	public PosOrderModel(Properties ctx, int C_Order_ID, String trxName, MPOS pos) {
 		super(ctx, C_Order_ID, trxName);
 		m_pos = pos;
 	}
-
-	/**
-	 * Get/create Order
-	 * 
-	 * @return order or null
-	 */
-	public static PosOrderModel createOrder(MPOS pos, MBPartner partner) {
-		
-		PosOrderModel order = new PosOrderModel(Env.getCtx(), 0, null, pos);
-		order.setAD_Org_ID(pos.getAD_Org_ID());
-		order.setIsSOTrx(true);
-		order.setC_POS_ID(pos.getC_POS_ID());
-		if (pos.getC_DocType_ID() != 0)
-			Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, pos.getC_DocType_ID());
-		else
-			Services.get(IOrderBL.class).setDocTypeTargetId(order, MOrder.DocSubType_POS);
-		if (partner == null || partner.get_ID() == 0)
-			partner = pos.getBPartner();
-		if (partner == null || partner.get_ID() == 0) {
-			throw new AdempierePOSException("No BPartner for order");
-		}
-		order.setBPartner(partner);
-		//
-		order.setM_PriceList_ID(pos.getM_PriceList_ID());
-		order.setM_Warehouse_ID(pos.getM_Warehouse_ID());
-		order.setSalesRep_ID(pos.getSalesRep_ID());
-		order.setPaymentRule(MOrder.PAYMENTRULE_Cash);
-		if (!order.save())
-		{
-			order = null;
-			throw new AdempierePOSException("Save order failed");
-		}
-		
-		return order;
-	} //	createOrder
-
 
 	/**
 	 * @author Comunidad de Desarrollo OpenXpertya 
@@ -117,16 +79,16 @@ public class PosOrderModel extends MOrder {
 
 	/**
 	 * Create new Line
-	 * 
+	 *
 	 * @return line or null
 	 */
 	public MOrderLine createLine(MProduct product, BigDecimal QtyOrdered,
 			BigDecimal PriceActual) {
-		
+
 		if (!getDocStatus().equals("DR") )
 			return null;
 		//add new line or increase qty
-		
+
 		// catch Exceptions at order.getLines()
 		int numLines = 0;
 		MOrderLine[] lines = null;
@@ -160,23 +122,23 @@ public class PosOrderModel extends MOrder {
 		MOrderLine line = new MOrderLine(this);
 		line.setProduct(product);
 		line.setQty(QtyOrdered);
-			
+
 		line.setPrice(); //	sets List/limit
 		if ( PriceActual.compareTo(Env.ZERO) > 0 )
 			line.setPrice(PriceActual);
 		line.save();
 		return line;
-			
+
 	} //	createLine
-	
-	
+
+
 	/**
 	 * Delete order from database
-	 * 
-	 * @author Comunidad de Desarrollo OpenXpertya 
+	 *
+	 * @author Comunidad de Desarrollo OpenXpertya
  *         *Basado en Codigo Original Modificado, Revisado y Optimizado de:
  *         *Copyright � ConSerTi
-	 */		
+	 */
 	public boolean deleteOrder () {
 		if (getDocStatus().equals("DR"))
 			{
@@ -191,7 +153,7 @@ public class PosOrderModel extends MOrder {
 								deleteLine(lines[i].getC_Order_ID());
 						}
 				}
-				
+
 				MOrderTax[] taxs = getTaxes(true);
 				if (taxs != null)
 				{
@@ -204,14 +166,14 @@ public class PosOrderModel extends MOrder {
 							taxs[i] = null;
 						}
 				}
-				
+
 				getLines(true, null);		// requery order
 				return delete(true);
 			}
 		return false;
 	} //	deleteOrder
-	
-	/** 
+
+	/**
 	 * to erase the lines from order
 	 * @return true if deleted
 	 */
@@ -222,7 +184,7 @@ public class PosOrderModel extends MOrder {
 			{
 				if ( line.getC_OrderLine_ID() == C_OrderLine_ID )
 				{
-					line.delete(true);	
+					line.delete(true);
 				}
 			}
 		}
@@ -230,17 +192,17 @@ public class PosOrderModel extends MOrder {
 
 	/**
 	 * 	Process Order
-	 *  @author Comunidad de Desarrollo OpenXpertya 
+	 *  @author Comunidad de Desarrollo OpenXpertya
 	 *         *Basado en Codigo Original Modificado, Revisado y Optimizado de:
 	 *         *Copyright � ConSerTi
 	 */
 	public boolean processOrder()
-	{		
+	{
 		//Returning orderCompleted to check for order completeness
 		boolean orderCompleted = false;
 		// check if order completed OK
 		if (getDocStatus().equals("DR") || getDocStatus().equals("IP") )
-		{ 
+		{
 			setDocAction(IDocument.ACTION_Complete);
 			try
 			{
@@ -250,7 +212,7 @@ public class PosOrderModel extends MOrder {
 				}
 				else
 				{
-					log.info( "Process Order FAILED");		
+					log.info( "Process Order FAILED");
 				}
 			}
 			catch (Exception e)
@@ -266,12 +228,12 @@ public class PosOrderModel extends MOrder {
 				else if( getDocStatus().equals("CO") )
 				{
 					orderCompleted = true;
-					log.info( "SubCheckout - processOrder OK");	 
-				}			
+					log.info( "SubCheckout - processOrder OK");
+				}
 				else
 				{
-					log.info( "SubCheckout - processOrder - unrecognized DocStatus"); 
-				}					
+					log.info( "SubCheckout - processOrder - unrecognized DocStatus");
+				}
 			} // try-finally
 
 		}
@@ -287,7 +249,7 @@ public class PosOrderModel extends MOrder {
 		}
 		return taxAmt;
 	}
-	
+
 	public BigDecimal getSubtotal() {
 		return getGrandTotal().subtract(getTaxAmt());
 	}
@@ -298,12 +260,12 @@ public class PosOrderModel extends MOrder {
 		BigDecimal received = DB.getSQLValueBD(null, sql, getC_Order_ID());
 		if ( received == null )
 			received = Env.ZERO;
-		
+
 		sql = "SELECT sum(Amount) FROM C_CashLine WHERE C_Invoice_ID = ? ";
 		BigDecimal cashline = DB.getSQLValueBD(null, sql, getC_Invoice_ID());
 		if ( cashline != null )
 			received = received.add(cashline);
-		
+
 		return received;
 	}
 
@@ -324,7 +286,7 @@ public class PosOrderModel extends MOrder {
 		else return false;
 	} // payCash
 
-	public boolean payCheck(BigDecimal amt, String accountNo, String routingNo, String checkNo) 
+	public boolean payCheck(BigDecimal amt, String accountNo, String routingNo, String checkNo)
 	{
 		MPayment payment = createPayment(MPayment.TENDERTYPE_Check);
 		payment.setAmount(getC_Currency_ID(), amt);
@@ -342,9 +304,9 @@ public class PosOrderModel extends MOrder {
 		}
 		else return false;
 	} // payCheck
-	
+
 	public boolean payCreditCard(BigDecimal amt, String accountName, int month, int year,
-			String cardNo, String cvc, String cardtype) 
+			String cardNo, String cvc, String cardtype)
 	{
 
 		MPayment payment = createPayment(MPayment.TENDERTYPE_Check);
@@ -378,7 +340,7 @@ public class PosOrderModel extends MOrder {
 		load( get_TrxName());
 		getLines(true, "");
 	}
-	
+
 	/**
 	 * Duplicated from MPayment
 	 * 	Get Accepted Credit Cards for amount
@@ -389,7 +351,7 @@ public class PosOrderModel extends MOrder {
 	{
 		try
 		{
-			MPaymentProcessor[] m_mPaymentProcessors = MPaymentProcessor.find (getCtx (), null, null, 
+			MPaymentProcessor[] m_mPaymentProcessors = MPaymentProcessor.find (getCtx (), null, null,
 					getAD_Client_ID (), getAD_Org_ID(), getC_Currency_ID (), amt, get_TrxName());
 			//
 			HashMap<String,ValueNamePair> map = new HashMap<>(); //	to eliminate duplicates
@@ -420,9 +382,9 @@ public class PosOrderModel extends MOrder {
 			return null;
 		}
 	}	//	getCreditCards
-	
+
 	/**
-	 * 
+	 *
 	 * Duplicated from MPayment
 	 * 	Get Type and name pair
 	 *	@param CreditCardType credit card Type
@@ -430,11 +392,11 @@ public class PosOrderModel extends MOrder {
 	 */
 	private ValueNamePair getCreditCardPair (String CreditCardType)
 	{
-		return new ValueNamePair (CreditCardType, getCreditCardName(CreditCardType));
+		return ValueNamePair.of(CreditCardType, getCreditCardName(CreditCardType));
 	}	//	getCreditCardPair
 
 	/**
-	 * 
+	 *
 	 * Duplicated from MPayment
 	 *	Get Name of Credit Card
 	 * 	@param CreditCardType credit card type
@@ -460,5 +422,5 @@ public class PosOrderModel extends MOrder {
 			return "PurchaseCard";
 		return "?" + CreditCardType + "?";
 	}	//	getCreditCardName
-	
+
 } // PosOrderModel.class

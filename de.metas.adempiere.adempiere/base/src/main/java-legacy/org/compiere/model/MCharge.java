@@ -20,12 +20,15 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *	Charge Model
@@ -51,16 +54,16 @@ public class MCharge extends X_C_Charge
 	 *  @param amount amount for expense(+)/revenue(-)
 	 *  @return Charge Account or null
 	 */
-	public static MAccount getAccount (int C_Charge_ID, MAcctSchema as, BigDecimal amount)
+	public static MAccount getAccount (int C_Charge_ID, AcctSchemaId acctSchemaId, BigDecimal amount)
 	{
-		if (C_Charge_ID == 0 || as == null)
+		if (C_Charge_ID == 0 || acctSchemaId == null)
 			return null;
 
 		String acctName = X_C_Charge_Acct.COLUMNNAME_Ch_Expense_Acct;		//  Expense (positive amt)
 		if (amount != null && amount.signum() < 0)
 			acctName = X_C_Charge_Acct.COLUMNNAME_Ch_Revenue_Acct;			//  Revenue (negative amt)
 		String sql = "SELECT "+acctName+" FROM C_Charge_Acct WHERE C_Charge_ID=? AND C_AcctSchema_ID=?";
-		int Account_ID = DB.getSQLValueEx(null, sql, C_Charge_ID, as.get_ID());
+		int Account_ID = DB.getSQLValueEx(null, sql, C_Charge_ID, acctSchemaId);
 		//	No account
 		if (Account_ID <= 0)
 		{
@@ -69,7 +72,7 @@ public class MCharge extends X_C_Charge
 		}
 
 		//	Return Account
-		MAccount acct = MAccount.get (as.getCtx(), Account_ID);
+		MAccount acct = Services.get(IAccountDAO.class).getById(Account_ID);
 		return acct;
 	}   //  getAccount
 
@@ -82,7 +85,7 @@ public class MCharge extends X_C_Charge
 	public static MCharge get (Properties ctx, int C_Charge_ID)
 	{
 		Integer key = new Integer (C_Charge_ID);
-		MCharge retValue = (MCharge)s_cache.get (key);
+		MCharge retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;
 		retValue = new MCharge (ctx, C_Charge_ID, null);
@@ -93,7 +96,7 @@ public class MCharge extends X_C_Charge
 
 	/**	Cache						*/
 	private static CCache<Integer, MCharge> s_cache 
-		= new CCache<Integer, MCharge> ("C_Charge", 10);
+		= new CCache<> ("C_Charge", 10);
 	
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MCharge.class);
@@ -136,6 +139,7 @@ public class MCharge extends X_C_Charge
 	 *	@param success success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (newRecord && success)
@@ -148,6 +152,7 @@ public class MCharge extends X_C_Charge
 	 * 	Before Delete
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeDelete ()
 	{
 		return delete_Accounting("C_Charge_Acct"); 

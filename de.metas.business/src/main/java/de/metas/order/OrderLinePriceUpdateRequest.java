@@ -63,6 +63,8 @@ public class OrderLinePriceUpdateRequest
 	PricingSystemId pricingSystemIdOverride;
 	PriceListId priceListIdOverride;
 	Quantity qtyOverride;
+
+	/** If not {@code null}, then the pricing engine is requested to not revalidate the PricingConditionsBreak, but go with this one*/
 	PricingConditionsBreak pricingConditionsBreakOverride;
 
 	//
@@ -73,7 +75,9 @@ public class OrderLinePriceUpdateRequest
 	//
 	// Updating the order line options
 	boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet; // task 06727
+
 	boolean updateLineNetAmt;
+
 	@Default
 	boolean applyPriceLimitRestrictions = true;
 

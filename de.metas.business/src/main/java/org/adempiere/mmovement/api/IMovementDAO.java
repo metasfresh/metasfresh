@@ -13,15 +13,14 @@ package org.adempiere.mmovement.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -53,4 +52,8 @@ public interface IMovementDAO extends ISingletonService
 	<MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(I_M_Movement movement, final Class<MovementLineType> movementLineClass);
 
 	IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(int inventoryId);
+
+	void save(final I_M_Movement movement);
+
+	void save(final I_M_MovementLine movementLine);
 }

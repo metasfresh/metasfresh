@@ -25,11 +25,11 @@ package de.metas.handlingunits;
 import java.util.List;
 
 import org.compiere.model.I_M_Product;
+import org.compiere.util.KeyNamePair;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 
 public interface IHUPIItemProductBL extends ISingletonService
@@ -69,5 +69,5 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 */
 	void setNameAndDescription(I_M_HU_PI_Item_Product itemProduct);
 
-	ITranslatableString getDisplayName(HUPIItemProductId piItemProductId);
+	KeyNamePair getDisplayName(HUPIItemProductId piItemProductId, String adLanguage);
 }
