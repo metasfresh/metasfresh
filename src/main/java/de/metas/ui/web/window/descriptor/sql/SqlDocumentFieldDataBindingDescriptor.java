@@ -122,7 +122,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		sqlSelectValue = builder.buildSqlSelectValue();
 		sqlSelectDisplayValue = builder.buildSqlSelectDisplayValue();
 
-		//
 		// ORDER BY
 		{
 			defaultOrderByPriority = builder.orderByPriority;
@@ -289,13 +288,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		// Built values
 		private boolean _usingDisplayColumn;
 		private String _displayColumnName;
+		//private String _descriptionColumnName;
+
 		private IStringExpression _displayColumnSqlExpression;
 		private Boolean _numericKey;
 		private DocumentFieldValueLoader _documentFieldValueLoader;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public SqlDocumentFieldDataBindingDescriptor build()
@@ -342,7 +342,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 
 			final String sqlColumnNameFQ = sqlTableAlias + "." + sqlColumnName;
-			final IStringExpression displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression(sqlColumnNameFQ);
+			final IStringExpression displayColumnSqlExpression = sqlLookupDescriptor.getSqlForFetchingLookupByIdExpression(sqlColumnNameFQ);
 			if (displayColumnSqlExpression == null || displayColumnSqlExpression.isNullExpression())
 			{
 				return ConstantStringExpression.of(sqlColumnName);
@@ -398,7 +398,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				_documentFieldValueLoader = createDocumentFieldValueLoader(
 						getColumnName(),
-						isUsingDisplayColumn() ? getDisplayColumnName() : null, // displayColumnName
+						isUsingDisplayColumn() ? getDisplayColumnName() : null/* displayColumnName */,
+//						isUsingDisplayColumn() ? getDescriptionColumnName() : null/* descriptionColumnName */,
 						getValueClass(),
 						getWidgetType(),
 						encrypted,
@@ -408,30 +409,26 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		}
 
 		/**
-		 *
 		 * NOTE to developer: make sure there is NO reference to fieldDescriptor or dataBinding or anything else in returned lambdas.
 		 * They shall be independent from descriptors.
 		 * That's the reason why it's a static method (to make sure we are no doing any mistakes).
 		 *
-		 * @param sqlColumnName
-		 * @param displayColumnName
-		 * @param valueClass
-		 * @param encrypted
-		 * @param numericKey
+		 * @param descriptionColumnName currently only used in lookup value
+		 *
 		 * @return document field value loader
 		 */
 		private static final DocumentFieldValueLoader createDocumentFieldValueLoader(
-				final String sqlColumnName //
-				, final String displayColumnName //
-				, final Class<?> valueClass //
-				, final DocumentFieldWidgetType widgetType //
-				, final boolean encrypted //
-				, final Boolean numericKey //
-		)
+				final String sqlColumnName,
+				final String displayColumnName,
+				//final String descriptionColumnName,
+				final Class<?> valueClass,
+				final DocumentFieldWidgetType widgetType,
+				final boolean encrypted,
+				final Boolean numericKey)
 		{
 			if (!Check.isEmpty(displayColumnName))
 			{
-				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, displayColumnName, numericKey);
+				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, displayColumnName, /*descriptionColumnName,*/ numericKey);
 			}
 			else if (java.lang.String.class == valueClass)
 			{
@@ -621,6 +618,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			return _displayColumnName;
 		}
+
+//		private String getDescriptionColumnName()
+//		{
+//			return _descriptionColumnName;
+//		}
 
 		public IStringExpression getDisplayColumnSqlExpression()
 		{

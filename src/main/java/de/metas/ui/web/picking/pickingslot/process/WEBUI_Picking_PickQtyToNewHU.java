@@ -12,6 +12,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HUPIItemProductId;
@@ -28,7 +30,6 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
-import de.metas.i18n.ITranslatableString;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
@@ -57,12 +58,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,10 +71,10 @@ import lombok.NonNull;
  */
 
 /**
- * 
+ *
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -179,7 +180,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	}
 
 	/**
-	 * 
+	 *
 	 * @return a list of PI item products that match the selected shipment schedule's product and partner, sorted by name.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
@@ -212,8 +213,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 			}
 			else
 			{
-				final ITranslatableString displayName = Services.get(IHUPIItemProductBL.class).getDisplayName(piItemProductId);
-				return IntegerLookupValue.of(piItemProductId, displayName);
+				final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+				final String adLanguage = Env.getAD_Language();
+
+				final KeyNamePair keyNamePair = hupiItemProductBL.getDisplayName(piItemProductId, adLanguage);
+				return IntegerLookupValue.fromNamePair(keyNamePair, adLanguage);
 			}
 		}
 		else
@@ -239,7 +243,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	/**
 	 * Creates a new M_HU within the processe's interited trx.
-	 * 
+	 *
 	 * @param itemProduct
 	 * @param locatorId
 	 * @return

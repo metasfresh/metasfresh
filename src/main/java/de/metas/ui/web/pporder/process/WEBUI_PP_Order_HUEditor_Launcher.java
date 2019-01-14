@@ -1,7 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.List;
 
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -15,6 +13,8 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -66,10 +66,13 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
+	private final IHUPPOrderQtyDAO huOrderCandidatesRepo = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
 	@Autowired
 	private IViewsRepository viewsRepo;
-
-	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -123,7 +126,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	{
 		final PPOrderLineRow ppOrderLineRow = getSingleSelectedRow();
 
-		final int ppOrderBomLineId = ppOrderLineRow.getPP_Order_BOMLine_ID();
+		final PPOrderBOMLineId ppOrderBomLineId = ppOrderLineRow.getOrderBOMLineId();
 
 		final ViewId ppOrderLineViewId = getView().getViewId();
 
@@ -147,11 +150,10 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		return MSG_OK;
 	}
 
-	private List<HuId> retrieveHuIdsToShowInEditor(final int ppOrderBomLineId)
+	private List<HuId> retrieveHuIdsToShowInEditor(final PPOrderBOMLineId ppOrderBomLineId)
 	{
-		final I_PP_Order_BOMLine ppOrderBomLine = load(ppOrderBomLineId, I_PP_Order_BOMLine.class);
+		final I_PP_Order_BOMLine ppOrderBomLine = orderBOMsRepo.getOrderBOMLineById(ppOrderBomLineId);
 
-		final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
 		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
 
 		final List<HuId> availableHUsIDs = huIdsToAvailableToIssueQuery.createQuery()
@@ -159,7 +161,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 				.stream()
 				.map(HuId::ofRepoId)
 				.filter(huId -> !SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
-				.filter(huId -> !Services.get(IHUPPOrderQtyDAO.class).isHuIdIssued(huId))
+				.filter(huId -> !huOrderCandidatesRepo.isHuIdIssued(huId))
 				.collect(ImmutableList.toImmutableList());
 		return availableHUsIDs;
 	}

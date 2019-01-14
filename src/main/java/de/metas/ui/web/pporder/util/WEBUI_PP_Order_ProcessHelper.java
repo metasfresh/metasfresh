@@ -1,10 +1,9 @@
 package de.metas.ui.web.pporder.util;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.List;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -42,7 +42,7 @@ public class WEBUI_PP_Order_ProcessHelper
 
 	public static List<I_M_Source_HU> retrieveActiveSourceHus(@NonNull final PPOrderLineRow row)
 	{
-		final I_PP_Order ppOrder = load(row.getPP_Order_ID(), I_PP_Order.class);
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(row.getOrderId());
 
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
 				.productId(row.getProductId())

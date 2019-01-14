@@ -33,7 +33,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -151,7 +150,7 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue paymentTerm;
 
-	static final String FIELDNAME_PaymentDiscount = "paymentDiscount";
+	public static final String FIELDNAME_PaymentDiscount = "paymentDiscount";
 	@ViewColumn(fieldName = FIELDNAME_PaymentDiscount, captionKey = "PaymentDiscount", widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
@@ -175,6 +174,13 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 120)
 	})
 	private final LocalDateTime dateCreated;
+
+	private static final String FIELDNAME_CreatedBy = "createdBy";
+	@ViewColumn(fieldName = FIELDNAME_CreatedBy, captionKey = "CreatedBy", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 130)
+	})
+	private final LookupValue createdBy;
 
 	private static final Logger logger = LogManager.getLogger(PricingConditionsRow.class);
 
@@ -214,28 +220,28 @@ public class PricingConditionsRow implements IViewRow
 		this.bpartner = bpartner;
 		this.customer = customer;
 
-		statusColor = pricingConditionsBreak.isTemporaryPricingConditionsBreak() ? lookups.getTemporaryPriceConditionsColor() : null;
+		this.statusColor = pricingConditionsBreak.isTemporaryPricingConditionsBreak() ? lookups.getTemporaryPriceConditionsColor() : null;
 
 		PricingConditionsBreakId.assertMatching(pricingConditionsId, pricingConditionsBreak.getId());
 		this.pricingConditionsId = pricingConditionsId;
 		this.pricingConditionsBreak = pricingConditionsBreak;
 
-		product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
-		breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
+		this.product = lookups.lookupProduct(pricingConditionsBreak.getMatchCriteria().getProductId());
+		this.breakValue = pricingConditionsBreak.getMatchCriteria().getBreakValue();
 
-		paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermIdOrNull());
+		this.paymentTerm = lookups.lookupPaymentTerm(pricingConditionsBreak.getPaymentTermIdOrNull());
 
-		paymentDiscountOverride = Optional
+		this.paymentDiscountOverride = Optional
 				.ofNullable(pricingConditionsBreak.getPaymentDiscountOverrideOrNull())
 				.map(Percent::getValue)
 				.orElse(null);
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
-		priceType = lookups.lookupPriceType(price.getType());
-		basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
-		basePriceAddAmt = price.getBasePriceAddAmt();
+		this.priceType = lookups.lookupPriceType(price.getType());
+		this.basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
+		this.basePriceAddAmt = price.getBasePriceAddAmt();
 
-		discount = pricingConditionsBreak.getDiscount().getValue();
+		this.discount = pricingConditionsBreak.getDiscount().getValue();
 
 		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
 
@@ -246,28 +252,29 @@ public class PricingConditionsRow implements IViewRow
 						.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
 						.isSOTrx(customer)
 						.build());
-		if(basePriceAsMoney != null)
+		if (basePriceAsMoney != null)
 		{
-			basePrice = basePriceAsMoney.getValue();
-			basePriceCurrency = lookups.lookupCurrency(basePriceAsMoney.getCurrencyId());
+			this.basePrice = basePriceAsMoney.getValue();
+			this.basePriceCurrency = lookups.lookupCurrency(basePriceAsMoney.getCurrencyId());
 		}
 		else
 		{
-			basePrice = null;
-			basePriceCurrency = null;
+			this.basePrice = null;
+			this.basePriceCurrency = null;
 		}
 
-		netPrice = calculateNetPrice(basePrice, pricingConditionsBreak);
+		this.netPrice = calculateNetPrice(basePrice, pricingConditionsBreak);
 
 		this.dateLastInOut = dateLastInOut;
-		dateCreated = pricingConditionsBreak.getDateCreated();
+		this.dateCreated = pricingConditionsBreak.getDateCreated();
+		this.createdBy = lookups.lookupUser(pricingConditionsBreak.getCreatedById());
 
 		this.editable = editable;
-		viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getType());
+		this.viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(editable, price.getType());
 
 		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
 
-		id = buildDocumentId(this.pricingConditionsBreak, this.bpartner, this.customer, this.editable);
+		this.id = buildDocumentId(this.pricingConditionsBreak, this.bpartner, this.customer, this.editable);
 	}
 
 	private static final DocumentId buildDocumentId(final PricingConditionsBreak pricingConditionsBreak, final LookupValue bpartner, final boolean customer, final boolean editableRow)

@@ -19,9 +19,9 @@ import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
-
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -63,7 +63,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 			@NonNull final IRowsData<MaterialCockpitRow> rowsData,
 			@NonNull final ImmutableList<DocumentFilter> filters,
 			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors,
-			@NonNull final RelatedProcessDescriptor relatedProcessDescriptor)
+			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors)
 	{
 		super(viewId,
 				description,
@@ -71,7 +71,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 				filterDescriptors);
 
 		this.filters = filters;
-		this.relatedProcessDescriptors = ImmutableList.of(relatedProcessDescriptor);
+		this.relatedProcessDescriptors = ImmutableList.copyOf(relatedProcessDescriptors);
 	}
 
 	/**

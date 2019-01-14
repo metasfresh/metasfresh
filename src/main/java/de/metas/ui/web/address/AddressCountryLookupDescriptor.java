@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -78,7 +79,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	{
 		return true;
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -150,10 +151,10 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 		{
 			throw new IllegalStateException("No ID provided in " + evalCtx);
 		}
-		
+
 		return getLookupValueById(id);
 	}
-	
+
 	public LookupValue getLookupValueById(final Object idObj)
 	{
 		final LookupValue country = getAllCountriesById().getById(idObj);
@@ -207,9 +208,13 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	private IntegerLookupValue createLookupValue(final I_C_Country countryRecord)
 	{
 		final int countryId = countryRecord.getC_Country_ID();
-		final ITranslatableString countryName = InterfaceWrapperHelper.getModelTranslationMap(countryRecord)
-				.getColumnTrl(I_C_Country.COLUMNNAME_Name, countryRecord.getName());
-		return IntegerLookupValue.of(countryId, countryName);
+
+		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(countryRecord);
+
+		final ITranslatableString countryName = modelTranslationMap.getColumnTrl(I_C_Country.COLUMNNAME_Name, countryRecord.getName());
+		final ITranslatableString countryDescription = modelTranslationMap.getColumnTrl(I_C_Country.COLUMNNAME_Description, countryRecord.getName());
+
+		return IntegerLookupValue.of(countryId, countryName, countryDescription);
 	}
 
 	@Override
