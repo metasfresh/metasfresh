@@ -19,7 +19,7 @@ const createDummyProps = function(props, data) {
 };
 
 describe('RawList component', () => {
-  describe.skip('rendering tests:', () => {
+  describe('rendering tests:', () => {
     it('renders without errors', () => {
       const props = createDummyProps(
         {
@@ -58,7 +58,7 @@ describe('RawList component', () => {
   });
 
   describe('functional tests', () => {
-    it.skip('list focuses and toggles on click', () => {
+    it('list focuses and toggles on click', () => {
       const onOpenDropdownSpy = jest.fn();
 
       const props = createDummyProps(
@@ -88,7 +88,7 @@ describe('RawList component', () => {
       wrapper.unmount();
     });
 
-    it.skip('list handles key events', () => {
+    it('list handles key events', () => {
       const onOpenDropdownSpy = jest.fn();
       const onSelectSpy = jest.fn();
       const props = createDummyProps(
@@ -122,7 +122,7 @@ describe('RawList component', () => {
       expect(onOpenDropdownSpy).toHaveBeenCalled();
     });
 
-    it.skip('list focuses and toggles on click', () => {
+    it('list focuses and toggles on click', () => {
       const onOpenDropdownSpy = jest.fn();
 
       const props = createDummyProps(
@@ -152,29 +152,9 @@ describe('RawList component', () => {
       wrapper.unmount();
     });
 
-  // handleSelect = selected => {
-  //   const { onSelect, onCloseDropdown } = this.props;
-  //   const { dropdownList } = this.state;
-  //   const changedValues = {
-  //     ...setSelectedValue(dropdownList, selected),
-  //   };
-
-  //   this.setState(changedValues, () => {
-  //     if (selected.key === null) {
-  //       onSelect(null);
-  //     } else {
-  //       onSelect(selected);
-  //     }
-  //     onCloseDropdown();
-
-  //     setTimeout(() => {
-  //       console.log('select')
-  //       this.focusDropdown();
-  //     }, 0);
-  //   });
-  // };
-
     it('list hides dropdown after selecting an option', () => {
+      jest.useFakeTimers();
+
       const onCloseDropdownSpy = jest.fn();
       const onSelectSpy = jest.fn();
       const props = createDummyProps(
@@ -193,81 +173,61 @@ describe('RawList component', () => {
         stopPropagation: jest.fn(),
       };
 
-      const spyDropdown = jest.spyOn(RawListBare.prototype, 'focusDropdown');
+      const focusDropdownSpy = jest.spyOn(RawListBare.prototype, 'focusDropdown');
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
       const wrapper = mount(<RawListBare {...props} />);
       wrapper.instance().handleSelect(fixtures.data1.listData[0]);
 
+      jest.advanceTimersByTime(1);
+
       expect(onSelectSpy).toHaveBeenCalledWith(fixtures.data1.listData[0]);
       expect(onCloseDropdownSpy).toHaveBeenCalled();
-      expect(onFocusSpy).toHaveBeenCalled();
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+      expect(focusDropdownSpy).toHaveBeenCalled();
     });
 
-    // does the list stay hidden after list was updated when selection has been made
-    // it('list blurs and stays out of focus after tabbing out', () => {
-    // it('list hides dropdown after selecting an option', () => {
-    //   const onCloseDropdownSpy = jest.fn();
-    //   const onSelectSpy = jest.fn();
-    //   // const onFocusSpy = jest.fn();
-    //   const props = createDummyProps(
-    //     {
-    //       ...fixtures.data1.widgetProps,
-    //       isFocused: true,
-    //       isToggled: true,
-    //       onCloseDropdown: onCloseDropdownSpy,
-    //       onSelect: onSelectSpy,
-    //       // onFocus: onFocusSpy,
-    //       // readonly: false,
-    //     },
-    //     fixtures.data1.listData
-    //   );
-    //   // const map = {};
-    //   // window.addEventListener = jest.fn((event, cb) => {
-    //   //   console.log('event: ', event)
-    //   //   map[event] = cb;
-    //   // });
-    //   const eventProps = {
-    //     preventDefault: jest.fn(),
-    //     stopPropagation: jest.fn(),
-    //   };
+    it('list blurs and stays hidden after selecting an option', () => {
+      jest.useFakeTimers();
 
-    //   // console.log('RawList: ', RawList, RawList.prototype)
-    //   // const spyTab = jest.spyOn(RawList.prototype, 'handleTab');
+      const onCloseDropdownSpy = jest.fn();
+      const onSelectSpy = jest.fn();
+      const props = createDummyProps(
+        {
+          ...fixtures.data1.widgetProps,
+          isFocused: true,
+          isToggled: false,
+          mandatory: false,
+          emptyText: 'Some fake text',
+          onCloseDropdown: onCloseDropdownSpy,
+          onSelect: onSelectSpy,
+        },
+        fixtures.data1.listData
+      );
 
-    //   const spyDropdown = jest.spyOn(RawListBare.prototype, 'focusDropdown');
-    //   RawListBare.prototype.dropdown = { offsetWidth: 100 };
+      const eventProps = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+      };
 
-    //   const wrapper = mount(
-    //     <RawListBare {...props} />
-    //     // { attachTo: document.body.firstChild }
-    //   );
-    //   // const f = wrapper.find(RawListBare);
+      const focusDropdownSpy = jest.spyOn(RawListBare.prototype, 'focusDropdown');
+      RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
-    //   // wrapper.find('.input-dropdown-container'.).prop('on')()
-    //   wrapper.instance().handleSelect(fixtures.data1.listData[0]);
-    //   // console.log('F: ', wrapper.instance())
+      const wrapper = mount(<RawListBare {...props} />);
+      wrapper.instance().handleSelect(fixtures.data1.listData[0]);
 
-    //   // const spyDropdown2 = jest.spyOn(wrapper.instance(), 'focusDropdown');
+      jest.advanceTimersByTime(1);
+      wrapper.update();
 
-    //   // expect(wrapper.find('.input-dropdown-container.focused').length).toBe(0);
+      expect(focusDropdownSpy).toHaveBeenCalled();
 
-    //   // map.keydown({ ...eventProps, key: 'Tab' });
-    //   // map.keydown({ ...eventProps, key: 'Tab' });
-    //   // wrapper.instance().forceUpdate();
-    //   // wrapper.update();
+      focusDropdownSpy.mockClear();
 
-    //   expect(onSelectSpy).toHaveBeenCalledWith(fixtures.data1.listData[0]);
+      wrapper.setProps({ isFocused: false, list: List([fixtures.data1.listData[0]]) });
+      wrapper.update();
 
-    //   // console.log('document: ', document.activeElement)
-    //   // // expect(wrapper.find('.input-dropdown-container.focused').length).toBe(1);
-    //   // // expect(spyDropdown2).toHaveBeenCalled();
-
-    //   expect(onFocusSpy).toHaveBeenCalled();
-    //   // expect(spyDropdown).toHaveBeenCalled();
-    //   expect(onCloseDropdownSpy).toHaveBeenCalled();
-    //   // expect(onBlurSpy).not.toHaveBeenCalled();
-    // });
+      expect(focusDropdownSpy).not.toHaveBeenCalled();
+    });
 
     describe('with elements attached to dummy element', function() {
       let wrapper;
