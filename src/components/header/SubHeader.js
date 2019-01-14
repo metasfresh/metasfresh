@@ -15,15 +15,6 @@ import BookmarkButton from './BookmarkButton';
 
 const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
 
-const mapStateToProps = (state, props) => ({
-  standardActions: state.windowHandler.master.standardActions,
-  selected: getSelection({
-    state,
-    windowType: props.windowType,
-    viewId: props.viewId,
-  }),
-});
-
 class Subheader extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -37,12 +28,12 @@ class Subheader extends Component {
   componentDidMount() {
     document.getElementsByClassName('js-subheader-column')[0].focus();
 
-    const { entity, windowType } = this.props;
+    const { entity, windowId } = this.props;
     const entityType = entity === 'board' ? 'board' : 'window';
 
     // Main dashboard view doesn't have a windowTyep and is throwing 404
-    if (windowType) {
-      elementPathRequest(entityType, this.props.windowType).then(response => {
+    if (windowId) {
+      elementPathRequest(entityType, this.props.windowId).then(response => {
         this.setState({ elementPath: response.data });
       });
     }
@@ -179,6 +170,7 @@ class Subheader extends Component {
     const {
       dataId,
       docNo,
+      // activeTab,
       handleClone,
       handleDelete,
       handleEmail,
@@ -186,7 +178,7 @@ class Subheader extends Component {
       handlePrint,
       openModal,
       standardActions,
-      windowType,
+      windowId,
     } = this.props;
 
     if (!dataId) {
@@ -197,7 +189,7 @@ class Subheader extends Component {
       {
         action: 'advancedEdit',
         handler: () => {
-          openModal(windowType, 'window', 'Advanced edit', true);
+          openModal(windowId, 'window', 'Advanced edit', true);
         },
         icon: 'meta-icon-edit',
         caption: counterpart.translate('window.advancedEdit.caption'),
@@ -206,7 +198,7 @@ class Subheader extends Component {
       {
         action: 'clone',
         handler: () => {
-          handleClone(windowType, dataId);
+          handleClone(windowId, dataId);
         },
         icon: 'meta-icon-duplicate',
         caption: counterpart.translate('window.clone.caption'),
@@ -233,7 +225,7 @@ class Subheader extends Component {
       {
         action: 'print',
         handler: () => {
-          handlePrint(windowType, dataId, docNo);
+          handlePrint(windowId, dataId, docNo);
         },
         icon: 'meta-icon-print',
         caption: counterpart.translate('window.Print.caption'),
@@ -248,8 +240,22 @@ class Subheader extends Component {
         caption: counterpart.translate('window.Delete.caption'),
         hotkey: keymap.DELETE_DOCUMENT,
       },
+      {
+        action: 'about',
+        handler: () => {
+          openModal(windowId, 'window', 'About');
+        },
+        icon: 'meta-icon-delete',
+        // caption: counterpart.translate('window.About.caption'),
+        caption: 'About',
+        hotkey: keymap.ABOUT_DOCUMENT,
+      },
     ]
-      .filter(docLink => standardActions.has(docLink.action))
+      // TODO: Temporarily hardcoded 'about' - Kuba
+      .filter(
+        docLink =>
+          standardActions.has(docLink.action) || docLink.action === 'about'
+      )
       .map(docLink => {
         return this.renderDocLink(docLink);
       });
@@ -266,7 +272,7 @@ class Subheader extends Component {
       redirect,
       selected,
       siteName,
-      windowType,
+      windowId,
     } = this.props;
     const { elementPath } = this.state;
 
@@ -304,7 +310,7 @@ class Subheader extends Component {
 
         <div className="subheader-break" />
 
-        {windowType && (
+        {windowId && (
           <div
             id={`subheaderNav_${simplifyName(
               counterpart.translate('window.new.caption')
@@ -312,7 +318,7 @@ class Subheader extends Component {
             className="subheader-item js-subheader-item"
             tabIndex={0}
             onClick={() => {
-              redirect('/window/' + windowType + '/new');
+              redirect('/window/' + windowId + '/new');
               closeSubheader();
             }}
           >
@@ -324,10 +330,10 @@ class Subheader extends Component {
           </div>
         )}
 
-        {windowType && query && query.viewId && (
+        {windowId && query && query.viewId && (
           <a
             className="subheader-item js-subheader-item"
-            href={`${config.API_URL}/documentView/${windowType}/${
+            href={`${config.API_URL}/documentView/${windowId}/${
               query.viewId
             }/export/excel?selectedIds=${selected.join(',')}`}
             download
@@ -366,7 +372,7 @@ class Subheader extends Component {
 
   renderActionsColumn = () => {
     const {
-      windowType,
+      windowId,
       viewId,
       dataId,
       selected,
@@ -382,7 +388,7 @@ class Subheader extends Component {
     return (
       <Actions
         key={1}
-        windowType={windowType}
+        windowType={windowId}
         viewId={viewId}
         entity={entity}
         openModal={openModal}
@@ -417,5 +423,14 @@ class Subheader extends Component {
     );
   }
 }
+
+const mapStateToProps = (state, props) => ({
+  standardActions: state.windowHandler.master.standardActions,
+  selected: getSelection({
+    state,
+    windowType: props.windowId,
+    viewId: props.viewId,
+  }),
+});
 
 export default connect(mapStateToProps)(onClickOutside(Subheader));
