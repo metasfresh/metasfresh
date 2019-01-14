@@ -8,7 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner_TimeSpan;
+import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.ModelValidator;
 
 /*
@@ -40,7 +40,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
-import de.metas.contracts.impl.BPartnerTimeSpanRepository;
+import de.metas.contracts.impl.CustomerRetentionRepository;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
@@ -180,12 +180,12 @@ public class C_Order
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void updateBPartnerTimeSpan(final I_C_Order order)
+	public void updateCustomerRetention(final I_C_Order order)
 	{
 
 		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
 
-		final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
+		final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
 
 		if (!order.isSOTrx())
 		{
@@ -203,14 +203,14 @@ public class C_Order
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 
-		final I_C_BPartner_TimeSpan bpartnerTimeSpan = bpartnerTimeSpanRepo.retrieveBPartnerTimeSpan(bpartnerId);
+		final I_C_Customer_Retention customerRetention = customerRetentionRepo.retrieveCustomerRetention(bpartnerId);
 
-		if (!Check.isEmpty(bpartnerTimeSpan))
+		if (!Check.isEmpty(customerRetention))
 		{
 			// nothing to do
 			return;
 		}
 
-		bpartnerTimeSpanRepo.setNewCustomer(bpartnerId);
+		customerRetentionRepo.setNewCustomer(bpartnerId);
 	}
 }

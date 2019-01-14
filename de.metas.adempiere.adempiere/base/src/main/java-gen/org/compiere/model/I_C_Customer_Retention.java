@@ -1,15 +1,15 @@
 package org.compiere.model;
 
 
-/** Generated Interface for C_BPartner_TimeSpan
+/** Generated Interface for C_Customer_Retention
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_BPartner_TimeSpan 
+public interface I_C_Customer_Retention 
 {
 
-    /** TableName=C_BPartner_TimeSpan */
-    public static final String Table_Name = "C_BPartner_TimeSpan";
+    /** TableName=C_Customer_Retention */
+    public static final String Table_Name = "C_Customer_Retention";
 
     /** AD_Table_ID=541157 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -35,7 +35,7 @@ public interface I_C_BPartner_TimeSpan
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_Client>(I_C_BPartner_TimeSpan.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_Client>(I_C_Customer_Retention.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_C_BPartner_TimeSpan
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_Org>(I_C_BPartner_TimeSpan.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_Org>(I_C_Customer_Retention.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -93,55 +93,32 @@ public interface I_C_BPartner_TimeSpan
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_C_BPartner>(I_C_BPartner_TimeSpan.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_C_BPartner>(I_C_Customer_Retention.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set C_BPartner_TimeSpan.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_TimeSpan (java.lang.String C_BPartner_TimeSpan);
-
-	/**
-	 * Get C_BPartner_TimeSpan.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getC_BPartner_TimeSpan();
-
-    /** Column definition for C_BPartner_TimeSpan */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object> COLUMN_C_BPartner_TimeSpan = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object>(I_C_BPartner_TimeSpan.class, "C_BPartner_TimeSpan", null);
-    /** Column name C_BPartner_TimeSpan */
-    public static final String COLUMNNAME_C_BPartner_TimeSpan = "C_BPartner_TimeSpan";
-
-	/**
-	 * Set Partner Time Span.
+	 * Set C_Customer_Retention_ID.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_TimeSpan_ID (int C_BPartner_TimeSpan_ID);
+	public void setC_Customer_Retention_ID (int C_Customer_Retention_ID);
 
 	/**
-	 * Get Partner Time Span.
+	 * Get C_Customer_Retention_ID.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_TimeSpan_ID();
+	public int getC_Customer_Retention_ID();
 
-    /** Column definition for C_BPartner_TimeSpan_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object> COLUMN_C_BPartner_TimeSpan_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object>(I_C_BPartner_TimeSpan.class, "C_BPartner_TimeSpan_ID", null);
-    /** Column name C_BPartner_TimeSpan_ID */
-    public static final String COLUMNNAME_C_BPartner_TimeSpan_ID = "C_BPartner_TimeSpan_ID";
+    /** Column definition for C_Customer_Retention_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object> COLUMN_C_Customer_Retention_ID = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object>(I_C_Customer_Retention.class, "C_Customer_Retention_ID", null);
+    /** Column name C_Customer_Retention_ID */
+    public static final String COLUMNNAME_C_Customer_Retention_ID = "C_Customer_Retention_ID";
 
 	/**
 	 * Get Erstellt.
@@ -154,7 +131,7 @@ public interface I_C_BPartner_TimeSpan
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object>(I_C_BPartner_TimeSpan.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object>(I_C_Customer_Retention.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -169,9 +146,32 @@ public interface I_C_BPartner_TimeSpan
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_User>(I_C_BPartner_TimeSpan.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_User>(I_C_Customer_Retention.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Customer Retention.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerRetention (java.lang.String CustomerRetention);
+
+	/**
+	 * Get Customer Retention.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerRetention();
+
+    /** Column definition for CustomerRetention */
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object> COLUMN_CustomerRetention = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object>(I_C_Customer_Retention.class, "CustomerRetention", null);
+    /** Column name CustomerRetention */
+    public static final String COLUMNNAME_CustomerRetention = "CustomerRetention";
 
 	/**
 	 * Set Aktiv.
@@ -194,7 +194,7 @@ public interface I_C_BPartner_TimeSpan
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object>(I_C_BPartner_TimeSpan.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object>(I_C_Customer_Retention.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -209,7 +209,7 @@ public interface I_C_BPartner_TimeSpan
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, Object>(I_C_BPartner_TimeSpan.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, Object>(I_C_Customer_Retention.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -224,7 +224,7 @@ public interface I_C_BPartner_TimeSpan
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_TimeSpan, org.compiere.model.I_AD_User>(I_C_BPartner_TimeSpan.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Customer_Retention, org.compiere.model.I_AD_User>(I_C_Customer_Retention.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

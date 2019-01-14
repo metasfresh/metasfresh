@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.impl.BPartnerTimeSpanRepository;
+import de.metas.contracts.impl.CustomerRetentionRepository;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
@@ -32,10 +32,10 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class C_BPartner_TimeSpan_CreateMissing extends JavaProcess
+public class C_Customer_Retention_CreateMissing extends JavaProcess
 {
 
-	final BPartnerTimeSpanRepository bPartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
+	final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -46,12 +46,12 @@ public class C_BPartner_TimeSpan_CreateMissing extends JavaProcess
 		final ImmutableSet<BPartnerId> customers = bpartnerDAO.retrieveAllCustomerIDs();
 
 		customers.stream()
-				.filter(customerId -> !bPartnerTimeSpanRepo.hasTimeSpan(customerId))
-				.forEach(customerId -> bPartnerTimeSpanRepo.createNewBPartnerTimeSpan(customerId));
+				.filter(customerId -> !customerRetentionRepo.hasCustomerRetention(customerId))
+				.forEach(customerId -> customerRetentionRepo.createNewCustomerRetention(customerId));
 
 		customers.stream()
-				.filter(customerId -> !bPartnerTimeSpanRepo.isNewCustomer(customerId))
-				.forEach(customerId -> bPartnerTimeSpanRepo.updateTimeSpan(customerId));
+				.filter(customerId -> !customerRetentionRepo.isNewCustomer(customerId))
+				.forEach(customerId -> customerRetentionRepo.updateCustomerRetention(customerId));
 
 		return MSG_OK;
 	}
