@@ -54,49 +54,6 @@ public class AssignmentToRefundCandidate
 
 	boolean useAssignedQtyInSum;
 
-	/**
-	 * @return a new instance that has the previously assigned money and quantity subtracted from its {@link #getRefundInvoiceCandidate()}
-	 */
-	public AssignmentToRefundCandidate withZeroAssignedMoneyAndQuantity()
-	{
-		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();
-		final Money newMoneyAmount = refundInvoiceCandidate
-				.getMoney()
-				.subtract(moneySubtrahent);
-
-		final Quantity assignedQuantitySubtrahent = getQuantityAssigendToRefundCandidate();
-		final Quantity newQuantity = refundInvoiceCandidate
-				.getAssignedQuantity()
-				.subtract(assignedQuantitySubtrahent);
-
-		final RefundInvoiceCandidate newRefundCandidate = refundInvoiceCandidate.toBuilder()
-				.money(newMoneyAmount)
-				.assignedQuantity(newQuantity)
-				.build();
-
-		return withZeroAssignedMoneyAndQuantity(newRefundCandidate);
-	}
-
-	/**
-	 * Like {@link #withZeroAssignedMoneyAndQuantity()}, but the new instance does not contain a different refund invoice candidate.
-	 */
-	public AssignmentToRefundCandidate withZeroAssignedMoneyAndQuantitySameCandidate()
-	{
-		return withZeroAssignedMoneyAndQuantity(getRefundInvoiceCandidate());
-	}
-
-	private AssignmentToRefundCandidate withZeroAssignedMoneyAndQuantity(@NonNull final RefundInvoiceCandidate refundCandidate)
-	{
-		return new AssignmentToRefundCandidate(
-				refundConfigId,
-				assignableInvoiceCandidateId,
-				refundCandidate,
-				moneyBase,
-				moneyAssignedToRefundCandidate.toZero(),
-				quantityAssigendToRefundCandidate.toZero(),
-				useAssignedQtyInSum);
-	}
-
 	public AssignmentToRefundCandidate withRefundInvoiceCandidate(@NonNull final RefundInvoiceCandidate refundInvoiceCandidate)
 	{
 		return new AssignmentToRefundCandidate(

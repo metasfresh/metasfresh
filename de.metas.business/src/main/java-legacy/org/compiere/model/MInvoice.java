@@ -2174,6 +2174,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			{
 				if (matchPO.getM_InOutLine_ID() <= 0)
 				{
+					matchPO.setProcessed(false);
 					InterfaceWrapperHelper.delete(matchPO);
 				}
 				else

@@ -455,13 +455,13 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public void registerPriceLimitRule(final IPriceLimitRule rule)
+	public void registerPriceLimitRule(@NonNull final IPriceLimitRule rule)
 	{
 		priceLimitRules.addEnforcer(rule);
 	}
 
 	@Override
-	public PriceLimitRuleResult computePriceLimit(final PriceLimitRuleContext context)
+	public PriceLimitRuleResult computePriceLimit(@NonNull final PriceLimitRuleContext context)
 	{
 		return priceLimitRules.compute(context);
 	}
