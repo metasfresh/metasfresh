@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 273299024L;
+	private static final long serialVersionUID = -1826012770L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1694,6 +1694,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+	}
+
+	@Override
+	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
+	}
+
+	/** Set Preissystem.
+		@param M_PricingSystem_ID 
+		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	  */
+	@Override
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
+	{
+		if (M_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+	}
+
+	/** Get Preissystem.
+		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	  */
+	@Override
+	public int getM_PricingSystem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
@@ -2013,6 +2050,56 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_PricingSystem getPO_PricingSystem() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+	}
+
+	@Override
+	public void setPO_PricingSystem(org.compiere.model.I_M_PricingSystem PO_PricingSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, PO_PricingSystem);
+	}
+
+	/** Set Einkaufspreissystem.
+		@param PO_PricingSystem_ID Einkaufspreissystem	  */
+	@Override
+	public void setPO_PricingSystem_ID (int PO_PricingSystem_ID)
+	{
+		if (PO_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_PO_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_PricingSystem_ID, Integer.valueOf(PO_PricingSystem_ID));
+	}
+
+	/** Get Einkaufspreissystem.
+		@return Einkaufspreissystem	  */
+	@Override
+	public int getPO_PricingSystem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PricingSystem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set PO_PricingSystem_Value.
+		@param PO_PricingSystem_Value PO_PricingSystem_Value	  */
+	@Override
+	public void setPO_PricingSystem_Value (java.lang.String PO_PricingSystem_Value)
+	{
+		set_Value (COLUMNNAME_PO_PricingSystem_Value, PO_PricingSystem_Value);
+	}
+
+	/** Get PO_PricingSystem_Value.
+		@return PO_PricingSystem_Value	  */
+	@Override
+	public java.lang.String getPO_PricingSystem_Value () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PO_PricingSystem_Value);
+	}
+
 	/** Set PLZ.
 		@param Postal 
 		Postal code
@@ -2049,6 +2136,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPostal_Add () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Postal_Add);
+	}
+
+	/** Set PricingSystem_Value.
+		@param PricingSystem_Value PricingSystem_Value	  */
+	@Override
+	public void setPricingSystem_Value (java.lang.String PricingSystem_Value)
+	{
+		set_Value (COLUMNNAME_PricingSystem_Value, PricingSystem_Value);
+	}
+
+	/** Get PricingSystem_Value.
+		@return PricingSystem_Value	  */
+	@Override
+	public java.lang.String getPricingSystem_Value () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PricingSystem_Value);
 	}
 
 	/** Set PrintFormat_Name.
@@ -2353,9 +2456,9 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
-	/** Set Produkt-Kategorie Geschäftspartner.
+	/** Set Lieferanten Kategorie.
 		@param VendorCategory 
-		Produkt-Kategorie des Geschäftspartner
+		Lieferanten Kategorie
 	  */
 	@Override
 	public void setVendorCategory (java.lang.String VendorCategory)
@@ -2363,8 +2466,8 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
 	}
 
-	/** Get Produkt-Kategorie Geschäftspartner.
-		@return Produkt-Kategorie des Geschäftspartner
+	/** Get Lieferanten Kategorie.
+		@return Lieferanten Kategorie
 	  */
 	@Override
 	public java.lang.String getVendorCategory () 

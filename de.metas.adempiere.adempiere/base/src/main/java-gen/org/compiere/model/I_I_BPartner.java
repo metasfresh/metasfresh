@@ -1903,6 +1903,35 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
 
 	/**
+	 * Set Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
+
+	/**
+	 * Get Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_PricingSystem_ID();
+
+	public org.compiere.model.I_M_PricingSystem getM_PricingSystem();
+
+	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
+
+    /** Column definition for M_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_PricingSystem>(I_I_BPartner.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name M_PricingSystem_ID */
+    public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+
+	/**
 	 * Set Lieferweg.
 	 * Methode oder Art der Warenlieferung
 	 *
@@ -2234,6 +2263,56 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_PO_PaymentTerm_ID = "PO_PaymentTerm_ID";
 
 	/**
+	 * Set Einkaufspreissystem.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_PricingSystem_ID (int PO_PricingSystem_ID);
+
+	/**
+	 * Get Einkaufspreissystem.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPO_PricingSystem_ID();
+
+	public org.compiere.model.I_M_PricingSystem getPO_PricingSystem();
+
+	public void setPO_PricingSystem(org.compiere.model.I_M_PricingSystem PO_PricingSystem);
+
+    /** Column definition for PO_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_PricingSystem> COLUMN_PO_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_M_PricingSystem>(I_I_BPartner.class, "PO_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name PO_PricingSystem_ID */
+    public static final String COLUMNNAME_PO_PricingSystem_ID = "PO_PricingSystem_ID";
+
+	/**
+	 * Set PO_PricingSystem_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_PricingSystem_Value (java.lang.String PO_PricingSystem_Value);
+
+	/**
+	 * Get PO_PricingSystem_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPO_PricingSystem_Value();
+
+    /** Column definition for PO_PricingSystem_Value */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PO_PricingSystem_Value = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PO_PricingSystem_Value", null);
+    /** Column name PO_PricingSystem_Value */
+    public static final String COLUMNNAME_PO_PricingSystem_Value = "PO_PricingSystem_Value";
+
+	/**
 	 * Set PLZ.
 	 * Postal code
 	 *
@@ -2282,6 +2361,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Postal_Add = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Postal_Add", null);
     /** Column name Postal_Add */
     public static final String COLUMNNAME_Postal_Add = "Postal_Add";
+
+	/**
+	 * Set PricingSystem_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPricingSystem_Value (java.lang.String PricingSystem_Value);
+
+	/**
+	 * Get PricingSystem_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPricingSystem_Value();
+
+    /** Column definition for PricingSystem_Value */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PricingSystem_Value = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PricingSystem_Value", null);
+    /** Column name PricingSystem_Value */
+    public static final String COLUMNNAME_PricingSystem_Value = "PricingSystem_Value";
 
 	/**
 	 * Set PrintFormat_Name.
@@ -2681,8 +2783,8 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Produkt-Kategorie Geschäftspartner.
-	 * Produkt-Kategorie des Geschäftspartner
+	 * Set Lieferanten Kategorie.
+	 * Lieferanten Kategorie
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2691,8 +2793,8 @@ public interface I_I_BPartner
 	public void setVendorCategory (java.lang.String VendorCategory);
 
 	/**
-	 * Get Produkt-Kategorie Geschäftspartner.
-	 * Produkt-Kategorie des Geschäftspartner
+	 * Get Lieferanten Kategorie.
+	 * Lieferanten Kategorie
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
