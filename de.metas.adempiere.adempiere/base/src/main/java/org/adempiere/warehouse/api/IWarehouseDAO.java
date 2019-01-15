@@ -78,6 +78,8 @@ public interface IWarehouseDAO extends ISingletonService
 	I_M_Locator getLocatorById(final LocatorId locatorId);
 
 	<T extends I_M_Locator> T getLocatorById(final LocatorId locatorId, Class<T> modelClass);
+	
+	<T extends I_M_Locator> T getLocatorByIdInTrx(LocatorId locatorId, Class<T> modelClass);
 
 	List<I_M_Locator> getLocators(WarehouseId warehouseId);
 
