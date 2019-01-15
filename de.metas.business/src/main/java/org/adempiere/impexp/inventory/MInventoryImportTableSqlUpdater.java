@@ -75,7 +75,7 @@ public class MInventoryImportTableSqlUpdater
 				.append(") AS dimensions ")
 				.append("WHERE I_IsImported<>'Y' AND dimensions.locatorvalue = i.locatorvalue ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateWarehouse(@NonNull final String whereClause)
@@ -86,7 +86,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateCreateLocators(@NonNull final String whereClause)
@@ -103,7 +103,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
 		// update DateLastInventory
 		sql = new StringBuilder("UPDATE M_Locator l ")
@@ -112,7 +112,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("AND I_IsImported<>'Y' ")
 				.append("ORDER BY i.DateLastInventory DESC LIMIT 1 ) ") 
 				.append("WHERE 1=1  ");
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		
 		try
 		{
@@ -160,13 +160,13 @@ public class MInventoryImportTableSqlUpdater
 		final I_M_Locator locator;
 		if (locatorId != null)
 		{
-			locator = warehousesRepo.getLocatorById(locatorId);
+			locator = warehousesRepo.getLocatorByIdInTrx(locatorId, I_M_Locator.class);
 		}
 		else
 		{
 			locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
 		}
-
+		
 		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
 		locator.setM_Warehouse_ID(warehouseId.getRepoId());
 		locator.setValue(importRecord.getLocatorValue());
