@@ -71,17 +71,6 @@ public class PriceSpecification
 				currencyId);
 	}
 
-	// public static PriceSpecification fixedPriceOrNone(
-	// @Nullable final BigDecimal fixedPriceAmt,
-	// @Nullable final CurrencyId curencyId)
-	// {
-	// if (fixedPriceAmt == null |)
-	// {
-	// return NONE;
-	// }
-	// return fixedPrice(fixedPriceAmt, curencyId);
-	// }
-
 	public static PriceSpecification fixedZeroPrice(@NonNull final CurrencyId fixedPriceCurrencyId)
 	{
 		return new PriceSpecification(
