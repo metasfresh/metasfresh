@@ -1,26 +1,28 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
+import static org.compiere.util.Util.coalesce;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
-import org.compiere.util.Util;
 
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreak.PricingConditionsBreakBuilder;
+import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PriceChange;
 import de.metas.util.lang.Percent;
-import de.metas.pricing.conditions.PricingConditionsBreakId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -58,8 +60,9 @@ class PricingConditionsRowReducers
 		boolean changed = false;
 
 		final PricingConditionsBreak pricingConditionsBreakOld = row.getPricingConditionsBreak();
-		final PricingConditionsBreak pricingConditionsBreak = applyTo(request, pricingConditionsBreakOld)
+		final PricingConditionsBreak pricingConditionsBreak = applyRequestTo(request, pricingConditionsBreakOld)
 				.toTemporaryPricingConditionsBreakIfPriceRelevantFieldsChanged(pricingConditionsBreakOld);
+
 		if (!Objects.equals(pricingConditionsBreak, pricingConditionsBreakOld))
 		{
 			changed = true;
@@ -86,11 +89,11 @@ class PricingConditionsRowReducers
 				.build();
 	}
 
-	private PricingConditionsBreak applyTo(
+	private PricingConditionsBreak applyRequestTo(
 			@NonNull final PricingConditionsRowChangeRequest request,
 			@NonNull final PricingConditionsBreak rowPricingConditionsBreak)
 	{
-		final PricingConditionsBreak pricingConditionsBreakEffective = Util.coalesce(request.getPricingConditionsBreak(), rowPricingConditionsBreak);
+		final PricingConditionsBreak pricingConditionsBreakEffective = coalesce(request.getPricingConditionsBreak(), rowPricingConditionsBreak);
 		final PricingConditionsBreakBuilder builder = pricingConditionsBreakEffective.toBuilder();
 
 		//
@@ -131,8 +134,8 @@ class PricingConditionsRowReducers
 		// Price
 		if (request.getPriceChange() != null)
 		{
-			final PriceOverride price = applyPriceChangeTo(request.getPriceChange(), rowPricingConditionsBreak.getPriceOverride());
-			builder.priceOverride(price);
+			final PriceSpecification price = applyPriceChangeTo(request.getPriceChange(), rowPricingConditionsBreak.getPriceSpecification());
+			builder.priceSpecification(price);
 		}
 
 		PricingConditionsBreak newPricingConditionsBreak = builder.build();
@@ -144,7 +147,9 @@ class PricingConditionsRowReducers
 		return newPricingConditionsBreak;
 	}
 
-	private PriceOverride applyPriceChangeTo(final PriceChange priceChange, final PriceOverride price)
+	private PriceSpecification applyPriceChangeTo(
+			@Nullable final PriceChange priceChange,
+			@NonNull final PriceSpecification price)
 	{
 		if (priceChange == null)
 		{
@@ -166,32 +171,33 @@ class PricingConditionsRowReducers
 
 	}
 
-	private PriceOverride applyPartialPriceChangeTo(
+	private PriceSpecification applyPartialPriceChangeTo(
 			@NonNull final PartialPriceChange changes,
-			final PriceOverride price)
+			@NonNull final PriceSpecification price)
 	{
-		final PriceOverrideType priceType = changes.getPriceType() != null ? changes.getPriceType() : price.getType();
-		if (priceType == PriceOverrideType.NONE)
+		final PriceSpecificationType priceType = coalesce(changes.getPriceType(), price.getType());
+		if (priceType == PriceSpecificationType.NONE)
 		{
-			return PriceOverride.none();
+			return PriceSpecification.none();
 		}
-		else if (priceType == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
 			final PricingSystemId requestBasePricingSystemId = changes.getBasePricingSystemId() != null ? changes.getBasePricingSystemId().orElse(null) : null;
-			final PricingSystemId basePricingSystemId = Util.coalesce(requestBasePricingSystemId, price.getBasePricingSystemId(), PricingSystemId.NONE);
-			final BigDecimal basePriceAddAmt = changes.getBasePriceAddAmt() != null ? changes.getBasePriceAddAmt() : price.getBasePriceAddAmt();
+			final PricingSystemId basePricingSystemId = coalesce(requestBasePricingSystemId, price.getBasePricingSystemId(), PricingSystemId.NONE);
 
-			return PriceOverride.basePricingSystem(
+			final BigDecimal surchargeAmt = coalesce(changes.getPricingSystemSurchargeAmt(), price.getPricingSystemSurchargeAmt());
+			final CurrencyId currencyId = coalesce(changes.getCurrencyId(), price.getCurrencyId());
+
+			return PriceSpecification.basePricingSystem(
 					basePricingSystemId,
-					basePriceAddAmt != null ? basePriceAddAmt : BigDecimal.ZERO);
+					surchargeAmt, currencyId);
 		}
-		else if (priceType == PriceOverrideType.FIXED_PRICE)
+		else if (priceType == PriceSpecificationType.FIXED_PRICE)
 		{
-			final BigDecimal fixedPriceValue = Util.coalesce(changes.getFixedPrice(), price.getFixedPrice().getValue());
-			final CurrencyId fixedPriceCurrencyId = Util.coalesce(changes.getFixedPriceCurrencyId(), price.getFixedPrice().getCurrencyId());
+			final BigDecimal fixedPriceAmt = coalesce(changes.getFixedPrice(), price.getFixedPriceAmt());
+			final CurrencyId fixedPriceCurrencyId = coalesce(changes.getCurrencyId(), price.getCurrencyId());
 
-			final Money fixedPrice = Money.of(fixedPriceValue, fixedPriceCurrencyId);
-			return PriceOverride.fixedPriceOrNone(fixedPrice);
+			return PriceSpecification.fixedPrice(fixedPriceAmt, fixedPriceCurrencyId);
 		}
 		else
 		{

@@ -20,7 +20,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -78,7 +78,7 @@ public class PricingConditionsRowLookups
 		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		userLookup = lookupFactory.searchInTableLookup(I_AD_User.Table_Name);
 		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
-		priceTypeLookup = lookupFactory.listByAD_Reference_Value_ID(PriceOverrideType.AD_Reference_ID);
+		priceTypeLookup = lookupFactory.listByAD_Reference_Value_ID(PriceSpecificationType.AD_Reference_ID);
 		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
 		paymentTermLookup = lookupFactory.searchByColumn(I_M_DiscountSchemaBreak.Table_Name, I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID);
 		currencyIdLookup = lookupFactory.searchInTableLookup(I_C_Currency.Table_Name);
@@ -102,7 +102,6 @@ public class PricingConditionsRowLookups
 		return userLookup.findById(userId.getRepoId());
 	}
 
-
 	public LookupValue lookupProduct(@Nullable final ProductId productId)
 	{
 		if (productId == null)
@@ -112,7 +111,7 @@ public class PricingConditionsRowLookups
 		return productLookup.findById(productId.getRepoId());
 	}
 
-	public LookupValue lookupPriceType(@NonNull final PriceOverrideType priceType)
+	public LookupValue lookupPriceType(@NonNull final PriceSpecificationType priceType)
 	{
 		return priceTypeLookup.findById(priceType.getCode());
 	}
@@ -134,7 +133,6 @@ public class PricingConditionsRowLookups
 		}
 		return paymentTermLookup.findById(paymentTermId.getRepoId());
 	}
-
 
 	public LookupValue lookupCurrency(@Nullable final CurrencyId currencyId)
 	{
@@ -161,13 +159,17 @@ public class PricingConditionsRowLookups
 		{
 			return paymentTermLookup;
 		}
-		else if (PricingConditionsRow.FIELDNAME_PriceType.equals(fieldName))
+		else if (PricingConditionsRow.FIELDNAME_BasePriceType.equals(fieldName))
 		{
 			return priceTypeLookup;
 		}
 		else if (PricingConditionsRow.FIELDNAME_BasePricingSystem.equals(fieldName))
 		{
 			return pricingSystemLookup;
+		}
+		else if (PricingConditionsRow.FIELDNAME_C_Currency_ID.equals(fieldName))
+		{
+			return currencyIdLookup;
 		}
 		else
 		{
