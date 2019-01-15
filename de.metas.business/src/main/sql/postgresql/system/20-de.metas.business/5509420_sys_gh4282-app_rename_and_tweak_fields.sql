@@ -710,13 +710,3 @@ UPDATE AD_Field SET DisplayLogic='@PriceBase/F@ = F',Updated=TO_TIMESTAMP('2019-
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET DisplayLogic='(@PriceBase/P@ = P & @PricingSystemSurchargeAmt/0@ ! 0) | @PriceBase/P@ = F',Updated=TO_TIMESTAMP('2019-01-14 12:32:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565109
 ;
-
-
-
-
-SELECT db_alter_table('M_DiscountSchemaBreak', 'ALTER TABLE M_DiscountSchemaBreak RENAME COLUMN Std_AddAmt TO PricingSystemSurchargeAmt');
-SELECT db_alter_table('I_DiscountSchema', 'ALTER TABLE I_DiscountSchema RENAME COLUMN Std_AddAmt TO PricingSystemSurchargeAmt');
-
-SELECT db_alter_table('M_DiscountSchemaBreak', 'ALTER TABLE M_DiscountSchemaBreak RENAME COLUMN PriceStd TO PriceStdFixed');
-SELECT db_alter_table('I_DiscountSchema', 'ALTER TABLE I_DiscountSchema RENAME COLUMN PriceStd TO PriceStdFixed');
-
