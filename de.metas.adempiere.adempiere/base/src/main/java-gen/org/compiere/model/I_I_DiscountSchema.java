@@ -223,6 +223,35 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_C_Currency>(I_I_DiscountSchema.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
@@ -380,29 +409,6 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsPriceOverride.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsPriceOverride (boolean IsPriceOverride);
-
-	/**
-	 * Get IsPriceOverride.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isPriceOverride();
-
-    /** Column definition for IsPriceOverride */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_IsPriceOverride = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "IsPriceOverride", null);
-    /** Column name IsPriceOverride */
-    public static final String COLUMNNAME_IsPriceOverride = "IsPriceOverride";
-
-	/**
 	 * Set Discount Schema Break.
 	 * Trade Discount Break
 	 *
@@ -515,7 +521,7 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_PaymentTermValue = "PaymentTermValue";
 
 	/**
-	 * Set PriceBase.
+	 * Set Preisgrundlage.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -524,7 +530,7 @@ public interface I_I_DiscountSchema
 	public void setPriceBase (java.lang.String PriceBase);
 
 	/**
-	 * Get PriceBase.
+	 * Get Preisgrundlage.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -538,29 +544,54 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_PriceBase = "PriceBase";
 
 	/**
-	 * Set Standardpreis.
-	 * Standardpreis
+	 * Set Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriceStd (java.math.BigDecimal PriceStd);
+	public void setPriceStdFixed (java.math.BigDecimal PriceStdFixed);
 
 	/**
-	 * Get Standardpreis.
-	 * Standardpreis
+	 * Get Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPriceStd();
+	public java.math.BigDecimal getPriceStdFixed();
 
-    /** Column definition for PriceStd */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PriceStd", null);
-    /** Column name PriceStd */
-    public static final String COLUMNNAME_PriceStd = "PriceStd";
+    /** Column definition for PriceStdFixed */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PriceStdFixed = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PriceStdFixed", null);
+    /** Column name PriceStdFixed */
+    public static final String COLUMNNAME_PriceStdFixed = "PriceStdFixed";
+
+	/**
+	 * Set Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPricingSystemSurchargeAmt (java.math.BigDecimal PricingSystemSurchargeAmt);
+
+	/**
+	 * Get Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPricingSystemSurchargeAmt();
+
+    /** Column definition for PricingSystemSurchargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PricingSystemSurchargeAmt = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PricingSystemSurchargeAmt", null);
+    /** Column name PricingSystemSurchargeAmt */
+    public static final String COLUMNNAME_PricingSystemSurchargeAmt = "PricingSystemSurchargeAmt";
 
 	/**
 	 * Set Verarbeitet.
@@ -611,31 +642,6 @@ public interface I_I_DiscountSchema
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "ProductValue", null);
     /** Column name ProductValue */
     public static final String COLUMNNAME_ProductValue = "ProductValue";
-
-	/**
-	 * Set Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
-
-	/**
-	 * Get Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getStd_AddAmt();
-
-    /** Column definition for Std_AddAmt */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_Std_AddAmt = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "Std_AddAmt", null);
-    /** Column name Std_AddAmt */
-    public static final String COLUMNNAME_Std_AddAmt = "Std_AddAmt";
 
 	/**
 	 * Get Aktualisiert.

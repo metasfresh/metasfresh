@@ -63,13 +63,12 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.BreakValueType;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
@@ -193,7 +192,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.matchCriteria(toPricingConditionsBreakMatchCriteria(schemaBreakRecord))
 				.seqNo(schemaBreakRecord.getSeqNo())
 				//
-				.priceOverride(toPriceOverride(schemaBreakRecord))
+				.priceSpecification(toPriceSpecification(schemaBreakRecord))
 				//
 				.bpartnerFlatDiscount(schemaBreakRecord.isBPartnerFlatDiscount())
 				.discount(Percent.of(schemaBreakRecord.getBreakDiscount()))
@@ -223,43 +222,62 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.build();
 	}
 
-	private static PriceOverride toPriceOverride(@NonNull final I_M_DiscountSchemaBreak discountSchemaBreakRecord)
+	private static PriceSpecification toPriceSpecification(@NonNull final I_M_DiscountSchemaBreak discountSchemaBreakRecord)
 	{
 		final String priceBase = discountSchemaBreakRecord.getPriceBase();
 
 		if (Check.isEmpty(priceBase, true))
 		{
-			return PriceOverride.none();
-		}
-		else if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
-		{
-			final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
-			final BigDecimal basePriceAddAmt = discountSchemaBreakRecord.getStd_AddAmt();
-
-			return PriceOverride.basePricingSystem(basePricingSystemId, basePriceAddAmt);
-		}
-		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
-		{
-			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(discountSchemaBreakRecord.getC_Currency_ID());
-			if (currencyId == null)
-			{
-				throw new AdempiereException(TranslatableStringBuilder
-						.newInstance()
-						.insertFirstADMessage("discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={0} and M_DiscountSchema_ID={1} has PriceBase=F(ixed), but no C_Currency_ID!",
-								discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID())
-						.build());
-				// logger.warn("discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={} and M_DiscountSchema_ID={} has PriceBase=F(ixed), but no C_Currency_ID! Returning PriceOverride.none()",
-				// discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID());
-				// return PriceOverride.none();
-			}
-			final Money fixedPrice = Money.of(discountSchemaBreakRecord.getPriceStd(), currencyId);
-
-			return PriceOverride.fixedPrice(fixedPrice);
+			return PriceSpecification.none();
 		}
 		else
 		{
-			throw new AdempiereException("Unknown PriceBase: " + priceBase);
+			if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
+			{
+				final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
+				final BigDecimal surchargeAmt = discountSchemaBreakRecord.getPricingSystemSurchargeAmt();
+				final CurrencyId currencyId;
+				if (surchargeAmt == null)
+				{
+					currencyId = null;
+				}
+				else
+				{
+					currencyId = extractCurrencyId(
+							discountSchemaBreakRecord,
+							"discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={0} and M_DiscountSchema_ID={1} has PriceBase=P(ricing-System) and a surcharge amt, but no C_Currency_ID!");
+
+				}
+				return PriceSpecification.basePricingSystem(basePricingSystemId, surchargeAmt, currencyId);
+			}
+			else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
+			{
+				final CurrencyId currencyId = extractCurrencyId(
+						discountSchemaBreakRecord,
+						"discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={0} and M_DiscountSchema_ID={1} has PriceBase=F(ixed), but no C_Currency_ID!");
+
+				return PriceSpecification.fixedPrice(discountSchemaBreakRecord.getPriceStdFixed(), currencyId);
+			}
+			else
+			{
+				throw new AdempiereException("Unknown PriceBase: " + priceBase);
+			}
 		}
+	}
+
+	private static CurrencyId extractCurrencyId(final I_M_DiscountSchemaBreak discountSchemaBreakRecord, final String errorMessage)
+	{
+		final int currencyRepoId = discountSchemaBreakRecord.getC_Currency_ID();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(currencyRepoId);
+		if (currencyId == null)
+		{
+			throw new AdempiereException(TranslatableStringBuilder
+					.newInstance()
+					.insertFirstADMessage(errorMessage,
+							discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID())
+					.build());
+		}
+		return currencyId;
 	}
 
 	@VisibleForTesting
@@ -446,7 +464,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.copy();
 	}
 
-	private void updateSchemaBreakRecordFromPrice(final I_M_DiscountSchemaBreak schemaBreak, final PriceOverride price)
+	private void updateSchemaBreakRecordFromPrice(final I_M_DiscountSchemaBreak schemaBreak, final PriceSpecification price)
 	{
 		if (price == null)
 		{
@@ -454,34 +472,37 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			return;
 		}
 
-		final PriceOverrideType priceType = price.getType();
-		if (priceType == PriceOverrideType.NONE)
+		final PriceSpecificationType priceType = price.getType();
+		if (priceType == PriceSpecificationType.NONE)
 		{
 			schemaBreak.setPriceBase(null);
 			schemaBreak.setBase_PricingSystem_ID(-1);
-			schemaBreak.setStd_AddAmt(BigDecimal.ZERO);
+			schemaBreak.setPricingSystemSurchargeAmt(BigDecimal.ZERO);
 
-			schemaBreak.setPriceStd(null);
+			schemaBreak.setPriceStdFixed(null);
 			schemaBreak.setC_Currency(null);
 		}
-		else if (priceType == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
 			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem);
-			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
-			schemaBreak.setStd_AddAmt(price.getBasePriceAddAmt());
 
-			schemaBreak.setPriceStd(null);
-			schemaBreak.setC_Currency(null);
+			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
+
+			final BigDecimal surchargeAmt = price.getPricingSystemSurchargeAmt();
+			schemaBreak.setPricingSystemSurchargeAmt(surchargeAmt);
+			schemaBreak.setC_Currency_ID(CurrencyId.toRepoId(price.getCurrencyId()));
+
+			schemaBreak.setPriceStdFixed(null);
 		}
-		else if (priceType == PriceOverrideType.FIXED_PRICE)
+		else if (priceType == PriceSpecificationType.FIXED_PRICE)
 		{
 			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
 			schemaBreak.setBase_PricingSystem_ID(-1);
-			schemaBreak.setStd_AddAmt(BigDecimal.ZERO);
+			schemaBreak.setPricingSystemSurchargeAmt(BigDecimal.ZERO);
 
-			final Money fixedPrice = price.getFixedPrice();
-			schemaBreak.setPriceStd(fixedPrice.getValue());
-			schemaBreak.setC_Currency_ID(fixedPrice.getCurrencyId().getRepoId());
+			final BigDecimal fixedPriceAmt = price.getFixedPriceAmt();
+			schemaBreak.setPriceStdFixed(fixedPriceAmt);
+			schemaBreak.setC_Currency_ID(CurrencyId.toRepoId(price.getCurrencyId()));
 		}
 		else
 		{

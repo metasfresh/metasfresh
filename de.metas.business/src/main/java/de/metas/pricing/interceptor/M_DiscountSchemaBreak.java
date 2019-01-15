@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
@@ -105,26 +105,26 @@ public class M_DiscountSchemaBreak
 		}
 
 		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRepository.toPricingConditionsBreak(schemaBreak);
-		final PriceOverride priceOverride = pricingConditionsBreak.getPriceOverride();
-		final PriceOverrideType priceOverrideType = priceOverride.getType();
+		final PriceSpecification priceOverride = pricingConditionsBreak.getPriceSpecification();
+		final PriceSpecificationType priceOverrideType = priceOverride.getType();
 		final Set<Integer> countryIds;
-		if (priceOverrideType == PriceOverrideType.NONE)
+		if (priceOverrideType == PriceSpecificationType.NONE)
 		{
 			// nothing to validate
 			return;
 		}
-		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceOverrideType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
 			countryIds = Services.get(IPriceListDAO.class).retrieveCountryIdsByPricingSystem(priceOverride.getBasePricingSystemId());
 
 		}
-		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
+		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
 		{
 			countryIds = Services.get(IPricingBL.class).getPriceLimitCountryIds();
 		}
 		else
 		{
-			throw new AdempiereException("Unknown " + PriceOverrideType.class + ": " + priceOverrideType);
+			throw new AdempiereException("Unknown " + PriceSpecificationType.class + ": " + priceOverrideType);
 		}
 
 		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
