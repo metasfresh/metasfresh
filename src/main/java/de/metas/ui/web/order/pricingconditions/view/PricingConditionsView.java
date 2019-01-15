@@ -1,21 +1,28 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
+import static de.metas.util.Check.assumeNotNull;
+
+import java.math.BigDecimal;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.process.RelatedProcessDescriptor;
@@ -29,7 +36,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -148,11 +154,23 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			return;
 		}
 
+		final PricingConditionsRow editableRow = getEditableRow();
+
+		final BigDecimal basePriceAmt = editableRow.getBasePriceAmt();
+		final CurrencyId currencyId = editableRow.getCurrencyId();
+		final Money basePriceFromRow = Money.ofOrNull(basePriceAmt, currencyId);
+
+		final PricingConditionsBreak pricingConditionsBreak = editableRow.getPricingConditionsBreak();
+
+		updateOrderLineRecord(pricingConditionsBreak, basePriceFromRow);
+	}
+
+	private void updateOrderLineRecord(
+			@NonNull final PricingConditionsBreak pricingConditionsBreak,
+			@Nullable final Money basePrice)
+	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
-		final PricingConditionsRow editableRow = getEditableRow();
-		final PricingConditionsBreak pricingConditionsBreak = editableRow.getPricingConditionsBreak();
 
 		final I_C_OrderLine orderLineRecord = ordersRepo.getOrderLineById(getOrderLineId());
 		orderLineRecord.setIsTempPricingConditions(pricingConditionsBreak.isTemporaryPricingConditionsBreak());
@@ -162,26 +180,38 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			orderLineRecord.setM_DiscountSchema_ID(-1);
 			orderLineRecord.setM_DiscountSchemaBreak_ID(-1);
 
-			final PriceOverride price = pricingConditionsBreak.getPriceOverride();
-			final PriceOverrideType type = price.getType();
-			if (type == PriceOverrideType.NONE)
+			final PriceSpecification price = pricingConditionsBreak.getPriceSpecification();
+			if (!price.isValid())
+			{
+				throw new AdempiereException("Invalid price specification")
+						.appendParametersToMessage()
+						.setParameter("price", price)
+						.markAsUserValidationError();
+			}
+
+			final PriceSpecificationType type = price.getType();
+			if (type == PriceSpecificationType.NONE)
 			{
 				//
 			}
-			else if (type == PriceOverrideType.BASE_PRICING_SYSTEM)
+			else if (type == PriceSpecificationType.BASE_PRICING_SYSTEM)
 			{
 				orderLineRecord.setIsManualPrice(true);
-				orderLineRecord.setPriceEntered(editableRow.getBasePrice());
+
+				assumeNotNull(basePrice, "If type={}, then the given basePrice may not be null; pricingConditionsBreak={}", type, pricingConditionsBreak);
+				orderLineRecord.setPriceEntered(basePrice.getValue());
+				orderLineRecord.setC_Currency_ID(basePrice.getCurrencyId().getRepoId());
+
 				orderLineRecord.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
-
 			}
-			else if (type == PriceOverrideType.FIXED_PRICE)
+			else if (type == PriceSpecificationType.FIXED_PRICE)
 			{
 				orderLineRecord.setIsManualPrice(true);
 
-				final Money fixedPrice = price.getFixedPrice();
-				orderLineRecord.setPriceEntered(fixedPrice.getValue());
-				orderLineRecord.setC_Currency_ID(fixedPrice.getCurrencyId().getRepoId());
+				orderLineRecord.setPriceEntered(price.getFixedPriceAmt());
+				orderLineRecord.setC_Currency_ID(price.getCurrencyId().getRepoId());
+
+				orderLineRecord.setBase_PricingSystem(null);
 			}
 
 			orderLineRecord.setIsManualDiscount(true);
@@ -191,6 +221,12 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			final int paymentTermRepoId = PaymentTermId.getRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
 			orderLineRecord.setC_PaymentTerm_Override_ID(paymentTermRepoId);
 			orderLineRecord.setPaymentDiscount(Percent.getValueOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
+
+			// also with a temporary schema break, priceActual still needs to be set
+			final BigDecimal priceActual = pricingConditionsBreak
+					.getDiscount()
+					.subtractFromBase(orderLineRecord.getPriceEntered(), 2);
+			orderLineRecord.setPriceActual(priceActual);
 		}
 		else
 		{
@@ -201,9 +237,12 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			orderLineRecord.setIsManualDiscount(false);
 			orderLineRecord.setIsManualPrice(false);
 			orderLineRecord.setIsManualPaymentTerm(false);
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLineRecord)
+
+			final OrderLinePriceUpdateRequest orderLinePriceUpdateRequest = OrderLinePriceUpdateRequest
+					.prepare(orderLineRecord)
 					.pricingConditionsBreakOverride(pricingConditionsBreak)
-					.build());
+					.build();
+			orderLineBL.updatePrices(orderLinePriceUpdateRequest);
 		}
 
 		orderLineBL.updateLineNetAmt(orderLineRecord);

@@ -33,7 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceSpecification;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
@@ -250,6 +250,8 @@ class PricingConditionsRowsLoader
 		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(sourceDocumentLine.getBpartnerId(), sourceDocumentLine.getSoTrx());
 		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaIdOrNull(discountSchemaId);
 
+		final Money priceEntered = sourceDocumentLine.getPriceEntered();
+
 		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsBreak.builder()
 				.id(null) // N/A
 				.matchCriteria(PricingConditionsBreakMatchCriteria.builder()
@@ -257,8 +259,8 @@ class PricingConditionsRowsLoader
 						.productId(sourceDocumentLine.getProductId())
 						.productCategoryId(sourceDocumentLine.getProductCategoryId())
 						.build())
-				.priceOverride(PriceOverride.fixedPrice(sourceDocumentLine.getPriceEntered()))
-				// TODO: if we added those columns to C_OrderLine, then load them now
+				.priceSpecification(PriceSpecification.fixedPrice(priceEntered.getValue(), priceEntered.getCurrencyId()))
+
 				.paymentTermIdOrNull(sourceDocumentLine.getPaymentTermId())
 				.discount(sourceDocumentLine.getDiscount())
 				.dateCreated(null) // N/A; the PricingConditionsBreak hasn't been created (i.e. persisted on DB) yet

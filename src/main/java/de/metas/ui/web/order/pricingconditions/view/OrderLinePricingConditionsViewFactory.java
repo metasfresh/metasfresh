@@ -172,13 +172,13 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 
 		private Money calculate(final PricingConditionsBreak pricingConditionsBreak)
 		{
-			final IPricingResult prcingResult = orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
+			final IPricingResult pricingResult = orderLineBL.computePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(orderLine)
 					.pricingConditionsBreakOverride(pricingConditionsBreak)
 					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
 					.build());
 
-			return Money.of(prcingResult.getPriceStd(), prcingResult.getCurrencyId());
+			return Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId());
 		}
 	}
 }
