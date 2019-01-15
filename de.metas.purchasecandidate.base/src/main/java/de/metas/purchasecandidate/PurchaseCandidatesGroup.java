@@ -10,6 +10,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -146,8 +147,9 @@ public class PurchaseCandidatesGroup
 
 	boolean readonly;
 
-	@Getter(AccessLevel.NONE)
+	@Getter(AccessLevel.PACKAGE)
 	@Default
+	@VisibleForTesting
 	boolean allowPOAggregation = true;
 
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
@@ -191,7 +193,7 @@ public class PurchaseCandidatesGroup
 
 	public boolean isAggregatePOs()
 	{
-		if (!allowPOAggregation)
+		if (!isAllowPOAggregation())
 		{
 			return false;
 		}
@@ -201,7 +203,7 @@ public class PurchaseCandidatesGroup
 
 	public PurchaseCandidatesGroup allowingPOAggregation(final boolean allowPOAggregation)
 	{
-		if (this.allowPOAggregation == allowPOAggregation)
+		if (this.isAllowPOAggregation() == allowPOAggregation)
 		{
 			return this;
 		}
