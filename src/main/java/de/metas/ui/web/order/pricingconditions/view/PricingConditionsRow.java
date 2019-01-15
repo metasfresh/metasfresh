@@ -11,11 +11,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.conditions.PriceSpecification;
@@ -96,21 +98,22 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue product;
 
-	@ViewColumn(captionKey = "BreakValue", widgetType = DocumentFieldWidgetType.Number, layouts = {
+	@ViewColumn(captionKey = I_M_DiscountSchemaBreak.COLUMNNAME_BreakValue, widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23)
 	})
 	private final BigDecimal breakValue;
 
 	public static final String FIELDNAME_BasePriceType = "basePriceType";
-	@ViewColumn(fieldName = FIELDNAME_BasePriceType, captionKey = "BasePriceType", widgetType = DocumentFieldWidgetType.List, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_BasePriceType, captionKey = I_M_DiscountSchemaBreak.COLUMNNAME_PriceBase, widgetType = DocumentFieldWidgetType.List, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 25)
 	})
 	private final LookupValue basePriceType;
 
 	public static final String FIELDNAME_BasePricingSystem = "basePricingSystem";
-	@ViewColumn(fieldName = FIELDNAME_BasePricingSystem, captionKey = "M_PricingSystem_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_BasePricingSystem,
+			captionKey = I_M_DiscountSchemaBreak.COLUMNNAME_Base_PricingSystem_ID, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
@@ -118,15 +121,15 @@ public class PricingConditionsRow implements IViewRow
 
 	/** ..coming from either the pricing system or set as fixed price by the user */
 	static final String FIELDNAME_BasePrice = "basePrice";
-	@ViewColumn(fieldName = FIELDNAME_BasePrice, captionKey = "BasePrice", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_BasePrice, captionKey = "PriceStd", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
 	@Getter
 	private final BigDecimal basePriceAmt;
 
-	static final String FIELDNAME_PricingSystemSurcharge = "basePriceAddAmt";
-	@ViewColumn(fieldName = FIELDNAME_PricingSystemSurcharge, captionKey = "PricingSystemSurcharge", widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
+	static final String FIELDNAME_PricingSystemSurcharge = "pricingSystemSurchargeAmt";
+	@ViewColumn(fieldName = FIELDNAME_PricingSystemSurcharge, captionKey = I_M_DiscountSchemaBreak.COLUMNNAME_PricingSystemSurchargeAmt, widgetType = DocumentFieldWidgetType.CostPrice, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 45),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 45)
 	})
@@ -160,30 +163,30 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final BigDecimal paymentDiscountOverride;
 
-	@ViewColumn(captionKey = "PriceNet", widgetType = DocumentFieldWidgetType.Number, layouts = {
+	@ViewColumn(captionKey = I_C_OrderLine.COLUMNNAME_PriceActual, widgetType = DocumentFieldWidgetType.Number, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 100)
 	})
 	private final BigDecimal netPrice;
 
 	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.Date, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 110)
-	})
-	private final LocalDate dateLastInOut;
-
-	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.ZonedDateTime, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 120)
-	})
-	private final LocalDateTime dateCreated;
-
-	private static final String FIELDNAME_CreatedBy = "createdBy";
-	@ViewColumn(fieldName = FIELDNAME_CreatedBy, captionKey = "CreatedBy", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 130)
 	})
+	private final LocalDate dateLastInOut;
+
+	private static final String FIELDNAME_CreatedBy = "createdBy";
+	@ViewColumn(fieldName = FIELDNAME_CreatedBy, captionKey = "CreatedBy", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 120)
+	})
 	private final LookupValue createdBy;
+
+	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.ZonedDateTime, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 110)
+	})
+	private final LocalDateTime dateCreated;
 
 	//
 	private final PricingConditionsRowLookups lookups;

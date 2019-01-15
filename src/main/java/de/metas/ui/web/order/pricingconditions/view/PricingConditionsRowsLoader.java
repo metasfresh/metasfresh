@@ -283,7 +283,10 @@ class PricingConditionsRowsLoader
 				.build();
 	}
 
-	private LocalDate getLastInOutDate(final BPartnerId bpartnerId, final SOTrx soTrx, final PricingConditionsBreak pricingConditionsBreak)
+	private LocalDate getLastInOutDate(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final SOTrx soTrx,
+			@NonNull final PricingConditionsBreak pricingConditionsBreak)
 	{
 		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
 		if (productId == null)
