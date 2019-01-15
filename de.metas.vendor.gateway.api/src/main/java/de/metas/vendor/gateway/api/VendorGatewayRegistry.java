@@ -39,13 +39,13 @@ public class VendorGatewayRegistry
 {
 	private static final Logger logger = LoggerFactory.getLogger(VendorGatewayRegistry.class);
 
-	private final List<VendorGatewayService> services;
+	private final ImmutableList<VendorGatewayService> services;
 
 	public VendorGatewayRegistry(@NonNull final Optional<List<VendorGatewayService>> services)
 	{
 		this.services = ImmutableList.copyOf(services.orElse(ImmutableList.of()));
 
-		logger.info("Services: {}", services);
+		logger.info("VendorGatewayServices: {}", services);
 	}
 
 	public Optional<VendorGatewayService> getSingleVendorGatewayService(final int vendorId)
