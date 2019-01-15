@@ -584,7 +584,14 @@ public final class PurchaseRow implements IViewRow
 		assertRowType(PurchaseRowType.LINE);
 		availabilityResultRows.forEach(availabilityResultRow -> availabilityResultRow.assertRowType(PurchaseRowType.AVAILABILITY_DETAIL));
 
+		// If there is at least one "available on vendor" row,
+		// we shall order directly and not aggregate later on a Purchase Order.
+		final boolean allowPOAggregation = availabilityResultRows
+				.stream()
+				.noneMatch(row -> row.getRowId().isAvailableOnVendor());
+
 		setIncludedRows(ImmutableList.copyOf(availabilityResultRows));
+		setPurchaseCandidatesGroup(getPurchaseCandidatesGroup().allowingPOAggregation(allowPOAggregation));
 	}
 
 	public Stream<PurchaseCandidatesGroup> streamPurchaseCandidatesGroup()

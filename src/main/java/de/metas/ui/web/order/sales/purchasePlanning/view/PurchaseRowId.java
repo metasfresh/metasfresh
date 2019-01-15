@@ -329,4 +329,10 @@ public final class PurchaseRowId
 	{
 		return type == PurchaseRowType.AVAILABILITY_DETAIL;
 	}
+
+	public boolean isAvailableOnVendor()
+	{
+		assertRowType(PurchaseRowType.AVAILABILITY_DETAIL);
+		return getAvailabilityType().equals(Type.AVAILABLE);
+	}
 }
