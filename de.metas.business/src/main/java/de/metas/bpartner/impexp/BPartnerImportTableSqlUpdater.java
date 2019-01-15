@@ -87,6 +87,10 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateM_Shippers(whereClause);
 
 		dbUpdateAD_PrintFormats(whereClause);
+		
+		dbUpdateM_PricingSystems(whereClause);
+		
+		dbUpdatePO_PricingSystems(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -628,6 +632,48 @@ public class BPartnerImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid AD_PrintFormat_ID={}", no);
 	}
+	
+	
+	private void dbUpdateM_PricingSystems(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
+				+ " WHERE i.PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set M_PricingSystem_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
+				+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid M_PricingSystem={}", no);
+	}
+
+	private void dbUpdatePO_PricingSystems(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
+				+ " WHERE i.PO_PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE M_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set M_PricingSystem_ID={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid M_PricingSystem_ID, ' "
+				+ "WHERE M_PricingSystem_ID IS NULL AND PO_PricingSystem_Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid M_PricingSystem={}", no);
+	}
+	
 
 	private void dbUpdateErrorMessages(final String whereClause)
 	{
