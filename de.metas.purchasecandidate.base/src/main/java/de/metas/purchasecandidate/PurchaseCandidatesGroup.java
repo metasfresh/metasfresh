@@ -21,6 +21,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -143,6 +144,9 @@ public class PurchaseCandidatesGroup
 
 	boolean readonly;
 
+	@Default
+	boolean allowPOAggregation = true;
+
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
 	{
 		return CollectionUtils.singleElementOrNull(getPurchaseCandidateIds());
@@ -184,6 +188,21 @@ public class PurchaseCandidatesGroup
 
 	public boolean isAggregatePOs()
 	{
+		if (!allowPOAggregation)
+		{
+			return false;
+		}
+
 		return getVendorProductInfo().isAggregatePOs();
+	}
+
+	public PurchaseCandidatesGroup allowingPOAggregation(final boolean allowPOAggregation)
+	{
+		if (this.allowPOAggregation == allowPOAggregation)
+		{
+			return this;
+		}
+
+		return toBuilder().allowPOAggregation(allowPOAggregation).build();
 	}
 }
