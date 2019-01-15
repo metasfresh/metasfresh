@@ -131,6 +131,8 @@ import de.metas.util.Check;
 		bpartner.setVendorCategory(importRecord.getVendorCategory());
 		bpartner.setCustomerNoAtVendor(importRecord.getCustomerNoAtVendor());
 		bpartner.setQualification(importRecord.getQualification());
+		bpartner.setM_PricingSystem_ID(importRecord.getM_PricingSystem_ID());
+		bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
 
 		return bpartner;
 	}
@@ -253,6 +255,16 @@ import de.metas.util.Check;
 		{
 			bpartner.setM_Shipper_ID(importRecord.getM_Shipper_ID());
 		}
+		if (importRecord.getM_PricingSystem_ID() > 0)
+		{
+			bpartner.setM_PricingSystem_ID(importRecord.getM_PricingSystem_ID());
+		}
+		if (importRecord.getPO_PricingSystem_ID() > 0)
+		{
+			bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
+		}
+
+		
 		return bpartner;
 	}
 
