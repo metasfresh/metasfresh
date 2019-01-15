@@ -20,8 +20,10 @@ import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -144,6 +146,7 @@ public class PurchaseCandidatesGroup
 
 	boolean readonly;
 
+	@Getter(AccessLevel.NONE)
 	@Default
 	boolean allowPOAggregation = true;
 
