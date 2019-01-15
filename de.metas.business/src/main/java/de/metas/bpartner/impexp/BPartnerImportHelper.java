@@ -74,6 +74,7 @@ import de.metas.util.Check;
 		{
 			bpartner.setIsCompany(true);
 			bpartner.setCompanyName(companyName.trim());
+			bpartner.setName(companyName.trim());
 		}
 		else if (insertMode)
 		{
