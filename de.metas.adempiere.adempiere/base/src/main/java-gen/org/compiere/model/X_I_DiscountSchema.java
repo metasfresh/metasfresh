@@ -15,7 +15,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1665096748L;
+	private static final long serialVersionUID = 391384902L;
 
     /** Standard Constructor */
     public X_I_DiscountSchema (Properties ctx, int I_DiscountSchema_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
         {
 			setI_DiscountSchema_ID (0);
 			setI_IsImported (null); // N
-			setIsPriceOverride (false); // N
+			setPricingSystemSurchargeAmt (BigDecimal.ZERO);
 			setProcessed (false); // N
         } */
     }
@@ -196,6 +196,43 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	}
 
 	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
@@ -302,29 +339,6 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	public java.lang.String getI_IsImported () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
-	}
-
-	/** Set IsPriceOverride.
-		@param IsPriceOverride IsPriceOverride	  */
-	@Override
-	public void setIsPriceOverride (boolean IsPriceOverride)
-	{
-		set_Value (COLUMNNAME_IsPriceOverride, Boolean.valueOf(IsPriceOverride));
-	}
-
-	/** Get IsPriceOverride.
-		@return IsPriceOverride	  */
-	@Override
-	public boolean isPriceOverride () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsPriceOverride);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	@Override
@@ -457,39 +471,61 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentTermValue);
 	}
 
-	/** Set PriceBase.
-		@param PriceBase PriceBase	  */
+	/** Set Preisgrundlage.
+		@param PriceBase Preisgrundlage	  */
 	@Override
 	public void setPriceBase (java.lang.String PriceBase)
 	{
 		set_Value (COLUMNNAME_PriceBase, PriceBase);
 	}
 
-	/** Get PriceBase.
-		@return PriceBase	  */
+	/** Get Preisgrundlage.
+		@return Preisgrundlage	  */
 	@Override
 	public java.lang.String getPriceBase () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PriceBase);
 	}
 
-	/** Set Standardpreis.
-		@param PriceStd 
-		Standardpreis
+	/** Set Festpreis.
+		@param PriceStdFixed 
+		Festpreis, ohne ggf. zusätzliche Rabatte
 	  */
 	@Override
-	public void setPriceStd (java.math.BigDecimal PriceStd)
+	public void setPriceStdFixed (java.math.BigDecimal PriceStdFixed)
 	{
-		set_Value (COLUMNNAME_PriceStd, PriceStd);
+		set_Value (COLUMNNAME_PriceStdFixed, PriceStdFixed);
 	}
 
-	/** Get Standardpreis.
-		@return Standardpreis
+	/** Get Festpreis.
+		@return Festpreis, ohne ggf. zusätzliche Rabatte
 	  */
 	@Override
-	public java.math.BigDecimal getPriceStd () 
+	public java.math.BigDecimal getPriceStdFixed () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStdFixed);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Preisaufschlag.
+		@param PricingSystemSurchargeAmt 
+		Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	  */
+	@Override
+	public void setPricingSystemSurchargeAmt (java.math.BigDecimal PricingSystemSurchargeAmt)
+	{
+		set_Value (COLUMNNAME_PricingSystemSurchargeAmt, PricingSystemSurchargeAmt);
+	}
+
+	/** Get Preisaufschlag.
+		@return Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	  */
+	@Override
+	public java.math.BigDecimal getPricingSystemSurchargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PricingSystemSurchargeAmt);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -538,27 +574,5 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	public java.lang.String getProductValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
-	}
-
-	/** Set Aufschlag auf Standardpreis.
-		@param Std_AddAmt 
-		Amount added to a price as a surcharge
-	  */
-	@Override
-	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt)
-	{
-		set_Value (COLUMNNAME_Std_AddAmt, Std_AddAmt);
-	}
-
-	/** Get Aufschlag auf Standardpreis.
-		@return Amount added to a price as a surcharge
-	  */
-	@Override
-	public java.math.BigDecimal getStd_AddAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Std_AddAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 }

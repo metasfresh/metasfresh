@@ -154,7 +154,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		discountSchemaBreakRecord.setC_PaymentTerm(paymentTermRecord);
 		discountSchemaBreakRecord.setPaymentDiscount(TEN);
 		discountSchemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
-		discountSchemaBreakRecord.setPriceStd(TEN);
+		discountSchemaBreakRecord.setPriceStdFixed(TEN);
 		discountSchemaBreakRecord.setIsValid(true); // invalid records will be ignored
 		discountSchemaBreakRecord.setC_Currency(currencyRecord);
 		saveRecord(discountSchemaBreakRecord);

@@ -32,6 +32,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -349,7 +351,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateQtyReserved(final I_C_OrderLine orderLine)
+	public void updateQtyReserved(@Nullable final I_C_OrderLine orderLine)
 	{
 		if (orderLine == null)
 		{

@@ -203,8 +203,9 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	{
 		schemaBreak.setPriceBase(importRecord.getPriceBase());
 		schemaBreak.setBase_PricingSystem_ID(importRecord.getBase_PricingSystem_ID());
-		schemaBreak.setPriceStd(importRecord.getPriceStd());
-		schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
+		schemaBreak.setPriceStdFixed(importRecord.getPriceStdFixed());
+		schemaBreak.setPricingSystemSurchargeAmt(importRecord.getPricingSystemSurchargeAmt());
+		schemaBreak.setC_Currency_ID(importRecord.getC_Currency_ID());
 	}
 
 	@Override

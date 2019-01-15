@@ -14,6 +14,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.util.Check;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,7 +55,7 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	}
 
 	@Override
-	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
+	public void updateNoPriceConditionsColor(@NonNull final I_C_OrderLine orderLine)
 	{
 		final HasPricingConditions hasPricingConditions = hasPricingConditions(orderLine);
 		final int colorId = getColorId(hasPricingConditions);
