@@ -243,7 +243,7 @@ class Subheader extends Component {
       {
         action: 'about',
         handler: () => {
-          openModal(windowId, 'window', 'About');
+          openModal(windowId, 'static', 'About');
         },
         icon: 'meta-icon-delete',
         // caption: counterpart.translate('window.About.caption'),

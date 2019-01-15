@@ -170,7 +170,7 @@ class Header extends Component {
 
   openModal = (
     windowId,
-    type,
+    modalType,
     caption,
     isAdvanced,
     selected,
@@ -182,7 +182,7 @@ class Header extends Component {
       openModal(
         caption,
         windowId,
-        type,
+        modalType,
         null,
         null,
         isAdvanced,
@@ -198,10 +198,10 @@ class Header extends Component {
     );
   };
 
-  openModalRow = (windowId, type, caption, tabId, rowId) => {
+  openModalRow = (windowId, modalType, caption, tabId, rowId) => {
     const { dispatch } = this.props;
 
-    dispatch(openModal(caption, windowId, type, tabId, rowId));
+    dispatch(openModal(caption, windowId, modalType, tabId, rowId));
   };
 
   handlePrint = (windowId, docId, docNo) => {
@@ -343,6 +343,7 @@ class Header extends Component {
       entity,
       query,
       showIndicator,
+      windowId,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       notfound,
@@ -353,7 +354,7 @@ class Header extends Component {
       activeTab,
       plugins,
     } = this.props;
-    const windowId = this.props.windowType;
+
     const {
       isSubheaderShow,
       isSideListShow,

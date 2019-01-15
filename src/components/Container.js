@@ -90,7 +90,7 @@ class Container extends Component {
             attachments={attachments}
             actions={actions}
             references={references}
-            windowType={windowType}
+            windowId={windowType}
             breadcrumb={breadcrumb}
             dataId={dataId}
             dropzoneFocused={dropzoneFocused}

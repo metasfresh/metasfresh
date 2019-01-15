@@ -324,7 +324,7 @@ export function noConnection(status) {
 export function openModal(
   title,
   windowId,
-  type,
+  modalType,
   tabId,
   rowId,
   isAdvanced,
@@ -347,7 +347,7 @@ export function openModal(
   return {
     type: OPEN_MODAL,
     windowType: windowId,
-    modalType: type,
+    modalType,
     tabId: tabId,
     rowId: rowId,
     viewId: viewId,
