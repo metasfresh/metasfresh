@@ -281,6 +281,15 @@ public final class PurchaseRowId
 		return readonly ? "ro" : "rw";
 	}
 
+	public void assertRowType(@NonNull final PurchaseRowType expectedRowType)
+	{
+		final PurchaseRowType rowType = getType();
+		if (rowType != expectedRowType)
+		{
+			throw new AdempiereException("Expected " + expectedRowType + " but it was " + rowType + ": " + this);
+		}
+	}
+
 	public PurchaseRowId toGroupRowId()
 	{
 		if (isGroupRowId())
