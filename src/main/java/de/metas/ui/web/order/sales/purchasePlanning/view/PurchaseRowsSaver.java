@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -139,6 +140,7 @@ class PurchaseRowsSaver
 
 		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfoOrNull();
 		final LocalDateTime purchaseDatePromised = candidatesGroup.getPurchaseDatePromised();
+		final Duration reminderTime = candidatesGroup.getReminderTime();
 		final List<PurchaseCandidate> allCandidates = getPurchaseCandidates(candidatesGroup, existingPurchaseCandidatesById);
 
 		//
@@ -227,7 +229,7 @@ class PurchaseRowsSaver
 					.salesOrderAndLineIdOrNull(candidatesGroup.getSingleSalesOrderAndLineIdOrNull())
 					//
 					.purchaseDatePromised(purchaseDatePromised)
-					// .reminderTime(reminderTime) // TODO reminder time
+					.reminderTime(reminderTime)
 					//
 					.orgId(candidatesGroup.getOrgId())
 					.warehouseId(candidatesGroup.getWarehouseId())
