@@ -237,7 +237,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
 				final BigDecimal surchargeAmt = discountSchemaBreakRecord.getPricingSystemSurchargeAmt();
 				final CurrencyId currencyId;
-				if (surchargeAmt == null)
+				if (surchargeAmt == null || surchargeAmt.signum() == 0)
 				{
 					currencyId = null;
 				}
