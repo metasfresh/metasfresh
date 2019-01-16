@@ -29,7 +29,9 @@ import java.util.Properties;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -51,6 +53,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -915,13 +918,24 @@ public final class MPayment extends X_C_Payment
 	/**
 	 * Set Payment Amount
 	 *
-	 * @param C_Currency_ID currency
+	 * @param C_Currency_ID currency (optional)
 	 * @param payAmt amount
+	 * @deprecated Will be deleted because it's used only by legacy API
 	 */
-	public void setAmount(final int C_Currency_ID, final BigDecimal payAmt)
+	@Deprecated
+	public void setAmount(final int currencyId, final BigDecimal payAmt)
 	{
-		final int currencyId =  C_Currency_ID == 0 ? Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getC_Currency_ID() : C_Currency_ID;
-		setC_Currency_ID(currencyId);
+		final CurrencyId currencyIdEffective;
+		if(currencyId > 0)
+		{
+			currencyIdEffective = CurrencyId.ofRepoId(currencyId);
+		}
+		else
+		{
+			currencyIdEffective = Services.get(ICurrencyBL.class).getBaseCurrencyId(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
+		}
+		
+		setC_Currency_ID(currencyIdEffective.getRepoId());
 		setPayAmt(payAmt);
 	}   // setAmount
 

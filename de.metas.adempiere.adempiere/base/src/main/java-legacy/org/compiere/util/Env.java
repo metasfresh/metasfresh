@@ -16,10 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
@@ -35,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
 import javax.swing.JFrame;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -50,6 +47,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
+import org.adempiere.service.OrgId;
 import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
@@ -71,6 +69,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * System Environment and static variables.
@@ -1145,12 +1144,22 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID);
 	}	// getAD_Client_ID
+	
+	public static ClientId getClientId(Properties ctx)
+	{
+		return ClientId.ofRepoId(getAD_Client_ID(ctx));
+	}
 
 	public static int getAD_Client_ID()
 	{
 		return getAD_Client_ID(getCtx());
 	}
-	
+
+	public static ClientId getClientId()
+	{
+		return ClientId.ofRepoId(getAD_Client_ID());
+	}
+
 	public static void setAD_Client_ID(@NonNull final Properties ctx, @NonNull final ClientId clientId)
 	{
 		Env.setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
@@ -1166,6 +1175,16 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Org_ID);
 	}	// getAD_Client_ID
+	
+	public static OrgId getOrgId(final Properties ctx)
+	{
+		return OrgId.ofRepoIdOrAny(getAD_Org_ID(ctx));
+	}
+
+	public static OrgId getOrgId()
+	{
+		return getOrgId(getCtx());
+	}
 
 	/**
 	 * Get Login AD_User_ID

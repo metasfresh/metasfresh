@@ -238,15 +238,6 @@ UPDATE AD_Menu SET Name='Aufschlag auf Standardpreis', Description='', WEBUI_Nam
 UPDATE AD_UI_Element SET SeqNo=185,Updated=TO_TIMESTAMP('2019-01-13 13:56:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=552443
 ;
 
--- 2019-01-14T08:05:24.993
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_SysConfig SET Value='Gelb',Updated=TO_TIMESTAMP('2019-01-14 08:05:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541205
-;
-
--- 2019-01-14T08:05:40.585
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_SysConfig SET Value='Rot',Updated=TO_TIMESTAMP('2019-01-14 08:05:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541204
-;
 
 -- 2019-01-14T08:21:26.984
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

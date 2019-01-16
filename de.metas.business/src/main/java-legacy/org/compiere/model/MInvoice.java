@@ -38,6 +38,8 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
@@ -68,6 +70,7 @@ import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.pricing.service.IPriceListDAO;
@@ -1830,8 +1833,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		if (invAmt == null)
 		{
-			final I_C_Currency currency = InterfaceWrapperHelper.create(getCtx(), getC_Currency_ID(), I_C_Currency.class, get_TrxName());
-			final I_C_Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID());
+			final I_C_Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
+			final I_C_Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
 			final I_C_BPartner bp = getC_BPartner();
 
 			m_processMsg = Services.get(IMsgBL.class).getMsg(getCtx(),
