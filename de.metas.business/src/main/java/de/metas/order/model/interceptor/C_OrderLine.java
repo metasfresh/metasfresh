@@ -274,24 +274,22 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyEntered)
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered, I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID })
 	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
 	{
-		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false; // i.e. always update them
-
-		// make the BL revalidates the discounts..the new QtyEntered might also mean a new discount schema break
-		orderLine.setM_DiscountSchemaBreak(null);
-
 		if (orderLine.isProcessed())
 		{
 			return;
 		}
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
+		// make the BL revalidate the discounts..the new QtyEntered might also mean a new discount schema break
+		orderLine.setM_DiscountSchemaBreak(null);
+
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(orderLine)
 				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
 				.updateLineNetAmt(true)
 				.build());
 

@@ -162,6 +162,7 @@ class OrderLinePriceCalculator
 		final int discountSchemaId;
 		final int discountSchemaBreakId;
 		final boolean tempPricingConditions;
+
 		if (pricingConditionsResult != null)
 		{
 			basePricingSystemId = pricingConditionsResult.getBasePricingSystemId();

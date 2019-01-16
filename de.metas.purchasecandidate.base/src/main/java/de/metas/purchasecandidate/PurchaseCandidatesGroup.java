@@ -10,6 +10,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -20,7 +21,10 @@ import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -143,6 +147,11 @@ public class PurchaseCandidatesGroup
 
 	boolean readonly;
 
+	@Getter(AccessLevel.PACKAGE)
+	@Default
+	@VisibleForTesting
+	boolean allowPOAggregation = true;
+
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
 	{
 		return CollectionUtils.singleElementOrNull(getPurchaseCandidateIds());
@@ -184,6 +193,21 @@ public class PurchaseCandidatesGroup
 
 	public boolean isAggregatePOs()
 	{
+		if (!isAllowPOAggregation())
+		{
+			return false;
+		}
+
 		return getVendorProductInfo().isAggregatePOs();
+	}
+
+	public PurchaseCandidatesGroup allowingPOAggregation(final boolean allowPOAggregation)
+	{
+		if (this.isAllowPOAggregation() == allowPOAggregation)
+		{
+			return this;
+		}
+
+		return toBuilder().allowPOAggregation(allowPOAggregation).build();
 	}
 }
