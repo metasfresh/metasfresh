@@ -429,6 +429,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
+				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -447,6 +448,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
+				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -465,6 +467,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
+				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
