@@ -1731,4 +1731,26 @@ public class TimeUtil
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
 		}
 	}
+	
+	public static Duration max(
+			@Nullable final Duration duration1,
+			@Nullable final Duration duration2)
+	{
+		if (duration1 == null)
+		{
+			return duration2;
+		}
+		else if (duration2 == null)
+		{
+			return duration1;
+		}
+		else if (duration1.compareTo(duration2) >= 0)
+		{
+			return duration1;
+		}
+		else
+		{
+			return duration2;
+		}
+	}
 }	// TimeUtil

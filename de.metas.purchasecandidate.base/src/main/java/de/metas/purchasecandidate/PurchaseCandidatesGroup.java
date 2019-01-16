@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -86,6 +87,7 @@ public class PurchaseCandidatesGroup
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				//
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
+				.reminderTime(purchaseCandidate.getReminderTime())
 				//
 				.profitInfoOrNull(purchaseCandidate.getProfitInfoOrNull())
 				//
@@ -133,6 +135,8 @@ public class PurchaseCandidatesGroup
 
 	@NonNull
 	LocalDateTime purchaseDatePromised;
+	@Nullable
+	Duration reminderTime;
 
 	@Nullable
 	PurchaseProfitInfo profitInfoOrNull;

@@ -53,7 +53,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -73,7 +72,6 @@ public class FinReport extends JavaProcess
 {
 	// Services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
 	/** Period Parameter */
 	private int p_C_Period_ID = 0;
