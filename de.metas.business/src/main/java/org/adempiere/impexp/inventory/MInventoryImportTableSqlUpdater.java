@@ -188,7 +188,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND Value IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p ")
@@ -196,7 +196,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND UPC IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateSubProducer(@NonNull final String whereClause)
@@ -207,7 +207,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE SubProducer_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
@@ -220,7 +220,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Locator_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Locator = {}", no);
@@ -231,7 +231,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Warehouse = {}", no);
@@ -242,7 +242,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Product = {}", no);
@@ -254,7 +254,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE QtyInternalUse IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No QtyInternalUse = {}", no);

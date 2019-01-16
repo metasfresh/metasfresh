@@ -192,7 +192,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 				.adClientId(importRecord.getAD_Client_ID())
 				.adOrgId(importRecord.getAD_Org_ID())
 				.build();
@@ -230,7 +229,8 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 
 			inventoryLine.setM_Locator(importRecord.getM_Locator());
 			inventoryLine.setM_Product(importRecord.getM_Product());
-			inventoryLine.setQtyInternalUse(importRecord.getQtyInternalUse().negate());
+			inventoryLine.setQtyCount(importRecord.getQtyInternalUse());
+			inventoryLine.setIsCounted(true);
 
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, inventoryLine, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(inventoryLine);
@@ -239,7 +239,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		{
 			final int M_AttributeSetInstance_ID = extractM_AttributeSetInstance_ID(importRecord);
 			inventoryLine = InterfaceWrapperHelper.create(getCtx(), I_M_InventoryLine.class, ITrx.TRXNAME_ThreadInherited);
-			inventoryLine.setQtyInternalUse(importRecord.getQtyInternalUse().negate());
+			inventoryLine.setQtyCount(importRecord.getQtyInternalUse());
 			inventoryLine.setM_Inventory(inventory);
 			inventoryLine.setM_Locator(importRecord.getM_Locator());
 			inventoryLine.setM_Product(importRecord.getM_Product());
@@ -247,6 +247,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			inventoryLine.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 			final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 			inventoryLine.setC_Charge_ID(chargeId);
+			inventoryLine.setIsCounted(true);
 
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, inventoryLine, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(inventoryLine);
