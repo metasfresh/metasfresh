@@ -177,6 +177,7 @@ class Subheader extends Component {
       handleLetter,
       handlePrint,
       openModal,
+      openModalRow,
       standardActions,
       windowId,
     } = this.props;
@@ -243,17 +244,29 @@ class Subheader extends Component {
       {
         action: 'about',
         handler: () => {
-          // if something is selected use openModalRow instead
-          openModal(
-            windowId,
-            'static',
-            'About',
-            null,
-            null,
-            null,
-            null,
-            'about'
-          );
+          const { selected, activeTab } = this.props;
+
+          if (selected && selected.length) {
+            openModalRow(
+              windowId,
+              'static',
+              'About',
+              activeTab,
+              selected,
+              'about'
+            );
+          } else {
+            openModal(
+              windowId,
+              'static',
+              'About',
+              null,
+              null,
+              null,
+              null,
+              'about'
+            );
+          }
         },
         icon: 'meta-icon-delete',
         // caption: counterpart.translate('window.About.caption'),

@@ -139,8 +139,6 @@ class Modal extends Component {
     switch (modalType) {
       case 'static':
         {
-          console.log('PROPS: ', dataId, this.props)
-
           let request = null;
           if (staticModalType === 'about') {
             request = dispatch(

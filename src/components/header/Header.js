@@ -201,10 +201,35 @@ class Header extends Component {
     );
   };
 
-  openModalRow = (windowId, modalType, caption, tabId, rowId) => {
+  openModalRow = (
+    windowId,
+    modalType,
+    caption,
+    tabId,
+    rowId,
+    staticModalType
+  ) => {
     const { dispatch } = this.props;
 
-    dispatch(openModal(caption, windowId, modalType, tabId, rowId));
+    dispatch(
+      openModal(
+        caption,
+        windowId,
+        modalType,
+        tabId,
+        rowId,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        staticModalType
+      )
+    );
   };
 
   handlePrint = (windowId, docId, docNo) => {
