@@ -221,32 +221,38 @@ public class DocumentCollection
 
 	public <R> R forDocumentWritable(
 			@NonNull final DocumentPath documentPath,
-			final IDocumentChangesCollector changesCollector,
-			final Function<Document, R> documentProcessor)
+			@NonNull final IDocumentChangesCollector changesCollector,
+			@NonNull final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
-		return forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
+		return forRootDocumentWritable(
+				rootDocumentPath,
+				changesCollector,
+				rootDocument -> {
 
-			final Document document;
-			if (documentPath.isRootDocument())
-			{
-				document = rootDocument;
-			}
-			else if (documentPath.isSingleNewIncludedDocument())
-			{
-				document = rootDocument.createIncludedDocument(documentPath.getDetailId());
-			}
-			else
-			{
-				document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
-				DocumentPermissionsHelper.assertCanEdit(rootDocument);
-			}
+					final Document document;
+					if (documentPath.isRootDocument())
+					{
+						document = rootDocument;
+					}
+					else if (documentPath.isSingleNewIncludedDocument())
+					{
+						document = rootDocument.createIncludedDocument(documentPath.getDetailId());
+					}
+					else
+					{
+						document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
+						DocumentPermissionsHelper.assertCanEdit(rootDocument);
+					}
 
-			return documentProcessor.apply(document);
-		});
+					return documentProcessor.apply(document);
+				});
 	}
 
-	public <R> R forRootDocumentWritable(final DocumentPath documentPathOrNew, final IDocumentChangesCollector changesCollector, final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentWritable(
+			@NonNull final DocumentPath documentPathOrNew,
+			final IDocumentChangesCollector changesCollector,
+			@NonNull final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentPath rootDocumentPathOrNew = documentPathOrNew.getRootDocumentPath();
 
@@ -773,7 +779,7 @@ public class DocumentCollection
 		@Override
 		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
 		{
-			if(!document.hasField(fieldName))
+			if (!document.hasField(fieldName))
 			{
 				return defaultValue;
 			}

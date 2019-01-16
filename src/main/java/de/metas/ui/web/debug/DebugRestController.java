@@ -265,7 +265,7 @@ public class DebugRestController
 
 	@PostMapping("/websocket/view/fireRowChanges")
 	public void sendWebsocketViewChangedNotification(
-			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam("viewId") final String viewIdStr,
 			@RequestParam("changedIds") final String changedIdsStr)
 	{
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
