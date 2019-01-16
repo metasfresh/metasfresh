@@ -175,9 +175,11 @@ class Header extends Component {
     isAdvanced,
     selected,
     childViewId,
-    childViewSelectedIds
+    childViewSelectedIds,
+    staticModalType
   ) => {
     const { dispatch, query } = this.props;
+
     dispatch(
       openModal(
         caption,
@@ -193,7 +195,8 @@ class Header extends Component {
         null,
         null,
         childViewId,
-        childViewSelectedIds
+        childViewSelectedIds,
+        staticModalType
       )
     );
   };

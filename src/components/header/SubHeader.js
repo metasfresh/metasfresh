@@ -243,7 +243,17 @@ class Subheader extends Component {
       {
         action: 'about',
         handler: () => {
-          openModal(windowId, 'static', 'About');
+          // if something is selected use openModalRow instead
+          openModal(
+            windowId,
+            'static',
+            'About',
+            null,
+            null,
+            null,
+            null,
+            'about'
+          );
         },
         icon: 'meta-icon-delete',
         // caption: counterpart.translate('window.About.caption'),

@@ -73,6 +73,7 @@ const initialState = {
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
+    staticModalType: '',
   },
   overlay: {
     visible: false,
@@ -145,6 +146,7 @@ export default function windowHandler(state = initialState, action) {
           ...state.modal,
           visible: true,
           type: action.windowType,
+          staticModalType: action.staticModalType,
           dataId: action.dataId,
           tabId: action.tabId,
           rowId: action.rowId,
