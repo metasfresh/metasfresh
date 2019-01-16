@@ -335,7 +335,8 @@ export function openModal(
   parentViewId,
   parentViewSelectedIds,
   childViewId,
-  childViewSelectedIds
+  childViewSelectedIds,
+  staticModalType
 ) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
@@ -347,7 +348,6 @@ export function openModal(
   return {
     type: OPEN_MODAL,
     windowType: windowId,
-    modalType,
     tabId: tabId,
     rowId: rowId,
     viewId: viewId,
@@ -356,6 +356,8 @@ export function openModal(
     isAdvanced: isAdvanced,
     viewDocumentIds: viewDocumentIds,
     triggerField: triggerField,
+    modalType,
+    staticModalType,
     parentViewId,
     parentViewSelectedIds,
     childViewId,
@@ -402,7 +404,6 @@ export function removeSelectedTableItems({ windowType, viewId }) {
 }
 
 export function selectTableItems({ ids, windowType, viewId }) {
-  console.log('VIEWID: ', viewId)
   return {
     type: SELECT_TABLE_ITEMS,
     payload: { ids, windowType, viewId },
@@ -579,6 +580,24 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
         });
       }
     }
+  };
+}
+
+export function fetchChangeLog(windowId, docId, tabId, rowId) {
+  return dispatch => {
+    const url = `${config.API_URL}/window/${windowId}/${docId}${
+      rowId && tabId ? `/${tabId}/${rowId}` : ''
+    }/changeLog`;
+
+    return axios.get(url).then(resp => {
+      dispatch(
+        initDataSuccess({
+          data: resp.data,
+          docId,
+          scope: 'modal',
+        })
+      );
+    });
   };
 }
 
