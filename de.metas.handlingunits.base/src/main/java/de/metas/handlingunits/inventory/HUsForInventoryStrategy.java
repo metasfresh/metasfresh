@@ -29,7 +29,11 @@ import de.metas.handlingunits.model.I_M_HU;
 public interface HUsForInventoryStrategy
 {
 	Stream<I_M_HU> streamHus();
-	
+
+	/**
+	 * The number of different locators to look at when creating lines.
+	 * A value less that or equal to zero means "no restriction"
+	 */
 	default int getMaxLocatorsAllowed()
 	{
 		return 0;

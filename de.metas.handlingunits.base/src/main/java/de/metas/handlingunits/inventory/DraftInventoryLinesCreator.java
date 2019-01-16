@@ -6,10 +6,15 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -54,11 +59,13 @@ public class DraftInventoryLinesCreator
 
 	IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	@NonNull final DraftInventoryLines draftInventoryLines;
+	@NonNull
+	final DraftInventoryLines draftInventoryLines;
 
 	final Set<Integer> seenLocatorIds = new HashSet<>();
-	
-	@NonFinal long countInventoryLines = 0;
+
+	@NonFinal
+	long countInventoryLines = 0;
 
 	public DraftInventoryLinesCreator(DraftInventoryLines draftInventoryLines)
 	{
@@ -68,25 +75,24 @@ public class DraftInventoryLinesCreator
 	public void execute()
 	{
 		final HUsForInventoryStrategy strategy = draftInventoryLines.getStrategy();
-		
-		
+
 		// create/update new lines
 		final Iterator<I_M_HU> hus = strategy.streamHus().iterator();
 		while (hus.hasNext())
 		{
 			final I_M_HU hu = hus.next();
 			seenLocatorIds.add(hu.getM_Locator_ID());
-			
-			if (strategy.getMaxLocatorsAllowed() != 0 && strategy.getMaxLocatorsAllowed() < seenLocatorIds.size())
+
+			if (strategy.getMaxLocatorsAllowed() > 0 && strategy.getMaxLocatorsAllowed() < seenLocatorIds.size())
 			{
 				return;
 			}
 
-			countInventoryLines = countInventoryLines + createUpdateInventoryLines(hu).count();
+			countInventoryLines = countInventoryLines + createOrUpdateInventoryLines(hu).count();
 		}
 	}
 
-	private Stream<I_M_InventoryLine> createUpdateInventoryLines(@NonNull final I_M_HU hu)
+	private Stream<I_M_InventoryLine> createOrUpdateInventoryLines(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL
 				.getStorageFactory()
@@ -115,14 +121,20 @@ public class DraftInventoryLinesCreator
 			inventoryLine.setAD_Org_ID(draftInventoryLines.getInventoryRecord().getAD_Org_ID());
 		}
 
-		inventoryLine.setM_AttributeSetInstance_ID(0);
+		final IAttributeStorageFactory attributeStorageFactory = Services
+				.get(IAttributeStorageFactoryService.class)
+				.createHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		final I_M_AttributeSetInstance asi = Services.get(IAttributeSetInstanceBL.class).createASIFromAttributeSet(attributeStorage);
+		inventoryLine.setM_AttributeSetInstance(asi);
+
 		inventoryLine.setM_HU_ID(hu.getM_HU_ID());
 		inventoryLine.setM_HU_PI_Item_Product(null); // TODO
 		inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
 
 		inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
 		inventoryLine.setM_Product_ID(huProductStorage.getProductId().getRepoId());
-		
+
 		final Quantity qty = huProductStorage.getQty();
 		inventoryLine.setC_UOM_ID(qty.getUOMId());
 		inventoryLine.setQtyBook(qty.getAsBigDecimal());

@@ -35,6 +35,7 @@ import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -349,14 +350,10 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	/**
 	 * Convert given {@link I_C_BPartner} to a {@link KeyNamePair}.
-	 *
-	 * @param bpartner
-	 * @return
 	 */
-	private static final KeyNamePair toKeyNamePair(final I_C_BPartner bpartner)
+	private static final KeyNamePair toKeyNamePair(@NonNull final I_C_BPartner bpartner)
 	{
-		Check.assumeNotNull(bpartner, "bpartner not null");
-		return new KeyNamePair(bpartner.getC_BPartner_ID(), bpartner.getName());
+		return KeyNamePair.of(bpartner.getC_BPartner_ID(), bpartner.getName(), bpartner.getDescription());
 	}
 
 }
