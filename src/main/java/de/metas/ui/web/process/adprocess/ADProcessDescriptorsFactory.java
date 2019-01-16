@@ -247,7 +247,7 @@ import lombok.NonNull;
 				false // don't allow using auto sequence
 		);
 
-		final de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder paramDescriptorBuilder = DocumentFieldDescriptor.builder(parameterName);
+		final DocumentFieldDescriptor.Builder paramDescriptorBuilder = DocumentFieldDescriptor.builder(parameterName);
 		extractAndSetTranslatableValues(adProcessParam, paramDescriptorBuilder);
 
 		final DocumentFieldDescriptor.Builder paramDescriptor = paramDescriptorBuilder
@@ -277,7 +277,7 @@ import lombok.NonNull;
 
 	private void extractAndSetTranslatableValues(
 			@NonNull final I_AD_Process_Para adProcessParamRecord,
-			@NonNull final de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder paramDescriptorBuilder)
+			@NonNull final DocumentFieldDescriptor.Builder paramDescriptorBuilder)
 	{
 		if (adProcessParamRecord.getAD_Element_ID() <= 0)
 		{
