@@ -1,5 +1,9 @@
 package org.adempiere.impexp.inventory;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -20,6 +24,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Inventory;
@@ -295,7 +300,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			{
 				final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
 				final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(subProducerBPartnettr, importRecord);
-				attributeSetInstanceBL.getCreateAttributeInstance(asi, subProducerBPartneValue);
+				getCreateAttributeInstanceForSubproducer(asi, subProducerBPartneValue);
 			}
 			attributeSetInstanceBL.setDescription(asi);
 			InterfaceWrapperHelper.save(asi);
@@ -322,5 +327,33 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		InterfaceWrapperHelper.save(attributeValue);
 		return attributeValue;
 	}
+	
+	private I_M_AttributeInstance getCreateAttributeInstanceForSubproducer(final I_M_AttributeSetInstance asi, final I_M_AttributeValue attributeValue)
+	{
+		Check.assumeNotNull(attributeValue, "attributeValue not null");
+
+		// services
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		// M_Attribute_ID
+		final AttributeId attributeId = AttributeId.ofRepoId(attributeValue.getM_Attribute_ID());
+
+		//
+		// Get/Create/Update Attribute Instance
+		I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		if (attributeInstance == null)
+		{
+			attributeInstance = newInstance(I_M_AttributeInstance.class, asi);
+		}
+		attributeInstance.setM_AttributeSetInstance(asi);
+		attributeInstance.setM_AttributeValue(attributeValue);
+		attributeInstance.setM_Attribute_ID(attributeId.getRepoId());
+		// the attribute is a list, but expect to store as number, the id of the partner
+		attributeInstance.setValueNumber(new BigDecimal(attributeValue.getValue()));
+		save(attributeInstance);
+
+		return attributeInstance;
+	}
+
 
 }
