@@ -229,42 +229,32 @@ class PricingConditionsRowReducers
 		}
 	}
 
-	@Nullable
+	@NonNull
 	private static Money extractMoney(
 			@Nullable final BigDecimal amount,
 			@Nullable final CurrencyId currencyId,
 			@Nullable final Money fallback,
-			@NonNull final Supplier<CurrencyId> defaultCurrencyId)
+			@NonNull final Supplier<CurrencyId> defaultCurrencyIdSupplier)
 	{
-		if (amount == null && currencyId == null)
+		if (amount == null && currencyId == null && fallback != null)
 		{
 			return fallback;
 		}
 
 		final BigDecimal amountEffective = coalesce(
 				amount,
-				fallback != null ? fallback.getValue() : null);
+				fallback != null ? fallback.getValue() : BigDecimal.ZERO);
 
 		final CurrencyId currencyIdEffective = coalesceSuppliers(
 				() -> currencyId,
 				() -> fallback != null ? fallback.getCurrencyId() : null,
-				defaultCurrencyId);
-
+				defaultCurrencyIdSupplier);
 		if (currencyIdEffective == null)
 		{
-			if (amountEffective == null || amountEffective.signum() == 0)
-			{
-				return null;
-			}
-			else
-			{
-				// shall not happen
-				throw new AdempiereException("Please set the currency first");
-			}
+			// shall not happen
+			throw new AdempiereException("No currency set");
 		}
-		else
-		{
-			return Money.of(amountEffective != null ? amountEffective : BigDecimal.ZERO, currencyIdEffective);
-		}
+
+		return Money.of(amountEffective, currencyIdEffective);
 	}
 }
