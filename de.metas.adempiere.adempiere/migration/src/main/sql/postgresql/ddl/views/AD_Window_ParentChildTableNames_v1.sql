@@ -1,3 +1,4 @@
+
 drop view if exists AD_Window_ParentChildTableNames_v1;
 create or replace view AD_Window_ParentChildTableNames_v1 as
 select
@@ -57,9 +58,8 @@ from (
 			left join AD_Table ct/*child-table*/ on (ct.AD_Table_ID=ctt.AD_Table_ID)
 		inner join AD_Window w on (w.AD_Window_ID=ptt.AD_Window_ID)
 	where true
-		// the parent tab needs to have the smallest SeqNo (but not neccesarly 10) 
+		/* the parent tab needs to have the smallest SeqNo and TabLevel (but not neccesarly 10 resp. 0) */
 		and ptt.SeqNo=(select min(siblings.SeqNo) from AD_Tab siblings where siblings.AD_Window_ID=w.AD_Window_ID and siblings.IsActive='Y') 
-		// the parent tab needs to have the smallest Tablevel (but not neccesarly 0) 
 		and ptt.TabLevel=(select min(siblings.TabLevel) from AD_Tab siblings where siblings.AD_Window_ID=w.AD_Window_ID and siblings.IsActive='Y') 
 		and ptt.IsActive='Y'
 		and w.IsActive='Y'
@@ -73,5 +73,3 @@ select * from AD_Window_ParentChildTableNames_v1
 where true
 order by parentTableName, AD_Window_ID, childTableName;
 */
-
-
