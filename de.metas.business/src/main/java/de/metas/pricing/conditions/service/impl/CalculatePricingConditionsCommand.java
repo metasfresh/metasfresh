@@ -4,18 +4,18 @@
 package de.metas.pricing.conditions.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
@@ -28,7 +28,6 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -152,45 +151,57 @@ import lombok.NonNull;
 				.pricingConditionsBreak(breakToApply)
 				.paymentTermId(breakToApply.getDerivedPaymentTermIdOrNull());
 
-		computePriceForPricingConditionsBreak(result, breakToApply.getPriceOverride());
+		computePriceForPricingConditionsBreak(result, breakToApply.getPriceSpecification());
 		computeDiscountForPricingConditionsBreak(result, breakToApply);
 
 		return Optional.of(result.build());
 	}
 
 	private void computePriceForPricingConditionsBreak(
-			final PricingConditionsResultBuilder result,
-			@NonNull final PriceOverride priceOverride)
+			@NonNull final PricingConditionsResultBuilder result,
+			@NonNull final PriceSpecification priceOverride)
 	{
-		final PriceOverrideType priceOverrideType = priceOverride.getType();
-		if (priceOverrideType == PriceOverrideType.NONE)
+		if(!priceOverride.isValid())
+		{
+			return; // nothing;
+		}
+
+		final PriceSpecificationType priceOverrideType = priceOverride.getType();
+		if (priceOverrideType == PriceSpecificationType.NONE)
 		{
 			// nothing
 		}
-		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceOverrideType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
 			final PricingSystemId basePricingSystemId = priceOverride.getBasePricingSystemId();
 
 			final IPricingResult productPrices = computePricesForBasePricingSystem(basePricingSystemId);
+
 			final CurrencyId currencyId = productPrices.getCurrencyId();
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
-			final BigDecimal priceStdAddAmt = priceOverride.getBasePriceAddAmt();
-
 			result.currencyId(currencyId);
 			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
-			result.priceStdOverride(priceStd.add(priceStdAddAmt));
-		}
-		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
-		{
-			final Money fixedPrice = priceOverride.getFixedPrice();
 
-			result.currencyId(fixedPrice.getCurrencyId());
-			result.priceStdOverride(fixedPrice.getValue());
+			final BigDecimal pricingSystemSurchargeAmt = priceOverride.getPricingSystemSurchargeAmt();
+			if (pricingSystemSurchargeAmt != null)
+			{
+				Check.assume(Objects.equals(priceOverride.getCurrencyId(), currencyId),
+						"If priceOverrideType={} and pricingSystemSurcharge!=null, then the currencies need to match; pricingResult.currencyId={}, pricingSystemSurcharge={}",
+						PriceSpecificationType.BASE_PRICING_SYSTEM, currencyId, priceOverride.getCurrencyId());
+
+				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurchargeAmt);
+				result.priceStdOverride(priceStdOverride);
+			}
+		}
+		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
+		{
+			result.currencyId(priceOverride.getCurrencyId());
+			result.priceStdOverride(priceOverride.getFixedPriceAmt());
 		}
 		else
 		{

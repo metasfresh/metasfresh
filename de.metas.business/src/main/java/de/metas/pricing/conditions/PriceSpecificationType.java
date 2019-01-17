@@ -18,42 +18,51 @@ import lombok.Getter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum PriceOverrideType
+public enum PriceSpecificationType
 {
-	NONE("N"), BASE_PRICING_SYSTEM("P"), FIXED_PRICE("F");
+	NONE("N"),
+
+	/**
+	 * The price is specified via price condition (together with the respective bPartner, country, date etc etc).
+	 * In addition, there might be a surcharge amount with a currency.
+	 */
+	BASE_PRICING_SYSTEM("P"),
+
+	/** The price is specified by a fixed amount and a currency */
+	FIXED_PRICE("F");
 
 	public static final int AD_Reference_ID = 540862;
 
 	@Getter
 	private final String code;
 
-	PriceOverrideType(final String code)
+	PriceSpecificationType(final String code)
 	{
 		this.code = code;
 	}
 
-	public static PriceOverrideType ofCode(final String code)
+	public static PriceSpecificationType ofCode(final String code)
 	{
-		final PriceOverrideType type = valuesByCode.get(code);
+		final PriceSpecificationType type = valuesByCode.get(code);
 		if (type == null)
 		{
-			throw new NoSuchElementException("No " + PriceOverrideType.class + " for " + code);
+			throw new NoSuchElementException("No " + PriceSpecificationType.class + " for " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, PriceOverrideType> valuesByCode = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(PriceOverrideType::getCode, Function.identity()));
+	private static final ImmutableMap<String, PriceSpecificationType> valuesByCode = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(PriceSpecificationType::getCode, Function.identity()));
 }

@@ -14,8 +14,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_TimeSpan;
-import org.compiere.model.X_C_BPartner_TimeSpan;
+import org.compiere.model.I_C_Customer_Retention;
+import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -58,18 +58,18 @@ import de.metas.util.time.SystemTime;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, BPartnerTimeSpanRepository.class, ContractInvoiceService.class })
-public class BPartnerTimeSpanRepositoryTest
+@SpringBootTest(classes = { StartupListener.class, CustomerRetentionRepository.class, ContractInvoiceService.class })
+public class CustomerRetentionRepositoryTest
 {
 
-	private BPartnerTimeSpanRepository repository;
+	private CustomerRetentionRepository repository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		repository = Adempiere.getBean(BPartnerTimeSpanRepository.class);
+		repository = Adempiere.getBean(CustomerRetentionRepository.class);
 
 		SystemTime.setTimeSource(new FixedTimeSource(2018, 12, 13, 0, 0, 0));
 	}
@@ -79,15 +79,15 @@ public class BPartnerTimeSpanRepositoryTest
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
 		repository.setNewCustomer(bpartnerId);
 
-		refresh(timespan);
+		refresh(customerRetention);
 
-		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Neukunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 	}
 
 	@Test
@@ -95,15 +95,15 @@ public class BPartnerTimeSpanRepositoryTest
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
 		repository.setRegularCustomer(bpartnerId);
 
-		refresh(timespan);
+		refresh(customerRetention);
 
-		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Stammkunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 	}
 
 	@Test
@@ -111,47 +111,47 @@ public class BPartnerTimeSpanRepositoryTest
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
 		repository.setNonSubscriptionCustomer(bpartnerId);
 
-		refresh(timespan);
+		refresh(customerRetention);
 
-		assertThat(timespan.getC_BPartner_TimeSpan()).isNullOrEmpty();
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
 	}
 
 	@Test
-	public void retrieveBPartnerTimeSpanThreshol_Default()
+	public void retrieveCustomerRetentionThreshol_Default()
 	{
 
-		final int bPartnerTimeSpanThreshold = repository.retrieveBPartnerTimeSpanThreshold();
+		final int customerRetentionThreshold = repository.retrieveCustomerRetentionThreshold();
 
-		assertThat(repository.DEFAULT_Threshold_BPartner_TimeSpan).isEqualTo(bPartnerTimeSpanThreshold);
+		assertThat(repository.DEFAULT_Threshold_CustomerRetention).isEqualTo(customerRetentionThreshold);
 	}
 
 	@Test
-	public void retrieveBPartnerTimeSpanThreshol_Configured()
+	public void retrieveCustomerRetentionThreshol_Configured()
 	{
 
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
 
-		sysConfig.setName(repository.SYS_CONFIG_C_BPartner_TimeSpan_Threshold);
+		sysConfig.setName(repository.SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold);
 		sysConfig.setValue("23");
 
 		save(sysConfig);
 
-		final int bPartnerTimeSpanThreshold = repository.retrieveBPartnerTimeSpanThreshold();
+		final int customerRetentionThreshold = repository.retrieveCustomerRetentionThreshold();
 
-		assertThat(23).isEqualTo(bPartnerTimeSpanThreshold);
+		assertThat(23).isEqualTo(customerRetentionThreshold);
 	}
 
 	@Test
 	public void dateExceedsThreshold()
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(repository.SYS_CONFIG_C_BPartner_TimeSpan_Threshold);
+		sysConfig.setName(repository.SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold);
 		sysConfig.setValue("12");
 
 		save(sysConfig);
@@ -170,49 +170,49 @@ public class BPartnerTimeSpanRepositoryTest
 	}
 
 	@Test
-	public void updateTimeSpan_NewCustomer()
+	public void updateCustomerRetention_NewCustomer()
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final Timestamp masterEndDate = TimeUtil.parseTimestamp("2017-12-14");
 		createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.updateTimeSpan(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
-		refresh(timespan);
+		refresh(customerRetention);
 
-		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Neukunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 	}
 
 	@Test
-	public void updateTimeSpan_NoCustomer()
+	public void updateCustomerRetention_NoCustomer()
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final Timestamp masterEndDate = TimeUtil.parseTimestamp("2017-12-11");
 		createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.updateTimeSpan(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
-		refresh(timespan);
+		refresh(customerRetention);
 
-		assertThat(timespan.getC_BPartner_TimeSpan()).isNullOrEmpty();
+		assertThat(customerRetention.getCustomerRetention()).isNullOrEmpty();
 	}
 
 	@Test
-	public void updateTimeSpan_NewCustomer_InvoiceExceedsDate()
+	public void updateCustomerRetention_NewCustomer_InvoiceExceedsDate()
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final Timestamp masterEndDate1 = TimeUtil.parseTimestamp("2017-12-11");
 		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
@@ -238,21 +238,21 @@ public class BPartnerTimeSpanRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.updateTimeSpan(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
-		refresh(timespan);
+		refresh(customerRetention);
 
-		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Neukunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 
 
 	}
 
 	@Test
-	public void updateTimeSpan_RegularCustomer()
+	public void updateCustomerRetention_RegularCustomer()
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final Timestamp masterEndDate1 = TimeUtil.parseTimestamp("2017-12-13");
 		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
@@ -278,19 +278,19 @@ public class BPartnerTimeSpanRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.updateTimeSpan(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
-		refresh(timespan);
-		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Stammkunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+		refresh(customerRetention);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 
 	@Test
-	public void updateTimeSpan_SameInvoiceDate()
+	public void updateCustomerRetention_SameInvoiceDate()
 	{
 		final I_C_BPartner partner = createPartner("Partner1");
 
-		final I_C_BPartner_TimeSpan timespan = createBPartnerTimeSpan(partner.getC_BPartner_ID());
+		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
 		final Timestamp masterEndDate1 = SystemTime.asTimestamp();
 		final I_C_Flatrate_Term term1 = createFlatrateTerm(partner.getC_BPartner_ID(), masterEndDate1);
@@ -316,10 +316,10 @@ public class BPartnerTimeSpanRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.updateTimeSpan(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
-		refresh(timespan);
-		assertThat(X_C_BPartner_TimeSpan.C_BPARTNER_TIMESPAN_Stammkunde).isEqualTo(timespan.getC_BPartner_TimeSpan());
+		refresh(customerRetention);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 
@@ -379,15 +379,15 @@ public class BPartnerTimeSpanRepositoryTest
 
 	}
 
-	private I_C_BPartner_TimeSpan createBPartnerTimeSpan(int c_BPartner_ID)
+	private I_C_Customer_Retention createCustomerRetention(int partnerId)
 	{
-		final I_C_BPartner_TimeSpan timeSpan = newInstance(I_C_BPartner_TimeSpan.class);
+		final I_C_Customer_Retention customerRetention = newInstance(I_C_Customer_Retention.class);
 
-		timeSpan.setC_BPartner_ID(c_BPartner_ID);
+		customerRetention.setC_BPartner_ID(partnerId);
 
-		save(timeSpan);
+		save(customerRetention);
 
-		return timeSpan;
+		return customerRetention;
 	}
 
 	private I_C_BPartner createPartner(final String name)

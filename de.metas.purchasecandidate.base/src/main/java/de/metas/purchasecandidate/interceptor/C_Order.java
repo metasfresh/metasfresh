@@ -50,8 +50,8 @@ public class C_Order
 			return;
 		}
 
-		final OrderId salesOrderid = OrderId.ofRepoId(order.getC_Order_ID());
-		final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(salesOrderid);
+		final OrderId salesOrderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(salesOrderId);
 		if (purchaseCandidateIds.isEmpty())
 		{
 			return;

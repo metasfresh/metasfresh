@@ -5,7 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceSpecification;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -49,7 +49,7 @@ public class PricingConditionsBreakChangeRequest
 
 	//
 	// Price
-	PriceOverride price;
+	PriceSpecification price;
 
 	// Discount
 	Percent discount;

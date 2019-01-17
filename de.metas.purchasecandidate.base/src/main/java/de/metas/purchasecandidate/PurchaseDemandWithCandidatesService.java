@@ -182,6 +182,7 @@ public class PurchaseDemandWithCandidatesService
 		Quantity qtyToPurchase = null;
 		Quantity purchasedQty = null;
 		LocalDateTime purchaseDatePromised = null;
+		Duration reminderTime = null;
 
 		final Set<PurchaseCandidateId> purchaseCandidateIds = new LinkedHashSet<>();
 
@@ -195,6 +196,7 @@ public class PurchaseDemandWithCandidatesService
 			qtyToPurchase = Quantity.addNullables(qtyToPurchase, candidate.getQtyToPurchase());
 			purchasedQty = Quantity.addNullables(purchasedQty, candidate.getPurchasedQty());
 			purchaseDatePromised = TimeUtil.min(purchaseDatePromised, candidate.getPurchaseDatePromised());
+			reminderTime = TimeUtil.max(reminderTime, candidate.getReminderTime());
 
 			if (candidate.getId() != null)
 			{
@@ -240,6 +242,7 @@ public class PurchaseDemandWithCandidatesService
 				.purchasedQty(purchasedQty)
 				//
 				.purchaseDatePromised(purchaseDatePromised)
+				.reminderTime(reminderTime)
 				//
 				.profitInfoOrNull(profitInfo)
 				//
