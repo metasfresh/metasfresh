@@ -2,7 +2,7 @@
 
 
 .header-sticky-distance{
-    margin-top: 55px;
+    padding-top: 55px;
 }
 
 .header {
@@ -83,7 +83,7 @@
         padding:4px 0;
     }
     .header-sticky-distance {
-        margin-top: 130px;
+        padding-top: 130px;
     }
 }
 
