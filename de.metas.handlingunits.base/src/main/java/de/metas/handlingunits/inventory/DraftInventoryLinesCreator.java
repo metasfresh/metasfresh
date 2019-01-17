@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.handlingunits.HuId;
@@ -121,11 +122,7 @@ public class DraftInventoryLinesCreator
 			inventoryLine.setAD_Org_ID(draftInventoryLines.getInventoryRecord().getAD_Org_ID());
 		}
 
-		final IAttributeStorageFactory attributeStorageFactory = Services
-				.get(IAttributeStorageFactoryService.class)
-				.createHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-		final I_M_AttributeSetInstance asi = Services.get(IAttributeSetInstanceBL.class).createASIFromAttributeSet(attributeStorage);
+		final I_M_AttributeSetInstance asi = createStorageRelevantASI(hu);
 		inventoryLine.setM_AttributeSetInstance(asi);
 
 		inventoryLine.setM_HU_ID(hu.getM_HU_ID());
@@ -143,5 +140,19 @@ public class DraftInventoryLinesCreator
 		Services.get(IInventoryDAO.class).save(inventoryLine);
 
 		return inventoryLine;
+	}
+
+	private I_M_AttributeSetInstance createStorageRelevantASI(@NonNull final I_M_HU hu)
+	{
+		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService	.createHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIFromAttributeSet(
+				attributeStorage,
+				I_M_Attribute::isStorageRelevant);
+		return asi;
 	}
 }

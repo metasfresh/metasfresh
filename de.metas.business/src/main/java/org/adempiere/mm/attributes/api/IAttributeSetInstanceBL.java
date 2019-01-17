@@ -1,10 +1,14 @@
 package org.adempiere.mm.attributes.api;
 
+import java.util.function.Predicate;
+
 import org.adempiere.mm.attributes.AttributeId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
+
+import com.google.common.base.Predicates;
 
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -84,7 +88,12 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneASI(Object to, Object from);
 
-	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet);
+	default I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet)
+	{
+		return createASIFromAttributeSet(attributeSet, Predicates.alwaysTrue());
+	}
+
+	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
 
