@@ -130,7 +130,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 				.build();
 	}
 
-	private final SourceDocumentLine createSourceDocumentLine(final I_C_OrderLine orderLineRecord, final SOTrx soTrx)
+	private final SourceDocumentLine createSourceDocumentLine(@NonNull final I_C_OrderLine orderLineRecord, @NonNull final SOTrx soTrx)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
