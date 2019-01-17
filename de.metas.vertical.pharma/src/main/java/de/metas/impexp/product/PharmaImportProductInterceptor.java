@@ -11,7 +11,6 @@ import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.impexp.product.ProductPriceImporter;
-import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 

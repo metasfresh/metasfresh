@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1320550584L;
+	private static final long serialVersionUID = 421142813L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -498,23 +498,23 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return false;
 	}
 
-	/** Set Internal Use Qty.
-		@param QtyInternalUse 
-		Internal Use Quantity removed from Inventory
+	/** Set Zählmenge.
+		@param QtyCount 
+		Gezählte Menge
 	  */
 	@Override
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse)
+	public void setQtyCount (java.math.BigDecimal QtyCount)
 	{
-		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
+		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
 
-	/** Get Internal Use Qty.
-		@return Internal Use Quantity removed from Inventory
+	/** Get Zählmenge.
+		@return Gezählte Menge
 	  */
 	@Override
-	public java.math.BigDecimal getQtyInternalUse () 
+	public java.math.BigDecimal getQtyCount () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInternalUse);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

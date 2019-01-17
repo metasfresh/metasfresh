@@ -229,7 +229,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 
 			inventoryLine.setM_Locator(importRecord.getM_Locator());
 			inventoryLine.setM_Product(importRecord.getM_Product());
-			inventoryLine.setQtyCount(importRecord.getQtyInternalUse());
+			inventoryLine.setQtyCount(importRecord.getQtyCount());
 			inventoryLine.setIsCounted(true);
 
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, inventoryLine, IImportInterceptor.TIMING_AFTER_IMPORT);
@@ -239,7 +239,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		{
 			final int M_AttributeSetInstance_ID = extractM_AttributeSetInstance_ID(importRecord);
 			inventoryLine = InterfaceWrapperHelper.create(getCtx(), I_M_InventoryLine.class, ITrx.TRXNAME_ThreadInherited);
-			inventoryLine.setQtyCount(importRecord.getQtyInternalUse());
+			inventoryLine.setQtyCount(importRecord.getQtyCount());
 			inventoryLine.setM_Inventory(inventory);
 			inventoryLine.setM_Locator(importRecord.getM_Locator());
 			inventoryLine.setM_Product(importRecord.getM_Product());
