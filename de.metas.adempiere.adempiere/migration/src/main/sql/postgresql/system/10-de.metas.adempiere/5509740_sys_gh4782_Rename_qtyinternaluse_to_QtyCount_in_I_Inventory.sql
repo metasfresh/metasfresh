@@ -20,3 +20,26 @@ UPDATE AD_Field SET Name='Zählmenge', Description='Gezählte Menge', Help='"Zä
 
 alter table i_inventory rename column qtyinternaluse to QtyCount;
 
+
+-- 2019-01-17T15:50:29.569
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Window_ID=168,Updated=TO_TIMESTAMP('2019-01-17 15:50:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=296
+;
+
+-- 2019-01-17T15:50:47.512
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=296,Updated=TO_TIMESTAMP('2019-01-17 15:50:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=8820
+;
+
+-- 2019-01-17T15:51:40.370
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET AD_Window_ID=168,Updated=TO_TIMESTAMP('2019-01-17 15:51:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=53249
+;
+
+-- 2019-01-17T15:51:57.555
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=53249,Updated=TO_TIMESTAMP('2019-01-17 15:51:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=9763
+;
+
+
+
