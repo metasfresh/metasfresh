@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -68,13 +69,13 @@ public class MInventoryImportTableSqlUpdater
 		// Set M_Warehouse_ID
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET warehouseValue = dimensions.warehouseValue, X = dimensions.locatorX , Y = dimensions.locatorY, Z = dimensions.locatorZ, X1 = dimensions.locatorX1 ")
-				.append("FROM (SELECT I_Inventory_ID, d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1 ")
+				.append("FROM (SELECT d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1 ")
 				.append("	FROM I_Inventory as inv")
 				.append("	JOIN extractLocatorDimensions(inv.locatorvalue) as d on d.locatorvalue=inv.locatorvalue")
 				.append(") AS dimensions ")
-				.append("WHERE I_IsImported<>'Y' ")
+				.append("WHERE I_IsImported<>'Y' AND dimensions.locatorvalue = i.locatorvalue ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateWarehouse(@NonNull final String whereClause)
@@ -85,7 +86,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateCreateLocators(@NonNull final String whereClause)
@@ -98,20 +99,29 @@ public class MInventoryImportTableSqlUpdater
 	{
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l ")
-				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID) ")
+				.append("WHERE i.LocatorValue=l.Value AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
 		// update DateLastInventory
 		sql = new StringBuilder("UPDATE M_Locator l ")
 				.append("SET DateLastInventory=(SELECT DateLastInventory FROM I_Inventory i ")
 				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID ")
-				.append("AND I_IsImported<>'Y') ")
-				.append(" WHERE 1=1  ")
-				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+				.append("AND I_IsImported<>'Y' ")
+				.append("ORDER BY i.DateLastInventory DESC LIMIT 1 ) ") 
+				.append("WHERE 1=1  ");
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		
+		try
+		{
+			DB.commit(true, ITrx.TRXNAME_ThreadInherited);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException(e);
+		}
 	}
 
 	private void dbCreateLocators()
@@ -127,8 +137,11 @@ public class MInventoryImportTableSqlUpdater
 
 		unmatchedLocator.forEach(importRecord -> {
 			final I_M_Locator locator = getCreateNewMLocator(importRecord);
-			importRecord.setM_Locator(locator);
-			InterfaceWrapperHelper.save(importRecord);
+			if (locator != null)
+			{
+				importRecord.setM_Locator(locator);
+				InterfaceWrapperHelper.save(importRecord);
+			}
 		});
 	}
 
@@ -138,18 +151,22 @@ public class MInventoryImportTableSqlUpdater
 		
 		//
 		//check if exists, because might be created meanwhile
+		if (importRecord.getM_Warehouse_ID() <=0)
+		{
+			return null;
+		}
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID());
 		final LocatorId locatorId = warehousesRepo.retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), warehouseId);
 		final I_M_Locator locator;
 		if (locatorId != null)
 		{
-			locator = warehousesRepo.getLocatorById(locatorId);
+			locator = warehousesRepo.getLocatorByIdInTrx(locatorId, I_M_Locator.class);
 		}
 		else
 		{
 			locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
 		}
-
+		
 		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
 		locator.setM_Warehouse_ID(warehouseId.getRepoId());
 		locator.setValue(importRecord.getLocatorValue());
@@ -171,7 +188,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND Value IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p ")
@@ -179,7 +196,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND UPC IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateSubProducer(@NonNull final String whereClause)
@@ -190,7 +207,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE SubProducer_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
@@ -203,7 +220,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Locator_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Locator = {}", no);
@@ -214,7 +231,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Warehouse = {}", no);
@@ -225,21 +242,10 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Product = {}", no);
-		}
-
-		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Partner, ' ")
-				.append("WHERE SubProducer_BPartner_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
-		{
-			logger.warn("No Partners = {}", no);
 		}
 
 		// No QtyCount
@@ -248,7 +254,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE QtyInternalUse IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No QtyInternalUse = {}", no);

@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -129,11 +130,19 @@ public class TaxDAO implements ITaxDAO
 	@Override
 	public int findTaxCategoryId(@NonNull final TaxCategoryQuery query)
 	{
-		final IQueryBuilder<I_C_TaxCategory> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBuilder.addEqualsFilter(I_C_TaxCategory.COLUMN_VATType, query.getType().getValue())
+		final IQueryBuilder<I_C_TaxCategory> queryBuilder = queryBL.createQueryBuilder(I_C_TaxCategory.class);
+
+		final IQuery<I_C_Tax> querytaxes = queryBL.createQueryBuilder(I_C_Tax.class)
+				.addInArrayFilter(I_C_Tax.COLUMNNAME_C_Country_ID, null, query.getCountryId())
+				.create();
+
+		return queryBuilder
+				.addInArrayFilter(I_C_TaxCategory.COLUMN_VATType, query.getType().getValue(), null)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.addInSubQueryFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, I_C_Tax.COLUMNNAME_C_TaxCategory_ID, querytaxes)
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()
 				.firstId();

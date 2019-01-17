@@ -586,29 +586,29 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Internal Use Qty.
-	 * Internal Use Quantity removed from Inventory
+	 * Set Zählmenge.
+	 * Gezählte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse);
+	public void setQtyCount (java.math.BigDecimal QtyCount);
 
 	/**
-	 * Get Internal Use Qty.
-	 * Internal Use Quantity removed from Inventory
+	 * Get Zählmenge.
+	 * Gezählte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyInternalUse();
+	public java.math.BigDecimal getQtyCount();
 
-    /** Column definition for QtyInternalUse */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_QtyInternalUse = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "QtyInternalUse", null);
-    /** Column name QtyInternalUse */
-    public static final String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
+    /** Column definition for QtyCount */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_QtyCount = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "QtyCount", null);
+    /** Column name QtyCount */
+    public static final String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
 	 * Set Serien-Nr..

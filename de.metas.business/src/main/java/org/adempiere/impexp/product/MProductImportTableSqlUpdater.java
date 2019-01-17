@@ -65,6 +65,9 @@ public class MProductImportTableSqlUpdater
 	@Builder(buildMethodName = "updateIProduct")
 	private void updateMProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
+		targetTableName = I_I_Product.Table_Name;
+		valueColumnName = I_I_Product.COLUMNNAME_Value;
+		
 		dbUpdateBPartners(whereClause);
 
 		dbUpdateManufacturers(whereClause);
@@ -145,22 +148,13 @@ public class MProductImportTableSqlUpdater
 	private void dbUpdateManufacturers(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
-		int no;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET Manufacturer_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE i.ProductManufacturer ilike '%'||p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.ProductManufacturer ilike '%'||p.companyname||'%' AND i.AD_Client_ID=p.AD_Client_ID LIMIT 1) ")
 				.append("WHERE Manufacturer_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProductManufacturer,' ")
-				.append("WHERE Manufacturer_ID IS NULL AND ProductManufacturer IS NOT NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid BPartner={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateProducts(@NonNull final String whereClause)
