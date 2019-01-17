@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -128,7 +129,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	String getPriceListName(final PriceListId priceListId);
 
-	Set<Integer> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
+	Set<CountryId> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 }

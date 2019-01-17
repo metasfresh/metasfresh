@@ -25,6 +25,8 @@ package de.metas.pricing.service;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import org.adempiere.location.CountryId;
+
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -83,5 +85,5 @@ public interface IPricingBL extends ISingletonService
 
 	PriceLimitRuleResult computePriceLimit(PriceLimitRuleContext context);
 
-	Set<Integer> getPriceLimitCountryIds();
+	Set<CountryId> getPriceLimitCountryIds();
 }

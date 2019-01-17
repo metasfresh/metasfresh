@@ -2,12 +2,11 @@ package de.metas.pricing.interceptor;
 
 import java.math.BigDecimal;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.location.CountryId;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -107,7 +106,7 @@ public class M_DiscountSchemaBreak
 		final PricingConditionsBreak pricingConditionsBreak = PricingConditionsRepository.toPricingConditionsBreak(schemaBreak);
 		final PriceSpecification priceOverride = pricingConditionsBreak.getPriceSpecification();
 		final PriceSpecificationType priceOverrideType = priceOverride.getType();
-		final Set<Integer> countryIds;
+		final Set<CountryId> countryIds;
 		if (priceOverrideType == PriceSpecificationType.NONE)
 		{
 			// nothing to validate
@@ -127,20 +126,19 @@ public class M_DiscountSchemaBreak
 			throw new AdempiereException("Unknown " + PriceSpecificationType.class + ": " + priceOverrideType);
 		}
 
-		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
-				.pricingConditionsBreak(pricingConditionsBreak)
-				.isSOTrx(true)
-				.build();
+		// If there were no countryIds, there is nothing to enforce
+		if (countryIds.isEmpty())
+		{
+			return;
+		}
 
-		Stream.of(context)
-				.flatMap(explodeByCountryIds(countryIds))
+		countryIds.stream()
+				.map(countryId -> PriceLimitEnforceContext.builder()
+						.pricingConditionsBreak(pricingConditionsBreak)
+						.soTrx(SOTrx.SALES)
+						.countryId(countryId)
+						.build())
 				.forEach(this::enforcePriceLimit);
-	}
-
-	private Function<PriceLimitEnforceContext, Stream<PriceLimitEnforceContext>> explodeByCountryIds(final Set<Integer> countryIds)
-	{
-		return context -> countryIds.stream()
-				.map(countryId -> context.toBuilder().countryId(countryId).build());
 	}
 
 	private void enforcePriceLimit(@NonNull final PriceLimitEnforceContext context)
@@ -195,11 +193,11 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setProductId(productId);
 		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId).getRepoId());
-		pricingCtx.setSOTrx(SOTrx.ofBoolean(context.getIsSOTrx()));
+		pricingCtx.setSOTrx(context.getSoTrx());
 		pricingCtx.setQty(qty);
 
 		pricingCtx.setProperty(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible);
-		pricingCtx.setC_Country_ID(context.getCountryId());
+		pricingCtx.setC_Country_ID(CountryId.toRepoId(context.getCountryId()));
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getPricingConditionsIdOrNull())
@@ -213,14 +211,15 @@ public class M_DiscountSchemaBreak
 	}
 
 	@lombok.Value
-	@lombok.Builder(toBuilder = true)
+	@lombok.Builder
 	private static class PriceLimitEnforceContext
 	{
 		@NonNull
 		final PricingConditionsBreak pricingConditionsBreak;
 		@NonNull
-		final Boolean isSOTrx;
-		private Integer countryId;
+		final SOTrx soTrx;
+		@NonNull
+		private CountryId countryId;
 	}
 
 }
