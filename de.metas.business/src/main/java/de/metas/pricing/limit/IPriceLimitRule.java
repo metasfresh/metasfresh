@@ -2,6 +2,8 @@ package de.metas.pricing.limit;
 
 import java.util.Set;
 
+import org.adempiere.location.CountryId;
+
 /*
  * #%L
  * de.metas.business
@@ -30,5 +32,5 @@ public interface IPriceLimitRule
 
 	PriceLimitRuleResult compute(PriceLimitRuleContext context);
 
-	Set<Integer> getPriceCountryIds();
+	Set<CountryId> getPriceCountryIds();
 }

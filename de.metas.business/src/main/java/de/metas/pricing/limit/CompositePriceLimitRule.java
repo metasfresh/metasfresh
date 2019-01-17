@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
+import org.adempiere.location.CountryId;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -72,7 +74,7 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 	}
 
 	@Override
-	public Set<Integer> getPriceCountryIds()
+	public Set<CountryId> getPriceCountryIds()
 	{
 		return enforcers.stream()
 				.flatMap(enforcer -> enforcer.getPriceCountryIds().stream())
