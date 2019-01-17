@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
@@ -181,13 +180,6 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			orderLineRecord.setM_DiscountSchemaBreak_ID(-1);
 
 			final PriceSpecification price = pricingConditionsBreak.getPriceSpecification();
-			if (!price.isValid())
-			{
-				throw new AdempiereException("Invalid price specification")
-						.appendParametersToMessage()
-						.setParameter("price", price)
-						.markAsUserValidationError();
-			}
 
 			final PriceSpecificationType type = price.getType();
 			if (type == PriceSpecificationType.NONE)
@@ -208,8 +200,9 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			{
 				orderLineRecord.setIsManualPrice(true);
 
-				orderLineRecord.setPriceEntered(price.getFixedPriceAmt());
-				orderLineRecord.setC_Currency_ID(price.getCurrencyId().getRepoId());
+				final Money fixedPrice = price.getFixedPrice();
+				orderLineRecord.setPriceEntered(fixedPrice != null ? fixedPrice.getValue() : null);
+				orderLineRecord.setC_Currency_ID(fixedPrice != null ? fixedPrice.getCurrencyId().getRepoId() : -1);
 
 				orderLineRecord.setBase_PricingSystem(null);
 			}

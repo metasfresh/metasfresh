@@ -78,9 +78,11 @@ public class PricingConditionsRowChangeRequest
 		Optional<PricingSystemId> basePricingSystemId;
 		BigDecimal pricingSystemSurchargeAmt;
 
-		BigDecimal fixedPrice;
+		BigDecimal fixedPriceAmt;
 
 		CurrencyId currencyId;
+		
+		CurrencyId defaultCurrencyId;
 	}
 
 	@lombok.Value(staticConstructor = "of")

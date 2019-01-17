@@ -113,6 +113,6 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 			return PriceSpecification.none();
 		}
 
-		return PriceSpecification.basePricingSystem(pricingSystemId, null/* pricingSystemSurchargeAmt */, null/* currencyId */);
+		return PriceSpecification.basePricingSystem(pricingSystemId);
 	}
 }

@@ -259,7 +259,7 @@ class PricingConditionsRowsLoader
 						.productId(sourceDocumentLine.getProductId())
 						.productCategoryId(sourceDocumentLine.getProductCategoryId())
 						.build())
-				.priceSpecification(PriceSpecification.fixedPrice(priceEntered.getValue(), priceEntered.getCurrencyId()))
+				.priceSpecification(PriceSpecification.fixedPrice(priceEntered))
 
 				.paymentTermIdOrNull(sourceDocumentLine.getPaymentTermId())
 				.discount(sourceDocumentLine.getDiscount())
@@ -338,21 +338,30 @@ class PricingConditionsRowsLoader
 	@lombok.Builder
 	public static final class SourceDocumentLine
 	{
+		@Nullable
 		OrderLineId orderLineId;
+		@NonNull
 		SOTrx soTrx;
 
+		@NonNull
 		BPartnerId bpartnerId;
 
+		@NonNull
 		ProductId productId;
+		@NonNull
 		ProductCategoryId productCategoryId;
 
+		@NonNull
 		Money priceEntered;
 
 		@lombok.Builder.Default
+		@NonNull
 		Percent discount = Percent.ZERO;
 
+		@Nullable
 		PaymentTermId paymentTermId;
 
+		@Nullable
 		PricingConditionsBreakId pricingConditionsBreakId;
 	}
 
