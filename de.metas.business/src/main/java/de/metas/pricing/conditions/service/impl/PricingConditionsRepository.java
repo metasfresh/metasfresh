@@ -43,6 +43,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.user.UserId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_DiscountSchema;
@@ -61,8 +63,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
@@ -230,54 +233,47 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			return PriceSpecification.none();
 		}
-		else
+		else if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
-			if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
-			{
-				final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
-				final BigDecimal surchargeAmt = discountSchemaBreakRecord.getPricingSystemSurchargeAmt();
-				final CurrencyId currencyId;
-				if (surchargeAmt == null || surchargeAmt.signum() == 0)
-				{
-					currencyId = null;
-				}
-				else
-				{
-					currencyId = extractCurrencyId(
-							discountSchemaBreakRecord,
-							"discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={0} and M_DiscountSchema_ID={1} has PriceBase=P(ricing-System) and a surcharge amt, but no C_Currency_ID!");
+			final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
 
-				}
-				return PriceSpecification.basePricingSystem(basePricingSystemId, surchargeAmt, currencyId);
-			}
-			else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
+			final BigDecimal surchargeAmt = discountSchemaBreakRecord.getPricingSystemSurchargeAmt();
+			if (surchargeAmt == null || surchargeAmt.signum() == 0)
 			{
-				final CurrencyId currencyId = extractCurrencyId(
-						discountSchemaBreakRecord,
-						"discountSchemaBreakRecord with M_DiscountSchemaBreak_ID={0} and M_DiscountSchema_ID={1} has PriceBase=F(ixed), but no C_Currency_ID!");
-
-				return PriceSpecification.fixedPrice(discountSchemaBreakRecord.getPriceStdFixed(), currencyId);
+				return PriceSpecification.basePricingSystem(basePricingSystemId);
 			}
 			else
 			{
-				throw new AdempiereException("Unknown PriceBase: " + priceBase);
+				final CurrencyId currencyId = extractCurrencyId(discountSchemaBreakRecord);
+				final Money surcharge = Money.of(surchargeAmt, currencyId);
+				return PriceSpecification.basePricingSystem(basePricingSystemId, surcharge);
 			}
+		}
+		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
+		{
+			final CurrencyId currencyId = extractCurrencyId(discountSchemaBreakRecord);
+			final Money fixedPrice = Money.of(discountSchemaBreakRecord.getPriceStdFixed(), currencyId);
+			return PriceSpecification.fixedPrice(fixedPrice);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown PriceBase: " + priceBase);
 		}
 	}
 
-	private static CurrencyId extractCurrencyId(final I_M_DiscountSchemaBreak discountSchemaBreakRecord, final String errorMessage)
+	private static CurrencyId extractCurrencyId(final I_M_DiscountSchemaBreak discountSchemaBreakRecord)
 	{
 		final int currencyRepoId = discountSchemaBreakRecord.getC_Currency_ID();
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(currencyRepoId);
-		if (currencyId == null)
+		if (currencyId != null)
 		{
-			throw new AdempiereException(TranslatableStringBuilder
-					.newInstance()
-					.insertFirstADMessage(errorMessage,
-							discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID())
-					.build());
+			return currencyId;
 		}
-		return currencyId;
+
+		// Fallback: use default currency
+		return Services.get(ICurrencyBL.class).getBaseCurrencyId(
+				ClientId.ofRepoId(discountSchemaBreakRecord.getAD_Client_ID()),
+				OrgId.ofRepoIdOrAny(discountSchemaBreakRecord.getAD_Org_ID()));
 	}
 
 	@VisibleForTesting
@@ -488,9 +484,9 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 
-			final BigDecimal surchargeAmt = price.getPricingSystemSurchargeAmt();
-			schemaBreak.setPricingSystemSurchargeAmt(surchargeAmt);
-			schemaBreak.setC_Currency_ID(CurrencyId.toRepoId(price.getCurrencyId()));
+			final Money surcharge = price.getPricingSystemSurcharge();
+			schemaBreak.setPricingSystemSurchargeAmt(surcharge != null ? surcharge.getValue() : null);
+			schemaBreak.setC_Currency_ID(surcharge != null ? surcharge.getCurrencyId().getRepoId() : -1);
 
 			schemaBreak.setPriceStdFixed(null);
 		}
@@ -500,9 +496,9 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setBase_PricingSystem_ID(-1);
 			schemaBreak.setPricingSystemSurchargeAmt(BigDecimal.ZERO);
 
-			final BigDecimal fixedPriceAmt = price.getFixedPriceAmt();
-			schemaBreak.setPriceStdFixed(fixedPriceAmt);
-			schemaBreak.setC_Currency_ID(CurrencyId.toRepoId(price.getCurrencyId()));
+			final Money fixedPrice = price.getFixedPrice();
+			schemaBreak.setPriceStdFixed(fixedPrice != null ? fixedPrice.getValue() : null);
+			schemaBreak.setC_Currency_ID(fixedPrice != null ? fixedPrice.getCurrencyId().getRepoId() : -1);
 		}
 		else
 		{

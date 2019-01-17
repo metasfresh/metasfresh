@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -161,7 +162,7 @@ import lombok.NonNull;
 			@NonNull final PricingConditionsResultBuilder result,
 			@NonNull final PriceSpecification priceOverride)
 	{
-		if(!priceOverride.isValid())
+		if (!priceOverride.isValid())
 		{
 			return; // nothing;
 		}
@@ -187,21 +188,23 @@ import lombok.NonNull;
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
 
-			final BigDecimal pricingSystemSurchargeAmt = priceOverride.getPricingSystemSurchargeAmt();
-			if (pricingSystemSurchargeAmt != null)
+			final Money pricingSystemSurcharge = priceOverride.getPricingSystemSurcharge();
+			if (pricingSystemSurcharge != null)
 			{
-				Check.assume(Objects.equals(priceOverride.getCurrencyId(), currencyId),
+				// FIXME: avoid this error and do currency conversions if needed
+				Check.assume(Objects.equals(pricingSystemSurcharge.getCurrencyId(), currencyId),
 						"If priceOverrideType={} and pricingSystemSurcharge!=null, then the currencies need to match; pricingResult.currencyId={}, pricingSystemSurcharge={}",
-						PriceSpecificationType.BASE_PRICING_SYSTEM, currencyId, priceOverride.getCurrencyId());
+						PriceSpecificationType.BASE_PRICING_SYSTEM, currencyId, pricingSystemSurcharge.getCurrencyId());
 
-				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurchargeAmt);
+				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurcharge.getValue());
 				result.priceStdOverride(priceStdOverride);
 			}
 		}
 		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
 		{
-			result.currencyId(priceOverride.getCurrencyId());
-			result.priceStdOverride(priceOverride.getFixedPriceAmt());
+			final Money fixedPrice = priceOverride.getFixedPrice();
+			result.currencyId(fixedPrice != null ? fixedPrice.getCurrencyId() : null);
+			result.priceStdOverride(fixedPrice != null ? fixedPrice.getValue() : null);
 		}
 		else
 		{

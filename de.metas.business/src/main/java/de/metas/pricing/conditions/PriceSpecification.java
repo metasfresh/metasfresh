@@ -1,13 +1,11 @@
 package de.metas.pricing.conditions;
 
 import static de.metas.util.Check.fail;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
 import lombok.Value;
@@ -46,59 +44,60 @@ public class PriceSpecification
 		return NONE;
 	}
 
+	public static PriceSpecification basePricingSystem(@NonNull final PricingSystemId pricingSystemId)
+	{
+		final Money pricingSystemSurcharge = null;
+		return basePricingSystem(pricingSystemId, pricingSystemSurcharge);
+	}
+
 	public static PriceSpecification basePricingSystem(
 			@NonNull final PricingSystemId pricingSystemId,
-			@Nullable final BigDecimal pricingSystemSurchargeAmt,
-			@Nullable final CurrencyId currencyId)
+			@Nullable final Money pricingSystemSurcharge)
 	{
 		return new PriceSpecification(
 				PriceSpecificationType.BASE_PRICING_SYSTEM,
 				pricingSystemId/* pricingSystemId */,
-				pricingSystemSurchargeAmt,
-				null/* fixedPriceAmt */,
-				currencyId);
+				pricingSystemSurcharge /* pricingSystemSurcharge */,
+				null/* fixedPriceAmt */
+		);
 	}
 
-	public static PriceSpecification fixedPrice(
-			@Nullable final BigDecimal fixedPriceAmt,
-			@Nullable final CurrencyId currencyId)
+	public static PriceSpecification fixedNullPrice()
 	{
-		return new PriceSpecification(
-				PriceSpecificationType.FIXED_PRICE,
-				null/* pricingSystemId */,
-				null/* basePriceAddAmt */,
-				fixedPriceAmt,
-				currencyId);
+		return fixedPrice(null);
 	}
 
 	public static PriceSpecification fixedZeroPrice(@NonNull final CurrencyId fixedPriceCurrencyId)
 	{
+		return fixedPrice(Money.zero(fixedPriceCurrencyId));
+	}
+
+	public static PriceSpecification fixedPrice(@Nullable final Money fixedPrice)
+	{
 		return new PriceSpecification(
 				PriceSpecificationType.FIXED_PRICE,
 				null/* pricingSystemId */,
 				null/* basePriceAddAmt */,
-				ZERO/* fixedPrice */,
-				fixedPriceCurrencyId);
+				fixedPrice/* fixedPriceAmt */
+		);
 	}
 
 	private static final PriceSpecification NONE = new PriceSpecification(
 			PriceSpecificationType.NONE,
 			null/* basePricingSystemId */,
 			null/* pricingSystemSurchargeAmt */,
-			null/* fixedPriceAmt */,
-			null/* currencyId */);
+			null/* fixedPriceAmt */);
 
 	PriceSpecificationType type;
 
+	//
+	// Base pricing system related fields
 	PricingSystemId basePricingSystemId;
+	Money pricingSystemSurcharge;
 
-	/** Optional if type={@link PriceSpecificationType#BASE_PRICING_SYSTEM}. */
-	BigDecimal pricingSystemSurchargeAmt;
-
-	/** Mandatory if type= {@link PriceSpecificationType#FIXED_PRICE}. */
-	BigDecimal fixedPriceAmt;
-
-	CurrencyId currencyId;
+	//
+	// Fixed price related fields
+	Money fixedPrice;
 
 	boolean valid;
 
@@ -106,44 +105,38 @@ public class PriceSpecification
 			@NonNull final PriceSpecificationType type,
 
 			@Nullable final PricingSystemId basePricingSystemId,
-			@Nullable final BigDecimal pricingSystemSurchargeAmt,
-
-			@Nullable final BigDecimal fixedPriceAmt,
-
-			@Nullable final CurrencyId currencyId)
+			@Nullable final Money pricingSystemSurcharge,
+			@Nullable final Money fixedPrice)
 	{
 		this.type = type;
 		this.basePricingSystemId = basePricingSystemId;
-		this.pricingSystemSurchargeAmt = pricingSystemSurchargeAmt;
+		this.pricingSystemSurcharge = pricingSystemSurcharge;
 
-		this.fixedPriceAmt = fixedPriceAmt;
+		this.fixedPrice = fixedPrice;
 
-		this.currencyId = currencyId;
-
-		final boolean currencyIdGiven = currencyId != null;
 		switch (type)
 		{
 			case NONE:
-
+			{
 				this.valid = true;
 				break;
-
+			}
 			case BASE_PRICING_SYSTEM:
-
-				final boolean surchargeAmtGiven = pricingSystemSurchargeAmt != null;
-				this.valid = basePricingSystemId != null && (surchargeAmtGiven == currencyIdGiven);
+			{
+				this.valid = basePricingSystemId != null;
 				break;
-
+			}
 			case FIXED_PRICE:
-
-				final boolean fixedPriceAmtGiven = fixedPriceAmt != null;
-				this.valid = fixedPriceAmtGiven && currencyIdGiven;
+			{
+				this.valid = fixedPrice != null;
 				break;
-
+			}
 			default:
+			{
 				fail("Unexpected type={}", type);
 				valid = false;
 				break;
+			}
 		}
 
 		// TODO: add invalidReason
