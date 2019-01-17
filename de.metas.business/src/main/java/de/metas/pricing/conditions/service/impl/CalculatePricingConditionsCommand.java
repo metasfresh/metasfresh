@@ -183,8 +183,10 @@ import lombok.NonNull;
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
 
+			//
+			// Add surcharge amount to standard price
 			final Money pricingSystemSurcharge = priceOverride.getPricingSystemSurcharge();
-			if (pricingSystemSurcharge != null)
+			if (pricingSystemSurcharge != null && pricingSystemSurcharge.signum() != 0)
 			{
 				if (!CurrencyId.equals(pricingSystemSurcharge.getCurrencyId(), currencyId))
 				{
