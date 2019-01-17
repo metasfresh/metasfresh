@@ -103,20 +103,20 @@ public class AdempiereException extends RuntimeException
 			return "null";
 		}
 
-		if(throwable instanceof NullPointerException)
+		if (throwable instanceof NullPointerException)
 		{
 			return throwable.toString();
 		}
 		else
 		{
 			String message = throwable.getLocalizedMessage();
-	
+
 			// If throwable message is null or it's very short then it's better to use throwable.toString()
 			if (message == null || message.length() < 4)
 			{
 				message = throwable.toString();
 			}
-	
+
 			return message;
 		}
 	}
@@ -513,9 +513,33 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
+	@OverridingMethodsMustInvokeSuper
+	public <T extends Enum<?>> AdempiereException setParameter(@NonNull final T enumValue)
+	{
+		final String parameterName = buildParameterName(enumValue);
+		return setParameter(parameterName, enumValue);
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	public <T extends Enum<?>> boolean hasParameter(@NonNull final T enumValue)
+	{
+		final String parameterName = buildParameterName(enumValue);
+		return enumValue.equals(getParameter(parameterName));
+	}
+
+	private static final <T extends Enum<?>> String buildParameterName(@NonNull final T enumValue)
+	{
+		return enumValue.getClass().getSimpleName();
+	}
+
 	public final boolean hasParameter(@NonNull final String name)
 	{
 		return parameters == null ? false : parameters.containsKey(name);
+	}
+
+	public final Object getParameter(@NonNull final String name)
+	{
+		return parameters != null ? parameters.get(name) : null;
 	}
 
 	public final Map<String, Object> getParameters()
