@@ -186,7 +186,9 @@ class TableCell extends PureComponent {
         )
       : null;
     const description =
-      (widgetData[0].value, widgetData[0].value.description) || tdValue;
+      widgetData[0].value && widgetData[0].value.description
+        ? widgetData[0].value.description
+        : tdValue;
     let tdTitle =
       item.widgetType === 'YesNo' ||
       item.widgetType === 'Switch' ||
