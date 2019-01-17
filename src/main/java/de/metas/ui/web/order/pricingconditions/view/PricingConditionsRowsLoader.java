@@ -259,7 +259,7 @@ class PricingConditionsRowsLoader
 						.productId(sourceDocumentLine.getProductId())
 						.productCategoryId(sourceDocumentLine.getProductCategoryId())
 						.build())
-				.priceSpecification(PriceSpecification.fixedPrice(priceEntered.getValue(), priceEntered.getCurrencyId()))
+				.priceSpecification(PriceSpecification.fixedPrice(priceEntered))
 
 				.paymentTermIdOrNull(sourceDocumentLine.getPaymentTermId())
 				.discount(sourceDocumentLine.getDiscount())

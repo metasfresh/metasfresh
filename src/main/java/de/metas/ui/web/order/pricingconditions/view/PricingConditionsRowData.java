@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -68,11 +69,15 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	private final ConcurrentMap<DocumentId, PricingConditionsRow> rowsById;
 	private final DocumentId editableRowId;
 
+	@Getter
+	private final CurrencyId defaultCurrencyId;
+
 	@Builder
 	private PricingConditionsRowData(
 			@Nullable final OrderLineId orderLineId, // OK to not be set if called from material cockpit
 			@Nullable final PricingConditionsRow editableRow,
-			@NonNull final List<PricingConditionsRow> rows)
+			@NonNull final List<PricingConditionsRow> rows,
+			@Nullable final CurrencyId defaultCurrencyId)
 	{
 		this.orderLineId = orderLineId;
 		this.allRowsData = null;
@@ -85,6 +90,8 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 				.collect(Collectors.toConcurrentMap(PricingConditionsRow::getId, Function.identity()));
 
 		this.editableRowId = editableRow != null ? editableRow.getId() : null;
+		
+		this.defaultCurrencyId = defaultCurrencyId;
 	}
 
 	private PricingConditionsRowData(
@@ -106,6 +113,8 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 				.collect(ImmutableList.toImmutableList());
 
 		this.editableRowId = from.editableRowId;
+		
+		this.defaultCurrencyId = from.defaultCurrencyId;
 	}
 
 	private PricingConditionsRowData getAllRowsData()
@@ -183,7 +192,7 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	@Override
 	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final PricingConditionsRowChangeRequest request = PricingConditionsRowActions.toChangeRequest(fieldChangeRequests);
+		final PricingConditionsRowChangeRequest request = PricingConditionsRowActions.toChangeRequest(fieldChangeRequests, getDefaultCurrencyId());
 		changeRow(ctx.getRowId(), row -> PricingConditionsRowReducers.copyAndChange(request, row));
 	}
 

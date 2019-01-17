@@ -253,15 +253,15 @@ public class PricingConditionsRow implements IViewRow
 		switch (price.getType())
 		{
 			case NONE:
-
+			{
 				this.basePricingSystem = null;
 				this.basePriceAmt = null;
 				this.pricingSystemSurchargeAmt = null;
 				this.currency = null;
 				break;
-
+			}
 			case BASE_PRICING_SYSTEM:
-
+			{
 				final BasePricingSystemPriceCalculatorRequest calculatorRequest = BasePricingSystemPriceCalculatorRequest.builder()
 						.pricingConditionsBreak(pricingConditionsBreak)
 						.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
@@ -271,20 +271,26 @@ public class PricingConditionsRow implements IViewRow
 
 				this.basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
 				this.basePriceAmt = basePrice.getValue();
-				this.pricingSystemSurchargeAmt = price.getPricingSystemSurchargeAmt();
-				this.currency = lookups.lookupCurrency(basePrice.getCurrencyId());
+				
+				final Money surcharge = price.getPricingSystemSurcharge();
+				this.pricingSystemSurchargeAmt = surcharge != null ? surcharge.getValue() : null;
+				this.currency = lookups.lookupCurrency(surcharge != null ? surcharge.getCurrencyId() : null);
 				break;
-
+			}
 			case FIXED_PRICE:
-
+			{
+				final Money fixedPrice = price.getFixedPrice();
+				
 				this.basePricingSystem = null;
-				this.basePriceAmt = price.getFixedPriceAmt();
+				this.basePriceAmt = fixedPrice != null ? fixedPrice.getValue() : null;
 				this.pricingSystemSurchargeAmt = null;
-				this.currency = lookups.lookupCurrency(price.getCurrencyId());
+				this.currency = lookups.lookupCurrency(fixedPrice != null ? fixedPrice.getCurrencyId() : null);
 				break;
-
+			}
 			default:
+			{
 				throw new AdempiereException("Unknown " + PriceSpecificationType.class + ": " + price.getType());
+			}
 		}
 
 		this.netPrice = calculateNetPrice();

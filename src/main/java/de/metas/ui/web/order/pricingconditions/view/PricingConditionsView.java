@@ -208,8 +208,9 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			{
 				orderLineRecord.setIsManualPrice(true);
 
-				orderLineRecord.setPriceEntered(price.getFixedPriceAmt());
-				orderLineRecord.setC_Currency_ID(price.getCurrencyId().getRepoId());
+				final Money fixedPrice = price.getFixedPrice();
+				orderLineRecord.setPriceEntered(fixedPrice != null ? fixedPrice.getValue() : null);
+				orderLineRecord.setC_Currency_ID(fixedPrice != null ? fixedPrice.getCurrencyId().getRepoId() : -1);
 
 				orderLineRecord.setBase_PricingSystem(null);
 			}

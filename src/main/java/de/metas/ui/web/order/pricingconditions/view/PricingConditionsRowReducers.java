@@ -1,16 +1,21 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
 import static org.compiere.util.Util.coalesce;
+import static org.compiere.util.Util.coalesceSuppliers;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
 
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
@@ -22,6 +27,7 @@ import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PriceChange;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -158,11 +164,13 @@ class PricingConditionsRowReducers
 		}
 		else if (priceChange instanceof CompletePriceChange)
 		{
-			return ((CompletePriceChange)priceChange).getPrice();
+			final CompletePriceChange completePriceChange = (CompletePriceChange)priceChange;
+			return completePriceChange.getPrice();
 		}
 		else if (priceChange instanceof PartialPriceChange)
 		{
-			return applyPartialPriceChangeTo((PartialPriceChange)priceChange, price);
+			final PartialPriceChange partialPriceChange = (PartialPriceChange)priceChange;
+			return applyPartialPriceChangeTo(partialPriceChange, price);
 		}
 		else
 		{
@@ -171,7 +179,7 @@ class PricingConditionsRowReducers
 
 	}
 
-	private PriceSpecification applyPartialPriceChangeTo(
+	private static PriceSpecification applyPartialPriceChangeTo(
 			@NonNull final PartialPriceChange changes,
 			@NonNull final PriceSpecification price)
 	{
@@ -185,19 +193,22 @@ class PricingConditionsRowReducers
 			final PricingSystemId requestBasePricingSystemId = changes.getBasePricingSystemId() != null ? changes.getBasePricingSystemId().orElse(null) : null;
 			final PricingSystemId basePricingSystemId = coalesce(requestBasePricingSystemId, price.getBasePricingSystemId(), PricingSystemId.NONE);
 
-			final BigDecimal surchargeAmt = coalesce(changes.getPricingSystemSurchargeAmt(), price.getPricingSystemSurchargeAmt());
-			final CurrencyId currencyId = coalesce(changes.getCurrencyId(), price.getCurrencyId());
-
-			return PriceSpecification.basePricingSystem(
-					basePricingSystemId,
-					surchargeAmt, currencyId);
+			final Money surcharge = extractMoney(
+					changes.getPricingSystemSurchargeAmt(),
+					changes.getCurrencyId(),
+					price.getPricingSystemSurcharge(),
+					extractDefaultCurrencyIdSupplier(changes));
+			return PriceSpecification.basePricingSystem(basePricingSystemId, surcharge);
 		}
 		else if (priceType == PriceSpecificationType.FIXED_PRICE)
 		{
-			final BigDecimal fixedPriceAmt = coalesce(changes.getFixedPrice(), price.getFixedPriceAmt());
-			final CurrencyId fixedPriceCurrencyId = coalesce(changes.getCurrencyId(), price.getCurrencyId());
+			final Money fixedPrice = extractMoney(
+					changes.getFixedPriceAmt(),
+					changes.getCurrencyId(),
+					price.getFixedPrice(),
+					extractDefaultCurrencyIdSupplier(changes));
 
-			return PriceSpecification.fixedPrice(fixedPriceAmt, fixedPriceCurrencyId);
+			return PriceSpecification.fixedPrice(fixedPrice);
 		}
 		else
 		{
@@ -205,4 +216,55 @@ class PricingConditionsRowReducers
 		}
 	}
 
+	private static Supplier<CurrencyId> extractDefaultCurrencyIdSupplier(final PartialPriceChange changes)
+	{
+		if (changes.getDefaultCurrencyId() != null)
+		{
+			return changes::getDefaultCurrencyId;
+		}
+		else
+		{
+			final ICurrencyBL currenciesService = Services.get(ICurrencyBL.class);
+			return () -> currenciesService.getBaseCurrencyId(Env.getClientId(), Env.getOrgId());
+		}
+	}
+
+	@Nullable
+	private static Money extractMoney(
+			@Nullable final BigDecimal amount,
+			@Nullable final CurrencyId currencyId,
+			@Nullable final Money fallback,
+			@NonNull final Supplier<CurrencyId> defaultCurrencyId)
+	{
+		if (amount == null && currencyId == null)
+		{
+			return fallback;
+		}
+
+		final BigDecimal amountEffective = coalesce(
+				amount,
+				fallback != null ? fallback.getValue() : null);
+
+		final CurrencyId currencyIdEffective = coalesceSuppliers(
+				() -> currencyId,
+				() -> fallback != null ? fallback.getCurrencyId() : null,
+				defaultCurrencyId);
+
+		if (currencyIdEffective == null)
+		{
+			if (amountEffective == null || amountEffective.signum() == 0)
+			{
+				return null;
+			}
+			else
+			{
+				// shall not happen
+				throw new AdempiereException("Please set the currency first");
+			}
+		}
+		else
+		{
+			return Money.of(amountEffective != null ? amountEffective : BigDecimal.ZERO, currencyIdEffective);
+		}
+	}
 }

@@ -50,10 +50,12 @@ public class PricingConditionsRowActions
 				.build();
 	}
 
-	public static PricingConditionsRowChangeRequest toChangeRequest(final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	public static PricingConditionsRowChangeRequest toChangeRequest(
+			final List<JSONDocumentChangedEvent> fieldChangeRequests,
+			final CurrencyId defaultCurrencyId)
 	{
 		final PricingConditionsRowChangeRequestBuilder builder = PricingConditionsRowChangeRequest.builder()
-				.priceChange(toPartialPriceChange(fieldChangeRequests));
+				.priceChange(toPartialPriceChange(fieldChangeRequests, defaultCurrencyId));
 
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
@@ -85,10 +87,13 @@ public class PricingConditionsRowActions
 		return builder.build();
 	}
 
-	private static PartialPriceChange toPartialPriceChange(final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	private static PartialPriceChange toPartialPriceChange(
+			final List<JSONDocumentChangedEvent> fieldChangeRequests,
+			final CurrencyId defaultCurrencyId)
 	{
-		final PartialPriceChangeBuilder builder = PartialPriceChange.builder();
-
+		final PartialPriceChangeBuilder builder = PartialPriceChange.builder()
+				.defaultCurrencyId(defaultCurrencyId);
+		
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();
@@ -113,13 +118,18 @@ public class PricingConditionsRowActions
 			}
 			else if (PricingConditionsRow.FIELDNAME_BasePrice.equals(fieldName))
 			{
-				builder.fixedPrice(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
+				builder.fixedPriceAmt(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
 			}
 			else if (PricingConditionsRow.FIELDNAME_C_Currency_ID.equals(fieldName))
 			{
 				final LookupValue currency = fieldChangeRequest.getValueAsIntegerLookupValue();
 				final CurrencyId currencyId = currency != null ? CurrencyId.ofRepoIdOrNull(currency.getIdAsInt()) : null;
 				builder.currencyId(currencyId);
+				
+				if(currencyId != null)
+				{
+					builder.defaultCurrencyId(currencyId);
+				}
 			}
 		}
 
