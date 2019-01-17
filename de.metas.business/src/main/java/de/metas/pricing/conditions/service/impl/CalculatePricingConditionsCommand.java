@@ -4,7 +4,6 @@
 package de.metas.pricing.conditions.service.impl;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -23,6 +22,7 @@ import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.conditions.service.PricingConditionsErrorCode;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.PricingConditionsResult.PricingConditionsResultBuilder;
 import de.metas.pricing.service.IPricingBL;
@@ -191,10 +191,14 @@ import lombok.NonNull;
 			final Money pricingSystemSurcharge = priceOverride.getPricingSystemSurcharge();
 			if (pricingSystemSurcharge != null)
 			{
-				// FIXME: avoid this error and do currency conversions if needed
-				Check.assume(Objects.equals(pricingSystemSurcharge.getCurrencyId(), currencyId),
-						"If priceOverrideType={} and pricingSystemSurcharge!=null, then the currencies need to match; pricingResult.currencyId={}, pricingSystemSurcharge={}",
-						PriceSpecificationType.BASE_PRICING_SYSTEM, currencyId, pricingSystemSurcharge.getCurrencyId());
+				if (!CurrencyId.equals(pricingSystemSurcharge.getCurrencyId(), currencyId))
+				{
+					throw new AdempiereException("Surcharge's currency is not matching base price's currency. ")
+							.appendParametersToMessage()
+							.setParameter(PricingConditionsErrorCode.SurchargeCurrencyNotMatchingPriceListCurrency)
+							.setParameter("price", Money.of(priceStd, currencyId))
+							.setParameter("surcharge", pricingSystemSurcharge);
+				}
 
 				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurcharge.getValue());
 				result.priceStdOverride(priceStdOverride);

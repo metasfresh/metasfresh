@@ -21,6 +21,7 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
+import de.metas.pricing.conditions.service.PricingConditionsErrorCode;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
 import de.metas.pricing.limit.IPriceLimitRule;
@@ -145,9 +146,7 @@ public class M_DiscountSchemaBreak
 	{
 		final CalculatePricingConditionsRequest request = createCalculateDiscountRequest(context);
 
-		final PricingConditionsResult pricingConditionsResult = Services.get(IPricingConditionsService.class)
-				.calculatePricingConditions(request)
-				.orElse(null);
+		final PricingConditionsResult pricingConditionsResult = calculatePricingConditions(request);
 		if (pricingConditionsResult == null)
 		{
 			return;
@@ -175,6 +174,28 @@ public class M_DiscountSchemaBreak
 					.markAsUserValidationError()
 					.setParameter("context", context)
 					.setParameter("pricingCtx", request.getPricingCtx());
+		}
+	}
+
+	private PricingConditionsResult calculatePricingConditions(final CalculatePricingConditionsRequest request)
+	{
+		try
+		{
+			return Services.get(IPricingConditionsService.class)
+					.calculatePricingConditions(request)
+					.orElse(null);
+		}
+		catch (final AdempiereException ex)
+		{
+			if (PricingConditionsErrorCode.SurchargeCurrencyNotMatchingPriceListCurrency.matches(ex))
+			{
+				logger.info("Cannot calculate pricing conditions. Skipping. \n request: {}", request, ex);
+				return null;
+			}
+			else
+			{
+				throw ex;
+			}
 		}
 	}
 
