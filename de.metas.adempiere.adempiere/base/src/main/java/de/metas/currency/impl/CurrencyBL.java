@@ -59,23 +59,34 @@ public class CurrencyBL implements ICurrencyBL
 	@Override
 	public final I_C_Currency getBaseCurrency(final Properties ctx)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final OrgId adOrgId = Env.getOrgId(ctx);
 
-		return getBaseCurrency(ctx, adClientId, adOrgId);
+		return getBaseCurrency(adClientId, adOrgId);
 	}
 
 	@Override
-	public I_C_Currency getBaseCurrency(final Properties ctx, final int adClientId, final int adOrgId)
+	public I_C_Currency getBaseCurrency(
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
 	{
-		Check.assume(adClientId >= 0, "adClientId >= 0");
-
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(ClientId.ofRepoId(adClientId), OrgId.ofRepoIdOrAny(adOrgId));
+		final CurrencyId currencyId = getBaseCurrencyId(adClientId, adOrgId);
+		
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getById(currencyId);
+	}
+	
+	@Override
+	public CurrencyId getBaseCurrencyId(
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
+	{
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(adClientId, adOrgId);
 		Check.assumeNotNull(as, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
 
-		final CurrencyId currencyId = as.getCurrencyId();
-		return Services.get(ICurrencyDAO.class).getById(currencyId);
+		return as.getCurrencyId();
 	}
+
 
 	@Override
 	public final BigDecimal convertBase(
@@ -87,8 +98,8 @@ public class CurrencyBL implements ICurrencyBL
 			final int AD_Client_ID,
 			final int AD_Org_ID)
 	{
-		final int CurTo_ID = getBaseCurrency(ctx, AD_Client_ID, AD_Org_ID).getC_Currency_ID();
-		return convert(ctx, Amt, CurFrom_ID, CurTo_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+		final CurrencyId currencyToId = getBaseCurrencyId(ClientId.ofRepoId(AD_Client_ID), OrgId.ofRepoIdOrAny(AD_Org_ID));
+		return convert(ctx, Amt, CurFrom_ID, currencyToId.getRepoId(), ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
 	}
 
 	@Override

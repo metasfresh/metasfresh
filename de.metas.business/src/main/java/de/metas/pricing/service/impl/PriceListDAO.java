@@ -20,6 +20,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.location.CountryId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
@@ -354,7 +355,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Set<Integer> retrieveCountryIdsByPricingSystem(@NonNull final PricingSystemId pricingSystemId)
+	public Set<CountryId> retrieveCountryIdsByPricingSystem(@NonNull final PricingSystemId pricingSystemId)
 	{
 		final List<Integer> countryIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_PriceList.class)
@@ -363,8 +364,10 @@ public class PriceListDAO implements IPriceListDAO
 				.addNotNull(I_M_PriceList.COLUMN_C_Country_ID)
 				.create()
 				.listDistinct(I_M_PriceList.COLUMNNAME_C_Country_ID, Integer.class);
-
-		return ImmutableSet.copyOf(countryIds);
+		
+		return countryIds.stream()
+				.map(CountryId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

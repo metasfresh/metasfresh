@@ -1,17 +1,14 @@
-package de.metas.pricing.limit;
+package de.metas.pricing.conditions.service;
 
-import java.util.Optional;
-import java.util.Set;
+import org.adempiere.exceptions.AdempiereException;
 
-import org.adempiere.location.CountryId;
-
-import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,9 +26,12 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface IPriceLimitRestrictionsRepository extends ISingletonService
+public enum PricingConditionsErrorCode
 {
-	Optional<PriceLimitRestrictions> get();
+	SurchargeCurrencyNotMatchingPriceListCurrency;
 
-	Set<CountryId> getPriceCountryIds();
+	public boolean matches(@NonNull final AdempiereException ex)
+	{
+		return ex.hasParameter(this);
+	}
 }

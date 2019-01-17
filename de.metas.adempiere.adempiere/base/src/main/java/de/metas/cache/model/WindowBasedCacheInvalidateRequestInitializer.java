@@ -1,6 +1,10 @@
 package de.metas.cache.model;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -11,6 +15,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -49,32 +57,82 @@ public class WindowBasedCacheInvalidateRequestInitializer
 		final IModelCacheInvalidationService registry = Services.get(IModelCacheInvalidationService.class);
 		final CacheMgt cacheMgt = CacheMgt.get();
 
-		final Set<GenericModelCacheInvalidateRequestFactory> factories = retrieveFactories();
-		logger.info("Found {} factories to be registered", factories.size());
+		final Set<ParentChildInfo> parentChildInfos = retrieveParentChildInfos();
+		logger.info("Found {} parentChildInfo instances to be registered", parentChildInfos.size());
 
-		factories.forEach(factory -> {
-			registry.register(factory.getRootTableName(), DirectModelCacheInvalidateRequestFactory.instance);
-			cacheMgt.enableRemoteCacheInvalidationForTableName(factory.getRootTableName());
+		for (final ParentChildInfo info : parentChildInfos)
+		{
+			// parent
+			final String parentTableName = info.getParentTableName();
 
-			registry.register(factory.getChildTableName(), factory);
-			cacheMgt.enableRemoteCacheInvalidationForTableName(factory.getChildTableName());
-		});
+			registry.register(parentTableName, DirectModelCacheInvalidateRequestFactory.instance);
+			if (info.isParentNeedsRemoteCacheInvalidation())
+			{
+				cacheMgt.enableRemoteCacheInvalidationForTableName(parentTableName);
+			}
+
+			// child
+			final String childTableName = info.getChildTableName();
+			if (isEmpty(childTableName, true))
+			{
+				continue; // no child => are done
+			}
+
+			registry.register(childTableName, info.toGenericModelCacheInvalidateRequestFactory());
+			if (info.isChildNeedsRemoteCacheInvalidation())
+			{
+				cacheMgt.enableRemoteCacheInvalidationForTableName(childTableName);
+			}
+		}
+
 	}
 
-	private final Set<GenericModelCacheInvalidateRequestFactory> retrieveFactories()
+	private final Set<ParentChildInfo> retrieveParentChildInfos()
 	{
-		final ImmutableSet.Builder<GenericModelCacheInvalidateRequestFactory> factories = ImmutableSet.builder();
+		final ImmutableSet.Builder<ParentChildInfo> infos = ImmutableSet.builder();
 		DB.forEachRow(
-				"select * from AD_Window_ParentChildTableNames_v1 where ChildLinkColumnName is not null",
+				"select * from AD_Window_ParentChildTableNames_v1",
 				ImmutableList.of(),
-				rs -> factories.add(GenericModelCacheInvalidateRequestFactory.builder()
-						.rootTableName(rs.getString("ParentTableName"))
+				rs -> infos.add(ParentChildInfo.builder()
+						.parentTableName(rs.getString("ParentTableName"))
+						.parentNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Parent_Table_IsEnableRemoteCacheInvalidation"), false))
 						.childTableName(rs.getString("ChildTableName"))
+						.childNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Child_Table_IsEnableRemoteCacheInvalidation"), false))
 						.childKeyColumnName(rs.getString("ChildKeyColumnName"))
 						.childLinkColumnName(rs.getString("ChildLinkColumnName"))
 						.build()));
 
-		return factories.build();
+		return infos.build();
 	}
 
+	@Value
+	@Builder
+	private static class ParentChildInfo
+	{
+		@NonNull
+		String parentTableName;
+
+		boolean parentNeedsRemoteCacheInvalidation;
+
+		@Nullable
+		String childTableName;
+
+		boolean childNeedsRemoteCacheInvalidation;
+
+		@Nullable
+		String childKeyColumnName;
+
+		@Nullable
+		String childLinkColumnName;
+
+		private GenericModelCacheInvalidateRequestFactory toGenericModelCacheInvalidateRequestFactory()
+		{
+			return GenericModelCacheInvalidateRequestFactory.builder()
+					.rootTableName(parentTableName)
+					.childTableName(childTableName)
+					.childKeyColumnName(childKeyColumnName)
+					.childLinkColumnName(childLinkColumnName)
+					.build();
+		}
+	}
 }

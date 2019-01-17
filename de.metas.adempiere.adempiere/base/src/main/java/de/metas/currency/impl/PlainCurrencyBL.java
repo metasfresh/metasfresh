@@ -1,33 +1,12 @@
 package de.metas.currency.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Properties;
-
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Currency;
+import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 public class PlainCurrencyBL extends CurrencyBL
@@ -35,11 +14,12 @@ public class PlainCurrencyBL extends CurrencyBL
 	private String defaultCurrencyISOCode = "CHF";
 
 	@Override
-	public I_C_Currency getBaseCurrency(Properties ctx, int adClientId, int adOrgId)
+	public CurrencyId getBaseCurrencyId(final ClientId adClientId, final OrgId adOrgId)
 	{
-		return Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(ctx, defaultCurrencyISOCode);
+		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), defaultCurrencyISOCode);
+		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
 	}
-	
+
 	public void setDefaultCurrencyISOCode(String defaultCurrencyISOCode)
 	{
 		this.defaultCurrencyISOCode = defaultCurrencyISOCode;
