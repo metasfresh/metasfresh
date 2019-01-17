@@ -162,11 +162,6 @@ import lombok.NonNull;
 			@NonNull final PricingConditionsResultBuilder result,
 			@NonNull final PriceSpecification priceOverride)
 	{
-		if (!priceOverride.isValid())
-		{
-			return; // nothing;
-		}
-
 		final PriceSpecificationType priceOverrideType = priceOverride.getType();
 		if (priceOverrideType == PriceSpecificationType.NONE)
 		{

@@ -1,10 +1,7 @@
 package de.metas.pricing.conditions;
 
-import static de.metas.util.Check.fail;
-
 import javax.annotation.Nullable;
 
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.PricingSystemId;
 import lombok.NonNull;
@@ -62,17 +59,7 @@ public class PriceSpecification
 		);
 	}
 
-	public static PriceSpecification fixedNullPrice()
-	{
-		return fixedPrice(null);
-	}
-
-	public static PriceSpecification fixedZeroPrice(@NonNull final CurrencyId fixedPriceCurrencyId)
-	{
-		return fixedPrice(Money.zero(fixedPriceCurrencyId));
-	}
-
-	public static PriceSpecification fixedPrice(@Nullable final Money fixedPrice)
+	public static PriceSpecification fixedPrice(@NonNull final Money fixedPrice)
 	{
 		return new PriceSpecification(
 				PriceSpecificationType.FIXED_PRICE,
@@ -99,8 +86,6 @@ public class PriceSpecification
 	// Fixed price related fields
 	Money fixedPrice;
 
-	boolean valid;
-
 	private PriceSpecification(
 			@NonNull final PriceSpecificationType type,
 
@@ -109,37 +94,11 @@ public class PriceSpecification
 			@Nullable final Money fixedPrice)
 	{
 		this.type = type;
+
 		this.basePricingSystemId = basePricingSystemId;
 		this.pricingSystemSurcharge = pricingSystemSurcharge;
 
 		this.fixedPrice = fixedPrice;
-
-		switch (type)
-		{
-			case NONE:
-			{
-				this.valid = true;
-				break;
-			}
-			case BASE_PRICING_SYSTEM:
-			{
-				this.valid = basePricingSystemId != null;
-				break;
-			}
-			case FIXED_PRICE:
-			{
-				this.valid = fixedPrice != null;
-				break;
-			}
-			default:
-			{
-				fail("Unexpected type={}", type);
-				valid = false;
-				break;
-			}
-		}
-
-		// TODO: add invalidReason
 	}
 
 	public boolean isNoPrice()
