@@ -22,6 +22,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.PriceSpecification;
 import de.metas.pricing.conditions.PriceSpecificationType;
@@ -116,8 +117,7 @@ public class PricingConditionsRepositoryTest
 
 		final PriceSpecification priceSpecification = result.getPriceSpecification();
 		assertThat(priceSpecification.getType()).isEqualTo(PriceSpecificationType.FIXED_PRICE);
-		assertThat(priceSpecification.getFixedPriceAmt()).isEqualByComparingTo(TEN);
-		assertThat(priceSpecification.getCurrencyId()).isEqualTo(CurrencyId.ofRepoId(10));
+		assertThat(priceSpecification.getFixedPrice()).isEqualTo(Money.of(TEN, CurrencyId.ofRepoId(10)));
 	}
 
 	/** Tests with a schemaBreakRecord that has *no* base price (neither "fixed" nor "pricing-system") */

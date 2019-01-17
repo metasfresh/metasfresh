@@ -4,12 +4,12 @@
 package de.metas.pricing.conditions.service.impl;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -22,6 +22,7 @@ import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.conditions.service.PricingConditionsErrorCode;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.PricingConditionsResult.PricingConditionsResultBuilder;
 import de.metas.pricing.service.IPricingBL;
@@ -161,11 +162,6 @@ import lombok.NonNull;
 			@NonNull final PricingConditionsResultBuilder result,
 			@NonNull final PriceSpecification priceOverride)
 	{
-		if(!priceOverride.isValid())
-		{
-			return; // nothing;
-		}
-
 		final PriceSpecificationType priceOverrideType = priceOverride.getType();
 		if (priceOverrideType == PriceSpecificationType.NONE)
 		{
@@ -187,21 +183,29 @@ import lombok.NonNull;
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
 
-			final BigDecimal pricingSystemSurchargeAmt = priceOverride.getPricingSystemSurchargeAmt();
-			if (pricingSystemSurchargeAmt != null)
+			//
+			// Add surcharge amount to standard price
+			final Money pricingSystemSurcharge = priceOverride.getPricingSystemSurcharge();
+			if (pricingSystemSurcharge != null && pricingSystemSurcharge.signum() != 0)
 			{
-				Check.assume(Objects.equals(priceOverride.getCurrencyId(), currencyId),
-						"If priceOverrideType={} and pricingSystemSurcharge!=null, then the currencies need to match; pricingResult.currencyId={}, pricingSystemSurcharge={}",
-						PriceSpecificationType.BASE_PRICING_SYSTEM, currencyId, priceOverride.getCurrencyId());
+				if (!CurrencyId.equals(pricingSystemSurcharge.getCurrencyId(), currencyId))
+				{
+					throw new AdempiereException("Surcharge's currency is not matching base price's currency. ")
+							.appendParametersToMessage()
+							.setParameter(PricingConditionsErrorCode.SurchargeCurrencyNotMatchingPriceListCurrency)
+							.setParameter("price", Money.of(priceStd, currencyId))
+							.setParameter("surcharge", pricingSystemSurcharge);
+				}
 
-				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurchargeAmt);
+				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurcharge.getValue());
 				result.priceStdOverride(priceStdOverride);
 			}
 		}
 		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
 		{
-			result.currencyId(priceOverride.getCurrencyId());
-			result.priceStdOverride(priceOverride.getFixedPriceAmt());
+			final Money fixedPrice = priceOverride.getFixedPrice();
+			result.currencyId(fixedPrice != null ? fixedPrice.getCurrencyId() : null);
+			result.priceStdOverride(fixedPrice != null ? fixedPrice.getValue() : null);
 		}
 		else
 		{

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.uom.UomId;
@@ -467,7 +468,7 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public Set<Integer> getPriceLimitCountryIds()
+	public Set<CountryId> getPriceLimitCountryIds()
 	{
 		return priceLimitRules.getPriceCountryIds();
 	}
