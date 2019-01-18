@@ -13,8 +13,6 @@
  *****************************************************************************/
 package org.adempiere.model;
 
-import lombok.NonNull;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -47,6 +45,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -457,7 +456,6 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private POWrapper(final Class<?> interfaceClass, final PO po, final boolean useOldValues, final String trlAdLanguage)
 	{
-		super();
 		this.po = po;
 		this.useOldValues = useOldValues;
 		this.interfaceClass = interfaceClass;

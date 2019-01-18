@@ -311,7 +311,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 				line.getM_Locator_ID(),
 				line.getM_Product_ID(),
 				line.getM_AttributeSetInstance_ID(),
-				qtyDiff.getQty(),
+				qtyDiff.getAsBigDecimal(),
 				getMovementDate(),
 				get_TrxName());
 		mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());

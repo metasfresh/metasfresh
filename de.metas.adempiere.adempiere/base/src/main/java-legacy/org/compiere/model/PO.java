@@ -3396,7 +3396,7 @@ public abstract class PO
 				String value = (String)get_Value(index);
 				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
 					value = null;
-				if (value == null || value.isEmpty())
+				if (Check.isEmpty(value, true))
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
