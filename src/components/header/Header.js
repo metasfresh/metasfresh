@@ -406,7 +406,7 @@ class Header extends Component {
             text="Are you sure?"
             buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={() =>this.handlePromptSubmitClick(windowId, dataId)}
+            onSubmitClick={() => this.handlePromptSubmitClick(windowId, dataId)}
           />
         )}
 
