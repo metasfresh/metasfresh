@@ -250,14 +250,14 @@ public class MInventoryImportTableSqlUpdater
 
 		// No QtyCount
 		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No QtyInternalUse, ' ")
-				.append("WHERE QtyInternalUse IS NULL ")
+				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No qtycount, ' ")
+				.append("WHERE qtycount IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No QtyInternalUse = {}", no);
+			logger.warn("No qtycount = {}", no);
 		}
 
 	}
