@@ -33,7 +33,7 @@ Here come the actual release notes:
   * [#2124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2124) Webcam Foto not working anymore since last chrome update
   * [#2130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2130) Header/subheader not working correctly on mobile
   * [#2133](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2133) Display value description when hovering over field
-  * [#2135](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2135) sync all contract specs - add contracted vendor and discount schema
+  * [#2135](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2135) Sync all contract specs - add contracted vendor and discount schema
   * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
   * [#2134](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2134) string field is reset in mid-typing
   * [#2148](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2148) Tables not fully displayed in windows causing filters and actions not being displayed properly
