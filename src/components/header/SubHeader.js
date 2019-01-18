@@ -18,6 +18,8 @@ const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
 class Subheader extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
+    activeTab: PropTypes.string,
+    windowId: PropTypes.string.isRequired,
   };
 
   state = {
