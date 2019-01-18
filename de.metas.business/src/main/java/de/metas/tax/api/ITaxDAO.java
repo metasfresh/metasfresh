@@ -26,6 +26,7 @@ package de.metas.tax.api;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -84,5 +85,8 @@ public interface ITaxDAO extends ISingletonService
 
 		@NonNull
 		final VATType type;
+		
+		@NonNull
+		final CountryId countryId;
 	}
 }

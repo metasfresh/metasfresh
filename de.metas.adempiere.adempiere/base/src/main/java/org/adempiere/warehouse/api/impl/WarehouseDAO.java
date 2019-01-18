@@ -272,6 +272,12 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		return loadOutOfTrx(locatorId, modelClass);
 	}
+	
+	@Override
+	public <T extends I_M_Locator> T getLocatorByIdInTrx(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	{
+		return load(locatorId, modelClass);
+	}
 
 	@Override
 	public List<I_M_Locator> getLocators(@NonNull final WarehouseId warehouseId)
@@ -459,7 +465,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	public LocatorId retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorValue, final WarehouseId warehouseId)
 	{
 		final int locatorRepoId = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_M_Locator.class)
+				.createQueryBuilder(I_M_Locator.class)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorValue)
 				.create()
