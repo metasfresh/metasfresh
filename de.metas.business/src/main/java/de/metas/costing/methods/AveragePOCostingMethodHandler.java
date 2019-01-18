@@ -6,9 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -20,12 +20,16 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -310,8 +314,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		currentCost.addWeightedAverage(amount, costDetail.getQty());
 
-		final Stream<CostDetail> nextCostDetails = utils.streamAllCostDetailsAfter(costDetail);
-		nextCostDetails.forEach(nextCostDetail -> recalculateCostDetailAmount(nextCostDetail, currentCost));
+		final List<CostDetailAdjustment> nextCostDetailAdjustments = utils.streamAllCostDetailsAfter(costDetail)
+				.map(nextCostDetail -> recalculateCostDetailAmount(nextCostDetail, currentCost))
+				.collect(ImmutableList.toImmutableList());
 
 		//
 		// TODO: Create the final cost detail which is about posting the adjustment
@@ -321,25 +326,36 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		currentCost.getCumulatedQty();
 	}
 
-	private void recalculateCostDetailAmount(final CostDetail costDetail, final CurrentCost currentCost)
+	private CostDetailAdjustment recalculateCostDetailAmount(final CostDetail costDetail, final CurrentCost currentCost)
 	{
+		final CostDetailPreviousAmounts previousAmounts = CostDetailPreviousAmounts.of(currentCost);
 		final Quantity qty = costDetail.getQty();
+		final CostAmount amt;
 
 		//
 		// Inbound
 		if (costDetail.isInboundTrx())
 		{
-			currentCost.addWeightedAverage(costDetail.getAmt(), qty);
+			amt = costDetail.getAmt();
+			currentCost.addWeightedAverage(amt, qty);
 		}
 		//
 		// Outbound
 		else
 		{
-			final CostAmount amt = currentCost.getCostPrice()
+			amt = currentCost.getCostPrice()
 					.multiply(qty)
 					.roundToPrecisionIfNeeded(currentCost.getPrecision());
 
 			currentCost.addToCurrentQtyAndCumulate(qty, amt);
 		}
+
+		//
+		return CostDetailAdjustment.builder()
+				.costDetailId(costDetail.getId())
+				.amt(amt)
+				.qty(qty)
+				.previousAmounts(previousAmounts)
+				.build();
 	}
 }

@@ -32,7 +32,7 @@ import lombok.Value;
 @Builder
 public class CostDetailPreviousAmounts
 {
-	public static CostDetailPreviousAmounts of(CurrentCost currentCost)
+	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
 	{
 		return builder()
 				.costPrice(currentCost.getCostPrice())
