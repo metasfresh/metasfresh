@@ -79,7 +79,15 @@ public class WindowBasedCacheInvalidateRequestInitializer
 				continue; // no child => are done
 			}
 
-			registry.register(childTableName, info.toGenericModelCacheInvalidateRequestFactory());
+			try
+			{
+				registry.register(childTableName, info.toGenericModelCacheInvalidateRequestFactory());
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed registering model cache invalidate for {}: {}", childTableName, info, ex);
+			}
+
 			if (info.isChildNeedsRemoteCacheInvalidation())
 			{
 				cacheMgt.enableRemoteCacheInvalidationForTableName(childTableName);
