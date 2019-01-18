@@ -8,6 +8,8 @@ DELETE FROM  C_DocType_Trl WHERE C_DocType_ID=540956
 
 -- 2019-01-15T15:49:50.141
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+delete from ad_document_action_access WHERE C_DocType_ID=540956
+;
 DELETE FROM C_DocType WHERE C_DocType_ID=540956
 ;
 
