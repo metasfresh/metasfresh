@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -127,12 +128,19 @@ public class WindowBasedCacheInvalidateRequestInitializer
 
 		private GenericModelCacheInvalidateRequestFactory toGenericModelCacheInvalidateRequestFactory()
 		{
-			return GenericModelCacheInvalidateRequestFactory.builder()
-					.rootTableName(parentTableName)
-					.childTableName(childTableName)
-					.childKeyColumnName(childKeyColumnName)
-					.childLinkColumnName(childLinkColumnName)
-					.build();
+			try
+			{
+				return GenericModelCacheInvalidateRequestFactory.builder()
+						.rootTableName(parentTableName)
+						.childTableName(childTableName)
+						.childKeyColumnName(childKeyColumnName)
+						.childLinkColumnName(childLinkColumnName)
+						.build();
+			}
+			catch (final Exception ex)
+			{
+				throw new AdempiereException("Failed creating " + GenericModelCacheInvalidateRequestFactory.class.getSimpleName() + " for " + this, ex);
+			}
 		}
 	}
 }
