@@ -76,7 +76,7 @@ public class DocumentWebsocketPublisher
 			collector = threadLocalCollector;
 			autoflush = false;
 		}
-		else if(trxManager.isActive(trx))
+		else if (trxManager.isActive(trx))
 		{
 			collector = trx.getProperty(JSONDocumentChangedWebSocketEventCollector.class.getName(), () -> createCollectorAndBind(trx, websocketSender));
 			autoflush = false;
@@ -149,8 +149,10 @@ public class DocumentWebsocketPublisher
 		}
 
 		final JSONDocumentChangedWebSocketEventCollector collectorToMerge = JSONDocumentChangedWebSocketEventCollector.newInstance();
-		jsonDocumentEvents.forEach(event -> collectFrom(collectorToMerge, event));
-
+		for (final JSONDocument jsonDocumentEvent : jsonDocumentEvents)
+		{
+			collectFrom(collectorToMerge, jsonDocumentEvent);
+		}
 		if (collectorToMerge.isEmpty())
 		{
 			return;
@@ -174,7 +176,6 @@ public class DocumentWebsocketPublisher
 		}
 
 		final DocumentId documentId = event.getId();
-
 		event.getIncludedTabsInfos().forEach(tabInfo -> collector.mergeFrom(windowId, documentId, tabInfo));
 	}
 

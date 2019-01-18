@@ -15,6 +15,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
@@ -166,7 +167,7 @@ import lombok.NonNull;
 
 		//
 		// Parameters document descriptor
-		final DocumentEntityDescriptor parametersDescriptor;
+		final DocumentEntityDescriptor processDescriptor;
 		{
 			final DocumentEntityDescriptor.Builder parametersDescriptorBuilder = DocumentEntityDescriptor.builder()
 					.setDocumentType(DocumentType.Process, processId.toDocumentId())
@@ -181,7 +182,7 @@ import lombok.NonNull;
 					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
 					.forEach(processParaDescriptor -> parametersDescriptorBuilder.addField(processParaDescriptor));
 
-			parametersDescriptor = parametersDescriptorBuilder.build();
+			processDescriptor = parametersDescriptorBuilder.build();
 		}
 
 		//
@@ -189,9 +190,9 @@ import lombok.NonNull;
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setProcessId(processId)
 				.setLayoutType(webuiProcesClassInfo.getLayoutType())
-				.setCaption(parametersDescriptor.getCaption())
-				.setDescription(parametersDescriptor.getDescription())
-				.addElements(parametersDescriptor);
+				.setCaption(processDescriptor.getCaption())
+				.setDescription(processDescriptor.getDescription())
+				.addElements(processDescriptor);
 
 		//
 		// Process descriptor
@@ -200,14 +201,15 @@ import lombok.NonNull;
 				.setInternalName(adProcess.getValue())
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
-				.setParametersDescriptor(parametersDescriptor)
+				.setParametersDescriptor(processDescriptor)
 				.setLayout(layout.build())
 				.build();
 	}
 
-	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(final WebuiProcessClassInfo webuiProcesClassInfo, final I_AD_Process_Para adProcessParam)
+	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(
+			final WebuiProcessClassInfo webuiProcesClassInfo,
+			@NonNull final I_AD_Process_Para adProcessParam)
 	{
-		final IModelTranslationMap adProcessParaTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcessParam);
 		final String parameterName = adProcessParam.getColumnName();
 
 		//
@@ -245,10 +247,10 @@ import lombok.NonNull;
 				false // don't allow using auto sequence
 		);
 
-		final DocumentFieldDescriptor.Builder paramDescriptor = DocumentFieldDescriptor.builder(parameterName)
-				.setCaption(adProcessParaTrlsMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, adProcessParam.getName()))
-				.setDescription(adProcessParaTrlsMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, adProcessParam.getDescription()))
-				// .setHelp(adProcessParaTrlsMap.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Help, adProcessParam.getHelp()))
+		final DocumentFieldDescriptor.Builder paramDescriptorBuilder = DocumentFieldDescriptor.builder(parameterName);
+		extractAndSetTranslatableValues(adProcessParam, paramDescriptorBuilder);
+
+		final DocumentFieldDescriptor.Builder paramDescriptor = paramDescriptorBuilder
 				//
 				.setValueClass(valueClass)
 				.setWidgetType(widgetType)
@@ -271,6 +273,26 @@ import lombok.NonNull;
 		}
 
 		return paramDescriptor;
+	}
+
+	private void extractAndSetTranslatableValues(
+			@NonNull final I_AD_Process_Para adProcessParamRecord,
+			@NonNull final DocumentFieldDescriptor.Builder paramDescriptorBuilder)
+	{
+		if (adProcessParamRecord.getAD_Element_ID() <= 0)
+		{
+			final I_AD_Process_Para processParamTrl = InterfaceWrapperHelper.translate(adProcessParamRecord, I_AD_Process_Para.class);
+			paramDescriptorBuilder
+					.setCaption(processParamTrl.getName())
+					.setDescription(processParamTrl.getDescription());
+		}
+		else
+		{
+			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(adProcessParamRecord.getAD_Element(), I_AD_Element.class);
+			paramDescriptorBuilder
+					.setCaption(elementTrl.getName())
+					.setDescription(elementTrl.getDescription());
+		}
 	}
 
 	private static DocumentFieldWidgetType extractWidgetType(final String parameterName, final int adReferenceId, final LookupDescriptor lookupDescriptor, final boolean isRange)

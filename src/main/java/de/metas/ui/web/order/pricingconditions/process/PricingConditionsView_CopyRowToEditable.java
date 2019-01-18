@@ -1,6 +1,5 @@
 package de.metas.ui.web.order.pricingconditions.process;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import de.metas.bpartner.BPartnerId;
@@ -8,7 +7,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverride;
+import de.metas.pricing.conditions.PriceSpecification;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
@@ -16,7 +15,6 @@ import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRe
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -84,7 +82,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 	{
 		final PricingConditionsBreak templatePricingConditionsBreak = templateRow.getPricingConditionsBreak();
 
-		PriceOverride price = templatePricingConditionsBreak.getPriceOverride();
+		PriceSpecification price = templatePricingConditionsBreak.getPriceSpecification();
 		if (price.isNoPrice())
 		{
 			// In case row does not have a price then use BPartner's pricing system
@@ -107,15 +105,14 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 				.build();
 	}
 
-	private PriceOverride createBasePricingSystemPrice(final BPartnerId bpartnerId, final SOTrx soTrx)
+	private PriceSpecification createBasePricingSystemPrice(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
-			return PriceOverride.none();
+			return PriceSpecification.none();
 		}
 
-		final BigDecimal basePriceAddAmt = BigDecimal.ZERO;
-		return PriceOverride.basePricingSystem(pricingSystemId, basePriceAddAmt);
+		return PriceSpecification.basePricingSystem(pricingSystemId);
 	}
 }

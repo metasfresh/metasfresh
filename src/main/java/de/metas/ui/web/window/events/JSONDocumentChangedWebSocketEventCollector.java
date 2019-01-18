@@ -70,7 +70,7 @@ class JSONDocumentChangedWebSocketEventCollector
 		events.clear();
 		return eventsList;
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return events.isEmpty();

@@ -2,20 +2,21 @@ package de.metas.ui.web.order.pricingconditions.view;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import de.metas.money.CurrencyId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -68,19 +69,26 @@ public class PricingConditionsRowChangeRequest
 	@lombok.Builder
 	public static final class PartialPriceChange implements PriceChange
 	{
-		PriceOverrideType priceType;
+		/** Currently this field is just for debugging. But might also be used to distinguish between fields that were changed to null and fields that were not changed. */
+		@Singular
+		Set<String> changedFieldNames;
+
+		PriceSpecificationType priceType;
 
 		Optional<PricingSystemId> basePricingSystemId;
-		BigDecimal basePriceAddAmt;
+		BigDecimal pricingSystemSurchargeAmt;
 
-		BigDecimal fixedPrice;
-		CurrencyId fixedPriceCurrencyId;
+		BigDecimal fixedPriceAmt;
+
+		CurrencyId currencyId;
+		
+		CurrencyId defaultCurrencyId;
 	}
 
 	@lombok.Value(staticConstructor = "of")
 	public static final class CompletePriceChange implements PriceChange
 	{
 		@NonNull
-		PriceOverride price;
+		PriceSpecification price;
 	}
 }

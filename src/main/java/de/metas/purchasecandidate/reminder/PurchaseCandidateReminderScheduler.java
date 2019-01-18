@@ -13,7 +13,6 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -47,7 +46,6 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -85,6 +83,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	private final TaskScheduler taskScheduler;
 	private final IViewsRepository viewsRepo;
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
+	private final IBPartnerBL bpartnersService;
 
 	private static final NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.purchasecandidate.UserNotifications.Due");
 	private static final String MSG_PurchaseCandidatesDue = "de.metas.purchasecandidates.PurchaseCandidatesDueNotification";
@@ -96,11 +95,12 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 			@Qualifier(WebRestApiApplication.BEANNAME_WebuiTaskScheduler) @NonNull final TaskScheduler taskScheduler,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
-			final Adempiere databaseAvailable)
+			@NonNull final IBPartnerBL bpartnersService)
 	{
 		this.taskScheduler = taskScheduler;
 		this.viewsRepo = viewsRepo;
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
+		this.bpartnersService = bpartnersService;
 	}
 
 	@Override
@@ -245,7 +245,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	private final DocumentFilter createViewStickyFilter(final PurchaseCandidateReminder reminder)
 	{
 		final BPartnerId vendorBPartnerId = reminder.getVendorBPartnerId();
-		final String vendorName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(vendorBPartnerId);
+		final String vendorName = bpartnersService.getBPartnerValueAndName(vendorBPartnerId);
 		final LocalDateTime notificationTime = reminder.getNotificationTime();
 
 		final ITranslatableString caption = ITranslatableString.compose(" / ",

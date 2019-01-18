@@ -322,7 +322,7 @@ public final class PurchaseRow implements IViewRow
 	@Override
 	public DocumentId getId()
 	{
-		return rowId.toDocumentId();
+		return getRowId().toDocumentId();
 	}
 
 	public List<DemandGroupReference> getDemandGroupReferences()
@@ -334,7 +334,7 @@ public final class PurchaseRow implements IViewRow
 	@Override
 	public PurchaseRowType getType()
 	{
-		return rowId.getType();
+		return getRowId().getType();
 	}
 
 	@Override
@@ -495,18 +495,18 @@ public final class PurchaseRow implements IViewRow
 	{
 		if (readonly)
 		{
-			throw new AdempiereException("readonly").setParameter("rowId", rowId);
+			throw new AdempiereException("readonly").setParameter("rowId", getRowId());
 		}
 	}
 
 	public void assertRowType(@NonNull final PurchaseRowType expectedRowType)
 	{
+		getRowId().assertRowType(expectedRowType);
 		final PurchaseRowType rowType = getType();
 		if (rowType != expectedRowType)
 		{
 			throw new AdempiereException("Expected " + expectedRowType + " but it was " + rowType + ": " + this);
 		}
-
 	}
 
 	void changeIncludedRow(@NonNull final PurchaseRowId includedRowId, @NonNull final PurchaseRowChangeRequest request)
@@ -584,7 +584,14 @@ public final class PurchaseRow implements IViewRow
 		assertRowType(PurchaseRowType.LINE);
 		availabilityResultRows.forEach(availabilityResultRow -> availabilityResultRow.assertRowType(PurchaseRowType.AVAILABILITY_DETAIL));
 
+		// If there is at least one "available on vendor" row,
+		// we shall order directly and not aggregate later on a Purchase Order.
+		final boolean allowPOAggregation = availabilityResultRows
+				.stream()
+				.noneMatch(row -> row.getRowId().isAvailableOnVendor());
+
 		setIncludedRows(ImmutableList.copyOf(availabilityResultRows));
+		setPurchaseCandidatesGroup(getPurchaseCandidatesGroup().allowingPOAggregation(allowPOAggregation));
 	}
 
 	public Stream<PurchaseCandidatesGroup> streamPurchaseCandidatesGroup()

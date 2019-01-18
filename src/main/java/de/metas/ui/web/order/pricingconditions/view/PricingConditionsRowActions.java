@@ -7,15 +7,14 @@ import java.util.Optional;
 import de.metas.money.CurrencyId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
-import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -51,10 +50,12 @@ public class PricingConditionsRowActions
 				.build();
 	}
 
-	public static PricingConditionsRowChangeRequest toChangeRequest(final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	public static PricingConditionsRowChangeRequest toChangeRequest(
+			final List<JSONDocumentChangedEvent> fieldChangeRequests,
+			final CurrencyId defaultCurrencyId)
 	{
 		final PricingConditionsRowChangeRequestBuilder builder = PricingConditionsRowChangeRequest.builder()
-				.priceChange(toPartialPriceChange(fieldChangeRequests));
+				.priceChange(toPartialPriceChange(fieldChangeRequests, defaultCurrencyId));
 
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
@@ -86,16 +87,23 @@ public class PricingConditionsRowActions
 		return builder.build();
 	}
 
-	private static PartialPriceChange toPartialPriceChange(final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	private static PartialPriceChange toPartialPriceChange(
+			final List<JSONDocumentChangedEvent> fieldChangeRequests,
+			final CurrencyId defaultCurrencyId)
 	{
-		final PartialPriceChangeBuilder builder = PartialPriceChange.builder();
+		final PartialPriceChangeBuilder builder = PartialPriceChange.builder()
+				.defaultCurrencyId(defaultCurrencyId);
+		
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();
-			if (PricingConditionsRow.FIELDNAME_PriceType.equals(fieldName))
+
+			builder.changedFieldName(fieldName);
+
+			if (PricingConditionsRow.FIELDNAME_BasePriceType.equals(fieldName))
 			{
 				final LookupValue priceTypeLookupValue = fieldChangeRequest.getValueAsStringLookupValue();
-				final PriceOverrideType priceType = priceTypeLookupValue != null ? PriceOverrideType.ofCode(priceTypeLookupValue.getIdAsString()) : null;
+				final PriceSpecificationType priceType = priceTypeLookupValue != null ? PriceSpecificationType.ofCode(priceTypeLookupValue.getIdAsString()) : null;
 				builder.priceType(priceType);
 			}
 			else if (PricingConditionsRow.FIELDNAME_BasePricingSystem.equals(fieldName))
@@ -104,19 +112,24 @@ public class PricingConditionsRowActions
 				final PricingSystemId pricingSystemId = pricingSystem != null ? PricingSystemId.ofRepoIdOrNull(pricingSystem.getIdAsInt()) : null;
 				builder.basePricingSystemId(Optional.ofNullable(pricingSystemId));
 			}
-			else if (PricingConditionsRow.FIELDNAME_BasePriceAddAmt.equals(fieldName))
+			else if (PricingConditionsRow.FIELDNAME_PricingSystemSurcharge.equals(fieldName))
 			{
-				builder.basePriceAddAmt(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
+				builder.pricingSystemSurchargeAmt(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
 			}
-			else if (PricingConditionsRow.FIELDNAME_Price.equals(fieldName))
+			else if (PricingConditionsRow.FIELDNAME_BasePrice.equals(fieldName))
 			{
-				builder.fixedPrice(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
+				builder.fixedPriceAmt(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO));
 			}
 			else if (PricingConditionsRow.FIELDNAME_C_Currency_ID.equals(fieldName))
 			{
 				final LookupValue currency = fieldChangeRequest.getValueAsIntegerLookupValue();
 				final CurrencyId currencyId = currency != null ? CurrencyId.ofRepoIdOrNull(currency.getIdAsInt()) : null;
-				builder.fixedPriceCurrencyId(currencyId);
+				builder.currencyId(currencyId);
+				
+				if(currencyId != null)
+				{
+					builder.defaultCurrencyId(currencyId);
+				}
 			}
 		}
 
