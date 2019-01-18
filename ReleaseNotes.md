@@ -10,6 +10,8 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.88
+
 # metasfresh 5.87
 # Features
 * metasfresh
@@ -34,6 +36,7 @@ Here come the actual release notes:
   * [#2135](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2135) sync all contract specs - add contracted vendor and discount schema
   * [#2034](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2034) Uncaught TypeError: selected.indexOf is not a function
   * [#2134](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2134) string field is reset in mid-typing
+  * [#2148](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2148) Tables not fully displayed in windows causing filters and actions not being displayed properly
 
 # metasfresh 5.86
 # Features
