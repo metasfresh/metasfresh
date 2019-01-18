@@ -57,9 +57,12 @@ export class RawList extends PureComponent {
       selected: props.selected || null,
       dropdownList: props.list,
     };
+
+    this.focusDropdown = this.focusDropdown.bind(this);
+    this.handleSelect = this.handleSelect.bind(this);
   }
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     window.addEventListener('keydown', this.handleTab);
   }
 
@@ -124,7 +127,7 @@ export class RawList extends PureComponent {
           ...changedValues,
         },
         () => {
-          this.dropdown.focus();
+          this.focusDropdown();
         }
       );
     }
@@ -138,7 +141,7 @@ export class RawList extends PureComponent {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
     if (!isToggled) {
-      this.dropdown.focus();
+      this.focusDropdown();
       onOpenDropdown();
     } else {
       onCloseDropdown();
@@ -171,7 +174,7 @@ export class RawList extends PureComponent {
     }
   }
 
-  handleSelect = selected => {
+  handleSelect(selected) {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
     const changedValues = {
@@ -187,10 +190,10 @@ export class RawList extends PureComponent {
       onCloseDropdown();
 
       setTimeout(() => {
-        this.dropdown.focus();
+        this.focusDropdown();
       }, 0);
     });
-  };
+  }
 
   handleClear = event => {
     event.stopPropagation();
@@ -253,6 +256,10 @@ export class RawList extends PureComponent {
     this.dropdown.blur();
     onBlur();
   };
+
+  focusDropdown() {
+    this.dropdown.focus();
+  }
 
   render() {
     const {
