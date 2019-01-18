@@ -203,14 +203,16 @@ public class C_Order
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 
-		final I_C_Customer_Retention customerRetention = customerRetentionRepo.retrieveCustomerRetention(bpartnerId);
+		I_C_Customer_Retention customerRetention = customerRetentionRepo.retrieveCustomerRetention(bpartnerId);
 
-		if (!Check.isEmpty(customerRetention))
+		if (Check.isEmpty(customerRetention))
 		{
-			// nothing to do
-			return;
+			customerRetention = customerRetentionRepo.createNewCustomerRetention(bpartnerId);
 		}
 
-		customerRetentionRepo.setNewCustomer(bpartnerId);
+		if (Check.isEmpty(customerRetention.getCustomerRetention()))
+		{
+			customerRetentionRepo.setNewCustomer(bpartnerId);
+		}
 	}
 }
