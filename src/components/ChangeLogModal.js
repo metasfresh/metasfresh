@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-// import classnames from 'classnames';
+import PropTypes from 'prop-types';
 
 export default class ChangeLogModal extends Component {
   render() {
@@ -91,3 +91,7 @@ export default class ChangeLogModal extends Component {
     );
   }
 }
+
+ChangeLogModal.propTypes = {
+  data: PropTypes.object.isRequired,
+};
