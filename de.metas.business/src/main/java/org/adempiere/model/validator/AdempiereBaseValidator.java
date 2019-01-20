@@ -350,6 +350,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 
-		WindowBasedCacheInvalidateRequestInitializer.instance.initialize();
+		WindowBasedCacheInvalidateRequestInitializer.setup();
 	}
 }

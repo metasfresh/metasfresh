@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inventory;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Map;
@@ -58,16 +57,18 @@ import lombok.Value;
  */
 
 /**
- * Builds up a list of HUs for (when maxLocators was specified): 
- * <ul> 
- * <li>list the locators, ordered by the date they were last inventoriesed</li>
+ * Used to inventory those locators that have the "oldest" items.
+ *
+ * Builds up a list of HUs for (when maxLocators was specified):
+ * <ul>
+ * <li>list the locators, ordered by the date they were last inventoried</li>
  * <li> oldest first</li>
- * <li> if there are >1 products in one locator, then take the date from the one that wasn't inventorized for the longest time</li>
+ * <li> if there are >1 products in one locator, then take the date from the one that wasn't inventoried for the longest time</li>
  * <li>take the first <code>maxLocators</code> locators</li>
  * <li>take for all products from those locators</li>
  * <li>and stream HUs</li>
  * </ul>
- * 
+ *
  * Builds up a list of HUs for (when minimumPrice was specified):
  * <ul>
  * <li>get all products that have a priceActual of > <code>1000€</code></li>
@@ -75,17 +76,19 @@ import lombok.Value;
  * <li>get all products from their locators</li>
  * <li>and stream HUs</li>
  * </ul>
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Value
 @Builder
-public class OldTransactionsStrategy implements HUsForInventoryStrategy
+public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 {
 	int maxLocators;
+
 	@NonNull
 	BigDecimal minimumPrice;
+
 	@NonNull
 	LocalDate movementDate;
 
@@ -113,7 +116,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 	final Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
 			.thenComparing(TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR);
 
-	private OldTransactionsStrategy(final int maxLocators, final BigDecimal minimumPrice, final LocalDate movementDate)
+	private LeastRecentTransactionStrategy(final int maxLocators, final BigDecimal minimumPrice, final LocalDate movementDate)
 	{
 		this.maxLocators = maxLocators;
 		this.minimumPrice = minimumPrice;
@@ -145,6 +148,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 		// Order by
 		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
 				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
+				.addColumn(I_M_HU.COLUMN_Created)
 				.createQueryOrderBy();
 
 		return huQueryBuilder.createQuery()
@@ -169,7 +173,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 		final IQueryBuilder<I_M_Transaction> queryBuilder = queryBL.createQueryBuilder(I_M_Transaction.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (BigDecimal.ZERO.compareTo(minimumPrice) < 0)
+		if (minimumPrice.signum() < 0)
 		{
 			final Set<ProductId> productIds = Services.get(IPriceListDAO.class).retrieveHighPriceProducts(getMinimumPrice(), getMovementDate());
 			if (!productIds.isEmpty())
@@ -178,7 +182,8 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 			}
 		}
 
-		final ImmutableSetMultimap<Integer, ProductId> productsByLocatorIds = queryBuilder.create()
+		final ImmutableSetMultimap<Integer, ProductId> productsByLocatorIds = queryBuilder
+				.create()
 				.listDistinct(I_M_Transaction.COLUMNNAME_M_Locator_ID, I_M_Transaction.COLUMNNAME_M_Product_ID,
 						I_M_Transaction.COLUMNNAME_MovementDate, I_M_Transaction.COLUMNNAME_MovementType)
 				.stream()
@@ -187,7 +192,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 							.locatorId((int)record.get(I_M_Locator.COLUMNNAME_M_Locator_ID))
 							.productId(ProductId.ofRepoId((int)record.get(I_M_Product.COLUMNNAME_M_Product_ID)))
 							.movementType((String)record.get(I_M_Transaction.COLUMNNAME_MovementType))
-							.movementDate(TimeUtil.asLocalDate((Timestamp)record.get(I_M_Transaction.COLUMNNAME_MovementDate)))
+							.movementDate(TimeUtil.asLocalDate(record.get(I_M_Transaction.COLUMNNAME_MovementDate)))
 							.build();
 				})
 				.sorted(TRANSACTIONS_COMPARATOR)

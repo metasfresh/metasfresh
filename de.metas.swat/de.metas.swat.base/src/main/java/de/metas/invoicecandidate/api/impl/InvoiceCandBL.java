@@ -54,7 +54,9 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -268,7 +270,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			if (actualAmt.compareTo(invoiceSched.getAmt()) < 0)
 			{
-				final I_C_Currency targetCurrency = currencyConversionBL.getBaseCurrency(ctx, ic.getAD_Client_ID(), ic.getAD_Org_ID());
+				final I_C_Currency targetCurrency = currencyConversionBL.getBaseCurrency(
+						ClientId.ofRepoId(ic.getAD_Client_ID()),
+						OrgId.ofRepoId(ic.getAD_Org_ID()));
 				final String currSymbol = targetCurrency.getCurSymbol();
 
 				final String msg = msgBL.getMsg(ctx,

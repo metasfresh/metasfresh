@@ -3,12 +3,13 @@ package de.metas.contracts.process;
 import java.sql.Timestamp;
 
 import org.compiere.Adempiere;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.impl.BPartnerTimeSpanRepository;
+import de.metas.contracts.impl.CustomerRetentionRepository;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
@@ -37,19 +38,19 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-public class C_BPartner_Update_TimeSpan extends JavaProcess
+public class C_Customer_Retention_Update extends JavaProcess
 {
 
-	private final BPartnerTimeSpanRepository bpartnerTimeSpanRepo = Adempiere.getBean(BPartnerTimeSpanRepository.class);
+	private final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
 
 	final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableSet<BPartnerId> bPartnerIdsWithTimeSpan = bpartnerTimeSpanRepo.retrieveBPartnerIdsWithTimeSpan();
+		final ImmutableSet<BPartnerId> bPartnerIdsWithCustomerRetention = customerRetentionRepo.retrieveBPartnerIdsWithCustomerRetention();
 
-		for (final BPartnerId bpartnerId : bPartnerIdsWithTimeSpan)
+		for (final BPartnerId bpartnerId : bPartnerIdsWithCustomerRetention)
 		{
 			final I_C_Flatrate_Term latestFlatrateTermForBPartnerId = contractsDAO.retrieveLatestFlatrateTermForBPartnerId(bpartnerId);
 
@@ -58,11 +59,11 @@ public class C_BPartner_Update_TimeSpan extends JavaProcess
 				continue;
 			}
 
-			final Timestamp contractMasterEndDate = latestFlatrateTermForBPartnerId.getMasterEndDate();
+			final Timestamp endDate = Util.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
 
-			if (bpartnerTimeSpanRepo.dateExceedsThreshold(contractMasterEndDate, SystemTime.asTimestamp()))
+			if (customerRetentionRepo.dateExceedsThreshold(endDate, SystemTime.asTimestamp()))
 			{
-				bpartnerTimeSpanRepo.setNonSubscriptionCustomer(bpartnerId);
+				customerRetentionRepo.setNonSubscriptionCustomer(bpartnerId);
 			}
 		}
 

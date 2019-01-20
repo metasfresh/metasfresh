@@ -518,21 +518,6 @@ public class Util
 	}
 
 	/**
-	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
-	 * <p>
-	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
-	 * @param cond
-	 * @param errMsg
-	 * @param params
-	 */
-	@Deprecated
-	public static void errorUnless(final boolean cond, final String errMsg, Object... params)
-	{
-		Check.errorUnless(cond, errMsg, params);
-	}
-
-	/**
 	 * This method similar to {@link #assume(boolean, String, Object...)}, the error is throw <b>if the condition is true</b> and the message should be formulated in terms of an error message instead
 	 * of an assumption.
 	 * <p>

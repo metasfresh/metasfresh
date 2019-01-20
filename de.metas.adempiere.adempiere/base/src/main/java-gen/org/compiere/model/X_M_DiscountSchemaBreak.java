@@ -15,7 +15,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 430952688L;
+	private static final long serialVersionUID = -1715646964L;
 
     /** Standard Constructor */
     public X_M_DiscountSchemaBreak (Properties ctx, int M_DiscountSchemaBreak_ID, String trxName)
@@ -29,6 +29,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 			setIsValid (true); // Y
 			setM_DiscountSchemaBreak_ID (0);
 			setM_DiscountSchema_ID (0);
+			setPriceBase (null); // P
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=@M_DiscountSchema_ID@
         } */
     }
@@ -543,8 +544,8 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	public static final String PRICEBASE_PricingSystem = "P";
 	/** Fixed = F */
 	public static final String PRICEBASE_Fixed = "F";
-	/** Set PriceBase.
-		@param PriceBase PriceBase	  */
+	/** Set Preisgrundlage.
+		@param PriceBase Preisgrundlage	  */
 	@Override
 	public void setPriceBase (java.lang.String PriceBase)
 	{
@@ -552,31 +553,53 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_PriceBase, PriceBase);
 	}
 
-	/** Get PriceBase.
-		@return PriceBase	  */
+	/** Get Preisgrundlage.
+		@return Preisgrundlage	  */
 	@Override
 	public java.lang.String getPriceBase () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PriceBase);
 	}
 
-	/** Set Standardpreis.
-		@param PriceStd 
-		Standardpreis
+	/** Set Festpreis.
+		@param PriceStdFixed 
+		Festpreis, ohne ggf. zusätzliche Rabatte
 	  */
 	@Override
-	public void setPriceStd (java.math.BigDecimal PriceStd)
+	public void setPriceStdFixed (java.math.BigDecimal PriceStdFixed)
 	{
-		set_Value (COLUMNNAME_PriceStd, PriceStd);
+		set_Value (COLUMNNAME_PriceStdFixed, PriceStdFixed);
 	}
 
-	/** Get Standardpreis.
-		@return Standardpreis
+	/** Get Festpreis.
+		@return Festpreis, ohne ggf. zusätzliche Rabatte
 	  */
 	@Override
-	public java.math.BigDecimal getPriceStd () 
+	public java.math.BigDecimal getPriceStdFixed () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStdFixed);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Preisaufschlag.
+		@param PricingSystemSurchargeAmt 
+		Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	  */
+	@Override
+	public void setPricingSystemSurchargeAmt (java.math.BigDecimal PricingSystemSurchargeAmt)
+	{
+		set_Value (COLUMNNAME_PricingSystemSurchargeAmt, PricingSystemSurchargeAmt);
+	}
+
+	/** Get Preisaufschlag.
+		@return Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	  */
+	@Override
+	public java.math.BigDecimal getPricingSystemSurchargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PricingSystemSurchargeAmt);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -621,27 +644,5 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Aufschlag auf Standardpreis.
-		@param Std_AddAmt 
-		Amount added to a price as a surcharge
-	  */
-	@Override
-	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt)
-	{
-		set_Value (COLUMNNAME_Std_AddAmt, Std_AddAmt);
-	}
-
-	/** Get Aufschlag auf Standardpreis.
-		@return Amount added to a price as a surcharge
-	  */
-	@Override
-	public java.math.BigDecimal getStd_AddAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Std_AddAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 }

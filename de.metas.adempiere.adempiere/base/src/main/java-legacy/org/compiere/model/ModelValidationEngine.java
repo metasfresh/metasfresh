@@ -1386,7 +1386,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	private final boolean appliesFor(ModelValidator validator, int AD_Client_ID)
+	private final boolean appliesFor(@NonNull final ModelValidator validator, final int AD_Client_ID)
 	{
 		return AD_Client_ID == validator.getAD_Client_ID()
 				|| m_globalValidators.contains(validator);

@@ -35,6 +35,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -60,20 +61,19 @@ public interface ICurrencyBL extends ISingletonService
 	CurrencyConversionContext createCurrencyConversionContext(Date ConvDate, ConversionType conversionType, int AD_Client_ID, int AD_Org_ID);
 
 	/**
-	 * Gets base currency of AD_Client and AD_Org which are set in context.
-	 *
-	 * @param ctx
-	 * @return currency
+	 * @return base currency of AD_Client and AD_Org which are set in context.
 	 */
 	I_C_Currency getBaseCurrency(Properties ctx);
 
 	/**
-	 * Gets base currency of given AD_Client and AD_Org
-	 *
-	 * @param ctx
-	 * @return currency
+	 * @return base currency of given client and org
 	 */
-	I_C_Currency getBaseCurrency(Properties ctx, int adClientId, int adOrgId);
+	I_C_Currency getBaseCurrency(ClientId adClientId, OrgId adOrgId);
+
+	/**
+	 * @return base currency ID of given client and org
+	 */
+	CurrencyId getBaseCurrencyId(ClientId adClientId, OrgId adOrgId);
 
 	/**
 	 * Convert an amount to base Currency

@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -526,5 +527,22 @@ public class TimeUtilTest
 				.toInstant();
 
 		assertThat(TimeUtil.getDay(input, targetZoneId)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testMaxDuration()
+	{
+		testMaxDuration(null, null, null);
+		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
+		testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
+		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
+		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
+		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
+	}
+
+	private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
+	{
+		final Duration actual = TimeUtil.max(duration1, duration2);
+		assertThat(actual).isEqualTo(expected);
 	}
 }

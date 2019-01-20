@@ -37,7 +37,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @Getter
-final class GenericModelCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory
+final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory
 {
 	private final String rootTableName;
 	private final String childTableName;
@@ -45,7 +45,7 @@ final class GenericModelCacheInvalidateRequestFactory implements ModelCacheInval
 	private final String childLinkColumnName;
 
 	@Builder
-	private GenericModelCacheInvalidateRequestFactory(
+	private ParentChildModelCacheInvalidateRequestFactory(
 			@NonNull final String rootTableName,
 			@NonNull final String childTableName,
 			@Nullable final String childKeyColumnName,

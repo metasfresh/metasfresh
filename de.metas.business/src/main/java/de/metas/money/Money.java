@@ -262,4 +262,13 @@ public class Money
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
+
+	public static BigDecimal getValueOrZero(@Nullable final Money money)
+	{
+		if (money == null)
+		{
+			return ZERO;
+		}
+		return money.getValue();
+	}
 }

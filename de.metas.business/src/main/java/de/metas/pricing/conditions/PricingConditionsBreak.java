@@ -46,7 +46,7 @@ public class PricingConditionsBreak
 	PricingConditionsBreakMatchCriteria matchCriteria;
 	int seqNo;
 
-	PriceOverride priceOverride;
+	PriceSpecification priceSpecification;
 
 	//
 	// Discount%
@@ -76,7 +76,7 @@ public class PricingConditionsBreak
 			final PricingConditionsBreakId id,
 			@NonNull final PricingConditionsBreakMatchCriteria matchCriteria,
 			final int seqNo,
-			@NonNull final PriceOverride priceOverride,
+			@NonNull final PriceSpecification priceSpecification,
 			final boolean bpartnerFlatDiscount,
 			final Percent discount,
 			@Nullable final PaymentTermId paymentTermIdOrNull,
@@ -90,7 +90,7 @@ public class PricingConditionsBreak
 		this.id = id;
 		this.matchCriteria = matchCriteria;
 		this.seqNo = seqNo;
-		this.priceOverride = priceOverride;
+		this.priceSpecification = priceSpecification;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
@@ -123,7 +123,7 @@ public class PricingConditionsBreak
 			return true;
 		}
 
-		return Objects.equals(priceOverride, reference.priceOverride)
+		return Objects.equals(priceSpecification, reference.priceSpecification)
 				&& Objects.equals(coalesce(discount, Percent.ZERO), coalesce(reference.discount, Percent.ZERO))
 				&& Objects.equals(coalesce(bpartnerFlatDiscount, Percent.ZERO), coalesce(reference.bpartnerFlatDiscount, Percent.ZERO))
 				&& Objects.equals(paymentTermIdOrNull, reference.paymentTermIdOrNull)

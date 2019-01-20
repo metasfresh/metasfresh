@@ -554,19 +554,19 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_PaymentDiscount = "PaymentDiscount";
 
 	/**
-	 * Set PriceBase.
+	 * Set Preisgrundlage.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPriceBase (java.lang.String PriceBase);
 
 	/**
-	 * Get PriceBase.
+	 * Get Preisgrundlage.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getPriceBase();
@@ -577,29 +577,54 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_PriceBase = "PriceBase";
 
 	/**
-	 * Set Standardpreis.
-	 * Standardpreis
+	 * Set Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriceStd (java.math.BigDecimal PriceStd);
+	public void setPriceStdFixed (java.math.BigDecimal PriceStdFixed);
 
 	/**
-	 * Get Standardpreis.
-	 * Standardpreis
+	 * Get Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPriceStd();
+	public java.math.BigDecimal getPriceStdFixed();
 
-    /** Column definition for PriceStd */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PriceStd", null);
-    /** Column name PriceStd */
-    public static final String COLUMNNAME_PriceStd = "PriceStd";
+    /** Column definition for PriceStdFixed */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PriceStdFixed = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PriceStdFixed", null);
+    /** Column name PriceStdFixed */
+    public static final String COLUMNNAME_PriceStdFixed = "PriceStdFixed";
+
+	/**
+	 * Set Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPricingSystemSurchargeAmt (java.math.BigDecimal PricingSystemSurchargeAmt);
+
+	/**
+	 * Get Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPricingSystemSurchargeAmt();
+
+    /** Column definition for PricingSystemSurchargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PricingSystemSurchargeAmt = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PricingSystemSurchargeAmt", null);
+    /** Column name PricingSystemSurchargeAmt */
+    public static final String COLUMNNAME_PricingSystemSurchargeAmt = "PricingSystemSurchargeAmt";
 
 	/**
 	 * Set QualityIssuePercentage.
@@ -650,31 +675,6 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
-	 * Set Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
-
-	/**
-	 * Get Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getStd_AddAmt();
-
-    /** Column definition for Std_AddAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_Std_AddAmt = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "Std_AddAmt", null);
-    /** Column name Std_AddAmt */
-    public static final String COLUMNNAME_Std_AddAmt = "Std_AddAmt";
 
 	/**
 	 * Get Aktualisiert.

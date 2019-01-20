@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -20,7 +22,10 @@ import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -82,6 +87,7 @@ public class PurchaseCandidatesGroup
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				//
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
+				.reminderTime(purchaseCandidate.getReminderTime())
 				//
 				.profitInfoOrNull(purchaseCandidate.getProfitInfoOrNull())
 				//
@@ -129,6 +135,8 @@ public class PurchaseCandidatesGroup
 
 	@NonNull
 	LocalDateTime purchaseDatePromised;
+	@Nullable
+	Duration reminderTime;
 
 	@Nullable
 	PurchaseProfitInfo profitInfoOrNull;
@@ -142,6 +150,11 @@ public class PurchaseCandidatesGroup
 	ImmutableSet<OrderAndLineId> salesOrderAndLineIds;
 
 	boolean readonly;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Default
+	@VisibleForTesting
+	boolean allowPOAggregation = true;
 
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
 	{
@@ -184,6 +197,21 @@ public class PurchaseCandidatesGroup
 
 	public boolean isAggregatePOs()
 	{
+		if (!isAllowPOAggregation())
+		{
+			return false;
+		}
+
 		return getVendorProductInfo().isAggregatePOs();
+	}
+
+	public PurchaseCandidatesGroup allowingPOAggregation(final boolean allowPOAggregation)
+	{
+		if (this.isAllowPOAggregation() == allowPOAggregation)
+		{
+			return this;
+		}
+
+		return toBuilder().allowPOAggregation(allowPOAggregation).build();
 	}
 }
