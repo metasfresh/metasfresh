@@ -879,6 +879,10 @@ export class RawWidget extends Component {
     if (!widgetData[0].displayed || widgetData[0].displayed !== true) {
       return false;
     }
+    const valueDescription =
+      widgetData[0].value && widgetData[0].value.description
+        ? widgetData[0].value.description
+        : null;
 
     const widgetFieldsName = fields
       .map(field => 'form-field-' + field.field)
@@ -951,7 +955,7 @@ export class RawWidget extends Component {
             </div>
           )}
 
-          <div className="input-body-container">
+          <div className="input-body-container" title={valueDescription}>
             <ReactCSSTransitionGroup
               transitionName="fade"
               transitionEnterTimeout={200}
