@@ -2,11 +2,13 @@ package org.adempiere.mm.attributes.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.compiere.util.Util.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +27,7 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.product.IProductBL;
@@ -177,7 +180,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public void setAttributeInstanceValue(@NonNull final I_M_AttributeSetInstance asi, @NonNull final AttributeId attributeId, @NonNull final Object value)
+	public void setAttributeInstanceValue(
+			@NonNull final I_M_AttributeSetInstance asi,
+			@NonNull final AttributeId attributeId,
+			@NonNull final Object value)
 	{
 		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
 		setAttributeInstanceValue(asi, attribute, value);
@@ -211,10 +217,14 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull final IAttributeSet attributeSet)
+	public I_M_AttributeSetInstance createASIFromAttributeSet(
+			@NonNull final IAttributeSet attributeSet,
+			@Nullable final Predicate<I_M_Attribute> filter)
 	{
-		final ProductId productId = null;
-		return createASIWithASFromProductAndInsertAttributeSet(productId, attributeSet);
+		return createASIWithASFromProductAndInsertAttributeSet(
+				null/* productId */,
+				attributeSet,
+				filter);
 	}
 
 	@Override
@@ -222,6 +232,18 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@Nullable final ProductId productId,
 			@NonNull final IAttributeSet attributeSet)
 	{
+		return createASIWithASFromProductAndInsertAttributeSet(
+				productId,
+				attributeSet,
+				null/* filter */);
+	}
+
+	public I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(
+			@Nullable final ProductId productId,
+			@NonNull final IAttributeSet attributeSet,
+			@Nullable final Predicate<I_M_Attribute> filter)
+	{
+
 		final I_M_AttributeSetInstance attributeSetInstance;
 		if (productId != null)
 		{
@@ -237,13 +259,18 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				.sorted(Comparator.comparing(I_M_Attribute::getM_Attribute_ID))
 				.collect(ImmutableList.toImmutableList());
 
+		final Predicate<I_M_Attribute> effectiveFilter = coalesce(filter, Predicates.alwaysTrue());
+
 		for (final I_M_Attribute atttribute : attributesOrderedById)
 		{
-			final I_M_AttributeInstance attributeInstance = //
-					createAttributeInstanceForAttributeAndAttributeSet(atttribute, attributeSet);
+			if (effectiveFilter.test(atttribute))
+			{
+				final I_M_AttributeInstance attributeInstance = //
+						createAttributeInstanceForAttributeAndAttributeSet(atttribute, attributeSet);
 
-			attributeInstance.setM_AttributeSetInstance(attributeSetInstance);
-			save(attributeInstance);
+				attributeInstance.setM_AttributeSetInstance(attributeSetInstance);
+				save(attributeInstance);
+			}
 		}
 		return attributeSetInstance;
 	}
@@ -285,5 +312,4 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		return attributeInstance;
 	}
-
 }

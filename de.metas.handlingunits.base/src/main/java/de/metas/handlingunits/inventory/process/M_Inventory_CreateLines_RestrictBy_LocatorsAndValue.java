@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
 
-import de.metas.handlingunits.inventory.OldTransactionsStrategy;
+import de.metas.handlingunits.inventory.LeastRecentTransactionStrategy;
 import de.metas.process.Param;
 import lombok.NonNull;
 
@@ -31,23 +31,22 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Inventory_CreateLines extends DraftInventoryBase
+public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftInventoryBase
 {
-	@Param(parameterName = "ValueMin")
-	private BigDecimal valueMin;
+	@Param(parameterName = "MinValueOfGoods")
+	private BigDecimal minimumPrice;
 
-	@Param(parameterName = "Qty")
-	private int Qty;
+	@Param(parameterName = "MaxNumberOfLocators")
+	private int maxLocators;
 
 	@Override
-	protected OldTransactionsStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
+	protected LeastRecentTransactionStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		return OldTransactionsStrategy
+		return LeastRecentTransactionStrategy
 				.builder()
-				.maxLocators(Qty)
-				.minimumPrice(valueMin)
+				.maxLocators(maxLocators)
+				.minimumPrice(minimumPrice)
 				.movementDate(TimeUtil.asLocalDate(inventoryRecord.getMovementDate()))
 				.build();
 	}
-
 }

@@ -5,7 +5,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.inventory.LocatorAndProductHUsStrategy;
+import de.metas.handlingunits.inventory.LocatorAndProductStrategy;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
@@ -33,7 +33,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Inventory_CreateCountLinesFromHU extends DraftInventoryBase
+public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventoryBase
 {
 	@Param(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID)
 	private int locatorId;
@@ -42,11 +42,11 @@ public class M_Inventory_CreateCountLinesFromHU extends DraftInventoryBase
 	private int productId;
 
 	@Override
-	protected LocatorAndProductHUsStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
+	protected LocatorAndProductStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID()); 
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID());
 
-		final LocatorAndProductHUsStrategy strategy = LocatorAndProductHUsStrategy
+		final LocatorAndProductStrategy strategy = LocatorAndProductStrategy
 				.builder()
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
@@ -54,7 +54,4 @@ public class M_Inventory_CreateCountLinesFromHU extends DraftInventoryBase
 				.build();
 		return strategy;
 	}
-
-
-
 }
