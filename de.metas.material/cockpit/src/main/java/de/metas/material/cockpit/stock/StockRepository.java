@@ -1,7 +1,5 @@
 package de.metas.material.cockpit.stock;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +21,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -69,6 +68,8 @@ public class StockRepository
 	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(@NonNull final StockDataAggregateQuery query)
 	{
 		return createStockDataAggregateItemQuery(query)
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, query.getIteratorBatchSize())
 				.iterateAndStream()
 				.map(this::recordToStockDataItem);
 	}

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Async;
@@ -67,6 +68,8 @@ import lombok.NonNull;
 @Service
 public class MSV3StockAvailabilityService
 {
+	private static final String SYSCONFIG_STOCK_AVAILABILITY_BATCH_SIZE = "de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService.publishAll_StockAvailability.BatchSize";
+
 	private static final Logger logger = LogManager.getLogger(MSV3StockAvailabilityService.class);
 
 	private StockRepository stockRepository;
@@ -108,18 +111,24 @@ public class MSV3StockAvailabilityService
 		}
 		else
 		{
-			final MSV3StockAvailabilityUpdatedEvent event = createMSV3StockAvailabilityUpdateEvent(serverConfig);
-			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(event);
+			Loggables.get().withLogger(logger, Level.WARN)
+					.addLog("Deleting all products on the MSV3-server before sending the current products");
+			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deletedAll());
+
+			final Stream<MSV3StockAvailabilityUpdatedEvent> eventStream = streamMSV3StockAvailabilityUpdateEvents(serverConfig);
+			eventStream.forEach(msv3ServerPeerService::publishStockAvailabilityUpdatedEvent);
 		}
 	}
 
 	@VisibleForTesting
-	MSV3StockAvailabilityUpdatedEvent createMSV3StockAvailabilityUpdateEvent(@NonNull final MSV3ServerConfig serverConfig)
+	Stream<MSV3StockAvailabilityUpdatedEvent> streamMSV3StockAvailabilityUpdateEvents(
+			@NonNull final MSV3ServerConfig serverConfig)
 	{
 		final StockDataAggregateQuery query = StockDataAggregateQuery.builder()
 				.productCategoryIds(serverConfig.getProductCategoryIds())
 				.warehouseIds(serverConfig.getWarehouseIds())
 				.warehouseId(null) // accept also those which aren't in any warehouse yet
+				.iteratorBatchSize(getPublishAllStockAvailabilityBatchSize())
 				.orderBy(StockDataQueryOrderBy.ProductId)
 				.build();
 		final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(query);
@@ -127,16 +136,20 @@ public class MSV3StockAvailabilityService
 		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
 				.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
 				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-				// .flatMap(sa -> repeat(sa, 10000))
 				.filter(Predicates.notNull());
 
-		final List<MSV3StockAvailability> stockAvailabilities = stockAvailabilityStream.collect(ImmutableList.toImmutableList());
+		return GuavaCollectors
+				.batchAndStream(stockAvailabilityStream, query.getIteratorBatchSize())
+				.map(MSV3StockAvailabilityService::createAvailabilityUpdatedEvent);
+	}
 
-		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent.builder()
-				.items(stockAvailabilities)
-				.deleteAllOtherItems(true)
+	private static MSV3StockAvailabilityUpdatedEvent createAvailabilityUpdatedEvent(
+			@NonNull final List<MSV3StockAvailability> availabilityBatchesList)
+	{
+		return MSV3StockAvailabilityUpdatedEvent.builder()
+				.items(availabilityBatchesList)
+				.deleteAllOtherItems(false)
 				.build();
-		return event;
 	}
 
 	private void publishAll_ProductExcludes()
@@ -368,6 +381,13 @@ public class MSV3StockAvailabilityService
 		msv3ServerPeerService.publishProductExcludes(MSV3ProductExcludesUpdateEvent.builder()
 				.items(eventItems)
 				.build());
+	}
+
+	private int getPublishAllStockAvailabilityBatchSize()
+	{
+		return Services
+				.get(ISysConfigBL.class)
+				.getIntValue(SYSCONFIG_STOCK_AVAILABILITY_BATCH_SIZE, 500);
 	}
 
 }

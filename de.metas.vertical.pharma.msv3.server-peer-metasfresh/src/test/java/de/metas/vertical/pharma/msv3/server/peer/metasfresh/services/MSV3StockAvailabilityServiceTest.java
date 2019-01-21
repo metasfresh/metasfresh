@@ -12,6 +12,8 @@ import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.product.ProductCategoryId;
@@ -74,12 +76,16 @@ public class MSV3StockAvailabilityServiceTest
 				.build();
 
 		// invoke the method under test
-		final MSV3StockAvailabilityUpdatedEvent result = msv3StockAvailabilityService.createMSV3StockAvailabilityUpdateEvent(msv3ServerConfig);
+		final ImmutableList<MSV3StockAvailabilityUpdatedEvent> result = msv3StockAvailabilityService
+				.streamMSV3StockAvailabilityUpdateEvents(msv3ServerConfig)
+				.collect(ImmutableList.toImmutableList());
 
-		// new expect that only the valid PZN is present
-		assertThat(result.getItems()).hasSize(1);
+		assertThat(result).hasSize(1);
 
-		final MSV3StockAvailability msv3StockAvailabilityItem = result.getItems().get(0);
+		// we expect that only the valid PZN is present
+		assertThat(result.get(0).getItems()).hasSize(1);
+
+		final MSV3StockAvailability msv3StockAvailabilityItem = result.get(0).getItems().get(0);
 		assertThat(msv3StockAvailabilityItem.getPzn()).isEqualTo(12345);
 		assertThat(msv3StockAvailabilityItem.getQty()).isEqualTo(1);
 	}
@@ -98,12 +104,16 @@ public class MSV3StockAvailabilityServiceTest
 				.build();
 
 		// invoke the method under test
-		final MSV3StockAvailabilityUpdatedEvent result = msv3StockAvailabilityService.createMSV3StockAvailabilityUpdateEvent(msv3ServerConfig);
+		final ImmutableList<MSV3StockAvailabilityUpdatedEvent> result = msv3StockAvailabilityService
+				.streamMSV3StockAvailabilityUpdateEvents(msv3ServerConfig)
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(result).hasSize(1);
 
 		// new expect that only the valid PZN is present, but with the fixedQtyAvailableToPromise of 10 that we set
-		assertThat(result.getItems()).hasSize(1);
+		assertThat(result.get(0).getItems()).hasSize(1);
 
-		final MSV3StockAvailability msv3StockAvailabilityItem = result.getItems().get(0);
+		final MSV3StockAvailability msv3StockAvailabilityItem = result.get(0).getItems().get(0);
 		assertThat(msv3StockAvailabilityItem.getPzn()).isEqualTo(12345);
 		assertThat(msv3StockAvailabilityItem.getQty()).isEqualTo(10);
 	}
