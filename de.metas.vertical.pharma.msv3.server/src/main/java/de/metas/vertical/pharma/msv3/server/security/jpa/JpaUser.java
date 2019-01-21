@@ -24,12 +24,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +38,9 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "msv3_user", //
-		uniqueConstraints = @UniqueConstraint(name = "user_uq", columnNames = { "username" }), //
+		uniqueConstraints = { //
+				@UniqueConstraint(name = "metasfreshMSV3UserId_uq", columnNames = { "metasfreshMSV3UserId" }), //
+				@UniqueConstraint(name = "username_uq", columnNames = { "username" }) }, //
 		indexes = @Index(name = "user_sync_token", columnList = "sync_token") //
 )
 @Getter
@@ -58,6 +60,9 @@ public class JpaUser extends AbstractEntity
 
 	@NotNull
 	private Integer bpartnerLocationId;
+
+	@NotNull
+	private Integer metasfreshMSV3UserId;
 
 	@Column(name = "sync_token")
 	@NotNull

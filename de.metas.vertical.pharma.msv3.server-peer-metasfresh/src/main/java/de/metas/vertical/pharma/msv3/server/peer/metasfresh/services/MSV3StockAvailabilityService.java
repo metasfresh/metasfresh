@@ -9,18 +9,19 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.stock.StockDataAggregateItem;
 import de.metas.material.cockpit.stock.StockDataAggregateQuery;
 import de.metas.material.cockpit.stock.StockDataQueryOrderBy;
-import de.metas.material.cockpit.stock.StockDataAggregateItem;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.product.IProductDAO;
@@ -29,6 +30,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
@@ -67,12 +69,21 @@ public class MSV3StockAvailabilityService
 {
 	private static final Logger logger = LogManager.getLogger(MSV3StockAvailabilityService.class);
 
-	@Autowired
 	private StockRepository stockRepository;
-	@Autowired
+
 	private MSV3ServerConfigService msv3ServerConfigService;
-	@Autowired
+
 	private MSV3ServerPeerService msv3ServerPeerService;
+
+	public MSV3StockAvailabilityService(
+			@NonNull final StockRepository stockRepository,
+			@NonNull final MSV3ServerConfigService msv3ServerConfigService,
+			@NonNull final MSV3ServerPeerService msv3ServerPeerService)
+	{
+		this.stockRepository = stockRepository;
+		this.msv3ServerConfigService = msv3ServerConfigService;
+		this.msv3ServerPeerService = msv3ServerPeerService;
+	}
 
 	private MSV3ServerConfig getServerConfig()
 	{
@@ -90,31 +101,42 @@ public class MSV3StockAvailabilityService
 		final MSV3ServerConfig serverConfig = getServerConfig();
 		if (!serverConfig.hasProducts())
 		{
-			logger.warn("Asked to publish all stock availabilities but the MSV3 server has no products defined. Deleting all products. Check {}", serverConfig);
+			Loggables.get().withLogger(logger, Level.WARN)
+					.addLog("Asked to publish all stock availabilities but the MSV3 server has no products defined. Deleting all products. Check {}", serverConfig);
 			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deletedAll());
 			return;
 		}
 		else
 		{
-			final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(StockDataAggregateQuery.builder()
-					.productCategoryIds(serverConfig.getProductCategoryIds())
-					.warehouseIds(serverConfig.getWarehouseIds())
-					.warehouseId(null) // accept also those which aren't in any warehouse yet
-					.orderBy(StockDataQueryOrderBy.ProductId)
-					.build());
-
-			final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
-					.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-					// .flatMap(sa -> repeat(sa, 10000))
-					.filter(Predicates.notNull());
-
-			final List<MSV3StockAvailability> stockAvailabilities = stockAvailabilityStream.collect(ImmutableList.toImmutableList());
-
-			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.builder()
-					.items(stockAvailabilities)
-					.deleteAllOtherItems(true)
-					.build());
+			final MSV3StockAvailabilityUpdatedEvent event = createMSV3StockAvailabilityUpdateEvent(serverConfig);
+			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(event);
 		}
+	}
+
+	@VisibleForTesting
+	MSV3StockAvailabilityUpdatedEvent createMSV3StockAvailabilityUpdateEvent(@NonNull final MSV3ServerConfig serverConfig)
+	{
+		final StockDataAggregateQuery query = StockDataAggregateQuery.builder()
+				.productCategoryIds(serverConfig.getProductCategoryIds())
+				.warehouseIds(serverConfig.getWarehouseIds())
+				.warehouseId(null) // accept also those which aren't in any warehouse yet
+				.orderBy(StockDataQueryOrderBy.ProductId)
+				.build();
+		final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(query);
+
+		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
+				.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
+				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
+				// .flatMap(sa -> repeat(sa, 10000))
+				.filter(Predicates.notNull());
+
+		final List<MSV3StockAvailability> stockAvailabilities = stockAvailabilityStream.collect(ImmutableList.toImmutableList());
+
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent.builder()
+				.items(stockAvailabilities)
+				.deleteAllOtherItems(true)
+				.build();
+		return event;
 	}
 
 	private void publishAll_ProductExcludes()
@@ -132,7 +154,9 @@ public class MSV3StockAvailabilityService
 		msv3ServerPeerService.publishProductExcludes(eventsBuilder.build());
 	}
 
-	private MSV3StockAvailability toMSV3StockAvailabilityOrNullIfFailed(final MSV3ServerConfig serverConfig, final List<StockDataAggregateItem> records)
+	private MSV3StockAvailability toMSV3StockAvailabilityOrNullIfFailed(
+			@NonNull final MSV3ServerConfig serverConfig,
+			@NonNull final List<StockDataAggregateItem> records)
 	{
 		try
 		{
@@ -140,17 +164,21 @@ public class MSV3StockAvailabilityService
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed converting {} to {}", records, MSV3StockAvailability.class, ex);
+			Loggables.get().withLogger(logger, Level.WARN)
+					.addLog("Failed converting StockDataAggregateItems={} to {}", records, MSV3StockAvailability.class.getSimpleName());
 			return null;
 		}
 	}
 
-	private MSV3StockAvailability toMSV3StockAvailability(final MSV3ServerConfig serverConfig, final List<StockDataAggregateItem> records)
+	private MSV3StockAvailability toMSV3StockAvailability(
+			final MSV3ServerConfig serverConfig,
+			@NonNull final List<StockDataAggregateItem> records)
 	{
 		Check.assumeNotEmpty(records, "records is not empty");
 
 		final PZN pzn = getPZNByProductValue(records.get(0).getProductValue());
 		final int qtyOnHand = calculateQtyOnHand(serverConfig, records);
+
 		return MSV3StockAvailability.builder()
 				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)

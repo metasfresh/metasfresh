@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
@@ -94,9 +95,10 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		return toMSV3User(jpaUser);
 	}
 
-	private static MSV3User toMSV3User(final JpaUser jpaUser)
+	private static MSV3User toMSV3User(@NonNull final JpaUser jpaUser)
 	{
 		return MSV3User.builder()
+				.metasfreshMSV3UserId(MSV3MetasfreshUserId.of(jpaUser.getMetasfreshMSV3UserId()))
 				.username(jpaUser.getUsername())
 				.password(jpaUser.getPassword())
 				.bpartnerId(BPartnerId.of(jpaUser.getBpartnerId(), jpaUser.getBpartnerLocationId()))
@@ -146,10 +148,12 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		// Update/Delete
 		{
 			final AtomicInteger countUpdated = new AtomicInteger();
-			batchEvent.getEvents().forEach(event -> {
+
+			for (final MSV3UserChangedEvent event : batchEvent.getEvents())
+			{
 				handleEvent(event, syncToken);
 				countUpdated.incrementAndGet();
-			});
+			}
 			logger.debug("Updated/Deleted {} users", countUpdated);
 		}
 
@@ -168,13 +172,14 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		{
 			final String username = event.getUsername();
 
-			JpaUser user = usersRepo.findByUsername(username);
+			JpaUser user = usersRepo.findByMetasfreshMSV3UserId(event.getMetasfreshMSV3UserId().getId());
 			if (user == null)
 			{
 				user = new JpaUser();
-				user.setUsername(username);
+				user.setMetasfreshMSV3UserId(event.getMetasfreshMSV3UserId().getId());
 			}
 
+			user.setUsername(username);
 			user.setPassword(event.getPassword());
 			user.setBpartnerId(event.getBpartnerId());
 			user.setBpartnerLocationId(event.getBpartnerLocationId());

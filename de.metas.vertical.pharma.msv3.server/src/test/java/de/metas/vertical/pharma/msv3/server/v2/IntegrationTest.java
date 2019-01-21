@@ -29,6 +29,7 @@ import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.Application;
 import de.metas.vertical.pharma.msv3.server.MockedAmqpTemplate;
 import de.metas.vertical.pharma.msv3.server.order.OrderWebServiceV2;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
@@ -58,6 +59,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRuec
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -138,7 +140,7 @@ public class IntegrationTest
 	@Test
 	public void testUsers()
 	{
-		createOrUpdateUser("user", "pass", BPartnerId.of(1234, 5678));
+		createOrUpdateUser(MSV3MetasfreshUserId.of(10), "user", "pass", BPartnerId.of(1234, 5678));
 	}
 
 	@Test
@@ -181,7 +183,7 @@ public class IntegrationTest
 	@Ignore // ATM it's failing on some H2 unique index issue
 	public void testOrder()
 	{
-		createOrUpdateUser("user", "pass", BPartnerId.of(1234, 5678));
+		createOrUpdateUser(MSV3MetasfreshUserId.of(10), "user", "pass", BPartnerId.of(1234, 5678));
 		SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user", "pass"));
 
 		createOrUpdateStockAvailability(PZN_1, 10);
@@ -220,15 +222,21 @@ public class IntegrationTest
 		assertThat(soapResponseOrderPackageItem.getBestellMenge()).isEqualTo(qtyOrderedExpected);
 	}
 
-	private void createOrUpdateUser(final String username, final String password, final BPartnerId bpartner)
+	private void createOrUpdateUser(
+			@NonNull MSV3MetasfreshUserId metasfreshMSV3CustomerId,
+			final String username,
+			final String password,
+			final BPartnerId bpartner)
 	{
+		final MSV3UserChangedEvent event = MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent(metasfreshMSV3CustomerId)
+				.username(username)
+				.password(password)
+				.bpartnerId(bpartner.getBpartnerId())
+				.bpartnerLocationId(bpartner.getBpartnerLocationId())
+				.build();
+
 		usersListener.onUserEvent(MSV3UserChangedBatchEvent.builder()
-				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
-						.username(username)
-						.password(password)
-						.bpartnerId(bpartner.getBpartnerId())
-						.bpartnerLocationId(bpartner.getBpartnerLocationId())
-						.build())
+				.event(event)
 				.build());
 
 	}

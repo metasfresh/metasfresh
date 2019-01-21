@@ -3,14 +3,13 @@ package de.metas.vertical.pharma.msv3.server.peer.protocol;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Builder;
 import lombok.Value;
 
 /*
  * #%L
  * metasfresh-pharma.msv3.server-peer
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,30 +28,18 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class MSV3ServerRequest
+public class MSV3MetasfreshUserId
 {
-	public static MSV3ServerRequest requestAll()
-	{
-		return ALL;
-	}
-
-	private static final MSV3ServerRequest ALL = MSV3ServerRequest.builder()
-			.requestAllUsers(true)
-			.requestAllStockAvailabilities(true)
-			.build();
-
-	boolean requestAllUsers;
-	boolean requestAllStockAvailabilities;
-
 	@JsonCreator
-	private MSV3ServerRequest(
-			@JsonProperty("requestAllUsers") final boolean requestAllUsers,
-			@JsonProperty("requestAllStockAvailabilities") final boolean requestAllStockAvailabilities)
+	public static MSV3MetasfreshUserId of(@JsonProperty("id") final int id)
 	{
-		this.requestAllUsers = requestAllUsers;
-		this.requestAllStockAvailabilities = requestAllStockAvailabilities;
+		return new MSV3MetasfreshUserId(id);
 	}
 
+	int id;
 
+	private MSV3MetasfreshUserId(final int id)
+	{
+		this.id = id;
+	}
 }
