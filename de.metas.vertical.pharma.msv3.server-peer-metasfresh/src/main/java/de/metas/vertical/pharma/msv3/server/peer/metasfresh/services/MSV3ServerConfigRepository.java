@@ -60,7 +60,7 @@ public class MSV3ServerConfigRepository
 				.firstOnly(I_MSV3_Server.class);
 		if (serverConfigRecord != null)
 		{
-			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise().intValueExact();
+			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise();
 			serverConfigBuilder.fixedQtyAvailableToPromise(fixedQtyAvailableToPromise);
 
 			final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);

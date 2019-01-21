@@ -1,17 +1,17 @@
 package de.metas.material.cockpit.model;
 
 
-/** Generated Interface for MD_Stock_WarehouseAndProduct_v
+/** Generated Interface for T_MD_Stock_WarehouseAndProduct
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_MD_Stock_WarehouseAndProduct_v 
+public interface I_T_MD_Stock_WarehouseAndProduct 
 {
 
-    /** TableName=MD_Stock_WarehouseAndProduct_v */
-    public static final String Table_Name = "MD_Stock_WarehouseAndProduct_v";
+    /** TableName=T_MD_Stock_WarehouseAndProduct */
+    public static final String Table_Name = "T_MD_Stock_WarehouseAndProduct";
 
-    /** AD_Table_ID=540958 */
+    /** AD_Table_ID=541160 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
@@ -35,7 +35,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_AD_Client>(I_MD_Stock_WarehouseAndProduct_v.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_AD_Client>(I_T_MD_Stock_WarehouseAndProduct.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_AD_Org>(I_MD_Stock_WarehouseAndProduct_v.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_AD_Org>(I_T_MD_Stock_WarehouseAndProduct.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -89,7 +89,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public int getLine();
 
     /** Column definition for Line */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object>(I_MD_Stock_WarehouseAndProduct_v.class, "Line", null);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object>(I_T_MD_Stock_WarehouseAndProduct.class, "Line", null);
     /** Column name Line */
     public static final String COLUMNNAME_Line = "Line";
 
@@ -118,7 +118,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
 
     /** Column definition for M_Product_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_M_Product_Category>(I_MD_Stock_WarehouseAndProduct_v.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_M_Product_Category>(I_T_MD_Stock_WarehouseAndProduct.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
     public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
@@ -147,7 +147,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_M_Product>(I_MD_Stock_WarehouseAndProduct_v.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_M_Product>(I_T_MD_Stock_WarehouseAndProduct.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -176,7 +176,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_M_Warehouse>(I_MD_Stock_WarehouseAndProduct_v.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_M_Warehouse>(I_T_MD_Stock_WarehouseAndProduct.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
@@ -201,7 +201,7 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public java.lang.String getProductValue();
 
     /** Column definition for ProductValue */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object>(I_MD_Stock_WarehouseAndProduct_v.class, "ProductValue", null);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object>(I_T_MD_Stock_WarehouseAndProduct.class, "ProductValue", null);
     /** Column name ProductValue */
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
@@ -226,7 +226,53 @@ public interface I_MD_Stock_WarehouseAndProduct_v
 	public java.math.BigDecimal getQtyOnHand();
 
     /** Column definition for QtyOnHand */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object>(I_MD_Stock_WarehouseAndProduct_v.class, "QtyOnHand", null);
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object>(I_T_MD_Stock_WarehouseAndProduct.class, "QtyOnHand", null);
     /** Column name QtyOnHand */
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
+
+	/**
+	 * Set T_MD_Stock_WarehouseAndProduct_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setT_MD_Stock_WarehouseAndProduct_ID (int T_MD_Stock_WarehouseAndProduct_ID);
+
+	/**
+	 * Get T_MD_Stock_WarehouseAndProduct_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getT_MD_Stock_WarehouseAndProduct_ID();
+
+    /** Column definition for T_MD_Stock_WarehouseAndProduct_ID */
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object> COLUMN_T_MD_Stock_WarehouseAndProduct_ID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object>(I_T_MD_Stock_WarehouseAndProduct.class, "T_MD_Stock_WarehouseAndProduct_ID", null);
+    /** Column name T_MD_Stock_WarehouseAndProduct_ID */
+    public static final String COLUMNNAME_T_MD_Stock_WarehouseAndProduct_ID = "T_MD_Stock_WarehouseAndProduct_ID";
+
+	/**
+	 * Set UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setUUID (java.lang.String UUID);
+
+	/**
+	 * Get UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUUID();
+
+    /** Column definition for UUID */
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object> COLUMN_UUID = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object>(I_T_MD_Stock_WarehouseAndProduct.class, "UUID", null);
+    /** Column name UUID */
+    public static final String COLUMNNAME_UUID = "UUID";
 }

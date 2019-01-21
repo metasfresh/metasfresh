@@ -1,25 +1,35 @@
 package de.metas.material.cockpit.stock;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
+import de.metas.material.cockpit.model.I_T_MD_Stock_WarehouseAndProduct;
 import de.metas.material.commons.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -67,11 +77,84 @@ public class StockRepository
 
 	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(@NonNull final StockDataAggregateQuery query)
 	{
-		return createStockDataAggregateItemQuery(query)
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
-				.setOption(IQuery.OPTION_IteratorBufferSize, query.getIteratorBatchSize())
-				.iterateAndStream()
-				.map(this::recordToStockDataItem);
+		final IQuery<I_MD_Stock_WarehouseAndProduct_v> stockDataAggregateItemViewQuery = createStockDataAggregateItemQuery(query);
+		if (stockDataAggregateItemViewQuery instanceof TypedSqlQuery)
+		{
+			final TypedSqlQuery<I_MD_Stock_WarehouseAndProduct_v>//
+			sqlQuery = (TypedSqlQuery<I_MD_Stock_WarehouseAndProduct_v>)stockDataAggregateItemViewQuery;
+
+			final String uuid = UUID.randomUUID().toString();
+
+			final String insertSQL = createInsertSqlStatement(sqlQuery, uuid);
+
+			final int insertCount = DB.executeUpdateEx(
+					insertSQL,
+					sqlQuery.getParametersEffective().toArray(),
+					ITrx.TRXNAME_ThreadInherited);
+			Loggables.get().addLog("Inserted {} records with UUID={} into table {}", insertCount, uuid, I_T_MD_Stock_WarehouseAndProduct.Table_Name);
+
+			return Services
+					.get(IQueryBL.class)
+					.createQueryBuilder(I_T_MD_Stock_WarehouseAndProduct.class)
+					.addEqualsFilter(I_T_MD_Stock_WarehouseAndProduct.COLUMN_UUID, uuid)
+					.orderBy(I_T_MD_Stock_WarehouseAndProduct.COLUMN_Line)
+					.create()
+					.iterateAndStream()
+					.map(this::recordRowToStockDataItem);
+		}
+		else
+		{
+			// we are in unit test mode
+			return stockDataAggregateItemViewQuery.list().stream().map(this::viewRowToStockDataItem);
+		}
+
+	}
+
+	/**
+	 * Creates an {@code INSERT} statement that select the rows from the given {@code sqlQuery} into the {@link I_T_MD_Stock_WarehouseAndProduct} table
+	 *
+	 * @param uuid the inserted records all have this UUID
+	 */
+	private String createInsertSqlStatement(
+			@NonNull final TypedSqlQuery<I_MD_Stock_WarehouseAndProduct_v> sqlQuery,
+			@NonNull final String uuid)
+	{
+		final StringBuilder insertClause = new StringBuilder("INSERT INTO " + I_T_MD_Stock_WarehouseAndProduct.Table_Name);
+		final StringBuilder selectClause = new StringBuilder("SELECT ");
+		final I_AD_Table viewTable = Services.get(IADTableDAO.class).retrieveTable(I_MD_Stock_WarehouseAndProduct_v.Table_Name);
+		final List<I_AD_Column> viewColumns = Services.get(IADTableDAO.class).retrieveColumnsForTable(viewTable);
+
+		for (int i = 0; i < viewColumns.size(); i++)
+		{
+			if (i == 0)
+			{
+				insertClause.append(" (\n\t");
+				selectClause.append(" \n\t");
+			}
+			else
+			{
+				insertClause.append("\t, ");
+				selectClause.append("\t, ");
+			}
+			final String currentColumnName = viewColumns.get(i).getColumnName();
+			insertClause.append(currentColumnName).append("\n");
+			selectClause.append(currentColumnName).append("\n");
+		}
+
+		insertClause.append("\t, ").append(I_T_MD_Stock_WarehouseAndProduct.COLUMNNAME_UUID).append("\n");
+		selectClause.append("\t, '").append(uuid).append("'").append("\n");
+
+		insertClause.append("\t, ").append(I_T_MD_Stock_WarehouseAndProduct.COLUMNNAME_T_MD_Stock_WarehouseAndProduct_ID).append("\n)");
+		selectClause.append("\t, ").append("nextval('T_MD_Stock_WarehouseAndProduct_seq')");
+
+		final StringBuilder insertSQL = new StringBuilder();
+		insertSQL
+				.append(insertClause).append("\n")
+				.append(selectClause).append("\n")
+				.append("FROM ").append(I_MD_Stock_WarehouseAndProduct_v.Table_Name).append("\n")
+				.append("WHERE ").append(sqlQuery.getWhereClause());
+
+		return insertSQL.toString();
 	}
 
 	private IQuery<I_MD_Stock_WarehouseAndProduct_v> createStockDataAggregateItemQuery(@NonNull final StockDataAggregateQuery query)
@@ -92,7 +175,20 @@ public class StockRepository
 		return queryBuilder.create();
 	}
 
-	private StockDataAggregateItem recordToStockDataItem(@NonNull final I_MD_Stock_WarehouseAndProduct_v record)
+	/** Used in unit tests */
+	private StockDataAggregateItem viewRowToStockDataItem(@NonNull final I_MD_Stock_WarehouseAndProduct_v record)
+	{
+		return StockDataAggregateItem.builder()
+				.productCategoryId(record.getM_Product_Category_ID())
+				.productId(record.getM_Product_ID())
+				.productValue(record.getProductValue())
+				.warehouseId(record.getM_Warehouse_ID())
+				.qtyOnHand(record.getQtyOnHand())
+				.build();
+	}
+
+	/** Used when running against a real DB */
+	private StockDataAggregateItem recordRowToStockDataItem(@NonNull final I_T_MD_Stock_WarehouseAndProduct record)
 	{
 		return StockDataAggregateItem.builder()
 				.productCategoryId(record.getM_Product_Category_ID())

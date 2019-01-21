@@ -5,30 +5,32 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for MD_Stock_WarehouseAndProduct_v
+/** Generated Model for T_MD_Stock_WarehouseAndProduct
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_MD_Stock_WarehouseAndProduct_v extends org.compiere.model.PO implements I_MD_Stock_WarehouseAndProduct_v, org.compiere.model.I_Persistent 
+public class X_T_MD_Stock_WarehouseAndProduct extends org.compiere.model.PO implements I_T_MD_Stock_WarehouseAndProduct, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -189323833L;
+	private static final long serialVersionUID = 48880419L;
 
     /** Standard Constructor */
-    public X_MD_Stock_WarehouseAndProduct_v (Properties ctx, int MD_Stock_WarehouseAndProduct_v_ID, String trxName)
+    public X_T_MD_Stock_WarehouseAndProduct (Properties ctx, int T_MD_Stock_WarehouseAndProduct_ID, String trxName)
     {
-      super (ctx, MD_Stock_WarehouseAndProduct_v_ID, trxName);
-      /** if (MD_Stock_WarehouseAndProduct_v_ID == 0)
+      super (ctx, T_MD_Stock_WarehouseAndProduct_ID, trxName);
+      /** if (T_MD_Stock_WarehouseAndProduct_ID == 0)
         {
 			setLine (0);
+			setT_MD_Stock_WarehouseAndProduct_ID (0);
+			setUUID (null);
         } */
     }
 
     /** Load Constructor */
-    public X_MD_Stock_WarehouseAndProduct_v (Properties ctx, ResultSet rs, String trxName)
+    public X_T_MD_Stock_WarehouseAndProduct (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -214,5 +216,43 @@ public class X_MD_Stock_WarehouseAndProduct_v extends org.compiere.model.PO impl
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set T_MD_Stock_WarehouseAndProduct_ID.
+		@param T_MD_Stock_WarehouseAndProduct_ID T_MD_Stock_WarehouseAndProduct_ID	  */
+	@Override
+	public void setT_MD_Stock_WarehouseAndProduct_ID (int T_MD_Stock_WarehouseAndProduct_ID)
+	{
+		if (T_MD_Stock_WarehouseAndProduct_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_T_MD_Stock_WarehouseAndProduct_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_T_MD_Stock_WarehouseAndProduct_ID, Integer.valueOf(T_MD_Stock_WarehouseAndProduct_ID));
+	}
+
+	/** Get T_MD_Stock_WarehouseAndProduct_ID.
+		@return T_MD_Stock_WarehouseAndProduct_ID	  */
+	@Override
+	public int getT_MD_Stock_WarehouseAndProduct_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_T_MD_Stock_WarehouseAndProduct_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set UUID.
+		@param UUID UUID	  */
+	@Override
+	public void setUUID (java.lang.String UUID)
+	{
+		set_Value (COLUMNNAME_UUID, UUID);
+	}
+
+	/** Get UUID.
+		@return UUID	  */
+	@Override
+	public java.lang.String getUUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UUID);
 	}
 }
