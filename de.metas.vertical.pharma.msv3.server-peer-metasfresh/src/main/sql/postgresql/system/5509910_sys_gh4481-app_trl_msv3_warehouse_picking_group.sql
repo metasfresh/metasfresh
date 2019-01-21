@@ -24,11 +24,6 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=626231
 ;
 
--- 2019-01-21T14:05:59.132
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543497,626232,563151,0,540424,TO_TIMESTAMP('2019-01-21 14:05:58','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-01-21 14:05:58','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- 2019-01-21T14:05:59.729
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=626232
@@ -45,3 +40,7 @@ UPDATE AD_Field SET AD_Name_ID=575970, Description='Achtung: wenn die gewählte 
 ;
 
 
+-- 2019-01-21T14:06:02.555
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(575970) 
+;
