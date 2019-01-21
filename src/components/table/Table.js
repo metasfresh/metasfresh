@@ -1,7 +1,6 @@
 import update from 'immutability-helper';
 import { is } from 'immutable';
 import * as _ from 'lodash';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -28,6 +27,8 @@ import {
   getSizeClass,
   handleCopy,
   handleOpenNewTab,
+  propTypes,
+  constructorFn,
 } from '../../utils/tableHelpers';
 import {
   getRowsData,
@@ -36,52 +37,13 @@ import {
 } from '../../utils/documentListHelper';
 
 class Table extends Component {
-  static propTypes = {
-    // from @connect
-    dispatch: PropTypes.func.isRequired,
-
-    // from <DocumentList>
-    autofocus: PropTypes.bool,
-    rowEdited: PropTypes.bool,
-    onSelectionChanged: PropTypes.func,
-    onRowEdited: PropTypes.func,
-    defaultSelected: PropTypes.array,
-    disableOnClickOutside: PropTypes.func,
-    limitOnClickOutside: PropTypes.bool,
-    supportOpenRecord: PropTypes.bool,
-  };
-
   _isMounted = false;
 
   constructor(props) {
     super(props);
 
-    const { defaultSelected, rowEdited } = props;
-
-    this.state = {
-      selected:
-        defaultSelected && defaultSelected !== null
-          ? defaultSelected
-          : [undefined],
-      listenOnKeys: true,
-      contextMenu: {
-        open: false,
-        x: 0,
-        y: 0,
-        fieldName: null,
-        supportZoomInto: false,
-        supportFieldEdit: false,
-      },
-      promptOpen: false,
-      isBatchEntry: false,
-      rows: [],
-      collapsedRows: [],
-      collapsedParentsRows: [],
-      pendingInit: true,
-      collapsedArrayMap: [],
-      rowEdited: rowEdited,
-      tableRefreshToggle: false,
-    };
+    const constr = constructorFn.bind(this);
+    constr(props);
   }
 
   componentDidMount() {
@@ -1328,6 +1290,8 @@ class Table extends Component {
     );
   }
 }
+
+Table.propTypes = propTypes;
 
 const mapStateToProps = state => ({
   allowShortcut: state.windowHandler.allowShortcut,
