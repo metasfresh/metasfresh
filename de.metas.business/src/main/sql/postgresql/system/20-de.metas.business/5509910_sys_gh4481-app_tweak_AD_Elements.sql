@@ -105,8 +105,8 @@ UPDATE AD_Tab SET Name='Materialentnahme', Description=NULL, Help=NULL, CommitWa
 
 -- 2019-01-17T15:46:54.316
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_WINDOW SET Name='Materialentnahme', Description=NULL, Help=NULL WHERE AD_Element_ID = 574498
-;
+--UPDATE AD_WINDOW SET Name='Materialentnahme', Description=NULL, Help=NULL WHERE AD_Element_ID = 574498
+--;
 
 -- 2019-01-17T15:47:15.021
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
