@@ -30,7 +30,7 @@ public interface JpaUserRepository extends JpaRepository<JpaUser, Long>
 
 	JpaUser findByMetasfreshMSV3UserId(int id);
 
-	void deleteByUsername(final String username);
+	void deleteByMetasfreshMSV3UserId(int id);
 
 	long deleteInBatchBySyncTokenNot(String syncToken);
 

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -140,6 +142,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Transactional
 	public void handleEvent(@NonNull final MSV3UserChangedBatchEvent batchEvent)
 	{
 		final String syncToken = batchEvent.getId();
@@ -172,11 +175,11 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		{
 			final String username = event.getUsername();
 
-			JpaUser user = usersRepo.findByMetasfreshMSV3UserId(event.getMetasfreshMSV3UserId().getId());
+			JpaUser user = usersRepo.findByMetasfreshMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 			if (user == null)
 			{
 				user = new JpaUser();
-				user.setMetasfreshMSV3UserId(event.getMetasfreshMSV3UserId().getId());
+				user.setMetasfreshMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 			}
 
 			user.setUsername(username);
@@ -188,7 +191,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		}
 		else if (event.getChangeType() == ChangeType.DELETED)
 		{
-			usersRepo.deleteByUsername(event.getUsername());
+			usersRepo.deleteByMetasfreshMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 		}
 		else
 		{

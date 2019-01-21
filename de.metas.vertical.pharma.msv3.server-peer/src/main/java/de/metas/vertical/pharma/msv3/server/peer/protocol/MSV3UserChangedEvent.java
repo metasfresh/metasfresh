@@ -39,18 +39,18 @@ import lombok.Value;
 @ToString(exclude = "password")
 public class MSV3UserChangedEvent
 {
-	public static MSV3UserChangedEventBuilder prepareCreatedOrUpdatedEvent(@NonNull final MSV3MetasfreshUserId metasfreshMSV3UserId)
+	public static MSV3UserChangedEventBuilder prepareCreatedOrUpdatedEvent(@NonNull final MSV3MetasfreshUserId msv3MetasfreshUserId)
 	{
 		return _builder()
 				.changeType(ChangeType.CREATED_OR_UPDATED)
-				.metasfreshMSV3UserId(metasfreshMSV3UserId);
+				.msv3MetasfreshUserId(msv3MetasfreshUserId);
 	}
 
-	public static MSV3UserChangedEvent deletedEvent(@NonNull final MSV3MetasfreshUserId metasfreshMSV3UserId)
+	public static MSV3UserChangedEvent deletedEvent(@NonNull final MSV3MetasfreshUserId msv3MetasfreshUserId)
 	{
 		return _builder()
 				.changeType(ChangeType.DELETED)
-				.metasfreshMSV3UserId(metasfreshMSV3UserId)
+				.msv3MetasfreshUserId(msv3MetasfreshUserId)
 				.build();
 	}
 
@@ -59,8 +59,8 @@ public class MSV3UserChangedEvent
 		CREATED_OR_UPDATED, DELETED
 	};
 
-	@JsonProperty("metasfreshMSV3UserId")
-	private MSV3MetasfreshUserId metasfreshMSV3UserId;
+	@JsonProperty("msv3MetasfreshUserId")
+	private MSV3MetasfreshUserId msv3MetasfreshUserId;
 
 	@JsonProperty("changeType")
 	private ChangeType changeType;
@@ -80,14 +80,14 @@ public class MSV3UserChangedEvent
 	@JsonCreator
 	@Builder(builderMethodName = "_builder")
 	private MSV3UserChangedEvent(
-			@JsonProperty("metasfreshMSV3UserId") @NonNull final MSV3MetasfreshUserId metasfreshMSV3UserId,
+			@JsonProperty("msv3MetasfreshUserId") @NonNull final MSV3MetasfreshUserId msv3MetasfreshUserId,
 			@JsonProperty("changeType") @NonNull final ChangeType changeType,
 			@JsonProperty("username") @Nullable final String username,
 			@JsonProperty("password") @Nullable final String password,
 			@JsonProperty("bpartnerId") @Nullable final Integer bpartnerId,
 			@JsonProperty("bpartnerLocationId") @Nullable final Integer bpartnerLocationId)
 	{
-		this.metasfreshMSV3UserId = metasfreshMSV3UserId;
+		this.msv3MetasfreshUserId = msv3MetasfreshUserId;
 		this.changeType = changeType;
 		this.username = username;
 		this.password = password;

@@ -54,7 +54,15 @@ public class MSV3_Customer_Config
 	public void onUpdated(final I_MSV3_Customer_Config configRecord)
 	{
 		final MSV3CustomerConfigService service = getMSV3CustomerConfigService();
-		service.publishConfigChanged(configRecord);
+
+		if (configRecord.isActive())
+		{
+			service.publishConfigChanged(configRecord);
+		}
+		else
+		{
+			service.publishConfigDeleted(configRecord.getMSV3_Customer_Config_ID());
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
