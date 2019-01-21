@@ -131,16 +131,17 @@ public class MSV3StockAvailabilityService
 				.iteratorBatchSize(getPublishAllStockAvailabilityBatchSize())
 				.orderBy(StockDataQueryOrderBy.ProductId)
 				.build();
-		final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(query);
+		try (final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(query))
+		{
+			final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
+					.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
+					.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
+					.filter(Predicates.notNull());
 
-		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
-				.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
-				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-				.filter(Predicates.notNull());
-
-		return GuavaCollectors
-				.batchAndStream(stockAvailabilityStream, query.getIteratorBatchSize())
-				.map(MSV3StockAvailabilityService::createAvailabilityUpdatedEvent);
+			return GuavaCollectors
+					.batchAndStream(stockAvailabilityStream, query.getIteratorBatchSize())
+					.map(MSV3StockAvailabilityService::createAvailabilityUpdatedEvent);
+		}
 	}
 
 	private static MSV3StockAvailabilityUpdatedEvent createAvailabilityUpdatedEvent(

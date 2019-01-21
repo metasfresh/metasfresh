@@ -75,6 +75,7 @@ public class StockRepository
 		return qtyOnHand != null ? qtyOnHand : BigDecimal.ZERO;
 	}
 
+	/** Please use this stream within a try-with-resources statement, because it's supposed to do cleanup. */
 	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(@NonNull final StockDataAggregateQuery query)
 	{
 		final IQuery<I_MD_Stock_WarehouseAndProduct_v> stockDataAggregateItemViewQuery = createStockDataAggregateItemQuery(query);
@@ -100,6 +101,9 @@ public class StockRepository
 					.orderBy(I_T_MD_Stock_WarehouseAndProduct.COLUMN_Line)
 					.create()
 					.iterateAndStream()
+
+					// cleanup when the stream is closed, *if* the stream's close method is called
+					.onClose(() -> deleteTemporaryRecords(uuid))
 					.map(this::recordRowToStockDataItem);
 		}
 		else
@@ -107,7 +111,17 @@ public class StockRepository
 			// we are in unit test mode
 			return stockDataAggregateItemViewQuery.list().stream().map(this::viewRowToStockDataItem);
 		}
+	}
 
+	private void deleteTemporaryRecords(@NonNull final String uuid)
+	{
+		final int deleteCount = Services
+				.get(IQueryBL.class)
+				.createQueryBuilder(I_T_MD_Stock_WarehouseAndProduct.class)
+				.addEqualsFilter(I_T_MD_Stock_WarehouseAndProduct.COLUMN_UUID, uuid)
+				.create()
+				.deleteDirectly();
+		Loggables.get().addLog("Deleted {} records with UUID={} from table {}", deleteCount, uuid, I_T_MD_Stock_WarehouseAndProduct.Table_Name);
 	}
 
 	/**
