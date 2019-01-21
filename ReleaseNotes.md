@@ -10,7 +10,28 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.89
+
 # metasfresh 5.88
+#Features
+* metasfresh 
+  * [#4866](https://github.com/metasfresh/metasfresh/issues/4866) Create purchase orders: if the vendor is using a gateway then always order directly
+  * [#4868](https://github.com/metasfresh/metasfresh/issues/4868) Make C_PurchaseCandidate.IsAggregatePO a searchable column
+
+#Fixes
+* metasfresh
+  * [#4782](https://github.com/metasfresh/metasfresh/issues/4782) Various fixes to import processes
+  * [#4859](https://github.com/metasfresh/metasfresh/issues/4859) Durchschnittspreise SQL ergibt Fehlerhafte Daten (Preis Abw. nicht berücksichtigt)
+  * [#4876](https://github.com/metasfresh/metasfresh/issues/4876) Inventory related fixes
+  * [#4873](https://github.com/metasfresh/metasfresh/issues/4873) Product: The Temperature Field is too short
+
+* metasfresh-webui-api
+  * [#1123](https://github.com/metasfresh/metasfresh-webui-api/issues/1123) Fix process parameter translations
+  * [#1125](https://github.com/metasfresh/metasfresh-webui-api/issues/1125) Fix webui window update from remote editing
+  * [#1127](https://github.com/metasfresh/metasfresh-webui-api/issues/1127) Cache invalidation failing - null childLinkColumnName
+
+* metasfresh-webui-frontend
+  * [#2148](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2148) Tables not fully displayed in windows causing filters and actions not being displayed properly
 
 # metasfresh 5.87
 # Features
