@@ -329,7 +329,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 			product.setIsNarcotic(isNarcotic);
 		}
 		final Boolean isTFG = extractIsTFG(importRecord);
-		if (isNarcotic != null)
+		if (isTFG != null)
 		{
 			product.setIsTFG(isTFG);
 		}
