@@ -111,7 +111,7 @@ public class MSV3StockAvailabilityService
 		}
 		else
 		{
-			Loggables.get().withLogger(logger, Level.WARN)
+			Loggables.get().withLogger(logger, Level.INFO)
 					.addLog("Deleting all products on the MSV3-server before sending the current products");
 			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deletedAll());
 

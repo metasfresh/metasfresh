@@ -22,6 +22,12 @@
 CREATE UNIQUE INDEX T_MD_Stock_WarehouseAndProduct_UC ON T_MD_Stock_WarehouseAndProduct (Line,UUID)
 ;
 
+-- 2019-01-22T00:16:38.150
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE INDEX T_MD_Stock_WarehouseAndProduct_UUID ON T_MD_Stock_WarehouseAndProduct (UUID)
+;
+
+
 
 drop view if exists MD_Stock_WarehouseAndProduct_v;
 create or replace view MD_Stock_WarehouseAndProduct_v as
@@ -40,7 +46,7 @@ select
 from M_Product_Category pc
 inner join M_Product p on (p.M_Product_Category_ID=pc.M_Product_Category_ID)
 left outer join MD_Stock s on (s.M_Product_ID=p.M_Product_ID)
-where pc.IsActive='Y' and p.IsActive='Y' and s.IsActive='Y'
+where pc.IsActive='Y' and p.IsActive='Y' and COALESCE(s.IsActive,'Y')='Y'
 group by
 	pc.M_Product_Category_ID
 	, p.M_Product_ID

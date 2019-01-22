@@ -32,14 +32,25 @@ import lombok.Value;
 @Builder
 public class MSV3ServerRequest
 {
+	/** If you have 600K items on the metasfresh server, this request should be used with caution. */
 	public static MSV3ServerRequest requestAll()
 	{
 		return ALL;
 	}
 
+	public static MSV3ServerRequest requestConfig()
+	{
+		return CONFIG;
+	}
+
 	private static final MSV3ServerRequest ALL = MSV3ServerRequest.builder()
 			.requestAllUsers(true)
 			.requestAllStockAvailabilities(true)
+			.build();
+
+	private static final MSV3ServerRequest CONFIG = MSV3ServerRequest.builder()
+			.requestAllUsers(true)
+			.requestAllStockAvailabilities(false)
 			.build();
 
 	boolean requestAllUsers;

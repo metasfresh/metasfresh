@@ -44,6 +44,9 @@ public class Application implements InitializingBean
 	@Value("${msv3server.startup.requestAllData:false}")
 	private boolean requestAllDataOnStartup;
 
+	@Value("${msv3server.startup.requestConfigData:true}")
+	private boolean requestConfigDataOnStartup;
+
 	@Autowired
 	private MSV3ServerPeerService msv3ServerPeerService;
 
@@ -77,16 +80,20 @@ public class Application implements InitializingBean
 	@Override
 	public void afterPropertiesSet()
 	{
-		if (requestAllDataOnStartup)
+		try
 		{
-			try
+			if (requestAllDataOnStartup)
 			{
 				msv3ServerPeerService.requestAllUpdates();
 			}
-			catch (Exception ex)
+			else if (requestConfigDataOnStartup)
 			{
-				logger.warn("Error while requesting ALL updates. Skipped.", ex);
+				msv3ServerPeerService.requestConfigUpdates();
 			}
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Error while requesting ALL updates. Skipped.", ex);
 		}
 	}
 }

@@ -84,6 +84,12 @@ public class MSV3ServerPeerService
 		logger.info("Requested all data from MSV3 server peer");
 	}
 
+	public void requestConfigUpdates()
+	{
+		convertAndSend(RabbitMQConfig.QUEUENAME_MSV3ServerRequests, MSV3ServerRequest.requestConfig());
+		logger.info("Requested config data from MSV3 server peer");
+	}
+
 	public void publishUserChangedEvent(@NonNull final MSV3UserChangedBatchEvent event)
 	{
 		convertAndSend(RabbitMQConfig.QUEUENAME_UserChangedEvents, event);
