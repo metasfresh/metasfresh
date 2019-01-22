@@ -1240,7 +1240,7 @@ public final class FactLine extends X_Fact_Acct
 					if (salesRepId != null)
 					{
 						sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
-						setC_SalesRegion_ID(DB.getSQLValue(null, sql, salesRepId));
+						setC_SalesRegion_ID(DB.getSQLValueEx(ITrx.TRXNAME_None, sql, salesRepId));
 					}
 
 					if (super.getC_SalesRegion_ID() != 0)		// save in VO
