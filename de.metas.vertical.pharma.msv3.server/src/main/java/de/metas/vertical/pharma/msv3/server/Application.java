@@ -71,7 +71,8 @@ public class Application implements InitializingBean
 	{
 		if (authTokenStringValue == null || authTokenStringValue.trim().isEmpty())
 		{
-			return null;
+			// a token is needed on the receiver side, even if it's not valid
+			return MSV3PeerAuthToken.TOKEN_NOT_SET;
 		}
 
 		return MSV3PeerAuthToken.of(authTokenStringValue);
