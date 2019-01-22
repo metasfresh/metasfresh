@@ -1656,6 +1656,12 @@ public class TimeUtil
 		}
 	}
 
+	@Deprecated
+	public static ZonedDateTime asZonedDateTime(final ZonedDateTime zonedDateTime)
+	{
+		return zonedDateTime;
+	}
+
 	public static ZonedDateTime asZonedDateTime(final Object obj)
 	{
 		if (obj == null)
