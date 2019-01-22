@@ -172,7 +172,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 		return jsonConverters
 				.fromJson(request, masterdataProvider)
-				.adInputDataSourceInternalName(dataSourceInternalNameToUse)
+				.dataSourceInternalName(dataSourceInternalNameToUse)
 				.build();
 	}
 
