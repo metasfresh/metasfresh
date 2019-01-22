@@ -1,7 +1,6 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
@@ -44,7 +43,7 @@ import lombok.ToString;
 public final class CurrentCost
 {
 	@Setter
-	private int repoId;
+	private CurrentCostId id;
 
 	private final CostSegment costSegment;
 	private final CostElement costElement;
@@ -62,7 +61,7 @@ public final class CurrentCost
 
 	@Builder
 	private CurrentCost(
-			final int repoId,
+			final CurrentCostId id,
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CurrencyId currencyId,
@@ -74,7 +73,7 @@ public final class CurrentCost
 			final BigDecimal cumulatedAmt,
 			final BigDecimal cumulatedQty)
 	{
-		this.repoId = repoId > 0 ? repoId : 0;
+		this.id = id;
 
 		this.costSegment = costSegment;
 		this.costElement = costElement;
@@ -95,7 +94,7 @@ public final class CurrentCost
 
 	private CurrentCost(@NonNull final CurrentCost from)
 	{
-		this.repoId = from.repoId;
+		this.id = from.id;
 
 		this.costElement = from.costElement;
 		this.costSegment = from.costSegment;
@@ -107,6 +106,7 @@ public final class CurrentCost
 
 		this.costPrice = from.costPrice;
 		this.currentQty = from.currentQty;
+
 		this.cumulatedAmt = from.cumulatedAmt;
 		this.cumulatedQty = from.cumulatedQty;
 	}
@@ -114,6 +114,15 @@ public final class CurrentCost
 	public CurrentCost copy()
 	{
 		return new CurrentCost(this);
+	}
+
+	public void setFrom(final CostDetailPreviousAmounts previousAmounts)
+	{
+		this.costPrice = previousAmounts.getCostPrice();
+		this.currentQty = previousAmounts.getCumulatedQty();
+
+		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
+		this.cumulatedQty = previousAmounts.getCumulatedQty();
 	}
 
 	public CostElementId getCostElementId()
@@ -148,7 +157,7 @@ public final class CurrentCost
 		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			final CostAmount ownCostPrice = newAmt.divide(newQty.getAsBigDecimal(), getPrecision().toInt(), RoundingMode.HALF_UP);
+			final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
 			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
 		}
 		currentQty = newQty;
@@ -156,7 +165,7 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qty);
 	}
 
-	public void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	private void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
 
@@ -164,7 +173,13 @@ public final class CurrentCost
 		cumulatedQty = cumulatedQty.add(qty);
 	}
 
-	public void addToCurrentQty(@NonNull final Quantity qtyToAdd)
+	public void addToCurrentQtyAndCumulate(@NonNull final Quantity qtyToAdd, @NonNull final CostAmount amt)
+	{
+		addToCurrentQty(qtyToAdd);
+		addCumulatedAmtAndQty(amt, qtyToAdd);
+	}
+
+	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
 		currentQty = currentQty.add(qtyToAdd);
 	}

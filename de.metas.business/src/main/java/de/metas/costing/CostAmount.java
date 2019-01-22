@@ -11,8 +11,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -64,10 +64,9 @@ public class CostAmount
 	BigDecimal value;
 	CurrencyId currencyId;
 
-	@Builder
 	private CostAmount(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
-		this.value = value;
+		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyId = currencyId;
 	}
 
@@ -95,8 +94,10 @@ public class CostAmount
 		{
 			return this;
 		}
-
-		return new CostAmount(value.negate(), currencyId);
+		else
+		{
+			return new CostAmount(value.negate(), currencyId);
+		}
 	}
 
 	public CostAmount negateIf(final boolean condition)
@@ -115,8 +116,10 @@ public class CostAmount
 		{
 			return this;
 		}
-
-		return new CostAmount(value.multiply(multiplicand), currencyId);
+		else
+		{
+			return new CostAmount(value.multiply(multiplicand), currencyId);
+		}
 	}
 
 	public CostAmount multiply(@NonNull final Quantity quantity)
@@ -156,15 +159,15 @@ public class CostAmount
 		return new CostAmount(value.add(amtToAdd.value), currencyId);
 	}
 
-	public CostAmount divide(final BigDecimal divisor, final int precision, final RoundingMode roundingMode)
+	public CostAmount divide(@NonNull final BigDecimal divisor, @NonNull final CurrencyPrecision precision)
 	{
-		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
+		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
 		return new CostAmount(valueNew, currencyId);
 	}
 
-	public CostAmount divide(final Quantity divisor, final int precision, final RoundingMode roundingMode)
+	public CostAmount divide(@NonNull final Quantity divisor, @NonNull final CurrencyPrecision precision)
 	{
-		return divide(divisor.getAsBigDecimal(), precision, roundingMode);
+		return divide(divisor.getAsBigDecimal(), precision);
 	}
 
 	public CostAmount roundToPrecisionIfNeeded(final CurrencyPrecision precision)

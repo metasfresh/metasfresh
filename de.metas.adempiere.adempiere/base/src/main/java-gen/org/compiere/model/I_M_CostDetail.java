@@ -730,6 +730,52 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
+	 * Set Previous Cumulated Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CumulatedAmt (java.math.BigDecimal Prev_CumulatedAmt);
+
+	/**
+	 * Get Previous Cumulated Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CumulatedAmt();
+
+    /** Column definition for Prev_CumulatedAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CumulatedAmt = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CumulatedAmt", null);
+    /** Column name Prev_CumulatedAmt */
+    public static final String COLUMNNAME_Prev_CumulatedAmt = "Prev_CumulatedAmt";
+
+	/**
+	 * Set Previous Cumulated Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CumulatedQty (java.math.BigDecimal Prev_CumulatedQty);
+
+	/**
+	 * Get Previous Cumulated Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CumulatedQty();
+
+    /** Column definition for Prev_CumulatedQty */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CumulatedQty = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CumulatedQty", null);
+    /** Column name Prev_CumulatedQty */
+    public static final String COLUMNNAME_Prev_CumulatedQty = "Prev_CumulatedQty";
+
+	/**
 	 * Set Previous Current Cost Price.
 	 *
 	 * <br>Type: CostPrice

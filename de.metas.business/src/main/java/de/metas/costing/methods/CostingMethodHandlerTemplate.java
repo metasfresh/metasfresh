@@ -11,7 +11,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.order.OrderLineId;
@@ -165,10 +164,4 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
-
-	@Override
-	public void voidCosts(final CostDetailVoidRequest request)
-	{
-		throw new UnsupportedOperationException();
-	}
 }

@@ -1,10 +1,12 @@
 package de.metas.costing;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.product.ProductId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,24 +32,18 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class CostDetailQuery
 {
 	AcctSchemaId acctSchemaId;
-	AttributeSetInstanceId attributeSetInstanceId;
 	CostElementId costElementId;
 	CostingDocumentRef documentRef;
 
-	@Builder
-	private CostDetailQuery(
-			@NonNull AcctSchemaId acctSchemaId,
-			AttributeSetInstanceId attributeSetInstanceId,
-			CostElementId costElementId,
-			@NonNull CostingDocumentRef documentRef)
-	{
-		this.acctSchemaId = acctSchemaId;
-		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
-		this.costElementId = costElementId;
-		this.documentRef = documentRef;
-	}
+	ProductId productId;
+	AttributeSetInstanceId attributeSetInstanceId;
 
+	ClientId clientId;
+	OrgId orgId;
+
+	CostDetailId afterCostDetailId;
 }

@@ -1,16 +1,14 @@
 package de.metas.costing;
 
-import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,33 +26,17 @@ import lombok.Value;
  * #L%
  */
 
-@Value
 @Builder
-public class CostDetailPreviousAmounts
+public class CostDetailAdjustment
 {
-	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
-	{
-		return builder()
-				.costPrice(currentCost.getCostPrice())
-				.qty(currentCost.getCurrentQty())
-				.cumulatedAmt(currentCost.getCumulatedAmt())
-				.cumulatedQty(currentCost.getCumulatedQty())
-				.build();
-	}
+	@NonNull
+	CostDetailId costDetailId;
 
 	@NonNull
-	CostPrice costPrice;
-
+	CostAmount amt;
 	@NonNull
 	Quantity qty;
 
 	@NonNull
-	private CostAmount cumulatedAmt;
-	@NonNull
-	private Quantity cumulatedQty;
-
-	public CurrencyId getCurrencyId()
-	{
-		return getCostPrice().getCurrenyId();
-	}
+	CostDetailPreviousAmounts previousAmounts;
 }

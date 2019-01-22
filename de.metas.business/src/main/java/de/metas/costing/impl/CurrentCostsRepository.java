@@ -41,6 +41,7 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.CurrentCostId;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
@@ -83,16 +84,16 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	private ICostElementRepository costElementRepo;
 
 	@Override
-	public List<CurrentCost> getByIds(@NonNull final Set<Integer> repoIds)
+	public List<CurrentCost> getByIds(@NonNull final Set<CurrentCostId> ids)
 	{
-		if (repoIds.isEmpty())
+		if (ids.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Cost.class)
-				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, repoIds)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
 				.create()
 				.stream()
 				.map(this::toCurrentCost)
@@ -236,9 +237,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	public void save(@NonNull final CurrentCost currentCost)
 	{
 		final I_M_Cost costRecord;
-		if (currentCost.getRepoId() > 0)
+		if (currentCost.getId() != null)
 		{
-			costRecord = InterfaceWrapperHelper.load(currentCost.getRepoId(), I_M_Cost.class);
+			costRecord = InterfaceWrapperHelper.load(currentCost.getId(), I_M_Cost.class);
 		}
 		else
 		{
@@ -249,7 +250,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		// costRecord.setProcessed(true); // FIXME Processed is a virtual column ?!?! wtf?!
 		InterfaceWrapperHelper.save(costRecord);
 
-		currentCost.setRepoId(costRecord.getM_Cost_ID());
+		currentCost.setId(CurrentCostId.ofRepoId(costRecord.getM_Cost_ID()));
 	}
 
 	private CurrentCost toCurrentCost(final I_M_Cost record)
@@ -282,7 +283,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.build();
 
 		return CurrentCost.builder()
-				.repoId(record.getM_Cost_ID())
+				.id(CurrentCostId.ofRepoId(record.getM_Cost_ID()))
 				.costSegment(costSegment)
 				.costElement(costElement)
 				.currencyId(currencyId)

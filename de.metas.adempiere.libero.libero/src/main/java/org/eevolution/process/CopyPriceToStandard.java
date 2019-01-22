@@ -46,7 +46,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -69,7 +68,6 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
@@ -226,33 +224,15 @@ public class CopyPriceToStandard extends JavaProcess
 				final AttributeSetInstanceId attributeSetInstanceId,
 				final CostElementId costElementId)
 		{
-			this.clientId = as.getClientId();
 			this.productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
 			this.costTypeId = costTypeId;
 			this.acctSchemaId = as.getId();
 			this.costElementId = costElementId;
-
+			
 			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(product, as);
-			if (CostingLevel.Client.equals(costingLevel))
-			{
-				this.orgId = OrgId.ANY;
-				this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
-			}
-			else if (CostingLevel.Organization.equals(costingLevel))
-			{
-				this.orgId = orgId != null ? orgId : OrgId.ANY;
-				this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
-			}
-			else if (CostingLevel.BatchLot.equals(costingLevel))
-			{
-				this.orgId = OrgId.ANY;
-				this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
-			}
-			else
-			{
-				throw new AdempiereException("Unknowns costing level: " + costingLevel);
-			}
-
+			this.clientId = costingLevel.effectiveValue(as.getClientId());
+			this.orgId = costingLevel.effectiveValue(orgId);
+			this.attributeSetInstanceId = costingLevel.effectiveValue(attributeSetInstanceId);
 		}
 
 		public <T> IQuery<T> toQuery(Class<T> clazz, String trxName)

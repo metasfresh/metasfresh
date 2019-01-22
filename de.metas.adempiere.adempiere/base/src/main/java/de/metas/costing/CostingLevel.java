@@ -3,12 +3,17 @@ package de.metas.costing;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.X_C_AcctSchema;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -68,4 +73,81 @@ public enum CostingLevel
 
 	private static final ImmutableMap<String, CostingLevel> code2type = Stream.of(values())
 			.collect(GuavaCollectors.toImmutableMapByKey(CostingLevel::getCode));
+
+	public ClientId effectiveValue(@NonNull final ClientId clientId)
+	{
+		if (clientId.isSystem())
+		{
+			throw new AdempiereException("Invalid: " + clientId);
+		}
+		return clientId;
+	}
+
+	public OrgId effectiveValue(@NonNull final OrgId orgId)
+	{
+		return effectiveValueOr(orgId, OrgId.ANY);
+	}
+
+	public OrgId effectiveValueOrNull(@NonNull final OrgId orgId)
+	{
+		return effectiveValueOr(orgId, null);
+	}
+
+	private OrgId effectiveValueOr(@NonNull final OrgId orgId, final OrgId nullValue)
+	{
+		if (this == Client)
+		{
+			return nullValue;
+		}
+		else if (this == Organization)
+		{
+			if (orgId.isAny())
+			{
+				throw new AdempiereException("Regular organization expected when costing level is Organization");
+			}
+			return orgId;
+		}
+		else if (this == BatchLot)
+		{
+			return nullValue;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown costingLevel: " + this);
+		}
+	}
+
+	public AttributeSetInstanceId effectiveValue(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return effectiveValueOr(asiId, AttributeSetInstanceId.NONE);
+	}
+
+	public AttributeSetInstanceId effectiveValueOrNull(@NonNull final AttributeSetInstanceId asiId)
+	{
+		return effectiveValueOr(asiId, null);
+	}
+
+	private AttributeSetInstanceId effectiveValueOr(@NonNull final AttributeSetInstanceId asiId, final AttributeSetInstanceId nullValue)
+	{
+		if (this == Client)
+		{
+			return nullValue;
+		}
+		else if (this == Organization)
+		{
+			return nullValue;
+		}
+		else if (this == BatchLot)
+		{
+			if (asiId.isNone())
+			{
+				throw new AdempiereException("Regular ASI expected when costing level is Batch/Lot");
+			}
+			return asiId;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown costingLevel: " + this);
+		}
+	}
 }

@@ -27,6 +27,7 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.CurrentCostId;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -218,11 +219,11 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	@Override
 	public void save(final BOM bom)
 	{
-		final Set<Integer> costRepoIds = bom.getCostRepoIds();
+		final Set<CurrentCostId> costIds = bom.getCostIds(CurrentCostId.class);
 
-		final Map<Integer, CurrentCost> existingCostsById = currentCostsRepo.getByIds(costRepoIds)
+		final Map<CurrentCostId, CurrentCost> existingCostsById = currentCostsRepo.getByIds(costIds)
 				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(CurrentCost::getRepoId));
+				.collect(GuavaCollectors.toImmutableMapByKey(CurrentCost::getId));
 
 		bom.streamCostPrices()
 				.forEach(bomCostPrice -> save(bomCostPrice, existingCostsById));
@@ -230,13 +231,13 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 	private void save(
 			@NonNull final BOMCostPrice bomCostPrice,
-			final Map<Integer, CurrentCost> existingCostsByRepoId)
+			final Map<CurrentCostId, CurrentCost> existingCostsByRepoId)
 	{
 		final ProductId productId = bomCostPrice.getProductId();
 
 		for (final BOMCostElementPrice elementPrice : bomCostPrice.getElementPrices())
 		{
-			CurrentCost existingCost = existingCostsByRepoId.get(elementPrice.getRepoId());
+			CurrentCost existingCost = existingCostsByRepoId.get(elementPrice.getId());
 			if (existingCost == null)
 			{
 				final CostSegmentAndElement costSegmentAndElement = createCostSegment(productId)
@@ -246,14 +247,14 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 			existingCost.setCostPrice(elementPrice.getCostPrice());
 			currentCostsRepo.save(existingCost);
-			elementPrice.setRepoId(existingCost.getRepoId());
+			elementPrice.setId(existingCost.getId());
 		}
 	}
 
 	private BOMCostElementPrice toBOMCostElementPrice(final CurrentCost currentCost)
 	{
 		return BOMCostElementPrice.builder()
-				.repoId(currentCost.getRepoId())
+				.id(currentCost.getId())
 				.costElementId(currentCost.getCostElementId())
 				.costPrice(currentCost.getCostPrice())
 				.build();
