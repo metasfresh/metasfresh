@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -24,7 +27,6 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -122,7 +124,7 @@ public class ProductFilterUtil
 				.build();
 	}
 
-	public static IQuery<I_M_Product> createProductQueryOrNull(final ProductFilterVO productFilterVO)
+	public static IQuery<I_M_Product> createProductQueryOrNull(@Nullable final ProductFilterVO productFilterVO)
 	{
 		if (productFilterVO == null)
 		{
@@ -130,7 +132,32 @@ public class ProductFilterUtil
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_Product> productQuery = queryBL.createQueryBuilder(I_M_Product.class)
+		final IQueryFilter<I_M_Product> productFilterOrNull = createProductQueryFilterOrNull(
+				productFilterVO,
+				true/* nullForEmptyFilterVO */);
+		if (productFilterOrNull == null)
+		{
+			return null;
+		}
+
+		return queryBL
+				.createQueryBuilder(I_M_Product.class)
+				.filter(productFilterOrNull)
+				.create();
+	}
+
+	public static IQueryFilter<I_M_Product> createProductQueryFilterOrNull(
+			@Nullable final ProductFilterVO productFilterVO,
+			@Nullable final boolean nullForEmptyFilterVO)
+	{
+		if (productFilterVO == null)
+		{
+			return null;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_M_Product> productFilter = queryBL
+				.createCompositeQueryFilter(I_M_Product.class)
 				.addOnlyActiveRecordsFilter();
 		boolean anyRestrictionAdded = false;
 
@@ -138,7 +165,7 @@ public class ProductFilterUtil
 		if (!Check.isEmpty(productName, true))
 		{
 			final boolean ignoreCase = true;
-			productQuery.addStringLikeFilter(I_M_Product.COLUMN_Name, productName, ignoreCase);
+			productFilter.addStringLikeFilter(I_M_Product.COLUMN_Name, productName, ignoreCase);
 			anyRestrictionAdded = true;
 		}
 
@@ -146,37 +173,37 @@ public class ProductFilterUtil
 		if (!Check.isEmpty(productValue, true))
 		{
 			final boolean ignoreCase = true;
-			productQuery.addStringLikeFilter(I_M_Product.COLUMN_Value, productValue, ignoreCase);
+			productFilter.addStringLikeFilter(I_M_Product.COLUMN_Value, productValue, ignoreCase);
 			anyRestrictionAdded = true;
 		}
 
 		final int productCategoryId = productFilterVO.getProductCategoryId();
 		if (productCategoryId > 0)
 		{
-			productQuery.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId);
+			productFilter.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId);
 			anyRestrictionAdded = true;
 		}
 
 		final Boolean isPurchased = productFilterVO.getIsPurchased();
 		if (isPurchased != null)
 		{
-			productQuery.addEqualsFilter(I_M_Product.COLUMN_IsPurchased, isPurchased);
+			productFilter.addEqualsFilter(I_M_Product.COLUMN_IsPurchased, isPurchased);
 			anyRestrictionAdded = true;
 		}
 
 		final Boolean isSold = productFilterVO.getIsSold();
 		if (isSold != null)
 		{
-			productQuery.addEqualsFilter(I_M_Product.COLUMN_IsSold, isSold);
+			productFilter.addEqualsFilter(I_M_Product.COLUMN_IsSold, isSold);
 			anyRestrictionAdded = true;
 		}
 
 		//
-		if (!anyRestrictionAdded)
+		if (!anyRestrictionAdded && nullForEmptyFilterVO)
 		{
 			return null;
 		}
-		return productQuery.create();
+		return productFilter;
 	}
 
 	public static Predicate<I_M_Product> toPredicate(@NonNull final List<DocumentFilter> filters)

@@ -168,4 +168,5 @@ public class MaterialCockpitFilters
 		return ProductFilterUtil.toPredicate(filters);
 	}
 
+
 }
