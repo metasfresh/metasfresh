@@ -1,6 +1,5 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Queue from 'simple-promise-queue';
@@ -26,7 +25,6 @@ export class QuickActions extends Component {
     dispatch: PropTypes.func.isRequired,
 
     // from <DocumentList>
-    rows: ImmutablePropTypes.list,
     childView: PropTypes.object.isRequired,
     parentView: PropTypes.object.isRequired,
     windowType: PropTypes.string.isRequired,
