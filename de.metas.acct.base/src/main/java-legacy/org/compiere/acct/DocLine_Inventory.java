@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InventoryLine;
-import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostAmount;
@@ -71,7 +70,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -87,7 +86,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);
 		}

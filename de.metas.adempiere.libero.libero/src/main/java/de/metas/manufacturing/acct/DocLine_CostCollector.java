@@ -9,19 +9,18 @@ import org.compiere.Adempiere;
 import org.compiere.acct.DocLine;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.product.ProductId;
@@ -115,7 +114,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build());
 		}
 		else
@@ -130,7 +129,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.date(getDateAcct())
 							.build());
 		}
 	}
