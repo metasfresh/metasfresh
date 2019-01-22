@@ -1581,11 +1581,11 @@ public class TimeUtil
 		return dayOfWeek - 1;
 	}
 
-	// @Deprecated
-	// public static LocalDate asLocalDate(final LocalDate localDate)
-	// {
-	// return localDate;
-	// }
+	@Deprecated
+	public static LocalDate asLocalDate(final LocalDate localDate)
+	{
+		return localDate;
+	}
 
 	public static LocalDate asLocalDate(final Object obj)
 	{
