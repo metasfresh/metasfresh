@@ -70,8 +70,8 @@ class Table extends Component {
       viewId,
       isModal,
       hasIncluded,
-      rowEdited,
-      onRowEdited,
+      // rowEdited,
+      // onRowEdited,
     } = this.props;
     const { selected, rows } = this.state;
     const selectedEqual = _.isEqual(prevState.selected, selected);
@@ -126,32 +126,58 @@ class Table extends Component {
       );
     }
 
-    if (!is(prevProps.rowData, rowData)) {
-      // special case for the picking terminal
-      const firstLoad = prevProps.rowData.get(1) ? false : true;
+    // if (!is(prevProps.rowData, rowData)) {
+    //   // special case for the picking terminal
+    //   const firstLoad = prevProps.rowData.get(1) ? false : true;
+    //   // const firstLoad = false;
 
-      // this prevents collapsing rows when table cell was edited, for instance
-      // in purchase orders
-      if (!rowEdited) {
-        this.getIndentData(firstLoad);
-      } else {
-        onRowEdited && onRowEdited(false);
-      }
-    }
+    //   console.log('Table update firstLoad: ', firstLoad);
+
+    //   // this prevents collapsing rows when table cell was edited, for instance
+    //   // in purchase orders
+    //   if (!rowEdited) {
+    //     this.getIndentData(firstLoad);
+    //   } else {
+    //     onRowEdited && onRowEdited(false);
+    //   }
+    // }
+
+    console.log('Table update props: ', prevProps.viewId, viewId, '\n');
 
     if (
-      prevProps.viewId !== viewId &&
-      defaultSelected &&
-      defaultSelected.length === 0
+      prevProps.viewId !== viewId //&&
+      // defaultSelected &&
+      // defaultSelected.length === 0
     ) {
-      this.setState(
-        {
-          selected: defaultSelected,
-        },
-        () => {
-          this.getIndentData(true);
-        }
-      );
+      if (defaultSelected && defaultSelected.length === 0) {
+        this.setState({ selected: defaultSelected });
+      }
+
+      const firstLoad = prevProps.rowData.get(1) ? false : true;
+      console.log('Table update case1: ', firstLoad)
+
+      this.getIndentData(firstLoad);
+
+      // this.setState(
+      //   {
+      //     selected: defaultSelected,
+      //   },
+      //   () => {
+      //     // const firstLoad = prevProps.rowData.get(1) ? false : true;
+
+      //     this.getIndentData(true);
+      //     // this.getIndentData(firstLoad);
+      //   }
+      // );
+    } else if (!is(prevProps.rowData, rowData)) {
+      // let firstLoad = prevProps.rowData.get(1) ? false : true;
+
+      // if (prevProps.viewId !== viewId) {
+      //   firstLoad = true;
+      // }
+    // else if (!is(prevProps.rowData, rowData)) {
+      console.log('Table update case2')
+      this.getIndentData();
     }
   }
 
@@ -214,6 +240,7 @@ class Table extends Component {
       };
 
       if (selectFirst) {
+        console.log('Table getIndentData selectFirst: ', selectFirst)
         stateChange = {
           ...stateChange,
           collapsedParentsRows: [],
@@ -505,7 +532,8 @@ class Table extends Component {
       keyProperty,
       mainTable,
       readonly,
-      onDoubleClick,
+      // onDoubleClick,
+      // isIncluded,
       closeOverlays,
     } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
@@ -613,9 +641,13 @@ class Table extends Component {
         }
         break;
       case 'Enter':
-        if (selected.length <= 1 && onDoubleClick && readonly) {
+        if (selected.length <= 1 && readonly) { // && onDoubleClick && readonly) {
           e.preventDefault();
-          onDoubleClick(selected[selected.length - 1]);
+
+          // if (!isIncluded) {
+            this.handleDoubleClick(selected[selected.length - 1]);
+          // }
+          // onDoubleClick(selected[selected.length - 1]);
         }
         break;
       case 'Escape':
@@ -630,6 +662,14 @@ class Table extends Component {
         open: false,
       }),
     });
+  };
+
+  handleDoubleClick = id => {
+    const { isIncluded, onDoubleClick } = this.props;
+
+    if (!isIncluded) {
+      onDoubleClick && onDoubleClick(id);
+    }
   };
 
   handleClick = (e, keyProperty, item) => {
@@ -931,7 +971,6 @@ class Table extends Component {
       docId,
       readonly,
       keyProperty,
-      onDoubleClick,
       mainTable,
       newRow,
       tabIndex,
@@ -972,6 +1011,7 @@ class Table extends Component {
             readonly,
             collapsible,
             viewId,
+            supportOpenRecord,
           }}
           key={`${i}-${docId}`}
           collapsed={
@@ -987,11 +1027,7 @@ class Table extends Component {
           }}
           rowId={item[keyProperty]}
           tabId={tabid}
-          onDoubleClick={() => {
-            if (supportOpenRecord) {
-              onDoubleClick && onDoubleClick(item[keyProperty]);
-            }
-          }}
+          onDoubleClick={this.handleDoubleClick}
           onClick={e => {
             const selected = this.handleClick(e, keyProperty, item);
 

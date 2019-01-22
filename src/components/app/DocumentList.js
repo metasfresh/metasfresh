@@ -220,6 +220,9 @@ export class DocumentList extends Component {
       const { fullyChanged, changedIds } = msg;
 
       if (changedIds) {
+
+        console.log('websocket event, changedIds: ', changedIds);
+
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
             const { data, pageColumnInfosByFieldName } = this.state;
@@ -232,6 +235,8 @@ export class DocumentList extends Component {
               changedIds,
             });
             const rowsList = List(rows);
+
+            console.log('websocket rows: ', rowsList.toJS(), removedRows)
 
             if (removedRows.length) {
               dispatch(deselectTableItems(removedRows, windowType, viewId));
@@ -925,7 +930,7 @@ export class DocumentList extends Component {
               rowEdited={rowEdited}
               onRowEdited={this.setTableRowEdited}
               keyProperty="id"
-              onDoubleClick={id => !isIncluded && this.redirectToDocument(id)}
+              onDoubleClick={this.redirectToDocument}
               size={data.size}
               pageLength={this.pageLength}
               handleChangePage={this.handleChangePage}
