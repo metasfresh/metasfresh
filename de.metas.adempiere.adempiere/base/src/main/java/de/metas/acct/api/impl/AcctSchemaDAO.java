@@ -18,6 +18,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_CostElement;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
@@ -46,6 +47,7 @@ import de.metas.acct.api.AcctSchemaValidCombinationOptions;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.cache.CCache;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -68,6 +70,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 			.additionalTableNameToResetFor(I_C_AcctSchema_Default.Table_Name)
 			.additionalTableNameToResetFor(I_C_AcctSchema_GL.Table_Name)
 			.additionalTableNameToResetFor(I_C_AcctSchema_Element.Table_Name)
+			.additionalTableNameToResetFor(I_C_AcctSchema_CostElement.Table_Name)
 			.build();
 
 	@Override
@@ -197,11 +200,14 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchemaCosting toAcctSchemaCosting(final I_C_AcctSchema acctSchemaRecord, final CurrencyPrecision costingPrecision)
 	{
+		final ImmutableSet<CostElementId> postOnlyCostElementIds = retrievePostOnlyForCostElementIds(AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID()));
+
 		return AcctSchemaCosting.builder()
 				.costingPrecision(costingPrecision)
 				.costTypeId(CostTypeId.ofRepoId(acctSchemaRecord.getM_CostType_ID()))
 				.costingLevel(CostingLevel.forCode(acctSchemaRecord.getCostingLevel()))
 				.costingMethod(CostingMethod.ofCode(acctSchemaRecord.getCostingMethod()))
+				.postOnlyCostElementIds(postOnlyCostElementIds)
 				.build();
 	}
 
@@ -443,6 +449,19 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		acctSchemaRecord.setC_Period_ID(periodId);
 		InterfaceWrapperHelper.saveRecord(acctSchemaRecord);
+	}
+
+	private ImmutableSet<CostElementId> retrievePostOnlyForCostElementIds(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_AcctSchema_CostElement.class)
+				.addEqualsFilter(I_C_AcctSchema_CostElement.COLUMN_C_AcctSchema_ID, acctSchemaId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_C_AcctSchema_CostElement.COLUMNNAME_M_CostElement_ID, Integer.class)
+				.stream()
+				.map(CostElementId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@ToString

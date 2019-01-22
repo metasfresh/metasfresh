@@ -3,17 +3,21 @@ package de.metas.costing;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -50,7 +54,7 @@ public final class AggregatedCostAmount
 	@Builder
 	private AggregatedCostAmount(
 			@NonNull final CostSegment costSegment,
-			@NonNull final Map<CostElement, CostAmount> amounts)
+			@NonNull @Singular final Map<CostElement, CostAmount> amounts)
 	{
 		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
@@ -104,13 +108,42 @@ public final class AggregatedCostAmount
 		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 
-	public CostAmount getTotalAmount(final CostingMethod costingMethod)
+	public CostAmount getTotalAmountToPost(@NonNull final AcctSchema as)
+	{
+		return getTotalAmount(as.getCosting().getCostingMethod(), as.getCosting().getPostOnlyCostElementIds())
+				.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
+	}
+
+	@VisibleForTesting
+	Optional<CostAmount> getTotalAmount(
+			@NonNull final CostingMethod costingMethod,
+			final Set<CostElementId> onlyCostElementIds)
 	{
 		return getCostElements()
 				.stream()
-				.filter(costElement -> costingMethod.equals(costElement.getCostingMethod()))
+				.filter(costElement -> isCostElementMatching(costElement, costingMethod, onlyCostElementIds))
 				.map(this::getCostAmountForCostElement)
-				.reduce(CostAmount::add)
-				.orElseThrow(() -> new AdempiereException("No costs found for " + costingMethod + " in " + this));
+				.reduce(CostAmount::add);
+		// .orElseThrow(() -> new AdempiereException("No costs found for " + costingMethod + ", onlyCostElementIds=" + onlyCostElementIds + " in " + this));
+	}
+
+	private static boolean isCostElementMatching(
+			@NonNull final CostElement costElement,
+			@NonNull final CostingMethod costingMethod,
+			final Set<CostElementId> onlyCostElementIds)
+	{
+		if (!costingMethod.equals(costElement.getCostingMethod()))
+		{
+			return false;
+		}
+
+		if (onlyCostElementIds != null
+				&& !onlyCostElementIds.isEmpty()
+				&& !onlyCostElementIds.contains(costElement.getId()))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

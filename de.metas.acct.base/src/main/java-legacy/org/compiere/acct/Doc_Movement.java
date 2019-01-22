@@ -28,7 +28,6 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostingMethod;
 import de.metas.util.Services;
 
 /**
@@ -110,11 +109,11 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 	private void createFactsForMovementLine(final Fact fact, final DocLine_Movement line)
 	{
 		final AcctSchema as = fact.getAcctSchema();
-		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
 
 		//
 		// Inventory CR/DR (from locator)
-		final CostAmount outboundCosts = line.getCreateOutboundCosts(as).getTotalAmount(costingMethod);
+		final CostAmount outboundCosts = line.getCreateOutboundCosts(as)
+				.getTotalAmountToPost(as);
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
@@ -127,7 +126,8 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 
 		//
 		// InventoryTo DR/CR (to locator)
-		final CostAmount inboundCosts = line.getCreateInboundCosts(as).getTotalAmount(costingMethod);
+		final CostAmount inboundCosts = line.getCreateInboundCosts(as)
+				.getTotalAmountToPost(as);
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
