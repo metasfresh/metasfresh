@@ -11,14 +11,17 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 5.89
+# Features
+* metasfresh
+  * [#4883](https://github.com/metasfresh/metasfresh/issues/4883) Quickactions in Invoice Candidates Window
 
 # metasfresh 5.88
-#Features
+# Features
 * metasfresh 
   * [#4866](https://github.com/metasfresh/metasfresh/issues/4866) Create purchase orders: if the vendor is using a gateway then always order directly
   * [#4868](https://github.com/metasfresh/metasfresh/issues/4868) Make C_PurchaseCandidate.IsAggregatePO a searchable column
 
-#Fixes
+# Fixes
 * metasfresh
   * [#4782](https://github.com/metasfresh/metasfresh/issues/4782) Various fixes to import processes
   * [#4859](https://github.com/metasfresh/metasfresh/issues/4859) Durchschnittspreise SQL ergibt Fehlerhafte Daten (Preis Abw. nicht berücksichtigt)
