@@ -1,5 +1,6 @@
 package de.metas.acct.posting.server;
 
+import org.adempiere.acct.api.AcctDocRegistry;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,10 @@ import de.metas.util.Services;
 public class AccountingService implements DocumentPostRequestHandler
 {
 	private static final Logger logger = LogManager.getLogger(AccountingService.class);
+
+	public AccountingService(final AcctDocRegistry acctDocFactory)
+	{
+	}
 
 	@Override
 	public void handleRequest(final DocumentPostRequest request)

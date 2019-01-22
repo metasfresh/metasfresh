@@ -56,10 +56,10 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 {
 	private static final Logger logger = LogManager.getLogger(Doc_ProjectIssue.class);
 
-	public Doc_ProjectIssue(final IDocBuilder docBuilder)
+	public Doc_ProjectIssue(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_ProjectIssue);
-	}   // Doc_ProjectIssue
+		super(ctx, DOCTYPE_ProjectIssue);
+	}
 
 	/** Pseudo Line */
 	private DocLine_ProjectIssue m_line = null;

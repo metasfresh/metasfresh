@@ -1,4 +1,4 @@
-package org.compiere.acct;
+package de.metas.manufacturing.acct;
 
 /*
  * #%L
@@ -25,22 +25,26 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.compiere.model.MDocType;
-import org.eevolution.model.I_DD_Order;
+import org.compiere.acct.AcctDocContext;
+import org.compiere.acct.Doc;
+import org.compiere.acct.DocLine;
+import org.compiere.acct.Fact;
+import org.compiere.model.X_C_DocType;
+import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
 
-public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
+public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 {
 
-	public Doc_DDOrder(final IDocBuilder docBuilder)
+	public Doc_PPOrder(final AcctDocContext ctx)
 	{
-		super(docBuilder, MDocType.DOCBASETYPE_DistributionOrder);
+		super(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder);
 
-		final I_DD_Order ddOrder = getModel(I_DD_Order.class);
-		setDateAcct(ddOrder.getDateOrdered());
+		final I_PP_Order ppOrder = getModel(I_PP_Order.class);
+		setDateAcct(ppOrder.getDateOrdered());
 	}
 
 	@Override

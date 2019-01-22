@@ -84,7 +84,7 @@ import lombok.NonNull;
  *          <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
  *
  */
-final class FactLine extends X_Fact_Acct
+public final class FactLine extends X_Fact_Acct
 {
 	/**
 	 *

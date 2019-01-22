@@ -78,10 +78,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	/** All lines are product item */
 	private boolean m_allLinesItem = true;
 
-	public Doc_Invoice(final IDocBuilder docBuilder)
+	public Doc_Invoice(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_Invoice
+		super(ctx);
+	}
 
 	@Override
 	protected void loadDocumentDetails()

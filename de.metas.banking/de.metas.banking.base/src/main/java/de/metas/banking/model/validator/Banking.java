@@ -51,7 +51,7 @@ public class Banking extends AbstractModuleInterceptor
 		//
 		// Register default bank statement listeners
 		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
-		
+
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Datev_Payment.class, DatevPaymentImportProcess.class);
 	}
 
@@ -91,6 +91,6 @@ public class Banking extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine_Ref.instance);
-		
+
 	}
 }

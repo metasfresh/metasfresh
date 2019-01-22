@@ -60,9 +60,9 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	/** Shall we create accounting facts? (08555) */
 	private boolean noFactRecords = false;
 
-	public Doc_MatchPO(final IDocBuilder docBuilder)
+	public Doc_MatchPO(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMatchPO);
+		super(ctx, DOCTYPE_MatMatchPO);
 	}
 
 	@Override

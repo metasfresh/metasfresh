@@ -56,10 +56,10 @@ import de.metas.util.Services;
  */
 public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
-	public Doc_BankStatement(final IDocBuilder docBuilder)
+	public Doc_BankStatement(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_BankStatement);
-	}	// Doc_Bank
+		super(ctx, DOCTYPE_BankStatement);
+	}
 
 	@Override
 	protected void loadDocumentDetails()

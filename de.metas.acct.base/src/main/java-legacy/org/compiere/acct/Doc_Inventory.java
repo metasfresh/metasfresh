@@ -50,9 +50,9 @@ import de.metas.util.Services;
  */
 public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
-	public Doc_Inventory(final IDocBuilder docBuilder)
+	public Doc_Inventory(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatInventory);
+		super(ctx, DOCTYPE_MatInventory);
 	}
 
 	@Override

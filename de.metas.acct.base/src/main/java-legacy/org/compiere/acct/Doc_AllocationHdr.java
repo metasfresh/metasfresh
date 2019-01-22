@@ -77,9 +77,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	private static final Logger logger = LogManager.getLogger(Doc_AllocationHdr.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public Doc_AllocationHdr(final IDocBuilder docBuilder)
+	public Doc_AllocationHdr(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_Allocation);
+		super(ctx, DOCTYPE_Allocation);
 	}   // Doc_Allocation
 
 	@Override

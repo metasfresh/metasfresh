@@ -51,17 +51,10 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	private final transient IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
 	private final transient IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_GLJournal(final IDocBuilder docBuilder)
+	public Doc_GLJournal(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_GL_Journal
+		super(ctx);
+	}
 
 	private PostingType postingType = null;
 	private AcctSchemaId acctSchemaId;

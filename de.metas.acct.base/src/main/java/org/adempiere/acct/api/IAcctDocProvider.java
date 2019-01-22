@@ -1,10 +1,19 @@
 package org.adempiere.acct.api;
 
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.acct.Doc;
+import org.compiere.acct.PostingExecutionException;
+
+import de.metas.acct.api.AcctSchema;
+
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +31,13 @@ package org.adempiere.acct.api;
  * #L%
  */
 
-
-import java.lang.reflect.Constructor;
-
-import org.compiere.acct.Doc;
-
-/**
- * Accountable document ( {@link Doc}) meta informations.
- * 
- * This is a descriptor of an accountable document.
- * 
- * @author tsa
- *
- */
-public interface IDocMetaInfo
+public interface IAcctDocProvider
 {
-	int getAD_Table_ID();
+	/**
+	 * @return Document or <code>null</code> if there is no such accountable document for given AD_Table_ID/Record_ID
+	 * @throws PostingExecutionException if the document could not be created
+	 */
+	Doc<?> getOrNull(List<AcctSchema> acctSchemas, TableRecordReference documentRef);
 
-	String getTableName();
-
-	Class<? extends Doc<?>> getDocClass();
-
-	Constructor<? extends Doc<?>> getDocConstructor();
+	Set<String> getDocTableNames();
 }

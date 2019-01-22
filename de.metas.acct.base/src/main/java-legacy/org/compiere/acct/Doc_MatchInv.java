@@ -98,9 +98,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	/** Material Receipt */
 	private I_M_InOutLine _receiptLine = null;
 
-	public Doc_MatchInv(final IDocBuilder docBuilder)
+	public Doc_MatchInv(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMatchInv);
+		super(ctx, DOCTYPE_MatMatchInv);
 	}
 
 	@Override

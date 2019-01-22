@@ -70,9 +70,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	public Doc_InOut(final IDocBuilder docBuilder)
+	public Doc_InOut(final AcctDocContext ctx)
 	{
-		super(docBuilder);
+		super(ctx);
 	}
 
 	private int m_Reversal_ID = 0;

@@ -1,11 +1,12 @@
 /**
  *
  */
-package org.compiere.acct;
+package de.metas.manufacturing.acct;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.acct.DocLine;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;

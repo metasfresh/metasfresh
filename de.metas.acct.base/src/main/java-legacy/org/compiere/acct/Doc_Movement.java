@@ -45,10 +45,10 @@ import de.metas.util.Services;
  */
 public class Doc_Movement extends Doc<DocLine_Movement>
 {
-	public Doc_Movement(final IDocBuilder docBuilder)
+	public Doc_Movement(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMovement);
-	}   // Doc_Movement
+		super(ctx, DOCTYPE_MatMovement);
+	}
 
 	@Override
 	protected void loadDocumentDetails()

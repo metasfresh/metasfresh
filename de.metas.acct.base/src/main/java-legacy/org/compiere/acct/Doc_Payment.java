@@ -45,17 +45,10 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	// services
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_Payment(final IDocBuilder docBuilder)
+	public Doc_Payment(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_Payment
+		super(ctx);
+	}
 
 	/** Tender Type */
 	private String m_TenderType = null;

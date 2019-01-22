@@ -13,7 +13,7 @@
  * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
  * Contributor(s): Victor Perez www.e-evolution.com *
  *****************************************************************************/
-package org.compiere.acct;
+package de.metas.manufacturing.acct;
 
 /*
  * #%L
@@ -40,6 +40,10 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.compiere.acct.AcctDocContext;
+import org.compiere.acct.Doc;
+import org.compiere.acct.Fact;
+import org.compiere.acct.FactLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.CostCollectorType;
@@ -74,9 +78,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	/** Pseudo Line */
 	protected DocLine_CostCollector _line = null;
 
-	public Doc_PPCostCollector(final IDocBuilder docBuilder)
+	public Doc_PPCostCollector(final AcctDocContext ctx)
 	{
-		super(docBuilder, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
+		super(ctx, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 	}
 
 	@Override
