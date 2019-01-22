@@ -22,7 +22,11 @@ debug_jpa_show_sql=${DEBUG_JPA_SHOW_SQL:-false}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 java_max_heap=${JAVA_MAX_HEAP:-128M}
 server_port=${SERVER_PORT:-8080}
-request_all_data_on_startup=${SERVER_REQUEST_ALL_DATA_ON_STARTUP:-true}
+
+# Do not re-request all config and availability data on startup, because it will also truncate the stock availability data 
+request_all_data_on_startup=${SERVER_REQUEST_ALL_DATA_ON_STARTUP:-false}
+request_config_data_on_startup=${SERVER_REQUEST_CONFIG_DATA_ON_STARTUP:-true}
+
 
 echo_variable_values()
 {
@@ -38,6 +42,7 @@ echo_variable_values()
  echo "JAVA_MAX_HEAP=${java_max_heap}"
  echo "SERVER_PORT=${server_port}"
  echo "SERVER_REQUEST_ALL_DATA_ON_STARTUP=${request_all_data_on_startup}"
+ echo "SERVER_REQUEST_CONFIG_DATA_ON_STARTUP=${request_config_data_on_startup}"
  
  echo "RABBITMQ_HOST=${rabbitmq_host}"
  echo "RABBITMQ_PORT=${rabbitmq_port}"
@@ -98,6 +103,7 @@ run_metasfresh()
  -Dspring.jpa.hibernate.ddl-auto=create-drop\
  -Dspring.jpa.show-sql=${debug_jpa_show_sql}\
  -Dmsv3server.startup.requestAllData=${request_all_data_on_startup} \
+ -Dmsv3server.startup.requestConfigData=${request_config_data_on_startup} \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  -jar de.metas.vertical.pharma.msv3.server.jar
 }
