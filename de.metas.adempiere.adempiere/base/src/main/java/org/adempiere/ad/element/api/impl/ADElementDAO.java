@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
@@ -76,14 +77,26 @@ public class ADElementDAO implements IADElementDAO
 				.list(I_AD_Column.class);
 	}
 
+	private I_AD_Element getADElementByColumnName(@NonNull final String columnName)
+	{
+		return queryADElementByColumnName(columnName)
+				.create()
+				.firstOnly(I_AD_Element.class);
+	}
+
 	@Override
-	public I_AD_Element getADElement(@NonNull final String columnName)
+	public AdElementId getADElementIdByColumnNameOrNull(@NonNull final String columnName)
+	{
+		return queryADElementByColumnName(columnName)
+				.create()
+				.firstIdOnly(AdElementId::ofRepoIdOrNull);
+	}
+
+	private IQueryBuilder<I_AD_Element> queryADElementByColumnName(@NonNull final String columnName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Element.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Element.COLUMNNAME_ColumnName, columnName, UpperCaseQueryFilterModifier.instance)
-				.create()
-				.firstOnly(I_AD_Element.class);
+				.addEqualsFilter(I_AD_Element.COLUMNNAME_ColumnName, columnName, UpperCaseQueryFilterModifier.instance);
 	}
 
 	@Override
@@ -91,7 +104,7 @@ public class ADElementDAO implements IADElementDAO
 	{
 		final List<I_AD_Field> fields = new ArrayList<>();
 
-		final I_AD_Element element = getADElement(columnName);
+		final I_AD_Element element = getADElementByColumnName(columnName);
 		if (element != null)
 		{
 			final List<I_AD_Column> columns = retrieveColumns(element.getAD_Element_ID());
@@ -167,7 +180,5 @@ public class ADElementDAO implements IADElementDAO
 
 		return AdElementId.ofRepoId(record.getAD_Element_ID());
 	}
-
-
 
 }

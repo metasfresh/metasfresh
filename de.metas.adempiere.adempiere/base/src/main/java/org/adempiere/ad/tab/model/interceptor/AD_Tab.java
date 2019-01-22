@@ -9,6 +9,7 @@ import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
@@ -50,6 +51,26 @@ public class AD_Tab
 	public void init()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@CalloutMethod(columnNames = I_AD_Tab.COLUMNNAME_AD_Table_ID)
+	public void onTableIdChanged(final I_AD_Tab tab)
+	{
+		if (tab.getAD_Table_ID() > 0)
+		{
+			final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+			final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
+			final String tableName = adTablesRepo.retrieveTableName(tab.getAD_Table_ID());
+
+			tab.setInternalName(tableName);
+
+			final AdElementId adElementId = adElementsRepo.getADElementIdByColumnNameOrNull(tableName + "_ID");
+			if (adElementId != null)
+			{
+				tab.setAD_Element_ID(adElementId.getRepoId());
+				onElementIDChanged(tab);
+			}
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
@@ -119,5 +140,4 @@ public class AD_Tab
 
 		Services.get(IElementTranslationBL.class).updateTabTranslationsFromElement(tabElementId);
 	}
-
 }
