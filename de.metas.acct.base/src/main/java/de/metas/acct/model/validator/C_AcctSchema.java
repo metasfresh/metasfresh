@@ -127,5 +127,4 @@ public class C_AcctSchema
 			acctSchema.setCostingMethod(CostingMethod.StandardCosting.getCode());
 		}
 	}
-
 }

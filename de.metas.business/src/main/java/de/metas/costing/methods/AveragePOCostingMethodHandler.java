@@ -6,13 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -20,11 +20,16 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -32,6 +37,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
@@ -89,6 +95,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request));
 		final CostAmount amt = costPrice.multiply(request.getQty());
+
 		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
 	}
 
@@ -127,9 +134,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQty(qty);
+			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
 
 		utils.saveCurrentCost(currentCosts);
@@ -149,7 +157,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 		else
 		{
-			currentCosts.addToCurrentQty(qty.negate());
+			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), request.getAmt().negate());
 		}
 
 		utils.saveCurrentCost(currentCosts);
@@ -170,7 +178,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final int receiptInOutLineId)
 	{
-		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.load(receiptInOutLineId, I_M_InOutLine.class);
+		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+
+		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(receiptInOutLineId);
 		return Optional.of(receiptLine)
 				.map(I_M_InOutLine::getC_OrderLine)
 				.map(Services.get(IOrderLineBL.class)::getCostPrice)
@@ -284,5 +294,68 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			return Optional.empty();
 		}
+	}
+
+	public void adjustInboundCostDetailAmount(
+			@NonNull final CostDetail costDetail,
+			@NonNull final CostAmount amount)
+	{
+		if (costDetail.getAmt().equals(amount))
+		{
+			return;
+		}
+		if (!costDetail.isInboundTrx())
+		{
+			throw new AdempiereException("Only inbound cost details can be adjusted: " + costDetail);
+		}
+
+		final CurrentCost currentCost = utils.getCurrentCost(costDetail);
+		currentCost.setFrom(costDetail.getPreviousAmounts());
+
+		currentCost.addWeightedAverage(amount, costDetail.getQty());
+
+		final List<CostDetailAdjustment> nextCostDetailAdjustments = utils.streamAllCostDetailsAfter(costDetail)
+				.map(nextCostDetail -> recalculateCostDetailAmount(nextCostDetail, currentCost))
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// TODO: Create the final cost detail which is about posting the adjustment
+		currentCost.getCostPrice();
+		currentCost.getCurrentQty();
+		currentCost.getCumulatedAmt();
+		currentCost.getCumulatedQty();
+	}
+
+	private CostDetailAdjustment recalculateCostDetailAmount(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		final CostDetailPreviousAmounts previousAmounts = CostDetailPreviousAmounts.of(currentCost);
+		final Quantity qty = costDetail.getQty();
+		final CostAmount amt;
+
+		//
+		// Inbound
+		if (costDetail.isInboundTrx())
+		{
+			amt = costDetail.getAmt();
+			currentCost.addWeightedAverage(amt, qty);
+		}
+		//
+		// Outbound
+		else
+		{
+			amt = currentCost.getCostPrice()
+					.multiply(qty)
+					.roundToPrecisionIfNeeded(currentCost.getPrecision());
+
+			currentCost.addToCurrentQtyAndCumulate(qty, amt);
+		}
+
+		//
+		return CostDetailAdjustment.builder()
+				.costDetailId(costDetail.getId())
+				.amt(amt)
+				.qty(qty)
+				.previousAmounts(previousAmounts)
+				.build();
 	}
 }

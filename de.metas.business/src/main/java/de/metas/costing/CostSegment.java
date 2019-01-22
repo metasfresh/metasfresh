@@ -1,6 +1,5 @@
 package de.metas.costing;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -63,35 +62,10 @@ public class CostSegment
 		this.acctSchemaId = acctSchemaId;
 		this.costTypeId = costTypeId;
 		this.productId = productId;
-		this.clientId = clientId;
 
-		if (costingLevel == CostingLevel.Client)
-		{
-			this.orgId = OrgId.ANY;
-			this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
-		}
-		else if (costingLevel == CostingLevel.Organization)
-		{
-			if (orgId.isAny())
-			{
-				throw new AdempiereException("Cost Segment shall have a regular organization when costing level is Organization");
-			}
-			this.orgId = orgId;
-			this.attributeSetInstanceId = AttributeSetInstanceId.NONE;
-		}
-		else if (costingLevel == CostingLevel.BatchLot)
-		{
-			if (attributeSetInstanceId.isNone())
-			{
-				throw new AdempiereException("Cost Segment shall have a regular ASI when costing level is Batch/Lot");
-			}
-			this.orgId = OrgId.ANY;
-			this.attributeSetInstanceId = attributeSetInstanceId;
-		}
-		else
-		{
-			throw new AdempiereException("Unknown costingLevel: " + costingLevel);
-		}
+		this.clientId = costingLevel.effectiveValue(clientId);
+		this.orgId = costingLevel.effectiveValue(orgId);
+		this.attributeSetInstanceId = costingLevel.effectiveValue(attributeSetInstanceId);
 	}
 
 	public CostSegment withProductIdAndCostingLevel(@NonNull final ProductId productId, @NonNull final CostingLevel costingLevel)

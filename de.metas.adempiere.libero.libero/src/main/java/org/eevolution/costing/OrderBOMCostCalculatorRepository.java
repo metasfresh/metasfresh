@@ -12,7 +12,6 @@ import org.adempiere.service.OrgId;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPOrderCost;
-import org.eevolution.api.PPOrderCostId;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -177,7 +176,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	private BOMCostElementPrice toBOMCostElementPrice(final PPOrderCost cost)
 	{
 		return BOMCostElementPrice.builder()
-				.repoId(PPOrderCostId.toRepoId(cost.getId()))
+				.id(cost.getId())
 				.costElementId(cost.getCostElementId())
 				.costPrice(cost.getPrice())
 				.build();

@@ -144,7 +144,7 @@ public class BOMTest
 		bom.rollupCosts();
 
 		assertOwnCostPrice(bom, costElementId1, "0");
-		assertComponentsCostPrice(bom, costElementId1, "150.0000"); // (55 + 5) * 5 * 50%)
+		assertComponentsCostPrice(bom, costElementId1, "150"); // (55 + 5) * 5 * 50%)
 	}
 
 }

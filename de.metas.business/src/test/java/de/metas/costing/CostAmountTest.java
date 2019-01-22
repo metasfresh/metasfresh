@@ -1,16 +1,17 @@
 package de.metas.costing;
 
+import java.math.BigDecimal;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import de.metas.money.CurrencyId;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,33 +29,19 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CostDetailPreviousAmounts
+public class CostAmountTest
 {
-	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
+	private final CurrencyId currencyId = CurrencyId.ofRepoId(123);
+
+	@Test
+	public void testEquals()
 	{
-		return builder()
-				.costPrice(currentCost.getCostPrice())
-				.qty(currentCost.getCurrentQty())
-				.cumulatedAmt(currentCost.getCumulatedAmt())
-				.cumulatedQty(currentCost.getCumulatedQty())
-				.build();
+		Assert.assertEquals(newCostAmount("10"), newCostAmount("10.000000"));
+		Assert.assertEquals(newCostAmount("10.00001"), newCostAmount("10.00001000000"));
 	}
 
-	@NonNull
-	CostPrice costPrice;
-
-	@NonNull
-	Quantity qty;
-
-	@NonNull
-	private CostAmount cumulatedAmt;
-	@NonNull
-	private Quantity cumulatedQty;
-
-	public CurrencyId getCurrencyId()
+	private CostAmount newCostAmount(final String amountStr)
 	{
-		return getCostPrice().getCurrenyId();
+		return CostAmount.of(new BigDecimal(amountStr), currencyId);
 	}
 }

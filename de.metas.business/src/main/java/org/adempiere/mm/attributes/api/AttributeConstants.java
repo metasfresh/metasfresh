@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import lombok.experimental.UtilityClass;
 
 /*
@@ -30,7 +32,7 @@ public final class AttributeConstants
 	/**
 	 * No ASI (record which actually exists in M_AttributeSetInstance table)
 	 */
-	public static final int M_AttributeSetInstance_ID_None = 0;
+	public static final int M_AttributeSetInstance_ID_None = AttributeSetInstanceId.NONE.getRepoId();
 
 	/**
 	 * No Attribute Set (record which actually exists in M_AttributeSet table)

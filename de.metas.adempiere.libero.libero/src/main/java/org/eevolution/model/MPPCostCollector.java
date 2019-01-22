@@ -50,17 +50,13 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.engines.StorageEngine;
 import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
-import org.compiere.model.MTransaction;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_M_Transaction;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
@@ -82,7 +78,6 @@ import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -296,24 +291,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	{
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
-		final boolean isReversal = isReversal();
-
-		// Stock Movement
-		final I_M_Product product = Services.get(IProductDAO.class).getById(getM_Product_ID());
-		if (product != null && Services.get(IProductBL.class).isStocked(product) && !costCollectorType.isVariance())
-		{
-			StorageEngine.createTrasaction(
-					this,
-					getMovementType(),
-					getMovementDate(),
-					getMovementQty(),
-					isReversal,
-					getM_Warehouse_ID(),
-					getPP_Order().getM_AttributeSetInstance_ID(),	// Reservation ASI
-					getPP_Order().getM_Warehouse_ID(),				// Reservation Warehouse
-					false											// IsSOTrx=false
-			);
-		}	// stock movement
 
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
@@ -624,23 +601,5 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	private I_C_UOM getProductStockingUOM()
 	{
 		return Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
-	}
-
-	private String getMovementType()
-	{
-		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
-		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
-		if (costCollectorType.isMaterialReceipt())
-		{
-			return X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
-		}
-		else if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
-		{
-			return MTransaction.MOVEMENTTYPE_WorkOrderMinus;
-		}
-		else
-		{
-			return null;
-		}
 	}
 }

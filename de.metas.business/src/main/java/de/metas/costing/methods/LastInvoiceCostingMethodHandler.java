@@ -1,7 +1,6 @@
 package de.metas.costing.methods;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -20,6 +19,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
@@ -81,7 +81,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		{
 			if (qty.signum() != 0)
 			{
-				final CostAmount price = amt.divide(qty, currentCosts.getPrecision().toInt(), RoundingMode.HALF_UP);
+				final CostAmount price = amt.divide(qty, currentCosts.getPrecision());
 				currentCosts.setCostPrice(CostPrice.ownCostPrice(price));
 			}
 			else
@@ -90,8 +90,8 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 				currentCosts.addToOwnCostPrice(priceAdjust);
 			}
 		}
-		currentCosts.addToCurrentQty(qty);
-		currentCosts.addCumulatedAmtAndQty(amt, qty);
+
+		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -104,7 +104,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		currentCosts.addToCurrentQty(request.getQty());
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt());
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -175,4 +175,9 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		}
 	}	// getLastInvoicePrice
 
+	@Override
+	public void voidCosts(final CostDetailVoidRequest request)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

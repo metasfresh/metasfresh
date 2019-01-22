@@ -15,7 +15,7 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1152613955L;
+	private static final long serialVersionUID = -1642738087L;
 
     /** Standard Constructor */
     public X_M_CostDetail (Properties ctx, int M_CostDetail_ID, String trxName)
@@ -32,6 +32,8 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 			setM_AttributeSetInstance_ID (0);
 			setM_CostDetail_ID (0);
 			setM_Product_ID (0);
+			setPrev_CumulatedAmt (BigDecimal.ZERO); // 0
+			setPrev_CumulatedQty (BigDecimal.ZERO); // 0
 			setPrev_CurrentCostPrice (BigDecimal.ZERO); // 0
 			setPrev_CurrentCostPriceLL (BigDecimal.ZERO); // 0
 			setPrev_CurrentQty (BigDecimal.ZERO); // 0
@@ -764,6 +766,44 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Previous Cumulated Amount.
+		@param Prev_CumulatedAmt Previous Cumulated Amount	  */
+	@Override
+	public void setPrev_CumulatedAmt (java.math.BigDecimal Prev_CumulatedAmt)
+	{
+		set_Value (COLUMNNAME_Prev_CumulatedAmt, Prev_CumulatedAmt);
+	}
+
+	/** Get Previous Cumulated Amount.
+		@return Previous Cumulated Amount	  */
+	@Override
+	public java.math.BigDecimal getPrev_CumulatedAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CumulatedAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Cumulated Quantity.
+		@param Prev_CumulatedQty Previous Cumulated Quantity	  */
+	@Override
+	public void setPrev_CumulatedQty (java.math.BigDecimal Prev_CumulatedQty)
+	{
+		set_Value (COLUMNNAME_Prev_CumulatedQty, Prev_CumulatedQty);
+	}
+
+	/** Get Previous Cumulated Quantity.
+		@return Previous Cumulated Quantity	  */
+	@Override
+	public java.math.BigDecimal getPrev_CumulatedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CumulatedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Previous Current Cost Price.

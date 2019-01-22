@@ -38,7 +38,6 @@ package org.compiere.acct;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 import org.compiere.model.MAccount;
@@ -55,6 +54,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.util.Services;
 
 /**
@@ -238,7 +238,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			final CostAmount costsReceived = costs.divide(qtyTotal, 12, RoundingMode.HALF_UP)
+			final CostAmount costsReceived = costs.divide(qtyTotal, CurrencyPrecision.ofInt(12))
 					.multiply(qtyReceived)
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
 			final CostAmount costsScrapped = costs.subtract(costsReceived);
