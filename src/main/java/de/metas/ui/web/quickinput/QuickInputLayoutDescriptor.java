@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,9 +40,10 @@ public class QuickInputLayoutDescriptor
 		return new Builder();
 	}
 
-	public static final QuickInputLayoutDescriptor build(final DocumentEntityDescriptor entityDescriptor, String[][] fieldNames)
+	public static final QuickInputLayoutDescriptor build(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final String[][] fieldNames)
 	{
-		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
 		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
 
 		final Builder layoutBuilder = builder();
@@ -54,7 +55,7 @@ public class QuickInputLayoutDescriptor
 				continue;
 			}
 
-			layoutBuilder.addElement(DocumentLayoutElementDescriptor.builder(entityDescriptor, elementFieldNames));
+			layoutBuilder.element(DocumentLayoutElementDescriptor.builder(entityDescriptor, elementFieldNames));
 		}
 
 		return layoutBuilder.build();
@@ -62,10 +63,9 @@ public class QuickInputLayoutDescriptor
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 
-	private QuickInputLayoutDescriptor(final Builder builder)
+	private QuickInputLayoutDescriptor(final List<DocumentLayoutElementDescriptor> elements)
 	{
-		super();
-		elements = ImmutableList.copyOf(builder.buildElements());
+		this.elements = ImmutableList.copyOf(elements);
 	}
 
 	@Override
@@ -84,38 +84,20 @@ public class QuickInputLayoutDescriptor
 
 	public static final class Builder
 	{
-		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+		private final List<DocumentLayoutElementDescriptor> elements = new ArrayList<>();
 
 		private Builder()
 		{
-			super();
 		}
 
 		public QuickInputLayoutDescriptor build()
 		{
-			return new QuickInputLayoutDescriptor(this);
+			return new QuickInputLayoutDescriptor(elements);
 		}
 
-		private List<DocumentLayoutElementDescriptor> buildElements()
+		public Builder element(@NonNull final DocumentLayoutElementDescriptor.Builder elementBuilder)
 		{
-			return elementBuilders
-					.stream()
-					.map(elementBuilder -> elementBuilder.build())
-					.collect(GuavaCollectors.toImmutableList());
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("elements-count", elementBuilders.size())
-					.toString();
-		}
-
-		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
-		{
-			Check.assumeNotNull(elementBuilder, "Parameter elementBuilder is not null");
-			elementBuilders.add(elementBuilder);
+			elements.add(elementBuilder.build());
 			return this;
 		}
 	}

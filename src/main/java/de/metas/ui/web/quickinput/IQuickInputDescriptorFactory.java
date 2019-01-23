@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import de.metas.lang.SOTrx;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -53,7 +54,7 @@ public interface IQuickInputDescriptorFactory
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			final Optional<Boolean> soTrx);
+			final Optional<SOTrx> soTrx);
 
 	//
 	//

@@ -53,7 +53,6 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
-
 import lombok.NonNull;
 
 /*
@@ -649,7 +648,7 @@ public class LayoutFactory
 					entityDescriptor.getDocumentTypeId(),
 					entityDescriptor.getTableNameOrNull(),
 					entityDescriptor.getDetailId(),
-					entityDescriptor.getIsSOTrx());
+					entityDescriptor.getSOTrx());
 			layoutDetail.supportQuickInput(supportQuickInput);
 		}
 

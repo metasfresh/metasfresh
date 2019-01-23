@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
@@ -251,10 +252,10 @@ public final class Document
 			// NOTE: these dynamic attributes will be considered by Document.asEvaluatee.
 			if (_parentDocument == null)
 			{
-				final Optional<Boolean> isSOTrx = entityDescriptor.getIsSOTrx();
-				if (isSOTrx.isPresent())
+				final Optional<SOTrx> soTrx = entityDescriptor.getSOTrx();
+				if (soTrx.isPresent())
 				{
-					setDynAttributeNoCheck("IsSOTrx", isSOTrx.get()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+					setDynAttributeNoCheck("IsSOTrx", soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
 				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}

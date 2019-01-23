@@ -38,6 +38,7 @@ import com.google.common.collect.Ordering;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -57,7 +58,6 @@ import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -131,7 +131,7 @@ public class DocumentEntityDescriptor
 	// Legacy
 	private final OptionalInt AD_Tab_ID;
 	private final Optional<String> tableName;
-	private final Optional<Boolean> isSOTrx;
+	private final Optional<SOTrx> soTrx;
 
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
@@ -172,7 +172,7 @@ public class DocumentEntityDescriptor
 		// legacy:
 		AD_Tab_ID = builder.getAD_Tab_ID();
 		tableName = builder.getTableName();
-		isSOTrx = builder.getIsSOTrx();
+		soTrx = builder.getSOTrx();
 	}
 
 	@Override
@@ -415,9 +415,9 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
-	public Optional<Boolean> getIsSOTrx()
+	public Optional<SOTrx> getSOTrx()
 	{
-		return isSOTrx;
+		return soTrx;
 	}
 
 	public ITabCallout createAndInitializeDocumentCallout(final ICalloutRecord documentAsCalloutRecord)
@@ -512,7 +512,7 @@ public class DocumentEntityDescriptor
 		// Legacy
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
 		private Optional<String> _tableName = Optional.empty();
-		private Optional<Boolean> _isSOTrx = Optional.empty();
+		private Optional<SOTrx> _soTrx = Optional.empty();
 
 		private Builder()
 		{
@@ -936,19 +936,19 @@ public class DocumentEntityDescriptor
 
 		public Builder setIsSOTrx(final boolean isSOTrx)
 		{
-			_isSOTrx = Optional.of(isSOTrx);
+			_soTrx = Optional.of(SOTrx.ofBoolean(isSOTrx));
 			return this;
 		}
 
-		public Builder setIsSOTrx(final Optional<Boolean> isSOTrx)
+		public Builder setIsSOTrx(final Optional<SOTrx> soTrx)
 		{
-			_isSOTrx = isSOTrx != null ? isSOTrx : Optional.empty();
+			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
 		}
 
-		public Optional<Boolean> getIsSOTrx()
+		public Optional<SOTrx> getSOTrx()
 		{
-			return _isSOTrx;
+			return _soTrx;
 		}
 
 		public Builder setAllowCreateNewLogic(final ILogicExpression allowCreateNewLogic)

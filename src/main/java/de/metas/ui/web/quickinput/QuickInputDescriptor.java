@@ -4,6 +4,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,9 +36,12 @@ public class QuickInputDescriptor
 {
 	@NonNull
 	private final DocumentEntityDescriptor entityDescriptor;
+
 	@NonNull
 	private final QuickInputLayoutDescriptor layout;
+
 	@NonNull
+	@Getter(AccessLevel.NONE)
 	private final Class<? extends IQuickInputProcessor> processorClass;
 
 	public IQuickInputProcessor createProcessor()
@@ -53,6 +58,6 @@ public class QuickInputDescriptor
 
 	public DetailId getDetailId()
 	{
-		return entityDescriptor.getDetailId();
+		return getEntityDescriptor().getDetailId();
 	}
 }
