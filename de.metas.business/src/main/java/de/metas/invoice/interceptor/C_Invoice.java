@@ -23,7 +23,7 @@ package de.metas.invoice.interceptor;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -37,6 +37,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -82,10 +83,10 @@ public class C_Invoice // 03771
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_PriceList_ID })
 	public void removeMaterialLinesNotCorrespondingToPriceList(final I_C_Invoice invoice)
 	{
-		Date invoiceDate = invoice.getDateInvoiced();
+		LocalDate invoiceDate = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 		if (invoiceDate == null)
 		{
-			invoiceDate = SystemTime.asDate();
+			invoiceDate = SystemTime.asLocalDate();
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);

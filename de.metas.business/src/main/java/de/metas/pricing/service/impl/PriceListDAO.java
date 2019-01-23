@@ -30,6 +30,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -105,6 +106,17 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public Iterator<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
+				.create()
+				.iterate(I_M_ProductPrice.class);
+	}
+
+	@Override
 	public Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(@NonNull final PriceListVersionId priceListVersionId)
 	{
 		return Services.get(IQueryBL.class)
@@ -134,13 +146,13 @@ public class PriceListDAO implements IPriceListDAO
 			return pl;
 		}
 
-		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
+		final CountryId countryId = CountryId.ofRepoId(bpartnerLocation.getC_Location().getC_Country_ID());
 		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx);
 		return !priceLists.isEmpty() ? priceLists.get(0) : null;
 	}
 
 	@Override
-	public Iterator<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final int countryId, final SOTrx soTrx)
+	public Iterator<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
 	{
 		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx)
 				.iterator();
@@ -150,7 +162,7 @@ public class PriceListDAO implements IPriceListDAO
 	public ImmutableList<I_M_PriceList> retrievePriceLists(
 			final @CacheCtx Properties ctx,
 			final PricingSystemId pricingSystemId,
-			final int countryId,
+			final CountryId countryId,
 			final SOTrx soTrx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -178,7 +190,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@NonNull final org.compiere.model.I_M_PriceList priceList,
-			@NonNull final Date date,
+			@NonNull final LocalDate date,
 			final Boolean processed)
 	{
 		final Properties ctx = getCtx(priceList);
@@ -188,11 +200,19 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public I_M_PriceList_Version retrievePriceListVersionOrNull(
+			final PriceListId priceListId,
+			final LocalDate date,
+			final Boolean processed)
+	{
+		return retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
+	}
+
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@CacheCtx final Properties ctx,
 			final PriceListId priceListId,
-			final Date date,
+			final LocalDate date,
 			final Boolean processed)
 	{
 		Check.assumeNotNull(date, "Param 'date' is not null; other params: priceListId={}, processed={}, ctx={}", priceListId, processed, ctx);
@@ -205,7 +225,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addCompareFilter(
 						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
 						CompareQueryFilter.Operator.LESS_OR_EQUAL,
-						new Timestamp(date.getTime()),
+						TimeUtil.asTimestamp(date),
 						DateTruncQueryFilterModifier.DAY)
 
 				// active

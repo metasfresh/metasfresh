@@ -25,7 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -51,6 +51,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -79,7 +80,6 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-
 import lombok.NonNull;
 
 public class OrderBL implements IOrderBL
@@ -537,14 +537,14 @@ public class OrderBL implements IOrderBL
 		}
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final Timestamp orderDate;
+		final LocalDate orderDate;
 		if (order.getDatePromised() != null)
 		{
-			orderDate = order.getDatePromised();
+			orderDate = TimeUtil.asLocalDate(order.getDatePromised());
 		}
 		else
 		{
-			orderDate = order.getDateOrdered();
+			orderDate = TimeUtil.asLocalDate(order.getDateOrdered());
 		}
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it

@@ -24,6 +24,7 @@ package de.metas.pricing.service.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -32,6 +33,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -68,18 +70,14 @@ class PricingContext implements IEditablePricingContext
 
 	private ProductId productId;
 
+	private LocalDate priceDate;
 	/**
-	 * PriceDate timestamp.
-	 * NOTE: storing as milliseconds only because {@link Timestamp} is not an immutable class.
-	 */
-	private long priceDateTS = 0;
-	/**
-	 * "now" timestamp to be used when there was no priceDate set.
+	 * "now" to be used when there was no priceDate set.
 	 * NOTE: We are taking a snapshot of the current timestamp because we want to return the same value each time we are asked.
 	 */
-	private long priceDateNowTS = SystemTime.millis();
+	private LocalDate priceDateNow = SystemTime.asLocalDate();
 
-	private int C_Country_ID = 0;
+	private CountryId countryId;
 
 	private int C_UOM_ID;
 	private CurrencyId currencyId;
@@ -108,11 +106,11 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.priceListId = priceListId;
 		pricingCtxNew.priceListVersionId = priceListVersionId;
 		pricingCtxNew._priceListVersion = _priceListVersion;
-		pricingCtxNew.priceDateTS = priceDateTS;
-		pricingCtxNew.priceDateNowTS = priceDateNowTS;
+		pricingCtxNew.priceDate = priceDate;
+		pricingCtxNew.priceDateNow = priceDateNow;
 		pricingCtxNew.C_UOM_ID = C_UOM_ID;
 		pricingCtxNew.currencyId = currencyId;
-		pricingCtxNew.C_Country_ID = C_Country_ID;
+		pricingCtxNew.countryId = countryId;
 		pricingCtxNew.bpartnerId = bpartnerId;
 		pricingCtxNew.qty = qty;
 		pricingCtxNew.soTrx = soTrx;
@@ -204,15 +202,21 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public Timestamp getPriceDate()
+	public LocalDate getPriceDate()
 	{
-		return new Timestamp(priceDateTS <= 0 ? priceDateNowTS : priceDateTS);
+		return priceDate != null ? priceDate : priceDateNow;
 	}
 
 	@Override
 	public IEditablePricingContext setPriceDate(final Timestamp priceDate)
 	{
-		priceDateTS = priceDate == null ? 0 : priceDate.getTime();
+		return setPriceDate(priceDate);
+	}
+
+	@Override
+	public IEditablePricingContext setPriceDate(final LocalDate priceDate)
+	{
+		this.priceDate = priceDate;
 		return this;
 	}
 
@@ -386,15 +390,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getC_Country_ID()
+	public CountryId getCountryId()
 	{
-		return C_Country_ID;
+		return countryId;
 	}
 
 	@Override
 	public IEditablePricingContext setC_Country_ID(final int countryId)
 	{
-		C_Country_ID = countryId;
+		this.countryId = CountryId.ofRepoIdOrNull(countryId);
 		return this;
 	}
 

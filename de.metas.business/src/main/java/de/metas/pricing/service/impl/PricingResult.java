@@ -24,7 +24,7 @@ package de.metas.pricing.service.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +46,6 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -111,7 +110,7 @@ class PricingResult implements IPricingResult
 	private boolean taxIncluded = false;
 	private boolean isUseDiscountSchema = false;
 	private boolean disallowDiscount = false;
-	private Timestamp priceDateTS = null;
+	private LocalDate priceDate = null;
 
 	private boolean isPriceEditable = true;
 	private boolean isDiscountEditable = true;
@@ -230,18 +229,15 @@ class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public Timestamp getPriceDate()
+	public LocalDate getPriceDate()
 	{
-		return priceDateTS;
+		return priceDate;
 	}
 
-	/**
-	 * @param priceDate the priceDate to set
-	 */
 	@Override
-	public void setPriceDate(final Timestamp priceDate)
+	public void setPriceDate(final LocalDate priceDate)
 	{
-		priceDateTS = priceDate;
+		this.priceDate = priceDate;
 	}
 
 	@Override

@@ -48,6 +48,7 @@ import javax.swing.JLabel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
@@ -411,8 +412,8 @@ public class CreateInvoiceCandidateDialog
 
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
 						PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()) //
-						, location.getC_Location().getC_Country_ID() // country
-						, SystemTime.asDayTimestamp() // date
+						, CountryId.ofRepoId(location.getC_Location().getC_Country_ID()) // country
+						, SystemTime.asLocalDate() // date
 						, soTrx //
 						, (Boolean)null // processedPLVFiltering
 				);

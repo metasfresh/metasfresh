@@ -23,7 +23,7 @@ package de.metas.pricing;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,7 +35,6 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /**
@@ -160,14 +159,14 @@ public interface IPricingResult
 	 *
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
-	Timestamp getPriceDate();
+	LocalDate getPriceDate();
 
 	/**
 	 * See {@link #getPriceDate()}.
 	 *
 	 * @param priceDate
 	 */
-	void setPriceDate(Timestamp priceDate);
+	void setPriceDate(LocalDate priceDate);
 
 	boolean isPriceEditable();
 
