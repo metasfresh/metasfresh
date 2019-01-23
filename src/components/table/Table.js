@@ -84,21 +84,21 @@ class Table extends Component {
       return;
     }
 
-    if (!_.isEqual(prevState.rows, rows)) {
+    if (rows && !_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
-        if (rows) {
-          let firstRow = rows[0];
+      // if (rows) {
+        let firstRow = rows[0];
 
-          if (firstRow) {
-            if (openIncludedViewOnSelect) {
-              this.showSelectedIncludedView([firstRow.id]);
-            }
+        if (firstRow) {
+          if (openIncludedViewOnSelect) {
+            this.showSelectedIncludedView([firstRow.id]);
+          }
 
-            if (firstRow.id && !selectedEqual) {
-              this.selectOneProduct(firstRow.id);
-            }
+          if (firstRow.id && !selectedEqual) {
+            this.selectOneProduct(firstRow.id);
           }
         }
+      // }
       }
     }
 
@@ -142,7 +142,7 @@ class Table extends Component {
     //   }
     // }
 
-    console.log('Table update props: ', prevProps.viewId, viewId, '\n');
+    // console.log('Table update props: ', rowData, prevProps.rowData, '\n');
 
     if (
       prevProps.viewId !== viewId //&&
@@ -153,8 +153,8 @@ class Table extends Component {
         this.setState({ selected: defaultSelected });
       }
 
-      const firstLoad = prevProps.rowData.get(1) ? false : true;
-      console.log('Table update case1: ', firstLoad)
+      const firstLoad = prevProps.rowData.get('1') && rowData.get(0) ? false : true;
+      console.log('Table update case1: ', rowData, prevProps.rowData);
 
       this.getIndentData(firstLoad);
 
@@ -170,14 +170,18 @@ class Table extends Component {
       //   }
       // );
     } else if (!is(prevProps.rowData, rowData)) {
-      // let firstLoad = prevProps.rowData.get(1) ? false : true;
+      let firstLoad = rowData.get(0) ? false : true;
 
+      if (!prevProps.rowData.get(0) && rowData.get(0)) {
+        console.log('BAZINGA')
+        firstLoad = true;
+      }
       // if (prevProps.viewId !== viewId) {
       //   firstLoad = true;
       // }
     // else if (!is(prevProps.rowData, rowData)) {
-      console.log('Table update case2')
-      this.getIndentData();
+      console.log('Table update case2: ', prevProps.rowData, rowData.get('1'));
+      this.getIndentData(firstLoad);
     }
   }
 
@@ -232,6 +236,12 @@ class Table extends Component {
     const { selected } = this.state;
     let rowsData = [];
 
+    // if (!rowData.size()) {
+    //   return;
+    // }
+
+    console.log('TABID: ', tabid, rowData, this._isMounted)
+
     if (indentSupported && rowData.get(`${tabid}`)) {
       rowsData = getRowsData(rowData.get(`${tabid}`));
       let stateChange = {
@@ -239,68 +249,88 @@ class Table extends Component {
         pendingInit: !rowsData,
       };
 
-      if (selectFirst) {
-        console.log('Table getIndentData selectFirst: ', selectFirst)
-        stateChange = {
-          ...stateChange,
-          collapsedParentsRows: [],
-          collapsedRows: [],
-        };
+      console.log('Table getIndentData selectFirst: ', selectFirst, rowsData)
+
+      // if (selectFirst) {
+        
+      //   stateChange = {
+      //     ...stateChange,
+      //     collapsedParentsRows: [],
+      //     collapsedRows: [],
+      //   };
+      // }
+
+      // if (this._isMounted) {
+        this.setState(stateChange, () => {
+          const { rows } = this.state;
+          const firstRow = rows[0];
+          let updatedParentsRows = [...this.state.collapsedParentsRows];
+          let updatedRows = [...this.state.collapsedRows];
+
+          if (firstRow && selectFirst) {
+            let selectedIndex = 0;
+            if (
+              selected &&
+              selected.length === 1 &&
+              selected[0] &&
+              firstRow.id !== selected[0]
+            ) {
+              selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
+            }
+
+            if (!selectedIndex) {
+              this.selectOneProduct(rows[0].id);
+            }
+
+            document.getElementsByClassName('js-table')[0].focus();
+          }
+
+          console.log('COLLAPSIBLE: ', collapsible, [...updatedParentsRows], [...updatedRows]);
+
+          let mapCollapsed = [];
+
+          if (collapsible && rows && rows.length && selectFirst) {
+            rows.map(row => {
+              if (row.indent.length >= expandedDepth && row.includedDocuments) {
+                mapCollapsed = mapCollapsed.concat(collapsedMap(row));
+                updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
+              }
+              if (row.indent.length > expandedDepth) {
+                updatedRows = updatedRows.concat(row[keyProperty]);
+              }
+            });
+
+            const updatedState = {};
+
+            if (mapCollapsed.length) {
+              updatedState.collapsedArrayMap = mapCollapsed;
+            }
+            if (updatedRows.length) {
+              updatedState.collapsedRows = updatedRows;
+            }
+            if (updatedParentsRows.length) {
+              updatedState.collapsedParentsRows = updatedParentsRows;
+            }
+
+            console.log('UPDATED STATE: ', updatedState)
+
+            if (Object.keys(updatedState).length) {
+              this.setState({ ...updatedState });
+            }
+          }
+        });
+      } else {
+        rowsData = rowData.get(`${tabid}`)
+          ? rowData.get(`${tabid}`).toArray()
+          : [];
+        this.setState({
+          rows: rowsData,
+          pendingInit: !rowData.get(`${tabid}`),
+        });
       }
+    // }
 
-      this.setState(stateChange, () => {
-        const { rows } = this.state;
-        const firstRow = rows[0];
-        let updatedParentsRows = [...this.state.collapsedParentsRows];
-        let updatedRows = [...this.state.collapsedRows];
-
-        if (firstRow && selectFirst) {
-          let selectedIndex = 0;
-          if (
-            selected &&
-            selected.length === 1 &&
-            selected[0] &&
-            firstRow.id !== selected[0]
-          ) {
-            selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
-          }
-
-          if (!selectedIndex) {
-            this.selectOneProduct(rows[0].id);
-          }
-
-          document.getElementsByClassName('js-table')[0].focus();
-        }
-
-        let mapCollapsed = [];
-
-        if (collapsible && rows && rows.length && selectFirst) {
-          rows.map(row => {
-            if (row.indent.length >= expandedDepth && row.includedDocuments) {
-              mapCollapsed = mapCollapsed.concat(collapsedMap(row));
-              updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
-            }
-            if (row.indent.length > expandedDepth) {
-              updatedRows = updatedRows.concat(row[keyProperty]);
-            }
-          });
-
-          this.setState({
-            collapsedArrayMap: mapCollapsed,
-            collapsedRows: updatedRows,
-            collapsedParentsRows: updatedParentsRows,
-          });
-        }
-      });
-    } else {
-      rowsData = rowData.get(`${tabid}`)
-        ? rowData.get(`${tabid}`).toArray()
-        : [];
-      this.setState({
-        rows: rowsData,
-        pendingInit: !rowData.get(`${tabid}`),
-      });
-    }
+    console.log('THISSTATE: ', {...this.state});
 
     if (rowsData.length) {
       setTimeout(() => {
@@ -528,14 +558,7 @@ class Table extends Component {
   };
 
   handleKeyDown = e => {
-    const {
-      keyProperty,
-      mainTable,
-      readonly,
-      // onDoubleClick,
-      // isIncluded,
-      closeOverlays,
-    } = this.props;
+    const { keyProperty, mainTable, readonly, closeOverlays } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
 
     if (!listenOnKeys) {
@@ -641,13 +664,10 @@ class Table extends Component {
         }
         break;
       case 'Enter':
-        if (selected.length <= 1 && readonly) { // && onDoubleClick && readonly) {
+        if (selected.length <= 1 && readonly) {
           e.preventDefault();
 
-          // if (!isIncluded) {
-            this.handleDoubleClick(selected[selected.length - 1]);
-          // }
-          // onDoubleClick(selected[selected.length - 1]);
+          this.handleDoubleClick(selected[selected.length - 1]);
         }
         break;
       case 'Escape':
@@ -867,6 +887,8 @@ class Table extends Component {
       collapsedRows,
       collapsedArrayMap,
     } = this.state;
+
+    console.log('handlecollapse')
 
     this.setState({
       collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap),
