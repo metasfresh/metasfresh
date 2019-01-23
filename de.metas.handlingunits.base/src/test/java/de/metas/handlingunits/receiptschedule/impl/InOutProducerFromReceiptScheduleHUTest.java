@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
@@ -50,6 +49,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;

@@ -45,7 +45,6 @@ import java.util.Properties;
 
 import javax.swing.JLabel;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -75,6 +74,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;

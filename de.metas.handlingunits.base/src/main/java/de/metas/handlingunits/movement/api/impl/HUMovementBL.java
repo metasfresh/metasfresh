@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -18,6 +17,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;

@@ -1,12 +1,12 @@
 package de.metas.acct.posting.server;
 
-import org.adempiere.acct.api.AcctDocRegistry;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostRequestHandler;

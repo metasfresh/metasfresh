@@ -1,12 +1,13 @@
 package de.metas.manufacturing.acct;
 
-import org.adempiere.acct.api.AcctDocProviderTemplate;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.acct.doc.AcctDocProviderTemplate;
 
 /*
  * #%L

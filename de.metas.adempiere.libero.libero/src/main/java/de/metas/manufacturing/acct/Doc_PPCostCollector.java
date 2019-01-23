@@ -40,7 +40,6 @@ package de.metas.manufacturing.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.compiere.acct.AcctDocContext;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
@@ -55,6 +54,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;

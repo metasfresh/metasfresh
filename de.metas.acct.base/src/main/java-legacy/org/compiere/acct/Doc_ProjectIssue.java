@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;

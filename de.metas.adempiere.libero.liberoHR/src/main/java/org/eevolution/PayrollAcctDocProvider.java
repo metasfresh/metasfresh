@@ -1,11 +1,12 @@
 package org.eevolution;
 
-import org.adempiere.acct.api.AcctDocProviderTemplate;
 import org.compiere.acct.Doc_HRProcess;
 import org.eevolution.model.I_HR_Process;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.acct.doc.AcctDocProviderTemplate;
 
 /*
  * #%L

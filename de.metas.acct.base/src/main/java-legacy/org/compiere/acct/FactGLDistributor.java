@@ -5,12 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.GLDistributionBuilder;
-import org.adempiere.acct.api.GLDistributionResult;
-import org.adempiere.acct.api.GLDistributionResultLine;
-import org.adempiere.acct.api.GLDistributionResultLine.Sign;
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.acct.api.IGLDistributionDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -23,6 +18,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.gldistribution.GLDistributionBuilder;
+import de.metas.acct.gldistribution.GLDistributionResult;
+import de.metas.acct.gldistribution.GLDistributionResultLine;
+import de.metas.acct.gldistribution.IGLDistributionDAO;
+import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;

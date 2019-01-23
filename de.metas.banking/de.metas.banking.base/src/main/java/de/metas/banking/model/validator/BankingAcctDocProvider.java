@@ -1,11 +1,12 @@
 package de.metas.banking.model.validator;
 
-import org.adempiere.acct.api.AcctDocProviderTemplate;
 import org.compiere.acct.Doc_BankStatement;
 import org.compiere.model.I_C_BankStatement;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.acct.doc.AcctDocProviderTemplate;
 
 /*
  * #%L

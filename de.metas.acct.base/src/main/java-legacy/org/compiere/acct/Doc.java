@@ -68,6 +68,8 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.PostingException;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
@@ -1496,7 +1498,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
 	}
 
-	protected final int getStdPrecision()
+	public final int getStdPrecision()
 	{
 		if (_currencyPrecision != null)
 		{

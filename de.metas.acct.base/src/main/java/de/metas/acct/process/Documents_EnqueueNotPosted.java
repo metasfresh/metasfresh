@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.adempiere.acct.api.AcctDocRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -13,6 +12,7 @@ import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.api.IPostingService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;

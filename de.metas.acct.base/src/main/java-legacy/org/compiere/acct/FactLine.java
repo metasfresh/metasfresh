@@ -49,6 +49,7 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.PostingException;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;

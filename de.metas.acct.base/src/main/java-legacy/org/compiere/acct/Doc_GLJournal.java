@@ -21,9 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.acct.api.IGLJournalLineBL;
-import org.adempiere.acct.api.IGLJournalLineDAO;
-import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
@@ -32,6 +29,10 @@ import org.compiere.model.X_GL_JournalLine;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.tax.ITaxAccountable;
 import de.metas.util.Services;
 
 /**

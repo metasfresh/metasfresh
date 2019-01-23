@@ -37,6 +37,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.util.Services;
 
 /**

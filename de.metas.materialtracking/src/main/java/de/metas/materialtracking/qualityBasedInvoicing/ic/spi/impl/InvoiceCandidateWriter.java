@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -48,6 +47,7 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;

@@ -28,6 +28,7 @@ import org.compiere.util.Util;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;

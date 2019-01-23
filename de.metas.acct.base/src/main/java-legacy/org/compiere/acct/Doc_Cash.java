@@ -29,6 +29,7 @@ import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.money.CurrencyId;
 
 /**

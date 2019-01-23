@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.api.impl;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,6 +15,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;

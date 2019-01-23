@@ -50,6 +50,8 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.util.Services;
 
 /**
@@ -219,7 +221,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return docLines;
 	}	// loadLines
 
-	final boolean isCreditMemo()
+	public final boolean isCreditMemo()
 	{
 		final String docBaseType = getDocumentType();
 		final boolean cm = Doc.DOCTYPE_ARCredit.equals(docBaseType)

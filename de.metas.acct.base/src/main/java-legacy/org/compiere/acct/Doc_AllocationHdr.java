@@ -48,6 +48,8 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.PostingException;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;

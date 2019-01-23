@@ -28,6 +28,7 @@ import org.compiere.model.MRequisition;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocContext;
 
 /**
  * Post Order Documents.
