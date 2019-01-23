@@ -119,7 +119,7 @@ public class DocumentCollection
 		// setup the cache
 		final int cacheSize = Services
 				.get(ISysConfigBL.class)
-				.getIntValue(SYSCONFIG_CACHE_SIZE, 300);
+				.getIntValue(SYSCONFIG_CACHE_SIZE, DEFAULT_CACHE_SIZE);
 
 		rootDocuments = CacheBuilder
 				.newBuilder()
