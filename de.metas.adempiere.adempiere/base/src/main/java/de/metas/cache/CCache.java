@@ -191,7 +191,7 @@ public class CCache<K, V> implements CacheInterface
 			if (tableName == null)
 			{
 				this.cacheName = "$NoCacheName$" + cacheId;
-				tableNameEffective = "$NoTableName$" + tableName;
+				tableNameEffective = "$NoTableName$" + cacheId;
 			}
 			else
 			{

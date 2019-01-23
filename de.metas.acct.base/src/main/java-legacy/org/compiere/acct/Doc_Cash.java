@@ -29,6 +29,7 @@ import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.money.CurrencyId;
 
 /**
@@ -44,16 +45,9 @@ import de.metas.money.CurrencyId;
  */
 public class Doc_Cash extends Doc<DocLine_Cash>
 {
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_Cash(final IDocBuilder docBuilder)
+	public Doc_Cash(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_CashJournal);
+		super(ctx, DOCTYPE_CashJournal);
 	}	// Doc_Cash
 
 	@Override

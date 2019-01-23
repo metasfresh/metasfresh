@@ -27,7 +27,6 @@ import java.util.Optional;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,6 +48,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
@@ -179,7 +179,7 @@ import lombok.ToString;
 	{
 		logger.debug("Posting directly: {}", this);
 
-		final IDocFactory docFactory = Services.get(IDocFactory.class);
+		final AcctDocRegistry docFactory = Adempiere.getBean(AcctDocRegistry.class);
 
 		final ClientId clientId = getClientId();
 		final TableRecordReference documentRef = getDocumentRef();

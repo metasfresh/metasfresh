@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.util.Services;
@@ -50,9 +51,9 @@ import de.metas.util.Services;
  */
 public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
-	public Doc_Inventory(final IDocBuilder docBuilder)
+	public Doc_Inventory(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatInventory);
+		super(ctx, DOCTYPE_MatInventory);
 	}
 
 	@Override

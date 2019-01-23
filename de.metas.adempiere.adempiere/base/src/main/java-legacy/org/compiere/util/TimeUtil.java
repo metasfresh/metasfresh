@@ -1581,6 +1581,12 @@ public class TimeUtil
 		return dayOfWeek - 1;
 	}
 
+	@Deprecated
+	public static LocalDate asLocalDate(final LocalDate localDate)
+	{
+		return localDate;
+	}
+
 	public static LocalDate asLocalDate(final Object obj)
 	{
 		if (obj == null)
@@ -1596,6 +1602,12 @@ public class TimeUtil
 			return asLocalDateTime(obj).toLocalDate();
 		}
 	}
+
+	// @Deprecated
+	// public static LocalTime asLocalTime(final LocalTime localTime)
+	// {
+	// return localTime;
+	// }
 
 	public static LocalTime asLocalTime(final Object obj)
 	{
@@ -1642,6 +1654,12 @@ public class TimeUtil
 		{
 			return asInstant(obj).atZone(ZoneId.systemDefault()).toLocalDateTime();
 		}
+	}
+
+	@Deprecated
+	public static ZonedDateTime asZonedDateTime(final ZonedDateTime zonedDateTime)
+	{
+		return zonedDateTime;
 	}
 
 	public static ZonedDateTime asZonedDateTime(final Object obj)
@@ -1731,7 +1749,7 @@ public class TimeUtil
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
 		}
 	}
-	
+
 	public static Duration max(
 			@Nullable final Duration duration1,
 			@Nullable final Duration duration2)

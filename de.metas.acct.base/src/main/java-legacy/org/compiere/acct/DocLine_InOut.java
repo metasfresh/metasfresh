@@ -8,7 +8,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.ProductAcctType;
@@ -121,7 +120,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -137,7 +136,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);
 		}
@@ -153,7 +152,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateAcct()))
+					.date(getDateAcct())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -169,7 +168,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-							.date(TimeUtil.asLocalDate(getDateAcct()))
+							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);
 		}

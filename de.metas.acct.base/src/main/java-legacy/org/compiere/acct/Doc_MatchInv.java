@@ -41,6 +41,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
@@ -98,9 +99,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	/** Material Receipt */
 	private I_M_InOutLine _receiptLine = null;
 
-	public Doc_MatchInv(final IDocBuilder docBuilder)
+	public Doc_MatchInv(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMatchInv);
+		super(ctx, DOCTYPE_MatMatchInv);
 	}
 
 	@Override

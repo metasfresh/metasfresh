@@ -28,6 +28,7 @@ import org.compiere.util.Util;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
@@ -56,10 +57,10 @@ import de.metas.util.Services;
  */
 public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
-	public Doc_BankStatement(final IDocBuilder docBuilder)
+	public Doc_BankStatement(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_BankStatement);
-	}	// Doc_Bank
+		super(ctx, DOCTYPE_BankStatement);
+	}
 
 	@Override
 	protected void loadDocumentDetails()

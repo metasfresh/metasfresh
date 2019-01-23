@@ -48,6 +48,8 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.PostingException;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -77,9 +79,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	private static final Logger logger = LogManager.getLogger(Doc_AllocationHdr.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public Doc_AllocationHdr(final IDocBuilder docBuilder)
+	public Doc_AllocationHdr(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_Allocation);
+		super(ctx, DOCTYPE_Allocation);
 	}   // Doc_Allocation
 
 	@Override

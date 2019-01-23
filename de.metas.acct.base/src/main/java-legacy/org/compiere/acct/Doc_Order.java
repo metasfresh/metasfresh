@@ -36,6 +36,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
@@ -59,17 +60,10 @@ public class Doc_Order extends Doc<DocLine_Order>
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_Order(final IDocBuilder docBuilder)
+	public Doc_Order(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_Order
+		super(ctx);
+	}
 
 	/** Contained Optional Tax Lines */
 	private List<DocTax> _taxes = null;

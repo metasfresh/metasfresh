@@ -5,8 +5,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.acct.api.GL_JournalLine_Builder;
-import org.adempiere.acct.api.GL_Journal_Builder;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -26,6 +24,8 @@ import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.gljournal.GL_JournalLine_Builder;
+import de.metas.acct.gljournal.GL_Journal_Builder;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;

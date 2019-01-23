@@ -3,7 +3,6 @@ package org.compiere.acct;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_ProjectIssue;
-import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostAmount;
@@ -54,7 +53,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofProjectIssueId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -70,7 +69,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 							.documentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.date(getDateAcct())
 							.build())
 					.getTotalAmountToPost(as);
 		}

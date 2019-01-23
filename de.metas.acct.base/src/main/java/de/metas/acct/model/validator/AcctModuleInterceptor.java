@@ -25,7 +25,6 @@ package de.metas.acct.model.validator;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -46,6 +45,7 @@ import org.slf4j.Logger;
 import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctListener;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
