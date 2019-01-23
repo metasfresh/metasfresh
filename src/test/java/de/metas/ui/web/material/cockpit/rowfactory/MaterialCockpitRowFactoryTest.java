@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
@@ -43,6 +44,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
@@ -238,7 +240,7 @@ public class MaterialCockpitRowFactoryTest
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(today)
-				.productsToListEvenIfEmpty(ImmutableList.of())
+				.productIdsToListEvenIfEmpty(ImmutableSet.of())
 				.cockpitRecords(ImmutableList.of(cockpitRecordWithAttributes, cockpitRecordWithEmptyAttributesKey))
 				.stockRecords(ImmutableList.of(stockRecordWithAttributes, stockRecordWithEmptyAttributesKey))
 				.includePerPlantDetailRows(true) // without this, we would not get 4 but 3 included rows
@@ -317,15 +319,16 @@ public class MaterialCockpitRowFactoryTest
 	public void createEmptyRowBuckets()
 	{
 		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// invoke method under test
 		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
-				ImmutableList.of(product),
+				ImmutableSet.of(productId),
 				today,
 				true);
 
 		assertThat(result).hasSize(1);
-		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);
+		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(productId, today);
 		assertThat(result).containsKey(productIdAndDate);
 		final MainRowWithSubRows mainRowBucket = result.get(productIdAndDate);
 		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);

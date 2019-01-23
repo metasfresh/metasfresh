@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.springframework.stereotype.Service;
@@ -15,11 +14,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.util.Services;
@@ -59,7 +60,7 @@ public class MaterialCockpitRowFactory
 		Timestamp date;
 
 		@NonNull
-		List<I_M_Product> productsToListEvenIfEmpty;
+		ImmutableSet<ProductId> productIdsToListEvenIfEmpty;
 
 		@NonNull
 		List<I_MD_Cockpit> cockpitRecords;
@@ -73,7 +74,7 @@ public class MaterialCockpitRowFactory
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
 	{
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
-				request.getProductsToListEvenIfEmpty(),
+				request.getProductIdsToListEvenIfEmpty(),
 				request.getDate(),
 				request.isIncludePerPlantDetailRows());
 
@@ -92,7 +93,7 @@ public class MaterialCockpitRowFactory
 
 	@VisibleForTesting
 	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
-			@NonNull final List<I_M_Product> products,
+			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final Timestamp timestamp,
 			final boolean includePerPlantDetailRows)
 	{
@@ -102,9 +103,9 @@ public class MaterialCockpitRowFactory
 		final List<I_S_Resource> plants = retrieveCountingPlants(includePerPlantDetailRows);
 
 		final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
-		for (final I_M_Product product : products)
+		for (final ProductId productId : productIds)
 		{
-			final MainRowBucketId key = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), timestamp);
+			final MainRowBucketId key = MainRowBucketId.createPlainInstance(productId, timestamp);
 			final MainRowWithSubRows mainRowBucket = MainRowWithSubRows.create(key);
 
 			for (final I_S_Resource plant : plants)

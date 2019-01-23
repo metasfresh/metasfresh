@@ -18,12 +18,14 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
@@ -69,13 +71,17 @@ public class MaterialCockpitRowRepository
 	private static final String SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.CacheSize";
 	private static final int DEFAULT_EMPTY_PRODUCTS_CACHESIZE = 10;
 
-	private final transient CCache<CacheKey, List<I_M_Product>> productFilterVOToProducts;
+	private final transient CCache<CacheKey, ImmutableSet<ProductId>> productFilterVOToProducts;
 
 	@Value
 	private static class CacheKey
 	{
+		@NonNull
 		OrgId orgId;
+
+		@NonNull
 		ProductFilterVO productFilterVO;
+
 		int limit;
 	}
 
@@ -96,7 +102,7 @@ public class MaterialCockpitRowRepository
 				.getIntValue(SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE, DEFAULT_EMPTY_PRODUCTS_CACHESIZE);
 
 		productFilterVOToProducts = CCache
-				.<CacheKey, List<I_M_Product>> builder()
+				.<CacheKey, ImmutableSet<ProductId>> builder()
 				.tableName(I_M_Product.Table_Name)
 				.cacheMapType(CacheMapType.LRU)
 				.initialCapacity(cacheSize)
@@ -161,7 +167,7 @@ public class MaterialCockpitRowRepository
 		final CreateRowsRequest request = CreateRowsRequest
 				.builder()
 				.date(TimeUtil.asTimestamp(date))
-				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
+				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
 				.includePerPlantDetailRows(includePerPlantDetailRows)
@@ -179,7 +185,7 @@ public class MaterialCockpitRowRepository
 		return includePerPlantDetailRows;
 	}
 
-	private List<I_M_Product> retrieveRelevantProducts(@NonNull final List<DocumentFilter> filters)
+	private ImmutableSet<ProductId> retrieveRelevantProductIds(@NonNull final List<DocumentFilter> filters)
 	{
 		final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx()));
 
@@ -192,20 +198,18 @@ public class MaterialCockpitRowRepository
 				ProductFilterUtil.extractProductFilterVO(filters),
 				limit);
 
-		final List<I_M_Product> products = productFilterVOToProducts
-				.getOrLoad(cacheKey, () -> retrieveProductsFor(
-						cacheKey.getOrgId(),
-						cacheKey.getProductFilterVO(),
-						cacheKey.getLimit()));
+		final ImmutableSet<ProductId> productIds = productFilterVOToProducts
+				.getOrLoad(cacheKey, () -> retrieveProductsFor(cacheKey));
 
-		return products;
+		return productIds;
 	}
 
-	private List<I_M_Product> retrieveProductsFor(
-			@NonNull final OrgId orgId,
-			@NonNull final ProductFilterVO productFilterVO,
-			final int limit)
+	private static ImmutableSet<ProductId> retrieveProductsFor(@NonNull final CacheKey cacheKey)
 	{
+		final OrgId orgId = cacheKey.getOrgId();
+		final ProductFilterVO productFilterVO = cacheKey.getProductFilterVO();
+		final int limit = cacheKey.getLimit();
+
 		final IQueryFilter<I_M_Product> productQueryFilter = ProductFilterUtil.createProductQueryFilterOrNull(
 				productFilterVO,
 				false/* nullForEmptyFilterVO */);
@@ -224,7 +228,7 @@ public class MaterialCockpitRowRepository
 
 		return queryBuilder
 				.create()
-				.list();
+				.listIds(ProductId::ofRepoId);
 	}
 
 	private static boolean isEligibleRecordRef(final TableRecordReference recordRef)
