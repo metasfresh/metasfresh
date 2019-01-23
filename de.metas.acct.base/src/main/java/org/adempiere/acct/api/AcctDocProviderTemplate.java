@@ -40,6 +40,12 @@ import de.metas.acct.api.AcctSchema;
  * #L%
  */
 
+/**
+ * Convenient {@link IAcctDocProvider} implementation.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 {
 	private final ImmutableMap<String, AcctDocFactory> docFactoriesByTableName;
