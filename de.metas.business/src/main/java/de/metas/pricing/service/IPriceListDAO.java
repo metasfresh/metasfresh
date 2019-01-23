@@ -60,12 +60,12 @@ public interface IPriceListDAO extends ISingletonService
 	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
 
 	/**
-	 * Retrieves <b>all</b> (including inactive) {@link I_M_ProductPrice} record of the given price list version
+	 * Retrieves product prices records of the given price list version
 	 *
-	 * @param plv
-	 * @return iterator of {@link I_M_ProductPrice} ordered by SeqNo and Name
+	 * @param priceListVersionId
+	 * @return iterator of product prices ordered by SeqNo and Name
 	 */
-	Iterator<I_M_ProductPrice> retrieveAllProductPricesOrderedBySeqNOandProductName(I_M_PriceList_Version plv);
+	Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(PriceListVersionId priceListVersionId);
 
 	/**
 	 * Returns a list containing all the PO price lists for a given pricing system and a country.<br>

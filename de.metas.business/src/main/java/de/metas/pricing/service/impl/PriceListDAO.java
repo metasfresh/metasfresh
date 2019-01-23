@@ -105,18 +105,16 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Iterator<I_M_ProductPrice> retrieveAllProductPricesOrderedBySeqNOandProductName(final I_M_PriceList_Version plv)
+	public Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(@NonNull final PriceListVersionId priceListVersionId)
 	{
-		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class, plv)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID());
-
-		queryBuilder.orderBy()
-				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_SeqNo)
-				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID)
-				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_MatchSeqNo);
-
-		return queryBuilder.create()
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
+				.orderBy(org.compiere.model.I_M_ProductPrice.COLUMNNAME_SeqNo)
+				.orderBy(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID)
+				.orderBy(org.compiere.model.I_M_ProductPrice.COLUMNNAME_MatchSeqNo)
+				.create()
 				.iterate(I_M_ProductPrice.class);
 	}
 
