@@ -1,28 +1,16 @@
-DROP FUNCTION IF EXISTS report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying);
-DROP FUNCTION IF EXISTS report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying (6));
-CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying (6))
-RETURNS TABLE ( 
-kontono character varying(40),
-kontoname character varying(60),
-dateacct date,
-documentno character varying(40),
-taxname character varying(60),
-taxrate numeric,
-taxamt numeric, 
-taxbaseamt numeric, 
-vatcode character varying(10),
-doctype character varying,
-endsaldo numeric,
-param_startdate date,
-param_enddate date,
-param_konto character varying,
-param_vatcode character varying,
-param_org character varying,
+-- Function: report.tax_accounting_report(numeric, numeric, numeric, numeric, character varying, character varying)
 
-ad_org_id numeric
-) 
-AS
-$$
+-- DROP FUNCTION report.tax_accounting_report(numeric, numeric, numeric, numeric, character varying, character varying);
+
+CREATE OR REPLACE FUNCTION report.tax_accounting_report(
+    IN c_period_id numeric,
+    IN vatcode numeric,
+    IN account_id numeric,
+    IN org_id numeric,
+    IN showdetails character varying,
+    IN ad_language character varying)
+  RETURNS TABLE(kontono character varying, kontoname character varying, dateacct date, documentno character varying, taxname character varying, taxrate numeric, taxamt numeric, taxbaseamt numeric, vatcode character varying, doctype character varying, endsaldo numeric, param_startdate date, param_enddate date, param_konto character varying, param_vatcode character varying, param_org character varying, ad_org_id numeric) AS
+$BODY$
 
 SELECT 
 	x.kontono,x.kontoname,
@@ -144,5 +132,7 @@ GROUP BY
 
 ORDER BY vatcode,kontono,documentno
 
-$$ 
-LANGUAGE sql STABLE;
+$BODY$
+  LANGUAGE sql STABLE
+  COST 100
+  ROWS 1000;
