@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.DocLine_Invoice;
 import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_MatchInv;
@@ -37,6 +36,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.util.Services;
 
 @Interceptor(I_M_MatchInv.class)

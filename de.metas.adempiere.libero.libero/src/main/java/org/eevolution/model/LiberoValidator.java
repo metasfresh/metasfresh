@@ -98,7 +98,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_S_Resource.class);
 		cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class);
-		
+
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_PP_Order.Table_Name);
 	}
 

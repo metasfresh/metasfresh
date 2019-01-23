@@ -1,7 +1,5 @@
 package de.metas.activity.model.validator;
 
-import org.adempiere.acct.api.IProductAcctDAO;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -28,6 +26,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;

@@ -68,10 +68,12 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.PostingException;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
@@ -210,27 +212,27 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private static final Logger log = LogManager.getLogger(Doc.class);
 
 	/**
-	 * @param docBuilder construction parameters
+	 * @param ctx construction parameters
 	 */
-	/* package */ Doc(final IDocBuilder docBuilder)
+	/* package */ Doc(final AcctDocContext ctx)
 	{
-		this(docBuilder, (String)null); // defaultDocBaseType=null
+		this(ctx, (String)null); // defaultDocBaseType=null
 	}
 
 	/**
-	 * @param docBuilder construction parameters
+	 * @param ctx construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
-	/* package */ Doc(@NonNull final IDocBuilder docBuilder, final String defaultDocBaseType)
+	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
 	{
 		//
 		// Accounting schemas
-		Check.assumeNotEmpty(docBuilder.getAcctSchemas(), "ass not empty");
-		acctSchemas = ImmutableList.copyOf(docBuilder.getAcctSchemas());
+		Check.assumeNotEmpty(ctx.getAcctSchemas(), "ass not empty");
+		acctSchemas = ImmutableList.copyOf(ctx.getAcctSchemas());
 
 		//
 		// Document model
-		final Object documentModel = docBuilder.getDocumentModel();
+		final Object documentModel = ctx.getDocumentModel();
 		p_po = InterfaceWrapperHelper.getPO(documentModel);
 		Check.assumeNotNull(p_po, "p_po not null");
 
@@ -1496,7 +1498,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
 	}
 
-	protected final int getStdPrecision()
+	public final int getStdPrecision()
 	{
 		if (_currencyPrecision != null)
 		{

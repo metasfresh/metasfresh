@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.util.Services;
 
@@ -45,10 +46,10 @@ import de.metas.util.Services;
  */
 public class Doc_Movement extends Doc<DocLine_Movement>
 {
-	public Doc_Movement(final IDocBuilder docBuilder)
+	public Doc_Movement(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMovement);
-	}   // Doc_Movement
+		super(ctx, DOCTYPE_MatMovement);
+	}
 
 	@Override
 	protected void loadDocumentDetails()

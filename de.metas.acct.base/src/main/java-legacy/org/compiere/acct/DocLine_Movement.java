@@ -5,15 +5,14 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
@@ -85,7 +84,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build());
 		}
 		else
@@ -112,7 +111,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build());
 		}
 		else
@@ -132,7 +131,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 				.documentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 				.qty(getQty().negate())
 				.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-				.date(TimeUtil.asLocalDate(getDateAcct()))
+				.date(getDateAcct())
 				.build();
 	}
 
@@ -151,7 +150,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 				.qty(getQty())
 				.amt(amt)
 				.costElement(costElement)
-				.date(TimeUtil.asLocalDate(getDateAcct()))
+				.date(getDateAcct())
 				.build();
 	}
 

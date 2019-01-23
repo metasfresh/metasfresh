@@ -5,13 +5,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_InOut;

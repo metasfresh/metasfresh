@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -70,9 +71,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	public Doc_InOut(final IDocBuilder docBuilder)
+	public Doc_InOut(final AcctDocContext ctx)
 	{
-		super(docBuilder);
+		super(ctx);
 	}
 
 	private int m_Reversal_ID = 0;

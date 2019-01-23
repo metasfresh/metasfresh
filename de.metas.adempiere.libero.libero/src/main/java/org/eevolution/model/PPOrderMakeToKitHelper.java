@@ -375,7 +375,7 @@ public class PPOrderMakeToKitHelper
 						.orderBOMLine(orderBOMLine)
 						.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(storage.getM_Locator_ID()))
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-						.movementDate(TimeUtil.asLocalDateTime(movementdate))
+						.movementDate(movementdate)
 						.qtyIssue(Quantity.of(qtyIssue, uom))
 						.qtyScrap(Quantity.of(qtyScrap, uom))
 						.qtyReject(Quantity.of(qtyReject, uom))
@@ -398,7 +398,7 @@ public class PPOrderMakeToKitHelper
 					.orderBOMLine(orderBOMLine)
 					.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(orderBOMLine.getM_Locator_ID()))
 					.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(orderBOMLine.getM_AttributeSetInstance_ID()))
-					.movementDate(TimeUtil.asLocalDateTime(movementdate))
+					.movementDate(movementdate)
 					.qtyIssue(Quantity.of(toIssue, uom))
 					.build());
 

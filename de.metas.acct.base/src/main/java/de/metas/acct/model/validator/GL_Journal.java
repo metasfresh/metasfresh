@@ -1,7 +1,5 @@
 package de.metas.acct.model.validator;
 
-import org.adempiere.acct.api.IGLJournalLineDAO;
-import org.adempiere.acct.api.IGLJournalLineGroup;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -12,6 +10,8 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.ModelValidator;
 
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.gljournal.IGLJournalLineGroup;
 import de.metas.acct.impexp.GLJournalImportProcess;
 import de.metas.util.Services;
 

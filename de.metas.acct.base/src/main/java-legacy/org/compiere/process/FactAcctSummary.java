@@ -19,12 +19,12 @@ package org.compiere.process;
 
 import java.util.List;
 
-import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_PA_ReportCube;
 
+import de.metas.acct.cube.IFactAcctCubeBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;

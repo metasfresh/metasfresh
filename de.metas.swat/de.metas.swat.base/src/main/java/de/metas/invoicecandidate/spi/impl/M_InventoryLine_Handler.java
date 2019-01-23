@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -23,6 +22,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;

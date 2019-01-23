@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostRequestHandler;
@@ -39,6 +40,10 @@ import de.metas.util.Services;
 public class AccountingService implements DocumentPostRequestHandler
 {
 	private static final Logger logger = LogManager.getLogger(AccountingService.class);
+
+	public AccountingService(final AcctDocRegistry acctDocFactory)
+	{
+	}
 
 	@Override
 	public void handleRequest(final DocumentPostRequest request)

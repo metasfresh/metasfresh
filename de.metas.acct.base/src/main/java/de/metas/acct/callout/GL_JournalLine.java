@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.IGLJournalLineBL;
-import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,6 +39,8 @@ import org.compiere.model.X_GL_JournalLine;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.util.Services;

@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -56,10 +57,10 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 {
 	private static final Logger logger = LogManager.getLogger(Doc_ProjectIssue.class);
 
-	public Doc_ProjectIssue(final IDocBuilder docBuilder)
+	public Doc_ProjectIssue(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_ProjectIssue);
-	}   // Doc_ProjectIssue
+		super(ctx, DOCTYPE_ProjectIssue);
+	}
 
 	/** Pseudo Line */
 	private DocLine_ProjectIssue m_line = null;

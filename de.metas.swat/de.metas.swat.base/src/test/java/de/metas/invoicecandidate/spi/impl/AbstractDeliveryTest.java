@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -46,6 +45,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
