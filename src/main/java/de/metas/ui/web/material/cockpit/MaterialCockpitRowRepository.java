@@ -63,14 +63,11 @@ import lombok.Value;
 @Repository
 public class MaterialCockpitRowRepository
 {
-	private static final String SYSCONFIG_EMPTY_PRODUCTS_LIMIT = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProductsLimit";
+	private static final String SYSCONFIG_EMPTY_PRODUCTS_LIMIT = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.Limit";
 
-	private final transient CCache<CacheKey, List<I_M_Product>> productFilterVOToProducts = CCache
-			.<CacheKey, List<I_M_Product>> builder()
-			.tableName(I_M_Product.Table_Name)
-			.cacheMapType(CacheMapType.LRU)
-			.initialCapacity(10)
-			.build();
+	private static final String SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.CacheSize";
+
+	private final transient CCache<CacheKey, List<I_M_Product>> productFilterVOToProducts;
 
 	@Value
 	private static class CacheKey
@@ -90,6 +87,18 @@ public class MaterialCockpitRowRepository
 	{
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+
+		// setup caching
+		final int cacheSize = Services
+				.get(ISysConfigBL.class)
+				.getIntValue(SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE, 10);
+
+		productFilterVOToProducts = CCache
+				.<CacheKey, List<I_M_Product>> builder()
+				.tableName(I_M_Product.Table_Name)
+				.cacheMapType(CacheMapType.LRU)
+				.initialCapacity(cacheSize)
+				.build();
 	}
 
 	public IRowsData<MaterialCockpitRow> createRowsData(@NonNull final List<DocumentFilter> filters)
@@ -172,7 +181,7 @@ public class MaterialCockpitRowRepository
 	{
 		final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx()));
 
-		final int limit = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_EMPTY_PRODUCTS_LIMIT, -1);
+		final int limit = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_EMPTY_PRODUCTS_LIMIT, 2000);
 
 		final CacheKey cacheKey = new CacheKey(
 				orgId,
