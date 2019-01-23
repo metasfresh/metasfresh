@@ -23,6 +23,7 @@ import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
@@ -95,6 +96,9 @@ import lombok.Value;
 @Component
 public class DocumentCollection
 {
+	private static final String SYSCONFIG_CACHE_SIZE = "de.metas.ui.web.window.model.DocumentCollection.CacheSize";
+	private static final int DEFAULT_CACHE_SIZE = 800;
+
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
 
 	@Autowired
@@ -106,12 +110,21 @@ public class DocumentCollection
 	@Autowired
 	private DocumentWebsocketPublisher websocketPublisher;
 
-	private final Cache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder().build();
+	private final Cache<DocumentKey, Document> rootDocuments;
 
 	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>();
 
 	/* package */ DocumentCollection()
 	{
+		// setup the cache
+		final int cacheSize = Services
+				.get(ISysConfigBL.class)
+				.getIntValue(SYSCONFIG_CACHE_SIZE, 300);
+
+		rootDocuments = CacheBuilder
+				.newBuilder()
+				.maximumSize(cacheSize)
+				.build();
 	}
 
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
