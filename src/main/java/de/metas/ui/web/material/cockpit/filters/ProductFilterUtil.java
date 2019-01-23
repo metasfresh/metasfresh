@@ -102,7 +102,7 @@ public class ProductFilterUtil
 				.build();
 	}
 
-	public static ProductFilterVO extractProductFilterVO(final Collection<DocumentFilter> filters)
+	public static ProductFilterVO extractProductFilterVO(@NonNull final Collection<DocumentFilter> filters)
 	{
 		return filters.stream()
 				.filter(filter -> ProductFilterVO.FILTER_ID.equals(filter.getFilterId()))
@@ -111,7 +111,7 @@ public class ProductFilterUtil
 				.orElse(ProductFilterVO.EMPTY);
 	}
 
-	public static ProductFilterVO extractProductFilterVO(final DocumentFilter filter)
+	public static ProductFilterVO extractProductFilterVO(@NonNull final DocumentFilter filter)
 	{
 		Check.assume(ProductFilterVO.FILTER_ID.equals(filter.getFilterId()), "Filter ID is {} but it was {}", ProductFilterVO.FILTER_ID, filter);
 
