@@ -100,6 +100,7 @@ public class OrderService
 		return OrderCreateResponse.ok(order);
 	}
 
+	@Transactional
 	public void confirmOrderSavedOnPeerServer(@NonNull final MSV3OrderSyncResponse response)
 	{
 		if (response.isError())

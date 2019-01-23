@@ -3,6 +3,8 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +137,7 @@ public class StockAvailabilityService
 		return Optional.of(qty);
 	}
 
+	@Transactional
 	public void handleEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
 		final String syncToken = event.getId();
@@ -181,6 +184,7 @@ public class StockAvailabilityService
 		}
 	}
 
+	@Transactional
 	public void handleEvent(@NonNull final MSV3ProductExcludesUpdateEvent event)
 	{
 		final String syncToken = event.getId();
