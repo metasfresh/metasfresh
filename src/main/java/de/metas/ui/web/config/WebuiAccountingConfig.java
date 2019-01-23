@@ -1,14 +1,12 @@
 package de.metas.ui.web.config;
 
-import java.util.Set;
-
 import javax.annotation.PostConstruct;
 
-import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.document.process.WEBUI_Fact_Acct_Repost;
@@ -40,6 +38,12 @@ import de.metas.util.Services;
 public class WebuiAccountingConfig
 {
 	private static final Logger logger = LogManager.getLogger(WebuiAccountingConfig.class);
+	private final AcctDocRegistry acctDocRegistry;
+
+	public WebuiAccountingConfig(final AcctDocRegistry acctDocRegistry)
+	{
+		this.acctDocRegistry = acctDocRegistry;
+	}
 
 	@PostConstruct
 	public void registerRepostProcess()
@@ -54,9 +58,9 @@ public class WebuiAccountingConfig
 
 		//
 		// Link Repost process to all accountable documents
-		final IDocFactory acctDocFactory = Services.get(IDocFactory.class);
-		final Set<Integer> docTableIds = acctDocFactory.getDocTableIds();
-		docTableIds.forEach(docTableId -> adProcessesRepo.registerTableProcess(docTableId, repostProcessId));
+		acctDocRegistry
+				.getDocTableNames()
+				.forEach(docTableName -> adProcessesRepo.registerTableProcess(docTableName, repostProcessId));
 
 		//
 		// Link Repost process to RV_UnPosted view
