@@ -89,7 +89,7 @@ MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
 
  cd /opt/metasfresh-msv3-server/\
  && java\
- -XX:+HeapDumpOnOutOfMemoryError\
+ -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/metasfresh-msv3-server/heapdump \
  ${metasfresh_admin_params}\
  ${MEMORY_PARAMS} \
  -Dsun.misc.URLClassPath.disableJarChecking=true\
