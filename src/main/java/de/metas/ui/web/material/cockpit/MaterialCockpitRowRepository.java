@@ -4,9 +4,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -16,13 +18,18 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
+import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
+import de.metas.ui.web.material.cockpit.filters.ProductFilterVO;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
@@ -31,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -57,10 +65,25 @@ import lombok.NonNull;
 @Repository
 public class MaterialCockpitRowRepository
 {
-	private final transient CCache<Integer, List<I_M_Product>> orgIdToproducts = CCache.newCache(
-			I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_AD_Org_ID,
-			10, // initial size
-			CCache.EXPIREMINUTES_Never);
+	private static final String SYSCONFIG_EMPTY_PRODUCTS_LIMIT = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.Limit";
+	private static final int DEFAULT_EMPTY_PRODUCTS_LIMIT = 2000;
+
+	private static final String SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE = "de.metas.ui.web.material.cockpit.MaterialCockpitRowRepository.EmptyProducts.CacheSize";
+	private static final int DEFAULT_EMPTY_PRODUCTS_CACHESIZE = 10;
+
+	private final transient CCache<CacheKey, ImmutableSet<ProductId>> productFilterVOToProducts;
+
+	@Value
+	private static class CacheKey
+	{
+		@NonNull
+		OrgId orgId;
+
+		@NonNull
+		ProductFilterVO productFilterVO;
+
+		int limit;
+	}
 
 	private final MaterialCockpitFilters materialCockpitFilters;
 
@@ -72,6 +95,18 @@ public class MaterialCockpitRowRepository
 	{
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+
+		// setup caching
+		final int cacheSize = Services
+				.get(ISysConfigBL.class)
+				.getIntValue(SYSCONFIG_EMPTY_PRODUCTS_CACHESIZE, DEFAULT_EMPTY_PRODUCTS_CACHESIZE);
+
+		productFilterVOToProducts = CCache
+				.<CacheKey, ImmutableSet<ProductId>> builder()
+				.tableName(I_M_Product.Table_Name)
+				.cacheMapType(CacheMapType.LRU)
+				.initialCapacity(cacheSize)
+				.build();
 	}
 
 	public IRowsData<MaterialCockpitRow> createRowsData(@NonNull final List<DocumentFilter> filters)
@@ -132,7 +167,7 @@ public class MaterialCockpitRowRepository
 		final CreateRowsRequest request = CreateRowsRequest
 				.builder()
 				.date(TimeUtil.asTimestamp(date))
-				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
+				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
 				.includePerPlantDetailRows(includePerPlantDetailRows)
@@ -150,35 +185,50 @@ public class MaterialCockpitRowRepository
 		return includePerPlantDetailRows;
 	}
 
-	private List<I_M_Product> retrieveRelevantProducts(@NonNull final List<DocumentFilter> filters)
+	private ImmutableSet<ProductId> retrieveRelevantProductIds(@NonNull final List<DocumentFilter> filters)
 	{
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
-		final List<I_M_Product> allProducts = orgIdToproducts
-				.getOrLoad(orgId, () -> retrieveAllProducts(orgId));
+		final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx()));
 
-		return allProducts.stream()
-				.filter(materialCockpitFilters.toProductFilterPredicate(filters))
-				.collect(ImmutableList.toImmutableList());
+		final int limit = Services
+				.get(ISysConfigBL.class)
+				.getIntValue(SYSCONFIG_EMPTY_PRODUCTS_LIMIT, DEFAULT_EMPTY_PRODUCTS_LIMIT);
+
+		final CacheKey cacheKey = new CacheKey(
+				orgId,
+				ProductFilterUtil.extractProductFilterVO(filters),
+				limit);
+
+		final ImmutableSet<ProductId> productIds = productFilterVOToProducts
+				.getOrLoad(cacheKey, () -> retrieveProductsFor(cacheKey));
+
+		return productIds;
 	}
 
-	private List<I_M_Product> retrieveAllProducts(final int adOrgId)
+	private static ImmutableSet<ProductId> retrieveProductsFor(@NonNull final CacheKey cacheKey)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_M_Product> relevantProductFilter = //
-				queryBL.createCompositeQueryFilter(I_M_Product.class)
-						.setJoinOr()
-						.addEqualsFilter(I_M_Product.COLUMN_IsSold, true)
-						.addEqualsFilter(I_M_Product.COLUMN_IsPurchased, true)
-						.addEqualsFilter(I_M_Product.COLUMN_IsStocked, true);
+		final OrgId orgId = cacheKey.getOrgId();
+		final ProductFilterVO productFilterVO = cacheKey.getProductFilterVO();
+		final int limit = cacheKey.getLimit();
 
-		final List<I_M_Product> products = //
-				queryBL.createQueryBuilder(I_M_Product.class)
-						.addOnlyActiveRecordsFilter()
-						.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, adOrgId, 0)
-						.filter(relevantProductFilter)
-						.create()
-						.list();
-		return products;
+		final IQueryFilter<I_M_Product> productQueryFilter = ProductFilterUtil.createProductQueryFilterOrNull(
+				productFilterVO,
+				false/* nullForEmptyFilterVO */);
+
+		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class)
+				.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, orgId.getRepoId(), 0)
+				.addEqualsFilter(I_M_Product.COLUMN_IsStocked, true)
+				.filter(productQueryFilter)
+				.orderBy(I_M_Product.COLUMN_Value);
+
+		if (limit > 0)
+		{
+			queryBuilder.setLimit(limit);
+		}
+
+		return queryBuilder
+				.create()
+				.listIds(ProductId::ofRepoId);
 	}
 
 	private static boolean isEligibleRecordRef(final TableRecordReference recordRef)

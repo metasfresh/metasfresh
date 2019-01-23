@@ -7,6 +7,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -39,7 +40,7 @@ public class MainRowBucketId
 			@NonNull final I_MD_Cockpit dataRecord)
 	{
 		return new MainRowBucketId(
-				dataRecord.getM_Product_ID(),
+				ProductId.ofRepoId(dataRecord.getM_Product_ID()),
 				TimeUtil.getDay(dataRecord.getDateGeneral()));
 	}
 
@@ -48,16 +49,16 @@ public class MainRowBucketId
 			@NonNull final Timestamp date)
 	{
 		return new MainRowBucketId(
-				stockRecord.getM_Product_ID(),
+				ProductId.ofRepoId(stockRecord.getM_Product_ID()),
 				TimeUtil.getDay(date));
 	}
 
-	public static MainRowBucketId createPlainInstance(final int productId, @NonNull final Timestamp date)
+	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final Timestamp date)
 	{
 		return new MainRowBucketId(productId, date);
 	}
 
-	int productId;
+	ProductId productId;
 	Timestamp date;
 
 	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
@@ -74,7 +75,9 @@ public class MainRowBucketId
 
 	private BigDecimal qtyOnHand = BigDecimal.ZERO;
 
-	private MainRowBucketId(final int productId, @NonNull final Timestamp date)
+	private MainRowBucketId(
+			@NonNull final ProductId productId,
+			@NonNull final Timestamp date)
 	{
 		this.productId = productId;
 		this.date = date;

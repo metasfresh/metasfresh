@@ -331,6 +331,5 @@ public final class DocumentFilter
 			}
 			internalParameterNames.add(parameterName);
 		}
-
 	}
 }

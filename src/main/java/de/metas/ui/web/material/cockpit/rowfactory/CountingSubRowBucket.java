@@ -1,6 +1,7 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import static de.metas.quantity.Quantity.addToNullable;
+import static de.metas.util.Check.assumeNotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -86,11 +87,13 @@ public class CountingSubRowBucket
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
 	{
-		final MainRowBucketId productIdAndDate = mainRowBucket.getProductIdAndDate();
+		final MainRowBucketId productIdAndDate = assumeNotNull(
+				mainRowBucket.getProductIdAndDate(),
+				"productIdAndDate may not be null; mainRowBucket={}", mainRowBucket);
 
 		return MaterialCockpitRow.countingSubRowBuilder()
 				.date(productIdAndDate.getDate())
-				.productId(productIdAndDate.getProductId())
+				.productId(productIdAndDate.getProductId().getRepoId())
 				.plantId(plantId)
 				.qtyOnHandEstimate(qtyOnHandEstimate)
 				.qtyOnHandStock(qtyOnHandStock)
