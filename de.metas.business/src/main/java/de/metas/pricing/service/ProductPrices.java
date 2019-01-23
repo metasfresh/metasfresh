@@ -15,12 +15,12 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -53,9 +53,10 @@ public class ProductPrices
 
 	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()
 				.setContextProvider(plv)
-				.setM_PriceList_Version_ID(plv);
+				.setPriceListVersionId(priceListVersionId);
 	}
 
 	/**
