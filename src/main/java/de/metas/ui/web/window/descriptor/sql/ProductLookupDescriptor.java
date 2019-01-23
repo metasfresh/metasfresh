@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -427,9 +428,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return -1;
 		}
 
-		final Date date = getEffectivePricingDate(evalCtx);
+		final LocalDate date = getEffectivePricingDate(evalCtx);
 		final Boolean processed = null;
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
+		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(priceListId, date, processed);
 		if (plv == null)
 		{
 			return -1;
@@ -438,12 +439,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return plv.getM_PriceList_Version_ID();
 	}
 
-	private Date getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
+	private LocalDate getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		final Date date = Util.coalesceSuppliers(
-				() -> param_PricingDate.getValueAsDate(evalCtx),
-				() -> SystemTime.asDayTimestamp());
-		return date;
+		return Util.coalesceSuppliers(
+				() -> param_PricingDate.getValueAsLocalDate(evalCtx),
+				() -> SystemTime.asLocalDate());
 	}
 
 	@Override
