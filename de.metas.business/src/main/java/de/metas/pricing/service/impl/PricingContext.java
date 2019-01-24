@@ -39,6 +39,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
@@ -210,7 +211,7 @@ class PricingContext implements IEditablePricingContext
 	@Override
 	public IEditablePricingContext setPriceDate(final Timestamp priceDate)
 	{
-		return setPriceDate(priceDate);
+		return setPriceDate(TimeUtil.asLocalDate(priceDate));
 	}
 
 	@Override
