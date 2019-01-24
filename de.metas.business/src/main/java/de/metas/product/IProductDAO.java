@@ -46,6 +46,8 @@ public interface IProductDAO extends ISingletonService
 
 	I_M_Product getById(final int productId);
 
+	List<I_M_Product> getByIds(final Set<ProductId> productIds);
+
 	/**
 	 * @return default product category; never returns null
 	 */
