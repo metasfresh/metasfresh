@@ -27,7 +27,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 
 		final boolean strictDefault = false;
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
-				.setM_Product_ID(productId.getRepoId())
+				.setProductId(productId)
 				.onlyAttributePricing()
 				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
 		

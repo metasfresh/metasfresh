@@ -41,6 +41,7 @@ import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
@@ -50,7 +51,6 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -263,7 +263,10 @@ public class OrderFastInput extends CalloutEngine
 		Services.get(IClientUI.class).invokeLater(calloutField.getWindowNo(), () -> clearFields(calloutField, save));
 	}
 
-	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<I_C_OrderLine> orderLineCustomizer)
+	public static I_C_OrderLine addOrderLine(
+			final Properties ctx, 
+			final I_C_Order order, 
+			final Consumer<I_C_OrderLine> orderLineCustomizer)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 

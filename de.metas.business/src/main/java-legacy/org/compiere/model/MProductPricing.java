@@ -145,16 +145,6 @@ public class MProductPricing
 	}
 
 	/**
-	 * Get Price Date
-	 * 
-	 * @return date
-	 */
-	public Timestamp getPriceDate()
-	{
-		return pricingCtx.getPriceDate();
-	}	// getPriceDate
-
-	/**
 	 * Set Price Date
 	 * 
 	 * @param priceDate date

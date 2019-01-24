@@ -24,6 +24,7 @@ package de.metas.pricing;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
@@ -56,6 +57,8 @@ public interface IEditablePricingContext extends IPricingContext
 	IEditablePricingContext setC_UOM_ID(final int uomId);
 
 	IEditablePricingContext setPriceDate(final Timestamp priceDate);
+
+	IEditablePricingContext setPriceDate(final LocalDate priceDate);
 
 	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
 

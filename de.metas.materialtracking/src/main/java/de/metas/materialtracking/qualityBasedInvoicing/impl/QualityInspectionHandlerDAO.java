@@ -27,10 +27,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
 
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
@@ -143,8 +145,8 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
 				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-				inOut.getC_BPartner_Location().getC_Location().getC_Country_ID(),
-				inOut.getMovementDate(),
+				CountryId.ofRepoId(inOut.getC_BPartner_Location().getC_Location().getC_Country_ID()),
+				TimeUtil.asLocalDate(inOut.getMovementDate()),
 				SOTrx.ofBoolean(inOut.isSOTrx()),
 				processedPLVFiltering);
 		ic.setM_PriceList_Version(plv);

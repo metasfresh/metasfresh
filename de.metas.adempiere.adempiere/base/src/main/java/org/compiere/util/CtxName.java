@@ -1,6 +1,7 @@
 package org.compiere.util;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -313,6 +314,11 @@ public final class CtxName
 			return sourceResult;
 		}
 		return defaultValueAsBigDecimal;
+	}
+
+	public LocalDate getValueAsLocalDate(final Evaluatee source)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(source));
 	}
 
 	public java.util.Date getValueAsDate(final Evaluatee source)

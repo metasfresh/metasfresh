@@ -11,6 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -30,6 +33,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -105,18 +109,27 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Iterator<I_M_ProductPrice> retrieveAllProductPricesOrderedBySeqNOandProductName(final I_M_PriceList_Version plv)
+	public Stream<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
 	{
-		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class, plv)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plv.getM_PriceList_Version_ID());
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
+				.create()
+				.iterateAndStream();
+	}
 
-		queryBuilder.orderBy()
-				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_SeqNo)
-				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID)
-				.addColumn(org.compiere.model.I_M_ProductPrice.COLUMNNAME_MatchSeqNo);
-
-		return queryBuilder.create()
+	@Override
+	public Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
+				.orderBy(org.compiere.model.I_M_ProductPrice.COLUMNNAME_SeqNo)
+				.orderBy(org.compiere.model.I_M_ProductPrice.COLUMNNAME_M_Product_ID)
+				.orderBy(org.compiere.model.I_M_ProductPrice.COLUMNNAME_MatchSeqNo)
+				.create()
 				.iterate(I_M_ProductPrice.class);
 	}
 
@@ -136,13 +149,13 @@ public class PriceListDAO implements IPriceListDAO
 			return pl;
 		}
 
-		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
+		final CountryId countryId = CountryId.ofRepoId(bpartnerLocation.getC_Location().getC_Country_ID());
 		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx);
 		return !priceLists.isEmpty() ? priceLists.get(0) : null;
 	}
 
 	@Override
-	public Iterator<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final int countryId, final SOTrx soTrx)
+	public Iterator<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
 	{
 		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx)
 				.iterator();
@@ -152,7 +165,7 @@ public class PriceListDAO implements IPriceListDAO
 	public ImmutableList<I_M_PriceList> retrievePriceLists(
 			final @CacheCtx Properties ctx,
 			final PricingSystemId pricingSystemId,
-			final int countryId,
+			final CountryId countryId,
 			final SOTrx soTrx)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -180,7 +193,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@NonNull final org.compiere.model.I_M_PriceList priceList,
-			@NonNull final Date date,
+			@NonNull final LocalDate date,
 			final Boolean processed)
 	{
 		final Properties ctx = getCtx(priceList);
@@ -190,12 +203,30 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public I_M_PriceList_Version retrievePriceListVersionOrNull(
+			final PriceListId priceListId,
+			final LocalDate date,
+			final Boolean processed)
+	{
+		return retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
+	}
+
+	@Override
+	public PriceListVersionId retrievePriceListVersionIdOrNull(
+			@NonNull final PriceListId priceListId,
+			@NonNull final LocalDate date,
+			@Nullable final Boolean processed)
+	{
+		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
+		return plv != null ? PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID()) : null;
+	}
+
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
-			@CacheCtx final Properties ctx,
-			final PriceListId priceListId,
-			final Date date,
-			final Boolean processed)
+			@CacheCtx @NonNull final Properties ctx,
+			@NonNull final PriceListId priceListId,
+			@NonNull final LocalDate date,
+			@Nullable final Boolean processed)
 	{
 		Check.assumeNotNull(date, "Param 'date' is not null; other params: priceListId={}, processed={}, ctx={}", priceListId, processed, ctx);
 
@@ -207,7 +238,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addCompareFilter(
 						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
 						CompareQueryFilter.Operator.LESS_OR_EQUAL,
-						new Timestamp(date.getTime()),
+						TimeUtil.asTimestamp(date),
 						DateTruncQueryFilterModifier.DAY)
 
 				// active
@@ -304,7 +335,7 @@ public class PriceListDAO implements IPriceListDAO
 			lastMatchSeqNo = 0;
 		}
 
-		final int nextMatchSeqNo = (lastMatchSeqNo / 10) * 10 + 10;
+		final int nextMatchSeqNo = lastMatchSeqNo / 10 * 10 + 10;
 		return nextMatchSeqNo;
 	}
 
@@ -364,7 +395,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addNotNull(I_M_PriceList.COLUMN_C_Country_ID)
 				.create()
 				.listDistinct(I_M_PriceList.COLUMNNAME_C_Country_ID, Integer.class);
-		
+
 		return countryIds.stream()
 				.map(CountryId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());

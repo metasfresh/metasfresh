@@ -34,19 +34,15 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut
 {
 	String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
 
-	public static String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
-
 	@Override
 	public int getM_PricingSystem_ID();
-
 	@Override
 	public void setM_PricingSystem_ID(int pricingSystemId);
 
 
-	public static String RECEIVED_VIA = "ReceivedVia";
-
+	@Override
 	public String getReceivedVia();
-
+	@Override
 	public void setReceivedVia(String receivedVia);
 
 

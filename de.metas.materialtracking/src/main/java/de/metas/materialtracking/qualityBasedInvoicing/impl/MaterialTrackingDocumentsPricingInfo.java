@@ -1,6 +1,6 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
@@ -20,6 +21,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -247,7 +249,7 @@ import de.metas.util.Services;
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
 		{
 			final I_M_PricingSystem pricingSystem = getM_PricingSystem();
-			final int countryId = inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID();
+			final CountryId countryId = CountryId.ofRepoId(inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID());
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
 					PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 					countryId,
@@ -259,7 +261,7 @@ import de.metas.util.Services;
 				return null;
 			}
 
-			final Timestamp movementDate = inOutLine.getM_InOut().getMovementDate();
+			final LocalDate movementDate = TimeUtil.asLocalDate(inOutLine.getM_InOut().getMovementDate());
 			final I_M_PriceList priceList = priceLists.next();
 			final Boolean processedPLVFiltering = true; // task 09533: in material-tracking we work only with PLVs that are cleared
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);

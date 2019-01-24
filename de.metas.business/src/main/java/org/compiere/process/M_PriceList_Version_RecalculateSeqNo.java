@@ -13,35 +13,34 @@ package org.compiere.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.TrxRunnable;
 
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 
 // TODO: consider removing it
 @Deprecated
 public class M_PriceList_Version_RecalculateSeqNo extends JavaProcess
 {
+	// Services
+	final ITrxManager trxManager = Services.get(ITrxManager.class);
+	final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 	@Override
 	protected void prepare()
 	{
@@ -52,37 +51,21 @@ public class M_PriceList_Version_RecalculateSeqNo extends JavaProcess
 	 * Recalculates SeqNo in M_ProductPrice in 10-steps for the current M_PriceList_Version, keeping the order they already had
 	 */
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		//
-		// Services
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(getRecord_ID());
 
-		final Properties ctx = getCtx();
+		int seqNumber = 10;
 
-		trxManager.run(new TrxRunnable()
+		final Iterator<I_M_ProductPrice> productPrices = priceListDAO.retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(priceListVersionId);
+		while (productPrices.hasNext())
 		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				int seqNumber = 10;
+			final I_M_ProductPrice pp = productPrices.next();
+			pp.setSeqNo(seqNumber);
+			InterfaceWrapperHelper.save(pp);
 
-				final ProcessInfo processInfo = getProcessInfo();
-				final int recordId = processInfo.getRecord_ID();
-				final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, recordId, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
-
-				final Iterator<I_M_ProductPrice> productPrices = priceListDAO.retrieveAllProductPricesOrderedBySeqNOandProductName(plv);
-				while (productPrices.hasNext())
-				{
-					final I_M_ProductPrice pp = productPrices.next();
-					pp.setSeqNo(seqNumber);
-					InterfaceWrapperHelper.save(pp);
-
-					seqNumber = seqNumber + 10;
-				}
-			}
-		});
+			seqNumber = seqNumber + 10;
+		}
 
 		return "@SeqNoRecalculated@";
 	}
