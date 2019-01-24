@@ -88,6 +88,7 @@ public class ProductsProposalRowsLoader
 				.product(productLookup.findById(record.getM_Product_ID()))
 				.price(Amount.of(record.getPriceStd(), currencyCode))
 				.qty(null)
+				.lastShipmentDate(null) // TODO
 				.build();
 	}
 

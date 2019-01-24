@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -55,6 +56,9 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 30, editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qty;
 
+	@ViewColumn(captionKey = "LastShipmentDate", widgetType = DocumentFieldWidgetType.Amount, seqNo = 40)
+	private final LocalDate lastShipmentDate;
+
 	private final DocumentId id;
 	private ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
@@ -63,12 +67,14 @@ public class ProductsProposalRow implements IViewRow
 			@NonNull final DocumentId id,
 			@NonNull final LookupValue product,
 			@NonNull final Amount price,
-			@Nullable final BigDecimal qty)
+			@Nullable final BigDecimal qty,
+			@Nullable final LocalDate lastShipmentDate)
 	{
 		this.id = id;
 		this.product = product;
 		this.price = price;
 		this.qty = qty;
+		this.lastShipmentDate = lastShipmentDate;
 	}
 
 	@Override
