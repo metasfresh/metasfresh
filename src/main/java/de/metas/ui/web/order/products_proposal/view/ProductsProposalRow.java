@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.currency.Amount;
+import de.metas.product.ProductId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -18,6 +19,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -54,6 +56,7 @@ public class ProductsProposalRow implements IViewRow
 
 	public static final String FIELD_Qty = "qty";
 	@ViewColumn(fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 30, editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
 	private final BigDecimal qty;
 
 	@ViewColumn(captionKey = "LastShipmentDate", widgetType = DocumentFieldWidgetType.Amount, seqNo = 40)
@@ -103,5 +106,16 @@ public class ProductsProposalRow implements IViewRow
 	public DocumentPath getDocumentPath()
 	{
 		return null;
+	}
+
+	public ProductId getProductId()
+	{
+		return product.getIdAs(ProductId::ofRepoId);
+	}
+
+	public boolean isQtySet()
+	{
+		final BigDecimal qty = getQty();
+		return qty != null && qty.signum() != 0;
 	}
 }

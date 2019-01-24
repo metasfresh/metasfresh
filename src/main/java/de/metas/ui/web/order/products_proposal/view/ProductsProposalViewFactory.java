@@ -9,6 +9,7 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalNotification;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
@@ -22,6 +23,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -67,7 +69,7 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 
 	private final Cache<ViewId, ProductsProposalView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
-			// .removalListener(notification -> onViewRemoved(notification))
+			.removalListener(this::onViewRemoved)
 			.build();
 
 	@Override
@@ -124,6 +126,7 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 		return ProductsProposalRowsLoader.builder()
 				.priceListId(priceListId)
 				.date(datePromised)
+				.orderId(orderId)
 				.build()
 				.load();
 	}
@@ -163,6 +166,27 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 		}
 
 		view.invalidateAll();
+	}
+
+	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	{
+		final ProductsProposalView view = ProductsProposalView.cast(notification.getValue());
+		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
+		view.close(closeReason);
+
+		if (closeReason == ViewCloseReason.USER_REQUEST)
+		{
+			onViewClosedByUser(view);
+		}
+	}
+
+	private void onViewClosedByUser(final ProductsProposalView view)
+	{
+		OrderLinesFromProductProposalsProducer.builder()
+				.orderId(view.getOrderId())
+				.rows(view.getRowsWithQtySet())
+				.build()
+				.produce();
 	}
 
 	@lombok.Value(staticConstructor = "of")

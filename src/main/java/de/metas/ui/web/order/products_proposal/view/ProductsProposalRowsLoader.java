@@ -2,6 +2,8 @@ package de.metas.ui.web.order.products_proposal.view;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -11,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -49,6 +52,7 @@ public class ProductsProposalRowsLoader
 
 	private final PriceListId priceListId;
 	private final LocalDate date;
+	private final OrderId orderId;
 
 	private final String currencyCode;
 	private final LookupDataSource productLookup;
@@ -56,7 +60,8 @@ public class ProductsProposalRowsLoader
 	@Builder
 	public ProductsProposalRowsLoader(
 			@NonNull final PriceListId priceListId,
-			@NonNull final LocalDate date)
+			@NonNull final LocalDate date,
+			@Nullable final OrderId orderId)
 	{
 		this.priceListId = priceListId;
 		this.date = date;
@@ -67,6 +72,8 @@ public class ProductsProposalRowsLoader
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
+
+		this.orderId = orderId;
 	}
 
 	public ProductsProposalRowsData load()
@@ -78,6 +85,7 @@ public class ProductsProposalRowsLoader
 
 		return ProductsProposalRowsData.builder()
 				.rows(rows)
+				.orderId(orderId)
 				.build();
 	}
 

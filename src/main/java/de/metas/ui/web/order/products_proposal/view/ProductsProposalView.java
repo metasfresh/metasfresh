@@ -1,10 +1,14 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderId;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -36,21 +40,25 @@ import lombok.NonNull;
 
 public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow> implements IEditableView
 {
-	public static ProductsProposalView cast(final IView view)
+	public static ProductsProposalView cast(final Object viewObj)
 	{
-		return (ProductsProposalView)view;
+		return (ProductsProposalView)viewObj;
 	}
+
+	private final ProductsProposalRowsData rowsData;
 
 	@Builder
 	private ProductsProposalView(
 			@NonNull final WindowId windowId,
-			@NonNull final IRowsData<ProductsProposalRow> rowsData)
+			@NonNull final ProductsProposalRowsData rowsData)
 	{
 		super(
 				ViewId.random(windowId),
 				ITranslatableString.empty(),
 				rowsData,
 				NullDocumentFilterDescriptorsProvider.instance);
+
+		this.rowsData = rowsData;
 	}
 
 	@Override
@@ -69,5 +77,18 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	public OrderId getOrderId()
+	{
+		return rowsData.getOrderId();
+	}
+
+	public List<ProductsProposalRow> getRowsWithQtySet()
+	{
+		return getRows()
+				.stream()
+				.filter(ProductsProposalRow::isQtySet)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

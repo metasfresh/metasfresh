@@ -7,11 +7,14 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.order.OrderId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
@@ -19,6 +22,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -48,8 +52,13 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
 	private final ConcurrentMap<DocumentId, ProductsProposalRow> rowsById;
 
+	@Getter
+	private final OrderId orderId;
+
 	@Builder
-	private ProductsProposalRowsData(@NonNull final List<ProductsProposalRow> rows)
+	private ProductsProposalRowsData(
+			@NonNull final List<ProductsProposalRow> rows,
+			@Nullable final OrderId orderId)
 	{
 		rowIds = rows.stream()
 				.map(ProductsProposalRow::getId)
@@ -57,6 +66,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 		rowsById = rows.stream()
 				.collect(Collectors.toConcurrentMap(ProductsProposalRow::getId, Function.identity()));
+
+		this.orderId = orderId;
 	}
 
 	@Override
