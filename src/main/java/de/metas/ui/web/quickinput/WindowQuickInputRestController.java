@@ -68,7 +68,7 @@ import lombok.NonNull;
 
 @Api
 @RestController
-@RequestMapping(value = WindowQuickInputRestController.ENDPOINT)
+@RequestMapping(WindowQuickInputRestController.ENDPOINT)
 public class WindowQuickInputRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT + "/{windowId}/{documentId}/{tabId}/quickInput";
@@ -189,7 +189,7 @@ public class WindowQuickInputRestController
 	}
 
 	private final <R> R forQuickInputReadonly(
-			@NonNull final QuickInputPath quickInputPath, 
+			@NonNull final QuickInputPath quickInputPath,
 			@NonNull final Function<QuickInput, R> quickInputProcessor)
 	{
 		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
@@ -235,7 +235,7 @@ public class WindowQuickInputRestController
 		return forQuickInputReadonly(quickInputPath, quickInput -> JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions()));
 	}
 
-	@RequestMapping(value = "/{quickInputId}/field/{fieldName}/typeahead", method = RequestMethod.GET)
+	@GetMapping("/{quickInputId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getFieldTypeaheadValues(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
@@ -251,7 +251,7 @@ public class WindowQuickInputRestController
 		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldTypeaheadValues(fieldName, query));
 	}
 
-	@RequestMapping(value = "/{quickInputId}/field/{fieldName}/dropdown", method = RequestMethod.GET)
+	@GetMapping("/{quickInputId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getFieldDropdownValues(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
