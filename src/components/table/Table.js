@@ -58,10 +58,6 @@ class Table extends Component {
     }
   }
 
-  componentWillUnmount() {
-    console.log('UNMOUNTED')
-  }
-
   componentDidUpdate(prevProps, prevState) {
     const {
       dispatch,
@@ -77,8 +73,6 @@ class Table extends Component {
       tabid,
       isModal,
       hasIncluded,
-      // rowEdited,
-      // onRowEdited,
     } = this.props;
     const { selected, rows } = this.state;
     const selectedEqual = _.isEqual(prevState.selected, selected);
@@ -93,7 +87,6 @@ class Table extends Component {
 
     if (rows && !_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
-      // if (rows) {
         let firstRow = rows[0];
 
         if (firstRow) {
@@ -105,7 +98,6 @@ class Table extends Component {
             this.selectOneProduct(firstRow.id);
           }
         }
-      // }
       }
     }
 
@@ -133,62 +125,28 @@ class Table extends Component {
       );
     }
 
-    // if (!is(prevProps.rowData, rowData)) {
-    //   // special case for the picking terminal
-    //   const firstLoad = prevProps.rowData.get(1) ? false : true;
-    //   // const firstLoad = false;
-
-    //   console.log('Table update firstLoad: ', firstLoad);
-
-    //   // this prevents collapsing rows when table cell was edited, for instance
-    //   // in purchase orders
-    //   if (!rowEdited) {
-    //     this.getIndentData(firstLoad);
-    //   } else {
-    //     onRowEdited && onRowEdited(false);
-    //   }
-    // }
-
-    // console.log('Table update props: ', rowData, prevProps.rowData, '\n');
-
-    if (
-      prevProps.viewId !== viewId &&
-      rowData.get(`${tabid}`)
-      // defaultSelected &&
-      // defaultSelected.length === 0
-    ) {
+    if (prevProps.viewId !== viewId && rowData.get(`${tabid}`)) {
       if (defaultSelected && defaultSelected.length === 0) {
         this.setState({ selected: defaultSelected });
       }
 
-      const firstLoad = prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size ? false : true;
-      console.log('Table update case1: ', rowData, prevProps.rowData, this.state);
+      const firstLoad =
+        prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size
+          ? false
+          : true;
 
       this.getIndentData(firstLoad);
-
-      // this.setState(
-      //   {
-      //     selected: defaultSelected,
-      //   },
-      //   () => {
-      //     // const firstLoad = prevProps.rowData.get(1) ? false : true;
-
-      //     this.getIndentData(true);
-      //     // this.getIndentData(firstLoad);
-      //   }
-      // );
     } else if (rowData.get(`${tabid}`) && !is(prevProps.rowData, rowData)) {
       let firstLoad = rowData.get(`${tabid}`).size ? false : true;
 
-      if (prevProps.rowData.get(`${tabid}`) && !prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size) {
-        console.log('BAZINGA')
+      if (
+        prevProps.rowData.get(`${tabid}`) &&
+        !prevProps.rowData.get(`${tabid}`).size &&
+        rowData.get(`${tabid}`).size
+      ) {
         firstLoad = true;
       }
-      // if (prevProps.viewId !== viewId) {
-      //   firstLoad = true;
-      // }
-    // else if (!is(prevProps.rowData, rowData)) {
-      console.log('Table update case2: ', this.state);
+
       this.getIndentData(firstLoad);
     }
   }
@@ -244,12 +202,6 @@ class Table extends Component {
     const { selected } = this.state;
     let rowsData = [];
 
-    // if (!rowData.size()) {
-    //   return;
-    // }
-
-    console.log('TABID: ', tabid, rowData.get(`${tabid}`), this._isMounted)
-
     if (indentSupported && rowData.get(`${tabid}`).size) {
       rowsData = getRowsData(rowData.get(`${tabid}`));
       let stateChange = {
@@ -257,10 +209,7 @@ class Table extends Component {
         pendingInit: !rowsData,
       };
 
-      console.log('Table getIndentData selectFirst: ', selectFirst, rowsData)
-
       if (selectFirst) {
-        
         stateChange = {
           ...stateChange,
           collapsedParentsRows: [],
@@ -268,77 +217,71 @@ class Table extends Component {
         };
       }
 
-      // if (this._isMounted) {
-        this.setState(stateChange, () => {
-          const { rows } = this.state;
-          const firstRow = rows[0];
-          let updatedParentsRows = [...this.state.collapsedParentsRows];
-          let updatedRows = [...this.state.collapsedRows];
+      this.setState(stateChange, () => {
+        const { rows } = this.state;
+        const firstRow = rows[0];
+        let updatedParentsRows = [...this.state.collapsedParentsRows];
+        let updatedRows = [...this.state.collapsedRows];
 
-          if (firstRow && selectFirst) {
-            let selectedIndex = 0;
-            if (
-              selected &&
-              selected.length === 1 &&
-              selected[0] &&
-              firstRow.id !== selected[0]
-            ) {
-              selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
-            }
-
-            if (!selectedIndex) {
-              this.selectOneProduct(rows[0].id);
-            }
-
-            document.getElementsByClassName('js-table')[0].focus();
+        if (firstRow && selectFirst) {
+          let selectedIndex = 0;
+          if (
+            selected &&
+            selected.length === 1 &&
+            selected[0] &&
+            firstRow.id !== selected[0]
+          ) {
+            selectedIndex = _.findIndex(rows, row => row.id === selected[0]);
           }
 
-          console.log('COLLAPSIBLE: ', collapsible, [...updatedParentsRows], [...updatedRows]);
-
-          let mapCollapsed = [];
-
-          if (collapsible && rows && rows.length && selectFirst) {
-            rows.map(row => {
-              if (row.indent.length >= expandedDepth && row.includedDocuments) {
-                mapCollapsed = mapCollapsed.concat(collapsedMap(row));
-                updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
-              }
-              if (row.indent.length > expandedDepth) {
-                updatedRows = updatedRows.concat(row[keyProperty]);
-              }
-            });
-
-            const updatedState = {};
-
-            if (mapCollapsed.length) {
-              updatedState.collapsedArrayMap = mapCollapsed;
-            }
-            if (updatedRows.length) {
-              updatedState.collapsedRows = updatedRows;
-            }
-            if (updatedParentsRows.length) {
-              updatedState.collapsedParentsRows = updatedParentsRows;
-            }
-
-            console.log('UPDATED STATE: ', updatedState)
-
-            if (Object.keys(updatedState).length) {
-              this.setState({ ...updatedState });
-            }
+          if (!selectedIndex) {
+            this.selectOneProduct(rows[0].id);
           }
-        });
-      } else {
-        rowsData = rowData.get(`${tabid}`) && rowData.get(`${tabid}`).size
+
+          document.getElementsByClassName('js-table')[0].focus();
+        }
+
+        let mapCollapsed = [];
+
+        if (collapsible && rows && rows.length && selectFirst) {
+          rows.map(row => {
+            if (row.indent.length >= expandedDepth && row.includedDocuments) {
+              mapCollapsed = mapCollapsed.concat(collapsedMap(row));
+              updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
+            }
+            if (row.indent.length > expandedDepth) {
+              updatedRows = updatedRows.concat(row[keyProperty]);
+            }
+          });
+
+          const updatedState = {};
+
+          if (mapCollapsed.length) {
+            updatedState.collapsedArrayMap = mapCollapsed;
+          }
+          if (updatedRows.length) {
+            updatedState.collapsedRows = updatedRows;
+          }
+          if (updatedParentsRows.length) {
+            updatedState.collapsedParentsRows = updatedParentsRows;
+          }
+
+          if (Object.keys(updatedState).length) {
+            this.setState({ ...updatedState });
+          }
+        }
+      });
+    } else {
+      rowsData =
+        rowData.get(`${tabid}`) && rowData.get(`${tabid}`).size
           ? rowData.get(`${tabid}`).toArray()
           : [];
-        this.setState({
-          rows: rowsData,
-          pendingInit: !rowData.get(`${tabid}`),
-        });
-      }
-    // }
 
-    // console.log('THISSTATE: ', {...this.state});
+      this.setState({
+        rows: rowsData,
+        pendingInit: !rowData.get(`${tabid}`),
+      });
+    }
 
     if (rowsData.length) {
       setTimeout(() => {
@@ -897,8 +840,6 @@ class Table extends Component {
       collapsedRows,
       collapsedArrayMap,
     } = this.state;
-
-    console.log('handlecollapse')
 
     this.setState({
       collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap),
