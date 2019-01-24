@@ -21,7 +21,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
@@ -41,6 +40,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
@@ -351,8 +351,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final SqlParamsCollector sqlWhereClauseParams,
 			@NonNull final LookupDataSourceContext evalCtx)
 	{
-		final int priceListVersionId = getPriceListVersionId(evalCtx);
-		if (priceListVersionId <= 0)
+		final PriceListVersionId priceListVersionId = getPriceListVersionId(evalCtx);
+		if (priceListVersionId == null)
 		{
 			return;
 		}
@@ -420,23 +420,16 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return IntegerLookupValue.of(productId, displayName);
 	}
 
-	private final int getPriceListVersionId(final LookupDataSourceContext evalCtx)
+	private final PriceListVersionId getPriceListVersionId(final LookupDataSourceContext evalCtx)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(param_M_PriceList_ID.getValueAsInteger(evalCtx));
 		if (priceListId == null)
 		{
-			return -1;
+			return null;
 		}
 
 		final LocalDate date = getEffectivePricingDate(evalCtx);
-		final Boolean processed = null;
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(priceListId, date, processed);
-		if (plv == null)
-		{
-			return -1;
-		}
-
-		return plv.getM_PriceList_Version_ID();
+		return Services.get(IPriceListDAO.class).retrievePriceListVersionIdOrNull(priceListId, date);
 	}
 
 	private LocalDate getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
