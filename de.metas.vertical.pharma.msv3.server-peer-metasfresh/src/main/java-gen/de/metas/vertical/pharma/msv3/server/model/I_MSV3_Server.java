@@ -101,20 +101,20 @@ public interface I_MSV3_Server
 	/**
 	 * Set Konst. Zusagbar (ATP) Wert.
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFixedQtyAvailableToPromise (java.math.BigDecimal FixedQtyAvailableToPromise);
+	public void setFixedQtyAvailableToPromise (int FixedQtyAvailableToPromise);
 
 	/**
 	 * Get Konst. Zusagbar (ATP) Wert.
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFixedQtyAvailableToPromise();
+	public int getFixedQtyAvailableToPromise();
 
     /** Column definition for FixedQtyAvailableToPromise */
     public static final org.adempiere.model.ModelColumn<I_MSV3_Server, Object> COLUMN_FixedQtyAvailableToPromise = new org.adempiere.model.ModelColumn<I_MSV3_Server, Object>(I_MSV3_Server.class, "FixedQtyAvailableToPromise", null);
@@ -147,33 +147,6 @@ public interface I_MSV3_Server
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Warehouse Picking Group.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Warehouse_PickingGroup_ID (int M_Warehouse_PickingGroup_ID);
-
-	/**
-	 * Get Warehouse Picking Group.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Warehouse_PickingGroup_ID();
-
-	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup();
-
-	public void setM_Warehouse_PickingGroup(org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup);
-
-    /** Column definition for M_Warehouse_PickingGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Server, org.compiere.model.I_M_Warehouse_PickingGroup> COLUMN_M_Warehouse_PickingGroup_ID = new org.adempiere.model.ModelColumn<I_MSV3_Server, org.compiere.model.I_M_Warehouse_PickingGroup>(I_MSV3_Server.class, "M_Warehouse_PickingGroup_ID", org.compiere.model.I_M_Warehouse_PickingGroup.class);
-    /** Column name M_Warehouse_PickingGroup_ID */
-    public static final String COLUMNNAME_M_Warehouse_PickingGroup_ID = "M_Warehouse_PickingGroup_ID";
-
-	/**
 	 * Set MSV3 Server.
 	 *
 	 * <br>Type: ID
@@ -195,6 +168,33 @@ public interface I_MSV3_Server
     public static final org.adempiere.model.ModelColumn<I_MSV3_Server, Object> COLUMN_MSV3_Server_ID = new org.adempiere.model.ModelColumn<I_MSV3_Server, Object>(I_MSV3_Server.class, "MSV3_Server_ID", null);
     /** Column name MSV3_Server_ID */
     public static final String COLUMNNAME_MSV3_Server_ID = "MSV3_Server_ID";
+
+	/**
+	 * Set Kommissionier-Lagergruppe .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_PickingGroup_ID (int M_Warehouse_PickingGroup_ID);
+
+	/**
+	 * Get Kommissionier-Lagergruppe .
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_PickingGroup_ID();
+
+	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup();
+
+	public void setM_Warehouse_PickingGroup(org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup);
+
+    /** Column definition for M_Warehouse_PickingGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Server, org.compiere.model.I_M_Warehouse_PickingGroup> COLUMN_M_Warehouse_PickingGroup_ID = new org.adempiere.model.ModelColumn<I_MSV3_Server, org.compiere.model.I_M_Warehouse_PickingGroup>(I_MSV3_Server.class, "M_Warehouse_PickingGroup_ID", org.compiere.model.I_M_Warehouse_PickingGroup.class);
+    /** Column name M_Warehouse_PickingGroup_ID */
+    public static final String COLUMNNAME_M_Warehouse_PickingGroup_ID = "M_Warehouse_PickingGroup_ID";
 
 	/**
 	 * Get Aktualisiert.

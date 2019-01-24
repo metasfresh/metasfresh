@@ -100,6 +100,7 @@ public class OrderService
 		return OrderCreateResponse.ok(order);
 	}
 
+	@Transactional
 	public void confirmOrderSavedOnPeerServer(@NonNull final MSV3OrderSyncResponse response)
 	{
 		if (response.isError())
@@ -120,7 +121,7 @@ public class OrderService
 				final Integer olCandId = olCandIdsByPackageItemId.get(jpaOrderPackageItem.getUuid());
 				if (olCandId != null && olCandId > 0)
 				{
-					jpaOrderPackageItem.setOlCandId(olCandId);
+					jpaOrderPackageItem.setMfOlCandId(olCandId);
 				}
 			});
 
@@ -133,14 +134,14 @@ public class OrderService
 		final String documentNo = order.getOrderId().getValueAsString();
 		final int bpartnerId = order.getBpartnerId().getBpartnerId();
 
-		if (jpaOrdersRepo.existsByDocumentNoAndBpartnerId(documentNo, bpartnerId))
+		if (jpaOrdersRepo.existsByDocumentNoAndMfBpartnerId(documentNo, bpartnerId))
 		{
 			throw new RuntimeException("An order with same documentNo (" + documentNo + ") was already recorded");
 		}
 
 		final JpaOrder jpaOrder = new JpaOrder();
-		jpaOrder.setBpartnerId(bpartnerId);
-		jpaOrder.setBpartnerLocationId(order.getBpartnerId().getBpartnerLocationId());
+		jpaOrder.setMfBpartnerId(bpartnerId);
+		jpaOrder.setMfBpartnerLocationId(order.getBpartnerId().getBpartnerLocationId());
 		jpaOrder.setDocumentNo(documentNo);
 		jpaOrder.setSupportId(order.getSupportId().getValueAsInt());
 		jpaOrder.setOrderStatus(OrderStatus.UNKNOWN_ID);
@@ -225,7 +226,7 @@ public class OrderService
 	private OrderResponse createOrderResponse(final JpaOrder jpaOrder)
 	{
 		return OrderResponse.builder()
-				.bpartnerId(BPartnerId.of(jpaOrder.getBpartnerId(), jpaOrder.getBpartnerLocationId()))
+				.bpartnerId(BPartnerId.of(jpaOrder.getMfBpartnerId(), jpaOrder.getMfBpartnerLocationId()))
 				.orderId(Id.of(jpaOrder.getDocumentNo()))
 				.supportId(SupportIDType.of(jpaOrder.getSupportId()))
 				.nightOperation(jpaOrder.getNightOperation())
@@ -267,7 +268,7 @@ public class OrderService
 
 	private JpaOrder getJpaOrder(@NonNull final Id orderId, @NonNull final BPartnerId bpartnerId)
 	{
-		final JpaOrder jpaOrder = jpaOrdersRepo.findByDocumentNoAndBpartnerId(orderId.getValueAsString(), bpartnerId.getBpartnerId());
+		final JpaOrder jpaOrder = jpaOrdersRepo.findByDocumentNoAndMfBpartnerId(orderId.getValueAsString(), bpartnerId.getBpartnerId());
 		if (jpaOrder == null)
 		{
 			throw new RuntimeException("No order found for id='" + orderId + "' and bpartnerId='" + bpartnerId + "'");

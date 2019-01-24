@@ -53,6 +53,7 @@ public class JsonSerializationTests
 	public void test_MSV3StockAvailabilityUpdatedEvent() throws Exception
 	{
 		jsonTestHelper.testSerializeDeserialize(MSV3StockAvailabilityUpdatedEvent.builder()
+				.eventVersion(MSV3EventVersion.of(10))
 				.item(MSV3StockAvailability.builder()
 						.pzn(1234567891)
 						.qty(111)
@@ -78,16 +79,17 @@ public class JsonSerializationTests
 	@Test
 	public void test_MSV3UserChangedBatchEvent() throws Exception
 	{
-		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedBatchEvent.builder()
-				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
+		final MSV3UserChangedBatchEvent event = MSV3UserChangedBatchEvent.builder()
+				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent(MSV3MetasfreshUserId.of(10))
 						.username("u1")
 						.password("p1")
 						.bpartnerId(1234567)
 						.bpartnerLocationId(7654321)
 						.build())
-				.event(MSV3UserChangedEvent.deletedEvent("u2"))
+				.event(MSV3UserChangedEvent.deletedEvent(MSV3MetasfreshUserId.of(20)))
 				.deleteAllOtherUsers(true)
-				.build());
+				.build();
+		jsonTestHelper.testSerializeDeserialize(event);
 	}
 
 	@Test

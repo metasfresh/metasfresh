@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.api;
 
+import static de.metas.util.Check.assumeNotEmpty;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -47,7 +49,10 @@ public class OLCandCreateRequest
 
 	String externalHeaderId;
 
+	/** Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record. */
 	String dataSourceInternalName;
+
+	/** Optional; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record. */
 	String dataDestInternalName;
 
 	OrgId orgId;
@@ -101,14 +106,9 @@ public class OLCandCreateRequest
 			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
 			final CurrencyId currencyId,
-			final Percent discount,
-			//
-			final String adInputDataSourceInternalName)
+			final Percent discount)
 	{
 		Check.assume(qty.signum() > 0, "qty > 0");
-		// Check.assume(price == null || price.signum() >= 0, "price >= 0");
-		// Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
-		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
 		this.externalLineId = externalLineId;
 		this.externalHeaderId = externalHeaderId;
@@ -116,7 +116,7 @@ public class OLCandCreateRequest
 		this.orgId = orgId;
 
 		this.dataDestInternalName = dataDestInternalName;
-		this.dataSourceInternalName = dataSourceInternalName;
+		this.dataSourceInternalName = assumeNotEmpty(dataSourceInternalName, "dataSourceInternalName is not empty");
 
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;

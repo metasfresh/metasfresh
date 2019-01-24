@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.security.jpa;
 
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
@@ -24,12 +22,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,28 +36,37 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "msv3_user", //
-		uniqueConstraints = @UniqueConstraint(name = "user_uq", columnNames = { "username" }), //
-		indexes = @Index(name = "user_sync_token", columnList = "sync_token") //
-)
+		uniqueConstraints = { //
+				@UniqueConstraint(name = "mf_msv3user_id_uq", columnNames = { "mf_msv3user_id" }), //
+				@UniqueConstraint(name = "mf_username_uq", columnNames = { "mf_username" }) }, //
+		indexes = @Index(name = "mf_sync_token", columnList = "mf_sync_token", unique = false))
 @Getter
 @Setter
 @ToString
 public class JpaUser extends AbstractEntity
 {
 	// kundenkennung
+	@Column(name = "mf_username")
 	@NotNull
-	private String username;
+	private String mfUsername;
 
+	@Column(name = "mf_password")
 	@NotNull
-	private String password;
+	private String mfPassword;
 
+	@Column(name = "mf_bpartner_id")
 	@NotNull
-	private Integer bpartnerId;
+	private Integer mfBpartnerId;
 
+	@Column(name = "mf_bpartnerlocation_id")
 	@NotNull
-	private Integer bpartnerLocationId;
+	private Integer mfBpartnerLocationId;
 
-	@Column(name = "sync_token")
+	@Column(name = "mf_msv3user_id")
 	@NotNull
-	private String syncToken = UUID.randomUUID().toString();
+	private Integer mfMSV3UserId;
+
+	@Column(name = "mf_sync_token", nullable = false)
+	@NotNull
+	private String mfSyncToken;
 }

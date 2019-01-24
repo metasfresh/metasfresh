@@ -124,7 +124,7 @@ public interface I_MD_Cockpit
 	/**
 	 * Set Datum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -133,7 +133,7 @@ public interface I_MD_Cockpit
 	/**
 	 * Get Datum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

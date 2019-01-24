@@ -127,7 +127,7 @@ public interface I_MSV3_Server_Product_Category
 	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -137,7 +137,7 @@ public interface I_MSV3_Server_Product_Category
 	 * Get Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

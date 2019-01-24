@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,15 +28,13 @@ import lombok.Value;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class MSV3StockAvailability
 {
-	@JsonProperty("pzn")
 	private long pzn;
-	@JsonProperty("qty")
+
 	private int qty;
-	@JsonProperty("delete")
+
 	private boolean delete;
 
 	@JsonCreator

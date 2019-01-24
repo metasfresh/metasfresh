@@ -1,6 +1,7 @@
 drop view if exists MD_Stock_WarehouseAndProduct_v;
 create or replace view MD_Stock_WarehouseAndProduct_v as
 select
+	
 	pc.M_Product_Category_ID
 	, p.M_Product_ID
 	, p.Value as ProductValue
@@ -9,6 +10,8 @@ select
 	--
 	, s.AD_Client_ID
 	, s.AD_Org_ID
+	--
+	, row_number() over() AS Line /* used when we select this into T_MD_Stock_WarehouseAndProduct to obtain a guaranteed iterator */
 from M_Product_Category pc
 inner join M_Product p on (p.M_Product_Category_ID=pc.M_Product_Category_ID)
 left outer join MD_Stock s on (s.M_Product_ID=p.M_Product_ID)
@@ -21,4 +24,3 @@ group by
 	, s.AD_Client_ID
 	, s.AD_Org_ID
 ;
-

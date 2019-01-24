@@ -15,7 +15,7 @@ public class X_MD_Stock_WarehouseAndProduct_v extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -596148794L;
+	private static final long serialVersionUID = -189323833L;
 
     /** Standard Constructor */
     public X_MD_Stock_WarehouseAndProduct_v (Properties ctx, int MD_Stock_WarehouseAndProduct_v_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_MD_Stock_WarehouseAndProduct_v extends org.compiere.model.PO impl
       super (ctx, MD_Stock_WarehouseAndProduct_v_ID, trxName);
       /** if (MD_Stock_WarehouseAndProduct_v_ID == 0)
         {
+			setLine (0);
         } */
     }
 
@@ -40,6 +41,28 @@ public class X_MD_Stock_WarehouseAndProduct_v extends org.compiere.model.PO impl
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Zeile Nr..
+		@param Line 
+		Einzelne Zeile in dem Dokument
+	  */
+	@Override
+	public void setLine (int Line)
+	{
+		set_ValueNoCheck (COLUMNNAME_Line, Integer.valueOf(Line));
+	}
+
+	/** Get Zeile Nr..
+		@return Einzelne Zeile in dem Dokument
+	  */
+	@Override
+	public int getLine () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
