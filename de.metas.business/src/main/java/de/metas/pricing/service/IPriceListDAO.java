@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
@@ -40,6 +41,7 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
@@ -92,6 +94,24 @@ public interface IPriceListDAO extends ISingletonService
 	 */
 	I_M_PriceList_Version retrievePriceListVersionOrNull(PriceListId priceListId, LocalDate date, Boolean processed);
 
+	PriceListVersionId retrievePriceListVersionIdOrNull(PriceListId priceListId, LocalDate date, Boolean processed);
+
+	default PriceListVersionId retrievePriceListVersionIdOrNull(final PriceListId priceListId, final LocalDate date)
+	{
+		final Boolean processed = null;
+		return retrievePriceListVersionIdOrNull(priceListId, date, processed);
+	}
+
+	default PriceListVersionId retrievePriceListVersionId(final PriceListId priceListId, final LocalDate date)
+	{
+		final PriceListVersionId priceListVersionId = retrievePriceListVersionIdOrNull(priceListId, date);
+		if (priceListVersionId == null)
+		{
+			throw new PriceListVersionNotFoundException(priceListId, date);
+		}
+		return priceListVersionId;
+	}
+
 	/**
 	 * Retrieve the price list version that has <code>Processed='Y'</code> and and was valid before after the the given <code>plv</code>.
 	 *
@@ -123,7 +143,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 
-	Iterator<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId);
+	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId);
 
 	/**
 	 * Retrieves product prices records of the given price list version

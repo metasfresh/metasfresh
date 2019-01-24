@@ -11,6 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -106,14 +109,14 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Iterator<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
+	public Stream<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_ProductPrice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
 				.create()
-				.iterate(I_M_ProductPrice.class);
+				.iterateAndStream();
 	}
 
 	@Override
@@ -208,12 +211,22 @@ public class PriceListDAO implements IPriceListDAO
 		return retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
 	}
 
+	@Override
+	public PriceListVersionId retrievePriceListVersionIdOrNull(
+			@NonNull final PriceListId priceListId,
+			@NonNull final LocalDate date,
+			@Nullable final Boolean processed)
+	{
+		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
+		return plv != null ? PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID()) : null;
+	}
+
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
-			@CacheCtx final Properties ctx,
-			final PriceListId priceListId,
-			final LocalDate date,
-			final Boolean processed)
+			@CacheCtx @NonNull final Properties ctx,
+			@NonNull final PriceListId priceListId,
+			@NonNull final LocalDate date,
+			@Nullable final Boolean processed)
 	{
 		Check.assumeNotNull(date, "Param 'date' is not null; other params: priceListId={}, processed={}, ctx={}", priceListId, processed, ctx);
 
@@ -322,7 +335,7 @@ public class PriceListDAO implements IPriceListDAO
 			lastMatchSeqNo = 0;
 		}
 
-		final int nextMatchSeqNo = (lastMatchSeqNo / 10) * 10 + 10;
+		final int nextMatchSeqNo = lastMatchSeqNo / 10 * 10 + 10;
 		return nextMatchSeqNo;
 	}
 
@@ -382,7 +395,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addNotNull(I_M_PriceList.COLUMN_C_Country_ID)
 				.create()
 				.listDistinct(I_M_PriceList.COLUMNNAME_C_Country_ID, Integer.class);
-		
+
 		return countryIds.stream()
 				.map(CountryId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
