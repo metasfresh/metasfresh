@@ -35,6 +35,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3EventVersion;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent.MSV3ProductExcludesUpdateEventBuilder;
@@ -72,11 +73,13 @@ public class MSV3StockAvailabilityService
 
 	private static final Logger logger = LogManager.getLogger(MSV3StockAvailabilityService.class);
 
-	private StockRepository stockRepository;
+	private final StockRepository stockRepository;
 
-	private MSV3ServerConfigService msv3ServerConfigService;
+	private final MSV3ServerConfigService msv3ServerConfigService;
 
-	private MSV3ServerPeerService msv3ServerPeerService;
+	private final MSV3ServerPeerService msv3ServerPeerService;
+
+	private final MSV3EventVersionGenerator eventVersionGenerator;
 
 	public MSV3StockAvailabilityService(
 			@NonNull final StockRepository stockRepository,
@@ -86,6 +89,7 @@ public class MSV3StockAvailabilityService
 		this.stockRepository = stockRepository;
 		this.msv3ServerConfigService = msv3ServerConfigService;
 		this.msv3ServerPeerService = msv3ServerPeerService;
+		this.eventVersionGenerator = new MSV3EventVersionGenerator();
 	}
 
 	private MSV3ServerConfig getServerConfig()
@@ -101,28 +105,33 @@ public class MSV3StockAvailabilityService
 
 	private void publishAll_StockAvailability()
 	{
+		final MSV3EventVersion eventVersion = eventVersionGenerator.getNextEventVersion();
+
 		final MSV3ServerConfig serverConfig = getServerConfig();
 		if (!serverConfig.hasProducts())
 		{
 			Loggables.get().withLogger(logger, Level.WARN)
 					.addLog("Asked to publish all stock availabilities but the MSV3 server has no products defined. Deleting all products. Check {}", serverConfig);
-			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deletedAll());
+			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deleteAllOlderThan(eventVersion));
 			return;
 		}
 		else
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
-					.addLog("Deleting all products on the MSV3-server before sending the current products");
-			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deletedAll());
+			// we need the stream's close method to be called so it can clean up temporary DB data
+			try (final Stream<MSV3StockAvailabilityUpdatedEvent> eventStream = streamMSV3StockAvailabilityUpdateEvents(serverConfig, eventVersion))
+			{
+				eventStream.forEach(msv3ServerPeerService::publishStockAvailabilityUpdatedEvent);
+			}
 
-			final Stream<MSV3StockAvailabilityUpdatedEvent> eventStream = streamMSV3StockAvailabilityUpdateEvents(serverConfig);
-			eventStream.forEach(msv3ServerPeerService::publishStockAvailabilityUpdatedEvent);
+			// finally delete the info that is based on earlier update events
+			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deleteAllOlderThan(eventVersion));
 		}
 	}
 
 	@VisibleForTesting
 	Stream<MSV3StockAvailabilityUpdatedEvent> streamMSV3StockAvailabilityUpdateEvents(
-			@NonNull final MSV3ServerConfig serverConfig)
+			@NonNull final MSV3ServerConfig serverConfig,
+			@NonNull final MSV3EventVersion eventVersion)
 	{
 		final StockDataAggregateQuery query = StockDataAggregateQuery.builder()
 				.productCategoryIds(serverConfig.getProductCategoryIds())
@@ -131,25 +140,28 @@ public class MSV3StockAvailabilityService
 				.iteratorBatchSize(getPublishAllStockAvailabilityBatchSize())
 				.orderBy(StockDataQueryOrderBy.ProductId)
 				.build();
-		try (final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(query))
-		{
-			final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
-					.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
-					.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-					.filter(Predicates.notNull());
 
-			return GuavaCollectors
-					.batchAndStream(stockAvailabilityStream, query.getIteratorBatchSize())
-					.map(MSV3StockAvailabilityService::createAvailabilityUpdatedEvent);
-		}
+		final Stream<StockDataAggregateItem> stockRecordsStream = stockRepository.streamStockDataAggregateItems(query);
+
+		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
+				.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
+				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
+				.filter(Predicates.notNull());
+
+		return GuavaCollectors
+				.batchAndStream(stockAvailabilityStream, query.getIteratorBatchSize())
+				.map(availabilityBatchesList -> createAvailabilityUpdatedEvent(availabilityBatchesList, eventVersion))
+				.onClose(() -> stockRecordsStream.close())/*forward the close invocation*/;
 	}
 
 	private static MSV3StockAvailabilityUpdatedEvent createAvailabilityUpdatedEvent(
-			@NonNull final List<MSV3StockAvailability> availabilityBatchesList)
+			@NonNull final List<MSV3StockAvailability> availabilityBatchesList,
+			@NonNull final MSV3EventVersion eventVersion)
 	{
 		return MSV3StockAvailabilityUpdatedEvent.builder()
+				.eventVersion(eventVersion)
 				.items(availabilityBatchesList)
-				.deleteAllOtherItems(false)
+				.deleteAllOtherItems(false) // important!
 				.build();
 	}
 
@@ -213,18 +225,22 @@ public class MSV3StockAvailabilityService
 				.intValue();
 	}
 
-	public void handleStockChangedEvent(final StockChangedEvent event)
+	public void handleStockChangedEvent(final StockChangedEvent stockChangedEvent)
 	{
 		final MSV3ServerConfig serverConfig = getServerConfig();
-		if (!isEligible(serverConfig, event))
+		if (!isEligible(serverConfig, stockChangedEvent))
 		{
-			logger.trace("Skip {} because it's not eligible for {}", event, serverConfig);
+			logger.trace("Skip {} because it's not eligible for {}", stockChangedEvent, serverConfig);
 			return;
 		}
 
-		final ProductId productId = ProductId.ofRepoId(event.getProductId());
-		final MSV3StockAvailability stockAvailability = createStockAvailabilityEventForProductId(serverConfig, productId);
-		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(stockAvailability);
+		final ProductId productId = ProductId.ofRepoId(stockChangedEvent.getProductId());
+		final MSV3StockAvailability item = createStockAvailabilityEventForProductId(serverConfig, productId);
+
+		final MSV3StockAvailabilityUpdatedEvent msv3Event = MSV3StockAvailabilityUpdatedEvent.ofSingle(
+				item,
+				eventVersionGenerator.getNextEventVersion());
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(msv3Event);
 	}
 
 	private boolean isEligible(final MSV3ServerConfig serverConfig, final StockChangedEvent event)
@@ -306,10 +322,15 @@ public class MSV3StockAvailabilityService
 
 		final PZN pzn = getPZNByProductId(productId);
 		final int qtyOnHand = serverConfig.getFixedQtyAvailableToPromise().orElse(0);
-		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
+		final MSV3StockAvailability item = MSV3StockAvailability.builder()
 				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)
-				.build());
+				.build();
+
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent.ofSingle(
+				item,
+				eventVersionGenerator.getNextEventVersion());
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(event);
 	}
 
 	@Async
@@ -319,20 +340,31 @@ public class MSV3StockAvailabilityService
 
 		final PZN pzn = getPZNByProductId(productId);
 		final int qtyOnHand = getQtyOnHand(serverConfig, productId);
-		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
+
+		final MSV3StockAvailability item = MSV3StockAvailability.builder()
 				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)
-				.build());
+				.build();
+
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent.ofSingle(
+				item,
+				eventVersionGenerator.getNextEventVersion());
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(event);
 	}
 
 	@Async
 	public void publishProductDeletedEvent(final ProductId productId)
 	{
 		final PZN pzn = getPZNByProductId(productId);
-		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
+		final MSV3StockAvailability item = MSV3StockAvailability.builder()
 				.pzn(pzn.getValueAsLong())
 				.delete(true)
-				.build());
+				.build();
+
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent.ofSingle(
+				item,
+				eventVersionGenerator.getNextEventVersion());
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(event);
 	}
 
 	public void publishProductExcludeAddedOrChanged(

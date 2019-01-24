@@ -53,6 +53,7 @@ public class JsonSerializationTests
 	public void test_MSV3StockAvailabilityUpdatedEvent() throws Exception
 	{
 		jsonTestHelper.testSerializeDeserialize(MSV3StockAvailabilityUpdatedEvent.builder()
+				.eventVersion(MSV3EventVersion.of(10))
 				.item(MSV3StockAvailability.builder()
 						.pzn(1234567891)
 						.qty(111)

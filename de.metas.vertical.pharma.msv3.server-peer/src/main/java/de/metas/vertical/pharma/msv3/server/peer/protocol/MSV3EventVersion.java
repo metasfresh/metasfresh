@@ -3,14 +3,13 @@ package de.metas.vertical.pharma.msv3.server.peer.protocol;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Builder;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,34 +27,29 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Currently used in {@link MSV3StockAvailabilityUpdatedEvent}. Might likewise be used in {@link MSV3UserChangedEvent}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Value
-public class MSV3StockAvailability
+public class MSV3EventVersion
 {
-	private long pzn;
-
-	private int qty;
-
-	private boolean delete;
-
-	@JsonCreator
-	@Builder(toBuilder = true)
-	private MSV3StockAvailability(
-			@JsonProperty("pzn") final long pzn,
-			@JsonProperty("qty") final int qty,
-			@JsonProperty("delete") final boolean delete)
+	public static MSV3EventVersion of(final int asInt)
 	{
-		if (pzn <= 0)
-		{
-			throw new IllegalArgumentException("pzn shall be > 0");
-		}
-		if (qty < 0)
-		{
-			throw new IllegalArgumentException("qty shall be >= 0");
-		}
-
-		this.pzn = pzn;
-		this.qty = qty;
-		this.delete = delete;
+		return new MSV3EventVersion(asInt);
 	}
 
+	int asInt;
+
+	@JsonCreator
+	private MSV3EventVersion(@JsonProperty("asInt") final int asInt)
+	{
+		if (asInt <= 0)
+		{
+			throw new IllegalArgumentException("asInt shall be > 0");
+		}
+		this.asInt = asInt;
+	}
 }

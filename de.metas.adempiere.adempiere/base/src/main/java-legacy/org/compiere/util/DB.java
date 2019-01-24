@@ -1090,6 +1090,15 @@ public final class DB
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}	// executeUpdateEx
 
+	public static int executeUpdateEx(final String sql,
+			final Object[] params,
+			final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
+	{
+		return executeUpdate(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor);
+	}
+
 	/**
 	 * Prepares and executes a callable statement and makes sure that its closed at the end.
 	 *

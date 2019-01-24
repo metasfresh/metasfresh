@@ -1,7 +1,9 @@
 package de.metas.vertical.pharma.msv3.server.order.jpa;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -35,7 +37,11 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "msv3_order_package_item")
+@Table(name = "msv3_order_package_item", //
+		indexes = { //
+				@Index(name = "order_package_item_order_package_id", columnList = "order_package_id", unique = false),
+				@Index(name = "order_package_item_ol_cand_id", columnList = "mf_ol_cand_id", unique = false/*might be unique, but i'm not 100% sure*/)
+		})
 @Getter
 @Setter
 @ToString
@@ -47,5 +53,7 @@ public class JpaOrderPackageItem extends AbstractEntity
 	private long pzn;
 	private int qty;
 	private DeliverySpecifications deliverySpecifications;
-	private int olCandId;
+
+	@Column(name="mf_ol_cand_id")
+	private int mfOlCandId;
 }

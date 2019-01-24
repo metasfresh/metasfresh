@@ -26,12 +26,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaUserRepository extends JpaRepository<JpaUser, Long>
 {
-	JpaUser findByUsername(final String username);
+	JpaUser findByMfUsername(final String mfUsername);
 
-	JpaUser findByMetasfreshMSV3UserId(int id);
+	JpaUser findByMfMSV3UserId(int mfMSV3UserId);
 
-	void deleteByMetasfreshMSV3UserId(int id);
+	void deleteByMfMSV3UserId(int mfMSV3UserId);
 
-	long deleteInBatchBySyncTokenNot(String syncToken);
+	long deleteInBatchByMfSyncTokenNot(String mfSyncToken);
 
 }

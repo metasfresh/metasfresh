@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.security.jpa;
 
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
@@ -39,32 +37,36 @@ import lombok.ToString;
 @Entity
 @Table(name = "msv3_user", //
 		uniqueConstraints = { //
-				@UniqueConstraint(name = "metasfreshMSV3UserId_uq", columnNames = { "metasfreshMSV3UserId" }), //
-				@UniqueConstraint(name = "username_uq", columnNames = { "username" }) }, //
-		indexes = @Index(name = "user_sync_token", columnList = "sync_token") //
-)
+				@UniqueConstraint(name = "mf_msv3user_id_uq", columnNames = { "mf_msv3user_id" }), //
+				@UniqueConstraint(name = "mf_username_uq", columnNames = { "mf_username" }) }, //
+		indexes = @Index(name = "mf_sync_token", columnList = "mf_sync_token", unique = false))
 @Getter
 @Setter
 @ToString
 public class JpaUser extends AbstractEntity
 {
 	// kundenkennung
+	@Column(name = "mf_username")
 	@NotNull
-	private String username;
+	private String mfUsername;
 
+	@Column(name = "mf_password")
 	@NotNull
-	private String password;
+	private String mfPassword;
 
+	@Column(name = "mf_bpartner_id")
 	@NotNull
-	private Integer bpartnerId;
+	private Integer mfBpartnerId;
 
+	@Column(name = "mf_bpartnerlocation_id")
 	@NotNull
-	private Integer bpartnerLocationId;
+	private Integer mfBpartnerLocationId;
 
+	@Column(name = "mf_msv3user_id")
 	@NotNull
-	private Integer metasfreshMSV3UserId;
+	private Integer mfMSV3UserId;
 
-	@Column(name = "sync_token")
+	@Column(name = "mf_sync_token", nullable = false)
 	@NotNull
-	private String syncToken = UUID.randomUUID().toString();
+	private String mfSyncToken;
 }

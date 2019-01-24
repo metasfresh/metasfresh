@@ -76,9 +76,11 @@ public class StockRepository
 	}
 
 	/** Please use this stream within a try-with-resources statement, because it's supposed to do cleanup. */
-	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(@NonNull final StockDataAggregateQuery query)
+	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(
+			@NonNull final StockDataAggregateQuery query)
 	{
 		final IQuery<I_MD_Stock_WarehouseAndProduct_v> stockDataAggregateItemViewQuery = createStockDataAggregateItemQuery(query);
+
 		if (stockDataAggregateItemViewQuery instanceof TypedSqlQuery)
 		{
 			final TypedSqlQuery<I_MD_Stock_WarehouseAndProduct_v>//
@@ -100,6 +102,9 @@ public class StockRepository
 					.addEqualsFilter(I_T_MD_Stock_WarehouseAndProduct.COLUMN_UUID, uuid)
 					.orderBy(I_T_MD_Stock_WarehouseAndProduct.COLUMN_Line)
 					.create()
+					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+					.setOption(IQuery.OPTION_IteratorBufferSize, query.getIteratorBatchSize())
+					.setOption(IQuery.OPTION_ReturnReadOnlyRecords, true)
 					.iterateAndStream()
 
 					// cleanup when the stream is closed, *if* the stream's close method is called

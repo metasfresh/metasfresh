@@ -18,6 +18,7 @@ import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.product.ProductCategoryId;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3EventVersion;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
@@ -72,12 +73,11 @@ public class MSV3StockAvailabilityServiceTest
 
 		final MSV3ServerConfig msv3ServerConfig = MSV3ServerConfig.builder()
 				.productCategoryId(productCategoryId)
-
 				.build();
 
 		// invoke the method under test
 		final ImmutableList<MSV3StockAvailabilityUpdatedEvent> result = msv3StockAvailabilityService
-				.streamMSV3StockAvailabilityUpdateEvents(msv3ServerConfig)
+				.streamMSV3StockAvailabilityUpdateEvents(msv3ServerConfig, MSV3EventVersion.of(20))
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(result).hasSize(1);
@@ -105,7 +105,7 @@ public class MSV3StockAvailabilityServiceTest
 
 		// invoke the method under test
 		final ImmutableList<MSV3StockAvailabilityUpdatedEvent> result = msv3StockAvailabilityService
-				.streamMSV3StockAvailabilityUpdateEvents(msv3ServerConfig)
+				.streamMSV3StockAvailabilityUpdateEvents(msv3ServerConfig, MSV3EventVersion.of(20))
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(result).hasSize(1);

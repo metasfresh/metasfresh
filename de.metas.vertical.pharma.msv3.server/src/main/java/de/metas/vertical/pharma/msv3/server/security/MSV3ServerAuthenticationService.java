@@ -88,7 +88,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 			return adminUser;
 		}
 
-		final JpaUser jpaUser = usersRepo.findByUsername(username);
+		final JpaUser jpaUser = usersRepo.findByMfUsername(username);
 		if (jpaUser == null || jpaUser.isDeleted())
 		{
 			throw new UsernameNotFoundException("User '" + username + "' does not exist");
@@ -100,10 +100,10 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 	private static MSV3User toMSV3User(@NonNull final JpaUser jpaUser)
 	{
 		return MSV3User.builder()
-				.metasfreshMSV3UserId(MSV3MetasfreshUserId.of(jpaUser.getMetasfreshMSV3UserId()))
-				.username(jpaUser.getUsername())
-				.password(jpaUser.getPassword())
-				.bpartnerId(BPartnerId.of(jpaUser.getBpartnerId(), jpaUser.getBpartnerLocationId()))
+				.metasfreshMSV3UserId(MSV3MetasfreshUserId.of(jpaUser.getMfMSV3UserId()))
+				.username(jpaUser.getMfUsername())
+				.password(jpaUser.getMfPassword())
+				.bpartnerId(BPartnerId.of(jpaUser.getMfBpartnerId(), jpaUser.getMfBpartnerLocationId()))
 				.build();
 	}
 
@@ -145,7 +145,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 	@Transactional
 	public void handleEvent(@NonNull final MSV3UserChangedBatchEvent batchEvent)
 	{
-		final String syncToken = batchEvent.getId();
+		final String mfSyncToken = batchEvent.getId();
 
 		//
 		// Update/Delete
@@ -154,7 +154,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 
 			for (final MSV3UserChangedEvent event : batchEvent.getEvents())
 			{
-				handleEvent(event, syncToken);
+				handleEvent(event, mfSyncToken);
 				countUpdated.incrementAndGet();
 			}
 			logger.debug("Updated/Deleted {} users", countUpdated);
@@ -164,34 +164,34 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		// Delete
 		if (batchEvent.isDeleteAllOtherUsers())
 		{
-			final long countDeleted = usersRepo.deleteInBatchBySyncTokenNot(syncToken);
+			final long countDeleted = usersRepo.deleteInBatchByMfSyncTokenNot(mfSyncToken);
 			logger.debug("Deleted {} users", countDeleted);
 		}
 	}
 
-	private void handleEvent(@NonNull final MSV3UserChangedEvent event, final String syncToken)
+	private void handleEvent(@NonNull final MSV3UserChangedEvent event, final String mfSyncToken)
 	{
 		if (event.getChangeType() == ChangeType.CREATED_OR_UPDATED)
 		{
 			final String username = event.getUsername();
 
-			JpaUser user = usersRepo.findByMetasfreshMSV3UserId(event.getMsv3MetasfreshUserId().getId());
+			JpaUser user = usersRepo.findByMfMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 			if (user == null)
 			{
 				user = new JpaUser();
-				user.setMetasfreshMSV3UserId(event.getMsv3MetasfreshUserId().getId());
+				user.setMfMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 			}
 
-			user.setUsername(username);
-			user.setPassword(event.getPassword());
-			user.setBpartnerId(event.getBpartnerId());
-			user.setBpartnerLocationId(event.getBpartnerLocationId());
-			user.setSyncToken(syncToken);
+			user.setMfUsername(username);
+			user.setMfPassword(event.getPassword());
+			user.setMfBpartnerId(event.getBpartnerId());
+			user.setMfBpartnerLocationId(event.getBpartnerLocationId());
+			user.setMfSyncToken(mfSyncToken);
 			usersRepo.save(user);
 		}
 		else if (event.getChangeType() == ChangeType.DELETED)
 		{
-			usersRepo.deleteByMetasfreshMSV3UserId(event.getMsv3MetasfreshUserId().getId());
+			usersRepo.deleteByMfMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 		}
 		else
 		{
