@@ -9,7 +9,6 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
@@ -17,13 +16,14 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.process.IADProcessDAO;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewCloseReason;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -69,7 +69,6 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 
 	private final Cache<ViewId, ProductsProposalView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
-			.removalListener(this::onViewRemoved)
 			.build();
 
 	@Override
@@ -100,6 +99,8 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 				.setWindowId(key.getWindowId())
 				.setCaption(caption)
 				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
+				.allowViewCloseAction(ViewCloseAction.CANCEL)
+				.allowViewCloseAction(ViewCloseAction.DONE)
 				.build();
 	}
 
@@ -138,14 +139,29 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 	}
 
 	@Override
-	public IView getByIdOrNull(final ViewId viewId)
+	public ProductsProposalView getByIdOrNull(final ViewId viewId)
 	{
 		return views.getIfPresent(viewId);
 	}
 
-	@Override
-	public void removeById(final ViewId viewId)
+	private ProductsProposalView getById(final ViewId viewId)
 	{
+		final ProductsProposalView view = getByIdOrNull(viewId);
+		if (view == null)
+		{
+			throw new EntityNotFoundException("View not found: " + viewId.toJson());
+		}
+		return view;
+	}
+
+	@Override
+	public void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
+	{
+		if (ViewCloseAction.DONE.equals(closeAction))
+		{
+			createOrderLines(viewId);
+		}
+
 		views.invalidate(viewId);
 		views.cleanUp();
 	}
@@ -159,29 +175,14 @@ public class ProductsProposalViewFactory implements IViewFactory, IViewsIndexSto
 	@Override
 	public void invalidateView(final ViewId viewId)
 	{
-		final IView view = getByIdOrNull(viewId);
-		if (view == null)
-		{
-			return;
-		}
-
+		final ProductsProposalView view = getById(viewId);
 		view.invalidateAll();
 	}
 
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	private void createOrderLines(final ViewId viewId)
 	{
-		final ProductsProposalView view = ProductsProposalView.cast(notification.getValue());
-		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
-		view.close(closeReason);
+		final ProductsProposalView view = getById(viewId);
 
-		if (closeReason == ViewCloseReason.USER_REQUEST)
-		{
-			onViewClosedByUser(view);
-		}
-	}
-
-	private void onViewClosedByUser(final ProductsProposalView view)
-	{
 		OrderLinesFromProductProposalsProducer.builder()
 				.orderId(view.getOrderId())
 				.rows(view.getRowsWithQtySet())

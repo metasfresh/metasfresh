@@ -23,6 +23,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -138,16 +139,16 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 
 	public final PricingConditionsView getById(final ViewId viewId)
 	{
-		final PricingConditionsView view = getByIdOrNull(viewId);
+		final PricingConditionsView view = getById(viewId);
 		if (view == null)
 		{
-			throw new EntityNotFoundException(viewId.toJson());
+			throw new EntityNotFoundException("View not found: " + viewId.toJson());
 		}
 		return view;
 	}
 
 	@Override
-	public final void removeById(final ViewId viewId)
+	public final void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.

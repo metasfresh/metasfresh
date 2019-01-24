@@ -192,8 +192,8 @@ public class ViewRestController
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
 	public JSONViewResult deleteStickyFilter(
-			@PathVariable(PARAM_WindowId) final String windowIdStr, 
-			@PathVariable(PARAM_ViewId) final String viewIdStr, 
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_FilterId) final String filterId)
 	{
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
@@ -203,14 +203,16 @@ public class ViewRestController
 	}
 
 	@DeleteMapping("/{viewId}")
-	public void deleteView(
+	public void closeView(
 			@PathVariable(PARAM_WindowId) final String windowId,
-			@PathVariable(PARAM_ViewId) final String viewIdStr)
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@RequestParam(name = "action", required = false) final String closeActionStr)
 	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		viewsRepo.deleteView(viewId);
+		final ViewCloseAction closeAction = ViewCloseAction.fromJsonOr(closeActionStr, ViewCloseAction.DONE);
+		viewsRepo.closeView(viewId, closeAction);
 	}
 
 	@GetMapping("/{viewId}")

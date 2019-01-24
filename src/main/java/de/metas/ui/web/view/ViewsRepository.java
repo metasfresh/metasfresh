@@ -360,7 +360,7 @@ public class ViewsRepository implements IViewsRepository
 		final IView view = getViewsStorageFor(viewId).getByIdOrNull(viewId);
 		if (view == null)
 		{
-			throw new EntityNotFoundException("No view found for viewId=" + viewId);
+			throw new EntityNotFoundException("View not found: " + viewId.toJson());
 		}
 
 		DocumentPermissionsHelper.assertViewAccess(viewId.getWindowId(), viewId.getViewId(), UserSession.getCurrentPermissions());
@@ -369,10 +369,10 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public void deleteView(final ViewId viewId)
+	public void closeView(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
-		getViewsStorageFor(viewId).removeById(viewId);
-		logger.trace("Removed view {}", viewId);
+		getViewsStorageFor(viewId).closeById(viewId, closeAction);
+		logger.trace("Closed/Removed view {} using close action {}", viewId, closeAction);
 	}
 
 	@Override

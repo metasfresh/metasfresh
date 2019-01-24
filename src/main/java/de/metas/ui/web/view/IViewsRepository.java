@@ -82,7 +82,7 @@ public interface IViewsRepository
 
 	IView deleteStickyFilter(ViewId viewId, String filterId);
 
-	void deleteView(ViewId viewId);
+	void closeView(ViewId viewId, ViewCloseAction closeAction);
 
 	void invalidateView(ViewId viewId);
 

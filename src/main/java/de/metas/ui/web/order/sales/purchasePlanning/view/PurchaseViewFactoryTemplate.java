@@ -26,6 +26,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -33,7 +34,6 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -152,7 +152,7 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 	}
 
 	@Override
-	public final void removeById(final ViewId viewId)
+	public final void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.

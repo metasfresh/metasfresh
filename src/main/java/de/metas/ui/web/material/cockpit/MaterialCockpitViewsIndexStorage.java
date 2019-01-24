@@ -11,8 +11,10 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -88,9 +90,9 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void removeById(ViewId viewId)
+	public void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
-		defaultViewsRepositoryStorage.removeById(viewId);
+		defaultViewsRepositoryStorage.closeById(viewId, closeAction);
 	}
 
 	@Override

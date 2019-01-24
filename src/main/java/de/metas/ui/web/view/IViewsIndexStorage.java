@@ -48,8 +48,8 @@ public interface IViewsIndexStorage
 	/** @return the {@link IView} identified by <code>viewId</code> or <code>null</code> if not found. */
 	IView getByIdOrNull(ViewId viewId);
 
-	/** Removes the view identified by given <code>viewId</code>. If the view does not exist, the method will do nothing, i.e. not failing. */
-	void removeById(ViewId viewId);
+	/** Closes and removes the view identified by given <code>viewId</code>. If the view does not exist, the method will do nothing, i.e. not failing. */
+	void closeById(ViewId viewId, ViewCloseAction closeAction);
 
 	Stream<IView> streamAllViews();
 
