@@ -47,13 +47,19 @@ class Table extends Component {
   }
 
   componentDidMount() {
+    const { rowData, tabid } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
-    this.getIndentData(true);
-
+    if (rowData.get(`${tabid}`)) {
+      this.getIndentData(true);
+    }
     if (this.props.autofocus) {
       this.table.focus();
     }
+  }
+
+  componentWillUnmount() {
+    console.log('UNMOUNTED')
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -68,6 +74,7 @@ class Table extends Component {
       refreshSelection,
       openIncludedViewOnSelect,
       viewId,
+      tabid,
       isModal,
       hasIncluded,
       // rowEdited,
@@ -145,7 +152,8 @@ class Table extends Component {
     // console.log('Table update props: ', rowData, prevProps.rowData, '\n');
 
     if (
-      prevProps.viewId !== viewId //&&
+      prevProps.viewId !== viewId &&
+      rowData.get(`${tabid}`)
       // defaultSelected &&
       // defaultSelected.length === 0
     ) {
@@ -153,8 +161,8 @@ class Table extends Component {
         this.setState({ selected: defaultSelected });
       }
 
-      const firstLoad = prevProps.rowData.get('1') && rowData.get(0) ? false : true;
-      console.log('Table update case1: ', rowData, prevProps.rowData);
+      const firstLoad = prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size ? false : true;
+      console.log('Table update case1: ', rowData, prevProps.rowData, this.state);
 
       this.getIndentData(firstLoad);
 
@@ -169,10 +177,10 @@ class Table extends Component {
       //     // this.getIndentData(firstLoad);
       //   }
       // );
-    } else if (!is(prevProps.rowData, rowData)) {
-      let firstLoad = rowData.get(0) ? false : true;
+    } else if (rowData.get(`${tabid}`) && !is(prevProps.rowData, rowData)) {
+      let firstLoad = rowData.get(`${tabid}`).size ? false : true;
 
-      if (!prevProps.rowData.get(0) && rowData.get(0)) {
+      if (prevProps.rowData.get(`${tabid}`) && !prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size) {
         console.log('BAZINGA')
         firstLoad = true;
       }
@@ -180,7 +188,7 @@ class Table extends Component {
       //   firstLoad = true;
       // }
     // else if (!is(prevProps.rowData, rowData)) {
-      console.log('Table update case2: ', prevProps.rowData, rowData.get('1'));
+      console.log('Table update case2: ', this.state);
       this.getIndentData(firstLoad);
     }
   }
@@ -240,9 +248,9 @@ class Table extends Component {
     //   return;
     // }
 
-    console.log('TABID: ', tabid, rowData, this._isMounted)
+    console.log('TABID: ', tabid, rowData.get(`${tabid}`), this._isMounted)
 
-    if (indentSupported && rowData.get(`${tabid}`)) {
+    if (indentSupported && rowData.get(`${tabid}`).size) {
       rowsData = getRowsData(rowData.get(`${tabid}`));
       let stateChange = {
         rows: rowsData,
@@ -251,14 +259,14 @@ class Table extends Component {
 
       console.log('Table getIndentData selectFirst: ', selectFirst, rowsData)
 
-      // if (selectFirst) {
+      if (selectFirst) {
         
-      //   stateChange = {
-      //     ...stateChange,
-      //     collapsedParentsRows: [],
-      //     collapsedRows: [],
-      //   };
-      // }
+        stateChange = {
+          ...stateChange,
+          collapsedParentsRows: [],
+          collapsedRows: [],
+        };
+      }
 
       // if (this._isMounted) {
         this.setState(stateChange, () => {
@@ -320,7 +328,7 @@ class Table extends Component {
           }
         });
       } else {
-        rowsData = rowData.get(`${tabid}`)
+        rowsData = rowData.get(`${tabid}`) && rowData.get(`${tabid}`).size
           ? rowData.get(`${tabid}`).toArray()
           : [];
         this.setState({
@@ -330,13 +338,15 @@ class Table extends Component {
       }
     // }
 
-    console.log('THISSTATE: ', {...this.state});
+    // console.log('THISSTATE: ', {...this.state});
 
     if (rowsData.length) {
       setTimeout(() => {
-        this.setState({
-          tableRefreshToggle: !this.state.mounted,
-        });
+        if (this._isMounted) {
+          this.setState({
+            tableRefreshToggle: !this.state.mounted,
+          });
+        }
       }, 1);
     }
   };
