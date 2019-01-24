@@ -244,9 +244,9 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public I_C_OrderLine createOrderLine(final org.compiere.model.I_C_Order order)
+	public I_C_OrderLine createOrderLine(@NonNull final org.compiere.model.I_C_Order order)
 	{
-		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class, order);
+		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class);
 		ol.setC_Order(order);
 		setOrder(ol, order);
 
