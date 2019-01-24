@@ -46,7 +46,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ProductsProposalRowsLoader
+final class ProductsProposalRowsLoader
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
