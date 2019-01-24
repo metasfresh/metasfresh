@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -52,6 +53,7 @@ import lombok.NonNull;
 final class OrderLinesFromProductProposalsProducer
 {
 	private static final Logger logger = LogManager.getLogger(OrderLinesFromProductProposalsProducer.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -75,6 +77,11 @@ final class OrderLinesFromProductProposalsProducer
 			return;
 		}
 
+		trxManager.runInNewTrx(this::produceInTrx);
+	}
+
+	private void produceInTrx()
+	{
 		final Properties ctx = Env.getCtx();
 		final I_C_Order order = ordersRepo.getById(orderId);
 
