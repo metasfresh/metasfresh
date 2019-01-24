@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor.sql;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -12,15 +13,11 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
@@ -40,6 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
@@ -350,8 +348,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final SqlParamsCollector sqlWhereClauseParams,
 			@NonNull final LookupDataSourceContext evalCtx)
 	{
-		final int priceListVersionId = getPriceListVersionId(evalCtx);
-		if (priceListVersionId <= 0)
+		final PriceListVersionId priceListVersionId = getPriceListVersionId(evalCtx);
+		if (priceListVersionId == null)
 		{
 			return;
 		}
@@ -419,31 +417,23 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return IntegerLookupValue.of(productId, displayName);
 	}
 
-	private final int getPriceListVersionId(final LookupDataSourceContext evalCtx)
+	private final PriceListVersionId getPriceListVersionId(final LookupDataSourceContext evalCtx)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(param_M_PriceList_ID.getValueAsInteger(evalCtx));
 		if (priceListId == null)
 		{
-			return -1;
+			return null;
 		}
 
-		final Date date = getEffectivePricingDate(evalCtx);
-		final Boolean processed = null;
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
-		if (plv == null)
-		{
-			return -1;
-		}
-
-		return plv.getM_PriceList_Version_ID();
+		final LocalDate date = getEffectivePricingDate(evalCtx);
+		return Services.get(IPriceListDAO.class).retrievePriceListVersionIdOrNull(priceListId, date);
 	}
 
-	private Date getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
+	private LocalDate getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		final Date date = Util.coalesceSuppliers(
-				() -> param_PricingDate.getValueAsDate(evalCtx),
-				() -> SystemTime.asDayTimestamp());
-		return date;
+		return Util.coalesceSuppliers(
+				() -> param_PricingDate.getValueAsLocalDate(evalCtx),
+				() -> SystemTime.asLocalDate());
 	}
 
 	@Override
@@ -612,29 +602,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
 	{
-		final ImmutableAttributeSet attributes = createImmutableAttributeSet(lookupValue.getAttribute(ATTRIBUTE_ASI));
+		final ProductId productId = lookupValue.getIdAs(ProductId::ofRepoId);
+
+		final Map<Object, Object> valuesByAttributeIdMap = lookupValue.getAttribute(ATTRIBUTE_ASI);
+		final ImmutableAttributeSet attributes = ImmutableAttributeSet.ofValuesByAttributeIdMap(valuesByAttributeIdMap);
 
 		return ProductAndAttributes.builder()
-				.productId(ProductId.ofRepoId(lookupValue.getIdAsInt()))
+				.productId(productId)
 				.attributes(attributes)
 				.build();
-	}
-
-	public static final ImmutableAttributeSet createImmutableAttributeSet(@Nullable final Map<Object, Object> map)
-	{
-		if (map == null || map.isEmpty())
-		{
-			return ImmutableAttributeSet.EMPTY;
-		}
-
-		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
-
-		map.forEach((attributeIdObj, value) -> {
-			final AttributeId attributeId = AttributeId.ofRepoIdObj(attributeIdObj);
-			builder.attributeValue(attributeId, value);
-		});
-
-		return builder.build();
 	}
 
 	@Value

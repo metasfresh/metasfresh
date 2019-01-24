@@ -2,6 +2,7 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
@@ -26,6 +28,7 @@ import de.metas.ui.web.cache.ETag;
 import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
@@ -38,6 +41,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -92,6 +96,9 @@ public class ViewLayout implements ETagAware
 	private final IncludedViewLayout includedViewLayout;
 	private final String allowNewCaption;
 
+	@Getter
+	private final ImmutableSet<ViewCloseAction> allowedViewCloseActions;
+
 	private final boolean hasTreeSupport;
 	private final boolean treeCollapsible;
 	private final int treeExpandedDepth;
@@ -125,6 +132,8 @@ public class ViewLayout implements ETagAware
 		idFieldName = builder.getIdFieldName();
 
 		hasAttributesSupport = builder.hasAttributesSupport;
+		
+		allowedViewCloseActions = builder.getAllowedViewCloseActions();
 
 		hasTreeSupport = builder.hasTreeSupport;
 		treeCollapsible = builder.treeCollapsible;
@@ -169,6 +178,9 @@ public class ViewLayout implements ETagAware
 		idFieldName = from.idFieldName;
 
 		hasAttributesSupport = from.hasAttributesSupport;
+		
+		allowedViewCloseActions = from.allowedViewCloseActions;
+		
 		this.hasTreeSupport = hasTreeSupport;
 		this.treeCollapsible = treeCollapsible;
 		this.treeExpandedDepth = treeExpandedDepth;
@@ -504,6 +516,9 @@ public class ViewLayout implements ETagAware
 		private boolean hasAttributesSupport = false;
 		private IncludedViewLayout includedViewLayout;
 
+		private LinkedHashSet<ViewCloseAction> allowedViewCloseActions;
+		private static final ImmutableSet<ViewCloseAction> DEFAULT_allowedViewCloseActions = ImmutableSet.of(ViewCloseAction.DONE);
+
 		private boolean hasTreeSupport = false;
 		private boolean treeCollapsible = false;
 		private int treeExpandedDepth = TreeExpandedDepth_AllExpanded;
@@ -710,6 +725,25 @@ public class ViewLayout implements ETagAware
 		{
 			this.includedViewLayout = includedViewLayout;
 			return this;
+		}
+
+		public Builder allowViewCloseAction(@NonNull final ViewCloseAction viewCloseAction)
+		{
+			if (allowedViewCloseActions == null)
+			{
+				allowedViewCloseActions = new LinkedHashSet<>();
+			}
+
+			allowedViewCloseActions.add(viewCloseAction);
+
+			return this;
+		}
+
+		private ImmutableSet<ViewCloseAction> getAllowedViewCloseActions()
+		{
+			return allowedViewCloseActions != null
+					? ImmutableSet.copyOf(allowedViewCloseActions)
+					: DEFAULT_allowedViewCloseActions;
 		}
 
 		public Builder setHasTreeSupport(final boolean hasTreeSupport)

@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
@@ -23,7 +24,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -62,7 +62,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentType, documentTypeId, detailId, soTrx);
 		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
@@ -74,7 +74,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 

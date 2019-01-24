@@ -381,7 +381,8 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 			if (row == null)
 			{
 				throw new EntityNotFoundException("Row not found")
-						.appendParametersToMessage().setParameter("rowId", rowId);
+						.appendParametersToMessage()
+						.setParameter("rowId", rowId);
 			}
 			return row;
 		}

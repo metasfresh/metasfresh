@@ -43,6 +43,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
@@ -233,7 +234,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				.build());
 		if (view.size() <= 0)
 		{
-			viewsRepo.deleteView(view.getViewId());
+			viewsRepo.closeView(view.getViewId(), ViewCloseAction.CANCEL);
 			return null;
 		}
 		else

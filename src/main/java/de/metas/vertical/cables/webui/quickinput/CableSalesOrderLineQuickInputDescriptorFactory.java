@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
@@ -78,7 +79,11 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId, final Optional<Boolean> soTrx)
+	public QuickInputDescriptor createQuickInputDescriptor(
+			final DocumentType documentType, 
+			final DocumentId documentTypeId, 
+			final DetailId detailId, 
+			final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createDescriptorBuilder(documentTypeId, detailId, soTrx)
 				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID)
@@ -94,15 +99,15 @@ import lombok.NonNull;
 				.build();
 
 		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.builder()
-				.addElement(DocumentLayoutElementDescriptor.builder(
+				.element(DocumentLayoutElementDescriptor.builder(
 						entityDescriptor,
 						ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID,
 						ICablesOrderLineQuickInput.COLUMNNAME_Cable_Product_ID,
 						ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID)
 						.setWidgetSize(WidgetSize.Large))
-				.addElement(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
+				.element(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
 						.setWidgetSize(WidgetSize.Small))
-				.addElement(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_Qty)
+				.element(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_Qty)
 						.setWidgetSize(WidgetSize.Small))
 				.build();
 
@@ -112,7 +117,7 @@ import lombok.NonNull;
 	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		return DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)

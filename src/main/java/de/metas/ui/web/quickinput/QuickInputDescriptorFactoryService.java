@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.cache.CCache;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -106,7 +107,7 @@ public class QuickInputDescriptorFactoryService
 			final DocumentId documentTypeId,
 			final String tableName,
 			final DetailId detailId,
-			final Optional<Boolean> soTrx)
+			final Optional<SOTrx> soTrx)
 	{
 		final QuickInputDescriptorKey key = QuickInputDescriptorKey.builder()
 				.documentType(documentType)
@@ -137,7 +138,7 @@ public class QuickInputDescriptorFactoryService
 				.documentTypeId(entityDescriptor.getDocumentTypeId())
 				.tableName(entityDescriptor.getTableNameOrNull())
 				.detailId(entityDescriptor.getDetailId())
-				.soTrx(entityDescriptor.getIsSOTrx())
+				.soTrx(entityDescriptor.getSOTrx())
 				.build();
 	}
 
@@ -217,6 +218,6 @@ public class QuickInputDescriptorFactoryService
 		DetailId detailId;
 
 		@NonNull
-		Optional<Boolean> soTrx;
+		Optional<SOTrx> soTrx;
 	}
 }

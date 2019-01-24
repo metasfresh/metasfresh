@@ -16,6 +16,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -37,7 +38,6 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndA
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -79,7 +79,7 @@ import lombok.NonNull;
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(
 				documentType,
@@ -99,7 +99,7 @@ import lombok.NonNull;
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		return createDescriptorBuilder(documentTypeId, detailId, soTrx)
 				.addField(createProductFieldBuilder(soTrx))
@@ -111,7 +111,7 @@ import lombok.NonNull;
 	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		return DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)
@@ -122,7 +122,7 @@ import lombok.NonNull;
 				.setTableName(I_C_OrderLine.Table_Name); // TODO: figure out if it's needed
 	}
 
-	private DocumentFieldDescriptor.Builder createProductFieldBuilder(@NonNull final Optional<Boolean> soTrx)
+	private DocumentFieldDescriptor.Builder createProductFieldBuilder(@NonNull final Optional<SOTrx> soTrx)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -141,9 +141,9 @@ import lombok.NonNull;
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
-	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<Boolean> soTrx)
+	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<SOTrx> soTrx)
 	{
-		if (soTrx.orElse(false))
+		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
 			return ProductLookupDescriptor
 					.builderWithStockInfo()

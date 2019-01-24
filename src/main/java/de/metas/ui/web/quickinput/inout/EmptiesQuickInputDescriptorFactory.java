@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
@@ -25,7 +26,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -70,7 +70,7 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx);
 		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
@@ -80,7 +80,7 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 	private DocumentEntityDescriptor createEntityDescriptor(
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final DocumentEntityDescriptor.Builder entityDescriptor = DocumentEntityDescriptor.builder()

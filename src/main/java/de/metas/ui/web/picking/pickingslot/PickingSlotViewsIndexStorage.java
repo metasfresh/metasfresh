@@ -17,6 +17,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -165,7 +166,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void removeById(@NonNull final ViewId pickingSlotViewId)
+	public void closeById(@NonNull final ViewId pickingSlotViewId, @NonNull final ViewCloseAction closeAction)
 	{
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
 		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);

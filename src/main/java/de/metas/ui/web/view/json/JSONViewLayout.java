@@ -1,6 +1,7 @@
 package de.metas.ui.web.view.json;
 
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -10,6 +11,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -104,6 +106,9 @@ public final class JSONViewLayout
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer expandedDepth;
 
+	@JsonProperty("allowedCloseActions")
+	private final Set<ViewCloseAction> allowedCloseActions;
+
 	//
 	@JsonProperty("includedView")
 	private final JSONIncludedViewSupport includedView;
@@ -122,7 +127,7 @@ public final class JSONViewLayout
 	@JsonProperty("newRecordCaption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String newRecordCaption = null;
-	
+
 	//
 	//
 	@JsonProperty("supportOpenRecord")
@@ -159,6 +164,8 @@ public final class JSONViewLayout
 
 		supportAttributes = layout.isAttributesSupport();
 
+		allowedCloseActions = layout.getAllowedViewCloseActions();
+
 		//
 		// Included view
 		includedView = JSONIncludedViewSupport.fromNullable(layout.getIncludedViewLayout());
@@ -193,7 +200,7 @@ public final class JSONViewLayout
 			collapsible = null;
 			expandedDepth = null;
 		}
-		
+
 		supportOpenRecord = layout.isAllowOpeningRowDetails();
 	}
 

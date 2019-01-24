@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.compiere.util.NamePair;
 
+import de.metas.currency.Amount;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
@@ -125,6 +126,10 @@ public final class Values
 		else if (value instanceof Money)
 		{
 			return bigDecimalToJson(((Money)value).getValue());
+		}
+		else if (value instanceof Amount)
+		{
+			return bigDecimalToJson(((Amount)value).getValue());
 		}
 		else if (value instanceof DocumentId)
 		{

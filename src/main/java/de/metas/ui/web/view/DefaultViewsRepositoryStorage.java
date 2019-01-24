@@ -66,7 +66,7 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void removeById(@NonNull final ViewId viewId)
+	public void closeById(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
 		// Don't remove the view if not allowed.
 		// Will be removed when it will expire.

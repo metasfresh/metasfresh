@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -36,7 +37,6 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -78,7 +78,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 			final DocumentType documentType,
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx);
 		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
@@ -89,7 +89,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 	private DocumentEntityDescriptor createEntityDescriptor(
 			final DocumentId documentTypeId,
 			final DetailId detailId,
-			@NonNull final Optional<Boolean> soTrx)
+			@NonNull final Optional<SOTrx> soTrx)
 	{
 		return createDescriptorBuilder(documentTypeId, detailId)
 				.addField(createProductFieldBuilder())

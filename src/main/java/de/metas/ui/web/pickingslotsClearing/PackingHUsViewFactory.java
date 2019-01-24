@@ -21,6 +21,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -28,6 +29,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -101,7 +103,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	}
 
 	@Override
-	public void removeById(final ViewId packingHUsViewId)
+	public void closeById(@NonNull final ViewId packingHUsViewId, @NonNull final ViewCloseAction closeAction)
 	{
 		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView(packingHUsViewId);
 		pickingSlotsClearingView.closePackingHUsView(packingHUsViewId);

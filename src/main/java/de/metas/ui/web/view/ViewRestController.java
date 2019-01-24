@@ -89,6 +89,7 @@ public class ViewRestController
 	// FIXME: change "documentView" to "view"
 	/* package */static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/documentView/{" + PARAM_WindowId + "}";
 
+	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_ViewDataType = "viewType";
 	private static final String PARAM_OrderBy = "orderBy";
 	private static final String PARAM_OrderBy_Description = "Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered";
@@ -96,6 +97,8 @@ public class ViewRestController
 	private static final String PARAM_FirstRow = "firstRow";
 	private static final String PARAM_FirstRow_Description = "first row to fetch (starting from 0)";
 	private static final String PARAM_PageLength = "pageLength";
+	//
+	private static final String PARAM_FilterId = "filterId";
 
 	@Autowired
 	private UserSession userSession;
@@ -177,7 +180,7 @@ public class ViewRestController
 	@PostMapping("/{viewId}/filter")
 	public JSONViewResult filterView( //
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @PathVariable("viewId") final String viewIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
 	)
 	{
@@ -188,7 +191,10 @@ public class ViewRestController
 	}
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
-	public JSONViewResult deleteStickyFilter(@PathVariable(PARAM_WindowId) final String windowIdStr, @PathVariable("viewId") final String viewIdStr, @PathVariable("filterId") final String filterId)
+	public JSONViewResult deleteStickyFilter(
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@PathVariable(PARAM_FilterId) final String filterId)
 	{
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
@@ -197,18 +203,22 @@ public class ViewRestController
 	}
 
 	@DeleteMapping("/{viewId}")
-	public void deleteView(@PathVariable(PARAM_WindowId) final String windowId, @PathVariable("viewId") final String viewIdStr)
+	public void closeView(
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@RequestParam(name = "action", required = false) final String closeActionStr)
 	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		viewsRepo.deleteView(viewId);
+		final ViewCloseAction closeAction = ViewCloseAction.fromJsonOr(closeActionStr, ViewCloseAction.DONE);
+		viewsRepo.closeView(viewId, closeAction);
 	}
 
 	@GetMapping("/{viewId}")
 	public JSONViewResult getViewData(
 			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr//
+			, @PathVariable(PARAM_ViewId) final String viewIdStr//
 			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
@@ -255,7 +265,7 @@ public class ViewRestController
 	@GetMapping("/{viewId}/byIds")
 	public List<JSONViewRow> getByIds(
 			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr //
 	)
 	{
@@ -277,8 +287,8 @@ public class ViewRestController
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr //
-			, @PathVariable("filterId") final String filterId //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
+			, @PathVariable(PARAM_FilterId) final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
 	)
@@ -294,8 +304,8 @@ public class ViewRestController
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr //
-			, @PathVariable("filterId") final String filterId //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
+			, @PathVariable(PARAM_FilterId) final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 	)
 	{
@@ -335,7 +345,7 @@ public class ViewRestController
 	@GetMapping("/{viewId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
-			@PathVariable("viewId") final String viewIdStr,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr,
 			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
 			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
@@ -363,7 +373,7 @@ public class ViewRestController
 	@GetMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getDocumentQuickActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
-			@PathVariable("viewId") final String viewIdStr,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr,
 			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
 			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
@@ -392,7 +402,7 @@ public class ViewRestController
 	@GetMapping("/{viewId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getRowFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("viewId") final String viewIdStr,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable("rowId") final String rowId,
 			@PathVariable("fieldName") final String fieldName)
 	{
@@ -408,7 +418,7 @@ public class ViewRestController
 	@GetMapping("/{viewId}/export/excel")
 	public ResponseEntity<Resource> exportToExcel(
 			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("viewId") final String viewIdStr,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr)
 			throws Exception
 	{
