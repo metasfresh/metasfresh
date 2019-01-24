@@ -2,12 +2,17 @@ package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -40,18 +45,50 @@ import lombok.NonNull;
 
 public class ProductsProposalRowsData implements IEditableRowsData<ProductsProposalRow>
 {
-	private final ImmutableMap<DocumentId, ProductsProposalRow> rowsById;
+	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
+	private final ConcurrentMap<DocumentId, ProductsProposalRow> rowsById;
 
 	@Builder
 	private ProductsProposalRowsData(@NonNull final List<ProductsProposalRow> rows)
 	{
-		rowsById = Maps.uniqueIndex(rows, ProductsProposalRow::getId);
+		rowIds = rows.stream()
+				.map(ProductsProposalRow::getId)
+				.collect(ImmutableList.toImmutableList());
+
+		rowsById = rows.stream()
+				.collect(Collectors.toConcurrentMap(ProductsProposalRow::getId, Function.identity()));
 	}
 
 	@Override
-	public Map<DocumentId, ProductsProposalRow> getDocumentId2TopLevelRows()
+	public int size()
 	{
-		return rowsById;
+		return rowIds.size();
+	}
+
+	@Override
+	public ImmutableMap<DocumentId, ProductsProposalRow> getDocumentId2TopLevelRows()
+	{
+		return ImmutableMap.copyOf(rowsById);
+	}
+
+	@Override
+	public Map<DocumentId, ProductsProposalRow> getDocumentId2AllRows()
+	{
+		return getDocumentId2TopLevelRows();
+	}
+
+	@Override
+	public ImmutableList<ProductsProposalRow> getTopLevelRows()
+	{
+		return rowIds.stream()
+				.map(rowsById::get)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public ImmutableList<ProductsProposalRow> getAllRows()
+	{
+		return getTopLevelRows();
 	}
 
 	@Override
@@ -68,7 +105,25 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Override
 	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("not implemented");
+		final ProductsProposalRowChangeRequest request = ProductsProposalRowActions.toChangeRequest(fieldChangeRequests);
+		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.copyAndChange(request, row));
 	}
+
+	private void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsProposalRow> mapper)
+	{
+		if (!rowIds.contains(rowId))
+		{
+			throw new EntityNotFoundException(rowId.toJson());
+		}
+
+		rowsById.compute(rowId, (key, oldRow) -> {
+			if (oldRow == null)
+			{
+				throw new EntityNotFoundException(rowId.toJson());
+			}
+
+			return mapper.apply(oldRow);
+		});
+	}
+
 }

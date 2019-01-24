@@ -51,13 +51,14 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount, seqNo = 20)
 	private final Amount price;
 
-	@ViewColumn(captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 30, editor = ViewEditorRenderMode.ALWAYS)
+	public static final String FIELD_Qty = "qty";
+	@ViewColumn(fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 30, editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qty;
 
 	private final DocumentId id;
 	private ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ProductsProposalRow(
 			@NonNull final DocumentId id,
 			@NonNull final LookupValue product,
