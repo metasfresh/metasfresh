@@ -16,7 +16,6 @@ import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +70,7 @@ public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
-	private final ImmutableMap<ArrayKey, IViewFactory> factories;
+	private final ImmutableMap<ViewFactoryKey, IViewFactory> factories;
 	@Autowired
 	private SqlViewFactory defaultFactory;
 
@@ -131,9 +130,9 @@ public class ViewsRepository implements IViewsRepository
 		}
 	}
 
-	private static ImmutableMap<ArrayKey, IViewFactory> createFactoriesMap(final Collection<IViewFactory> viewFactories)
+	private static ImmutableMap<ViewFactoryKey, IViewFactory> createFactoriesMap(final Collection<IViewFactory> viewFactories)
 	{
-		final Map<ArrayKey, IViewFactory> factories = new HashMap<>();
+		final Map<ViewFactoryKey, IViewFactory> factories = new HashMap<>();
 		for (final IViewFactory factory : viewFactories)
 		{
 			final ViewFactory annotation = factory.getClass().getAnnotation(ViewFactory.class);
@@ -157,7 +156,7 @@ public class ViewsRepository implements IViewsRepository
 
 			for (final JSONViewDataType viewType : viewTypes)
 			{
-				factories.put(mkFactoryKey(windowId, viewType), factory);
+				factories.put(ViewFactoryKey.of(windowId, viewType), factory);
 			}
 		}
 
@@ -187,24 +186,19 @@ public class ViewsRepository implements IViewsRepository
 
 	private final IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		IViewFactory factory = factories.get(mkFactoryKey(windowId, viewType));
+		IViewFactory factory = factories.get(ViewFactoryKey.of(windowId, viewType));
 		if (factory != null)
 		{
 			return factory;
 		}
 
-		factory = factories.get(mkFactoryKey(windowId, null));
+		factory = factories.get(ViewFactoryKey.of(windowId, null));
 		if (factory != null)
 		{
 			return factory;
 		}
 
 		return defaultFactory;
-	}
-
-	private static final ArrayKey mkFactoryKey(final WindowId windowId, final JSONViewDataType viewType)
-	{
-		return ArrayKey.of(windowId, viewType);
 	}
 
 	@Override
@@ -409,5 +403,12 @@ public class ViewsRepository implements IViewsRepository
 
 			logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
 		}
+	}
+
+	@lombok.Value(staticConstructor = "of")
+	private static class ViewFactoryKey
+	{
+		WindowId windowId;
+		JSONViewDataType viewType;
 	}
 }
