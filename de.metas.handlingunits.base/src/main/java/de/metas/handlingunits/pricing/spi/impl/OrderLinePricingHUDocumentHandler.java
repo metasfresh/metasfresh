@@ -162,7 +162,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		{
 			final boolean strictDefault = false;
 			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
-					.setM_Product_ID(orderLine.getM_Product_ID())
+					.setProductId(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()))
 					.onlyAttributePricing()
 					.matching(HUPricing.createHUPIItemProductMatcher(orderLine.getM_HU_PI_Item_Product_ID()))
 					.retrieveDefault(strictDefault, I_M_ProductPrice.class);
@@ -175,7 +175,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
 		final boolean strictDefault = true;
 		return ProductPrices.newQuery(plv)
-				.setM_Product_ID(orderLine.getM_Product_ID())
+				.setProductId(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()))
 				.onlyAttributePricing()
 				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
 	}

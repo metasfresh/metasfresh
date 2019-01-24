@@ -4,7 +4,6 @@ import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.Env;
 
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
@@ -100,7 +99,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
-		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(Env.getCtx(),
+		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(
 				pricingCtx.getPriceListId(),
 				pricingCtx.getPriceDate(),
 				(Boolean)null // processed

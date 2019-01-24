@@ -5,9 +5,12 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -60,6 +63,23 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public static final Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static final ImmutableAttributeSet ofValuesByAttributeIdMap(@Nullable final Map<Object, Object> valuesByAttributeIdMap)
+	{
+		if (valuesByAttributeIdMap == null || valuesByAttributeIdMap.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		final Builder builder = builder();
+
+		valuesByAttributeIdMap.forEach((attributeIdObj, value) -> {
+			final AttributeId attributeId = AttributeId.ofRepoIdObj(attributeIdObj);
+			builder.attributeValue(attributeId, value);
+		});
+
+		return builder.build();
 	}
 
 	public static ImmutableAttributeSet createSubSet(
@@ -139,7 +159,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return false;
 		}
 	}
-
 
 	public boolean isEmpty()
 	{

@@ -2,8 +2,8 @@ package org.adempiere.pricing.exceptions;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
@@ -47,7 +47,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 				pricingCtx.getPriceDate());
 	}
 
-	protected static String buildMessage(final int documentLineNo, final ProductId productId, final PriceListId priceListId, final Timestamp priceDate)
+	protected static String buildMessage(final int documentLineNo, final ProductId productId, final PriceListId priceListId, final LocalDate priceDate)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (documentLineNo > 0)

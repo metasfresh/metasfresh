@@ -1,7 +1,5 @@
 package de.metas.invoice.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -50,6 +48,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -69,6 +68,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -214,7 +214,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList priceList = invoice.getM_PriceList();
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
+				priceList,
+				TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
@@ -241,7 +244,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList priceList = order.getM_PriceList();
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
+				priceList, 
+				TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());

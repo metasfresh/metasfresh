@@ -1,28 +1,6 @@
 package de.metas.invoice.callout;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.annotations.Callout;
@@ -30,11 +8,13 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -46,6 +26,7 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 @Callout(I_C_Invoice.class)
 @Component("de.metas.invoice.callout.C_Invoice")
@@ -105,16 +86,16 @@ public class C_Invoice
 
 		//
 		// Get current dateInvoiced or use current time if it's not set
-		Timestamp dateInvoiced = invoice.getDateInvoiced();
+		LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 		if (dateInvoiced == null)
 		{
-			dateInvoiced = new Timestamp(System.currentTimeMillis());
+			dateInvoiced = SystemTime.asLocalDate();
 		}
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		final I_M_PriceList priceListNew = priceListBL.getCurrentPricelistOrNull(
 				pricingSystemId,
-				location.getC_Location().getC_Country_ID(),
+				CountryId.ofRepoId(location.getC_Location().getC_Country_ID()),
 				dateInvoiced,
 				soTrx);
 		if (priceListNew == null)
