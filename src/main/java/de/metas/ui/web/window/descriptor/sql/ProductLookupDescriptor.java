@@ -13,11 +13,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.service.ISysConfigBL;
@@ -605,29 +602,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
 	{
-		final ImmutableAttributeSet attributes = createImmutableAttributeSet(lookupValue.getAttribute(ATTRIBUTE_ASI));
+		final ProductId productId = lookupValue.getIdAs(ProductId::ofRepoId);
+
+		final Map<Object, Object> valuesByAttributeIdMap = lookupValue.getAttribute(ATTRIBUTE_ASI);
+		final ImmutableAttributeSet attributes = ImmutableAttributeSet.ofValuesByAttributeIdMap(valuesByAttributeIdMap);
 
 		return ProductAndAttributes.builder()
-				.productId(ProductId.ofRepoId(lookupValue.getIdAsInt()))
+				.productId(productId)
 				.attributes(attributes)
 				.build();
-	}
-
-	public static final ImmutableAttributeSet createImmutableAttributeSet(@Nullable final Map<Object, Object> map)
-	{
-		if (map == null || map.isEmpty())
-		{
-			return ImmutableAttributeSet.EMPTY;
-		}
-
-		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
-
-		map.forEach((attributeIdObj, value) -> {
-			final AttributeId attributeId = AttributeId.ofRepoIdObj(attributeIdObj);
-			builder.attributeValue(attributeId, value);
-		});
-
-		return builder.build();
 	}
 
 	@Value
