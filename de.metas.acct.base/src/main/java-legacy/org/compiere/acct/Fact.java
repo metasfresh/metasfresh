@@ -734,6 +734,11 @@ public final class Fact
 		m_lines.toArray(temp);
 		return temp;
 	}	// getLines
+	
+	public boolean isEmpty()
+	{
+		return m_lines.isEmpty();
+	}
 
 	/**
 	 * Save Fact
@@ -804,6 +809,21 @@ public final class Fact
 	{
 		return m_trxName;
 	}	// getTrxName
+
+	public AmountSourceAndAcct getAmtSourceAndAcctOnDebit()
+	{
+		return m_lines.stream()
+				.map(FactLine::getAmtSourceAndAcctOnDebit)
+				.reduce(AmountSourceAndAcct.ZERO, AmountSourceAndAcct::add);
+	}
+	
+	public AmountSourceAndAcct getAmtSourceAndAcctOnCredit()
+	{
+		return m_lines.stream()
+				.map(FactLine::getAmtSourceAndAcctOnCredit)
+				.reduce(AmountSourceAndAcct.ZERO, AmountSourceAndAcct::add);
+	}
+
 
 	/**
 	 * Fact Balance Utility
@@ -922,13 +942,12 @@ public final class Fact
 		private BigDecimal qty = null;
 
 		private boolean alsoAddZeroLine = false;
-		
+
 		// Other dimensions
 		private Integer AD_Org_ID;
 		private Integer C_BPartner_ID;
 		private Integer C_Tax_ID;
 
-		
 		private FactLineBuilder(final Fact fact)
 		{
 			this.fact = fact;
@@ -1004,7 +1023,7 @@ public final class Fact
 				{
 					log.debug("Both amounts & qty = 0/Null - {}", this);
 					// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
-					if(!alsoAddZeroLine)
+					if (!alsoAddZeroLine)
 					{
 						return null;
 					}
@@ -1157,7 +1176,7 @@ public final class Fact
 			return this;
 		}
 
-		/** 
+		/**
 		 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
 		 * Invoke this builder method still have the builder add them.
 		 */
@@ -1166,7 +1185,7 @@ public final class Fact
 			alsoAddZeroLine = true;
 			return this;
 		}
-		
+
 		public FactLineBuilder setC_Currency_ID(final int currencyId)
 		{
 			assertNotBuild();

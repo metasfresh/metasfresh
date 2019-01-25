@@ -1,5 +1,6 @@
 package de.metas.i18n;
 
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -114,6 +115,17 @@ public interface IMsgBL extends ISingletonService
 	 */
 	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
 
+	default ITranslatableString getTranslatableMsgText(final String adMessage, final List<Object> msgParameters)
+	{
+		final Object[] msgParametersArr = msgParameters != null ? msgParameters.toArray() : new Object[] {};
+		return getTranslatableMsgText(adMessage, msgParametersArr);
+	}
+
+	default ITranslatableString getTranslatableMsgText(final boolean booleanValue)
+	{
+		return getTranslatableMsgText(booleanValue ? "Y" : "N");
+	}
+	
 	/**
 	 * Gets AD_Language/message map
 	 * 

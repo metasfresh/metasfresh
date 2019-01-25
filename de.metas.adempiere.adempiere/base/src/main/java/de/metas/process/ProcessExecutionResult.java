@@ -1,5 +1,11 @@
 package de.metas.process;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+
+import javax.annotation.concurrent.Immutable;
+
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -7,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -18,6 +22,8 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -32,7 +38,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
-import lombok.AllArgsConstructor;
 
 /*
  * #%L
@@ -454,6 +459,13 @@ public class ProcessExecutionResult
 		reportContentType = contentType;
 	}
 
+	public void setReportData(@NonNull final File file)
+	{
+		reportData = Util.readBytes(file);
+		reportFilename = file.getName();
+		reportContentType = MimeType.getMimeType(reportFilename);
+	}
+	
 	public byte[] getReportData()
 	{
 		return reportData;

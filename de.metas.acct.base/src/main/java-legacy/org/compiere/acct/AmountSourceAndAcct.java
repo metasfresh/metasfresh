@@ -1,5 +1,7 @@
 package org.compiere.acct;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
@@ -19,11 +21,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,18 +51,24 @@ final class AmountSourceAndAcct
 				.build();
 	}
 
-	public static final AmountSourceAndAcct ZERO = of(BigDecimal.ZERO, BigDecimal.ZERO);
+	public static final AmountSourceAndAcct ZERO = new AmountSourceAndAcct();
 
 	private final BigDecimal amtSource;
 	private final BigDecimal amtAcct;
 
+	private AmountSourceAndAcct()
+	{
+		amtSource = BigDecimal.ZERO;
+		amtAcct = BigDecimal.ZERO;
+	}
+
 	private AmountSourceAndAcct(final Builder builder)
 	{
-		super();
+		Check.assumeNotNull(builder.amtSource, "amtSource not null");
+		Check.assumeNotNull(builder.amtAcct, "amtAcct not null");
+
 		amtSource = builder.amtSource;
-		Check.assumeNotNull(amtSource, "amtSource not null");
 		amtAcct = builder.amtAcct;
-		Check.assumeNotNull(amtAcct, "amtAcct not null");
 	}
 
 	@Override
@@ -82,6 +90,30 @@ final class AmountSourceAndAcct
 		return amtAcct;
 	}
 
+	public boolean isZero()
+	{
+		return amtSource.signum() == 0 && amtAcct.signum() == 0;
+	}
+
+	public AmountSourceAndAcct add(@NonNull final AmountSourceAndAcct add)
+	{
+		if (isZero())
+		{
+			return add;
+		}
+		else if (add.isZero())
+		{
+			return this;
+		}
+		else
+		{
+			return builder()
+					.add(this)
+					.add(add)
+					.build();
+		}
+	}
+
 	public static final class Builder
 	{
 		private BigDecimal amtSource = BigDecimal.ZERO;
@@ -89,11 +121,15 @@ final class AmountSourceAndAcct
 
 		private Builder()
 		{
-			super();
 		}
 
 		public final AmountSourceAndAcct build()
 		{
+			if (amtSource.signum() == 0 || amtAcct.signum() == 0)
+			{
+				return ZERO;
+			}
+
 			return new AmountSourceAndAcct(this);
 		}
 
@@ -124,11 +160,11 @@ final class AmountSourceAndAcct
 		public Builder add(final AmountSourceAndAcct amtSourceAndAcctToAdd)
 		{
 			// Optimization: do nothing if zero
-			if (amtSourceAndAcctToAdd == ZERO)
+			if (amtSourceAndAcctToAdd.isZero())
 			{
 				return this;
 			}
-			
+
 			addAmtSource(amtSourceAndAcctToAdd.getAmtSource());
 			addAmtAcct(amtSourceAndAcctToAdd.getAmtAcct());
 			return this;

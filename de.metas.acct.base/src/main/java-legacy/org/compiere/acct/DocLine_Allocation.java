@@ -374,6 +374,12 @@ class DocLine_Allocation extends DocLine
 		return creditMemoInvoice;
 	}
 
+	public final boolean isRevenue()
+	{
+		return (isSOTrxInvoice() && !isCreditMemoInvoice()) // regular sales invoice
+				|| (!isSOTrxInvoice() && isCreditMemoInvoice()); // purchase invoice credit memo
+	}
+
 	/**
 	 * Get Invoice C_Currency_ID
 	 *

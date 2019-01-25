@@ -69,6 +69,29 @@ public interface I_M_Product
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Obligatorische Zusatzangaben.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAdditional_produktinfos (java.lang.String Additional_produktinfos);
+
+	/**
+	 * Get Obligatorische Zusatzangaben.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAdditional_produktinfos();
+
+    /** Column definition for Additional_produktinfos */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Additional_produktinfos = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Additional_produktinfos", null);
+    /** Column name Additional_produktinfos */
+    public static final String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
+
+	/**
 	 * Set Umsatzrealisierung.
 	 * Method for recording revenue
 	 *
@@ -470,6 +493,29 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_ImageURL = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "ImageURL", null);
     /** Column name ImageURL */
     public static final String COLUMNNAME_ImageURL = "ImageURL";
+
+	/**
+	 * Set Zutaten.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIngredients (java.lang.String Ingredients);
+
+	/**
+	 * Get Zutaten.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIngredients();
+
+    /** Column definition for Ingredients */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Ingredients = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Ingredients", null);
+    /** Column name Ingredients */
+    public static final String COLUMNNAME_Ingredients = "Ingredients";
 
 	/**
 	 * Set Aktiv.
@@ -1605,6 +1651,29 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Volume = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Volume", null);
     /** Column name Volume */
     public static final String COLUMNNAME_Volume = "Volume";
+
+	/**
+	 * Set Lager- und Transporttemperatur.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWarehouse_temperature (java.lang.String Warehouse_temperature);
+
+	/**
+	 * Get Lager- und Transporttemperatur.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWarehouse_temperature();
+
+    /** Column definition for Warehouse_temperature */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Warehouse_temperature = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Warehouse_temperature", null);
+    /** Column name Warehouse_temperature */
+    public static final String COLUMNNAME_Warehouse_temperature = "Warehouse_temperature";
 
 	/**
 	 * Set Gewicht.

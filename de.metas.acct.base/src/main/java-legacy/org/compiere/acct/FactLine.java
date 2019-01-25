@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
@@ -806,20 +807,16 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public final AmountSourceAndAcct getAmtSourceAndAcctDrOrCr()
 	{
-		final BigDecimal amtAcctDr = getAmtAcctDr();
-		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
-		final BigDecimal amtAcctCr = getAmtAcctCr();
-		final int amtAcctCrSign = amtAcctCr == null ? 0 : amtAcctCr.signum();
+		final int amtAcctDrSign = getAmtAcctDr().signum();
+		final int amtAcctCrSign = getAmtAcctCr().signum();
 		
 		if(amtAcctDrSign != 0 && amtAcctCrSign == 0)
 		{
-			final BigDecimal amtSourceDr = getAmtSourceDr();
-			return AmountSourceAndAcct.of(amtSourceDr, amtAcctDr);
+			return getAmtSourceAndAcctOnDebit();
 		}
 		else if(amtAcctDrSign == 0 && amtAcctCrSign != 0)
 		{
-			final BigDecimal amtSourceCr = getAmtSourceCr();
-			return AmountSourceAndAcct.of(amtSourceCr, amtAcctCr);
+			return getAmtSourceAndAcctOnCredit();
 		}
 		else if (amtAcctDrSign == 0 && amtAcctCrSign == 0)
 		{
@@ -828,9 +825,18 @@ final class FactLine extends X_Fact_Acct
 		else
 		{
 			// shall not happen
-			throw new IllegalStateException("Both AmtAcctDr and AmtAcctCr are not zero: " + this);
+			throw new AdempiereException("Both AmtAcctDr and AmtAcctCr are not zero: " + this);
 		}
-		
+	}
+
+	public AmountSourceAndAcct getAmtSourceAndAcctOnDebit()
+	{
+		return AmountSourceAndAcct.of(getAmtSourceDr(), getAmtAcctDr());
+	}
+
+	public AmountSourceAndAcct getAmtSourceAndAcctOnCredit()
+	{
+		return AmountSourceAndAcct.of(getAmtSourceCr(), getAmtAcctCr());
 	}
 
 	/**
