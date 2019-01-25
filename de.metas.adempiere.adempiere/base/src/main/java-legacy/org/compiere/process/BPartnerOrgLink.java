@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
@@ -28,13 +29,13 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Role_OrgAccess;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MOrg;
 import org.compiere.model.MWarehouse;
 
+import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
@@ -118,7 +119,7 @@ public class BPartnerOrgLink extends JavaProcess
 			org.setName(bp.getName());
 			org.setDescription(bp.getDescription());
 			orgsRepo.save(org);
-			
+
 			p_AD_Org_ID = OrgId.ofRepoId(org.getAD_Org_ID());
 		}
 		else	// check if linked to already
@@ -133,7 +134,8 @@ public class BPartnerOrgLink extends JavaProcess
 		}
 
 		// Update Org Info
-		final I_AD_OrgInfo oInfo = org.getInfo();
+		final I_AD_OrgInfo oInfo = create(org.getInfo(), I_AD_OrgInfo.class);
+		oInfo.setOrgBP_Location_ID(p_C_BPartner_Location_ID);
 		oInfo.setAD_OrgType_ID(p_AD_OrgType_ID);
 
 		// metas: 03084: We are no longer setting the location to AD_OrgInfo.
@@ -163,8 +165,9 @@ public class BPartnerOrgLink extends JavaProcess
 		Services.get(IWarehouseBL.class).getDefaultLocator(wh);
 
 		// Update/Save Org Info
+
 		oInfo.setM_Warehouse_ID(wh.getM_Warehouse_ID());
-		save(oInfo,get_TrxName());
+		save(oInfo, get_TrxName());
 
 		// Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID.getRepoId());
