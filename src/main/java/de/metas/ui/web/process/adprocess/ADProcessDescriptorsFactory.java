@@ -1,6 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -21,12 +20,9 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessParams;
@@ -129,7 +125,6 @@ import lombok.NonNull;
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 		final ProcessPreconditionsResolutionSupplier preconditionsResolutionSupplier = ProcessPreconditionsResolutionSupplier.builder()
 				.preconditionsContext(preconditionsContext)
-				.processPreconditionsCheckers(relatedProcessDescriptor.getProcessPreconditionsCheckers())
 				.processDescriptor(processDescriptor)
 				.build();
 
@@ -354,40 +349,22 @@ import lombok.NonNull;
 	private static final class ProcessPreconditionsResolutionSupplier implements Supplier<ProcessPreconditionsResolution>
 	{
 		private final IProcessPreconditionsContext preconditionsContext;
-		private final ImmutableList<IProcessPrecondition> processPreconditionsCheckers;
 		private final ProcessDescriptor processDescriptor;
 
 		@Builder
 		private ProcessPreconditionsResolutionSupplier(
 				@NonNull final IProcessPreconditionsContext preconditionsContext,
-				final List<IProcessPrecondition> processPreconditionsCheckers,
 				@NonNull final ProcessDescriptor processDescriptor)
 		{
 			this.preconditionsContext = preconditionsContext;
-			this.processPreconditionsCheckers = !processPreconditionsCheckers.isEmpty() ? ImmutableList.copyOf(processPreconditionsCheckers) : ImmutableList.of();
 			this.processDescriptor = processDescriptor;
 		}
 
 		@Override
 		public ProcessPreconditionsResolution get()
 		{
-			//
-			// Check registered preconditions
-			final ProcessPreconditionsResolution rejectResolution = processPreconditionsCheckers.stream()
-					.map(processPreconditionsChecker -> processPreconditionsChecker.checkPreconditionsApplicable(preconditionsContext))
-					.filter(resolution -> !resolution.isAccepted())
-					.findFirst()
-					.orElse(null);
-			if (rejectResolution != null)
-			{
-				return rejectResolution;
-			}
-
-			//
-			// Ask the process descriptor
 			return processDescriptor.checkPreconditionsApplicable(preconditionsContext);
 		}
-
 	}
 
 	private static final class ProcessParametersCallout
