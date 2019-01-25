@@ -8,21 +8,12 @@ import {
   elementPathRequest,
   updateBreadcrumb,
 } from '../../actions/MenuActions';
-import { getSelection } from '../../reducers/windowHandler';
+import { getSelectionInstant } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
 const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
-
-const mapStateToProps = (state, props) => ({
-  standardActions: state.windowHandler.master.standardActions,
-  selected: getSelection({
-    state,
-    windowType: props.windowType,
-    viewId: props.viewId,
-  }),
-});
 
 class Subheader extends Component {
   static propTypes = {
@@ -417,5 +408,14 @@ class Subheader extends Component {
     );
   }
 }
+
+const mapStateToProps = (state, props) => ({
+  standardActions: state.windowHandler.master.standardActions,
+  selected: getSelectionInstant(
+    state,
+    props,
+    state.windowHandler.selectionsHash
+  ),
+});
 
 export default connect(mapStateToProps)(onClickOutside(Subheader));
