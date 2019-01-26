@@ -1,11 +1,17 @@
 package de.metas.process;
 
+import java.util.HashSet;
+
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.security.IUserRolePermissions;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -45,42 +51,65 @@ public final class RelatedProcessDescriptor
 		return new Builder();
 	}
 
-	private final int processId;
+	private final AdProcessId processId;
 
 	private final int tableId;
-	private final int windowId;
+	private final AdWindowId windowId;
+	private final AdTabId tabId;
 
-	private final boolean webuiQuickAction;
+	public static enum DisplayPlace
+	{
+		SingleDocumentActionsMenu, //
+		IncludedTabTopActionsMenu, //
+		ViewActionsMenu, //
+		ViewQuickActions, //
+	}
+
+	private final ImmutableSet<DisplayPlace> displayPlaces;
+
 	private final boolean webuiDefaultQuickAction;
 
 	private RelatedProcessDescriptor(final Builder builder)
 	{
 		processId = builder.processId;
-		Preconditions.checkArgument(processId > 0, "adProcessId not set");
+		Preconditions.checkArgument(processId != null, "adProcessId not set");
 
 		tableId = builder.tableId > 0 ? builder.tableId : 0;
-		windowId = builder.windowId > 0 ? builder.windowId : 0;
+		windowId = builder.windowId;
+		tabId = builder.tabId;
 
-		webuiQuickAction = builder.webuiQuickAction;
-		webuiDefaultQuickAction = builder.webuiDefaultQuickAction;
+		displayPlaces = builder.getDisplayPlaces();
+		webuiDefaultQuickAction = builder.webuiDefaultQuickAction && displayPlaces.contains(DisplayPlace.ViewQuickActions);
+	}
+
+	public boolean isDisplayedOn(@NonNull final DisplayPlace displayPlace)
+	{
+		return getDisplayPlaces().contains(displayPlace);
 	}
 
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
 	{
-		return permissions.checkProcessAccessRW(processId);
+		return permissions.checkProcessAccessRW(processId.getRepoId());
 	}
+
+	//
+	//
+	//
 
 	public static final class Builder
 	{
-		private int processId;
+		private AdProcessId processId;
 		private int tableId;
-		private int windowId;
-		private boolean webuiQuickAction;
+		private AdWindowId windowId;
+		private AdTabId tabId;
+
+		private final HashSet<DisplayPlace> displayPlaces = new HashSet<>();
+		private final ImmutableSet<DisplayPlace> DEFAULT_displayPlaces = ImmutableSet.of(DisplayPlace.SingleDocumentActionsMenu);
+
 		private boolean webuiDefaultQuickAction;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public RelatedProcessDescriptor build()
@@ -88,7 +117,7 @@ public final class RelatedProcessDescriptor
 			return new RelatedProcessDescriptor(this);
 		}
 
-		public Builder processId(final int adProcessId)
+		public Builder processId(final AdProcessId adProcessId)
 		{
 			processId = adProcessId;
 			return this;
@@ -102,26 +131,46 @@ public final class RelatedProcessDescriptor
 
 		public Builder anyTable()
 		{
-			tableId = 0;
-			return this;
+			return tableId(0);
 		}
 
-		public Builder windowId(final int adWindowId)
+		public Builder windowId(final AdWindowId windowId)
 		{
-			windowId = adWindowId > 0 ? adWindowId : 0;
+			this.windowId = windowId;
 			return this;
 		}
 
 		public Builder anyWindow()
 		{
-			windowId = 0;
+			return windowId(null);
+		}
+
+		public Builder tabId(final AdTabId tabId)
+		{
+			this.tabId = tabId;
 			return this;
 		}
 
-		public Builder webuiQuickAction(final boolean webuiQuickAction)
+		public Builder displayPlace(@NonNull final DisplayPlace displayPlace)
 		{
-			this.webuiQuickAction = webuiQuickAction;
+			this.displayPlaces.add(displayPlace);
 			return this;
+		}
+
+		public Builder displayPlaceIfTrue(final boolean cond, @NonNull final DisplayPlace displayPlace)
+		{
+			if (cond)
+			{
+				displayPlace(displayPlace);
+			}
+			return this;
+		}
+
+		private ImmutableSet<DisplayPlace> getDisplayPlaces()
+		{
+			return !displayPlaces.isEmpty()
+					? ImmutableSet.copyOf(displayPlaces)
+					: DEFAULT_displayPlaces;
 		}
 
 		public Builder webuiDefaultQuickAction(final boolean webuiDefaultQuickAction)
@@ -132,8 +181,7 @@ public final class RelatedProcessDescriptor
 
 		public Builder webuiDefaultQuickAction()
 		{
-			webuiDefaultQuickAction(true);
-			return this;
+			return webuiDefaultQuickAction(true);
 		}
 	}
 }

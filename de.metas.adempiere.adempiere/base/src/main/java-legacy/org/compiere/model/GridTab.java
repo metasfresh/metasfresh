@@ -46,6 +46,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
@@ -96,6 +98,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1875,7 +1878,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public boolean isPrinted()
 	{
-		return m_vo.getPrint_Process_ID() > 0;
+		return m_vo.getPrintProcessId() != null;
 	}	// isPrinted
 
 	/**
@@ -1898,15 +1901,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		return m_vo.getTabNo();
 	}	// getTabNo
 
-	/**
-	 * Get Process ID
-	 *
-	 * @return Process ID
-	 */
-	public int getAD_Process_ID()
+	public AdProcessId getPrintProcessId()
 	{
-		return m_vo.getPrint_Process_ID();
-	}	// getAD_Process_ID
+		return m_vo.getPrintProcessId();
+	}
 
 	/**
 	 * Is High Volume?
@@ -4409,9 +4407,15 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		@Override
-		public int getAD_Window_ID()
+		public AdWindowId getAdWindowId()
 		{
-			return gridTab.getAD_Window_ID();
+			return AdWindowId.ofRepoId(gridTab.getAD_Window_ID());
+		}
+		
+		@Override
+		public AdTabId getAdTabId()
+		{
+			return AdTabId.ofRepoId(gridTab.getAD_Tab_ID());
 		}
 
 		@Override

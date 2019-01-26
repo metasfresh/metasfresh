@@ -34,14 +34,9 @@ import javax.print.PrintServiceLookup;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfo;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.model.I_AD_PrinterRouting;
@@ -53,6 +48,10 @@ import de.metas.adempiere.service.IPrintingService;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa
@@ -71,14 +70,17 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
 		final int AD_Role_ID = Env.getAD_Role_ID(ctx);
 		final int AD_User_ID = Env.getAD_User_ID(ctx);
-		final int AD_Process_ID = pi.getAD_Process_ID();
+		final AdProcessId AD_Process_ID = pi.getAdProcessId();
 		final int C_DocType_ID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, pi.getTable_ID(), pi.getRecord_ID());
 		final String printerType = null;
 
 		return findPrintingService0(ctx,
-				AD_Client_ID, AD_Org_ID,
-				AD_Role_ID, AD_User_ID,
-				C_DocType_ID, AD_Process_ID,
+				AD_Client_ID, 
+				AD_Org_ID,
+				AD_Role_ID, 
+				AD_User_ID,
+				C_DocType_ID,
+				AD_Process_ID.getRepoId(),
 				printerType);
 	}
 

@@ -542,7 +542,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setAD_Table_ID(pi.getTable_ID());
 		adPInstance.setRecord_ID(Util.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
 		adPInstance.setWhereClause(pi.getWhereClause());
-		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
+		adPInstance.setAD_Process_ID(pi.getAdProcessId().getRepoId());
 		adPInstance.setAD_Window_ID(pi.getAD_Window_ID());
 
 		final Language reportingLanguage = pi.getReportLanguage();

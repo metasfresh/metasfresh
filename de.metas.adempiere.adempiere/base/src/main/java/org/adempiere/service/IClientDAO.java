@@ -37,17 +37,16 @@ public interface IClientDAO extends ISingletonService
 	/**
 	 * System AD_Client_ID (i.e. AD_Client_ID=0)
 	 */
-	int SYSTEM_CLIENT_ID = 0;
+	int SYSTEM_CLIENT_ID = ClientId.SYSTEM.getRepoId();
 	
-	I_AD_Client getById(int adClientId);
+	I_AD_Client getById(ClientId adClientId);
+	
+	default I_AD_Client getById(int adClientId)
+	{
+		return getById(ClientId.ofRepoId(adClientId));
+	}
 
-	/**
-	 * Retrieves {@link I_AD_Client} for ID.
-	 *
-	 * @param ctx
-	 * @param adClientId
-	 * @return client
-	 */
+	@Deprecated
 	I_AD_Client retriveClient(Properties ctx, int adClientId);
 
 	/**
