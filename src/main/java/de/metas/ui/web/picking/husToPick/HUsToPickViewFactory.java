@@ -11,6 +11,7 @@ import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
@@ -159,8 +160,8 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(processClass))
-				.webuiQuickAction(true)
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 

@@ -46,6 +46,7 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -587,7 +588,7 @@ public class DocumentCollection
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
-		final int printProcessId = entityDescriptor.getPrintProcessId();
+		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = getTableRecordReference(documentPath);
 
 		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()

@@ -5,6 +5,8 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -28,6 +30,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
@@ -95,17 +98,19 @@ import lombok.NonNull;
 
 	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
-	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final WebuiPreconditionsContext preconditionsContext, final IUserRolePermissions userRolePermissions)
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(
+			@NonNull final WebuiPreconditionsContext preconditionsContext,
+			@NonNull final IUserRolePermissions userRolePermissions)
 	{
 		final String tableName = preconditionsContext.getTableName();
 		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
 
-		final int adWindowId = preconditionsContext.getAD_Window_ID();
+		final AdWindowId adWindowId = preconditionsContext.getAdWindowId();
+		final AdTabId adTabId = preconditionsContext.getAdTabId();
 
 		final Stream<RelatedProcessDescriptor> relatedProcessDescriptors;
 		{
-			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
-					.values()
+			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
 			final Stream<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors()
 					.stream();
@@ -114,12 +119,17 @@ import lombok.NonNull;
 					.collect(GuavaCollectors.distinctBy(RelatedProcessDescriptor::getProcessId));
 		}
 
+		final DisplayPlace displayPlace = preconditionsContext.getDisplayPlace();
+
 		return relatedProcessDescriptors
+				.filter(relatedProcess -> displayPlace == null || relatedProcess.isDisplayedOn(displayPlace))
 				.filter(relatedProcess -> relatedProcess.isExecutionGranted(userRolePermissions)) // only those which can be executed by current user permissions
 				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
 
-	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor, @NonNull final IProcessPreconditionsContext preconditionsContext)
+	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(
+			@NonNull final RelatedProcessDescriptor relatedProcessDescriptor,
+			@NonNull final IProcessPreconditionsContext preconditionsContext)
 	{
 		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcessDescriptor.getProcessId());
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
@@ -135,7 +145,7 @@ import lombok.NonNull;
 				.processDescription(processDescriptor.getDescription())
 				.debugProcessClassname(processDescriptor.getProcessClassname())
 				//
-				.quickAction(relatedProcessDescriptor.isWebuiQuickAction())
+				.displayPlaces(relatedProcessDescriptor.getDisplayPlaces())
 				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
 				//
 				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)

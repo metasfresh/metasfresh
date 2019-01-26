@@ -9,13 +9,15 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
-
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 
@@ -62,7 +64,7 @@ public final class WebuiRelatedProcessDescriptor
 	private final ITranslatableString processDescription;
 
 	@Getter
-	private final boolean quickAction;
+	private final ImmutableSet<DisplayPlace> displayPlaces;
 
 	@Getter
 	private final boolean defaultQuickAction;
@@ -78,7 +80,7 @@ public final class WebuiRelatedProcessDescriptor
 			final String internalName,
 			final ITranslatableString processCaption,
 			final ITranslatableString processDescription,
-			final boolean quickAction,
+			@NonNull @Singular final ImmutableSet<DisplayPlace> displayPlaces,
 			final boolean defaultQuickAction,
 			@NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier,
 			final String debugProcessClassname)
@@ -87,8 +89,8 @@ public final class WebuiRelatedProcessDescriptor
 		this.internalName = internalName;
 		this.processCaption = processCaption;
 		this.processDescription = processDescription;
-		this.quickAction = quickAction;
-		this.defaultQuickAction = defaultQuickAction;
+		this.displayPlaces = displayPlaces;
+		this.defaultQuickAction = defaultQuickAction && displayPlaces.contains(DisplayPlace.ViewQuickActions);
 
 		// Memorize the resolution supplier to make sure it's not invoked more than once because it might be an expensive operation.
 		// Also we assume this is a short living instance which was created right before checking
@@ -161,6 +163,11 @@ public final class WebuiRelatedProcessDescriptor
 		}
 
 		return debugProperties.build();
+	}
+
+	public boolean isDisplayedOn(@NonNull final DisplayPlace displayPlace)
+	{
+		return getDisplayPlaces().contains(displayPlace);
 	}
 
 	@Value

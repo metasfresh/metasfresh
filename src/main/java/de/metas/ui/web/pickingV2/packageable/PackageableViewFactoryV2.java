@@ -6,8 +6,10 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.money.MoneyService;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_OpenProductsToPick;
@@ -105,8 +107,8 @@ public class PackageableViewFactoryV2 implements IViewFactory
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final int processId = adProcessDAO.retrieveProcessIdByClass(processClass);
-		if (processId <= 0)
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId == null)
 		{
 			throw new AdempiereException("No processId found for " + processClass);
 		}
@@ -114,7 +116,7 @@ public class PackageableViewFactoryV2 implements IViewFactory
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
 				.anyTable().anyWindow()
-				.webuiQuickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 

@@ -3,6 +3,10 @@ package de.metas.ui.web.process;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -10,7 +14,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -26,53 +34,61 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public final class DocumentPreconditionsAsContext implements WebuiPreconditionsContext
 {
-	public static final DocumentPreconditionsAsContext of(final Document document, final Set<TableRecordReference> selectedIncludedRecords)
-	{
-		return new DocumentPreconditionsAsContext(document, selectedIncludedRecords);
-	}
-
 	private final Document document;
+	@Getter
 	private final String tableName;
-	private final Set<TableRecordReference> selectedIncludedRecords;
 
-	private DocumentPreconditionsAsContext(@NonNull final Document document, final Set<TableRecordReference> selectedIncludedRecords)
+	@Getter
+	private final AdTabId adTabId;
+	@Getter
+	private final ImmutableSet<TableRecordReference> selectedIncludedRecords;
+
+	@Getter
+	private final DisplayPlace displayPlace;
+
+	@Builder
+	private DocumentPreconditionsAsContext(
+			@NonNull final Document document,
+			@Nullable final DetailId selectedTabId,
+			@Nullable final Set<TableRecordReference> selectedIncludedRecords,
+			@Nullable final DisplayPlace displayPlace)
 	{
 		this.document = document;
 		tableName = document.getEntityDescriptor().getTableName();
-		
+
+		this.adTabId = selectedTabId != null ? selectedTabId.toAdTabId() : null;
 		this.selectedIncludedRecords = selectedIncludedRecords != null ? ImmutableSet.copyOf(selectedIncludedRecords) : ImmutableSet.of();
+
+		this.displayPlace = displayPlace;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.addValue(document)
+				.omitNullValues()
+				.add("documentPath", document.getDocumentPath())
+				.add("tableName", tableName)
+				.add("adTabId", adTabId)
 				.add("selectedIncludedRecords", selectedIncludedRecords)
 				.toString();
 	}
-	
-	@Override
-	public int getAD_Window_ID()
-	{
-		return document.getDocumentPath().getAD_Window_ID(-1);
-	}
 
 	@Override
-	public String getTableName()
+	public AdWindowId getAdWindowId()
 	{
-		return tableName;
+		return document.getDocumentPath().getAdWindowIdOrNull();
 	}
 
 	@Override
@@ -80,29 +96,23 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	{
 		return InterfaceWrapperHelper.create(document, modelClass);
 	}
-	
+
 	@Override
 	public <T> List<T> getSelectedModels(final Class<T> modelClass)
 	{
 		final T model = getSelectedModel(modelClass);
 		return ImmutableList.of(model);
 	}
-	
+
 	@Override
 	public int getSingleSelectedRecordId()
 	{
 		return document.getDocumentIdAsInt();
 	}
-	
+
 	@Override
 	public int getSelectionSize()
 	{
 		return 1;
-	}
-	
-	@Override
-	public Set<TableRecordReference> getSelectedIncludedRecords()
-	{
-		return selectedIncludedRecords;
 	}
 }

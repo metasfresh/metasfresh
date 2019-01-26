@@ -5,15 +5,17 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.element.api.AdTabId;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,7 +46,7 @@ public final class DetailId
 {
 	public static DetailId fromAD_Tab_ID(final int adTabId)
 	{
-		return new DetailId(adTabId);
+		return new DetailId(AdTabId.ofRepoId(adTabId));
 	}
 
 	@JsonCreator
@@ -67,7 +69,7 @@ public final class DetailId
 
 	public static final String toJson(final DetailId detailId)
 	{
-		return detailId == null ? null : String.valueOf(detailId.adTabId);
+		return detailId == null ? null : String.valueOf(detailId.adTabId.getRepoId());
 	}
 
 	public static final Set<String> toJson(final Collection<DetailId> detailIds)
@@ -80,13 +82,12 @@ public final class DetailId
 		return detailIds.stream().map(detailId -> detailId.toJson()).collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private final int adTabId;
+	private final AdTabId adTabId;
 
 	private transient String _tableAlias = null; // lazy
 
-	private DetailId(final int adTabId)
+	private DetailId(@NonNull final AdTabId adTabId)
 	{
-		Check.assume(adTabId > 0, "adTabId > 0");
 		this.adTabId = adTabId;
 	}
 
@@ -106,8 +107,13 @@ public final class DetailId
 	{
 		if (_tableAlias == null)
 		{
-			_tableAlias = "d" + adTabId;
+			_tableAlias = "d" + adTabId.getRepoId();
 		}
 		return _tableAlias;
+	}
+
+	public AdTabId toAdTabId()
+	{
+		return adTabId;
 	}
 }

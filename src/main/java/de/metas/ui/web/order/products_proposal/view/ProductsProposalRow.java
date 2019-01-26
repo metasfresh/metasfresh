@@ -50,7 +50,10 @@ public class ProductsProposalRow implements IViewRow
 {
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 10)
 	private final LookupValue product;
+	
+	// TODO ASI column 
 
+	// Show price with currency
 	@ViewColumn(captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount, seqNo = 20)
 	private final Amount price;
 
@@ -59,6 +62,7 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final BigDecimal qty;
 
+	// TODO: change it to "last shipment days" = now() - last shipment date
 	@ViewColumn(captionKey = "LastShipmentDate", widgetType = DocumentFieldWidgetType.Amount, seqNo = 40)
 	private final LocalDate lastShipmentDate;
 

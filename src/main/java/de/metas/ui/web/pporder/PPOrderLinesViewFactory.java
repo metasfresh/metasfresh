@@ -7,14 +7,15 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
@@ -152,14 +153,13 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(processClass);
-		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
 
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
-				.windowId(PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toInt())
+				.windowId(PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toAdWindowIdOrNull())
 				.anyTable()
-				.webuiQuickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 }

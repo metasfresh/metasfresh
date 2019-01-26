@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.datatypes;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -132,6 +133,11 @@ public final class WindowId
 		{
 			return fallbackValue;
 		}
+	}
+
+	public AdWindowId toAdWindowIdOrNull()
+	{
+		return AdWindowId.ofRepoIdOrNull(toIntOr(-1));
 	}
 
 	public boolean isInt()

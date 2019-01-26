@@ -21,6 +21,7 @@ import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -169,24 +170,24 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private RelatedProcessDescriptor createIssueTopLevelHusDescriptor()
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_IssueTopLevelHUs.class))
-				.webuiQuickAction(true)
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_IssueTopLevelHUs.class))
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 
 	private RelatedProcessDescriptor createSelectHuAsSourceHuDescriptor()
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_Create_M_Source_HUs.class))
-				.webuiQuickAction(true)
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_Create_M_Source_HUs.class))
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 
 	private RelatedProcessDescriptor createIssueTUsDescriptor()
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_IssueTUs.class))
-				.webuiQuickAction(true)
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(WEBUI_PP_Order_HUEditor_IssueTUs.class))
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 

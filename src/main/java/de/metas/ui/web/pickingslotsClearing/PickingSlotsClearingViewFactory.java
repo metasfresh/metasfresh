@@ -15,6 +15,7 @@ import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotQuery.PickingSlotQueryBuilder;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -158,7 +159,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))
 				.anyTable().anyWindow()
-				.webuiQuickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 

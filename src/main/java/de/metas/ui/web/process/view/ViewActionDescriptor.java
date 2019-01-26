@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
@@ -22,7 +23,6 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -131,8 +131,8 @@ public final class ViewActionDescriptor
 				.processCaption(caption)
 				.processDescription(description)
 				//
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.defaultQuickAction(defaultAction)
-				.quickAction(true)
 				//
 				.preconditionsResolutionSupplier(() -> checkPreconditions(view, selectedDocumentIds))
 				//

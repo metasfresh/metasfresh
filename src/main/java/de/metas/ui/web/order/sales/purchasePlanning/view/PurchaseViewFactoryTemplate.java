@@ -13,9 +13,11 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidatesService;
@@ -216,12 +218,12 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 
 	protected final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
-		final int processId = adProcessRepo.retriveProcessIdByClassIfUnique(processClass);
-		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
+		final AdProcessId processId = adProcessRepo.retrieveProcessIdByClassIfUnique(processClass);
+		Preconditions.checkArgument(processId != null, "No AD_Process_ID found for %s", processClass);
 
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
-				.webuiQuickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 
