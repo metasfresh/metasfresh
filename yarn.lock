@@ -1618,7 +1618,7 @@ assert@^1.1.1:
   dependencies:
     util "0.10.3"
 
-assertion-error@^1.1.0:
+assertion-error@^1.0.2, assertion-error@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
@@ -5262,6 +5262,13 @@ enzyme-to-json@^3.3.0:
   integrity sha1-Z8YEDpMRgvGDQYry659DIyWKp38=
   dependencies:
     lodash "^4.17.4"
+
+enzyme-wait@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/enzyme-wait/-/enzyme-wait-1.0.9.tgz#f7a08bf49c7047358fa03e1f411a565c3a15101a"
+  integrity sha1-96CL9JxwRzWPoD4fQRpWXDoVEBo=
+  dependencies:
+    assertion-error "^1.0.2"
 
 enzyme@^3.7.0:
   version "3.7.0"
