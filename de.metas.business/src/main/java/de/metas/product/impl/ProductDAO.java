@@ -2,6 +2,7 @@ package de.metas.product.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -82,6 +83,12 @@ public class ProductDAO implements IProductDAO
 	public I_M_Product getById(final int productId)
 	{
 		return getById(ProductId.ofRepoId(productId), I_M_Product.class);
+	}
+
+	@Override
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
 	}
 
 	@Override

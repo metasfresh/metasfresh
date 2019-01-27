@@ -14,8 +14,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -29,7 +27,6 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -241,21 +238,9 @@ public class ProductPriceQuery
 		return _contextProvider;
 	}
 
-	public ProductPriceQuery setM_PriceList_Version_ID(final int priceListVersionId)
-	{
-		setPriceListVersionId(PriceListVersionId.ofRepoIdOrNull(priceListVersionId));
-		return this;
-	}
-
 	public ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
 		this._priceListVersionId = priceListVersionId;
-		return this;
-	}
-
-	public ProductPriceQuery setM_PriceList_Version_ID(@NonNull final I_M_PriceList_Version priceListVersion)
-	{
-		setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		return this;
 	}
 
@@ -265,21 +250,9 @@ public class ProductPriceQuery
 		return _priceListVersionId;
 	}
 
-	public ProductPriceQuery setM_Product_ID(final int productId)
-	{
-		setProductId(ProductId.ofRepoIdOrNull(productId));
-		return this;
-	}
-
 	public ProductPriceQuery setProductId(final ProductId productId)
 	{
 		_productId = productId;
-		return this;
-	}
-
-	public ProductPriceQuery setM_Product_ID(final I_M_Product product)
-	{
-		setM_Product_ID(product == null ? -1 : product.getM_Product_ID());
 		return this;
 	}
 

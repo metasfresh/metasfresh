@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -68,6 +67,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;

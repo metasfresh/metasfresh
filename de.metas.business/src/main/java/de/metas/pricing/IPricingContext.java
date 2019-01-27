@@ -23,10 +23,11 @@ package de.metas.pricing;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
@@ -59,7 +60,7 @@ public interface IPricingContext extends IContextAware
 	 *
 	 * @return pricing evaluation date; never returns null.
 	 */
-	Timestamp getPriceDate();
+	LocalDate getPriceDate();
 
 	int getC_UOM_ID();
 
@@ -112,7 +113,7 @@ public interface IPricingContext extends IContextAware
 	 */
 	Boolean isManualPrice();
 
-	int getC_Country_ID();
+	CountryId getCountryId();
 
 	boolean isFailIfNotCalculated();
 

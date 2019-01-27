@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -83,9 +84,11 @@ public class CostingService implements ICostingService
 {
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
+
 	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
 	public CostingService(
@@ -100,6 +103,18 @@ public class CostingService implements ICostingService
 		this.costingMethodHandlers = costingMethodHandlers.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(CostingMethodHandler::getCostingMethod, Function.identity()));
 		logger.info("Costing method handlers: {}", this.costingMethodHandlers);
+	}
+
+	private AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
+	{
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		return acctSchemasRepo.getById(acctSchemaId);
+	}
+
+	private List<AcctSchema> getAllAcctSchemaByClientId(final ClientId clientId)
+	{
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		return acctSchemasRepo.getAllByClient(clientId);
 	}
 
 	@Override
@@ -160,8 +175,7 @@ public class CostingService implements ICostingService
 			return request;
 		}
 
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
+		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		if (request.getAmt().getCurrencyId().equals(acctCurrencyId))
 		{
@@ -208,11 +222,8 @@ public class CostingService implements ICostingService
 
 	private CostDetailVoidRequest createCostDetailVoidRequest(final CostDetail costDetail)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-
 		final AcctSchemaId acctSchemaId = costDetail.getAcctSchemaId();
-		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
 		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
 
 		final ProductId productId = costDetail.getProductId();
@@ -248,17 +259,15 @@ public class CostingService implements ICostingService
 
 	private Stream<AcctSchema> streamAcctSchemas(final CostDetailCreateRequest request)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-
 		if (request.isAllAcctSchemas())
 		{
-			return acctSchemasRepo.getAllByClient(request.getClientId())
+			return getAllAcctSchemaByClientId(request.getClientId())
 					.stream()
 					.filter(acctSchema -> acctSchema.isAllowPostingForOrg(request.getOrgId()));
 		}
 		else
 		{
-			final AcctSchema acctSchema = acctSchemasRepo.getById(request.getAcctSchemaId());
+			final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
 			if (!acctSchema.isAllowPostingForOrg(request.getOrgId()))
 			{
 				logger.warn("Accounting schema does not allow posting for given organization: {}", request);

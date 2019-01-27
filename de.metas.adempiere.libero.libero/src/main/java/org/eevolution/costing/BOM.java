@@ -17,6 +17,7 @@ import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -143,11 +144,11 @@ public final class BOM
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	Set<Integer> getCostRepoIds()
+	<T extends RepoIdAware> Set<T> getCostIds(@NonNull final Class<T> idType)
 	{
 		return streamCostPrices()
-				.flatMap(BOMCostPrice::streamRepoIds)
-				.filter(repoId -> repoId > 0)
+				.flatMap(bomCostPrice -> bomCostPrice.streamIds(idType))
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

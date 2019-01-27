@@ -32,6 +32,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.location.CountryId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -899,15 +901,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public int getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
 	{
 		// take the precision from the bpartner price list
-		final Timestamp date = ic.getDateOrdered();
-		final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
 		if (partnerLocation != null)
 		{
+			final LocalDate date = TimeUtil.asLocalDate(ic.getDateOrdered());
+			final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
+			
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
 							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-							partnerLocation.getC_Location().getC_Country_ID(),
+							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
 							date,
 							soTrx);
 

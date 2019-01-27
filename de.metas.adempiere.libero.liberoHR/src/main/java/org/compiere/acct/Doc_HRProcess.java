@@ -37,6 +37,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.util.Services;
 
 /**
@@ -56,17 +57,10 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	/** Process Payroll **/
 	public static final String DOCTYPE_Payroll = "HRP";
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schema
-	 * @param rs record
-	 * @parem trxName trx
-	 */
-	public Doc_HRProcess(final IDocBuilder docBuilder)
+	public Doc_HRProcess(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_Payroll);
-	}	// Doc_Payroll
+		super(ctx, DOCTYPE_Payroll);
+	}
 
 	@Override
 	protected void loadDocumentDetails()

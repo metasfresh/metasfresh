@@ -23,7 +23,6 @@ import java.util.List;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -32,6 +31,7 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
 import de.metas.interfaces.I_C_OrderLine;
@@ -60,9 +60,9 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	/** Shall we create accounting facts? (08555) */
 	private boolean noFactRecords = false;
 
-	public Doc_MatchPO(final IDocBuilder docBuilder)
+	public Doc_MatchPO(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMatchPO);
+		super(ctx, DOCTYPE_MatMatchPO);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		setNoCurrency();
 		docLine = new DocLine_MatchPO(getModel(I_M_MatchPO.class), this);
 
-		setDateDoc(TimeUtil.asLocalDate(docLine.getDateDoc()));
+		setDateDoc(docLine.getDateDoc());
 
 		this.noFactRecords = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
 	}

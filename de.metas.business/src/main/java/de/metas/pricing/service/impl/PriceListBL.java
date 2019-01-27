@@ -23,8 +23,10 @@ package de.metas.pricing.service.impl;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Iterator;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -34,7 +36,6 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -55,8 +56,8 @@ public class PriceListBL implements IPriceListBL
 	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final PricingSystemId pricingSystemId,
-			final int countryId,
-			final Timestamp date,
+			final CountryId countryId,
+			final LocalDate date,
 			@NonNull final SOTrx soTrx)
 	{
 		final Boolean processedPLVFiltering = null;
@@ -73,14 +74,12 @@ public class PriceListBL implements IPriceListBL
 	@Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			final PricingSystemId pricingSystemId,
-			final int countryId,
-			final Timestamp date,
+			final CountryId countryId,
+			@NonNull final LocalDate date,
 			final SOTrx soTrx,
 			final Boolean processedPLVFiltering)
 	{
-		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, soTrx={}, processedPLVFiltering={}", countryId, soTrx, processedPLVFiltering);
-
-		if (countryId <= 0)
+		if (countryId == null)
 		{
 			return null;
 		}

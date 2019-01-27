@@ -8,16 +8,13 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -117,24 +114,21 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = as.getId();
-		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
-
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
+					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(getDateAcct())
 					.build())
-					.getTotalAmount(costingMethod);
+					.getTotalAmountToPost(as);
 		}
 		else
 		{
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
-							.acctSchemaId(acctSchemaId)
+							.acctSchemaId(as.getId())
 							.clientId(getClientId())
 							.orgId(getOrgId())
 							.productId(getProductId())
@@ -142,9 +136,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.date(getDateAcct())
 							.build())
-					.getTotalAmount(costingMethod);
+					.getTotalAmountToPost(as);
 		}
 	}
 
@@ -152,24 +146,21 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
-		final AcctSchemaId acctSchemaId = as.getId();
-		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
-
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
+					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateAcct()))
+					.date(getDateAcct())
 					.build())
-					.getTotalAmount(costingMethod);
+					.getTotalAmountToPost(as);
 		}
 		else
 		{
 			return costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
-							.acctSchemaId(acctSchemaId)
+							.acctSchemaId(as.getId())
 							.clientId(getClientId())
 							.orgId(getOrgId())
 							.productId(getProductId())
@@ -177,9 +168,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-							.date(TimeUtil.asLocalDate(getDateAcct()))
+							.date(getDateAcct())
 							.build())
-					.getTotalAmount(costingMethod);
+					.getTotalAmountToPost(as);
 		}
 	}
 }

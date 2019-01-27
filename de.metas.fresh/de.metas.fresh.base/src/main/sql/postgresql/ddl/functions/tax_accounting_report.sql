@@ -85,8 +85,8 @@ JOIN ad_table t ON fa.ad_table_id=t.ad_table_id and t.isActive = 'Y'
 JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id and tax.isActive = 'Y'
 JOIN c_period p ON p.c_period_id=$1 and p.isActive = 'Y'
 
---Show only tax accounts
-JOIN (select distinct vc.Account_ID as C_ElementValue_ID
+--Show all accounts, not only tax accounts
+LEFT OUTER JOIN (select distinct vc.Account_ID as C_ElementValue_ID
 from C_Tax_Acct ta
 inner join C_ValidCombination vc on (vc.C_ValidCombination_ID in (ta.T_Liability_Acct, ta.T_Receivables_Acct, ta.T_Due_Acct, ta.T_Credit_Acct,ta.T_Expense_Acct)) and vc.isActive = 'Y'
 where ta.isActive = 'Y'

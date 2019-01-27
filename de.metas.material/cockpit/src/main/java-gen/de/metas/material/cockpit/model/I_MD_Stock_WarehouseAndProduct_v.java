@@ -69,6 +69,31 @@ public interface I_MD_Stock_WarehouseAndProduct_v
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Zeile Nr..
+	 * Einzelne Zeile in dem Dokument
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setLine (int Line);
+
+	/**
+	 * Get Zeile Nr..
+	 * Einzelne Zeile in dem Dokument
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getLine();
+
+    /** Column definition for Line */
+    public static final org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_MD_Stock_WarehouseAndProduct_v, Object>(I_MD_Stock_WarehouseAndProduct_v.class, "Line", null);
+    /** Column name Line */
+    public static final String COLUMNNAME_Line = "Line";
+
+	/**
 	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *

@@ -3,13 +3,12 @@ package de.metas.vertical.pharma.msv3.server.peer.protocol;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -35,33 +34,53 @@ import lombok.Value;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class MSV3StockAvailabilityUpdatedEvent
 {
-	public static MSV3StockAvailabilityUpdatedEvent deletedAll()
+	/** Delete all items that create created/updated according to a previous event version */
+	public static MSV3StockAvailabilityUpdatedEvent deleteAllOlderThan(@NonNull final MSV3EventVersion eventVersion)
 	{
-		return builder().deleteAllOtherItems(true).build();
+		return builder()
+				.eventVersion(eventVersion)
+				.deleteAllOtherItems(true)
+				.build();
 	}
-	
-	@JsonProperty("id")
+
+	public static MSV3StockAvailabilityUpdatedEvent ofSingle(
+			@NonNull final MSV3StockAvailability msv3StockAvailability,
+			@NonNull final MSV3EventVersion eventVersion)
+	{
+		return builder()
+				.eventVersion(eventVersion)
+				.item(msv3StockAvailability)
+				.deleteAllOtherItems(false)
+				.build();
+	}
+
 	private final String id;
 
-	@JsonProperty("items")
 	private final List<MSV3StockAvailability> items;
 
-	@JsonProperty("deleteAllOtherItems")
 	private final boolean deleteAllOtherItems;
+
+	/**
+	 * The items of events with lower versions are discarded if the msv3-server was already updated based on an event with a higher version.
+	 * Multiple events may have the same version.
+	 */
+	private MSV3EventVersion eventVersion;
 
 	@JsonCreator
 	@Builder
 	private MSV3StockAvailabilityUpdatedEvent(
 			@JsonProperty("id") final String id,
 			@JsonProperty("items") @Singular final List<MSV3StockAvailability> items,
-			@JsonProperty("deleteAllOtherItems") final boolean deleteAllOtherItems)
+			@JsonProperty("deleteAllOtherItems") final boolean deleteAllOtherItems,
+			@JsonProperty("eventVersion") @NonNull final MSV3EventVersion eventVersion)
 	{
 		this.id = id != null ? id : UUID.randomUUID().toString();
 		this.items = items != null ? ImmutableList.copyOf(items) : ImmutableList.of();
 		this.deleteAllOtherItems = deleteAllOtherItems;
+
+		this.eventVersion = eventVersion;
 	}
 }

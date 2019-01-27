@@ -25,7 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -210,7 +210,7 @@ public class PricingBL implements IPricingBL
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final Timestamp priceDate = pricingCtx.getPriceDate();
+		final LocalDate priceDate = pricingCtx.getPriceDate();
 
 		//
 		// Set M_PriceList_ID and M_PriceList_Version_ID from pricingSystem, date and country, if necessary;
@@ -218,12 +218,12 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getPricingSystemId() != null
 				&& priceDate != null
 				&& pricingCtx.getProductId() != null
-				&& pricingCtx.getC_Country_ID() > 0)
+				&& pricingCtx.getCountryId() != null)
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
-					pricingCtx.getC_Country_ID(),
+					pricingCtx.getCountryId(),
 					pricingCtx.getPriceDate(),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
@@ -240,7 +240,7 @@ public class PricingBL implements IPricingBL
 						pricingCtx.getM_PriceList_Version(),  // 1
 						pricingCtx.getPricingSystemId(),  // 2
 						pricingCtx.getProductId(),  // 3
-						pricingCtx.getC_Country_ID(),  // 4
+						pricingCtx.getCountryId(),  // 4
 						pricingCtx.getSoTrx(),  // 5
 						computedPLV);
 				pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(computedPLV.getM_PriceList_Version_ID()));

@@ -29,6 +29,8 @@ import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.Application;
 import de.metas.vertical.pharma.msv3.server.MockedAmqpTemplate;
 import de.metas.vertical.pharma.msv3.server.order.OrderWebServiceV2;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3EventVersion;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
@@ -58,6 +60,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRuec
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -84,8 +87,8 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Verfuegbarkeitsant
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = IntegrationTestConfiguration.class)
-@TestPropertySource(locations = "classpath:application-integrationtest.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@TestPropertySource(locations = "classpath:application-integrationtest.properties") // shall reset the DB
 public class IntegrationTest
 {
 	@TestConfiguration
@@ -108,6 +111,10 @@ public class IntegrationTest
 	}
 
 	private static final PZN PZN_1 = PZN.of(123456789);
+	private static final PZN PZN_2 = PZN.of(223456789);
+	private static final PZN PZN_3 = PZN.of(323456789);
+	private static final PZN PZN_4 = PZN.of(423456789);
+
 	private static final PZN PZN_MISSING = PZN.of(1234567891);
 
 	private final ObjectFactory jaxbObjectFactory = new ObjectFactory();
@@ -126,6 +133,8 @@ public class IntegrationTest
 	@Autowired
 	private OrderWebServiceV2 orderWebService;
 
+	private int eventVersionCounter = 0;
+
 	private void setupDummyCurrentUserForBPartnerId(final int bpartnerId)
 	{
 		authService.setCurrentUser(MSV3User.builder()
@@ -138,7 +147,7 @@ public class IntegrationTest
 	@Test
 	public void testUsers()
 	{
-		createOrUpdateUser("user", "pass", BPartnerId.of(1234, 5678));
+		createOrUpdateUser(MSV3MetasfreshUserId.of(10), "user", "pass", BPartnerId.of(1234, 5678));
 	}
 
 	@Test
@@ -154,6 +163,81 @@ public class IntegrationTest
 		createOrUpdateStockAvailability(PZN_1, 200);
 		testStockAvailability(PZN_1, 100, 100);
 	}
+
+	@Test
+	public void testStockAvailability_delete_other_items()
+	{
+		setupDummyCurrentUserForBPartnerId(1234);
+
+		createOrUpdateStockAvailability(PZN_1, 11);
+		createOrUpdateStockAvailability(PZN_2, 22);
+		testStockAvailability(PZN_1, 11, 11); // guard
+		testStockAvailability(PZN_2, 22, 22); // guard
+
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent
+				.builder()
+				.eventVersion(MSV3EventVersion.of(++eventVersionCounter))
+				.deleteAllOtherItems(true)
+				.item(MSV3StockAvailability.builder()
+						.pzn(PZN_2.getValueAsLong())
+						.qty(23)
+						.build())
+				.item(MSV3StockAvailability.builder()
+						.pzn(PZN_3.getValueAsLong())
+						.qty(33)
+						.build())
+				.build();
+		stockAvailabilityListener.onStockAvailabilityUpdatedEvent(event);
+
+		testStockAvailability(PZN_1, 11, 0);
+		testStockAvailability(PZN_2, 23, 23);
+		testStockAvailability(PZN_3, 33, 33);
+	}
+
+	@Test
+	public void testStockAvailability_delete_older_items()
+	{
+		// setup
+		setupDummyCurrentUserForBPartnerId(1234);
+
+		createOrUpdateStockAvailability(PZN_1, 11);
+		createOrUpdateStockAvailability(PZN_2, 22);
+		testStockAvailability(PZN_1, 11, 11); // guard
+		testStockAvailability(PZN_2, 22, 22); // guard
+
+		final MSV3EventVersion eventVersion = MSV3EventVersion.of(++eventVersionCounter);
+
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent
+				.builder()
+				.eventVersion(eventVersion)
+				.deleteAllOtherItems(false)
+				.item(MSV3StockAvailability.builder()
+						.pzn(PZN_2.getValueAsLong())
+						.qty(23)
+						.build())
+				.item(MSV3StockAvailability.builder()
+						.pzn(PZN_3.getValueAsLong())
+						.qty(33)
+						.build())
+				.build();
+		stockAvailabilityListener.onStockAvailabilityUpdatedEvent(event);
+		testStockAvailability(PZN_1, 11, 11); // guard
+		testStockAvailability(PZN_2, 23, 23); // guard
+		testStockAvailability(PZN_3, 33, 33); // guard
+
+		createOrUpdateStockAvailability(PZN_4, 44);
+		testStockAvailability(PZN_4, 44, 44); // guard
+
+		// test
+		stockAvailabilityListener.onStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deleteAllOlderThan(eventVersion));
+
+		// verify
+		testStockAvailability(PZN_1, 11, 0);
+		testStockAvailability(PZN_2, 23, 23);
+		testStockAvailability(PZN_3, 33, 33);
+		testStockAvailability(PZN_4, 44, 44); // PZN_4 is still there because of its higher event version!
+	}
+
 
 	@Test
 	public void testStockAvailability_UnknownPZN()
@@ -181,7 +265,7 @@ public class IntegrationTest
 	@Ignore // ATM it's failing on some H2 unique index issue
 	public void testOrder()
 	{
-		createOrUpdateUser("user", "pass", BPartnerId.of(1234, 5678));
+		createOrUpdateUser(MSV3MetasfreshUserId.of(10), "user", "pass", BPartnerId.of(1234, 5678));
 		SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user", "pass"));
 
 		createOrUpdateStockAvailability(PZN_1, 10);
@@ -220,27 +304,39 @@ public class IntegrationTest
 		assertThat(soapResponseOrderPackageItem.getBestellMenge()).isEqualTo(qtyOrderedExpected);
 	}
 
-	private void createOrUpdateUser(final String username, final String password, final BPartnerId bpartner)
+	private void createOrUpdateUser(
+			@NonNull MSV3MetasfreshUserId metasfreshMSV3CustomerId,
+			final String username,
+			final String password,
+			final BPartnerId bpartner)
 	{
+		final MSV3UserChangedEvent event = MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent(metasfreshMSV3CustomerId)
+				.username(username)
+				.password(password)
+				.bpartnerId(bpartner.getBpartnerId())
+				.bpartnerLocationId(bpartner.getBpartnerLocationId())
+				.build();
+
 		usersListener.onUserEvent(MSV3UserChangedBatchEvent.builder()
-				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
-						.username(username)
-						.password(password)
-						.bpartnerId(bpartner.getBpartnerId())
-						.bpartnerLocationId(bpartner.getBpartnerLocationId())
-						.build())
+				.event(event)
 				.build());
 
 	}
 
-	private void createOrUpdateStockAvailability(final PZN pzn, final int qtyAvailable)
+	private void createOrUpdateStockAvailability(
+			final PZN pzn,
+			final int qtyAvailable)
 	{
-		stockAvailabilityListener.onStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.builder()
+		final MSV3StockAvailabilityUpdatedEvent event = MSV3StockAvailabilityUpdatedEvent
+				.builder()
+				.eventVersion(MSV3EventVersion.of(++eventVersionCounter))
+				.deleteAllOtherItems(false)
 				.item(MSV3StockAvailability.builder()
 						.pzn(pzn.getValueAsLong())
 						.qty(qtyAvailable)
 						.build())
-				.build());
+				.build();
+		stockAvailabilityListener.onStockAvailabilityUpdatedEvent(event);
 	}
 
 	private void excludeProduct(final PZN pzn, final int bpartnerId)

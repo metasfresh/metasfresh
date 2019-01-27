@@ -49,6 +49,7 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.PostingException;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -84,7 +85,7 @@ import lombok.NonNull;
  *          <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
  *
  */
-final class FactLine extends X_Fact_Acct
+public final class FactLine extends X_Fact_Acct
 {
 	/**
 	 *
@@ -1240,7 +1241,7 @@ final class FactLine extends X_Fact_Acct
 					if (salesRepId != null)
 					{
 						sql = "SELECT COALESCE(MAX(C_SalesRegion_ID),0) FROM C_SalesRegion WHERE SalesRep_ID=?";
-						setC_SalesRegion_ID(DB.getSQLValue(null, sql, salesRepId));
+						setC_SalesRegion_ID(DB.getSQLValueEx(ITrx.TRXNAME_None, sql, salesRepId));
 					}
 
 					if (super.getC_SalesRegion_ID() != 0)		// save in VO

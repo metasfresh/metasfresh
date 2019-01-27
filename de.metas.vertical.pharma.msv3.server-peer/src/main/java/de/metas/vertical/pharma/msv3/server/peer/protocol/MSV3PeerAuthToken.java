@@ -37,6 +37,8 @@ public class MSV3PeerAuthToken
 {
 	public static final String NAME = "AuthToken";
 
+	public static final MSV3PeerAuthToken TOKEN_NOT_SET = MSV3PeerAuthToken.of("missing-msv3server.peer.authToken-in-msv3server");
+
 	@JsonCreator
 	public static MSV3PeerAuthToken of(final String value)
 	{

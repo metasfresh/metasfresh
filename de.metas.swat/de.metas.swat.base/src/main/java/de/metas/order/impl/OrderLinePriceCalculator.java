@@ -3,7 +3,7 @@ package de.metas.order.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
@@ -255,7 +255,7 @@ class OrderLinePriceCalculator
 			bpartnerId = order.getC_BPartner_ID();
 		}
 
-		final Timestamp date = OrderLineBL.getPriceDate(orderLine, order);
+		final LocalDate date = OrderLineBL.getPriceDate(orderLine, order);
 
 		final BigDecimal qtyInPriceUOM;
 		if (request.getQtyOverride() != null)

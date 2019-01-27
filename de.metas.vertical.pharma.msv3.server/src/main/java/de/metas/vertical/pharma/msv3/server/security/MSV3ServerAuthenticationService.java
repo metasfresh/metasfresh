@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
@@ -85,7 +88,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 			return adminUser;
 		}
 
-		final JpaUser jpaUser = usersRepo.findByUsername(username);
+		final JpaUser jpaUser = usersRepo.findByMfUsername(username);
 		if (jpaUser == null || jpaUser.isDeleted())
 		{
 			throw new UsernameNotFoundException("User '" + username + "' does not exist");
@@ -94,12 +97,13 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		return toMSV3User(jpaUser);
 	}
 
-	private static MSV3User toMSV3User(final JpaUser jpaUser)
+	private static MSV3User toMSV3User(@NonNull final JpaUser jpaUser)
 	{
 		return MSV3User.builder()
-				.username(jpaUser.getUsername())
-				.password(jpaUser.getPassword())
-				.bpartnerId(BPartnerId.of(jpaUser.getBpartnerId(), jpaUser.getBpartnerLocationId()))
+				.metasfreshMSV3UserId(MSV3MetasfreshUserId.of(jpaUser.getMfMSV3UserId()))
+				.username(jpaUser.getMfUsername())
+				.password(jpaUser.getMfPassword())
+				.bpartnerId(BPartnerId.of(jpaUser.getMfBpartnerId(), jpaUser.getMfBpartnerLocationId()))
 				.build();
 	}
 
@@ -138,18 +142,21 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Transactional
 	public void handleEvent(@NonNull final MSV3UserChangedBatchEvent batchEvent)
 	{
-		final String syncToken = batchEvent.getId();
+		final String mfSyncToken = batchEvent.getId();
 
 		//
 		// Update/Delete
 		{
 			final AtomicInteger countUpdated = new AtomicInteger();
-			batchEvent.getEvents().forEach(event -> {
-				handleEvent(event, syncToken);
+
+			for (final MSV3UserChangedEvent event : batchEvent.getEvents())
+			{
+				handleEvent(event, mfSyncToken);
 				countUpdated.incrementAndGet();
-			});
+			}
 			logger.debug("Updated/Deleted {} users", countUpdated);
 		}
 
@@ -157,33 +164,34 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		// Delete
 		if (batchEvent.isDeleteAllOtherUsers())
 		{
-			final long countDeleted = usersRepo.deleteInBatchBySyncTokenNot(syncToken);
+			final long countDeleted = usersRepo.deleteInBatchByMfSyncTokenNot(mfSyncToken);
 			logger.debug("Deleted {} users", countDeleted);
 		}
 	}
 
-	private void handleEvent(@NonNull final MSV3UserChangedEvent event, final String syncToken)
+	private void handleEvent(@NonNull final MSV3UserChangedEvent event, final String mfSyncToken)
 	{
 		if (event.getChangeType() == ChangeType.CREATED_OR_UPDATED)
 		{
 			final String username = event.getUsername();
 
-			JpaUser user = usersRepo.findByUsername(username);
+			JpaUser user = usersRepo.findByMfMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 			if (user == null)
 			{
 				user = new JpaUser();
-				user.setUsername(username);
+				user.setMfMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 			}
 
-			user.setPassword(event.getPassword());
-			user.setBpartnerId(event.getBpartnerId());
-			user.setBpartnerLocationId(event.getBpartnerLocationId());
-			user.setSyncToken(syncToken);
+			user.setMfUsername(username);
+			user.setMfPassword(event.getPassword());
+			user.setMfBpartnerId(event.getBpartnerId());
+			user.setMfBpartnerLocationId(event.getBpartnerLocationId());
+			user.setMfSyncToken(mfSyncToken);
 			usersRepo.save(user);
 		}
 		else if (event.getChangeType() == ChangeType.DELETED)
 		{
-			usersRepo.deleteByUsername(event.getUsername());
+			usersRepo.deleteByMfMSV3UserId(event.getMsv3MetasfreshUserId().getId());
 		}
 		else
 		{

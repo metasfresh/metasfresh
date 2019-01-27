@@ -23,12 +23,12 @@ import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConf
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,11 +60,13 @@ public class MSV3ServerConfigRepository
 				.firstOnly(I_MSV3_Server.class);
 		if (serverConfigRecord != null)
 		{
-			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise().intValueExact();
+			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise();
 			serverConfigBuilder.fixedQtyAvailableToPromise(fixedQtyAvailableToPromise);
 
 			final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 			final WarehousePickingGroupId warehousePickingGroupId = WarehousePickingGroupId.ofRepoId(serverConfigRecord.getM_Warehouse_PickingGroup_ID());
+
+			// note that the DAO method invoked by this supplier is cached
 			serverConfigBuilder.warehousePickingGroupSupplier(() -> warehouseDAO.getWarehousePickingGroupById(warehousePickingGroupId));
 		}
 

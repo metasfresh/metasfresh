@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -43,6 +42,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.interfaces.I_C_OrderLine;

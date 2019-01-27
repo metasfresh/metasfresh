@@ -99,16 +99,20 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
 
-		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final PPOrderCosts orderCosts;
+		final CurrentCost currentCost;
 
 		final CostDetailCreateResult result;
 		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
+			orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			currentCost = utils.getCurrentCost(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
+			orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			currentCost = utils.getCurrentCost(request);
 			result = createComponentIssue(request, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isActivityControl())
@@ -117,27 +121,39 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
+			orderCosts = null;
+			currentCost = null;
 			result = createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
 		}
 		else if (costCollectorType.isUsageVariance()
 				|| costCollectorType.isMethodChangeVariance()
 				|| costCollectorType.isRateVariance())
 		{
-			// does cost collectors are specific to standard costs,
+			// those cost collectors are specific to standard costs,
 			// so we are ignoring them
+			orderCosts = null;
+			currentCost = null;
 			result = null;
 		}
 		else
 		{
+			orderCosts = null;
+			currentCost = null;
 			result = null;
 		}
 
 		//
-		orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
-		ppOrderCostsService.save(orderCosts);
+		if (orderCosts != null)
+		{
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
+			ppOrderCostsService.save(orderCosts);
+		}
 
 		//
-		utils.saveCurrentCost(currentCost);
+		if (currentCost != null)
+		{
+			utils.saveCurrentCost(currentCost);
+		}
 
 		return Optional.ofNullable(result);
 	}
@@ -197,9 +213,10 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
+			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			currentCosts.addToCurrentQty(request.getQty());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs

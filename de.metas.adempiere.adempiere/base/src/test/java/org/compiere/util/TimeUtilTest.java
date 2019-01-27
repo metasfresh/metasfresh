@@ -545,4 +545,11 @@ public class TimeUtilTest
 		final Duration actual = TimeUtil.max(duration1, duration2);
 		assertThat(actual).isEqualTo(expected);
 	}
+
+	private static <T> T castObject(final Object obj)
+	{
+		@SuppressWarnings("unchecked")
+		final T objCasted = (T)obj;
+		return objCasted;
+	}
 }

@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Customer_Config;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
@@ -47,9 +48,11 @@ public class MSV3CustomerConfigService
 		msv3ServerPeerService.publishUserChangedEvent(toMSV3UserChangedEvent(configRecord));
 	}
 
-	public void publishConfigDeleted(final String username)
+	public void publishConfigDeleted(final int MSV3_Customer_Config_ID)
 	{
-		msv3ServerPeerService.publishUserChangedEvent(MSV3UserChangedEvent.deletedEvent(username));
+		final MSV3MetasfreshUserId userId = MSV3MetasfreshUserId.of(MSV3_Customer_Config_ID);
+		final MSV3UserChangedEvent deletedEvent = MSV3UserChangedEvent.deletedEvent(userId);
+		msv3ServerPeerService.publishUserChangedEvent(deletedEvent);
 	}
 
 	public void publishAllConfig()
@@ -71,9 +74,11 @@ public class MSV3CustomerConfigService
 
 	private static MSV3UserChangedEvent toMSV3UserChangedEvent(final I_MSV3_Customer_Config configRecord)
 	{
+		final MSV3MetasfreshUserId externalId = MSV3MetasfreshUserId.of(configRecord.getMSV3_Customer_Config_ID());
+
 		if (configRecord.isActive())
 		{
-			return MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
+			return MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent(externalId)
 					.username(configRecord.getUserID())
 					.password(configRecord.getPassword())
 					.bpartnerId(configRecord.getC_BPartner_ID())
@@ -82,7 +87,7 @@ public class MSV3CustomerConfigService
 		}
 		else
 		{
-			return MSV3UserChangedEvent.deletedEvent(configRecord.getUserID());
+			return MSV3UserChangedEvent.deletedEvent(externalId);
 		}
 
 	}

@@ -72,8 +72,15 @@ public interface ICurrencyDAO extends ISingletonService
 	 * @param ctx Context
 	 * @param C_Currency_ID currency
 	 * @return ISO Code or <code>null</code>
+	 * @deprecated Please use {@link #getISOCodeById(CurrencyId)}
 	 */
+	@Deprecated
 	String getISO_Code(Properties ctx, int C_Currency_ID);
+
+	default String getISOCodeById(@NonNull final CurrencyId currencyId)
+	{
+		return getISO_Code(Env.getCtx(), currencyId.getRepoId());
+	}
 
 	/**
 	 * Get Standard Precision.

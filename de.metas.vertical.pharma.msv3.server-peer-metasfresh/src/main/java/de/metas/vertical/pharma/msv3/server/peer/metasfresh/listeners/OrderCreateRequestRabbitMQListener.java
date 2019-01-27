@@ -146,7 +146,7 @@ public class OrderCreateRequestRabbitMQListener
 						.qty(item.getQty().getValueAsBigDecimal())
 						.uomId(uomId)
 						.huPIItemProductId(huPIItemProductId)
-						.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
+						.dataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
 						.build());
 			}
 		}

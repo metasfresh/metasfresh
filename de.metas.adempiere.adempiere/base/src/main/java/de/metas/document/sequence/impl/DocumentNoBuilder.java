@@ -37,7 +37,6 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.DB;
-import org.compiere.util.DB.OnFail;
 import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
@@ -283,9 +282,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
-		DB.executeUpdate(sql,
+		DB.executeUpdateEx(sql,
 				sqlParams.toArray(),
-				OnFail.ThrowException,
 				trxName,
 				QUERY_TIME_OUT,
 				new ISqlUpdateReturnProcessor()

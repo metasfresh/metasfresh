@@ -55,6 +55,13 @@ import lombok.NonNull;
 public class InOutDAO implements IInOutDAO
 {
 	@Override
+	public I_M_InOutLine getLineById(final int inoutLineId)
+	{
+		Check.assumeGreaterThanZero(inoutLineId, "inoutLineId");
+		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
 	{
 		return retrieveLines(inOut, I_M_InOutLine.class);

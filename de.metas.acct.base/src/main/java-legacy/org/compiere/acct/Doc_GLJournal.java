@@ -21,9 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.acct.api.IGLJournalLineBL;
-import org.adempiere.acct.api.IGLJournalLineDAO;
-import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
@@ -32,6 +29,10 @@ import org.compiere.model.X_GL_JournalLine;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.tax.ITaxAccountable;
 import de.metas.util.Services;
 
 /**
@@ -51,17 +52,10 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	private final transient IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
 	private final transient IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_GLJournal(final IDocBuilder docBuilder)
+	public Doc_GLJournal(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_GL_Journal
+		super(ctx);
+	}
 
 	private PostingType postingType = null;
 	private AcctSchemaId acctSchemaId;

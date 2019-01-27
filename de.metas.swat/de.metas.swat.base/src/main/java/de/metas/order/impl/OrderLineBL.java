@@ -27,7 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -49,6 +49,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMBL;
 import org.slf4j.Logger;
 
@@ -243,9 +244,9 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public I_C_OrderLine createOrderLine(final org.compiere.model.I_C_Order order)
+	public I_C_OrderLine createOrderLine(@NonNull final org.compiere.model.I_C_Order order)
 	{
-		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class, order);
+		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class);
 		ol.setC_Order(order);
 		setOrder(ol, order);
 
@@ -466,25 +467,25 @@ public class OrderLineBL implements IOrderLineBL
 	 * @param order
 	 * @return
 	 */
-	static Timestamp getPriceDate(
+	static LocalDate getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final org.compiere.model.I_C_Order order)
 	{
-		Timestamp date = orderLine.getDatePromised();
+		LocalDate date = TimeUtil.asLocalDate(orderLine.getDatePromised());
 		// if null, then get date promised from order
 		if (date == null)
 		{
-			date = order.getDatePromised();
+			date = TimeUtil.asLocalDate(order.getDatePromised());
 		}
 		// still null, then get date ordered from order line
 		if (date == null)
 		{
-			date = orderLine.getDateOrdered();
+			date = TimeUtil.asLocalDate(orderLine.getDateOrdered());
 		}
 		// still null, then get date ordered from order
 		if (date == null)
 		{
-			date = order.getDateOrdered();
+			date = TimeUtil.asLocalDate(order.getDateOrdered());
 		}
 		return date;
 	}

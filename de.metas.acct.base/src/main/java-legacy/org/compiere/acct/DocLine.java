@@ -23,7 +23,6 @@ import java.util.function.IntFunction;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.location.LocationId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -46,7 +45,9 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.PostingException;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;

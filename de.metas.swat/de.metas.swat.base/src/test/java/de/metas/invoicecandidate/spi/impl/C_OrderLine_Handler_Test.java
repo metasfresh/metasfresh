@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
@@ -47,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;

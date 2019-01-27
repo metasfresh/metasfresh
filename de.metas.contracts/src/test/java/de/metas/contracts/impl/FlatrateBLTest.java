@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.service.OrgId;
@@ -53,6 +52,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.contracts.IFlatrateBL;

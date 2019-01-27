@@ -40,14 +40,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
@@ -100,9 +99,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	/** Material Receipt */
 	private I_M_InOutLine _receiptLine = null;
 
-	public Doc_MatchInv(final IDocBuilder docBuilder)
+	public Doc_MatchInv(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_MatMatchInv);
+		super(ctx, DOCTYPE_MatMatchInv);
 	}
 
 	@Override
@@ -510,12 +509,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
-		final AcctSchemaId acctSchemaId = as.getId();
-		final CostingMethod costingMethod = as.getCosting().getCostingMethod();
-
 		return costDetailService
 				.createCostDetail(CostDetailCreateRequest.builder()
-						.acctSchemaId(acctSchemaId)
+						.acctSchemaId(as.getId())
 						.clientId(getClientId())
 						.orgId(getOrgId())
 						.productId(getProductId())
@@ -527,7 +523,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.date(currencyConvCtx.getConversionDate())
 						.description(getDescription())
 						.build())
-				.getTotalAmount(costingMethod);
+				.getTotalAmountToPost(as);
 	}
 
 }   // Doc_MatchInv

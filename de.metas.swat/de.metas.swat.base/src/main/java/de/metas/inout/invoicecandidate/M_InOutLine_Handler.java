@@ -36,7 +36,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.acct.api.IProductAcctDAO;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -59,6 +58,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;

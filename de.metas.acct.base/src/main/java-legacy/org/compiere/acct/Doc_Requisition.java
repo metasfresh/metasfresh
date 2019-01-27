@@ -28,6 +28,7 @@ import org.compiere.model.MRequisition;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocContext;
 
 /**
  * Post Order Documents.
@@ -42,9 +43,9 @@ import de.metas.acct.api.AcctSchema;
  */
 public class Doc_Requisition extends Doc<DocLine_Requisition>
 {
-	public Doc_Requisition(final IDocBuilder docBuilder)
+	public Doc_Requisition(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_PurchaseRequisition);
+		super(ctx, DOCTYPE_PurchaseRequisition);
 	}	// Doc_Requisition
 
 	@Override

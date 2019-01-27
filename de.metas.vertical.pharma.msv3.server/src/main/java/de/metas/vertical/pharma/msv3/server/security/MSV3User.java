@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -42,6 +43,7 @@ import lombok.Value;
 @SuppressWarnings("serial")
 public class MSV3User implements UserDetails
 {
+	private final MSV3MetasfreshUserId metasfreshMSV3UserId;
 	private final String username;
 	private final String password;
 	private final BPartnerId bpartnerId;
@@ -54,11 +56,13 @@ public class MSV3User implements UserDetails
 
 	@Builder
 	private MSV3User(
+			final MSV3MetasfreshUserId metasfreshMSV3UserId,
 			@NonNull final String username,
 			@NonNull final String password,
 			final boolean serverAdmin,
 			final BPartnerId bpartnerId)
 	{
+		this.metasfreshMSV3UserId = metasfreshMSV3UserId;
 		this.username = username;
 		this.password = password;
 		this.authorities = serverAdmin ? AUTHORITIES_SERVER_ADMIN : AUTHORITIES_CLIENT;
