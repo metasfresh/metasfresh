@@ -13,7 +13,25 @@ Here come the actual release notes:
 # metasfresh 5.89
 # Features
 * metasfresh
+  * [#4881](https://github.com/metasfresh/metasfresh/issues/4881) Different improvements around MSV3 server synchronization
   * [#4883](https://github.com/metasfresh/metasfresh/issues/4883) Quickactions in Invoice Candidates Window
+  * [#4886](https://github.com/metasfresh/metasfresh/issues/4886) Account Schema window: don't allow creating new accounting schemas
+  * [#4887](https://github.com/metasfresh/metasfresh/issues/4887) New Window Tab: callout to automatically set AD_Element_ID, Name, InternalName when a table is selected
+  * [#4892](https://github.com/metasfresh/metasfresh/issues/4892) Add inactive product fields for hu tracing and label printing
+  * [#4894](https://github.com/metasfresh/metasfresh/issues/4894) BPartner Product statistics: LastShipmentDate, LastReceiptDate
+
+
+* metasfresh-webui-api
+  * [#1128](https://github.com/metasfresh/metasfresh-webui-api/issues/1128) Limit number of products shown in material cockpit
+  * [#1132](https://github.com/metasfresh/metasfresh-webui-api/issues/1132) Sales/Purchase order: customer proposal products list
+  * [#1130](https://github.com/metasfresh/metasfresh-webui-api/issues/1130) Restrict DocumentCollection cache size
+
+# Fixes
+* metasfresh
+  * [#4896](https://github.com/metasfresh/metasfresh/issues/4896) Errors in Tax Codes Report
+  * [#4900](https://github.com/metasfresh/metasfresh/issues/4900) AD_Val_Rule ESR_Import_AD_AttachmentEntry is broken
+  * [#4902](https://github.com/metasfresh/metasfresh/issues/4902) Process BPartnerOrgLink doesn't set AD_OrgInfo.OrgBP_Location_ID
+
 
 # metasfresh 5.88
 # Features
