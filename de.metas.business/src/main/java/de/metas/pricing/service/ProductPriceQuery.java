@@ -170,12 +170,12 @@ public class ProductPriceQuery
 		return strictDefaultSecondTry;
 	}
 
-	public IQuery<I_M_ProductPrice> toQuery()
+	IQuery<I_M_ProductPrice> toQuery()
 	{
 		return toQueryBuilder().create();
 	}
 
-	public IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
+	private IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class, getContextProvider())
@@ -226,7 +226,7 @@ public class ProductPriceQuery
 		return queryBuilder;
 	}
 
-	public ProductPriceQuery setContextProvider(final Object contextProvider)
+	ProductPriceQuery setContextProvider(final Object contextProvider)
 	{
 		_contextProvider = contextProvider;
 		return this;
@@ -238,7 +238,7 @@ public class ProductPriceQuery
 		return _contextProvider;
 	}
 
-	public ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
+	ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
 		this._priceListVersionId = priceListVersionId;
 		return this;

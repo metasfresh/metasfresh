@@ -112,10 +112,9 @@ public class ProductPrices
 			@NonNull final I_M_PriceList_Version plv,
 			final ProductId productId)
 	{
-		final List<I_M_ProductPrice> allMainPrices = newMainProductPriceQuery(plv, productId)
+		return newMainProductPriceQuery(plv, productId)
 				.toQuery()
 				.list();
-		return allMainPrices;
 	}
 
 	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
