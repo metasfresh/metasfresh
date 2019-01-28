@@ -119,7 +119,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 
 	private I_AD_PInstance createPInstance()
 	{
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId, 0, 0);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 

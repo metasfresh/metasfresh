@@ -558,7 +558,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public PInstanceId createPInstanceId()
+	public PInstanceId createSelectionId()
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		final int adPInstanceId = DB.getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
@@ -566,20 +566,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public I_AD_PInstance createAD_PInstance(@NonNull final AdProcessId adProcessId, final int AD_Table_ID, final int recordId)
+	public I_AD_PInstance createAD_PInstance(@NonNull final AdProcessId adProcessId)
 	{
 		final I_AD_PInstance adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
 		adPInstance.setAD_Process_ID(adProcessId.getRepoId());
-		if (AD_Table_ID > 0)
-		{
-			adPInstance.setAD_Table_ID(AD_Table_ID);
-			adPInstance.setRecord_ID(recordId);
-		}
-		else
-		{
-			adPInstance.setAD_Table(null);
-			adPInstance.setRecord_ID(0); // mandatory
-		}
+
+		adPInstance.setAD_Table(null);
+		adPInstance.setRecord_ID(0); // mandatory
 
 		final Properties ctx = Env.getCtx();
 		adPInstance.setAD_User_ID(Env.getAD_User_ID(ctx));

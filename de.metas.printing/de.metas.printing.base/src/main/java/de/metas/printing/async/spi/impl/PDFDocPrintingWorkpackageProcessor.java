@@ -179,7 +179,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 		final Language language = Services.get(ILanguageBL.class).getOrgLanguage(ctx, jobInstructions.getAD_Org_ID());
 		
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(SummaryPdfPrinting_AD_Process_ID, 0, 0);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(SummaryPdfPrinting_AD_Process_ID);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 		

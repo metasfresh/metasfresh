@@ -75,7 +75,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
 		final int adUserId = workpackage.getCreatedBy();
-		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 
 		final boolean updateOnlyLocked = true; // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
 		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, pinstanceId, updateOnlyLocked);

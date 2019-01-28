@@ -1093,7 +1093,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	private PInstanceId createSelectionPInstanceId()
 	{
-		return Services.get(IADPInstanceDAO.class).createPInstanceId();
+		return Services.get(IADPInstanceDAO.class).createSelectionId();
 	}
 
 	public PInstanceId createSelection(final Collection<Integer> selection)
