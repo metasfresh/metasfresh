@@ -24,7 +24,10 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_VERSION'),
 
 		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere',
-			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
+			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
+
+		booleanParam(defaultValue: true,
+			name: 'MF_MF_SKIP_UNIT_TESTS')
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
@@ -47,6 +50,57 @@ timestamps
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
+
+		final String BUILD_ARTIFACT_URL
+
+		stage('Set versions and build metasfresh-webui-frontend')
+		{
+			def scmVars = checkout scm
+			BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
+			sh 'git clean -d --force -x' // clean the workspace
+
+
+	sh "if [ -d ~/.npm ]; then rm -r ~/.npm; fi" // make sure the .npm folder isn't there. it caused us problems in the past when it contained "stale files".
+
+	def nodeHome = tool name: "$NODEJS_TOOL_NAME"
+	env.PATH = "${nodeHome}/bin:${env.PATH}"
+
+	sh 'yarn install'
+	sh 'yarn lint --quiet'
+						
+	sh "yarn add jest jest-junit --dev"
+	if(params.MF_MF_SKIP_UNIT_TESTS)
+	{
+		echo "params.MF_MF_SKIP_UNIT_TESTS=${params.MF_MF_SKIP_UNIT_TESTS}, so we skip the jest unit tests."
+	}
+	else 
+	{
+		withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
+			sh 'yarn test --ci --testResultsProcessor="jest-junit"'
+		}
+		junit 'jest-test-results.xml'
+	}
+				
+	sh "webpack --config webpack.prod.js --bail --display-error-details"
+
+	// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
+	// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
+	final version_info_json = """{
+  \"build\": {
+	\"releaseVersion\": \"${MF_VERSION}\",
+    \"jenkinsBuildUrl\": \"${env.BUILD_URL}\",
+    \"jenkinsBuildNo\": \"${env.BUILD_NUMBER}\",
+    \"jenkinsJobName\": \"${env.JOB_NAME}\",
+    \"jenkinsBuildTag\": \"${env.BUILD_TAG}\"
+    \"gitSHA1\": \"${BUILD_GIT_SHA1}\"
+  }
+}""";
+	writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
+
+	sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
+
+	// upload our results to the maven repo
+
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
 		// create our config instance to be used further on
@@ -57,73 +111,29 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
 		)
 		echo "mvnConf=${mvnConf.toString()}"
+		nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
+        {
+			sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
-		final String BUILD_ARTIFACT_URL
-
-		stage('Set versions and build metasfresh-webui-frontend')
-		{
-			def scmVars = checkout scm
-			BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
-			sh 'git clean -d --force -x' // clean the workspace
-
-			nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
-
-        	withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
-        	{
-
-				sh "if [ -d ~/.npm ]; then rm -r ~/.npm; fi" // make sure the .npm folder isn't there. it caused us problems in the past when it contained "stale files".
-
-				def nodeHome = tool name: "$NODEJS_TOOL_NAME"
-				env.PATH = "${nodeHome}/bin:${env.PATH}"
-
-				sh 'yarn install'
-				sh 'yarn lint --quiet'
-								
-				sh "yarn add jest jest-junit --dev"
-				withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
-					sh 'yarn test --ci --testResultsProcessor="jest-junit"'
-				}
-				junit 'jest-test-results.xml'
-				
-				sh "webpack --config webpack.prod.js --bail --display-error-details"
-
-				
-				
-
-				// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
-				// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
-				final version_info_json = """{
-  \"build\": {
-	\"releaseVersion\": \"${MF_VERSION}\",
-    \"jenkinsBuildUrl\": \"${env.BUILD_URL}\",
-    \"jenkinsBuildNo\": \"${env.BUILD_NUMBER}\",
-    \"jenkinsJobName\": \"${env.JOB_NAME}\",
-    \"jenkinsBuildTag\": \"${env.BUILD_TAG}\"
-    \"gitSHA1\": \"${BUILD_GIT_SHA1}\"
-  }
-}""";
-				writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
-
-				sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
-				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
-
-				final misc = new de.metas.jenkins.Misc()
-				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz"
+			final misc = new de.metas.jenkins.Misc()
+			BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz"
 /*
-				// IMPORTANT: we might parse this build description's href value in downstream builds!
-				currentBuild.description="""artifacts (if not yet cleaned up)
+			// IMPORTANT: we might parse this build description's href value in downstream builds!
+			currentBuild.description="""artifacts (if not yet cleaned up)
 <ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
 </ul>""";
 */
-			} // withMaven
+		} // withMaven
+	} // configFileProvider
 
-			// gh #968:
-			// set env variables which will be available to a possible upstream job that might have called us
-			// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-			env.MF_VERSION=MF_VERSION
-			env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
-		} // stage
+	// gh #968:
+	// set env variables which will be available to a possible upstream job that might have called us
+	// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
+	env.MF_VERSION=MF_VERSION
+	env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
+} // stage
 
 		final String publishedDockerImageName;
 
@@ -146,7 +156,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
 <li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(MF_UPSTREAM_BRANCH)}_LATEST</code></li>
 </ul>"""
-	} // configFileProvider
  } // node
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
