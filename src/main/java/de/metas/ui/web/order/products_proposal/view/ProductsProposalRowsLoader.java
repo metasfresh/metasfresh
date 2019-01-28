@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -49,6 +51,8 @@ import lombok.NonNull;
 final class ProductsProposalRowsLoader
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
 	private final PriceListId priceListId;
 	private final LocalDate date;
@@ -67,7 +71,6 @@ final class ProductsProposalRowsLoader
 		this.date = date;
 
 		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 		currencyCode = currenciesRepo.getISOCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
@@ -91,12 +94,15 @@ final class ProductsProposalRowsLoader
 
 	private ProductsProposalRow toProductsProposalRow(final I_M_ProductPrice record)
 	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+
 		return ProductsProposalRow.builder()
 				.id(DocumentId.of(record.getM_ProductPrice_ID()))
 				.product(productLookup.findById(record.getM_Product_ID()))
+				.asiDescription(attributeSetInstanceBL.getASIDescriptionById(asiId))
 				.price(Amount.of(record.getPriceStd(), currencyCode))
 				.qty(null)
-				.lastShipmentDate(null) // TODO
+				.lastShipmentDays(null) // TODO
 				.build();
 	}
 
