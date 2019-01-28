@@ -134,6 +134,19 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public Set<PriceListId> retrievePriceListIds(final PricingSystemId pricingSystemId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilderOutOfTrx(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_PriceList.COLUMNNAME_C_Country_ID)
+				.create()
+				.listIds(PriceListId::ofRepoId);
+
+	}
+
+	@Override
 	public I_M_PriceList retrievePriceListByPricingSyst(final PricingSystemId pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final SOTrx soTrx)
 	{
 		if (pricingSystemId == null)
