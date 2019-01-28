@@ -2,6 +2,7 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -132,7 +133,7 @@ public class ViewLayout implements ETagAware
 		idFieldName = builder.getIdFieldName();
 
 		hasAttributesSupport = builder.hasAttributesSupport;
-		
+
 		allowedViewCloseActions = builder.getAllowedViewCloseActions();
 
 		hasTreeSupport = builder.hasTreeSupport;
@@ -178,9 +179,9 @@ public class ViewLayout implements ETagAware
 		idFieldName = from.idFieldName;
 
 		hasAttributesSupport = from.hasAttributesSupport;
-		
+
 		allowedViewCloseActions = from.allowedViewCloseActions;
-		
+
 		this.hasTreeSupport = hasTreeSupport;
 		this.treeCollapsible = treeCollapsible;
 		this.treeExpandedDepth = treeExpandedDepth;
@@ -607,6 +608,25 @@ public class ViewLayout implements ETagAware
 		public Builder clearElements()
 		{
 			elementBuilders.clear();
+			return this;
+		}
+
+		public Builder removeElementByFieldName(final String fieldName)
+		{
+			for (final Iterator<DocumentLayoutElementDescriptor.Builder> it = elementBuilders.iterator(); it.hasNext();)
+			{
+				final DocumentLayoutElementDescriptor.Builder element = it.next();
+				if (element.getFieldNames().contains(fieldName))
+				{
+					element.removeFieldByFieldName(fieldName);
+					if (element.getFieldsCount() == 0)
+					{
+						it.remove();
+						continue;
+					}
+				}
+			}
+
 			return this;
 		}
 
