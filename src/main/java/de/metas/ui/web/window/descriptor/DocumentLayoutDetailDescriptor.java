@@ -1,10 +1,17 @@
 package de.metas.ui.web.window.descriptor;
 
+import static de.metas.util.Check.assumeNotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -29,9 +36,14 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Specifies the fields of a tab, both in terms of a table row and of a one-record detail view.
+ */
 public final class DocumentLayoutDetailDescriptor
 {
-	public static final Builder builder(final WindowId windowId, final DetailId detailId)
+	public static final Builder builder(
+			@NonNull final WindowId windowId,
+			@NonNull final DetailId detailId)
 	{
 		return new Builder(windowId, detailId);
 	}
@@ -40,17 +52,26 @@ public final class DocumentLayoutDetailDescriptor
 	private final DetailId detailId;
 	private final String internalName;
 
+	private final ITranslatableString caption;
+	private final ITranslatableString description;
+
 	private final ViewLayout gridLayout;
 	private final DocumentLayoutSingleRow singleRowLayout;
 
 	private final boolean supportQuickInput;
 	private final boolean queryOnActivate;
 
-	private DocumentLayoutDetailDescriptor(final Builder builder)
+	@Getter
+	private final List<DocumentLayoutDetailDescriptor> subTabLayouts;
+
+	private DocumentLayoutDetailDescriptor(@NonNull final Builder builder)
 	{
 		windowId = Check.assumeNotNull(builder.windowId, "Parameter windowId is not null");
 
 		detailId = builder.detailId;
+
+		caption = assumeNotNull(builder.caption, "builder.caption may not be null; builder={}", builder);
+		description = assumeNotNull(builder.description, "builder.description may not be null; builder={}", builder);
 
 		internalName = builder.internalName;
 
@@ -59,6 +80,8 @@ public final class DocumentLayoutDetailDescriptor
 
 		supportQuickInput = builder.isSupportQuickInput();
 		queryOnActivate = builder.queryOnActivate;
+
+		subTabLayouts = builder.subTabLayouts;
 	}
 
 	@Override
@@ -98,7 +121,11 @@ public final class DocumentLayoutDetailDescriptor
 
 	public boolean isEmpty()
 	{
-		return !gridLayout.hasElements() && singleRowLayout.isEmpty();
+		final boolean hasSubLayouts = !Check.isEmpty(subTabLayouts);
+		final boolean hasFields = gridLayout != null && gridLayout.hasElements()
+				&& singleRowLayout != null && !singleRowLayout.isEmpty();
+
+		return !hasSubLayouts && !hasFields;
 	}
 
 	public boolean isSupportQuickInput()
@@ -109,6 +136,16 @@ public final class DocumentLayoutDetailDescriptor
 	public boolean isQueryOnActivate()
 	{
 		return queryOnActivate;
+	}
+
+	public String getCaption(@NonNull final String adLanguage)
+	{
+		return caption.translate(adLanguage);
+	}
+
+	public String getDescription(@NonNull final String adLanguage)
+	{
+		return description.translate(adLanguage);
 	}
 
 	public static final class Builder
@@ -124,6 +161,11 @@ public final class DocumentLayoutDetailDescriptor
 
 		private boolean queryOnActivate;
 
+		private final List<DocumentLayoutDetailDescriptor> subTabLayouts = new ArrayList<>();
+
+		private ITranslatableString caption;
+		private ITranslatableString description;
+
 		private Builder(@NonNull final WindowId windowId, @NonNull final DetailId detailId)
 		{
 			this.windowId = windowId;
@@ -137,11 +179,19 @@ public final class DocumentLayoutDetailDescriptor
 
 		private ViewLayout buildGridLayout()
 		{
+			if (gridLayout == null)
+			{
+				return null;
+			}
 			return gridLayout.build();
 		}
 
 		private DocumentLayoutSingleRow buildSingleRowLayout()
 		{
+			if (singleRowLayout == null)
+			{
+				return null;
+			}
 			return singleRowLayout.build();
 		}
 
@@ -195,6 +245,24 @@ public final class DocumentLayoutDetailDescriptor
 		public boolean isSupportQuickInput()
 		{
 			return supportQuickInput;
+		}
+
+		public Builder caption(@NonNull final ITranslatableString caption)
+		{
+			this.caption = caption;
+			return this;
+		}
+
+		public Builder description(@NonNull final ITranslatableString description)
+		{
+			this.description = description;
+			return this;
+		}
+
+		public Builder addSubLayout(@NonNull final DocumentLayoutDetailDescriptor subTabLayout)
+		{
+			subTabLayouts.add(subTabLayout);
+			return this;
 		}
 	}
 }

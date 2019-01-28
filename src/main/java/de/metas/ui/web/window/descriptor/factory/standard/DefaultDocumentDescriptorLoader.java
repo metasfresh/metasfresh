@@ -1,8 +1,9 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import java.util.List;
+
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
@@ -13,6 +14,7 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.factory.dataentry.DataEntryTabLoader;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
 
@@ -52,7 +54,6 @@ import de.metas.util.Check;
 
 	/* package */ DefaultDocumentDescriptorLoader(final int AD_Window_ID)
 	{
-		super();
 		this.AD_Window_ID = AD_Window_ID;
 	}
 
@@ -71,17 +72,12 @@ import de.metas.util.Check;
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final GridWindowVO gridWindowVO = GridWindowVO.builder()
-				.ctx(Env.getCtx())
-				.windowNo(0) // TODO: get rid of WindowNo from GridWindowVO
-				.adWindowId(AD_Window_ID)
-				.adMenuId(-1) // N/A
-				.loadAllLanguages(true)
-				.applyRolePermissions(false)
-				.build();
+
+		final GridWindowVO gridWindowVO = DocumentLoaderUtil.createGridWindoVO(AD_Window_ID);
 		Check.assumeNotNull(gridWindowVO, "Parameter gridWindowVO is not null"); // shall never happen
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();
+
 		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
 				.setWindowId(WindowId.of(gridWindowVO.getAD_Window_ID()))
 				.setStopwatch(stopwatch)
@@ -104,28 +100,28 @@ import de.metas.util.Check;
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
 
-		//
-		// Layout: Create UI details from child tabs
-		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(mainTabVO.getTabNo()))
+		ADTabLoader.builder()
+				.adWindowId(AD_Window_ID)
+				.rootLayoutFactory(rootLayoutFactory)
+				.layoutBuilder(layoutBuilder)
+				.build()
+				.load();
+
+		final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader
+				.builder()
+				.adWindowId(AD_Window_ID)
+				.windowId(rootLayoutFactory.documentEntity().getWindowId())
+				.build();
+		final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();
+		for (final DocumentLayoutDetailDescriptor descriptor : layoutDescriptors)
 		{
-			// Skip sort tabs because they are not supported
-			if (detailTabVO.IsSortTab)
-			{
-				continue;
-			}
-			
-			// Skip tabs which were already used/embedded in root layout
-			if(rootLayoutFactory.isSkipAD_Tab_ID(detailTabVO.getAD_Tab_ID()))
-			{
-				continue;
-			}
+			layoutBuilder.addDetail(descriptor);
+		}
 
-			final LayoutFactory detailLayoutFactory = LayoutFactory.ofIncludedTab(gridWindowVO, mainTabVO, detailTabVO);
-			final DocumentLayoutDetailDescriptor.Builder layoutDetail = detailLayoutFactory.layoutDetail();
-			layoutBuilder.addDetailIfValid(layoutDetail);
-
-			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailLayoutFactory.documentEntity();
-			rootLayoutFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());
+		final List<DocumentEntityDescriptor> entityDescriptors = dataEntryTabLoader.loadDocumentEntity();
+		for (final DocumentEntityDescriptor descriptor : entityDescriptors)
+		{
+			rootLayoutFactory.documentEntity().addIncludedEntity(descriptor);
 		}
 
 		//
@@ -137,4 +133,5 @@ import de.metas.util.Check;
 		logger.debug("Descriptor loaded in {}: {}", stopwatch, descriptor);
 		return descriptor;
 	}
+
 }

@@ -1,8 +1,9 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
@@ -20,6 +22,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,20 +48,21 @@ import io.swagger.annotations.ApiModel;
 
 /**
  * Window included tab layout (JSON)
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @ApiModel("tab")
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONDocumentLayoutTab implements Serializable
+public final class JSONDocumentLayoutTab
 {
-	static List<JSONDocumentLayoutTab> ofList(final Collection<DocumentLayoutDetailDescriptor> details, final JSONOptions jsonOpts)
+	public static List<JSONDocumentLayoutTab> ofList(
+			@NonNull final Collection<DocumentLayoutDetailDescriptor> details,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final Collection<DocumentFilterDescriptor> filters = null;
 		return details.stream()
 				.map(detail -> new JSONDocumentLayoutTab(detail, filters, jsonOpts))
-				.filter(jsonDetail -> jsonDetail.hasElements())
+				.filter(jsonDetail -> jsonDetail.hasElements() || !jsonDetail.subTabs.isEmpty())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -98,6 +102,10 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
+	@JsonProperty("tabs")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutTab> subTabs;
+
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
@@ -113,29 +121,29 @@ public final class JSONDocumentLayoutTab implements Serializable
 	private final boolean queryOnActivate;
 
 	private JSONDocumentLayoutTab(
-			final DocumentLayoutDetailDescriptor includedTabLayout //
-			, final Collection<DocumentFilterDescriptor> filters //
-			, final JSONOptions jsonOpts //
-	)
+			@NonNull final DocumentLayoutDetailDescriptor includedTabLayout,
+			@Nullable final Collection<DocumentFilterDescriptor> filters,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final ViewLayout gridLayout = includedTabLayout.getGridLayout();
+
 		supportQuickInput = includedTabLayout.isSupportQuickInput();
 		queryOnActivate = includedTabLayout.isQueryOnActivate();
 
-		windowId = gridLayout.getWindowId();
+		windowId = includedTabLayout.getWindowId();
 		type = windowId;
 
-		this.tabId = gridLayout.getDetailId();
+		this.tabId = includedTabLayout.getDetailId();
 		tabid = tabId;
 
 		internalName = includedTabLayout.getInternalName();
 
 		final String adLanguage = jsonOpts.getAD_Language();
-		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabid != null)
+		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabId != null)
 		{
 			caption = new StringBuilder()
 					.append("[")
-					.append(tabid)
+					.append(tabId)
 					.append(queryOnActivate ? "Q" : "")
 					.append("] ")
 					.append(gridLayout.getCaption(adLanguage))
@@ -143,17 +151,30 @@ public final class JSONDocumentLayoutTab implements Serializable
 		}
 		else
 		{
-			caption = gridLayout.getCaption(adLanguage);
+			caption = includedTabLayout.getCaption(adLanguage);
 		}
-		description = gridLayout.getDescription(adLanguage);
-		emptyResultText = gridLayout.getEmptyResultText(adLanguage);
-		emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
 
-		elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
+		this.description = includedTabLayout.getDescription(adLanguage);
+
+		if (gridLayout != null)
+		{
+			this.emptyResultText = gridLayout.getEmptyResultText(adLanguage);
+			this.emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
+
+			this.elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
+			this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
+		}
+		else
+		{
+			this.emptyResultText = null;
+			this.emptyResultHint = null;
+
+			this.elements = ImmutableList.of();
+			this.defaultOrderBys = ImmutableList.of();
+		}
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-
-		this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
+		this.subTabs = JSONDocumentLayoutTab.ofList(includedTabLayout.getSubTabLayouts(), jsonOpts);
 	}
 
 	@Override

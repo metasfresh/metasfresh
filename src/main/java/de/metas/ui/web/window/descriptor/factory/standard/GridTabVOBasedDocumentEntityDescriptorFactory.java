@@ -99,7 +99,7 @@ import lombok.NonNull;
 
 	//
 	// State
-	private final DocumentEntityDescriptor.Builder _documentEntryBuilder;
+	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 
 	public GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final GridTabVO gridTabVO,
@@ -121,13 +121,13 @@ import lombok.NonNull;
 
 		//
 		// Create initial document entity & field builders
-		_documentEntryBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx, labelsUIElements);
+		_documentEntityBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx, labelsUIElements);
 
 		//
 		// Document summary
 		if (rootEntity)
 		{
-			final IDocumentFieldValueProvider summaryValueProvider = GenericDocumentSummaryValueProvider.of(_documentEntryBuilder);
+			final IDocumentFieldValueProvider summaryValueProvider = GenericDocumentSummaryValueProvider.of(_documentEntityBuilder);
 			if (summaryValueProvider != null)
 			{
 				addInternalVirtualField(WindowConstants.FIELDNAME_DocumentSummary, DocumentFieldWidgetType.Text, summaryValueProvider);
@@ -170,7 +170,7 @@ import lombok.NonNull;
 
 	public DocumentEntityDescriptor.Builder documentEntity()
 	{
-		return _documentEntryBuilder;
+		return _documentEntityBuilder;
 	}
 
 	private DocumentEntityDescriptor.Builder createDocumentEntityBuilder(

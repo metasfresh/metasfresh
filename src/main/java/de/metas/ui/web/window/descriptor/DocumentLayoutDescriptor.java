@@ -23,8 +23,6 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-
 import lombok.NonNull;
 
 /*
@@ -68,6 +66,11 @@ public final class DocumentLayoutDescriptor
 	private final ViewLayout gridView;
 	/** Side list layout */
 	private final ViewLayout sideListView;
+
+	// private final Map<DocumentLayoutDetailGroupDescriptor, List<DocumentLayoutDetailDescriptor>> detailGroupToDetails = new HashMap<>();
+	//
+
+	// private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
 
 	/** Single row layout: included tabs */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
@@ -114,7 +117,7 @@ public final class DocumentLayoutDescriptor
 	{
 		return windowId;
 	}
-	
+
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -174,7 +177,6 @@ public final class DocumentLayoutDescriptor
 
 	public static final class Builder
 	{
-
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
 
 		private WindowId windowId;
@@ -186,14 +188,13 @@ public final class DocumentLayoutDescriptor
 		private ViewLayout.Builder _gridView;
 		private ViewLayout _sideListView;
 
-		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
+		private final List<DocumentLayoutDetailDescriptor> details = new ArrayList<>();
 
 		private final Map<String, String> debugProperties = new LinkedHashMap<>();
 		private Stopwatch stopwatch;
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -220,11 +221,27 @@ public final class DocumentLayoutDescriptor
 
 		private Map<DetailId, DocumentLayoutDetailDescriptor> buildDetails()
 		{
-			return detailsBuilders
-					.stream()
-					.map(detailBuilder -> detailBuilder.build())
-					.filter(detail -> !detail.isEmpty())
-					.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getDetailId()));
+			final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map = ImmutableMap.builder();
+			for (final DocumentLayoutDetailDescriptor detail : details)
+			{
+				buildDetailsRecurse(detail, map);
+			}
+			return map.build();
+		}
+
+		private void buildDetailsRecurse(
+				@NonNull final DocumentLayoutDetailDescriptor detail,
+				@NonNull final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map)
+		{
+			if (detail.isEmpty())
+			{
+				return;
+			}
+			map.put(detail.getDetailId(), detail);
+			for (final DocumentLayoutDetailDescriptor subDetail : detail.getSubTabLayouts())
+			{
+				buildDetailsRecurse(subDetail, map);
+			}
 		}
 
 		public Builder setWindowId(WindowId windowId)
@@ -273,25 +290,20 @@ public final class DocumentLayoutDescriptor
 			return _gridView;
 		}
 
-		/**
-		 * Adds detail/tab if it's valid.
-		 *
-		 * @param detailBuilder detail/tab builder
-		 */
-		public Builder addDetailIfValid(@Nullable final DocumentLayoutDetailDescriptor.Builder detailBuilder)
+		public Builder addDetail(@Nullable final DocumentLayoutDetailDescriptor detail)
 		{
-			if (detailBuilder == null)
+			if (detail == null)
 			{
 				return this;
 			}
 
-			if (detailBuilder.isEmpty())
+			if (detail.isEmpty())
 			{
-				logger.trace("Skip adding detail tab to layout because it does not have elements: {}", detailBuilder);
+				logger.trace("Skip adding detail to layout because it is empty; detail={}", detail);
 				return this;
 			}
+			details.add(detail);
 
-			detailsBuilders.add(detailBuilder);
 			return this;
 		}
 

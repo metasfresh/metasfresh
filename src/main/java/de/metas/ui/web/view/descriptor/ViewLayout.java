@@ -79,8 +79,13 @@ public class ViewLayout implements ETagAware
 	private final WindowId windowId;
 	private final DetailId detailId;
 	private final ViewProfileId profileId;
+
+	@Getter
 	private final ITranslatableString caption;
+
+	@Getter
 	private final ITranslatableString description;
+
 	private final ITranslatableString emptyResultText;
 	private final ITranslatableString emptyResultHint;
 
@@ -132,7 +137,7 @@ public class ViewLayout implements ETagAware
 		idFieldName = builder.getIdFieldName();
 
 		hasAttributesSupport = builder.hasAttributesSupport;
-		
+
 		allowedViewCloseActions = builder.getAllowedViewCloseActions();
 
 		hasTreeSupport = builder.hasTreeSupport;
@@ -178,9 +183,9 @@ public class ViewLayout implements ETagAware
 		idFieldName = from.idFieldName;
 
 		hasAttributesSupport = from.hasAttributesSupport;
-		
+
 		allowedViewCloseActions = from.allowedViewCloseActions;
-		
+
 		this.hasTreeSupport = hasTreeSupport;
 		this.treeCollapsible = treeCollapsible;
 		this.treeExpandedDepth = treeExpandedDepth;

@@ -49,6 +49,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow.Builder;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
@@ -124,7 +125,10 @@ public class LayoutFactory
 	private final IWindowUIElementsProvider _uiProvider;
 	private final List<I_AD_UI_Section> _uiSections;
 
-	private LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
+	private LayoutFactory(
+			@NonNull final GridWindowVO gridWindowVO,
+			@NonNull final GridTabVO gridTabVO,
+			@Nullable final GridTabVO parentTab)
 	{
 		Adempiere.autowire(this);
 
@@ -634,10 +638,15 @@ public class LayoutFactory
 			return null;
 		}
 
-		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
+		final Builder layoutSingleRow = layoutSingleRow();
+
+		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor
+				.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
+				.caption(entityDescriptor.getCaption())
+				.description(entityDescriptor.getDescription())
 				.internalName(entityDescriptor.getInternalName())
 				.gridLayout(layoutGridView())
-				.singleRowLayout(layoutSingleRow())
+				.singleRowLayout(layoutSingleRow)
 				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
 
 		//
@@ -671,7 +680,7 @@ public class LayoutFactory
 				.setSupportZoomInto(field.isSupportZoomInto())
 				.trackField(field);
 
-		if(!Check.isEmpty(field.getTooltipIconName()))
+		if (!Check.isEmpty(field.getTooltipIconName()))
 		{
 			layoutElementFieldBuilder.setFieldType(FieldType.Tooltip);
 			layoutElementFieldBuilder.setTooltipIconName(field.getTooltipIconName());

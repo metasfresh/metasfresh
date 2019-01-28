@@ -73,6 +73,8 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /*
  * #%L
@@ -96,6 +98,7 @@ import io.swagger.annotations.ApiParam;
  * #L%
  */
 
+@ApiResponses(value = { @ApiResponse(code = 401, message = "Unauthorized") })
 @RestController
 @RequestMapping(value = DebugRestController.ENDPOINT)
 public class DebugRestController
@@ -114,6 +117,7 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private IViewsRepository viewsRepo;
+
 	@Autowired
 	@Lazy
 	private SqlViewFactory sqlViewFactory;
@@ -130,9 +134,12 @@ public class DebugRestController
 	@Lazy
 	private WebsocketSender websocketSender;
 
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "cache reset done") })
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public void cacheReset()
 	{
+		userSession.assertLoggedIn();
+
 		CacheMgt.get().reset();
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
@@ -148,18 +155,24 @@ public class DebugRestController
 	@RequestMapping(value = "/showColumnNamesForCaption", method = RequestMethod.PUT)
 	public void setShowColumnNamesForCaption(@RequestBody final String showColumnNamesForCaptionStr)
 	{
+		userSession.assertLoggedIn();
+
 		userSession.setShowColumnNamesForCaption(DisplayType.toBoolean(showColumnNamesForCaptionStr));
 	}
 
 	@RequestMapping(value = "/allowDeprecatedRestAPI", method = RequestMethod.PUT)
 	public void setAllowDeprecatedRestAPI(@RequestBody final String allowDeprecatedRestAPI)
 	{
+		userSession.assertLoggedIn();
+
 		userSession.setAllowDeprecatedRestAPI(DisplayType.toBoolean(allowDeprecatedRestAPI));
 	}
 
 	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.GET)
 	public boolean isAllowDeprecatedRestAPI()
 	{
+		userSession.assertLoggedIn();
+
 		return userSession.isAllowDeprecatedRestAPI();
 	}
 
@@ -170,6 +183,8 @@ public class DebugRestController
 					allowEmptyValue = false) //
 			@RequestParam("enabled") final boolean enabled)
 	{
+		userSession.assertLoggedIn();
+
 		if (enabled)
 		{
 			statisticsLogger.enableWithSqlTracing();
@@ -183,12 +198,16 @@ public class DebugRestController
 	@RequestMapping(value = "/debugProtocol", method = RequestMethod.GET)
 	public void setDebugProtocol(@RequestParam("enabled") final boolean enabled)
 	{
+		userSession.assertLoggedIn();
+
 		WindowConstants.setProtocolDebugging(enabled);
 	}
 
 	@RequestMapping(value = "/views/list", method = RequestMethod.GET)
 	public List<JSONViewResult> getViewsList()
 	{
+		userSession.assertLoggedIn();
+
 		final String adLanguage = userSession.getAD_Language();
 
 		return viewsRepo.getViews()
@@ -201,12 +220,16 @@ public class DebugRestController
 	@PostMapping("/viewDefaultProfile/{windowId}")
 	public void setDefaultViewProfile(@PathVariable("windowId") final String windowIdStr, @RequestBody final String profileIdStr)
 	{
+		userSession.assertLoggedIn();
+
 		sqlViewFactory.setDefaultProfileId(WindowId.fromJson(windowIdStr), ViewProfileId.fromJson(profileIdStr));
 	}
 
 	@RequestMapping(value = "/lookups/cacheStats", method = RequestMethod.GET)
 	public List<String> getLookupCacheStats()
 	{
+		userSession.assertLoggedIn();
+
 		return LookupDataSourceFactory.instance.getCacheStats()
 				.stream()
 				.map(stats -> stats.toString())
@@ -225,6 +248,8 @@ public class DebugRestController
 			, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final Topic topic = Topic.builder()
 				.name(topicName)
 				.type(Type.LOCAL)
@@ -254,6 +279,8 @@ public class DebugRestController
 	public void postToWebsocket(
 			@RequestParam("endpoint") final String endpoint, @RequestBody final String messageStr)
 	{
+		userSession.assertLoggedIn();
+
 		final Charset charset = Charset.forName("UTF-8");
 		final Map<String, Object> headers = ImmutableMap.<String, Object> builder()
 				.put("simpMessageType", SimpMessageType.MESSAGE)
@@ -268,6 +295,8 @@ public class DebugRestController
 			@RequestParam("viewId") final String viewIdStr,
 			@RequestParam("changedIds") final String changedIdsStr)
 	{
+		userSession.assertLoggedIn();
+
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		final DocumentIdsSelection changedRowIds = DocumentIdsSelection.ofCommaSeparatedString(changedIdsStr);
 		sendWebsocketViewChangedNotification(viewId, changedRowIds);
@@ -275,6 +304,8 @@ public class DebugRestController
 
 	private void sendWebsocketViewChangedNotification(final ViewId viewId, final DocumentIdsSelection changedRowIds)
 	{
+		userSession.assertLoggedIn();
+
 		final ViewChanges viewChanges = new ViewChanges(viewId);
 		viewChanges.addChangedRowIds(changedRowIds);
 		JSONViewChanges jsonViewChanges = JSONViewChanges.of(viewChanges);
@@ -296,6 +327,8 @@ public class DebugRestController
 	@GetMapping("/logger/{loggerName}/_getUpToRoot")
 	public List<Map<String, Object>> getLoggersUpToRoot(@PathVariable("loggerName") final String loggerName)
 	{
+		userSession.assertLoggedIn();
+
 		final Logger logger = LogManager.getLogger(loggerName);
 		if (logger == null)
 		{
@@ -357,6 +390,8 @@ public class DebugRestController
 			, @PathVariable("level") final String levelStr //
 	)
 	{
+		userSession.assertLoggedIn();
+
 		//
 		// Get Level to set
 		final Level level;
@@ -408,6 +443,8 @@ public class DebugRestController
 	@GetMapping("http.cache.maxAge")
 	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final int httpCacheMaxAge)
 	{
+		userSession.assertLoggedIn();
+
 		final long httpCacheMaxAgeOld = userSession.getHttpCacheMaxAge();
 		userSession.setHttpCacheMaxAge(httpCacheMaxAge);
 		return ImmutableMap.of("value", httpCacheMaxAge, "valueOld", httpCacheMaxAgeOld);
@@ -416,6 +453,8 @@ public class DebugRestController
 	@GetMapping("http.use.AcceptLanguage")
 	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
 	{
+		userSession.assertLoggedIn();
+
 		final boolean useHttpAcceptLanguageOld = userSession.isUseHttpAcceptLanguage();
 		userSession.setUseHttpAcceptLanguage(useHttpAcceptLanguage);
 		return ImmutableMap.of("value", useHttpAcceptLanguage, "valueOld", useHttpAcceptLanguageOld);
@@ -426,6 +465,8 @@ public class DebugRestController
 			@RequestParam("enabled") final boolean enabled,
 			@RequestParam(value = "maxLoggedEvents", defaultValue = "500") final int maxLoggedEvents)
 	{
+		userSession.assertLoggedIn();
+
 		websocketSender.setLogEventsEnabled(enabled);
 		websocketSender.setLogEventsMaxSize(maxLoggedEvents);
 	}
@@ -433,6 +474,8 @@ public class DebugRestController
 	@GetMapping("websocketEvents")
 	public List<WebsocketEventLogRecord> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
 	{
+		userSession.assertLoggedIn();
+
 		return websocketSender.getLoggedEvents(destinationFilter);
 	}
 
@@ -441,6 +484,8 @@ public class DebugRestController
 			@PathVariable("viewId") final String viewIdStr,
 			@RequestParam("ids") final String rowIdsStr)
 	{
+		userSession.assertLoggedIn();
+
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(rowIdsStr);
 

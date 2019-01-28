@@ -1,10 +1,12 @@
 package de.metas.ui.web.window.descriptor;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
+import static de.metas.util.Check.isEmpty;
 
 import java.util.Collection;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -41,37 +43,38 @@ import lombok.EqualsAndHashCode;
 @Immutable
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class DetailId
+public final class DetailGroupId
 {
-	public static DetailId fromAD_Tab_ID(final int adTabId)
+	public static final DetailGroupId ANONYMOUS = fromTabGroupId(0);
+
+	public static DetailGroupId fromTabGroupId(final int tabGroupId)
 	{
-		return new DetailId(adTabId);
+		return new DetailGroupId(tabGroupId);
 	}
 
 	@JsonCreator
-	public static final DetailId fromJson(String json)
+	public static final DetailGroupId fromJson(@Nullable final String json)
 	{
 		if (json == null)
 		{
 			return null;
 		}
 
-		json = json.trim();
-		if (json.isEmpty())
+		if (isEmpty(json, true))
 		{
 			return null;
 		}
 
-		final int adTabId = Integer.parseInt(json);
-		return fromAD_Tab_ID(adTabId);
+		final int tabGroupId = Integer.parseInt(json.trim());
+		return fromTabGroupId(tabGroupId);
 	}
 
-	public static final String toJson(final DetailId detailId)
+	public static final String toJson(final DetailGroupId detailGroupId)
 	{
-		return detailId == null ? null : String.valueOf(detailId.adTabId);
+		return detailGroupId == null ? null : String.valueOf(detailGroupId.detailGroupId);
 	}
 
-	public static final Set<String> toJson(final Collection<DetailId> detailIds)
+	public static final Set<String> toJson(final Collection<DetailGroupId> detailIds)
 	{
 		if (detailIds == null || detailIds.isEmpty())
 		{
@@ -81,13 +84,14 @@ public final class DetailId
 		return detailIds.stream().map(detailId -> detailId.toJson()).collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private final int adTabId;
+	private final int detailGroupId;
 
 	private transient String _tableAlias = null; // lazy
 
-	private DetailId(final int adTabId)
+	private DetailGroupId(final int detailGroupId)
 	{
-		this.adTabId = assumeGreaterThanZero(adTabId, "adTabId");
+		// note that the anonymous group has the ID "zero"
+		this.detailGroupId = assumeGreaterOrEqualToZero(detailGroupId, "detailGroupId");
 	}
 
 	@Override
@@ -106,13 +110,8 @@ public final class DetailId
 	{
 		if (_tableAlias == null)
 		{
-			_tableAlias = "d" + adTabId;
+			_tableAlias = "dg" + detailGroupId;
 		}
 		return _tableAlias;
-	}
-
-	public int getIntValue()
-	{
-		return adTabId;
 	}
 }
