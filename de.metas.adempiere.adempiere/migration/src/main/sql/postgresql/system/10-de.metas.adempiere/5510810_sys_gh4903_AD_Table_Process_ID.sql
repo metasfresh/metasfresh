@@ -1683,6 +1683,11 @@ commit;
 ALTER TABLE AD_Table_Process ALTER COLUMN AD_Table_Process_ID SET DEFAULT nextval('ad_table_process_seq')
 ;
 
+commit;
+
+update AD_Table_Process set AD_Table_Process_ID=nextval('ad_table_process_seq') where AD_Table_Process_ID is null;
+commit;
+
 -- 2019-01-25T17:32:49.541
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 ALTER TABLE AD_Table_Process ALTER COLUMN AD_Table_Process_ID SET NOT NULL
