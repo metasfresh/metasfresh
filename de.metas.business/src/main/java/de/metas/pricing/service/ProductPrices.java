@@ -81,7 +81,7 @@ public class ProductPrices
 				.matches();
 	}
 
-	public static void assertIsNoMainPriceDuplicate(final I_M_ProductPrice productPrice)
+	public static void assertMainProductPriceIsNotDuplicate(final I_M_ProductPrice productPrice)
 	{
 		if (productPrice == null || !productPrice.isActive())
 		{
