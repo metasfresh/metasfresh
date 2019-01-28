@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -48,19 +47,25 @@ import lombok.ToString;
 @ToString(exclude = "_fieldNameAndJsonValues")
 public class ProductsProposalRow implements IViewRow
 {
-	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, seqNo = 10)
+	@ViewColumn(seqNo = 10, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
 	private final LookupValue product;
 
-	@ViewColumn(captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount, seqNo = 20)
+	@ViewColumn(seqNo = 20, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
+	private final String asiDescription;
+
+	@ViewColumn(seqNo = 30, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
 	private final Amount price;
 
+	@ViewColumn(seqNo = 40, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
+	private final String currencyCode;
+
 	public static final String FIELD_Qty = "qty";
-	@ViewColumn(fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, seqNo = 30, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 50, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final BigDecimal qty;
 
-	@ViewColumn(captionKey = "LastShipmentDate", widgetType = DocumentFieldWidgetType.Amount, seqNo = 40)
-	private final LocalDate lastShipmentDate;
+	@ViewColumn(seqNo = 60, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	private final Integer lastShipmentDays;
 
 	private final DocumentId id;
 	private ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
@@ -69,15 +74,18 @@ public class ProductsProposalRow implements IViewRow
 	private ProductsProposalRow(
 			@NonNull final DocumentId id,
 			@NonNull final LookupValue product,
+			@Nullable final String asiDescription,
 			@NonNull final Amount price,
 			@Nullable final BigDecimal qty,
-			@Nullable final LocalDate lastShipmentDate)
+			@Nullable final Integer lastShipmentDays)
 	{
 		this.id = id;
 		this.product = product;
+		this.asiDescription = asiDescription;
 		this.price = price;
+		this.currencyCode = price.getCurrencyCode();
 		this.qty = qty;
-		this.lastShipmentDate = lastShipmentDate;
+		this.lastShipmentDays = lastShipmentDays;
 	}
 
 	@Override

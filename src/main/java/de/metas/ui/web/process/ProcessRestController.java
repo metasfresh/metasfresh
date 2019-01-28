@@ -2,25 +2,27 @@ package de.metas.ui.web.process;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessClassInfo;
@@ -79,36 +81,31 @@ import lombok.NonNull;
 
 @Api
 @RestController
-@RequestMapping(value = ProcessRestController.ENDPOINT)
+@RequestMapping(ProcessRestController.ENDPOINT)
 public class ProcessRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/process";
 
 	private static final Logger logger = LogManager.getLogger(ProcessRestController.class);
-
-	@Autowired
-	private UserSession userSession;
-
-	@Autowired
-	private IViewsRepository viewsRepo;
-	@Autowired
-	private DocumentCollection documentsCollection;
-
-	private final ConcurrentHashMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType = new ConcurrentHashMap<>();
+	private final ImmutableMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType;
+	private final UserSession userSession;
+	private final IViewsRepository viewsRepo;
+	private final DocumentCollection documentsCollection;
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
-	public ProcessRestController(final ApplicationContext context)
+	public ProcessRestController(
+			@NonNull final List<IProcessInstancesRepository> pinstancesRepositories,
+			@NonNull final UserSession userSession,
+			@NonNull final IViewsRepository viewsRepo,
+			@NonNull final DocumentCollection documentsCollection)
 	{
-		//
-		// Discover and register process instance repositories
-		context.getBeansOfType(IProcessInstancesRepository.class)
-				.values().stream()
-				.forEach(processInstanceRepo -> {
-					final String processHandlerType = processInstanceRepo.getProcessHandlerType();
-					pinstancesRepositoriesByHandlerType.put(processHandlerType, processInstanceRepo);
-					logger.info("Registered process instances repository for '{}': {}", processHandlerType, processInstanceRepo);
-				});
+		this.pinstancesRepositoriesByHandlerType = Maps.uniqueIndex(pinstancesRepositories, IProcessInstancesRepository::getProcessHandlerType);
+		logger.info("Registered process instances repositories: {}", pinstancesRepositoriesByHandlerType);
+
+		this.userSession = userSession;
+		this.viewsRepo = viewsRepo;
+		this.documentsCollection = documentsCollection;
 	}
 
 	private JSONOptions newJSONOptions()
@@ -139,7 +136,7 @@ public class ProcessRestController
 		return pinstancesRepositoriesByHandlerType.values();
 	}
 
-	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
+	@GetMapping("/{processId}/layout")
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
 			final WebRequest request)
@@ -158,7 +155,7 @@ public class ProcessRestController
 				.toJson(JSONProcessLayout::of);
 	}
 
-	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
+	@PostMapping("/{processId}")
 	public JSONProcessInstance createInstanceFromRequest(
 			@PathVariable("processId") final String processIdStr,
 			@RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
@@ -199,7 +196,7 @@ public class ProcessRestController
 		});
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
+	@GetMapping("/{processId}/{pinstanceId}")
 	public JSONProcessInstance getInstance(
 			@PathVariable("processId") final String processIdStr,
 			@PathVariable("pinstanceId") final String pinstanceIdStr)
@@ -214,7 +211,7 @@ public class ProcessRestController
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJSONOptions()));
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.PATCH)
+	@PatchMapping("/{processId}/{pinstanceId}")
 	public List<JSONDocument> processParametersChangeEvents(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
@@ -242,7 +239,7 @@ public class ProcessRestController
 		});
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/start", method = RequestMethod.GET)
+	@GetMapping(value = "/{processId}/{pinstanceId}/start")
 	public JSONProcessInstanceResult startProcess(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
@@ -270,7 +267,7 @@ public class ProcessRestController
 				});
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/print/{filename:.*}", method = RequestMethod.GET)
+	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getReport(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
@@ -300,7 +297,7 @@ public class ProcessRestController
 		return response;
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/field/{parameterName}/typeahead", method = RequestMethod.GET)
+	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesList getParameterTypeahead(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
@@ -319,7 +316,7 @@ public class ProcessRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/field/{parameterName}/dropdown", method = RequestMethod.GET)
+	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getParameterDropdown(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //

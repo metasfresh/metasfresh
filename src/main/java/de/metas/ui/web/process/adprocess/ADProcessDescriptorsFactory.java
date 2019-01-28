@@ -1,11 +1,12 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -21,17 +22,15 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
@@ -99,17 +98,19 @@ import lombok.NonNull;
 
 	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
-	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final WebuiPreconditionsContext preconditionsContext, final IUserRolePermissions userRolePermissions)
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(
+			@NonNull final WebuiPreconditionsContext preconditionsContext,
+			@NonNull final IUserRolePermissions userRolePermissions)
 	{
 		final String tableName = preconditionsContext.getTableName();
 		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
 
-		final int adWindowId = preconditionsContext.getAD_Window_ID();
+		final AdWindowId adWindowId = preconditionsContext.getAdWindowId();
+		final AdTabId adTabId = preconditionsContext.getAdTabId();
 
 		final Stream<RelatedProcessDescriptor> relatedProcessDescriptors;
 		{
-			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
-					.values()
+			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
 			final Stream<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors()
 					.stream();
@@ -118,18 +119,22 @@ import lombok.NonNull;
 					.collect(GuavaCollectors.distinctBy(RelatedProcessDescriptor::getProcessId));
 		}
 
+		final DisplayPlace displayPlace = preconditionsContext.getDisplayPlace();
+
 		return relatedProcessDescriptors
+				.filter(relatedProcess -> displayPlace == null || relatedProcess.isDisplayedOn(displayPlace))
 				.filter(relatedProcess -> relatedProcess.isExecutionGranted(userRolePermissions)) // only those which can be executed by current user permissions
 				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
 
-	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor, @NonNull final IProcessPreconditionsContext preconditionsContext)
+	private WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(
+			@NonNull final RelatedProcessDescriptor relatedProcessDescriptor,
+			@NonNull final IProcessPreconditionsContext preconditionsContext)
 	{
 		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcessDescriptor.getProcessId());
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 		final ProcessPreconditionsResolutionSupplier preconditionsResolutionSupplier = ProcessPreconditionsResolutionSupplier.builder()
 				.preconditionsContext(preconditionsContext)
-				.processPreconditionsCheckers(relatedProcessDescriptor.getProcessPreconditionsCheckers())
 				.processDescriptor(processDescriptor)
 				.build();
 
@@ -140,7 +145,7 @@ import lombok.NonNull;
 				.processDescription(processDescriptor.getDescription())
 				.debugProcessClassname(processDescriptor.getProcessClassname())
 				//
-				.quickAction(relatedProcessDescriptor.isWebuiQuickAction())
+				.displayPlaces(relatedProcessDescriptor.getDisplayPlaces())
 				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
 				//
 				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
@@ -354,40 +359,22 @@ import lombok.NonNull;
 	private static final class ProcessPreconditionsResolutionSupplier implements Supplier<ProcessPreconditionsResolution>
 	{
 		private final IProcessPreconditionsContext preconditionsContext;
-		private final ImmutableList<IProcessPrecondition> processPreconditionsCheckers;
 		private final ProcessDescriptor processDescriptor;
 
 		@Builder
 		private ProcessPreconditionsResolutionSupplier(
 				@NonNull final IProcessPreconditionsContext preconditionsContext,
-				final List<IProcessPrecondition> processPreconditionsCheckers,
 				@NonNull final ProcessDescriptor processDescriptor)
 		{
 			this.preconditionsContext = preconditionsContext;
-			this.processPreconditionsCheckers = !processPreconditionsCheckers.isEmpty() ? ImmutableList.copyOf(processPreconditionsCheckers) : ImmutableList.of();
 			this.processDescriptor = processDescriptor;
 		}
 
 		@Override
 		public ProcessPreconditionsResolution get()
 		{
-			//
-			// Check registered preconditions
-			final ProcessPreconditionsResolution rejectResolution = processPreconditionsCheckers.stream()
-					.map(processPreconditionsChecker -> processPreconditionsChecker.checkPreconditionsApplicable(preconditionsContext))
-					.filter(resolution -> !resolution.isAccepted())
-					.findFirst()
-					.orElse(null);
-			if (rejectResolution != null)
-			{
-				return rejectResolution;
-			}
-
-			//
-			// Ask the process descriptor
 			return processDescriptor.checkPreconditionsApplicable(preconditionsContext);
 		}
-
 	}
 
 	private static final class ProcessParametersCallout

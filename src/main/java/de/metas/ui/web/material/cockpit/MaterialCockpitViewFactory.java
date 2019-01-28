@@ -1,7 +1,5 @@
 package de.metas.ui.web.material.cockpit;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -10,8 +8,10 @@ import org.adempiere.service.ISysConfigBL;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
@@ -31,6 +31,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -136,8 +137,8 @@ public class MaterialCockpitViewFactory
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final int processId = adProcessDAO.retrieveProcessIdByClass(processClass);
-		if (processId <= 0)
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId == null)
 		{
 			throw new AdempiereException("No processId found for " + processClass);
 		}
@@ -145,7 +146,7 @@ public class MaterialCockpitViewFactory
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
 				.anyTable().anyWindow()
-				.webuiQuickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 

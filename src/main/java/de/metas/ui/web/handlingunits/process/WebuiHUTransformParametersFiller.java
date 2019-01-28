@@ -25,6 +25,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.product.ProductId;
@@ -152,7 +153,7 @@ public class WebuiHUTransformParametersFiller
 	/**
 	 * @return the actions that are available according to which row is currently selected and to also according to whether there are already existing TUs or LUs in the context.
 	 */
-	public final LookupValuesList getActions(final int processId)
+	public final LookupValuesList getActions(final AdProcessId processId)
 	{
 		final Set<String> allowedActions = new HashSet<>();
 
@@ -173,7 +174,7 @@ public class WebuiHUTransformParametersFiller
 		}
 
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final I_AD_Process_Para processParameter = adProcessDAO.retriveProcessParameter(processId, WEBUI_M_HU_Transform.PARAM_Action);
+		final I_AD_Process_Para processParameter = adProcessDAO.retrieveProcessParameter(processId, WEBUI_M_HU_Transform.PARAM_Action);
 		final int actionsReferenceId = processParameter.getAD_Reference_Value_ID();
 		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(actionsReferenceId);
 

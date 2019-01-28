@@ -1,5 +1,8 @@
 package de.metas.ui.web.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -8,7 +11,10 @@ import org.springframework.stereotype.Component;
 
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.process.WEBUI_Fact_Acct_Repost;
 import de.metas.util.Services;
 
@@ -49,26 +55,31 @@ public class WebuiAccountingConfig
 	public void registerRepostProcess()
 	{
 		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
-		final int repostProcessId = adProcessesRepo.retriveProcessIdByClassIfUnique(WEBUI_Fact_Acct_Repost.class);
-		if (repostProcessId <= 0)
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+
+		final AdProcessId repostProcessId = adProcessesRepo.retrieveProcessIdByClassIfUnique(WEBUI_Fact_Acct_Repost.class);
+		if (repostProcessId == null)
 		{
 			logger.warn("No AD_Process_ID found for {}", WEBUI_Fact_Acct_Repost.class);
 			return;
 		}
 
 		//
-		// Link Repost process to all accountable documents
-		acctDocRegistry
-				.getDocTableNames()
-				.forEach(docTableName -> adProcessesRepo.registerTableProcess(docTableName, repostProcessId));
+		final List<String> linkToTableNames = new ArrayList<>();
+		linkToTableNames.addAll(acctDocRegistry.getDocTableNames());
+		linkToTableNames.add(WEBUI_Fact_Acct_Repost.TABLENAME_RV_UnPosted);
 
 		//
-		// Link Repost process to RV_UnPosted view
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
-		final int rvUnPostTableId = adTablesRepo.retrieveTableId(WEBUI_Fact_Acct_Repost.TABLENAME_RV_UnPosted);
-		if (rvUnPostTableId > 0)
-		{
-			adProcessesRepo.registerTableProcess(rvUnPostTableId, repostProcessId);
-		}
+		// Link Repost process to all accountable documents
+		linkToTableNames
+				.stream()
+				.map(adTablesRepo::retrieveTableId)
+				.filter(adTableId -> adTableId > 0)
+				.forEach(adTableId -> adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
+						.processId(repostProcessId)
+						.tableId(adTableId)
+						.anyWindow()
+						.displayPlace(DisplayPlace.ViewQuickActions) // NOTE: atm the process works only for views
+						.build()));
 	}
 }

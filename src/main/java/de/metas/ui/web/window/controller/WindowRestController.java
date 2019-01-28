@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -540,7 +541,6 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-
 		final JSONDocumentPath jsonZoomIntoDocumentPath;
 		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> getDocumentFieldZoomInto(document, fieldName));
 		if (zoomIntoInfo == null)
@@ -570,7 +570,7 @@ public class WindowRestController
 	{
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final DocumentFieldDescriptor singleKeyFieldDescriptor = entityDescriptor.getSingleIdFieldOrNull();
-		
+
 		final IDocumentFieldView field = document.getFieldView(fieldName);
 
 		// Generic ZoomInto button
@@ -619,22 +619,47 @@ public class WindowRestController
 	@GetMapping("/{windowId}/{documentId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("documentId") final String documentId,
+			@PathVariable("documentId") final String documentIdStr,
 			@RequestParam(name = "selectedTabId", required = false) final String selectedTabIdStr,
 			@RequestParam(name = "selectedRowIds", required = false) final String selectedRowIdsAsStr,
 			@RequestParam(name = "disabled", defaultValue = "false") final boolean returnDisabled)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
 		final DetailId selectedTabId = DetailId.fromJson(selectedTabIdStr);
 		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStr);
 		final Set<TableRecordReference> selectedIncludedRecords = selectedRowIds.stream()
-				.map(rowId -> documentPath.createChildPath(selectedTabId, rowId))
+				.map(rowId -> rootDocumentPath.createChildPath(selectedTabId, rowId))
 				.map(documentCollection::getTableRecordReference)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return getDocumentActions(documentPath, selectedIncludedRecords, returnDisabled);
+		return getDocumentActions(
+				rootDocumentPath,
+				selectedTabId,
+				selectedIncludedRecords,
+				returnDisabled,
+				DisplayPlace.SingleDocumentActionsMenu);
+	}
+
+	@GetMapping("/{windowId}/{documentId}/{tabId}/topActions")
+	public JSONDocumentActionsList getIncludedTabTopActions(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+		final DetailId selectedTabId = DetailId.fromJson(tabIdStr);
+		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
+		boolean returnDisabled = false;
+
+		return getDocumentActions(
+				rootDocumentPath,
+				selectedTabId,
+				selectedIncludedRecords,
+				returnDisabled,
+				DisplayPlace.IncludedTabTopActionsMenu);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
@@ -646,33 +671,42 @@ public class WindowRestController
 			@RequestParam(name = "disabled", defaultValue = "false") final boolean returnDisabled)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
+		final DetailId selectedTabId = DetailId.fromJson(tabIdStr);
+
+		final DocumentPath includedDocumentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, selectedTabId.toJson(), rowIdStr);
 		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
-		return getDocumentActions(documentPath, selectedIncludedRecords, returnDisabled);
+		return getDocumentActions(
+				includedDocumentPath,
+				selectedTabId,
+				selectedIncludedRecords,
+				returnDisabled,
+				DisplayPlace.SingleDocumentActionsMenu);
 	}
 
 	private JSONDocumentActionsList getDocumentActions(
-			final DocumentPath documentPath,
-			final Set<TableRecordReference> selectedIncludedRecords,
-			final boolean returnDisabled)
+			@NonNull final DocumentPath documentPath,
+			final DetailId selectedTabId,
+			@NonNull final Set<TableRecordReference> selectedIncludedRecords,
+			final boolean returnDisabled,
+			@NonNull final DisplayPlace displayPlace)
 	{
 		userSession.assertLoggedIn();
 
-		final Predicate<WebuiRelatedProcessDescriptor> filter;
-		if (returnDisabled)
-		{
-			filter = WebuiRelatedProcessDescriptor::isEnabledOrNotSilent;
-		}
-		else
-		{
-			filter = WebuiRelatedProcessDescriptor::isEnabled;
-		}
+		final Predicate<WebuiRelatedProcessDescriptor> isEnabled = returnDisabled
+				? WebuiRelatedProcessDescriptor::isEnabledOrNotSilent
+				: WebuiRelatedProcessDescriptor::isEnabled;
 
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
-			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document, selectedIncludedRecords);
+			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.builder()
+					.document(document)
+					.selectedTabId(selectedTabId)
+					.selectedIncludedRecords(selectedIncludedRecords)
+					.displayPlace(displayPlace)
+					.build();
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
-					.filter(filter)
+					.filter(descriptor -> descriptor.isDisplayedOn(displayPlace))
+					.filter(isEnabled)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
 	}

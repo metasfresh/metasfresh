@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 
 import org.compiere.util.TimeUtil;
 
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
@@ -59,7 +61,11 @@ public final class JSONDocumentAction implements Serializable
 	@JsonProperty("description")
 	private final String description;
 
+	@JsonProperty("displayPlaces")
+	private final Set<DisplayPlace> displayPlaces;
+	//
 	@JsonProperty("quickAction")
+	@Deprecated
 	private final boolean quickAction;
 
 	@JsonProperty("defaultQuickAction")
@@ -97,7 +103,8 @@ public final class JSONDocumentAction implements Serializable
 		caption = relatedProcessDescriptor.getCaption(adLanguage);
 		description = relatedProcessDescriptor.getDescription(adLanguage);
 
-		quickAction = relatedProcessDescriptor.isQuickAction();
+		displayPlaces = relatedProcessDescriptor.getDisplayPlaces();
+		quickAction = relatedProcessDescriptor.isDisplayedOn(DisplayPlace.ViewQuickActions);
 		defaultQuickAction = relatedProcessDescriptor.isDefaultQuickAction();
 
 		disabled = relatedProcessDescriptor.isDisabled() ? Boolean.TRUE : null;

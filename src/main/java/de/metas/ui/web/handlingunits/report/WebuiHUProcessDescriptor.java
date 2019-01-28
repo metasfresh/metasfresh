@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.report;
 
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
@@ -72,7 +73,7 @@ class WebuiHUProcessDescriptor
 				.internalName(processDescriptor.getInternalName())
 				.processCaption(processDescriptor.getCaption())
 				.processDescription(processDescriptor.getDescription())
-				.quickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.preconditionsResolutionSupplier(() -> ProcessPreconditionsResolution.accept())
 				.build();
 	}

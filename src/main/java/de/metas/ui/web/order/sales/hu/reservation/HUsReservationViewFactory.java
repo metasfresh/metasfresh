@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -95,8 +96,8 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(processClass))
-				.webuiQuickAction(true)
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.webuiDefaultQuickAction()
 				.build();
 	}

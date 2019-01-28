@@ -3,6 +3,8 @@ package de.metas.ui.web.process;
 import java.util.List;
 import java.util.Objects;
 
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -14,15 +16,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.Check;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -72,11 +74,15 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	private final IView view;
 	private final String tableName;
-	private final WindowId windowId;
+	@Getter
+	private final AdWindowId adWindowId;
 
 	private final ViewRowIdsSelection viewRowIdsSelection;
 	private final ViewRowIdsSelection parentViewRowIdsSelection;
 	private final ViewRowIdsSelection childViewRowIdsSelection;
+
+	@Getter
+	private final DisplayPlace displayPlace;
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
@@ -85,11 +91,11 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 			@NonNull final IView view,
 			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
 			final ViewRowIdsSelection parentViewRowIdsSelection,
-			final ViewRowIdsSelection childViewRowIdsSelection)
+			final ViewRowIdsSelection childViewRowIdsSelection,
+			final DisplayPlace displayPlace)
 	{
-		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
-		this.windowId = view.getViewId().getWindowId();
+		this.adWindowId = view.getViewId().getWindowId().toAdWindowIdOrNull();
 
 		this.viewRowIdsSelection = viewRowIdsSelection;
 		this.parentViewRowIdsSelection = parentViewRowIdsSelection;
@@ -104,6 +110,8 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		{
 			this.tableName = view.getTableNameOrNull(null);
 		}
+
+		this.displayPlace = displayPlace;
 	}
 
 	public DocumentIdsSelection getSelectedRowIds()
@@ -125,9 +133,9 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	}
 
 	@Override
-	public int getAD_Window_ID()
+	public AdTabId getAdTabId()
 	{
-		return windowId.toIntOr(-1);
+		return null;
 	}
 
 	@Override

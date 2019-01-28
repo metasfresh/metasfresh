@@ -2,10 +2,13 @@ package de.metas.ui.web.process;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 
 /*
  * #%L
@@ -20,17 +23,20 @@ import de.metas.process.RelatedProcessDescriptor;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public interface WebuiPreconditionsContext extends IProcessPreconditionsContext
 {
+	@Nullable
+	DisplayPlace getDisplayPlace();
+
 	default List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return ImmutableList.of();
