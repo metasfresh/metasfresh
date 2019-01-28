@@ -113,7 +113,7 @@ public class ProductPriceQuery
 	}
 
 	/** @return true if there is at least one product price that matches */
-	public boolean matches()
+	boolean matches()
 	{
 		return toQuery().match();
 	}
