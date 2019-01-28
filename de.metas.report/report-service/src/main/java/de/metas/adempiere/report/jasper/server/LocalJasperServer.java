@@ -79,7 +79,7 @@ public class LocalJasperServer implements IJasperServer
 		// Create report context based on processInfo
 		final ReportContext reportContext = ReportContext.builder()
 				.setCtx(processInfo.getCtx())
-				.setAD_Process_ID(processInfo.getAD_Process_ID())
+				.setAD_Process_ID(processInfo.getAdProcessId())
 				.setPInstanceId(processInfo.getPinstanceId())
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
 				.setAD_Language(processInfo.getReportAD_Language())

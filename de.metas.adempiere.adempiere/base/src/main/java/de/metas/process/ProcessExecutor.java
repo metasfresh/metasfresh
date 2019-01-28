@@ -15,6 +15,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Rule;
@@ -30,7 +31,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.i18n.IMsgBL;
 // import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
@@ -57,28 +57,28 @@ public final class ProcessExecutor
 
 	public static int getCurrentOrgId()
 	{
-		final Integer orgId = s_currentOrg_ID.get();
+		final OrgId orgId = s_currentOrg_ID.get();
 		if (orgId == null)
 		{
-			return 0;
+			return OrgId.ANY.getRepoId();
 		}
-		return orgId;
+		return orgId.getRepoId();
 	}
 
 	public static int getCurrentProcessId()
 	{
-		final Integer processId = s_currentProcess_ID.get();
+		final AdProcessId processId = s_currentProcess_ID.get();
 		if (processId == null)
 		{
 			return 0;
 		}
-		return processId;
+		return processId.getRepoId();
 	}
 
 	//
 	// Thread locals
-	private static final ThreadLocal<Integer> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
-	private static final ThreadLocal<Integer> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
+	private static final ThreadLocal<AdProcessId> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
+	private static final ThreadLocal<OrgId> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutor.class);
@@ -259,13 +259,13 @@ public final class ProcessExecutor
 
 		//
 		// now run the process executor
-		final Integer previousProcessId = s_currentProcess_ID.get();
-		final Integer previousOrgId = s_currentOrg_ID.get();
+		final AdProcessId previousProcessId = s_currentProcess_ID.get();
+		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
 		try (final IAutoCloseable contextRestorer = switchContextIfNeeded())
 		{
-			s_currentProcess_ID.set(pi.getAD_Process_ID());
-			s_currentOrg_ID.set(pi.getAD_Org_ID());
+			s_currentProcess_ID.set(pi.getAdProcessId());
+			s_currentOrg_ID.set(pi.getOrgId());
 
 			//
 			// Check permissions
@@ -295,7 +295,7 @@ public final class ProcessExecutor
 			{
 				duration.stop();
 				final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-				adProcessDAO.addProcessStatistics(pi.getCtx(), pi.getAD_Process_ID(), pi.getAD_Client_ID(), duration.elapsed(TimeUnit.MILLISECONDS)); // never throws exception
+				adProcessDAO.addProcessStatistics(pi.getAdProcessId(), pi.getClientId(), duration.elapsed(TimeUnit.MILLISECONDS)); // never throws exception
 			}
 
 			// Unlock
@@ -337,8 +337,8 @@ public final class ProcessExecutor
 
 		if (permissions.getAD_Role_ID() > 0)
 		{
-			final int adProcessId = pi.getAD_Process_ID();
-			final Boolean access = permissions.getProcessAccess(adProcessId);
+			final AdProcessId adProcessId = pi.getAdProcessId();
+			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
 			if (access == null || !access.booleanValue())
 			{
 				throw new AdempiereException("Cannot access Process " + adProcessId + " with role: " + permissions.getName());

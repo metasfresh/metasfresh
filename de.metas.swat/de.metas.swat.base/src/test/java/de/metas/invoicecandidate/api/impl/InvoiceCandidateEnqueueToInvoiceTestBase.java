@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_User;
@@ -126,8 +125,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 
 	private final IInvoiceCandidateEnqueueResult step20_enqueueToInvoice()
 	{
-		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModelsCollection(invoiceCandidates);
-		final PInstanceId adPInstanceId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
+		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModelsCollection(invoiceCandidates);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(true);
@@ -138,7 +136,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 				.setFailIfNothingEnqueued(true)
 				.setFailOnChanges(true)
 				.setInvoicingParams(invoicingParams)
-				.enqueueSelection(adPInstanceId);
+				.enqueueSelection(selectionId);
 
 		//
 		// Make sure nothing is locked by enqueuer lock at this point because:

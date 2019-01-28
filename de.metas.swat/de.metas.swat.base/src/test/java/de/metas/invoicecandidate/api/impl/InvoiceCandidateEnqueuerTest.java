@@ -30,7 +30,6 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -89,7 +88,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 
 		//
 		// Enqueue them to be invoiced
-		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModels(ic1, ic2);
+		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(ic1, ic2);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IMutable<IInvoiceCandidateEnqueueResult> enqueueResultRef = new Mutable<>();
 		trxManager.run(new TrxRunnable()
@@ -101,7 +100,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 						.setContext(Env.getCtx())
 						.setInvoicingParams(createDefaultInvoicingParams())
 						.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
-						.enqueueSelection(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
+						.enqueueSelection(selectionId);
 				enqueueResultRef.setValue(result);
 			}
 		});

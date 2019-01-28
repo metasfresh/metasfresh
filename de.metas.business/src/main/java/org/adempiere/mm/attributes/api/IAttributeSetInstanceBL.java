@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api;
 import java.util.function.Predicate;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -110,4 +111,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
 
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
+
+	String getASIDescriptionById(AttributeSetInstanceId asiId);
 }

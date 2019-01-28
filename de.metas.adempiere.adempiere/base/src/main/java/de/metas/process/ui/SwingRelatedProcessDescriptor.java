@@ -65,7 +65,7 @@ public class SwingRelatedProcessDescriptor
 
 		Check.assumeNotNull(relatedProcessDescriptor, "Parameter relatedProcessDescriptor is not null");
 
-		adProcessId = relatedProcessDescriptor.getProcessId();
+		adProcessId = relatedProcessDescriptor.getProcessId().getRepoId();
 		adProcessSupplier = ExtendedMemorizingSupplier.of(() -> InterfaceWrapperHelper.create(Env.getCtx(), adProcessId, I_AD_Process.class, ITrx.TRXNAME_None));
 
 		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(preconditionsResolutionSupplier);

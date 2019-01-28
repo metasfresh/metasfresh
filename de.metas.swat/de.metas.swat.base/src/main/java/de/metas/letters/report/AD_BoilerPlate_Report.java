@@ -78,7 +78,7 @@ public class AD_BoilerPlate_Report extends JavaProcess
 		final String whereClause = I_AD_Process.COLUMNNAME_AD_Process_ID + "=?"
 				+ " AND " + I_AD_Process.COLUMNNAME_JasperReport + " IS NOT NULL";
 		return new Query(getCtx(), I_AD_Process.Table_Name, whereClause, get_TrxName())
-				.setParameters(getProcessInfo().getAD_Process_ID())
+				.setParameters(getProcessInfo().getAdProcessId())
 				.match();
 	}
 
