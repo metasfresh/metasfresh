@@ -23,7 +23,6 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -529,6 +528,12 @@ public final class DocumentLayoutElementDescriptor
 		public boolean isAdvancedField()
 		{
 			return _advancedField;
+		}
+		
+		public Builder removeFieldByFieldName(final String fieldName)
+		{
+			_fieldsBuilders.remove(fieldName);
+			return this;
 		}
 
 		public Builder addField(@NonNull final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
