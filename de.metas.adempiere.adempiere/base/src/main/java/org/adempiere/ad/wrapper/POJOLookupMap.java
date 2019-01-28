@@ -1091,13 +1091,9 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	private I_AD_PInstance createSelectionPInstance()
+	private PInstanceId createSelectionPInstanceId()
 	{
-		final int adProcessId = 0; // N/A
-		final int adTableId = 0;
-		final int recordId = 0;
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId, adTableId, recordId);
-		return adPInstance;
+		return Services.get(IADPInstanceDAO.class).createPInstanceId();
 	}
 
 	public PInstanceId createSelection(final Collection<Integer> selection)
@@ -1107,26 +1103,26 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return selectionId;
 	}
 
-	public <T> I_AD_PInstance createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
+	public <T> PInstanceId createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
 	{
-		final I_AD_PInstance adPInstance = createSelectionPInstance();
+		final PInstanceId adPInstanceId = createSelectionPInstanceId();
 
 		if (models != null)
 		{
-			createSelectionFromModelsCollection(adPInstance, Arrays.asList(models));
+			createSelectionFromModelsCollection(adPInstanceId, Arrays.asList(models));
 		}
 
-		return adPInstance;
+		return adPInstanceId;
 	}
 
-	public <T> I_AD_PInstance createSelectionFromModelsCollection(Collection<T> models)
+	public <T> PInstanceId createSelectionFromModelsCollection(Collection<T> models)
 	{
-		final I_AD_PInstance adPInstance = createSelectionPInstance();
-		createSelectionFromModelsCollection(adPInstance, models);
-		return adPInstance;
+		final PInstanceId adPInstanceId = createSelectionPInstanceId();
+		createSelectionFromModelsCollection(adPInstanceId, models);
+		return adPInstanceId;
 	}
 
-	public <T> void createSelectionFromModelsCollection(final I_AD_PInstance adPInstance, final Collection<T> models)
+	public <T> void createSelectionFromModelsCollection(final PInstanceId selectionId, final Collection<T> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -1140,7 +1136,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			selection.add(modelId);
 		}
 
-		final PInstanceId selectionId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
 		createSelection(selectionId, selection);
 	}
 

@@ -61,6 +61,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
@@ -565,10 +566,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public I_AD_PInstance createAD_PInstance(final int AD_Process_ID, final int AD_Table_ID, final int recordId)
+	public I_AD_PInstance createAD_PInstance(@NonNull final AdProcessId adProcessId, final int AD_Table_ID, final int recordId)
 	{
 		final I_AD_PInstance adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
-		adPInstance.setAD_Process_ID(AD_Process_ID);
+		adPInstance.setAD_Process_ID(adProcessId.getRepoId());
 		if (AD_Table_ID > 0)
 		{
 			adPInstance.setAD_Table_ID(AD_Table_ID);

@@ -23,7 +23,6 @@ package de.metas.process;
  */
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -38,7 +37,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	 *
 	 * @param pi
 	 * @see #saveProcessInfoOnly(ProcessInfo)
-	 * @see #saveParameterToDB(int, List)
+	 * @see #saveParameterToDB(PInstanceId, List)
 	 */
 	void saveProcessInfo(ProcessInfo pi);
 
@@ -88,7 +87,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * Creates a new AD_PInstance_ID.
 	 *
 	 * IMPORTANT: <b>this method is NOT creating an {@link I_AD_PInstance} record.</b>
-	 * If you want to create an {@link I_AD_PInstance}, please use {@link #createAD_PInstance(Properties, int, int, int)}.
+	 * If you want to create an {@link I_AD_PInstance}, please use {@link #createAD_PInstance(AdProcessId, int, int)}.
 	 *
 	 * @return new AD_PInstance_ID
 	 */
@@ -96,13 +95,8 @@ public interface IADPInstanceDAO extends ISingletonService
 
 	/**
 	 * Creates and saves a new AD_PInstance.
-	 *
-	 * @param AD_Process_ID
-	 * @param AD_Table_ID
-	 * @param recordId
-	 * @return
 	 */
-	I_AD_PInstance createAD_PInstance(int AD_Process_ID, int AD_Table_ID, int recordId);
+	I_AD_PInstance createAD_PInstance(AdProcessId adProcessId, int AD_Table_ID, int recordId);
 
 	/**
 	 * @return process instance; never returns null

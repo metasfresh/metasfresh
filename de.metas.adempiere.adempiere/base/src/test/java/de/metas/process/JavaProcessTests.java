@@ -242,7 +242,7 @@ public class JavaProcessTests
 		final AdProcessId adProcessId = createProcess(processClass);
 		final int AD_Table_ID = 0;
 		final int recordId = 0;
-		final I_AD_PInstance pinstance = pinstancesRepo.createAD_PInstance(adProcessId.getRepoId(), AD_Table_ID, recordId);
+		final I_AD_PInstance pinstance = pinstancesRepo.createAD_PInstance(adProcessId, AD_Table_ID, recordId);
 
 		//
 		// Create ProcessInfo descriptor
