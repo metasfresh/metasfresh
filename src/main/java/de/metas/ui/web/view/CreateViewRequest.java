@@ -267,6 +267,13 @@ public final class CreateViewRequest
 		}
 	}
 
+	public <T> T getParameterAs(@NonNull final String parameterName, @NonNull final Class<T> type)
+	{
+		@SuppressWarnings("unchecked")
+		final T value = (T)getParameters().get(parameterName);
+		return value;
+	}
+
 	//
 	//
 	//
