@@ -121,6 +121,11 @@ public class ProductsProposalRow implements IViewRow
 		return product.getIdAs(ProductId::ofRepoId);
 	}
 
+	public String getProductName()
+	{
+		return product.getDisplayName();
+	}
+
 	public boolean isQtySet()
 	{
 		final BigDecimal qty = getQty();
