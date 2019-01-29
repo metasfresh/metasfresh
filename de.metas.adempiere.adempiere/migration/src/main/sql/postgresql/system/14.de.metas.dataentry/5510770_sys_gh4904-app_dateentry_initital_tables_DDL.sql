@@ -33,3 +33,8 @@ INSERT INTO t_alter_column values('dataentry_listvalue','DataEntry_ListValue_ID'
 /* DDL */ CREATE TABLE public.DataEntry_Record_Assignment (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, DataEntry_Record_Assignment_ID NUMERIC(10) NOT NULL, DataEntry_Record_ID NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT DataEntry_Record_Assignment_Key PRIMARY KEY (DataEntry_Record_Assignment_ID), CONSTRAINT DataEntryRecord_DataEntryRecordAssignment FOREIGN KEY (DataEntry_Record_ID) REFERENCES public.DataEntry_Record DEFERRABLE INITIALLY DEFERRED)
 ;
 
+-- 2019-01-28T15:22:05.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('DataEntry_ListValue','ALTER TABLE public.DataEntry_ListValue ADD COLUMN Description TEXT')
+;
+
