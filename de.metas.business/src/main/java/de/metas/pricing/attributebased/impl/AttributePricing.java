@@ -30,10 +30,13 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
@@ -112,12 +115,10 @@ public class AttributePricing implements IPricingRule
 	protected void setResultForProductPriceAttribute(
 			final IPricingContext pricingCtx,
 			final IPricingResult result,
-			final I_M_ProductPrice productPrice)
+			@NonNull final I_M_ProductPrice productPrice)
 	{
-		Check.assumeNotNull(productPrice, "Parameter productPrice is not null");
-
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
-		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
 
@@ -138,7 +139,6 @@ public class AttributePricing implements IPricingRule
 		result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
 
 		// 08803: store the information about the price relevant attributes
-		final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));
 	}
 
@@ -184,8 +184,6 @@ public class AttributePricing implements IPricingRule
 		final IAttributeSetInstanceAware attributeSetInstanceAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
 		if (attributeSetInstanceAware != null)
 		{
-			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
-
 			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware);
 			return explicitProductPriceAware;
 		}

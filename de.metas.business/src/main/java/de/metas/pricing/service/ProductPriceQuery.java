@@ -92,6 +92,11 @@ public class ProductPriceQuery
 				.toString();
 	}
 
+	public List<I_M_ProductPrice> list()
+	{
+		return toQuery().list();
+	}
+
 	/** @return first matching product price or null */
 	public I_M_ProductPrice firstMatching()
 	{
@@ -170,7 +175,7 @@ public class ProductPriceQuery
 		return strictDefaultSecondTry;
 	}
 
-	IQuery<I_M_ProductPrice> toQuery()
+	private IQuery<I_M_ProductPrice> toQuery()
 	{
 		return toQueryBuilder().create();
 	}

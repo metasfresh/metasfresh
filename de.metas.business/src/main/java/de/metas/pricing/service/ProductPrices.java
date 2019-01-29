@@ -88,9 +88,11 @@ public class ProductPrices
 			return;
 		}
 
-		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(
-				productPrice.getM_PriceList_Version(),
-				ProductId.ofRepoId(productPrice.getM_Product_ID()));
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
+		final I_M_PriceList_Version priceListVersion = Services.get(IPriceListDAO.class).getPriceListVersionById(priceListVersionId);
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(priceListVersion, productId);
 
 		final boolean productPriceIsMainPrice = allMainPrices.stream()
 				.anyMatch(mainPrice -> mainPrice.getM_ProductPrice_ID() == productPrice.getM_ProductPrice_ID());
@@ -110,10 +112,9 @@ public class ProductPrices
 
 	private static List<I_M_ProductPrice> retrieveAllMainPrices(
 			@NonNull final I_M_PriceList_Version plv,
-			final ProductId productId)
+			@NonNull final ProductId productId)
 	{
 		return newMainProductPriceQuery(plv, productId)
-				.toQuery()
 				.list();
 	}
 
