@@ -14,7 +14,7 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -92079726L;
+	private static final long serialVersionUID = 1249893862L;
 
     /** Standard Constructor */
     public X_M_PriceList_Version (Properties ctx, int M_PriceList_Version_ID, String trxName)
@@ -22,14 +22,12 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
       super (ctx, M_PriceList_Version_ID, trxName);
       /** if (M_PriceList_Version_ID == 0)
         {
+			setFallbackToBasePriceListPrices (false); // N
 			setM_PriceList_ID (0);
 			setM_PriceList_Version_ID (0);
-			setName (null);
-// @#Date@
-			setProcessed (false);
-// N
-			setValidFrom (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setName (null); // @#Date@
+			setProcessed (false); // N
+			setValidFrom (new Timestamp( System.currentTimeMillis() )); // @#Date@
         } */
     }
 
@@ -64,6 +62,29 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Fallback to Base Price List prices.
+		@param FallbackToBasePriceListPrices Fallback to Base Price List prices	  */
+	@Override
+	public void setFallbackToBasePriceListPrices (boolean FallbackToBasePriceListPrices)
+	{
+		set_Value (COLUMNNAME_FallbackToBasePriceListPrices, Boolean.valueOf(FallbackToBasePriceListPrices));
+	}
+
+	/** Get Fallback to Base Price List prices.
+		@return Fallback to Base Price List prices	  */
+	@Override
+	public boolean isFallbackToBasePriceListPrices () 
+	{
+		Object oo = get_Value(COLUMNNAME_FallbackToBasePriceListPrices);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	@Override
 	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
 	{
@@ -76,9 +97,9 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
 	}
 
-	/** Set Rabatt-Schema.
+	/** Set Rabatt Schema.
 		@param M_DiscountSchema_ID 
-		Schema to calculate the trade discount percentage
+		Schema um den prozentualen Rabatt zu berechnen
 	  */
 	@Override
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
@@ -89,8 +110,8 @@ public class X_M_PriceList_Version extends org.compiere.model.PO implements I_M_
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
 	}
 
-	/** Get Rabatt-Schema.
-		@return Schema to calculate the trade discount percentage
+	/** Get Rabatt Schema.
+		@return Schema um den prozentualen Rabatt zu berechnen
 	  */
 	@Override
 	public int getM_DiscountSchema_ID () 

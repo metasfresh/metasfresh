@@ -124,9 +124,16 @@ public class ProductPriceQuery
 		return toQuery().match();
 	}
 
-	public I_M_ProductPrice retrieveDefault(final boolean strictDefault)
+	public <T extends I_M_ProductPrice> T retrieveStrictDefault(@NonNull final Class<T> type)
 	{
-		return retrieveDefault(strictDefault, I_M_ProductPrice.class);
+		boolean strictDefault = true;
+		return retrieveDefault(strictDefault, type);
+	}
+
+	public <T extends I_M_ProductPrice> T retrieveDefault(@NonNull final Class<T> type)
+	{
+		boolean strictDefault = false;
+		return retrieveDefault(strictDefault, type);
 	}
 
 	/**
@@ -136,7 +143,7 @@ public class ProductPriceQuery
 	 * 			@param type
 	 * @return
 	 */
-	public <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, final Class<T> type)
+	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
 		if (strictDefault)

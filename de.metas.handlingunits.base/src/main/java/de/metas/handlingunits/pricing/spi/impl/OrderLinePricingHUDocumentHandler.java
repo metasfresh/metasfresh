@@ -156,18 +156,19 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_M_PriceList_Version plv = orderLineBL.getPriceListVersion(orderLine);
+		
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
 
 		//
 		// Check if we have a product price specific to current PI Item Product
-		HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
 		if(packingMaterialId != null)
 		{
-			final boolean strictDefault = false;
 			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
-					.setProductId(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()))
+					.setProductId(productId)
 					.onlyAttributePricing()
 					.matching(HUPricing.createHUPIItemProductMatcher(packingMaterialId))
-					.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+					.retrieveDefault(I_M_ProductPrice.class);
 			if(huProductPrice != null)
 			{
 				return huProductPrice;
@@ -175,10 +176,9 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		}
 
 		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
-		final boolean strictDefault = true;
 		return ProductPrices.newQuery(plv)
-				.setProductId(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()))
+				.setProductId(productId)
 				.onlyAttributePricing()
-				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+				.retrieveStrictDefault(I_M_ProductPrice.class);
 	}
 }

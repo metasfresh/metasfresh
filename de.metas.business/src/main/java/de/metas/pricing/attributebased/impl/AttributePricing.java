@@ -248,18 +248,20 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
-		if (plv == null)
+		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
+		if (ctxPriceListVersion == null)
 		{
 			logger.debug("No M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
-				.setProductId(pricingCtx.getProductId())
-				.matching(_defaultMatchers)
-				.matchingAttributes(attributeSetInstance)
-				.firstMatching();
+		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+				ctxPriceListVersion,
+				priceListVersion -> ProductPrices.newQuery(priceListVersion)
+						.setProductId(pricingCtx.getProductId())
+						.matching(_defaultMatchers)
+						.matchingAttributes(attributeSetInstance)
+						.firstMatching());
 
 		if (productPrice == null)
 		{

@@ -85,7 +85,9 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId, final I_M_PriceList_Version ctxPriceListVersion)
 	{
-		return ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, productId);
+		return ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+				ctxPriceListVersion,
+				priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId));
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(
