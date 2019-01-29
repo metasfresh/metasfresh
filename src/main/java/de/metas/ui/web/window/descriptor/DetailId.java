@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
-
 import java.util.Collection;
 import java.util.Set;
 
