@@ -55,7 +55,6 @@ public class ProductPrices
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()
-				.setContextProvider(plv)
 				.setPriceListVersionId(priceListVersionId);
 	}
 
