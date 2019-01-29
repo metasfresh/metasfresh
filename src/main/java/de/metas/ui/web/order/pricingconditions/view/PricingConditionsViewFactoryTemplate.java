@@ -12,6 +12,7 @@ import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_CopyRowToEditable;
@@ -221,8 +222,9 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))
-				.anyTable().anyWindow()
-				.webuiQuickAction(true)
+				.anyTable()
+				.anyWindow()
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 

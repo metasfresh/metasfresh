@@ -229,7 +229,7 @@ import lombok.NonNull;
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
 				//
-				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID());
+				.setPrintProcessId(gridTabVO.getPrintProcessId());
 
 		// Fields descriptor
 		gridTabVO

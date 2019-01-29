@@ -139,7 +139,7 @@ public class WEBUI_M_HU_Transform
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
 	private LookupValuesList getActions()
 	{
-		return newParametersFiller().getActions(getProcessInfo().getAD_Process_ID());
+		return newParametersFiller().getActions(getProcessInfo().getAdProcessId());
 	}
 
 	/**

@@ -1,20 +1,16 @@
-package de.metas.ui.web.process;
+package de.metas.ui.web.order.products_proposal.process;
 
-import java.util.List;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.order.products_proposal.view.BPartnerProductsProposalViewFactory;
+import de.metas.ui.web.view.CreateViewRequest;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,13 +28,14 @@ import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
  * #L%
  */
 
-public interface WebuiPreconditionsContext extends IProcessPreconditionsContext
+public class WEBUI_BPartner_ProductsProposal_Launcher extends WEBUI_ProductsProposal_Launcher_Template
 {
-	@Nullable
-	DisplayPlace getDisplayPlace();
+	@Autowired
+	private BPartnerProductsProposalViewFactory productsProposalViewFactory;
 
-	default List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	@Override
+	protected CreateViewRequest createViewRequest(final TableRecordReference recordRef)
 	{
-		return ImmutableList.of();
+		return productsProposalViewFactory.createViewRequest(recordRef);
 	}
 }

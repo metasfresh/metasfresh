@@ -29,12 +29,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.impexp.excel.ExcelFormat;
 import de.metas.impexp.excel.ExcelFormats;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
-import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -325,7 +325,8 @@ public class ViewRestController
 			final String parentViewId,
 			final String parentViewSelectedIdsList,
 			final String childViewId,
-			final String childViewSelectedIdsList)
+			final String childViewSelectedIdsList,
+			final DisplayPlace displayPlace)
 	{
 		final ViewId viewId = ViewId.of(windowId, viewIdString);
 		final IView view = viewsRepo.getView(viewId);
@@ -339,6 +340,7 @@ public class ViewRestController
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
+				.displayPlace(displayPlace)
 				.build();
 	}
 
@@ -363,9 +365,11 @@ public class ViewRestController
 				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)
 				.childViewId(childViewIdStr)
 				.childViewSelectedIdsList(childViewSelectedIdsListStr)
+				.displayPlace(DisplayPlace.ViewActionsMenu)
 				.build();
 
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
+				.filter(descriptor -> descriptor.isDisplayedOn(preconditionsContext.getDisplayPlace())) // shall be already filtered out, but just to make sure
 				.filter(descriptor -> all || descriptor.isEnabled()) // only those which are enabled and not internally rejected
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
@@ -391,10 +395,11 @@ public class ViewRestController
 				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)
 				.childViewId(childViewIdStr)
 				.childViewSelectedIdsList(childViewSelectedIdsListStr)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
-				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
+				.filter(descriptor -> descriptor.isDisplayedOn(preconditionsContext.getDisplayPlace())) // shall be already filtered out, but just to make sure
 				.filter(descriptor -> all || descriptor.isEnabledOrNotSilent()) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}

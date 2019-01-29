@@ -41,6 +41,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.AdProcessId;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -126,7 +127,7 @@ public class DocumentEntityDescriptor
 
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 
-	private final OptionalInt printProcessId;
+	private final AdProcessId printProcessId;
 
 	// Legacy
 	private final OptionalInt AD_Tab_ID;
@@ -167,7 +168,7 @@ public class DocumentEntityDescriptor
 
 		filterDescriptors = builder.createFilterDescriptors();
 
-		printProcessId = builder.getPrintAD_Process_ID();
+		printProcessId = builder.getPrintProcessId();
 
 		// legacy:
 		AD_Tab_ID = builder.getAD_Tab_ID();
@@ -443,14 +444,18 @@ public class DocumentEntityDescriptor
 		return filterDescriptors;
 	}
 
-	public int getPrintProcessId()
+	public AdProcessId getPrintProcessId()
 	{
-		return printProcessId.orElseThrow(() -> new IllegalStateException("No print process configured for " + this));
+		if (printProcessId == null)
+		{
+			new AdempiereException("No print process configured for " + this);
+		}
+		return printProcessId;
 	}
 
 	public boolean isPrintable()
 	{
-		return printProcessId.orElse(-1) > 0;
+		return printProcessId != null;
 	}
 
 	public boolean isCloneEnabled()
@@ -507,7 +512,7 @@ public class DocumentEntityDescriptor
 		private boolean _calloutsEnabled = true; // enabled by default
 		private boolean _defaultTableCalloutsEnabled = true; // enabled by default
 
-		private OptionalInt _printProcessId = OptionalInt.empty();
+		private AdProcessId _printProcessId = null;
 
 		// Legacy
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
@@ -1084,13 +1089,13 @@ public class DocumentEntityDescriptor
 			return DocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields);
 		}
 
-		public Builder setPrintAD_Process_ID(final int printProcessId)
+		public Builder setPrintProcessId(final AdProcessId printProcessId)
 		{
-			_printProcessId = printProcessId > 0 ? OptionalInt.of(printProcessId) : OptionalInt.empty();
+			_printProcessId = printProcessId;
 			return this;
 		}
 
-		private OptionalInt getPrintAD_Process_ID()
+		private AdProcessId getPrintProcessId()
 		{
 			return _printProcessId;
 		}

@@ -342,7 +342,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		{
 			//
 			// Build the parameters document
-			final ProcessId processId = ProcessId.ofAD_Process_ID(processInfo.getAD_Process_ID());
+			final ProcessId processId = ProcessId.ofAD_Process_ID(processInfo.getAdProcessId());
 			final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
 
 			//

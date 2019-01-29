@@ -1,15 +1,15 @@
 package de.metas.ui.web.order.products_proposal.process;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalViewFactory;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.order.products_proposal.view.OrderProductsProposalViewFactory;
+import de.metas.ui.web.view.CreateViewRequest;
 
 /*
  * #%L
@@ -21,20 +21,23 @@ import de.metas.process.ProcessPreconditionsResolution;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class WEBUI_Order_ProductsProposal_Launcher extends JavaProcess implements IProcessPrecondition
+public class WEBUI_Order_ProductsProposal_Launcher extends WEBUI_ProductsProposal_Launcher_Template implements IProcessPrecondition
 {
+	@Autowired
+	private OrderProductsProposalViewFactory productsProposalViewFactory;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -44,9 +47,6 @@ public class WEBUI_Order_ProductsProposal_Launcher extends JavaProcess implement
 		}
 
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
-
-		// NOTE: we allow sales and purchase orders too; see https://github.com/metasfresh/metasfresh/issues/4017
-
 		final String docStatus = salesOrder.getDocStatus();
 		if (!IDocument.STATUS_Drafted.equals(docStatus))
 		{
@@ -57,12 +57,8 @@ public class WEBUI_Order_ProductsProposal_Launcher extends JavaProcess implement
 	}
 
 	@Override
-	protected String doIt()
+	protected CreateViewRequest createViewRequest(final TableRecordReference recordRef)
 	{
-		final TableRecordReference orderRef = TableRecordReference.of(getTableName(), getRecord_ID());
-		getResult().setRecordToOpen(orderRef, ProductsProposalViewFactory.WINDOW_ID_STRING, OpenTarget.GridView);
-
-		return MSG_OK;
+		return productsProposalViewFactory.createViewRequest(recordRef);
 	}
-
 }

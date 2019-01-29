@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.element.api.AdWindowId;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -15,7 +17,6 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 
 /*
@@ -300,6 +301,19 @@ public final class DocumentPath
 		{
 			return returnIfNotAvailable;
 		}
+	}
+
+	public AdWindowId getAdWindowIdOrNull()
+	{
+		if (documentType == DocumentType.Window)
+		{
+			return AdWindowId.ofRepoIdOrNull(documentTypeId.toIntOr(-1));
+		}
+		else
+		{
+			return null;
+		}
+
 	}
 
 	public DocumentId getDocumentId()

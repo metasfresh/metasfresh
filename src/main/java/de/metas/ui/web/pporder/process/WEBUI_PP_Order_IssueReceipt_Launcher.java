@@ -1,5 +1,7 @@
 package de.metas.ui.web.pporder.process;
 
+import java.util.Objects;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
@@ -38,7 +40,7 @@ public class WEBUI_PP_Order_IssueReceipt_Launcher extends JavaProcess implements
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toInt() == context.getAD_Window_ID())
+		if (Objects.equals(PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toAdWindowIdOrNull(), context.getAdWindowId()))
 		{
 			// we did already launch the IssueReceipt window
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Already within the window " + PPOrderConstants.AD_WINDOW_ID_IssueReceipt);

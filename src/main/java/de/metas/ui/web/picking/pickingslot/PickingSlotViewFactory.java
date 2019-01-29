@@ -16,8 +16,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
@@ -217,12 +219,12 @@ public class PickingSlotViewFactory implements IViewFactory
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(processClass);
-		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(processClass);
+		Preconditions.checkArgument(processId != null, "No AD_Process_ID found for %s", processClass);
 
 		return RelatedProcessDescriptor.builder()
 				.processId(processId)
-				.webuiQuickAction(true)
+				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 	}
 }
