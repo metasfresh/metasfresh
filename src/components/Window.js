@@ -94,7 +94,6 @@ class Window extends PureComponent {
 
   renderTabs = tabs => {
     const { type } = this.props.layout;
-    // const { data, rowData, newRow, tabsInfo, sort } = this.props;
     const { data } = this.props;
     const { fullScreen } = this.state;
     const tabsArray = [];
@@ -106,8 +105,6 @@ class Window extends PureComponent {
     const dataId = data.ID && data.ID.value;
     this.getTabs(tabs, dataId, tabsArray);
 
-    console.log('tabsArray: ', tabsArray)
-
     return (
       <Tabs
         tabIndex={this.tabIndex.tabs}
@@ -117,49 +114,6 @@ class Window extends PureComponent {
         tabs={tabs}
       >
         {tabsArray}
-{/*        {tabs.map(elem => {
-          const {
-            tabid,
-            tabId,
-            caption,
-            description,
-            elements,
-            internalName,
-            emptyResultText,
-            emptyResultHint,
-            queryOnActivate,
-            supportQuickInput,
-            defaultOrderBys,
-          } = elem;
-          return (
-            <Table
-              {...{
-                caption,
-                description,
-                rowData,
-                tabid,
-                tabId,
-                type,
-                sort,
-                newRow,
-                internalName,
-              }}
-              entity="window"
-              keyProperty="rowId"
-              key={tabId}
-              cols={elements}
-              orderBy={defaultOrderBys}
-              docId={dataId}
-              emptyText={emptyResultText}
-              emptyHint={emptyResultHint}
-              tabIndex={this.tabIndex.tabs}
-              queryOnActivate={queryOnActivate}
-              supportQuickInput={supportQuickInput}
-              tabInfo={tabsInfo && tabsInfo[tabid]}
-              disconnectFromState={true}
-            />
-          );
-        })}*/}
       </Tabs>
     );
   };

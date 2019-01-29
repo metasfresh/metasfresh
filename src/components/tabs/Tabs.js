@@ -43,26 +43,21 @@ class Tabs extends Component {
   };
 
   renderNestedPills = (parentItem, maxWidth, level, nestedPills) => {
-    // const { selected } = this.state;
-    // const pillsArray = [];
-    // nestedPills[level] = [];
-
-    const pillsArray = parentItem.map(item => {
-      // nestedPills[level].push(this.renderPill(item, maxWidth));
-
-      if (parentItem.tabs) {
+    const pillsArray = parentItem.tabs.map(item => {
+      if (item.tabs) {
         this.renderNestedPills(item, maxWidth, level++, nestedPills);
       }
 
       return this.renderPill(item, maxWidth);
     });
 
-    // return (
-    //   <ul className="nav nav-tabs nested-tabs">
-    //   </ul>
-    // );
     nestedPills[level] = [
-      <ul className="nav nav-tabs nested-tabs">{pillsArray}</ul>     
+      <ul
+        key={`nested-tabs-${parentItem.tabId}`}
+        className="nav nav-tabs nested-tabs"
+      >
+        {pillsArray}
+      </ul>,
     ];
   };
 
@@ -74,7 +69,7 @@ class Tabs extends Component {
       <li
         id={`tab_${item.internalName}`}
         className="nav-item"
-        key={'tab' + item.tabId}
+        key={'tab-' + item.tabId}
         onClick={e => this.handleClick(e, item.tabId)}
         tabIndex={modalVisible ? -1 : tabIndex}
         onKeyDown={e => this.handlePillKeyDown(e, item.tabId)}
@@ -95,23 +90,19 @@ class Tabs extends Component {
   renderPills = pills => {
     const maxWidth = 95 / pills.length + '%';
     const { selected } = this.state;
-    // const nestedPills = {};
     const nestedPills = [];
 
     const pillsArray = pills.map(item => {
-      if (item.tabs && selected === item.key) {
+      if (item.tabs && selected == item.tabId) {
         this.renderNestedPills(item, maxWidth, 0, nestedPills);
       }
 
       return this.renderPill(item, maxWidth);
     });
 
-    console.log('NESTEDPILLS: ', nestedPills);
-
     return (
       <div className="tabs-wrap">
         <ul className="nav nav-tabs mt-1">{pillsArray}</ul>
-        {/*{this.renderNestedPills(pills)}*/}
         {nestedPills}
       </div>
     );
