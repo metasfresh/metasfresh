@@ -46,6 +46,29 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_A00ANBNR4 = "A00ANBNR4";
 
 	/**
+	 * Set A00ANBNR5.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setA00ANBNR5 (int A00ANBNR5);
+
+	/**
+	 * Get A00ANBNR5.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getA00ANBNR5();
+
+    /** Column definition for A00ANBNR5 */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00ANBNR5 = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00ANBNR5", null);
+    /** Column name A00ANBNR5 */
+    public static final String COLUMNNAME_A00ANBNR5 = "A00ANBNR5";
+
+	/**
 	 * Set A00ARTNR.
 	 *
 	 * <br>Type: String
@@ -205,6 +228,29 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00LKZ = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00LKZ", null);
     /** Column name A00LKZ */
     public static final String COLUMNNAME_A00LKZ = "A00LKZ";
+
+	/**
+	 * Set A00NTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA00NTIN (java.lang.String A00NTIN);
+
+	/**
+	 * Get A00NTIN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getA00NTIN();
+
+    /** Column definition for A00NTIN */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00NTIN = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00NTIN", null);
+    /** Column name A00NTIN */
+    public static final String COLUMNNAME_A00NTIN = "A00NTIN";
 
 	/**
 	 * Set A00PBEZ.
@@ -1311,6 +1357,29 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_A02BTM = "A02BTM";
 
 	/**
+	 * Set A02CMR.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA02CMR (java.lang.String A02CMR);
+
+	/**
+	 * Get A02CMR.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getA02CMR();
+
+    /** Column definition for A02CMR */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02CMR = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02CMR", null);
+    /** Column name A02CMR */
+    public static final String COLUMNNAME_A02CMR = "A02CMR";
+
+	/**
 	 * Set A02DIAET.
 	 *
 	 * <br>Type: List
@@ -1541,6 +1610,29 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_A02HOMOEO = "A02HOMOEO";
 
 	/**
+	 * Set A02INVITRO.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA02INVITRO (java.lang.String A02INVITRO);
+
+	/**
+	 * Get A02INVITRO.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getA02INVITRO();
+
+    /** Column definition for A02INVITRO */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02INVITRO = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02INVITRO", null);
+    /** Column name A02INVITRO */
+    public static final String COLUMNNAME_A02INVITRO = "A02INVITRO";
+
+	/**
 	 * Set A02KOSMET.
 	 *
 	 * <br>Type: List
@@ -1654,6 +1746,52 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02MP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02MP", null);
     /** Column name A02MP */
     public static final String COLUMNNAME_A02MP = "A02MP";
+
+	/**
+	 * Set A02MP31.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA02MP31 (java.lang.String A02MP31);
+
+	/**
+	 * Get A02MP31.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getA02MP31();
+
+    /** Column definition for A02MP31 */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02MP31 = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02MP31", null);
+    /** Column name A02MP31 */
+    public static final String COLUMNNAME_A02MP31 = "A02MP31";
+
+	/**
+	 * Set A02MPKLASS.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA02MPKLASS (java.lang.String A02MPKLASS);
+
+	/**
+	 * Get A02MPKLASS.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getA02MPKLASS();
+
+    /** Column definition for A02MPKLASS */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02MPKLASS = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02MPKLASS", null);
+    /** Column name A02MPKLASS */
+    public static final String COLUMNNAME_A02MPKLASS = "A02MPKLASS";
 
 	/**
 	 * Set A02NEGLIS.
@@ -1930,6 +2068,52 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02TREZEP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02TREZEP", null);
     /** Column name A02TREZEP */
     public static final String COLUMNNAME_A02TREZEP = "A02TREZEP";
+
+	/**
+	 * Set A02UNNR.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA02UNNR (java.math.BigDecimal A02UNNR);
+
+	/**
+	 * Get A02UNNR.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getA02UNNR();
+
+    /** Column definition for A02UNNR */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02UNNR = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02UNNR", null);
+    /** Column name A02UNNR */
+    public static final String COLUMNNAME_A02UNNR = "A02UNNR";
+
+	/**
+	 * Set A02VERB31.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA02VERB31 (java.lang.String A02VERB31);
+
+	/**
+	 * Get A02VERB31.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getA02VERB31();
+
+    /** Column definition for A02VERB31 */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A02VERB31 = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A02VERB31", null);
+    /** Column name A02VERB31 */
+    public static final String COLUMNNAME_A02VERB31 = "A02VERB31";
 
 	/**
 	 * Set A02VSPFL.
@@ -2781,6 +2965,29 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A11VERIFIZ = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A11VERIFIZ", null);
     /** Column name A11VERIFIZ */
     public static final String COLUMNNAME_A11VERIFIZ = "A11VERIFIZ";
+
+	/**
+	 * Set A11VERIHOC.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA11VERIHOC (java.sql.Timestamp A11VERIHOC);
+
+	/**
+	 * Get A11VERIHOC.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getA11VERIHOC();
+
+    /** Column definition for A11VERIHOC */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A11VERIHOC = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A11VERIHOC", null);
+    /** Column name A11VERIHOC */
+    public static final String COLUMNNAME_A11VERIHOC = "A11VERIHOC";
 
 	/**
 	 * Set A11VERIPFL.
