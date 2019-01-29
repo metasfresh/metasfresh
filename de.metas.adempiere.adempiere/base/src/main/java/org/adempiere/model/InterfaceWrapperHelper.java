@@ -1456,9 +1456,8 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final IModelTranslationMap getModelTranslationMap(final Object model)
+	public static final IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.getModelTranslationMap(model);
