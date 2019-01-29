@@ -76,7 +76,12 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
 	{
-		return loadOutOfTrx(productId, productClass); // assume caching is configured on table level
+		final T product = loadOutOfTrx(productId, productClass); // assume caching is configured on table level
+		if (product == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
+		}
+		return product;
 	}
 
 	@Override
@@ -238,9 +243,9 @@ public class ProductDAO implements IProductDAO
 	public ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if (product == null || !product.isActive())
+		if (!product.isActive())
 		{
-			return null;
+			throw new AdempiereException("Cannot retrieve product category and manufacturer because product is not active: " + product);
 		}
 
 		return createProductAndCategoryAndManufacturerId(product);
