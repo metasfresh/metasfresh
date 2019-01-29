@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -158,13 +159,14 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 
 		//
 		// Check if we have a product price specific to current PI Item Product
-		if(orderLine.getM_HU_PI_Item_Product_ID() > 0)
+		HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
+		if(packingMaterialId != null)
 		{
 			final boolean strictDefault = false;
 			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
 					.setProductId(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()))
 					.onlyAttributePricing()
-					.matching(HUPricing.createHUPIItemProductMatcher(orderLine.getM_HU_PI_Item_Product_ID()))
+					.matching(HUPricing.createHUPIItemProductMatcher(packingMaterialId))
 					.retrieveDefault(strictDefault, I_M_ProductPrice.class);
 			if(huProductPrice != null)
 			{

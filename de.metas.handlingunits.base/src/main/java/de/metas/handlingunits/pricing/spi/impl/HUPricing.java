@@ -9,6 +9,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
@@ -68,17 +69,17 @@ public class HUPricing extends AttributePricing
 		}
 
 		//
-		// Get the product price attribute which matches our Product, ASI, PriceListVersion and M_HU_PI_Item_Product_ID.
-		final int huPIItemProductId = getM_HU_PI_Item_Product_ID(pricingCtx);
-		if (huPIItemProductId <= 0)
+		// Get the product price attribute which matches our Product, ASI, PriceListVersion and packing material.
+		final HUPIItemProductId packingMaterialId = getPackingMaterialId(pricingCtx);
+		if (packingMaterialId == null)
 		{
-			logger.debug("No M_HU_PI_Item_Product_ID found: {}", pricingCtx);
+			logger.debug("No packing material found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
 		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
 				.setProductId(pricingCtx.getProductId())
-				.matching(createHUPIItemProductMatcher(huPIItemProductId));
+				.matching(createHUPIItemProductMatcher(packingMaterialId));
 
 		// Match attributes if we have attributes.
 		if (attributeSetInstance == null || attributeSetInstance.getM_AttributeSetInstance_ID() <= 0)
@@ -147,18 +148,18 @@ public class HUPricing extends AttributePricing
 		}
 
 		//
-		// Make sure the default product price attribute is matching our pricing context M_HU_PI_Item_Product_ID,
-		// or it has no M_HU_PI_Item_Product_ID set.
-		final int ctxPIItemProductId = getM_HU_PI_Item_Product_ID(pricingCtx);
-		if (ctxPIItemProductId <= 0)
+		// Make sure the default product price attribute is matching our pricing context packing material,
+		// or it has no packing material set.
+		final HUPIItemProductId packingMaterialId = getPackingMaterialId(pricingCtx);
+		if (packingMaterialId == null)
 		{
-			// We don't have a M_HU_PI_Item_Product_ID on the pricing context.
+			// We don't have a packing material in pricing context.
 			// Return the default price. It's M_HU_PI_Item_Product_ID will be used, e.g. in the C_OrderLine or C_OLCand which this invocation is about
 			return defaultPrice;
 		}
 
-		final int productPrice_HUPIItemProductId = defaultPrice.getM_HU_PI_Item_Product_ID();
-		if (productPrice_HUPIItemProductId == ctxPIItemProductId)
+		final HUPIItemProductId productPrice_packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(defaultPrice.getM_HU_PI_Item_Product_ID());
+		if (HUPIItemProductId.equals(productPrice_packingMaterialId, packingMaterialId))
 		{
 			return defaultPrice;
 		}
@@ -166,20 +167,20 @@ public class HUPricing extends AttributePricing
 		return null;
 	}
 
-	private int getM_HU_PI_Item_Product_ID(final IPricingContext pricingCtx)
+	private HUPIItemProductId getPackingMaterialId(final IPricingContext pricingCtx)
 	{
 		final Object referencedObj = pricingCtx.getReferencedObject();
-
-		if (null == referencedObj)
+		if (referencedObj == null)
 		{
-			return -1;
+			return null;
 		}
 
 		//
 		// check if we have an piip-aware
 		if (referencedObj instanceof I_M_HU_PI_Item_Product_Aware)
 		{
-			return ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
+			final int packingMaterialRepoId = ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
+			return HUPIItemProductId.ofRepoIdOrNull(packingMaterialRepoId);
 		}
 
 		//
@@ -187,22 +188,21 @@ public class HUPricing extends AttributePricing
 		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
 		{
 			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
-			return valueOverrideOrValue == null ? 0 : valueOverrideOrValue.intValue();
+			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue.intValue());
 		}
 
-		return -1;
+		return null;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final int huPIItemProductId)
+	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
 	{
-		if (huPIItemProductId <= 0)
+		if (packingMaterialId == null)
 		{
 			return HUPIItemProductMatcher_None;
 		}
 		else
 		{
-			return ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, huPIItemProductId));
+			return ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, packingMaterialId));
 		}
-
 	}
 }

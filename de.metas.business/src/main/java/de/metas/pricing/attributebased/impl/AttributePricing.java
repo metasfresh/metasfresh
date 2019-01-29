@@ -5,6 +5,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -291,13 +293,12 @@ public class AttributePricing implements IPricingRule
 		//
 		// Get M_AttributeSetInstance_ID and return it.
 		// NOTE: to respect the method contract, ALWAYS return ZERO if it's not set, no matter if the getter returned -1.
-		final int attributeSetInstanceId = asiAware.getM_AttributeSetInstance_ID();
-		if (attributeSetInstanceId <= 0)
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
+		if (attributeSetInstanceId.isNone())
 		{
 			return null;
 		}
 
-		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
-		return attributeSetInstance;
+		return Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId);
 	}
 }
