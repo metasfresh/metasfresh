@@ -120,7 +120,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 	private UomId getProductPriceUomId(final I_M_ProductPrice productPrice)
 	{
-		UomId productPriceUomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
+		final UomId productPriceUomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
 		if (productPriceUomId != null)
 		{
 			return productPriceUomId;
