@@ -256,6 +256,12 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public I_M_AttributeSetInstance getAttributeSetInstanceById(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		return load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+	}
+
+	@Override
 	public List<I_M_AttributeInstance> retrieveAttributeInstances(final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		if (attributeSetInstanceId.isNone())
@@ -263,7 +269,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		I_M_AttributeSetInstance asi = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		I_M_AttributeSetInstance asi = getAttributeSetInstanceById(attributeSetInstanceId);
 		return retrieveAttributeInstances(asi);
 	}
 

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -74,6 +73,11 @@ public class UserId implements RepoIdAware
 		{
 			return repoId >= 0 ? new UserId(repoId) : null;
 		}
+	}
+
+	public static int toRepoId(@Nullable final UserId userId)
+	{
+		return toRepoIdOr(userId, -1);
 	}
 
 	public static int toRepoIdOr(

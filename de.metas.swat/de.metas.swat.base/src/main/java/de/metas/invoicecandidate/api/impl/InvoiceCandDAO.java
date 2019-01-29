@@ -847,7 +847,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public InvoiceCandRecomputeTag generateNewRecomputeTag()
 	{
-		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		return InvoiceCandRecomputeTag.ofPInstanceId(pinstanceId);
 	}
 

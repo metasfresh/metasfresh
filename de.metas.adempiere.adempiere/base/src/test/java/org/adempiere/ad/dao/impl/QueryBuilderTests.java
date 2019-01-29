@@ -38,7 +38,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 import org.junit.Before;
@@ -223,8 +222,7 @@ public class QueryBuilderTests
 		assertThat(product2, notNullValue()); // simple guard;
 
 		// Create selection containing product1 and product2
-		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
-		final PInstanceId selectionId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
+		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
 
 		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null); // tableName=null)
 		final IQuery<I_M_Product> query = builder.create();
@@ -261,8 +259,7 @@ public class QueryBuilderTests
 		assertThat(product2, notNullValue()); // simple guard;
 
 		// Create selection containing product1 and product2
-		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
-		final PInstanceId selectionId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
+		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
 
 		// Query selection and test
 		final List<I_M_Product> list = new QueryBuilder<>(I_M_Product.class, null) // tableName=null

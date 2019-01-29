@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
@@ -40,11 +41,12 @@ import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ClientDAO implements IClientDAO
 {
 	@Override
-	public I_AD_Client getById(final int adClientId)
+	public I_AD_Client getById(@NonNull final ClientId adClientId)
 	{
 		return loadOutOfTrx(adClientId, I_AD_Client.class);
 	}

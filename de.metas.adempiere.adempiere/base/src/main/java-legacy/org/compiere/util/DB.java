@@ -2247,7 +2247,7 @@ public final class DB
 	 */
 	public static PInstanceId createT_Selection(Iterable<Integer> selection, String trxName)
 	{
-		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		createT_Selection(pinstanceId, selection, trxName);
 		return pinstanceId;
 	}

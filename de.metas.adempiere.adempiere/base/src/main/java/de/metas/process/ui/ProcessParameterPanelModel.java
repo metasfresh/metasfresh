@@ -72,7 +72,7 @@ public class ProcessParameterPanelModel
 		ctx = Env.deriveCtx(parentCtx);
 		windowNo = pi.getWindowNo();
 		tabNo = pi.getTabNo();
-		processId = pi.getAD_Process_ID();
+		processId = pi.getAdProcessId().getRepoId();
 
 		defaultParametersUpdater = ProcessDefaultParametersUpdater.newInstance()
 				.addDefaultParametersProvider(pi)

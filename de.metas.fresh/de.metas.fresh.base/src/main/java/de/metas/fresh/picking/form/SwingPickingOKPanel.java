@@ -409,7 +409,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		PInstanceId pinstanceId = _pinstanceId;
 		if (pinstanceId == null)
 		{
-			_pinstanceId = pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+			_pinstanceId = pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		}
 		return pinstanceId;
 	}
