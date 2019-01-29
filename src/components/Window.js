@@ -37,16 +37,76 @@ class Window extends PureComponent {
     });
   };
 
+  getTabs = (tabs, dataId, tabsArray) => {
+    const { type } = this.props.layout;
+    const { rowData, newRow, tabsInfo, sort } = this.props;
+
+    tabs.forEach(elem => {
+      const {
+        tabid,
+        tabId,
+        caption,
+        description,
+        elements,
+        internalName,
+        emptyResultText,
+        emptyResultHint,
+        queryOnActivate,
+        supportQuickInput,
+        defaultOrderBys,
+      } = elem;
+      elem.tabIndex = this.tabIndex.tabs;
+
+      tabsArray.push(
+        <Table
+          {...{
+            caption,
+            description,
+            rowData,
+            tabid,
+            tabId,
+            type,
+            sort,
+            newRow,
+            internalName,
+          }}
+          entity="window"
+          keyProperty="rowId"
+          key={tabId}
+          cols={elements}
+          orderBy={defaultOrderBys}
+          docId={dataId}
+          emptyText={emptyResultText}
+          emptyHint={emptyResultHint}
+          tabIndex={this.tabIndex.tabs}
+          queryOnActivate={queryOnActivate}
+          supportQuickInput={supportQuickInput}
+          tabInfo={tabsInfo && tabsInfo[tabid]}
+          disconnectFromState={true}
+        />
+      );
+
+      if (elem.tabs) {
+        this.getTabs(elem.tabs, dataId, tabsArray);
+      }
+    });
+  };
+
   renderTabs = tabs => {
     const { type } = this.props.layout;
-    const { data, rowData, newRow, tabsInfo, sort } = this.props;
+    // const { data, rowData, newRow, tabsInfo, sort } = this.props;
+    const { data } = this.props;
     const { fullScreen } = this.state;
+    const tabsArray = [];
 
     if (!Object.keys(data).length) {
       return;
     }
 
     const dataId = data.ID && data.ID.value;
+    this.getTabs(tabs, dataId, tabsArray);
+
+    console.log('tabsArray: ', tabsArray)
 
     return (
       <Tabs
@@ -54,10 +114,13 @@ class Window extends PureComponent {
         toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
         windowType={type}
+        tabs={tabs}
       >
-        {tabs.map(elem => {
+        {tabsArray}
+{/*        {tabs.map(elem => {
           const {
             tabid,
+            tabId,
             caption,
             description,
             elements,
@@ -75,6 +138,7 @@ class Window extends PureComponent {
                 description,
                 rowData,
                 tabid,
+                tabId,
                 type,
                 sort,
                 newRow,
@@ -82,7 +146,7 @@ class Window extends PureComponent {
               }}
               entity="window"
               keyProperty="rowId"
-              key={tabid}
+              key={tabId}
               cols={elements}
               orderBy={defaultOrderBys}
               docId={dataId}
@@ -95,7 +159,7 @@ class Window extends PureComponent {
               disconnectFromState={true}
             />
           );
-        })}
+        })}*/}
       </Tabs>
     );
   };

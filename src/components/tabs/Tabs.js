@@ -42,29 +42,79 @@ class Tabs extends Component {
     }
   };
 
-  renderPills = pills => {
+  renderNestedPills = (parentItem, maxWidth, level, nestedPills) => {
+    // const { selected } = this.state;
+    // const pillsArray = [];
+    // nestedPills[level] = [];
+
+    const pillsArray = parentItem.map(item => {
+      // nestedPills[level].push(this.renderPill(item, maxWidth));
+
+      if (parentItem.tabs) {
+        this.renderNestedPills(item, maxWidth, level++, nestedPills);
+      }
+
+      return this.renderPill(item, maxWidth);
+    });
+
+    // return (
+    //   <ul className="nav nav-tabs nested-tabs">
+    //   </ul>
+    // );
+    nestedPills[level] = [
+      <ul className="nav nav-tabs nested-tabs">{pillsArray}</ul>     
+    ];
+  };
+
+  renderPill = (item, maxWidth) => {
     const { tabIndex, modalVisible } = this.props;
-    const maxWidth = 95 / pills.length + '%';
     const { selected } = this.state;
 
-    return pills.map(item => {
-      return (
-        <li
-          id={`tab_${item.props.internalName}`}
-          className="nav-item"
-          key={'tab' + item.key}
-          onClick={e => this.handleClick(e, item.key)}
-          tabIndex={modalVisible ? -1 : tabIndex}
-          onKeyDown={e => this.handlePillKeyDown(e, item.key)}
-          style={{ maxWidth }}
-          title={item.props.description || item.props.caption}
+    return (
+      <li
+        id={`tab_${item.internalName}`}
+        className="nav-item"
+        key={'tab' + item.tabId}
+        onClick={e => this.handleClick(e, item.tabId)}
+        tabIndex={modalVisible ? -1 : tabIndex}
+        onKeyDown={e => this.handlePillKeyDown(e, item.tabId)}
+        style={{ maxWidth }}
+        title={item.description || item.caption}
+      >
+        <a
+          className={classnames('nav-link', {
+            active: selected === item.tabId,
+          })}
         >
-          <a className={'nav-link ' + (selected === item.key ? 'active' : '')}>
-            {item.props.caption}
-          </a>
-        </li>
-      );
+          {item.caption}
+        </a>
+      </li>
+    );
+  };
+
+  renderPills = pills => {
+    const maxWidth = 95 / pills.length + '%';
+    const { selected } = this.state;
+    // const nestedPills = {};
+    const nestedPills = [];
+
+    const pillsArray = pills.map(item => {
+      if (item.tabs && selected === item.key) {
+        this.renderNestedPills(item, maxWidth, 0, nestedPills);
+      }
+
+      return this.renderPill(item, maxWidth);
     });
+
+    console.log('NESTEDPILLS: ', nestedPills);
+
+    return (
+      <div className="tabs-wrap">
+        <ul className="nav nav-tabs mt-1">{pillsArray}</ul>
+        {/*{this.renderNestedPills(pills)}*/}
+        {nestedPills}
+      </div>
+    );
   };
 
   renderTabs = tabs => {
@@ -80,14 +130,14 @@ class Tabs extends Component {
       });
 
       if (selected == item.key) {
-        const { tabid, queryOnActivate, docId, orderBy } = item.props;
+        const { tabId, queryOnActivate, docId, orderBy } = item.props;
 
         return (
           <div key={'pane' + item.key} className="tab-pane active">
             <Tab
               {...{
                 queryOnActivate,
-                tabid,
+                tabId,
                 docId,
                 windowType,
                 orderBy,
@@ -104,7 +154,7 @@ class Tabs extends Component {
   };
 
   render() {
-    const { children, fullScreen } = this.props;
+    const { children, fullScreen, tabs } = this.props;
 
     return (
       <div
@@ -112,7 +162,7 @@ class Tabs extends Component {
           'tabs-fullscreen container-fluid': fullScreen,
         })}
       >
-        <ul className="nav nav-tabs mt-1">{this.renderPills(children)}</ul>
+        {this.renderPills(tabs)}
         <div className="tab-content" ref={c => (this.tabContent = c)}>
           {this.renderTabs(children)}
         </div>
