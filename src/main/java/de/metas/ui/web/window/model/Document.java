@@ -223,14 +223,7 @@ public final class Document
 		//
 		// Create included documents containers
 		{
-			final ImmutableMap.Builder<DetailId, IIncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
-			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
-			{
-				final DetailId detailId = includedEntityDescriptor.getDetailId();
-				final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this);
-				includedDocuments.put(detailId, includedDocumentsForDetailId);
-			}
-			this.includedDocuments = includedDocuments.build();
+			this.includedDocuments = extractIncludedDocuments(entityDescriptor.getIncludedEntities());
 		}
 
 		//
@@ -266,10 +259,28 @@ public final class Document
 		logger.trace("Created new document instance: {}", this); // keep it last
 	}
 
+	private ImmutableMap<DetailId, IIncludedDocumentsCollection> extractIncludedDocuments(@NonNull final Collection<DocumentEntityDescriptor> includedEntities)
+	{
+		final ImmutableMap.Builder<DetailId, IIncludedDocumentsCollection> includedDocuments = ImmutableMap.builder();
+
+		for (final DocumentEntityDescriptor includedEntityDescriptor : includedEntities)
+		{
+//			if (!includedEntityDescriptor.getFields().isEmpty())
+//			{
+				final DetailId detailId = includedEntityDescriptor.getDetailId();
+				final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this);
+				includedDocuments.put(detailId, includedDocumentsForDetailId);
+//			}
+
+			// recurse
+			includedDocuments.putAll(extractIncludedDocuments(includedEntityDescriptor.getIncludedEntities()));
+		}
+		return includedDocuments.build();
+	}
+
 	/** copy constructor */
 	private Document(final Document from, @Nullable final Document parentDocumentCopy, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		super();
 		documentPath = from.documentPath;
 		entityDescriptor = from.entityDescriptor;
 		windowNo = from.windowNo;

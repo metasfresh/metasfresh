@@ -92,10 +92,8 @@ public class DataEntryTabLoader
 			@NonNull final WindowId windowId,
 			@NonNull final DataEntryGroup dataEntryGroup)
 	{
-		final DetailId groupDetailId = createDetailIdFor(dataEntryGroup);
-
 		final de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
-				.builder(windowId, groupDetailId)
+				.builder(windowId, createDetailIdFor(dataEntryGroup))
 				.caption(dataEntryGroup.getName())
 				.description(dataEntryGroup.getDescription())
 				.internalName(dataEntryGroup.getInternalName())
@@ -233,9 +231,11 @@ public class DataEntryTabLoader
 				.setDescription(dataEntryGroup.getDescription())
 
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
-				.setAllowCreateNewLogic(ConstantLogicExpression.TRUE)
-				.setAllowDeleteLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
+
+				// this is just a "grouping" tab with no data(-records) of its own
+				.setAllowCreateNewLogic(ConstantLogicExpression.FALSE)
+				.setAllowDeleteLogic(ConstantLogicExpression.FALSE)
 
 				.setDataBinding(dataEntryDocumentBinding);
 
@@ -293,7 +293,7 @@ public class DataEntryTabLoader
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntrySubGroup dataEntrySubGroup)
 	{
-		return DetailId.fromAD_Tab_ID(dataEntrySubGroup.getId().getRepoId());
+		return DetailId.fromAD_Tab_ID(dataEntrySubGroup.getId().getRepoId() * 2); // TODO allow detail-ID with letter-prefix?
 	}
 
 }

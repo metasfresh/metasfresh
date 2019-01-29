@@ -35,9 +35,8 @@ public class DataEntrySubGroupBindingDescriptorBuilder implements DocumentEntity
 		@Override
 		public DocumentsRepository getDocumentsRepository()
 		{
-			throw new IllegalStateException("No repository available for " + this);
+			return DataEntrySubGroupBindingRepository.INSTANCE;
 		}
-
 	};
 
 	@Override
