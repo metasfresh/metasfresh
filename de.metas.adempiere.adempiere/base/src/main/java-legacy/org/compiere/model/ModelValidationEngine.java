@@ -113,9 +113,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 		if (State.TO_BE_INITALIZED.equals(state))
 		{
+			log.info("Start initializing ModelValidationEngine");
 			state = State.INITIALIZING;
 			s_engine.init();
 			state = State.INITIALIZED;
+			log.info("Done initializing ModelValidationEngine; m_globalValidators.size={}; m_validators.size={}",
+					s_engine.m_globalValidators.size(), s_engine.m_validators.size());
 		}
 		return s_engine;
 	}	// get
@@ -1321,7 +1324,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 				java.lang.reflect.Method m = null;
 				try
 				{
-					m = validator.getClass().getMethod("afterLoadPreferences", new Class[] { Properties.class });
+					m = validator.getClass().getMethod("afterLoadPreferences", new Class[]
+						{ Properties.class });
 				}
 				catch (NoSuchMethodException e)
 				{
