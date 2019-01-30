@@ -253,7 +253,8 @@ import de.metas.util.Services;
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
 					PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 					countryId,
-					SOTrx.PURCHASE);
+					SOTrx.PURCHASE)
+					.iterator();
 
 			if (!priceLists.hasNext())
 			{
