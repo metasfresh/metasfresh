@@ -1,7 +1,11 @@
 package de.metas.pricing.impexp;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -192,11 +196,30 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setSeqNo(10);
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
+
+        final  BigDecimal paymentDiscount  = parseStringToBigDecimalUsingComma(importRecord);
+		schemaBreak.setPaymentDiscount(paymentDiscount);
 		//
 		schemaBreak.setM_Product_ID(importRecord.getM_Product_ID());
 		schemaBreak.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		//
 		setPricingFields(importRecord, schemaBreak);
+	}
+
+	private BigDecimal parseStringToBigDecimalUsingComma(final I_I_DiscountSchema importRecord) 
+	{
+		final DecimalFormat df = new DecimalFormat();
+        final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setDecimalSeparator(',');
+        df.setDecimalFormatSymbols(symbols);
+        try
+		{
+			return BigDecimal.valueOf((long)df.parse(importRecord.getPaymentTermValue()));
+		}
+		catch (ParseException e)
+		{
+			throw new AdempiereException("Payment term value has wrong format! ");
+		}
 	}
 
 	private void setPricingFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
