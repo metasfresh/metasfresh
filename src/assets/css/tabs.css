@@ -34,10 +34,11 @@
             background-color: white;
 
             &.active {
-                background-color: #fdfdfd;
                 border: 1px solid #dee6ec;
-                border-bottom: 2px solid white;
                 border-color: #e9ecef #e9ecef #dee2e6;
+                border-bottom: none;
+                border-top: 1px solid transparent;
+                border-radius: 0;
             }
         }
     }

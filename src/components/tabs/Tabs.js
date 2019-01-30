@@ -61,7 +61,10 @@ class Tabs extends Component {
       reverse = true;
     }
     let selected = this.getSelected(firstTab, Set(), reverse);
-    selected = selected.reverse();
+
+    if (firstTab.parentTab) {
+      selected = selected.reverse();
+    }
 
     this.setState({
       selected,
