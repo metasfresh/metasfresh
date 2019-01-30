@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -44,6 +45,8 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.location.CountryId;
+import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
@@ -58,15 +61,18 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.adempiere.service.ILocationDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -255,9 +261,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId)
+	public List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
 	{
-		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId, ITrx.TRXNAME_None);
+		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
 	}
 
 	@Override
@@ -301,6 +307,24 @@ public class BPartnerDAO implements IBPartnerDAO
 					.findFirst()
 					.orElse(null);
 		}
+	}
+
+	@Override
+	public Set<CountryId> retrieveBPartnerLocationCountryIds(@NonNull final BPartnerId bpartnerId)
+	{
+		final Set<LocationId> locationIds = retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.map(I_C_BPartner_Location::getC_Location_ID)
+				.map(LocationId::ofRepoIdOrNull)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		return locationRepos.getByIds(locationIds)
+				.stream()
+				.map(I_C_Location::getC_Country_ID)
+				.map(CountryId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -996,7 +1020,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerLocationRecord.getC_BPartner_ID());
 		return Optional.ofNullable(bPartnerId);
 	}
-
 
 	@Override
 	public ImmutableSet<BPartnerId> retrieveAllCustomerIDs()
