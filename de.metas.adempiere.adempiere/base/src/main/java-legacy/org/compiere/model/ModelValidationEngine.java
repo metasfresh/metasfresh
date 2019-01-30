@@ -107,11 +107,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	{
 		if (s_engine == null)
 		{
+			log.info("Start initializing ModelValidationEngine");
 			// NOTE: we need to instantiate and assign it to static variable immediatelly
 			// else, in init() method, this get() is called indirectly which leads us to have 2 ModelValidationEngine instances
 			s_engine = new ModelValidationEngine();
 
-			s_engine.init(); // metas
+			s_engine.init();
+
+			log.info("Done initializing ModelValidationEngine; m_globalValidators.size={}; m_validators.size={}",
+					s_engine.m_globalValidators.size(), s_engine.m_validators.size());
 		}
 		return s_engine;
 	}	// get
@@ -220,7 +224,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			// Load from Spring context
 			for (final Object modelInterceptor : getSpringInterceptors())
 			{
-				addModelValidator(modelInterceptor, /*client*/null);
+				addModelValidator(modelInterceptor, /* client */null);
 			}
 		}
 		catch (Exception e)
@@ -253,18 +257,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 		// metas: 02504: end
 	}	// ModelValidatorEngine
-	
+
 	private static Collection<Object> getSpringInterceptors()
 	{
 		final ApplicationContext context = Adempiere.getSpringApplicationContext();
 		// NOTE: atm it returns null only when started from our tools (like the "model generator")
 		// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
 		// so we can leave with the NPE here
-		
+
 		final LinkedHashMap<String, Object> interceptorsByName = new LinkedHashMap<>();
 		interceptorsByName.putAll(context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class));
 		interceptorsByName.putAll(context.getBeansOfType(IModelInterceptor.class));
-		
+
 		return interceptorsByName.values();
 	}
 
@@ -1321,7 +1325,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 				java.lang.reflect.Method m = null;
 				try
 				{
-					m = validator.getClass().getMethod("afterLoadPreferences", new Class[] { Properties.class });
+					m = validator.getClass().getMethod("afterLoadPreferences", new Class[]
+						{ Properties.class });
 				}
 				catch (NoSuchMethodException e)
 				{
