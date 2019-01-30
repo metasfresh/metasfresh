@@ -39,6 +39,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -114,19 +115,22 @@ public final class POInfo implements Serializable
 			@Override
 			public Optional<POInfo> call()
 			{
+				final Stopwatch stopwatch = Stopwatch.createStarted();
 				final POInfo poInfo = new POInfo(AD_Table_ID, trxName);
+				stopwatch.stop();
+
 				final boolean valid = poInfo.getColumnCount() > 0;
 				if (!valid)
 				{
-					logger.info("Found no valid POInfo for AD_Table_ID={}; add 'absent' result to cache; trxName={}", AD_Table_ID, trxName);
+					logger.debug("Found no valid POInfo for AD_Table_ID={}; it took {}; add 'absent' result to cache; trxName={}", AD_Table_ID, stopwatch, trxName);
 					return Optional.absent();
 				}
 				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
 
+				logger.debug("Found POInfo for AD_Table_ID={} (TableName={}); it took {}; add result to cache; trxName={}", AD_Table_ID, poInfo.getTableName(),stopwatch, trxName);
+
 				// Update the cache by tablename
 				s_cacheByTableNameUC.put(poInfo.getTableNameUC(), poInfoOptional);
-
-				logger.info("Found POInfo for TableName={}, AD_Table_ID={}; add result to cache; trxName={}", poInfo.getTableName(), AD_Table_ID, trxName);
 
 				return poInfoOptional;
 			}
@@ -152,18 +156,22 @@ public final class POInfo implements Serializable
 		final String tableNameUC = tableName.toUpperCase();
 		return s_cacheByTableNameUC.get(tableNameUC, new Callable<Optional<POInfo>>()
 		{
-
 			@Override
 			public Optional<POInfo> call()
 			{
+				final Stopwatch stopwatch = Stopwatch.createStarted();
 				final POInfo poInfo = new POInfo(tableName, trxName);
+				stopwatch.stop();
+
 				final boolean valid = poInfo.getColumnCount() > 0;
 				if (!valid)
 				{
+					logger.debug("Found no valid POInfo for TableNameUC={}; it took {}; add 'absent' result to cache; trxName={}", tableNameUC, stopwatch, trxName);
 					return Optional.absent();
 				}
 				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
 
+				logger.debug("Loaded POInfo for TableName={} (AD_Table_ID={}); it took {}; add result to cache; trxName={}", tableName, poInfo.getAD_Table_ID(), stopwatch, trxName);
 				// Update the cache by AD_Table_ID
 				s_cache.put(poInfo.getAD_Table_ID(), poInfoOptional);
 
@@ -645,7 +653,8 @@ public final class POInfo implements Serializable
 		//
 		// Fallback: for some reason column index was not found
 		// => iterate columns and try to get it
-		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", new Object[] { AD_Column_ID, this });
+		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", new Object[]
+			{ AD_Column_ID, this });
 		for (int i = 0; i < m_columns.length; i++)
 		{
 			if (AD_Column_ID == m_columns[i].AD_Column_ID)

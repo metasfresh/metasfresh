@@ -70,6 +70,7 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -108,14 +109,16 @@ public class ModelValidationEngine implements IModelValidationEngine
 		if (s_engine == null)
 		{
 			log.info("Start initializing ModelValidationEngine");
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 			// NOTE: we need to instantiate and assign it to static variable immediatelly
 			// else, in init() method, this get() is called indirectly which leads us to have 2 ModelValidationEngine instances
 			s_engine = new ModelValidationEngine();
 
 			s_engine.init();
+			stopwatch.stop();
 
-			log.info("Done initializing ModelValidationEngine; m_globalValidators.size={}; m_validators.size={}",
-					s_engine.m_globalValidators.size(), s_engine.m_validators.size());
+			log.info("Done initializing ModelValidationEngine; it took {}; m_globalValidators.size={}; m_validators.size={}",
+					stopwatch, s_engine.m_globalValidators.size(), s_engine.m_validators.size());
 		}
 		return s_engine;
 	}	// get
@@ -171,7 +174,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	private ModelValidationEngine()
 	{
-		super();
 		// metas: tsa: begin: break this in 2 parts because if the get() method is called during initialization we will end with multiple instances of ModelVaidationEngine
 	}
 
@@ -190,7 +192,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 		String className = null; // className of current model interceptor which is about to be initialized
 		try
 		{
-			//
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+
 			// Load from AD_ModelValidator(s)
 			final List<I_AD_ModelValidator> modelValidators = retrieveModelValidators(ctx);
 			for (final I_AD_ModelValidator modelValidator : modelValidators)
@@ -220,12 +223,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 				loadModuleActivatorClass(adClient, className);
 			}
 
+			stopwatch.stop();
+			log.info("Done initializing AD_ModelValidator based interceptors; it took {}", stopwatch);
+			stopwatch.reset().start();
+
 			//
 			// Load from Spring context
 			for (final Object modelInterceptor : getSpringInterceptors())
 			{
 				addModelValidator(modelInterceptor, /* client */null);
 			}
+
+			log.info("Done initializing spring based interceptors; it took {}", stopwatch);
 		}
 		catch (Exception e)
 		{
