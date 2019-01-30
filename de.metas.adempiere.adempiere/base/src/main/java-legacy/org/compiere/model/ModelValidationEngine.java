@@ -68,6 +68,7 @@ import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -114,11 +115,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 		if (State.TO_BE_INITALIZED.equals(state))
 		{
 			log.info("Start initializing ModelValidationEngine");
+
 			state = State.INITIALIZING;
+
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 			s_engine.init();
+			stopwatch.stop();
+
 			state = State.INITIALIZED;
-			log.info("Done initializing ModelValidationEngine; m_globalValidators.size={}; m_validators.size={}",
-					s_engine.m_globalValidators.size(), s_engine.m_validators.size());
+
+			log.info("Done initializing ModelValidationEngine; it took {}; m_globalValidators.size={}; m_validators.size={}",
+					stopwatch, s_engine.m_globalValidators.size(), s_engine.m_validators.size());
 		}
 		return s_engine;
 	}	// get
@@ -192,7 +199,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 		String className = null; // className of current model interceptor which is about to be initialized
 		try
 		{
-			//
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+
 			// Load from AD_ModelValidator(s)
 			final List<I_AD_ModelValidator> modelValidators = retrieveModelValidators(ctx);
 			for (final I_AD_ModelValidator modelValidator : modelValidators)
@@ -222,11 +230,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 				loadModuleActivatorClass(adClient, className);
 			}
 
+			stopwatch.stop();
+			log.debug("Done initializing AD_ModelValidator based interceptors; it took {}", stopwatch);
+			stopwatch.reset().start();
+
+			//
 			// Load from Spring context
 			for (final Object modelInterceptor : getSpringInterceptors())
 			{
 				addModelValidator(modelInterceptor, /* client */null);
 			}
+
+			log.debug("Done initializing spring based interceptors; it took {}", stopwatch);
 		}
 		catch (Exception e)
 		{
