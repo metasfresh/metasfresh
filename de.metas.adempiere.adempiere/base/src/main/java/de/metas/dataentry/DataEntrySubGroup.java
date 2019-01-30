@@ -35,7 +35,7 @@ public class DataEntrySubGroup
 {
 	DataEntrySubGroupId id;
 
-	ITranslatableString name;
+	ITranslatableString caption;
 	ITranslatableString description;
 
 	String internalName;
@@ -45,17 +45,16 @@ public class DataEntrySubGroup
 	@Builder
 	private DataEntrySubGroup(
 			@NonNull final DataEntrySubGroupId id,
-			@NonNull final ITranslatableString name,
+			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			@Singular List<DataEntryField> dataEntryFields)
 	{
 		this.id = id;
-		this.name = name;
+		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
 		this.dataEntryFields = dataEntryFields;
 	}
-
 
 }

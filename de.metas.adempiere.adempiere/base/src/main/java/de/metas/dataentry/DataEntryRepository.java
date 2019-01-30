@@ -5,12 +5,16 @@ import static de.metas.util.Check.fail;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryField.Type;
+import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
@@ -63,7 +67,6 @@ public class DataEntryRepository
 
 		for (final I_DataEntry_Group groupRecord : groupRecords)
 		{
-
 			result.add(ofRecord(groupRecord));
 		}
 		return result.build();
@@ -71,10 +74,14 @@ public class DataEntryRepository
 
 	private DataEntryGroup ofRecord(@NonNull final I_DataEntry_Group groupRecord)
 	{
+		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(groupRecord.getDataEntry_TargetWindow_ID());
+		final I_AD_Table windowMainTable = firstADTab.getAD_Table();
+		final String parentLinkColumnName = InterfaceWrapperHelper.getKeyColumnName(windowMainTable.getTableName());
+
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(groupRecord);
 
-		final ITranslatableString nameTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_Group.COLUMNNAME_Name, groupRecord.getName());
+		final ITranslatableString captionTrl = modelTranslationMap
+				.getColumnTrl(I_DataEntry_Group.COLUMNNAME_TabName, groupRecord.getTabName());
 
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_Group.COLUMNNAME_Description, groupRecord.getDescription());
@@ -95,9 +102,10 @@ public class DataEntryRepository
 		return DataEntryGroup
 				.builder()
 				.id(DataEntryGroupId.ofRepoId(groupRecord.getDataEntry_Group_ID()))
-				.name(nameTrl)
+				.documentLinkColumnName(DocumentLinkColumnName.of(parentLinkColumnName))
+				.caption(captionTrl)
 				.description(descriptionTrl)
-				.internalName(groupRecord.getTabName())
+				.internalName(groupRecord.getName())
 				.dataEntrySubGroups(subGroups.build())
 				.build();
 	}
@@ -106,8 +114,8 @@ public class DataEntryRepository
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(subGroupRecord);
 
-		final ITranslatableString nameTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_SubGroup.COLUMNNAME_Name, subGroupRecord.getName());
+		final ITranslatableString captionTrl = modelTranslationMap
+				.getColumnTrl(I_DataEntry_SubGroup.COLUMNNAME_TabName, subGroupRecord.getTabName());
 
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_SubGroup.COLUMNNAME_Description, subGroupRecord.getDescription());
@@ -127,7 +135,7 @@ public class DataEntryRepository
 
 		return DataEntrySubGroup.builder()
 				.id(DataEntrySubGroupId.ofRepoId(subGroupRecord.getDataEntry_SubGroup_ID()))
-				.name(nameTrl)
+				.caption(captionTrl)
 				.description(descriptionTrl)
 				.internalName(subGroupRecord.getTabName())
 				.dataEntryFields(fields.build())
