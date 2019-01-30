@@ -118,12 +118,15 @@ public final class POInfo implements Serializable
 				final boolean valid = poInfo.getColumnCount() > 0;
 				if (!valid)
 				{
+					logger.info("Found no valid POInfo for AD_Table_ID={}; add 'absent' result to cache; trxName={}", AD_Table_ID, trxName);
 					return Optional.absent();
 				}
 				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
 
 				// Update the cache by tablename
 				s_cacheByTableNameUC.put(poInfo.getTableNameUC(), poInfoOptional);
+
+				logger.info("Found POInfo for TableName={}, AD_Table_ID={}; add result to cache; trxName={}", poInfo.getTableName(), AD_Table_ID, trxName);
 
 				return poInfoOptional;
 			}
