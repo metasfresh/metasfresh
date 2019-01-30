@@ -3,6 +3,7 @@ package de.metas.ui.web.order.products_proposal.view;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 
@@ -79,10 +80,15 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 
 		recordRef.assertTableName(I_C_BPartner.Table_Name);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(recordRef.getRecord_ID());
-		I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
+		final Set<CountryId> countryIds = bpartnersRepo.retrieveBPartnerLocationCountryIds(bpartnerId);
+		if (countryIds.isEmpty())
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
+		}
 
-		final PricingSystemId pricingSystemId = extractPricingSystemId(bpartnerRecord);
-		final Set<PriceListId> priceListIds = priceListsRepo.retrievePriceListIds(pricingSystemId);
+		final PricingSystemId pricingSystemId = extractPricingSystemId(bpartnersRepo.getById(bpartnerId));
+		final Set<PriceListId> priceListIds = priceListsRepo.retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
+				.filterAndListIds(countryIds);
 
 		return ProductsProposalRowsLoader.builder()
 				.priceListIds(priceListIds)
@@ -90,7 +96,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 				.build();
 	}
 
-	private PricingSystemId extractPricingSystemId(I_C_BPartner bpartnerRecord)
+	private static PricingSystemId extractPricingSystemId(I_C_BPartner bpartnerRecord)
 	{
 		PricingSystemId pricingSystemId = null;
 		if (bpartnerRecord.isCustomer())
