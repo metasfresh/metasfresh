@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.pricing.PriceListId;
@@ -57,6 +58,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -357,6 +359,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
 				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append("=").append(sqlWhereClauseParams.placeholder(priceListVersionId))
+				.append(" AND pp.IsActive=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
 	}
 
@@ -409,12 +412,18 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static LookupValue loadLookupValue(final ResultSet rs) throws SQLException
 	{
 		final int productId = rs.getInt(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
+
 		final String name = rs.getString(COLUMNNAME_ProductDisplayName);
 		final String bpartnerProductNo = rs.getString(I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo);
-
 		final String displayName = Joiner.on("_").skipNulls().join(name, bpartnerProductNo);
 
-		return IntegerLookupValue.of(productId, displayName);
+		final boolean active = StringUtils.toBoolean(rs.getString(I_M_Product_Lookup_V.COLUMNNAME_IsActive));
+
+		return IntegerLookupValue.builder()
+				.id(productId)
+				.displayName(ImmutableTranslatableString.anyLanguage(displayName))
+				.active(active)
+				.build();
 	}
 
 	private final PriceListVersionId getPriceListVersionId(final LookupDataSourceContext evalCtx)
