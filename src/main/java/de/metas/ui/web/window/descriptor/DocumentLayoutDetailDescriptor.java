@@ -259,9 +259,15 @@ public final class DocumentLayoutDetailDescriptor
 			return this;
 		}
 
-		public Builder addSubLayout(@NonNull final DocumentLayoutDetailDescriptor subTabLayout)
+		public Builder addSubTabLayout(@NonNull final DocumentLayoutDetailDescriptor subTabLayout)
 		{
-			subTabLayouts.add(subTabLayout);
+			this.subTabLayouts.add(subTabLayout);
+			return this;
+		}
+
+		public Builder addAllSubTabLayouts(@NonNull final List<DocumentLayoutDetailDescriptor> subTabLayouts)
+		{
+			this.subTabLayouts.addAll(subTabLayouts);
 			return this;
 		}
 	}

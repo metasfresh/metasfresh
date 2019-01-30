@@ -740,7 +740,16 @@ public class DocumentEntityDescriptor
 			}
 		}
 
-		public Builder addIncludedEntity(final DocumentEntityDescriptor includedEntity)
+		public Builder addAllIncludedEntities(@NonNull final Collection<DocumentEntityDescriptor> includedEntities)
+		{
+			for (final DocumentEntityDescriptor includedEntity : includedEntities)
+			{
+				addIncludedEntity(includedEntity);
+			}
+			return this;
+		}
+
+		public Builder addIncludedEntity(@NonNull final DocumentEntityDescriptor includedEntity)
 		{
 			final DetailId detailId = includedEntity.getDetailId();
 			Check.assumeNotNull(detailId, "detailId is not null for {}", includedEntity);

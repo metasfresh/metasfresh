@@ -51,7 +51,6 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 	private DocumentLayoutElementGroupDescriptor(final Builder builder)
 	{
-		super();
 		layoutType = builder.layoutType;
 		elementLines = ImmutableList.copyOf(builder.buildElementLines());
 	}
@@ -91,7 +90,6 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override

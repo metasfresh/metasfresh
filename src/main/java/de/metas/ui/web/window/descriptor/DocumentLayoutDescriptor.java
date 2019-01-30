@@ -72,8 +72,11 @@ public final class DocumentLayoutDescriptor
 
 	// private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
 
-	/** Single row layout: included tabs */
+	/** Single row layout: included tabs. */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
+
+	/** {@link #details} plus their included details. */
+	private final Map<DetailId, DocumentLayoutDetailDescriptor> allDetails;
 
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
@@ -95,6 +98,7 @@ public final class DocumentLayoutDescriptor
 				.setWindowId(windowId)
 				.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
+		allDetails = ImmutableMap.copyOf(builder.buildAllDetails());
 		sideListView = builder.getSideList();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
@@ -151,6 +155,7 @@ public final class DocumentLayoutDescriptor
 		return sideListView;
 	}
 
+	/** the this instance's "direct" details, without their included sub-details. */
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
 	{
 		return details.values();
@@ -161,7 +166,7 @@ public final class DocumentLayoutDescriptor
 	 */
 	public DocumentLayoutDetailDescriptor getDetail(final DetailId detailId)
 	{
-		final DocumentLayoutDetailDescriptor detail = details.get(detailId);
+		final DocumentLayoutDetailDescriptor detail = allDetails.get(detailId);
 		if (detail == null)
 		{
 			throw new DocumentLayoutDetailNotFoundException("Tab '" + detailId + "' was not found. Available tabs are: " + details.keySet());
@@ -224,6 +229,16 @@ public final class DocumentLayoutDescriptor
 			final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map = ImmutableMap.builder();
 			for (final DocumentLayoutDetailDescriptor detail : details)
 			{
+				putIfNotEmpty(detail, map);
+			}
+			return map.build();
+		}
+
+		private Map<DetailId, DocumentLayoutDetailDescriptor> buildAllDetails()
+		{
+			final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map = ImmutableMap.builder();
+			for (final DocumentLayoutDetailDescriptor detail : details)
+			{
 				buildDetailsRecurse(detail, map);
 			}
 			return map.build();
@@ -233,15 +248,20 @@ public final class DocumentLayoutDescriptor
 				@NonNull final DocumentLayoutDetailDescriptor detail,
 				@NonNull final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map)
 		{
+			putIfNotEmpty(detail, map);
+			for (final DocumentLayoutDetailDescriptor subDetail : detail.getSubTabLayouts())
+			{
+				buildDetailsRecurse(subDetail, map);
+			}
+		}
+
+		private void putIfNotEmpty(final DocumentLayoutDetailDescriptor detail, final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map)
+		{
 			if (detail.isEmpty())
 			{
 				return;
 			}
 			map.put(detail.getDetailId(), detail);
-			for (final DocumentLayoutDetailDescriptor subDetail : detail.getSubTabLayouts())
-			{
-				buildDetailsRecurse(subDetail, map);
-			}
 		}
 
 		public Builder setWindowId(WindowId windowId)

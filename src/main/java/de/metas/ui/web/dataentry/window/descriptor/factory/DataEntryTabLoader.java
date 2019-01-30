@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.factory.dataentry;
+package de.metas.ui.web.dataentry.window.descriptor.factory;
 
 import static org.assertj.core.api.Assertions.fail;
 
@@ -12,8 +12,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryField;
 import de.metas.dataentry.DataEntryGroup;
+import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.DataEntryRepository;
 import de.metas.dataentry.DataEntrySubGroup;
+import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -22,6 +24,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -82,30 +85,36 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> result = ImmutableList.builder();
 		for (final DataEntryGroup dataEntryGroup : dataEntryGroups)
 		{
-			final DocumentLayoutDetailDescriptor groupDescriptor = createGroupLayoutDescriptor(windowId, dataEntryGroup);
-			result.add(groupDescriptor);
+			result.addAll(createGroupLayoutDescriptors(windowId, dataEntryGroup));
 		}
 		return result.build();
 	}
 
-	private static DocumentLayoutDetailDescriptor createGroupLayoutDescriptor(
+	private static ImmutableList<DocumentLayoutDetailDescriptor> createGroupLayoutDescriptors(
 			@NonNull final WindowId windowId,
 			@NonNull final DataEntryGroup dataEntryGroup)
 	{
-		final de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
+		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> subGroupLayoutDescriptors = ImmutableList.builder();
+		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
+		{
+			subGroupLayoutDescriptors.add(createSubGroupLayoutDescriptor(windowId, dataEntrySubGroup));
+		}
+
+		if (dataEntryGroup.isAnonymous())
+		{
+			return subGroupLayoutDescriptors.build();
+		}
+
+		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
 				.builder(windowId, createDetailIdFor(dataEntryGroup))
-				.caption(dataEntryGroup.getName())
+				.caption(dataEntryGroup.getCaption())
 				.description(dataEntryGroup.getDescription())
 				.internalName(dataEntryGroup.getInternalName())
 				.queryOnActivate(true)
-				.supportQuickInput(false);
+				.supportQuickInput(false)
+				.addAllSubTabLayouts(subGroupLayoutDescriptors.build());
 
-		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
-		{
-			builder.addSubLayout(createSubGroupLayoutDescriptor(windowId, dataEntrySubGroup));
-		}
-
-		return builder.build();
+		return ImmutableList.of(builder.build());
 	}
 
 	private static DocumentLayoutDetailDescriptor createSubGroupLayoutDescriptor(
@@ -116,7 +125,7 @@ public class DataEntryTabLoader
 
 		final DocumentLayoutDetailDescriptor.Builder subGroupDescriptor = DocumentLayoutDetailDescriptor
 				.builder(windowId, subgroupDetailId)
-				.caption(dataEntrySubGroup.getName())
+				.caption(dataEntrySubGroup.getCaption())
 				.description(dataEntrySubGroup.getDescription())
 				.internalName(dataEntrySubGroup.getInternalName())
 				.queryOnActivate(true)
@@ -138,13 +147,14 @@ public class DataEntryTabLoader
 		final List<DataEntryField> fields = dataEntrySubGroup.getDataEntryFields();
 		for (final DataEntryField field : fields)
 		{
-			final DocumentLayoutElementDescriptor.Builder element = createFieldElementDescriptor(field);
+			final DocumentLayoutElementDescriptor.Builder elementForGridLayout = createFieldElementDescriptor(field);
+			viewLayout.addElement(elementForGridLayout);
 
-			viewLayout.addElement(element);
-
+			// note that each element builder can be used/"consumed" only ones
+			final DocumentLayoutElementDescriptor.Builder elementForSingleRowLayout = createFieldElementDescriptor(field);
 			final DocumentLayoutElementLineDescriptor.Builder elementLine = DocumentLayoutElementLineDescriptor
 					.builder()
-					.addElement(element);
+					.addElement(elementForSingleRowLayout);
 			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
 					.builder()
 					.addElementLine(elementLine);
@@ -212,24 +222,35 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentEntityDescriptor> result = ImmutableList.builder();
 		for (final DataEntryGroup dataEntryGroup : dataEntryGroups)
 		{
-			final DocumentEntityDescriptor.Builder documentEntityDescriptor = createGroupEntityDescriptor(dataEntryGroup);
-			result.add(documentEntityDescriptor.build());
+			result.addAll(createGroupEntityDescriptors(dataEntryGroup));
 		}
 		return result.build();
 	}
 
-	private DocumentEntityDescriptor.Builder createGroupEntityDescriptor(@NonNull final DataEntryGroup dataEntryGroup)
+	private ImmutableList<DocumentEntityDescriptor> createGroupEntityDescriptors(@NonNull final DataEntryGroup dataEntryGroup)
 	{
+		final ImmutableList.Builder<DocumentEntityDescriptor> subGroupEntityDescriptors = ImmutableList.builder();
+		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
+		{
+			subGroupEntityDescriptors.add(createSubGroupEntityDescriptor(dataEntrySubGroup, dataEntryGroup.getDocumentLinkColumnName()));
+		}
+
+		if (dataEntryGroup.isAnonymous())
+		{
+			return subGroupEntityDescriptors.build();
+		}
+
 		final DataEntryGroupBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntryGroupBindingDescriptorBuilder();
 
-		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
+		final DocumentEntityDescriptor documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
 				.setDocumentType(DocumentType.Window, getAdWindowId())
 				.setDetailId(createDetailIdFor(dataEntryGroup))
 				.setInternalName(dataEntryGroup.getInternalName())
-				.setCaption(dataEntryGroup.getName())
+				.setCaption(dataEntryGroup.getCaption())
 				.setDescription(dataEntryGroup.getDescription())
 
+				.disableCallouts()
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 
@@ -237,16 +258,17 @@ public class DataEntryTabLoader
 				.setAllowCreateNewLogic(ConstantLogicExpression.FALSE)
 				.setAllowDeleteLogic(ConstantLogicExpression.FALSE)
 
-				.setDataBinding(dataEntryDocumentBinding);
+				.addAllIncludedEntities(subGroupEntityDescriptors.build())
 
-		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
-		{
-			documentEntityDescriptor.addIncludedEntity(createSubGroupEntityDescriptor(dataEntrySubGroup));
-		}
-		return documentEntityDescriptor;
+				.setDataBinding(dataEntryDocumentBinding)
+				.build();
+
+		return ImmutableList.of(documentEntityDescriptor);
 	}
 
-	private DocumentEntityDescriptor createSubGroupEntityDescriptor(@NonNull final DataEntrySubGroup dataEntrySubGroup)
+	private DocumentEntityDescriptor createSubGroupEntityDescriptor(
+			@NonNull final DataEntrySubGroup dataEntrySubGroup,
+			@NonNull final DocumentLinkColumnName documentLinkColumnName)
 	{
 		final DataEntrySubGroupBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntrySubGroupBindingDescriptorBuilder();
 
@@ -255,9 +277,10 @@ public class DataEntryTabLoader
 				.setDocumentType(DocumentType.Window, getAdWindowId())
 				.setDetailId(createDetailIdFor(dataEntrySubGroup))
 				.setInternalName(dataEntrySubGroup.getInternalName())
-				.setCaption(dataEntrySubGroup.getName())
+				.setCaption(dataEntrySubGroup.getCaption())
 				.setDescription(dataEntrySubGroup.getDescription())
 
+				.disableCallouts()
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAllowCreateNewLogic(ConstantLogicExpression.TRUE)
 				.setAllowDeleteLogic(ConstantLogicExpression.TRUE)
@@ -265,12 +288,48 @@ public class DataEntryTabLoader
 
 				.setDataBinding(dataEntryDocumentBinding);
 
+		documentEntityDescriptor.addField(createIDField());
+
+		documentEntityDescriptor.addField(createParentLinkField(documentLinkColumnName));
+
 		for (final DataEntryField dataEntryField : dataEntrySubGroup.getDataEntryFields())
 		{
 			documentEntityDescriptor.addField(createFieldDescriptor(dataEntryField));
 		}
 
 		return documentEntityDescriptor.build();
+	}
+
+	private DocumentFieldDescriptor.Builder createIDField()
+	{
+		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
+				I_DataEntry_Record_Assignment.COLUMNNAME_DataEntry_Record_ID,
+				true/* mandatory */);
+
+		return DocumentFieldDescriptor.builder(I_DataEntry_Record_Assignment.COLUMNNAME_DataEntry_Record_ID)
+				.setCaption(I_DataEntry_Record_Assignment.COLUMNNAME_DataEntry_Record_ID)
+				.setWidgetType(DocumentFieldWidgetType.Integer)
+				.setDisplayLogic(ConstantLogicExpression.FALSE)
+				.setKey(true)
+				.addCharacteristic(Characteristic.PublicField)
+				.setDataBinding(dataBinding);
+	}
+
+	private DocumentFieldDescriptor.Builder createParentLinkField(@NonNull final DocumentLinkColumnName documentLinkColumnName)
+	{
+		final String columnNameAsString = documentLinkColumnName.getAsString();
+
+		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
+				columnNameAsString,
+				true/* mandatory */);
+
+		return DocumentFieldDescriptor.builder(columnNameAsString)
+				.setCaption(columnNameAsString)
+				.setWidgetType(DocumentFieldWidgetType.Integer)
+				.setParentLink(true, columnNameAsString)
+				.setDisplayLogic(ConstantLogicExpression.FALSE)
+				.addCharacteristic(Characteristic.PublicField)
+				.setDataBinding(dataBinding);
 	}
 
 	private DocumentFieldDescriptor.Builder createFieldDescriptor(@NonNull final DataEntryField dataEntryField)
@@ -283,6 +342,7 @@ public class DataEntryTabLoader
 				.setCaption(dataEntryField.getCaption())
 				.setDescription(dataEntryField.getDescription())
 				.setWidgetType(ofFieldType(dataEntryField.getType()))
+				.addCharacteristic(Characteristic.PublicField)
 				.setDataBinding(dataBinding);
 	}
 

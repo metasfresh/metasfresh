@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor.factory.dataentry;
+package de.metas.ui.web.dataentry.window.descriptor.factory;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import lombok.Value;

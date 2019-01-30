@@ -43,6 +43,8 @@ public interface DocumentDescriptorFactory
 
 	DocumentDescriptor getDocumentDescriptor(WindowId windowId) throws DocumentLayoutBuildException;
 
+	void invalidateForWindow(WindowId windowId);
+
 	default DocumentEntityDescriptor getDocumentEntityDescriptor(final int AD_Window_ID)
 	{
 		final WindowId windowId = WindowId.of(AD_Window_ID);

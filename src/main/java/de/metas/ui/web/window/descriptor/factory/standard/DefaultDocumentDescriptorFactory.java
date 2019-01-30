@@ -48,6 +48,13 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	{
 	}
 
+
+	@Override
+	public void invalidateForWindow(@NonNull final WindowId windowId)
+	{
+		documentDescriptorsByWindowId.remove(windowId);
+	}
+
 	@Override
 	public DocumentDescriptor getDocumentDescriptor(@NonNull final WindowId windowId)
 	{

@@ -1,7 +1,15 @@
-package de.metas.ui.web.window.descriptor.factory.dataentry;
+package de.metas.ui.web.dataentry.window.descriptor.factory;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
@@ -24,11 +32,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,9 +44,12 @@ import lombok.NonNull;
 public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 {
 
+	private static final Logger logger = LogManager.getLogger(DataEntrySubGroupBindingRepository.class);
+
 	public static final DataEntrySubGroupBindingRepository INSTANCE = new DataEntrySubGroupBindingRepository();
 
-	private DataEntrySubGroupBindingRepository() {
+	private DataEntrySubGroupBindingRepository()
+	{
 
 	}
 
@@ -68,10 +79,30 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	}
 
 	@Override
-	public Document createNewDocument(DocumentEntityDescriptor entityDescriptor, Document parentDocument, IDocumentChangesCollector changesCollector)
+	public Document createNewDocument(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			Document parentDocument, IDocumentChangesCollector changesCollector)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
+
+		return Document.builder(entityDescriptor)
+				.setParentDocument(parentDocument)
+				.setChangesCollector(changesCollector)
+				.initializeAsNewDocument(documentId, "0");
+
+	}
+
+	private static DocumentId retrieveNextDocumentId(@NonNull final DocumentEntityDescriptor entityDescriptor)
+	{
+		final int adClientId = UserSession.getCurrent().getAD_Client_ID();
+		final int nextId = DB.getNextID(adClientId, I_DataEntry_Record_Assignment.Table_Name, ITrx.TRXNAME_ThreadInherited);
+		if (nextId <= 0)
+		{
+			throw new DBException("Cannot retrieve next ID from database for " + entityDescriptor);
+		}
+
+		logger.trace("Acquired next ID={} for {}", nextId, entityDescriptor);
+		return DocumentId.of(nextId);
 	}
 
 	@Override
