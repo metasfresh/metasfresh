@@ -471,7 +471,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				zoomIntoWindowId = lookupInfo.getZoomAD_Window_ID_Override();
 				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy)
 						.caching();
-				sqlForFetchingLookupByIdExpression = buildSqlForFetchingDisplayNameById(lookupInfo)
+				sqlForFetchingLookupByIdExpression = buildSqlForFetchingById(lookupInfo)
 						.caching();
 
 				if (lookupInfo.isQueryHasEntityType())
@@ -613,7 +613,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.build();
 		}
 
-		private IStringExpression buildSqlForFetchingDisplayNameById(final MLookupInfo lookupInfo)
+		private IStringExpression buildSqlForFetchingById(final MLookupInfo lookupInfo)
 		{
 			final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfo.getDisplayColumnSql());
 
@@ -637,7 +637,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			final org.adempiere.ad.expression.api.impl.CompositeStringExpression.Builder composer = IStringExpression
 					.composer()
 					.append("SELECT ")
-					.append("ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append("]")
+					.append("\n ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append(",").append(lookupInfo.getActiveColumnSQL()).append("]")
 					.append("\n FROM ")
 					.append(fromSqlPart)
 					.append("\n WHERE ")

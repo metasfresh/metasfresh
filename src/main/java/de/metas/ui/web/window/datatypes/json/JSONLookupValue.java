@@ -24,6 +24,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue.IntegerLookupValueBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue.StringLookupValueBuilder;
+import de.metas.util.StringUtils;
 import io.swagger.annotations.ApiModel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -76,7 +77,8 @@ public final class JSONLookupValue
 			@Nullable final String description)
 	{
 		final Map<String, Object> attributes = null;
-		return new JSONLookupValue(key, caption, description, attributes);
+		final Boolean active = null;
+		return new JSONLookupValue(key, caption, description, attributes, active);
 	}
 
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
@@ -90,7 +92,10 @@ public final class JSONLookupValue
 		final String displayName = displayNameTrl.translate(adLanguage);
 		final String description = descriptionTrl.translate(adLanguage);
 
-		return new JSONLookupValue(id, displayName, description, lookupValue.getAttributes());
+		// NOTE: for bandwidth optimization, we provide the flag only when it's false
+		final Boolean active = !lookupValue.isActive() ? Boolean.FALSE : null;
+
+		return new JSONLookupValue(id, displayName, description, lookupValue.getAttributes(), active);
 	}
 
 	public static final JSONLookupValue ofNamePair(final NamePair namePair)
@@ -98,8 +103,7 @@ public final class JSONLookupValue
 		return of(namePair.getID(), namePair.getName(), namePair.getDescription());
 	}
 
-	public static final IntegerLookupValue integerLookupValueFromJsonMap(
-			@NonNull final Map<String, Object> map)
+	public static final IntegerLookupValue integerLookupValueFromJsonMap(@NonNull final Map<String, Object> map)
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		if (keyObj == null)
@@ -115,11 +119,13 @@ public final class JSONLookupValue
 
 		final ITranslatableString displayName = extractCaption(map);
 		final ITranslatableString description = extractDescription(map);
+		final Boolean active = extractActive(map);
 
 		final IntegerLookupValueBuilder builder = IntegerLookupValue.builder()
 				.id(keyInt)
 				.displayName(displayName)
-				.description(description);
+				.description(description)
+				.active(active);
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
@@ -131,18 +137,20 @@ public final class JSONLookupValue
 		return builder.build();
 	}
 
-	public static final StringLookupValue stringLookupValueFromJsonMap(final Map<String, Object> map)
+	public static final StringLookupValue stringLookupValueFromJsonMap(@NonNull final Map<String, Object> map)
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		final String key = keyObj != null ? keyObj.toString() : null;
 
 		final ITranslatableString displayName = extractCaption(map);
 		final ITranslatableString description = extractDescription(map);
+		final Boolean active = extractActive(map);
 
 		final StringLookupValueBuilder builder = StringLookupValue.builder()
 				.id(key)
 				.displayName(displayName)
-				.description(description);
+				.description(description)
+				.active(active);
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> attributes = (Map<String, Object>)map.get(PROPERTY_Attributes);
@@ -168,6 +176,11 @@ public final class JSONLookupValue
 		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
 		final ITranslatableString description = ImmutableTranslatableString.anyLanguage(descriptionStr);
 		return description;
+	}
+
+	private static Boolean extractActive(@NonNull final Map<String, Object> map)
+	{
+		return StringUtils.toBoolean(map.get(PROPERTY_Active), null);
 	}
 
 	public static JSONLookupValue unknown(final int id)
@@ -198,7 +211,6 @@ public final class JSONLookupValue
 	@JsonProperty(PROPERTY_Key)
 	@Getter
 	private final String key;
-
 	@JsonIgnore
 	private transient Integer keyAsInt = null; // lazy
 
@@ -219,34 +231,44 @@ public final class JSONLookupValue
 	@Getter
 	private final Map<String, Object> attributes;
 
+	private static final String PROPERTY_Active = "active";
+	@JsonProperty(PROPERTY_Active)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Boolean active;
+
 	@JsonCreator
 	private JSONLookupValue(
 			@JsonProperty(PROPERTY_Key) @NonNull final String key,
 			@JsonProperty(PROPERTY_Caption) @NonNull final String caption,
 			@JsonProperty(PROPERTY_Description) @Nullable final String description,
-			@JsonProperty(PROPERTY_Attributes) final Map<String, Object> attributes)
+			@JsonProperty(PROPERTY_Attributes) final Map<String, Object> attributes,
+			@JsonProperty(PROPERTY_Active) final Boolean active)
 	{
 		this.key = key;
 		this.caption = caption;
 		this.description = description;
 		this.attributes = attributes != null && !attributes.isEmpty() ? ImmutableMap.copyOf(attributes) : ImmutableMap.of();
+		this.active = active;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("key", key)
 				.add("caption", caption)
 				.add("attributes", attributes)
+				.add("active", active)
 				.toString();
 	}
 
 	public int getKeyAsInt()
 	{
+		Integer keyAsInt = this.keyAsInt;
 		if (keyAsInt == null)
 		{
-			keyAsInt = Integer.parseInt(getKey());
+			keyAsInt = this.keyAsInt = Integer.parseInt(getKey());
 		}
 
 		return keyAsInt;
@@ -258,6 +280,7 @@ public final class JSONLookupValue
 				.id(getKeyAsInt())
 				.displayName(ImmutableTranslatableString.constant(getCaption()))
 				.attributes(getAttributes())
+				.active(isActive())
 				.build();
 	}
 
@@ -267,7 +290,13 @@ public final class JSONLookupValue
 				.id(getKey())
 				.displayName(ImmutableTranslatableString.constant(getCaption()))
 				.attributes(getAttributes())
+				.active(isActive())
 				.build();
+	}
+
+	private boolean isActive()
+	{
+		return active == null || active.booleanValue();
 	}
 
 }
