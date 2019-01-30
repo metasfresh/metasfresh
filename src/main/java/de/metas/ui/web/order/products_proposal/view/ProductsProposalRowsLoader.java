@@ -12,6 +12,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -23,6 +24,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
@@ -104,16 +106,23 @@ final class ProductsProposalRowsLoader
 		final String currencyCode = getCurrencyCodeByPriceListId(priceListId);
 
 		return priceListsRepo.retrieveProductPrices(priceListVersionId)
-				.map(productPriceRecord -> toProductsProposalRow(productPriceRecord, currencyCode));
+				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord, currencyCode))
+				.filter(Predicates.notNull());
 	}
 
-	private ProductsProposalRow toProductsProposalRow(final I_M_ProductPrice record, final String currencyCode)
+	private ProductsProposalRow toProductsProposalRowOrNull(final I_M_ProductPrice record, final String currencyCode)
 	{
+		final LookupValue product = productLookup.findById(record.getM_Product_ID());
+		if (!product.isActive())
+		{
+			return null;
+		}
+
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 
 		return ProductsProposalRow.builder()
 				.id(DocumentId.of(record.getM_ProductPrice_ID()))
-				.product(productLookup.findById(record.getM_Product_ID()))
+				.product(product)
 				.asiDescription(attributeSetInstanceBL.getASIDescriptionById(asiId))
 				.price(Amount.of(record.getPriceStd(), currencyCode))
 				.qty(null)
