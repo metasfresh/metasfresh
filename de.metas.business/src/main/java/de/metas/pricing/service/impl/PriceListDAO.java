@@ -47,6 +47,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -134,19 +135,6 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Set<PriceListId> retrievePriceListIds(final PricingSystemId pricingSystemId)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilderOutOfTrx(I_M_PriceList.class)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_PriceList.COLUMNNAME_C_Country_ID)
-				.create()
-				.listIds(PriceListId::ofRepoId);
-
-	}
-
-	@Override
 	public I_M_PriceList retrievePriceListByPricingSyst(final PricingSystemId pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final SOTrx soTrx)
 	{
 		if (pricingSystemId == null)
@@ -157,50 +145,43 @@ public class PriceListDAO implements IPriceListDAO
 		// In case we are dealing with Pricing System None, return the PriceList none
 		if (pricingSystemId.isNone())
 		{
-			final I_M_PriceList pl = loadOutOfTrx(PricingSystemId.NONE.getRepoId(), I_M_PriceList.class);
+			final I_M_PriceList pl = loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
 			Check.assumeNotNull(pl, "pl with M_PriceList_ID={} is not null", M_PriceList_ID_None);
 			return pl;
 		}
 
 		final CountryId countryId = CountryId.ofRepoId(bpartnerLocation.getC_Location().getC_Country_ID());
-		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx);
+		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 		return !priceLists.isEmpty() ? priceLists.get(0) : null;
 	}
 
 	@Override
-	public Iterator<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
+	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
 	{
-		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, soTrx)
-				.iterator();
+		return retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
+				.filterAndList(countryId, soTrx);
 	}
 
-	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID#IsSOPriceList")
-	public ImmutableList<I_M_PriceList> retrievePriceLists(
-			final @CacheCtx Properties ctx,
-			final PricingSystemId pricingSystemId,
-			final CountryId countryId,
-			final SOTrx soTrx)
+	@Override
+	public PriceListsCollection retrievePriceListsCollectionByPricingSystemId(@NonNull final PricingSystemId pricingSystemId)
+	{
+		return retrievePriceListsCollectionByPricingSystemId(Env.getCtx(), pricingSystemId);
+	}
+
+	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID")
+	public PriceListsCollection retrievePriceListsCollectionByPricingSystemId(
+			@NonNull @CacheCtx final Properties ctx,
+			@NonNull final PricingSystemId pricingSystemId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_PriceList> queryBuilder = queryBL.createQueryBuilder(I_M_PriceList.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
-				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
-				.addOnlyContextClient()
+		final ImmutableList<I_M_PriceList> priceLists = queryBL.createQueryBuilder(I_M_PriceList.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_PriceList.COLUMNNAME_C_Country_ID);
-
-		if (soTrx != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, soTrx.isSales());
-		}
-		else
-		{
-			queryBuilder.orderByDescending(I_M_PriceList.COLUMNNAME_IsSOPriceList); // sales first
-		}
-
-		return queryBuilder
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
+				.orderBy(I_M_PriceList.COLUMNNAME_C_Country_ID)
 				.create()
 				.listImmutable(I_M_PriceList.class);
+
+		return new PriceListsCollection(pricingSystemId, priceLists);
 	}
 
 	@Override
@@ -401,17 +382,8 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public Set<CountryId> retrieveCountryIdsByPricingSystem(@NonNull final PricingSystemId pricingSystemId)
 	{
-		final List<Integer> countryIds = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_M_PriceList.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, pricingSystemId)
-				.addNotNull(I_M_PriceList.COLUMN_C_Country_ID)
-				.create()
-				.listDistinct(I_M_PriceList.COLUMNNAME_C_Country_ID, Integer.class);
-
-		return countryIds.stream()
-				.map(CountryId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		return retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
+				.getCountryIds();
 	}
 
 	@Override
@@ -462,5 +434,4 @@ public class PriceListDAO implements IPriceListDAO
 
 		return filters;
 	}
-
 }

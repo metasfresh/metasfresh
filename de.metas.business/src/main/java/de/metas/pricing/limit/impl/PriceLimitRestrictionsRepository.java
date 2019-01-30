@@ -73,11 +73,11 @@ public class PriceLimitRestrictionsRepository implements IPriceLimitRestrictions
 	public Set<CountryId> getPriceCountryIds()
 	{
 		return get()
-				.map(this::getPriceContryIds)
+				.map(this::getPriceCountryIds)
 				.orElseGet(ImmutableSet::of);
 	}
 
-	private final Set<CountryId> getPriceContryIds(final PriceLimitRestrictions priceLimitRestrictions)
+	private final Set<CountryId> getPriceCountryIds(final PriceLimitRestrictions priceLimitRestrictions)
 	{
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		return priceListsRepo.retrieveCountryIdsByPricingSystem(priceLimitRestrictions.getBasePricingSystemId());

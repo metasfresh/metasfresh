@@ -1588,13 +1588,12 @@ public final class DB
 		return getSQLValueTS(trxName, sql, arr);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> T[] getSQLValueArrayEx(
 			@Nullable final String trxName,
 			@NonNull final String sql,
 			@Nullable final Object... params)
 	{
-		final PreparedStatement pstmt = prepareStatement(sql, trxName);;
+		final PreparedStatement pstmt = prepareStatement(sql, trxName);
 		ResultSet rs = null;
 		try
 		{
@@ -1603,15 +1602,19 @@ public final class DB
 
 			if (rs.next())
 			{
-				return (T[])rs.getArray(1).getArray();
+				@SuppressWarnings("unchecked")
+				final T[] arr = (T[])rs.getArray(1).getArray();
+				return arr;
 			}
-
-			log.debug("Got no array value for sql={}; params={}", sql, params);
-			return null;
+			else
+			{
+				log.debug("Got no array value for sql={}; params={}", sql, params);
+				return null;
+			}
 		}
-		catch (SQLException e)
+		catch (final SQLException ex)
 		{
-			throw DBException.wrapIfNeeded(e)
+			throw DBException.wrapIfNeeded(ex)
 					.appendParametersToMessage()
 					.setParameter("trxName", trxName)
 					.setParameter("sql", sql)
