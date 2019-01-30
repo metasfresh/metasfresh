@@ -37,7 +37,7 @@ class Window extends PureComponent {
     });
   };
 
-  getTabs = (tabs, dataId, tabsArray) => {
+  getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
     const { type } = this.props.layout;
     const { rowData, newRow, tabsInfo, sort } = this.props;
 
@@ -56,7 +56,11 @@ class Window extends PureComponent {
         defaultOrderBys,
       } = elem;
       elem.tabIndex = this.tabIndex.tabs;
+      if (parentTab) {
+        elem.parentTab = parentTab;
+      }
 
+      tabsByIds[elem.tabId] = elem;
       tabsArray.push(
         <Table
           {...{
@@ -87,7 +91,7 @@ class Window extends PureComponent {
       );
 
       if (elem.tabs) {
-        this.getTabs(elem.tabs, dataId, tabsArray);
+        this.getTabs(elem.tabs, dataId, tabsArray, tabsByIds, tabId);
       }
     });
   };
@@ -97,13 +101,14 @@ class Window extends PureComponent {
     const { data } = this.props;
     const { fullScreen } = this.state;
     const tabsArray = [];
+    const tabsByIds = {};
 
     if (!Object.keys(data).length) {
       return;
     }
 
     const dataId = data.ID && data.ID.value;
-    this.getTabs(tabs, dataId, tabsArray);
+    this.getTabs(tabs, dataId, tabsArray, tabsByIds, null);
 
     return (
       <Tabs
@@ -111,7 +116,7 @@ class Window extends PureComponent {
         toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
         windowType={type}
-        tabs={tabs}
+        {...{ tabs, tabsByIds }}
       >
         {tabsArray}
       </Tabs>

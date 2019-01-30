@@ -11,9 +11,7 @@ class Tabs extends Component {
   constructor(props) {
     super(props);
 
-    const firstTab = props.tabs.find(
-      tab => tab.tabId === props.children[0].key
-    );
+    const firstTab = props.tabsByIds[props.children[0].key];
     const selected = this.getSelected(firstTab, Set());
 
     this.state = {
@@ -21,11 +19,18 @@ class Tabs extends Component {
     };
   }
 
-  getSelected = (tab, selected) => {
+  getSelected = (tab, selected, reverse) => {
+    const { tabsByIds } = this.props;
     selected = selected.add(tab.tabId);
 
-    if (tab.tabs) {
-      this.getSelected(tab.tabs[0], selected);
+    if (!reverse) {
+      if (tab.tabs) {
+        selected = this.getSelected(tab.tabs[0], selected);
+      }
+    } else {
+      if (tab.parentTab) {
+        selected = this.getSelected(tabsByIds[tab.parentTab], selected, true);
+      }
     }
 
     return selected;
@@ -48,8 +53,18 @@ class Tabs extends Component {
 
   handleClick = (e, id) => {
     e.preventDefault();
+
+    const firstTab = this.props.tabsByIds[id];
+    let reverse = false;
+
+    if (firstTab.parentTab) {
+      reverse = true;
+    }
+    let selected = this.getSelected(firstTab, Set(), reverse);
+    selected = selected.reverse();
+
     this.setState({
-      selected: id,
+      selected,
     });
   };
 
@@ -137,7 +152,7 @@ class Tabs extends Component {
         }),
       });
 
-      if (selected.has(item.key)) {
+      if (selected.last() === item.key) {
         const { tabId, queryOnActivate, docId, orderBy } = item.props;
 
         return (
@@ -181,6 +196,8 @@ class Tabs extends Component {
 
 Tabs.propTypes = {
   tabs: PropTypes.array,
+  parentTab: PropTypes.string,
+  children: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
 };
