@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { Set } from 'immutable';
 
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
@@ -9,10 +10,26 @@ import Tab from './Tab';
 class Tabs extends Component {
   constructor(props) {
     super(props);
+
+    const firstTab = props.tabs.find(
+      tab => tab.tabId === props.children[0].key
+    );
+    const selected = this.getSelected(firstTab, Set());
+
     this.state = {
-      selected: props.children[0].key,
+      selected,
     };
   }
+
+  getSelected = (tab, selected) => {
+    selected = selected.add(tab.tabId);
+
+    if (tab.tabs) {
+      this.getSelected(tab.tabs[0], selected);
+    }
+
+    return selected;
+  };
 
   componentDidMount = () => {
     this.props.dispatch(activateTab('master', this.state.selected));
@@ -78,7 +95,7 @@ class Tabs extends Component {
       >
         <a
           className={classnames('nav-link', {
-            active: selected === item.tabId,
+            active: selected.has(item.tabId),
           })}
         >
           {item.caption}
@@ -93,7 +110,7 @@ class Tabs extends Component {
     const nestedPills = [];
 
     const pillsArray = pills.map(item => {
-      if (item.tabs && selected == item.tabId) {
+      if (item.tabs && selected.has(item.tabId)) {
         this.renderNestedPills(item, maxWidth, 0, nestedPills);
       }
 
@@ -120,7 +137,7 @@ class Tabs extends Component {
         }),
       });
 
-      if (selected == item.key) {
+      if (selected.has(item.key)) {
         const { tabId, queryOnActivate, docId, orderBy } = item.props;
 
         return (
@@ -163,6 +180,7 @@ class Tabs extends Component {
 }
 
 Tabs.propTypes = {
+  tabs: PropTypes.array,
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
 };
