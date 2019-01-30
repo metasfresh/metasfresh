@@ -157,7 +157,7 @@ public class PriceListDAO implements IPriceListDAO
 		// In case we are dealing with Pricing System None, return the PriceList none
 		if (pricingSystemId.isNone())
 		{
-			final I_M_PriceList pl = loadOutOfTrx(PricingSystemId.NONE.getRepoId(), I_M_PriceList.class);
+			final I_M_PriceList pl = loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
 			Check.assumeNotNull(pl, "pl with M_PriceList_ID={} is not null", M_PriceList_ID_None);
 			return pl;
 		}
