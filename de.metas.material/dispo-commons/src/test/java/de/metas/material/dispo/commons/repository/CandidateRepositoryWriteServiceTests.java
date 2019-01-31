@@ -23,7 +23,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
@@ -173,17 +172,14 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrUpdateOverwriteStoredSeqNo_returns_equal_candidate()
 	{
-		POJOLookupMap.get().dumpStatus("before actual test starts", I_MD_Candidate.Table_Name);
-
 		final Candidate originalCandidate = repositoryTestHelper.stockCandidate;
-		System.out.println("originalCandidate: " + originalCandidate);
 
 		final Candidate candidateReturnedfromRepo = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(originalCandidate)
 				.getCandidate();
 
-		final Candidate originalCandidateWithZeroDelta = originalCandidate.withQuantity(ZERO);
-		assertThat(candidateReturnedfromRepo).isEqualTo(originalCandidateWithZeroDelta);
+		assertThat(candidateReturnedfromRepo)
+				.isEqualTo(originalCandidate);
 	}
 
 	/**
