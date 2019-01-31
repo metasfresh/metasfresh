@@ -26,7 +26,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
 
-		booleanParam(defaultValue: true,
+		booleanParam(defaultValue: false,
 			name: 'MF_MF_SKIP_UNIT_TESTS')
 	]),
 	pipelineTriggers([]),

@@ -1292,10 +1292,7 @@ export function connectWS(topic, onMessageCallback) {
     this.sock = new SockJs(config.WS_URL);
     this.sockClient = Stomp.Stomp.over(this.sock);
     this.sockClient.debug = null;
-    this.sockClient.connect(
-      {},
-      subscribe
-    );
+    this.sockClient.connect({}, subscribe);
   };
 
   const wasConnected = disconnectWS.call(this, connect);

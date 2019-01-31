@@ -1,12 +1,12 @@
 {
-  "presets": ["env", "es2017", "react"],
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
   "plugins": [
-      ["transform-class-properties", { "spec": true }],
-      "babel-plugin-syntax-dynamic-import",
+      ["@babel/plugin-proposal-class-properties", { "spec": true }],
+      "@babel/plugin-syntax-dynamic-import",
       "dynamic-import-node",
-      "transform-es2015-modules-commonjs",
-      "transform-object-rest-spread",
-      "transform-async-to-generator",
+      "@babel/plugin-transform-modules-commonjs",
+      "@babel/plugin-proposal-object-rest-spread",
+      "@babel/plugin-transform-async-to-generator",
       "react-hot-loader/babel"
   ]
 }
