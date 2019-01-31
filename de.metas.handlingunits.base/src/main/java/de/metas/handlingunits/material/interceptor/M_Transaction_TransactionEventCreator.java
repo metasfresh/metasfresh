@@ -18,7 +18,6 @@ import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -66,13 +65,11 @@ public class M_Transaction_TransactionEventCreator
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final Builder<MaterialEvent> result = ImmutableList.builder();
+		final ImmutableList.Builder<MaterialEvent> result = ImmutableList.builder();
 
-		if (transaction.getInoutLineId() > 0)
+		if (transaction.getInoutLineId() != null)
 		{
-			final List<MaterialEvent> //
-			eventsForInOutLine = M_Transaction_InOutLineEventCreator.createEventsForInOutLine(transaction, deleted);
-			result.addAll(eventsForInOutLine);
+			result.addAll(createEventForInOutLine(transaction, deleted));
 		}
 		else if (transaction.getCostCollectorId() > 0)
 		{
@@ -87,6 +84,13 @@ public class M_Transaction_TransactionEventCreator
 			result.addAll(createEventForInventoryLine(transaction, deleted));
 		}
 		return result.build();
+	}
+
+	private List<MaterialEvent> createEventForInOutLine(
+			@NonNull final TransactionDescriptor transaction,
+			final boolean deleted)
+	{
+		return M_Transaction_InOutLineEventCreator.createEventsForInOutLine(transaction, deleted);
 	}
 
 	private List<MaterialEvent> createEventForCostCollector(
