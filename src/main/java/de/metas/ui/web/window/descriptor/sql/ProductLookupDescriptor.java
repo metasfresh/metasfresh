@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -33,10 +35,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -217,9 +221,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			{
 				return unexplodedLookupValues;
 			}
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(param_C_BPartner_ID.getValueAsInteger(evalCtx));
 			return explodeRecordsWithStockQuantities(
 					unexplodedLookupValues,
-					param_C_BPartner_ID.getValueAsInteger(evalCtx),
+					bpartnerId,
 					stockdateOrNull);
 		}
 		catch (final SQLException ex)
@@ -512,7 +517,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private final LookupValuesList explodeRecordsWithStockQuantities(
 			@NonNull final LookupValuesList productLookupValues,
-			final int bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final Date dateOrNull)
 	{
 		if (productLookupValues.isEmpty() || !isAvailableStockQueryActivatedInSysConfig())
@@ -524,7 +529,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
 				.date(TimeUtil.asLocalDateTime(dateOrNull))
-				.bpartnerId(bpartnerId)
+				.bpartner(BPartnerClassifier.specificOrNone(bpartnerId))
 				.build();
 		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(query);
 		final List<Group> availableStockGroups = availableStock.getGroups();
