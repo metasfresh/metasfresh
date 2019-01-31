@@ -334,13 +334,13 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version retrieveLastCreatedPriceListVersion(final int priceListId)
+	public I_M_PriceList_Version retrieveNewestPriceListVersion(final int priceListId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_Created)
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 				.create()
 				.first();
 	}

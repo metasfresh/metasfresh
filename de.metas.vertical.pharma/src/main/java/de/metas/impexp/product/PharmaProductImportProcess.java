@@ -21,6 +21,7 @@ import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidationEngine;
@@ -67,7 +68,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Pharma_Product.COLUMNNAME_A00PZN;
+		return I_I_Pharma_Product.COLUMNNAME_A01GDAT;
 	}
 
 	@Override
@@ -161,7 +162,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 		final List<I_M_PriceList> matchedPriceList = retrievePriceLists();
 		matchedPriceList.forEach(priceList -> {
-			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveLastCreatedPriceListVersion(priceList.getM_PriceList_ID());
+			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceList.getM_PriceList_ID());
 			if (plv != null)
 			{
 				priceListVersions.add(plv);
@@ -220,7 +221,8 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.addOnlyActiveRecordsFilter()
 				.filter(sqlFilter)
 				.create()
-				.list();
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+				.list(clazz);
 	}
 
 	private I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
