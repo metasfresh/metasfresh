@@ -1,7 +1,5 @@
 package de.metas.handlingunits.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -86,11 +85,13 @@ public class M_Transaction_InOutLineEventCreator
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
+		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+
 		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
 
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
-		final I_M_InOutLine inOutLine = load(transaction.getInoutLineId(), I_M_InOutLine.class);
+		final I_M_InOutLine inOutLine = inoutsRepo.getLineById(transaction.getInoutLineId());
 
 		final List<HUDescriptor> huDescriptors = //
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLine, deleted);
@@ -198,11 +199,13 @@ public class M_Transaction_InOutLineEventCreator
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
-		final I_M_InOutLine inOutLine = load(transaction.getInoutLineId(), I_M_InOutLine.class);
+		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+		final IReceiptScheduleDAO receiptSchedulesRepo = Services.get(IReceiptScheduleDAO.class);
 
-		final Map<Integer, BigDecimal> receiptScheduleIds2Qtys = Services
-				.get(IReceiptScheduleDAO.class)
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
+		final I_M_InOutLine inOutLine = inoutsRepo.getLineById(transaction.getInoutLineId());
+
+		final Map<Integer, BigDecimal> receiptScheduleIds2Qtys = receiptSchedulesRepo
 				.retrieveRsaForInOutLine(inOutLine)
 				.stream()
 				.collect(Collectors.groupingBy(
