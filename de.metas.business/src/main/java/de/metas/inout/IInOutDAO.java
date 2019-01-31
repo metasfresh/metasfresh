@@ -40,7 +40,7 @@ import de.metas.util.ISingletonService;
 
 public interface IInOutDAO extends ISingletonService
 {
-	I_M_InOutLine getLineById(int inoutLineId);
+	I_M_InOutLine getLineById(InOutLineId inoutLineId);
 
 	List<I_M_InOutLine> retrieveLines(I_M_InOut inOut);
 
