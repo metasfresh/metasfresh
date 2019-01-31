@@ -23,6 +23,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
 
+import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -197,8 +198,13 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
 
-        final  BigDecimal paymentDiscount  = parseStringToBigDecimalUsingComma(importRecord);
-		schemaBreak.setPaymentDiscount(paymentDiscount);
+		final String paymentDiscontString = importRecord.getPaymentTermValue();
+		if (!Check.isEmpty(paymentDiscontString))
+		{
+			final  BigDecimal paymentDiscount  = parseStringToBigDecimalUsingComma(paymentDiscontString);
+			schemaBreak.setPaymentDiscount(paymentDiscount);	
+		}
+        
 		//
 		schemaBreak.setM_Product_ID(importRecord.getM_Product_ID());
 		schemaBreak.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
@@ -206,7 +212,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		setPricingFields(importRecord, schemaBreak);
 	}
 
-	private BigDecimal parseStringToBigDecimalUsingComma(final I_I_DiscountSchema importRecord) 
+	private BigDecimal parseStringToBigDecimalUsingComma(final String paymentDiscount) 
 	{
 		final DecimalFormat df = new DecimalFormat();
         final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
@@ -214,7 +220,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
         df.setDecimalFormatSymbols(symbols);
         try
 		{
-			return BigDecimal.valueOf((long)df.parse(importRecord.getPaymentTermValue()));
+			return BigDecimal.valueOf((long)df.parse(paymentDiscount));
 		}
 		catch (ParseException e)
 		{
