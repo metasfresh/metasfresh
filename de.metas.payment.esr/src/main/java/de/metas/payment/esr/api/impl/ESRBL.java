@@ -42,7 +42,9 @@ import org.compiere.util.Env;
 
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.banking.model.I_C_Payment_Request;
+import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
@@ -57,6 +59,8 @@ import de.metas.payment.esr.api.InvoiceReferenceNos;
 import de.metas.payment.esr.document.refid.spi.impl.InvoiceReferenceNoGenerator;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -92,20 +96,28 @@ public class ESRBL implements IESRBL
 	}
 
 	@Override
-	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
+	public boolean createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
 		// Do nothing if ESR is not enabled
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceRecord);
 		if (!ESRConstants.isEnabled(ctx))
 		{
-			logger.debug("Skip generating because ESR not enabled");
-			return;
+			loggable.addLog("Skip generating because ESR not enabled; C_Invoice={}", invoiceRecord);
+			return false;
 		}
 
 		if (!appliesForESRDocumentRefId(invoiceRecord))
 		{
-			logger.debug("Skip generating because source does not apply: " + invoiceRecord);
-			return;
+			loggable.addLog("Skip generating because invoiceRecord does not apply; C_Invoice={}", invoiceRecord);
+			return false;
+		}
+
+		final boolean hasPaymentRequests= Services.get(IPaymentRequestDAO.class).hasPaymentRequests(invoiceRecord);
+		if (hasPaymentRequests)
+		{
+			loggable.addLog("Skip generating because invoiceRecord already has a payment request; C_Invoice={}", invoiceRecord);
+			return false;
 		}
 
 		final I_C_BP_BankAccount bankAccountRecord = retrieveEsrBankAccount(invoiceRecord);
@@ -118,14 +130,18 @@ public class ESRBL implements IESRBL
 		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount, bankAccountRecord);
 
 		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class);
+		paymentRequestRecord.setC_Invoice(invoiceRecord);
+
 		paymentRequestRecord.setReference(invoiceReferenceString.asString());
 		paymentRequestRecord.setFullPaymentString(renderedCodeStr);
 		paymentRequestRecord.setC_BP_BankAccount(bankAccountRecord);
-		paymentRequestRecord.setC_Invoice(invoiceRecord);
 		paymentRequestRecord.setAmount(openInvoiceAmount);
 		saveRecord(paymentRequestRecord);
 
 		linkEsrStringsToInvoiceRecord(invoiceReferenceString, renderedCodeStr, invoiceRecord);
+
+		loggable.addLog("Created new C_Payment_Request={}; C_Invoice={}", paymentRequestRecord, invoiceRecord);
+		return true;
 	}
 
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)

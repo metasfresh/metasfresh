@@ -12,5 +12,8 @@ public interface IESRBL extends ISingletonService
 	 */
 	boolean appliesForESRDocumentRefId(Object sourceModel);
 
-	void createESRPaymentRequest(I_C_Invoice invoiceRecord);
+	/**
+	 * @return true if the payment request was created. Note that if it's not created the reason in logged to {@link de.metas.util.ILoggable}.
+	 */
+	boolean createESRPaymentRequest(I_C_Invoice invoiceRecord);
 }

@@ -46,6 +46,13 @@
 			<version>10.0.0</version>
 		</dependency>
 
+		<!-- needed so we can create new PDFs after having created ESR data for an existing invoice -->
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
@@ -104,7 +111,7 @@
 							<packageName>de.metas.payment.camt054_001_06</packageName>
 						</configuration>
 					</execution>
-					
+
 					<execution>
 						<id>generate-de.metas.payment.esr.camt054.001.02</id>
 						<goals>
