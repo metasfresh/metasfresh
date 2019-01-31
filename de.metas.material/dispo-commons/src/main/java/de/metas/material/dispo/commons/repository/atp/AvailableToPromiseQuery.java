@@ -54,7 +54,7 @@ public class AvailableToPromiseQuery
 				.date(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.bpartnerId(materialDescriptor.getCustomerId())
+				.bpartner(BPartnerClassifier.specificOrNone(materialDescriptor.getCustomerId()))
 				.build();
 	}
 
@@ -66,11 +66,7 @@ public class AvailableToPromiseQuery
 	ImmutableList<Integer> productIds;
 	ImmutableList<AttributesKey> storageAttributesKeys;
 
-	public static final int BPARTNER_ID_ANY = -1;
-	public static final int BPARTNER_ID_NONE = -2;
-
-	/** null means "none" */
-	private final int bpartnerId;
+	BPartnerClassifier bpartner;
 
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
@@ -78,7 +74,7 @@ public class AvailableToPromiseQuery
 			@Nullable final LocalDateTime date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<AttributesKey> storageAttributesKeys,
-			final int bpartnerId)
+			@Nullable final BPartnerClassifier bpartner)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
@@ -86,18 +82,7 @@ public class AvailableToPromiseQuery
 		this.date = date != null ? date : SystemTime.asLocalDateTime();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
-
-		final boolean bPartnerIdIsSpecified = bpartnerId == BPARTNER_ID_ANY
-				|| bpartnerId == BPARTNER_ID_NONE
-				|| bpartnerId > 0;
-		if (bPartnerIdIsSpecified)
-		{
-			this.bpartnerId = bpartnerId;
-		}
-		else // default, including 0; bpartnerId was not specified on build time
-		{
-			this.bpartnerId = BPARTNER_ID_NONE;
-		}
+		this.bpartner = bpartner != null ? bpartner : BPartnerClassifier.none();
 	}
 
 	public AvailableToPromiseQuery withDate(@NonNull final Date newDate)
@@ -113,21 +98,4 @@ public class AvailableToPromiseQuery
 		}
 		return toBuilder().date(newDate).build();
 	}
-
-	public boolean isBPartnerMatching(final int bpartnerIdToMatch)
-	{
-		return isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
-	}
-
-	public static boolean isBPartnerMatching(final int bpartnerId, final int bpartnerIdToMatch)
-	{
-		final boolean bpartnerIdMatchesEveryBPartnerIdToMatch = bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY;
-		final boolean bpartnerIdToMatchMatchesAnyBPartnerId = bpartnerIdToMatch == AvailableToPromiseQuery.BPARTNER_ID_ANY;
-
-		return bpartnerIdMatchesEveryBPartnerIdToMatch
-				|| bpartnerIdToMatchMatchesAnyBPartnerId
-				|| (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
-				|| (bpartnerId == bpartnerIdToMatch);
-	}
-
 }

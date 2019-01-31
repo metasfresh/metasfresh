@@ -19,6 +19,7 @@ import org.compiere.model.X_M_Transaction;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.InOutAndLineId;
@@ -95,10 +96,11 @@ public class M_Transaction_InOutLineEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLine, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				inOutLine.getM_InOut().getC_BPartner_ID(), // customerId
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				.customerId(BPartnerId.ofRepoId(inOutLine.getM_InOut().getC_BPartner_ID()))
+				.build();
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
 		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
@@ -214,10 +216,11 @@ public class M_Transaction_InOutLineEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInOutLine(inOutLine, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // receipts's bpartner is not a customer
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				.vendorId(BPartnerId.ofRepoId(inOutLine.getM_InOut().getC_BPartner_ID()))
+				.build();
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
 		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())

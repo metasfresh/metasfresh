@@ -111,7 +111,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		assertThat(candidateRecord.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		assertThat(candidateRecord.getM_Product_ID()).isEqualTo(PRODUCT_ID);
-		assertThat(candidateRecord.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID);
+		assertThat(candidateRecord.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId());
 		assertThat(candidateRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
 		assertThat(candidateRecord.getM_AttributeSetInstance_ID()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 		assertThat(candidateRecord.getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleId);
@@ -177,8 +177,7 @@ public class CandidateRepositoryWriteServiceTests
 				.addOrUpdateOverwriteStoredSeqNo(originalCandidate)
 				.getCandidate();
 
-		final Candidate originalCandidateWithZeroDelta = originalCandidate
-				.withMaterialDescriptor(originalCandidate.getMaterialDescriptor().withQuantity(ZERO));
+		final Candidate originalCandidateWithZeroDelta = originalCandidate.withQuantity(ZERO);
 		assertThat(candidateReturnedfromRepo)
 				.isEqualTo(originalCandidateWithZeroDelta);
 	}

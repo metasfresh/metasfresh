@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -25,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.IHUContextFactory;
@@ -39,6 +42,7 @@ import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -169,9 +173,11 @@ public class M_Transaction_HuDescriptor
 		return ImmutablePair.of(attributesKey, asi.getM_AttributeSetInstance_ID());
 	}
 
-	public Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
+	@Builder(builderMethodName = "newMaterialDescriptors", builderClassName = "_MaterialDescriptorsBuilder")
+	private Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
 			@NonNull final TransactionDescriptor transaction,
-			final int customerId,
+			@Nullable final BPartnerId customerId,
+			@Nullable final BPartnerId vendorId,
 			@NonNull final Collection<HUDescriptor> huDescriptors)
 	{
 		// aggregate HUDescriptors based on their product & attributes
@@ -195,11 +201,13 @@ public class M_Transaction_HuDescriptor
 					.date(transaction.getTransactionDate())
 					.productDescriptor(entry.getKey())
 					.customerId(customerId)
+					.vendorId(vendorId)
 					.quantity(quantity)
 					.build();
 
 			result.put(materialDescriptor, entry.getValue());
 		}
+
 		return result.build();
 	}
 

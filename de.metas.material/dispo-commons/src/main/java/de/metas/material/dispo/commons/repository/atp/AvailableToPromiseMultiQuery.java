@@ -51,12 +51,11 @@ public class AvailableToPromiseMultiQuery
 				.addToPredefinedBuckets(false)
 				.query(bPartnerQuery);
 
-		if (bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_ANY
-				&& bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		if (bPartnerQuery.getBpartner().isSpecificBPartner())
 		{
 			final AvailableToPromiseQuery noPartnerQuery = bPartnerQuery
 					.toBuilder()
-					.bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE)
+					.bpartner(BPartnerClassifier.none())
 					.build();
 			multiQueryBuilder.query(noPartnerQuery);
 		}

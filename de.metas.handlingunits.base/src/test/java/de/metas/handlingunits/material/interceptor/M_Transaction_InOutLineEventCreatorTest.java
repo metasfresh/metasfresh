@@ -343,10 +343,10 @@ public class M_Transaction_InOutLineEventCreatorTest
 		//
 		// invoke the method under test
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transactionDescriptor,
-				0, // bPartnerId
-				ImmutableList.of(huDescriptor1, huDescriptor2));
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transactionDescriptor)
+				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
+				.build();
 
 		final Set<Entry<MaterialDescriptor, Collection<HUDescriptor>>> entrySet = materialDescriptors.entrySet();
 		assertThat(entrySet).hasSize(2);
@@ -397,10 +397,10 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 		// invoke the method under test
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-						transactionDescriptor,
-						0, // bpartnerId
-						ImmutableList.of(huDescriptor1, huDescriptor2));
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transactionDescriptor)
+				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
+				.build();
 
 		final Set<Entry<MaterialDescriptor, Collection<HUDescriptor>>> entrySet = materialDescriptors.entrySet();
 		assertThat(entrySet).hasSize(1);

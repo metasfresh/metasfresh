@@ -172,7 +172,7 @@ public class DDOrderAdvisedHandlerTests
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
 								.productDescriptor(createProductDescriptor())
-								.bPartnerId(BPARTNER_ID)
+								.bPartnerId(BPARTNER_ID.getRepoId())
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
 								.networkDistributionLineId(networkDistributionLineId)

@@ -99,10 +99,13 @@ public class M_Transaction_TransactionEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForCostCollector(costCollector, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // don't provide the ppOrder's bPartnerId unless we clarified that it's the customer for which the produced goods are reserved
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				// don't provide the ppOrder's bPartnerId unless we clarified that it's the customer for which the produced goods are reserved
+				.customerId(null)
+				.vendorId(null)
+				.build();
 
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -210,10 +213,13 @@ public class M_Transaction_TransactionEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForMovementLine(movementLine, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // the movement's bpartner (if set at all) is not the customer, but probably a shipper
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				// the movement's bpartner (if set at all) is not the customer nor a vendor, but probably a shipper
+				.customerId(null)
+				.vendorId(null)
+				.build();
 
 		final int ddOrderId = movementLine.getDD_OrderLine_ID() > 0
 				? movementLine.getDD_OrderLine().getDD_Order_ID()
@@ -264,10 +270,10 @@ public class M_Transaction_TransactionEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInventoryLine(inventoryLine, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // customerId
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				.build();
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
 		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())
