@@ -110,6 +110,9 @@ public final class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableSet<Integer> recipientUserIds;
 
+	@JsonProperty("storeEvent")
+	private final boolean storeEvent;
+
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
@@ -125,6 +128,7 @@ public final class Event
 		senderId = builder.senderId;
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
+		storeEvent = builder.storeEvent;
 	}
 
 	@JsonCreator
@@ -136,7 +140,8 @@ public final class Event
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
-			@JsonProperty("properties") final Map<String, Object> properties)
+			@JsonProperty("properties") final Map<String, Object> properties,
+			@JsonProperty("storeEvent") final boolean storeEvent)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -147,6 +152,7 @@ public final class Event
 		this.senderId = senderId;
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
+		this.storeEvent = storeEvent;
 	}
 
 	private static final ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
@@ -193,7 +199,7 @@ public final class Event
 		}
 		return recipientUserIds.asList().get(0);
 	}
-	
+
 	public int getSuggestedWindowId()
 	{
 		return getPropertyAsInt(PROPERTY_SuggestedWindowId, 0);
@@ -316,6 +322,7 @@ public final class Event
 		private String senderId = EventBusConstants.getSenderId();
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
+		private boolean storeEvent;
 
 		private Builder()
 		{
@@ -402,7 +409,7 @@ public final class Event
 			detailADMessage = adMessage;
 			return this;
 		}
-		
+
 		public Builder setDetailADMessage(final String adMessage, final Map<String, Object> params)
 		{
 			if (params != null && !params.isEmpty())
@@ -413,7 +420,6 @@ public final class Event
 			detailADMessage = adMessage;
 			return this;
 		}
-
 
 		private String getDetailADMessage()
 		{
@@ -593,5 +599,15 @@ public final class Event
 			return this;
 		}
 
+		public Builder storeEvent()
+		{
+			return storeEvent(true);
+		}
+
+		public Builder storeEvent(final boolean storeEvent)
+		{
+			this.storeEvent = storeEvent;
+			return this;
+		}
 	}
 }
