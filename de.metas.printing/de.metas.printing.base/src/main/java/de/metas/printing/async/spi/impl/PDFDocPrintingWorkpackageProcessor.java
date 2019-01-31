@@ -37,6 +37,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
@@ -66,7 +67,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 	private final String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
 	private final String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
 	
-	public static final int SummaryPdfPrinting_AD_Process_ID = 540661;
+	public static final AdProcessId SummaryPdfPrinting_AD_Process_ID = AdProcessId.ofRepoId(540661);
 
 	private I_C_Async_Batch asyncBatch;
 
@@ -178,7 +179,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 		final Language language = Services.get(ILanguageBL.class).getOrgLanguage(ctx, jobInstructions.getAD_Org_ID());
 		
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(SummaryPdfPrinting_AD_Process_ID, 0, 0);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(SummaryPdfPrinting_AD_Process_ID);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 		

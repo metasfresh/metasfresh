@@ -56,6 +56,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.wf.MWorkflow;
 
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -220,7 +221,7 @@ public class ASPGenerateLevel extends JavaProcess
 						MColumn column = MColumn.get(getCtx(), field.getAD_Column_ID());
 						if (column.getAD_Reference_ID() == DisplayType.Button) {
 							if (column.getAD_Process_ID() > 0) {
-								generateProcess(column.getAD_Process_ID());
+								generateProcess(AdProcessId.ofRepoId(column.getAD_Process_ID()));
 							}
 						}
 					}
@@ -228,7 +229,7 @@ public class ASPGenerateLevel extends JavaProcess
 			}
 		} else if (menu.getAction().equals(MMenu.ACTION_Process)
 				|| menu.getAction().equals(MMenu.ACTION_Report)) {
-			generateProcess(menu.getAD_Process_ID());
+			generateProcess(AdProcessId.ofRepoId(menu.getAD_Process_ID()));
 		} else if (menu.getAction().equals(MMenu.ACTION_Form)) {
 			// Add Form
 			MForm form = new MForm(getCtx(), menu.getAD_Form_ID(), get_TrxName());
@@ -262,9 +263,9 @@ public class ASPGenerateLevel extends JavaProcess
 		}		
 	}
 
-	private void generateProcess(int p_AD_Process_ID) {
+	private void generateProcess(final AdProcessId adProcessId) {
 		// Add Process and Parameters
-		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(p_AD_Process_ID);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(adProcessId);
 		int asp_process_id = DB.getSQLValueEx(get_TrxName(),
 				"SELECT COUNT(*) FROM ASP_Process WHERE ASP_Level_ID = ? AND AD_Process_ID = ?",
 				p_ASP_Level_ID, process.getAD_Process_ID());

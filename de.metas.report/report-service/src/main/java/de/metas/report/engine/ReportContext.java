@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
@@ -49,7 +50,7 @@ public final class ReportContext
 	}
 
 	private final Properties ctx;
-	private final int AD_Process_ID;
+	private final AdProcessId AD_Process_ID;
 	private final PInstanceId pinstanceId;
 	private final String AD_Language;
 	private OutputType outputType;
@@ -65,7 +66,7 @@ public final class ReportContext
 		ctx = builder.ctx;
 
 		AD_Process_ID = builder.AD_Process_ID;
-		Check.assume(AD_Process_ID > 0, "AD_Process_ID > 0");
+		Check.assume(AD_Process_ID != null, "AD_Process_ID > 0");
 
 		pinstanceId = builder.pinstanceId;
 		AD_Language = builder.AD_Language;
@@ -112,7 +113,7 @@ public final class ReportContext
 		return sqlStatement;
 	}
 
-	public int getAD_Process_ID()
+	public AdProcessId getAD_Process_ID()
 	{
 		return AD_Process_ID;
 	}
@@ -174,7 +175,7 @@ public final class ReportContext
 	public static final class Builder
 	{
 		private Properties ctx;
-		private int AD_Process_ID;
+		private AdProcessId AD_Process_ID;
 		private PInstanceId pinstanceId;
 		private String AD_Language;
 		private OutputType outputType;
@@ -200,7 +201,7 @@ public final class ReportContext
 			return this;
 		}
 
-		public Builder setAD_Process_ID(final int AD_Process_ID)
+		public Builder setAD_Process_ID(final AdProcessId AD_Process_ID)
 		{
 			this.AD_Process_ID = AD_Process_ID;
 			return this;

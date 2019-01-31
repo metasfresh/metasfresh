@@ -1,5 +1,7 @@
 package org.adempiere.user.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -294,5 +296,13 @@ public class UserDAO implements IUserDAO
 	{
 		final I_AD_User userRecord = retrieveUser(userId.getRepoId());
 		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+	}
+
+
+	@Override
+	public <T extends org.compiere.model.I_AD_User> T getById(final int userId, final Class<T> modelClass)
+	{
+		final T user = loadOutOfTrx(userId, modelClass);
+		return user;
 	}
 }

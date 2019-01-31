@@ -1,8 +1,11 @@
 package de.metas.adempiere.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,6 +47,12 @@ public class LocationDAO implements ILocationDAO
 	public I_C_Location getById(@NonNull final LocationId id)
 	{
 		return loadOutOfTrx(id, I_C_Location.class);
+	}
+
+	@Override
+	public List<I_C_Location> getByIds(@NonNull final Set<LocationId> ids)
+	{
+		return loadByRepoIdAwaresOutOfTrx(ids, I_C_Location.class);
 	}
 
 	@Override

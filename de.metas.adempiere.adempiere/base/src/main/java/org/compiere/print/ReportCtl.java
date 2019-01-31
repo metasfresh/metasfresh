@@ -75,7 +75,7 @@ public final class ReportCtl
 	{
 		logger.info("start - {}", processInfo);
 
-		final int adProcessId = processInfo.getAD_Process_ID();
+		final int adProcessId = processInfo.getAdProcessId().getRepoId();
 		final int reportEngineDocumentType = extractReportEngineDocumentType(adProcessId);
 
 		//
@@ -230,7 +230,7 @@ public final class ReportCtl
 	{
 		// Create Query from Parameters
 		final Properties ctx = Env.getCtx();
-		final String TableName = pi.getAD_Process_ID() == 202 ? "T_Report" : "T_ReportStatement";
+		final String TableName = pi.getAdProcessId().getRepoId() == 202 ? "T_Report" : "T_ReportStatement";
 		final MQuery query = MQuery.get(ctx, pi.getPinstanceId(), TableName);
 
 		// Get PrintFormat

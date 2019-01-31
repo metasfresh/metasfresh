@@ -1582,7 +1582,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public PInstanceId createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
-		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 
 		// Populate the selection
 		final int count = createSelection(newSelectionId);
@@ -1822,7 +1822,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql;
 		if (queryInserter.isCreateSelectionOfInsertedRows())
 		{
-			insertSelectionId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+			insertSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 
 			final String toKeyColumnName = queryInserter.getToKeyColumnName();
 			sql = new StringBuilder()

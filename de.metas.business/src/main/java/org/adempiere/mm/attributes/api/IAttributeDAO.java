@@ -187,4 +187,6 @@ public interface IAttributeDAO extends ISingletonService
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
 
 	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
+
+	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
 }

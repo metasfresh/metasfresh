@@ -40,11 +40,12 @@ import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterMonitor;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Helper monitor which logs the given parameters by using <code>adProcessId</code> when export started. When export finished, it logs the status.
@@ -58,7 +59,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 {
 	private static final Logger logger = LogManager.getLogger(ProcessLoggerExporterMonitor.class);
 
-	private final int adProcessId;
+	private final AdProcessId adProcessId;
 	private final Object params;
 	private final Class<?> paramsInterfaceClass;
 
@@ -73,12 +74,11 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 	 * @param params object which contains the export parameters
 	 * @param paramsInterfaceClass interface class to be used when we are introspecting the export parameters
 	 */
-	public <T> ProcessLoggerExporterMonitor(final int adProcessId, T params, Class<T> paramsInterfaceClass)
+	public <T> ProcessLoggerExporterMonitor(
+			@NonNull final AdProcessId adProcessId, 
+			@NonNull final T params, 
+			@NonNull final Class<T> paramsInterfaceClass)
 	{
-		Check.assume(adProcessId > 0, "adProcessId > 0");
-		Check.assumeNotNull(params, "params not null");
-		Check.assumeNotNull(paramsInterfaceClass, "paramsInterfaceClass not null");
-
 		this.adProcessId = adProcessId;
 		this.params = params;
 		this.paramsInterfaceClass = paramsInterfaceClass;
@@ -119,7 +119,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 
 	private I_AD_PInstance createPInstance()
 	{
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId, 0, 0);
+		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 

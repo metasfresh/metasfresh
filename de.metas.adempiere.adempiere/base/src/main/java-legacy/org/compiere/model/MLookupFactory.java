@@ -605,6 +605,8 @@ public class MLookupFactory
 			sqlSelectKeyColumnSQL = "NULL";
 			sqlSelectValueColumnSQL = keyColumnFQ;
 		}
+		
+		final String activeColumnSQL = tableName + ".IsActive";
 
 		//
 		// SELECT SQL
@@ -612,7 +614,7 @@ public class MLookupFactory
 				.append(sqlSelectKeyColumnSQL) // Key
 				.append(",").append(sqlSelectValueColumnSQL) // Value
 				.append(",").append(displayColumnSQL_BaseLang)
-				.append(",").append(tableName).append(".IsActive")
+				.append(",").append(activeColumnSQL)
 				.append(",").append(descriptionColumnSQL_BaseLang)
 				.append(" FROM ").append(sqlFrom_BaseLang);
 
@@ -620,7 +622,7 @@ public class MLookupFactory
 				.append(sqlSelectKeyColumnSQL) // Key
 				.append(",").append(sqlSelectValueColumnSQL) // Value
 				.append(",").append(displayColumnSQL_Trl)
-				.append(",").append(tableName).append(".IsActive")
+				.append(",").append(activeColumnSQL)
 				.append(",").append(descriptionColumnSQL_Trl)
 				.append(" FROM ").append(sqlFrom_Trl);
 

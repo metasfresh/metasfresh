@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
@@ -50,12 +52,13 @@ public class AProcessModel
 		final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
 		Check.assumeNotNull(role, "No role found for {}", ctx);
 
-		final int AD_Table_ID = gridTab.getAD_Table_ID();
-		final int AD_Window_ID = gridTab.getAD_Window_ID();
 		final IProcessPreconditionsContext preconditionsContext = gridTab.toPreconditionsContext();
+		final int AD_Table_ID = gridTab.getAD_Table_ID();
+		final AdWindowId adWindowId = preconditionsContext.getAdWindowId();
+		final AdTabId adTabId = preconditionsContext.getAdTabId();
 
-		return Services.get(IADProcessDAO.class).retrieveRelatedProcessesForTableIndexedByProcessId(ctx, AD_Table_ID, AD_Window_ID)
-				.values().stream()
+		return Services.get(IADProcessDAO.class).retrieveRelatedProcessDescriptors(AD_Table_ID, adWindowId, adTabId)
+				.stream()
 				.filter(relatedProcess -> isExecutionGrantedOrLog(relatedProcess, role))
 				.map(relatedProcess -> createSwingRelatedProcess(relatedProcess, preconditionsContext))
 				.filter(this::isEnabledOrLog)

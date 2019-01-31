@@ -38,7 +38,7 @@ public class PrintInfo
 		super();
 		Check.assumeNotNull(pi, "pi not null");
 		setName(pi.getTitle());
-		setAD_Process_ID(pi.getAD_Process_ID());
+		setAD_Process_ID(pi.getAdProcessId().getRepoId());
 		setAD_Table_ID(pi.getTable_ID());
 		setRecord_ID(pi.getRecord_ID());
 		setAD_PInstance_ID(pi.getPinstanceId());

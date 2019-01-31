@@ -1159,10 +1159,10 @@ public final class Env
 	{
 		return ClientId.ofRepoId(getAD_Client_ID());
 	}
-
-	public static void setAD_Client_ID(@NonNull final Properties ctx, @NonNull final ClientId clientId)
+	
+	public static void setClientId(@NonNull final Properties ctx, @NonNull final ClientId clientId)
 	{
-		Env.setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
+		setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
 	}
 
 	/**
@@ -1173,7 +1173,7 @@ public final class Env
 	 */
 	public static int getAD_Org_ID(Properties ctx)
 	{
-		return Env.getContextAsInt(ctx, CTXNAME_AD_Org_ID);
+		return getContextAsInt(ctx, CTXNAME_AD_Org_ID);
 	}	// getAD_Client_ID
 	
 	public static OrgId getOrgId(final Properties ctx)
@@ -1186,6 +1186,11 @@ public final class Env
 		return getOrgId(getCtx());
 	}
 
+	public static void setOrgId(final Properties ctx, final OrgId orgId)
+	{
+		setContext(ctx, CTXNAME_AD_Org_ID, orgId.getRepoId());
+	}
+
 	/**
 	 * Get Login AD_User_ID
 	 *
@@ -1194,18 +1199,35 @@ public final class Env
 	 */
 	public static int getAD_User_ID(Properties ctx)
 	{
-		return Env.getContextAsInt(ctx, CTXNAME_AD_User_ID);
+		return getContextAsInt(ctx, CTXNAME_AD_User_ID);
 	}	// getAD_User_ID
 
 	public static int getAD_User_ID()
 	{
-		return Env.getAD_User_ID(getCtx());
+		return getAD_User_ID(getCtx());
 	}
 
 	public static UserId getLoggedUserId()
 	{
-		return UserId.ofRepoId(Env.getAD_User_ID(getCtx()));
+		return UserId.ofRepoId(getAD_User_ID(getCtx()));
 	}
+
+	public static UserId getLoggedUserId(final Properties ctx)
+	{
+		return UserId.ofRepoId(getAD_User_ID(ctx));
+	}
+	
+	public static void setLoggedUserId(final Properties ctx, @NonNull final UserId userId)
+	{
+		setContext(ctx, CTXNAME_AD_User_ID, userId.getRepoId());
+	}
+	
+	public static void setSalesRepId(final Properties ctx, @NonNull final UserId userId)
+	{
+		setContext(ctx, CTXNAME_SalesRep_ID, userId.getRepoId());
+	}
+
+
 
 	/**
 	 * Get Login AD_Role_ID
@@ -1379,6 +1401,11 @@ public final class Env
 				.retriveClient(ctx)
 				.isMultiLingualDocument();
 	}	// isMultiLingualDocument
+
+	public static void setAD_Language(final Properties ctx, final String adLanguage)
+	{
+		setContext(ctx, Env.CTXNAME_AD_Language, adLanguage);
+	}
 
 	/**
 	 * Get System AD_Language.

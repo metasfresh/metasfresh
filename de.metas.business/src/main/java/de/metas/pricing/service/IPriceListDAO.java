@@ -27,6 +27,7 @@ import java.time.LocalDate;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -60,6 +61,8 @@ public interface IPriceListDAO extends ISingletonService
 
 	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
 
+	PriceListsCollection retrievePriceListsCollectionByPricingSystemId(PricingSystemId pricingSystemId);
+
 	/**
 	 * Returns a list containing all the PO price lists for a given pricing system and a country.<br>
 	 * The method returns both price lists with the given country and without any country. The price list
@@ -69,7 +72,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param countryId
 	 * @param soTrx sales, purchase or null to return both
 	 */
-	Iterator<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx);
+	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx);
 
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
