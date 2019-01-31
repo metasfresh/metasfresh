@@ -1,6 +1,5 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -9,9 +8,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
@@ -40,12 +39,15 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_Transaction.class)
+@Component("de.metas.handlingunits.material.interceptor.M_Transaction")
 public class M_Transaction
 {
-	public static final M_Transaction INSTANCE = new M_Transaction();
+	private final PostMaterialEventService materialEventService;
 
-	private M_Transaction()
+	public M_Transaction(
+			@NonNull final PostMaterialEventService materialEventService)
 	{
+		this.materialEventService = materialEventService;
 	}
 
 	/**
@@ -57,28 +59,25 @@ public class M_Transaction
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */
+			ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_Transaction_ID */
 	})
 	public void fireTransactionEvent(
-			@NonNull final I_M_Transaction transaction,
+			@NonNull final I_M_Transaction transactionRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final TransactionDescriptorFactory transactionDescriptorFactory = new TransactionDescriptorFactory();
-		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
-		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(transaction);
+		final TransactionDescriptorFactory transactionFactory = new TransactionDescriptorFactory();
+		final TransactionDescriptor transaction = transactionFactory.ofRecord(transactionRecord);
+		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(transactionRecord);
 
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trxEvent -> createAndPostEventsNow(transactionDescriptor, deleted));
+				.registerHandlingMethod(trxEvent -> createAndPostEventsNow(transaction, deleted));
 	}
 
 	private void createAndPostEventsNow(final TransactionDescriptor transaction, final boolean deleted)
 	{
-		final List<MaterialEvent> events = new ArrayList<>();
-		events.addAll(M_Transaction_TransactionEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted));
-
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
 			materialEventService.postEventNow(event);
