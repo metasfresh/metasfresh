@@ -220,7 +220,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
         df.setDecimalFormatSymbols(symbols);
         try
 		{
-			return BigDecimal.valueOf((long)df.parse(paymentDiscount));
+			return new BigDecimal(df.parse(paymentDiscount).toString());
 		}
 		catch (ParseException e)
 		{
