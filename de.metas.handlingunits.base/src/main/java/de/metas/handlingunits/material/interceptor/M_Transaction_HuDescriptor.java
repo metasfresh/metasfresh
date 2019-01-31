@@ -14,6 +14,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
@@ -36,6 +37,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
@@ -76,10 +78,11 @@ public class M_Transaction_HuDescriptor
 	}
 
 	public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(
-			@NonNull final I_M_InOutLine inOutLine,
+			@NonNull final InOutAndLineId inOutLineId,
 			final boolean deleted)
 	{
-		return createHUDescriptorsForModel(inOutLine, deleted);
+		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineId.getInOutLineId());
+		return createHUDescriptorsForModel(inOutLineRef, deleted);
 	}
 
 	public ImmutableList<HUDescriptor> createHuDescriptorsForCostCollector(

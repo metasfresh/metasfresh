@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.AttributesKey;
@@ -91,6 +92,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 	private I_M_Product product;
 	private Timestamp movementDate;
 	private I_M_InOutLine inoutLine;
+	private InOutAndLineId inoutLineId;
 
 	private TransactionDescriptorFactory transactionDescriptorFactory;
 
@@ -115,6 +117,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 		inoutLine.setM_Product(product);
 		inoutLine.setM_InOut(inout);
 		save(inoutLine);
+
+		inoutLineId = InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID());
 
 		transactionDescriptorFactory = new TransactionDescriptorFactory();
 	}
@@ -217,7 +221,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		new Expectations(M_Transaction_HuDescriptor.class)
 		{{
 			// partial mocking - we only want to mock this one method
-			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLine, false);
+			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLineId, false);
 			result = ImmutableList.of(huDescriptor);
 		}}; // @formatter:on
 	}
