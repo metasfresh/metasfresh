@@ -223,6 +223,8 @@ class ListWidget extends Component {
       mainProperty,
       enableAutofocus,
       isModal,
+      widgetField,
+      id,
     } = this.props;
 
     if (enableAutofocus) {
@@ -231,7 +233,7 @@ class ListWidget extends Component {
 
     if (this.previousValue !== (option && option.caption)) {
       if (lookupList) {
-        const promise = onChange(properties[0].field, option);
+        const promise = onChange(properties[0].field, option, id);
         const mainPropertyField = mainProperty[0].field;
 
         this.setState({
@@ -275,7 +277,7 @@ class ListWidget extends Component {
           });
         }
       } else {
-        onChange(option);
+        onChange(widgetField, option, id);
       }
     }
   };
@@ -304,7 +306,7 @@ class ListWidget extends Component {
         onCloseDropdown={this.closeDropdownList}
         onFocus={this.handleFocus}
         onBlur={this.handleBlur}
-        onSelect={option => this.handleSelect(option)}
+        onSelect={this.handleSelect}
       />
     );
   }
