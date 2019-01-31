@@ -124,6 +124,7 @@ public class DataEntryRepository
 				.createQueryBuilder(I_DataEntry_Field.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DataEntry_Field.COLUMN_DataEntry_SubGroup_ID, subGroupRecord.getDataEntry_SubGroup_ID())
+				.orderBy(I_DataEntry_Field.COLUMN_SeqNo)
 				.create()
 				.list();
 
