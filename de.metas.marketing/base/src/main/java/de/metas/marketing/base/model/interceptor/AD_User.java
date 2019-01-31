@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,6 @@ import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
-import de.metas.marketing.base.model.I_AD_User;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -71,6 +71,11 @@ public class AD_User
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+		if (InterfaceWrapperHelper.isNew(userRecord))
+		{
+			return;
+		}
+		
 		final boolean isNewsletter = userRecord.isNewsletter();
 
 		final Optional<CampaignId> defaultcampaignId = campaignRepository.getDefaultNewsletterCampaignId(userRecord.getAD_Org_ID());
@@ -88,7 +93,7 @@ public class AD_User
 			final User user = userRepository.ofRecord(userRecord);
 			campaignService.addToCampaignIfHasEmailAddress(user, defaultcampaignId.get());
 		}
-		else if (!InterfaceWrapperHelper.isNew(userRecord))
+		else
 		{
 			if (!defaultcampaignId.isPresent())
 			{

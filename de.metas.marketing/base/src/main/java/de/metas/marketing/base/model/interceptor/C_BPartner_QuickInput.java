@@ -1,16 +1,17 @@
 package de.metas.marketing.base.model.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.User;
+import org.adempiere.user.UserRepository;
 import org.adempiere.user.api.IUserDAO;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.marketing.base.model.I_AD_User;
 import de.metas.util.Services;
 
 /*
@@ -39,6 +40,8 @@ import de.metas.util.Services;
 @Component()
 public class C_BPartner_QuickInput
 {
+	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_BPartner_QuickInput.COLUMNNAME_IsNewsletter })
 	public void setNewsletter(final I_C_BPartner_QuickInput quickInput)
 	{
@@ -51,16 +54,15 @@ public class C_BPartner_QuickInput
 		}
 
 
-		final I_AD_User user = userDAO.getById(quickInput.getAD_User_ID(), I_AD_User.class);
+		final I_AD_User userRecord = userDAO.getById(quickInput.getAD_User_ID(), I_AD_User.class);
 
-		if(user == null)
+		if(userRecord == null)
 		{
 			// nothing to do
 			return;
 		}
 
-		user.setIsNewsletter(quickInput.isNewsletter());
-
-		save(user);
+		final User user = userRepository.ofRecord(userRecord);
+		userRepository.save(user);
 	}
 }
