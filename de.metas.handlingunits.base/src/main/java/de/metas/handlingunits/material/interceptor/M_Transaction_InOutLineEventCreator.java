@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
@@ -74,7 +75,10 @@ public class M_Transaction_InOutLineEventCreator
 		{
 			return createEventsForShipment(transaction, deleted);
 		}
-		return createEventsForReceipt(transaction, deleted);
+		else
+		{
+			return createEventsForReceipt(transaction, deleted);
+		}
 	}
 
 	private static List<MaterialEvent> createEventsForShipment(
@@ -108,8 +112,7 @@ public class M_Transaction_InOutLineEventCreator
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.shipmentId(InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID()))
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
 			}
@@ -121,8 +124,7 @@ public class M_Transaction_InOutLineEventCreator
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.shipmentId(InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID()))
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
 			}
@@ -229,8 +231,7 @@ public class M_Transaction_InOutLineEventCreator
 						.materialDescriptor(materialDescriptor.getKey())
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.receiptId(InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID()))
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
 			}
@@ -241,8 +242,7 @@ public class M_Transaction_InOutLineEventCreator
 						.transactionId(transaction.getTransactionId())
 						.materialDescriptor(materialDescriptor.getKey())
 						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
-						.inOutId(inOutLine.getM_InOut_ID())
-						.inOutLineId(inOutLine.getM_InOutLine_ID())
+						.receiptId(InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID()))
 						.huOnHandQtyChangeDescriptors(materialDescriptor.getValue())
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
