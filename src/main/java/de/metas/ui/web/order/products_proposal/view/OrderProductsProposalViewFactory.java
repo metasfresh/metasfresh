@@ -6,7 +6,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
@@ -48,9 +51,14 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	public static final String WINDOW_ID_STRING = "orderProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	public OrderProductsProposalViewFactory()
+	private final BPartnerProductStatsService bpartnerProductStatsService;
+
+	public OrderProductsProposalViewFactory(
+			@NonNull final BPartnerProductStatsService bpartnerProductStatsService)
 	{
 		super(WINDOW_ID);
+
+		this.bpartnerProductStatsService = bpartnerProductStatsService;
 	}
 
 	@Override
@@ -79,12 +87,17 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 
 		final I_C_Order orderRecord = ordersRepo.getById(orderId);
 		final LocalDate date = TimeUtil.asLocalDate(orderRecord.getDatePromised());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 		final PriceListId priceListId = PriceListId.ofRepoId(orderRecord.getM_PriceList_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
 
 		return ProductsProposalRowsLoader.builder()
+				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.priceListId(priceListId)
 				.date(date)
 				.orderId(orderId)
+				.bpartnerId(bpartnerId)
+				.soTrx(soTrx)
 				.build();
 	}
 
