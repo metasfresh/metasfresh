@@ -356,9 +356,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return;
 		}
 
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId);
+
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
-				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append("=").append(sqlWhereClauseParams.placeholder(priceListVersionId))
+				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(allPriceListVersionIds, sqlWhereClauseParams::collectAll))
 				.append(" AND pp.IsActive=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
 	}
