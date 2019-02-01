@@ -113,7 +113,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setDateProjected(dateProjected);
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
-		candidateRecord.setC_BPartner_Customer_ID(BPARTNER_ID);
+		candidateRecord.setC_BPartner_Customer_ID(BPARTNER_ID.getRepoId());
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
 		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setQty(TEN);

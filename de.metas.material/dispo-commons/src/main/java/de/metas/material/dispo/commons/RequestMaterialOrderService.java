@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -130,7 +131,7 @@ public class RequestMaterialOrderService
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
-						.bPartnerId(materialDescriptor.getCustomerId())
+						.bPartnerId(BPartnerId.toRepoId(materialDescriptor.getCustomerId()))
 						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}
@@ -206,7 +207,7 @@ public class RequestMaterialOrderService
 			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			ddOrderLineBuilder
 					.productDescriptor(materialDescriptor)
-					.bPartnerId(materialDescriptor.getCustomerId())
+					.bPartnerId(BPartnerId.toRepoId(materialDescriptor.getCustomerId()))
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)

@@ -44,6 +44,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -55,9 +56,8 @@ import lombok.NonNull;
 public class InOutDAO implements IInOutDAO
 {
 	@Override
-	public I_M_InOutLine getLineById(final int inoutLineId)
+	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
-		Check.assumeGreaterThanZero(inoutLineId, "inoutLineId");
 		return load(inoutLineId, I_M_InOutLine.class);
 	}
 

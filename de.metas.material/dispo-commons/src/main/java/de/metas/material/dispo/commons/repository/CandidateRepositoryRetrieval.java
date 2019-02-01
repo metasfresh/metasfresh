@@ -18,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -183,7 +184,7 @@ public class CandidateRepositoryRetrieval
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
-				.customerId(candidateRecord.getC_BPartner_Customer_ID())
+				.customerId(BPartnerId.ofRepoIdOrNull(candidateRecord.getC_BPartner_Customer_ID()))
 
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(TimeUtil.asInstant(dateProjected))

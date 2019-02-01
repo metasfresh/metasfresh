@@ -40,7 +40,7 @@ public class EventBus2EventLogHandler implements IEventListener
 	@Override
 	public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 	{
-		if (EventLogSystemBusTools.isAdvisedToStoreEvent(event))
+		if (event.isStoreEvent())
 		{
 			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
 			eventLogService.storeEvent(event, eventBus);

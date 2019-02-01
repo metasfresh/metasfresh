@@ -3,7 +3,6 @@ package de.metas.material.dispo.commons.repository.atp;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static java.math.BigDecimal.TEN;
@@ -22,6 +21,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
@@ -55,8 +55,9 @@ import de.metas.material.event.commons.ProductDescriptor;
 
 public class AvailableToPromiseRepositoryTest
 {
+	private static final BPartnerId BPARTNER_ID_1 = BPartnerId.ofRepoId(10);
+	private static final BPartnerId BPARTNER_ID_2 = BPartnerId.ofRepoId(20);
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
-
 
 	public static final BigDecimal TWENTY = new BigDecimal("20");
 	public static final BigDecimal THIRTY = new BigDecimal("30");
@@ -80,12 +81,12 @@ public class AvailableToPromiseRepositoryTest
 	@Test
 	public void retrieveAvailableStock_for_material_descriptor()
 	{
-		createStockRecordWithBPartner(BPARTNER_ID, BEFORE_NOW);
-		createStockRecordWithBPartner(0, BEFORE_NOW); // belongs to "any" bpartner
-		createStockRecordWithBPartner(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
+		createStockRecordWithBPartner(BPARTNER_ID_1, BEFORE_NOW);
+		createStockRecordWithBPartner(null, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecordWithBPartner(BPARTNER_ID_2, BEFORE_NOW); // belongs to an unrelated bPartner
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
-		assertThat(materialDescriptor.getCustomerId()).isEqualTo(BPARTNER_ID); // guard
+		assertThat(materialDescriptor.getCustomerId()).isEqualTo(BPARTNER_ID_1); // guard
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 		assertThat(query.getQueries()).hasSize(2); // guard
@@ -102,9 +103,9 @@ public class AvailableToPromiseRepositoryTest
 	@Test
 	public void retrieveAvailableStock_for_material_descriptor_2()
 	{
-		createStockRecordWithBPartner(0, BEFORE_NOW); // belongs to "any" bpartner
-		createStockRecordWithBPartner(BPARTNER_ID, BEFORE_BEFORE_NOW);
-		createStockRecordWithBPartner(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
+		createStockRecordWithBPartner(null, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecordWithBPartner(BPARTNER_ID_1, BEFORE_BEFORE_NOW);
+		createStockRecordWithBPartner(BPARTNER_ID_2, BEFORE_NOW); // belongs to an unrelated bPartner
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
 
@@ -122,9 +123,9 @@ public class AvailableToPromiseRepositoryTest
 	@Test
 	public void retrieveAvailableStock_for_material_descriptor_3()
 	{
-		createStockRecordWithBPartner(0, BEFORE_NOW); // belongs to "any" bpartner
-		createStockRecordWithBPartner(BPARTNER_ID, BEFORE_NOW);
-		createStockRecordWithBPartner(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
+		createStockRecordWithBPartner(null, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecordWithBPartner(BPARTNER_ID_1, BEFORE_NOW);
+		createStockRecordWithBPartner(BPARTNER_ID_2, BEFORE_NOW); // belongs to an unrelated bPartner
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
@@ -140,11 +141,11 @@ public class AvailableToPromiseRepositoryTest
 	@Test
 	public void retrieveAvailableStock_for_material_descriptor_4()
 	{
-		createStockRecordWithBPartner(0, BEFORE_NOW); // belongs to "any" bpartner
-		createStockRecordWithBPartner(BPARTNER_ID, BEFORE_NOW);
-		createStockRecordWithBPartner(BPARTNER_ID + 10, BEFORE_NOW); // belongs to an unrelated bPartner
+		createStockRecordWithBPartner(null, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecordWithBPartner(BPARTNER_ID_1, BEFORE_NOW);
+		createStockRecordWithBPartner(BPARTNER_ID_2, BEFORE_NOW); // belongs to an unrelated bPartner
 
-		final MaterialDescriptor materialDescriptor = createMaterialDescriptor().withCustomerId(0);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor().withCustomerId(null);
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor));
 
 		final BigDecimal result = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
@@ -172,9 +173,9 @@ public class AvailableToPromiseRepositoryTest
 
 	private void retrieveAvailableStock_differentBPartners_performTest(final boolean addToPredefinedBuckets)
 	{
-		createStockRecordWithBPartner(0, BEFORE_NOW); // belongs to "any" bpartner
-		createStockRecordWithBPartner(BPARTNER_ID, BEFORE_BEFORE_NOW);
-		createStockRecordWithBPartner(BPARTNER_ID + 10, BEFORE_NOW);
+		createStockRecordWithBPartner(null, BEFORE_NOW); // belongs to "any" bpartner
+		createStockRecordWithBPartner(BPARTNER_ID_1, BEFORE_BEFORE_NOW);
+		createStockRecordWithBPartner(BPARTNER_ID_2, BEFORE_NOW);
 
 		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery
 				.builder()
@@ -184,7 +185,7 @@ public class AvailableToPromiseRepositoryTest
 				.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.bpartnerId(BPARTNER_ID)
+				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1))
 				.build();
 		multiQueryBuilder.query(query1);
 
@@ -192,7 +193,7 @@ public class AvailableToPromiseRepositoryTest
 				.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.bpartnerId(BPARTNER_ID + 10)
+				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_2))
 				.build();
 		multiQueryBuilder.query(query2);
 
@@ -209,12 +210,12 @@ public class AvailableToPromiseRepositoryTest
 				.allSatisfy(group -> assertThat(group.getProductId()).isEqualTo(PRODUCT_ID));
 
 		assertThat(resultGroups)
-				.filteredOn(group -> group.getBpartnerId() == BPARTNER_ID)
+				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_1)))
 				.hasSize(1)
 				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo(TWENTY));
 
 		assertThat(resultGroups)
-				.filteredOn(group -> group.getBpartnerId() == BPARTNER_ID + 10)
+				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_2)))
 				.hasSize(1)
 				.allSatisfy(group -> assertThat(group.getQty()).isEqualByComparingTo(TEN));
 	}
@@ -252,7 +253,7 @@ public class AvailableToPromiseRepositoryTest
 		createStockRecordWithProduct(PRODUCT_ID, AttributesKey.ofAttributeValueIds(1000007), BEFORE_NOW);
 
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
-				.bpartnerId(BPARTNER_ID) // shall not matter since all 3 records are not assigned to a particular customer
+				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1)) // shall not matter since all 3 records are not assigned to a particular customer
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ALL)
 				.build();
@@ -271,13 +272,13 @@ public class AvailableToPromiseRepositoryTest
 	private int seqNoCounter = 1; // we start with one, because 0 is not considered valid by the code under test
 
 	private I_MD_Candidate_ATP_QueryResult createStockRecordWithBPartner(
-			final int bPartnerId,
+			final BPartnerId bpartnerId,
 			final Instant dateProjected)
 	{
 		final int productId = PRODUCT_ID;
 		final AttributesKey storgateAttributesKey = STORAGE_ATTRIBUTES_KEY;
 
-		return createStockRecord(bPartnerId, productId, storgateAttributesKey, dateProjected);
+		return createStockRecord(bpartnerId, productId, storgateAttributesKey, dateProjected);
 	}
 
 	private I_MD_Candidate_ATP_QueryResult createStockRecordWithProduct(
@@ -285,13 +286,12 @@ public class AvailableToPromiseRepositoryTest
 			final AttributesKey storgateAttributesKey,
 			final Instant dateProjected)
 	{
-		final int bPartnerId = -1;
-
-		return createStockRecord(bPartnerId, productId, storgateAttributesKey, dateProjected);
+		final BPartnerId bpartnerId = null;
+		return createStockRecord(bpartnerId, productId, storgateAttributesKey, dateProjected);
 	}
 
 	private I_MD_Candidate_ATP_QueryResult createStockRecord(
-			final int bPartnerId,
+			final BPartnerId bpartnerId,
 			final int productId,
 			final AttributesKey storgateAttributesKey,
 			final Instant dateProjected)
@@ -307,7 +307,7 @@ public class AvailableToPromiseRepositoryTest
 		final I_MD_Candidate_ATP_QueryResult viewRecord = newInstance(I_MD_Candidate_ATP_QueryResult.class);
 		viewRecord.setM_Product_ID(productId);
 		viewRecord.setM_Warehouse_ID(WAREHOUSE_ID);
-		viewRecord.setC_BPartner_Customer_ID(bPartnerId);
+		viewRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(bpartnerId));
 		viewRecord.setDateProjected(TimeUtil.asTimestamp(dateProjected));
 		viewRecord.setStorageAttributesKey(storgateAttributesKey.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
@@ -332,6 +332,7 @@ public class AvailableToPromiseRepositoryTest
 				ATTRIBUTE_SET_INSTANCE_ID);
 		final MaterialDescriptor materialDescriptor = EventTestHelper
 				.createMaterialDescriptor()
+				.withCustomerId(BPARTNER_ID_1)
 				.withProductDescriptor(productDescriptor);
 		return materialDescriptor;
 	}

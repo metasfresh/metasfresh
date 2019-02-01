@@ -299,7 +299,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.qtyRequired(TEN)
 				.qtyDelivered(ONE)
 				.warehouseId(intermediateWarehouseId)
-				.bPartnerId(BPARTNER_ID)
+				.bPartnerId(BPARTNER_ID.getRepoId())
 				.plantId(120)
 				.productPlanningId(140)
 				.docStatus("IP")

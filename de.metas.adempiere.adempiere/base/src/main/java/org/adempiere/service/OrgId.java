@@ -4,6 +4,9 @@ import java.util.Optional;
 
 import org.compiere.util.Env;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -33,6 +36,7 @@ import lombok.Value;
 @Value
 public class OrgId implements RepoIdAware
 {
+	@JsonCreator
 	public static OrgId ofRepoId(final int repoId)
 	{
 		if (repoId == ANY.repoId)
@@ -101,6 +105,13 @@ public class OrgId implements RepoIdAware
 	private OrgId()
 	{
 		this.repoId = Env.CTXVALUE_AD_Org_ID_Any;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public boolean isAny()

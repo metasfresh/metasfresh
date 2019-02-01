@@ -262,9 +262,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		// costEngine.createRateVariances(this);
 		// costEngine.createMethodVariances(this);
 		// }
-		
+
 		// Reverse Rate and Method Variances
-		if(isReversal)
+		if (isReversal)
 		{
 			// Get the initial cost collector (which is reversed by this one)
 			final I_PP_Cost_Collector ccOriginal = getReversal();
@@ -330,6 +330,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			}
 
 			Services.get(IPPOrderDAO.class).save(order);
+
+			// FIXME: create M_Transaction or de.metas.handlingunits.material.interceptor.M_Transaction_TransactionEventCreator.createEventForCostCollector(TransactionDescriptor, boolean)
+			// Also check it in other places.
 		}
 		else
 		{

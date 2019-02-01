@@ -7,6 +7,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -46,8 +47,8 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			@JsonProperty("receiptScheduleIdsQtys") @Singular final Map<Integer, BigDecimal> receiptScheduleIdsQtys,
-			@JsonProperty("inOutId") final int inOutId,
-			@JsonProperty("inOutLineId") final int inOutLineId,
+			@JsonProperty("receiptId") final InOutAndLineId receiptId,
+			@JsonProperty("shipmentId") final InOutAndLineId shipmentId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("ddOrderId") final int ddOrderId,
@@ -60,8 +61,8 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 				materialDescriptor,
 				shipmentScheduleIds2Qtys,
 				receiptScheduleIdsQtys,
-				inOutId,
-				inOutLineId,
+				receiptId,
+				shipmentId,
 				ppOrderId,
 				ppOrderLineId,
 				ddOrderId,

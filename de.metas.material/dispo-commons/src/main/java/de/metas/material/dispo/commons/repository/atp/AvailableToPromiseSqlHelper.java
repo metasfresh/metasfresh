@@ -1,8 +1,5 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +18,8 @@ import de.metas.material.commons.AttributesKeyQueryHelper;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -96,18 +95,18 @@ import de.metas.util.Services;
 		}
 
 		// BPartner
-		final int bpartnerId = query.getBpartnerId();
-		if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY)
+		final BPartnerClassifier bpartner = query.getBpartner();
+		if (bpartner.isAny())
 		{
 			// nothing to filter
 		}
-		else if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		else if (bpartner.isNone())
 		{
 			queryBuilder.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, null);
 		}
-		else
+		else // specific
 		{
-			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, bpartnerId, null);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, bpartner.getBpartnerId(), null);
 		}
 
 		//
