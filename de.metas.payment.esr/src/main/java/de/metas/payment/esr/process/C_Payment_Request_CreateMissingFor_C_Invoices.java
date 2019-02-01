@@ -75,6 +75,7 @@ public class C_Payment_Request_CreateMissingFor_C_Invoices extends JavaProcess
 		final I_C_Queue_WorkPackage workPackage = workPackageQueueFactory
 				.getQueueForEnqueuing(getCtx(), DocOutboundWorkpackageProcessor.class)
 				.newBlock()
+				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.newWorkpackage()
 				.bindToThreadInheritedTrx()
 				.addElement(invoiceRecord)
