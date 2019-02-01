@@ -45,6 +45,13 @@ public class BPartnerProductStatsService
 		this.statsRepo = statsRepo;
 	}
 
+	public ImmutableMap<ProductId, BPartnerProductStats> getByPartnerAndProducts(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		return statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
+	}
+
 	public void handleEvent(@NonNull final InOutChangedEvent event)
 	{
 		final BPartnerId bpartnerId = event.getBpartnerId();

@@ -14,7 +14,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1965289375L;
+	private static final long serialVersionUID = -117417443L;
 
     /** Standard Constructor */
     public X_C_BPartner_QuickInput (Properties ctx, int C_BPartner_QuickInput_ID, String trxName)
@@ -27,7 +27,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 			setC_Location_ID (0);
 			setIsCompany (true); // Y
 			setIsCustomer (false); // N
-			setIsNewsletter (false); // N
 			setIsVendor (false); // N
 			setProcessed (false); // N
         } */
@@ -255,7 +254,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
-	/** Set Anrede (ID).
+	/** Set Anrede.
 		@param C_Greeting_ID 
 		Anrede zum Druck auf Korrespondenz
 	  */
@@ -268,7 +267,7 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
 	}
 
-	/** Get Anrede (ID).
+	/** Get Anrede.
 		@return Anrede zum Druck auf Korrespondenz
 	  */
 	@Override
@@ -448,29 +447,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public boolean isCustomer () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCustomer);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Newsletter.
-		@param IsNewsletter Newsletter	  */
-	@Override
-	public void setIsNewsletter (boolean IsNewsletter)
-	{
-		set_Value (COLUMNNAME_IsNewsletter, Boolean.valueOf(IsNewsletter));
-	}
-
-	/** Get Newsletter.
-		@return Newsletter	  */
-	@Override
-	public boolean isNewsletter () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsNewsletter);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
