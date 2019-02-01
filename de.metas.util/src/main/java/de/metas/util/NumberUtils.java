@@ -13,11 +13,11 @@ package de.metas.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -129,7 +129,7 @@ public final class NumberUtils
 	 * @param value
 	 * @param defaultValue
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>{@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
 	 *         </ul>
@@ -169,13 +169,18 @@ public final class NumberUtils
 		}
 	}
 
+	public static final int asIntOrZero(final Object value)
+	{
+		return asInt(value, 0);
+	}
+
 	/**
 	 * Converts given <code>value</code> to integer.
 	 *
 	 * @param value
 	 * @param defaultValue
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>integer value if the value is a integer or its string representation can be converted to integer
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 *         </ul>
@@ -183,6 +188,11 @@ public final class NumberUtils
 	public static final int asInt(final Object value, final int defaultValue)
 	{
 		return asInteger(value, defaultValue);
+	}
+
+	public static final Integer asIntegerOrNull(final Object value)
+	{
+		return asInteger(value, null);
 	}
 
 	public static final Integer asInteger(final Object value, final Integer defaultValue)

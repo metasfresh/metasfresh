@@ -19,6 +19,7 @@ import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsBL;
@@ -65,11 +66,12 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			statsRecord = createBPartnerStats(partner);
 		}
+		
 		return BPartnerStats.builder()
+				.repoId(statsRecord.getC_BPartner_Stats_ID())
+				.bpartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))
 				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
 				.openItems(statsRecord.getOpenItems())
-				.recordId(statsRecord.getC_BPartner_Stats_ID())
-				.bpartnerId(partner.getC_BPartner_ID())
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
 				.build();
@@ -188,7 +190,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
 	{
-		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
+		return load(bpStats.getRepoId(), I_C_BPartner_Stats.class);
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
@@ -290,15 +291,15 @@ public class StockCandidateService
 				.builder()
 				.customerIdOperator(CustomerIdOperator.GIVEN_ID_OR_NULL); // want the latest, only excluding records that have a *different* customerId
 
-		if (materialDescriptor.getCustomerId() > 0)
+		if (materialDescriptor.getCustomerId() != null)
 		{
 			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
-			builder.customerId(materialDescriptor.getCustomerId());
+			builder.customer(BPartnerClassifier.specific(materialDescriptor.getCustomerId()));
 		}
 		else
 		{
 			// ..on the other hand, if materialDescriptor has *no* bpartner, then the respective change in qty is related to everybody
-			builder.customerId(null);
+			builder.customer(BPartnerClassifier.any());
 		}
 
 		return builder

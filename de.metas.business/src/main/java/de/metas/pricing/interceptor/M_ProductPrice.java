@@ -45,8 +45,8 @@ public class M_ProductPrice
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void assertIsNoMainPriceDuplicate(@NonNull final I_M_ProductPrice productPrice)
+	public void assertMainProductPriceIsNotDuplicate(@NonNull final I_M_ProductPrice productPrice)
 	{
-		ProductPrices.assertIsNoMainPriceDuplicate(productPrice);
+		ProductPrices.assertMainProductPriceIsNotDuplicate(productPrice);
 	}
 }

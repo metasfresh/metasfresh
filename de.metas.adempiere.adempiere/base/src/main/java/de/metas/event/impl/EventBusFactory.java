@@ -196,6 +196,7 @@ public class EventBusFactory implements IEventBusFactory
 			// listener already exists => do nothing
 			return;
 		}
+		logger.info("Registered global listener to {}: {}", topic, listener);
 
 		//
 		// Also register the listener to EventBus

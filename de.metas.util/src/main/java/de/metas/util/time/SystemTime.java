@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -70,7 +71,6 @@ public final class SystemTime
 		return new Timestamp(millis());
 	}
 
-
 	public static Instant asInstant()
 	{
 		return Instant.ofEpochMilli(millis());
@@ -78,16 +78,17 @@ public final class SystemTime
 
 	public static LocalDateTime asLocalDateTime()
 	{
-		return Instant.ofEpochMilli(millis())
-				.atZone(ZoneId.systemDefault())
-				.toLocalDateTime();
+		return asZonedDateTime().toLocalDateTime();
 	}
 
 	public static LocalDate asLocalDate()
 	{
-		return Instant.ofEpochMilli(millis())
-				.atZone(ZoneId.systemDefault())
-				.toLocalDate();
+		return asZonedDateTime().toLocalDate();
+	}
+
+	public static ZonedDateTime asZonedDateTime()
+	{
+		return Instant.ofEpochMilli(millis()).atZone(ZoneId.systemDefault());
 	}
 
 	/**

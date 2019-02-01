@@ -29,7 +29,6 @@ import java.util.List;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
 import de.metas.util.ISingletonService;
 
@@ -42,7 +41,7 @@ public interface IMaterialBalanceDetailDAO extends ISingletonService
 	 * @param line
 	 * @param balanceConfig
 	 */
-	void addLineToBalance(I_M_InOutLine line, I_M_Material_Balance_Config balanceConfig);
+	void addLineToBalance(I_M_InOutLine line, MaterialBalanceConfig balanceConfig);
 
 	/**
 	 * In case the lines of the given inout are contained by any Material Movement Balance Detail entry, delete those entries
@@ -64,7 +63,7 @@ public interface IMaterialBalanceDetailDAO extends ISingletonService
 	 * @param resetDate
 	 * @return the Material Balance Details older than resetDate, with the given config
 	 */
-	List<I_M_Material_Balance_Detail> retrieveDetailsForConfigAndDate(I_M_Material_Balance_Config config, Timestamp resetDate);
+	List<I_M_Material_Balance_Detail> retrieveDetailsForConfigAndDate(MaterialBalanceConfig config, Timestamp resetDate);
 
 	/**
 	 * Delete directly all the Material Balance Detail entries that contain the given inout

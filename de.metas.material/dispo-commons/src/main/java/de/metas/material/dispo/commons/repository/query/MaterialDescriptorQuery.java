@@ -2,11 +2,11 @@ package de.metas.material.dispo.commons.repository.query;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
@@ -61,7 +61,7 @@ public class MaterialDescriptorQuery
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.customerId(materialDescriptor.getCustomerId())
+				.customer(BPartnerClassifier.specificOrAny(materialDescriptor.getCustomerId()))
 				.customerIdOperator(CustomerIdOperator.GIVEN_ID_ONLY)
 				.atTime(atTime)
 				.build();
@@ -79,7 +79,7 @@ public class MaterialDescriptorQuery
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.customerId(materialDescriptor.getCustomerId())
+				.customer(BPartnerClassifier.specificOrAny(materialDescriptor.getCustomerId()))
 				.customerIdOperator(CustomerIdOperator.GIVEN_ID_ONLY)
 				.timeRangeStart(timeRangeStart)
 				.timeRangeEnd(timeRangeEnd)
@@ -95,7 +95,7 @@ public class MaterialDescriptorQuery
 	int productId;
 	AttributesKey storageAttributesKey;
 
-	int customerId;
+	BPartnerClassifier customer;
 	CustomerIdOperator customerIdOperator;
 
 	DateAndSeqNo atTime;
@@ -107,12 +107,12 @@ public class MaterialDescriptorQuery
 	/**
 	 * @param customerId zero means "none", null or -1 means "any"; -2 means "none". Also see {@link AvailableToPromiseQuery}.
 	 */
-	@Builder(toBuilder=true)
+	@Builder(toBuilder = true)
 	private MaterialDescriptorQuery(
 			final int warehouseId,
 			final int productId,
 			final AttributesKey storageAttributesKey,
-			final Integer customerId,
+			final BPartnerClassifier customer,
 			final CustomerIdOperator customerIdOperator,
 			final DateAndSeqNo atTime,
 			final DateAndSeqNo timeRangeStart,
@@ -126,23 +126,7 @@ public class MaterialDescriptorQuery
 				: AttributesKey.ALL;
 
 		this.customerIdOperator = Util.coalesce(customerIdOperator, CustomerIdOperator.GIVEN_ID_ONLY);
-
-		if (customerId == null)
-		{
-			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
-		}
-		else if (customerId == 0)
-		{
-			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
-		}
-		else if (customerId > 0 || customerId == AvailableToPromiseQuery.BPARTNER_ID_ANY || customerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
-		{
-			this.customerId = customerId;
-		}
-		else
-		{
-			throw new AdempiereException("Parameter bPartnerCustomerId has an invalid value=" + customerId);
-		}
+		this.customer = customer != null ? customer : BPartnerClassifier.any();
 
 		if (atTime != null)
 		{

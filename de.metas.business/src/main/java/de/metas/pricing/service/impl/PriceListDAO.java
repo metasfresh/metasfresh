@@ -32,6 +32,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -433,5 +435,24 @@ public class PriceListDAO implements IPriceListDAO
 		filters.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, currencyPriceLisVersiontQuery);
 
 		return filters;
+	}
+
+	@Override
+	public List<PriceListVersionId> getPriceListVersionIdsUpToBase(@NonNull PriceListVersionId startPriceListVersionId)
+	{
+		final Object[] arr = DB.getSQLValueArrayEx(ITrx.TRXNAME_None,
+				"SELECT getPriceListVersionsUpToBase(?)",
+				startPriceListVersionId);
+		if (arr == null || arr.length == 0)
+		{
+			logger.warn("Got null/empty price list version array for {}. Returning same price list version.", startPriceListVersionId);
+			return ImmutableList.of(startPriceListVersionId);
+		}
+
+		return Stream.of(arr)
+				.map(NumberUtils::asIntOrZero)
+				.map(PriceListVersionId::ofRepoId)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 }

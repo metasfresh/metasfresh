@@ -337,22 +337,22 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
 	{
-		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_1.equals(record.getA05KKETTE());
+		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
 	}
 
 	private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_1.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_2.equals(importRecord.getA02VSPFL()));
+		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_01.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_02.equals(importRecord.getA02VSPFL()));
 	}
 
 	private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_1.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_2.equals(importRecord.getA02BTM()));
+		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_01.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_02.equals(importRecord.getA02BTM()));
 	}
 
 	private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_1.equals(importRecord.getA02TFG());
+		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
 	}
 
 	private void importPrices(@NonNull final I_I_Pharma_Product importRecord)
@@ -485,11 +485,11 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private VATType extractTaxCategoryVATTYpe(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		if (X_I_Pharma_Product.A01MWST_1.equals(importRecord.getA01MWST()))
+		if (X_I_Pharma_Product.A01MWST_01.equals(importRecord.getA01MWST()))
 		{
 			return VATType.ReducedVAT;
 		}
-		else if (X_I_Pharma_Product.A01MWST_2.equals(importRecord.getA01MWST()))
+		else if (X_I_Pharma_Product.A01MWST_02.equals(importRecord.getA01MWST()))
 		{
 			return VATType.TaxExempt;
 		}

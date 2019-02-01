@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.util.NumberUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -37,8 +39,7 @@ import lombok.experimental.FieldDefaults;
  * #L%
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
-		callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
 {
@@ -50,7 +51,9 @@ public class MaterialDescriptor extends ProductDescriptor
 	 * and is not available to other customers.
 	 */
 	@Getter
-	int customerId;
+	BPartnerId customerId;
+	@Getter
+	BPartnerId vendorId;
 
 	@Getter
 	BigDecimal quantity;
@@ -64,7 +67,8 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Builder
 	private MaterialDescriptor(
 			final int warehouseId,
-			final int customerId,
+			final BPartnerId customerId,
+			final BPartnerId vendorId,
 			final Instant date,
 			final ProductDescriptor productDescriptor,
 			final BigDecimal quantity)
@@ -72,6 +76,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		this(
 				warehouseId,
 				customerId,
+				vendorId,
 				quantity,
 				date,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
@@ -82,7 +87,8 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final int warehouseId,
-			@JsonProperty("customerId") final int customerId,
+			@JsonProperty("customerId") final BPartnerId customerId,
+			@JsonProperty("vendorId") final BPartnerId vendorId,
 			@JsonProperty("quantity") final BigDecimal quantity,
 			@JsonProperty("date") final Instant date,
 			@JsonProperty("productId") final int productId,
@@ -92,8 +98,11 @@ public class MaterialDescriptor extends ProductDescriptor
 		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
+
 		this.customerId = customerId;
-		this.quantity = quantity;
+		this.vendorId = vendorId;
+
+		this.quantity = NumberUtils.stripTrailingDecimalZeros(quantity);
 
 		this.date = date;
 
@@ -103,7 +112,11 @@ public class MaterialDescriptor extends ProductDescriptor
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
 		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
-		Preconditions.checkArgument(customerId >= 0, "customerId=%s needs to be >=0", customerId);
+
+		// Don't enforce customer/vendor. e.g. in case of Inventory there is no customer/vendor.
+		// Preconditions.checkNotNull(customerId, "customerId needs to be not-null", customerId);
+		// Preconditions.checkNotNull(vendorId, "vendorId needs to be not-null", vendorId);
+
 		Preconditions.checkNotNull(quantity, "quantity needs to be not-null");
 		Preconditions.checkNotNull(date, "date needs to be not-null");
 
@@ -158,7 +171,7 @@ public class MaterialDescriptor extends ProductDescriptor
 		return result.asssertMaterialDescriptorComplete();
 	}
 
-	public MaterialDescriptor withCustomerId(final int customerId)
+	public MaterialDescriptor withCustomerId(final BPartnerId customerId)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.warehouseId(this.warehouseId)
