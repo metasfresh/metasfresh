@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import { is, List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
@@ -405,7 +404,7 @@ RawList.propTypes = {
   clearable: PropTypes.bool,
   // Immutable List
   list: PropTypes.object,
-  listHash: PropTypes.oneOfType([null, PropTypes.string]),
+  listHash: PropTypes.string,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,
