@@ -1,7 +1,15 @@
 package de.metas.bpartner.product.stats;
 
+import java.time.ZonedDateTime;
+import java.util.Set;
+
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -37,36 +45,42 @@ public class BPartnerProductStatsService
 		this.statsRepo = statsRepo;
 	}
 
-	public void handleEvent(@NonNull final ShipmentCreatedEvent event)
+	public void handleEvent(@NonNull final InOutChangedEvent event)
 	{
-		final BPartnerProductStats stats = statsRepo.getOrCreateByPartnerAndProduct(event.getCustomerId(), event.getProductId());
+		final BPartnerId bpartnerId = event.getBpartnerId();
+		final Set<ProductId> productIds = event.getProductIds();
 
-		if (stats.getLastShipmentDate() == null || event.getShipmentDate().isAfter(stats.getLastShipmentDate()))
+		if (event.isReversal())
 		{
-			stats.setLastShipmentDate(event.getShipmentDate());
-			statsRepo.save(stats);
+			statsRepo.refreshByPartnerAndProducts(bpartnerId, productIds);
 		}
-	}
-
-	public void handleEvent(@NonNull final ShipmentDeletedEvent event)
-	{
-		// TODO
-	}
-
-	public void handleEvent(@NonNull final ReceiptCreatedEvent event)
-	{
-		final BPartnerProductStats stats = statsRepo.getOrCreateByPartnerAndProduct(event.getVendorId(), event.getProductId());
-
-		if (stats.getLastReceiptDate() == null || event.getReceiptDate().isAfter(stats.getLastReceiptDate()))
+		else
 		{
-			stats.setLastShipmentDate(event.getReceiptDate());
-			statsRepo.save(stats);
+			final ZonedDateTime movementDate = TimeUtil.asZonedDateTime(event.getMovementDate());
+			final boolean isShipment = event.getSoTrx().isSales();
+
+			final ImmutableMap<ProductId, BPartnerProductStats> statsByProductId = statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
+
+			for (final ProductId productId : productIds)
+			{
+				BPartnerProductStats stats = statsByProductId.get(productId);
+				if (stats == null)
+				{
+					stats = BPartnerProductStats.newInstance(bpartnerId, productId);
+				}
+
+				if (isShipment)
+				{
+					stats.updateLastShipmentDate(movementDate);
+				}
+				else
+				{
+					stats.updateLastReceiptDate(movementDate);
+				}
+
+				statsRepo.save(stats);
+			}
 		}
-	}
 
-	public void handleEvent(@NonNull final ReceiptDeletedEvent event)
-	{
-		// TODO
 	}
-
 }

@@ -36,7 +36,6 @@ import lombok.ToString;
 
 @Builder
 @Getter
-@Setter
 @ToString
 public class BPartnerProductStats
 {
@@ -55,6 +54,35 @@ public class BPartnerProductStats
 	@NonNull
 	private final ProductId productId;
 
+	@Setter(AccessLevel.PACKAGE)
 	private ZonedDateTime lastShipmentDate;
+	@Setter(AccessLevel.PACKAGE)
 	private ZonedDateTime lastReceiptDate;
+
+	public void updateLastReceiptDate(@NonNull final ZonedDateTime receiptDate)
+	{
+		lastReceiptDate = max(lastReceiptDate, receiptDate);
+	}
+
+	public void updateLastShipmentDate(@NonNull final ZonedDateTime shipmentDate)
+	{
+		lastShipmentDate = max(lastShipmentDate, shipmentDate);
+	}
+
+	private static final ZonedDateTime max(final ZonedDateTime date1, final ZonedDateTime date2)
+	{
+		if (date1 == null)
+		{
+			return date2;
+		}
+		else if (date2 == null)
+		{
+			return date1;
+		}
+		else
+		{
+			return date1.isAfter(date2) ? date1 : date2;
+		}
+	}
+
 }
