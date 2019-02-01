@@ -175,8 +175,6 @@ class ListWidget extends Component {
     const { onFocus, mandatory } = this.props;
     const { list, loading } = this.state;
 
-    console.log('handleFocus')
-
     this.focus();
     onFocus && onFocus();
 
@@ -198,8 +196,6 @@ class ListWidget extends Component {
       {
         autoFocus: false,
         listFocused: false,
-        // list: List(),
-        // listHash: null,
       },
       () => {
         onBlur && onBlur();
@@ -271,7 +267,6 @@ class ListWidget extends Component {
                 patchFields.lookupValuesStale === true ||
                 findKey(patchFields, ['widgetType', 'List'])
               ) {
-                console.log('WTF ?')
                 this.setState({
                   list: List(),
                   listHash: null,

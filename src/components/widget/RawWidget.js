@@ -293,7 +293,6 @@ export class RawWidget extends Component {
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
       title: widgetValue,
-      widgetField,
       id,
     };
 
@@ -510,6 +509,7 @@ export class RawWidget extends Component {
             {...{
               attribute,
             }}
+            widgetField={widgetField}
             dataId={dataId}
             entity={entity}
             subentity={subentity}
