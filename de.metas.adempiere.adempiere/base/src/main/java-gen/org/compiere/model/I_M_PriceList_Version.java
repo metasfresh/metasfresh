@@ -122,6 +122,29 @@ public interface I_M_PriceList_Version
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Fallback to Base Price List prices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFallbackToBasePriceListPrices (boolean FallbackToBasePriceListPrices);
+
+	/**
+	 * Get Fallback to Base Price List prices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isFallbackToBasePriceListPrices();
+
+    /** Column definition for FallbackToBasePriceListPrices */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList_Version, Object> COLUMN_FallbackToBasePriceListPrices = new org.adempiere.model.ModelColumn<I_M_PriceList_Version, Object>(I_M_PriceList_Version.class, "FallbackToBasePriceListPrices", null);
+    /** Column name FallbackToBasePriceListPrices */
+    public static final String COLUMNNAME_FallbackToBasePriceListPrices = "FallbackToBasePriceListPrices";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -147,8 +170,8 @@ public interface I_M_PriceList_Version
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Rabatt-Schema.
-	 * Schema to calculate the trade discount percentage
+	 * Set Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -157,8 +180,8 @@ public interface I_M_PriceList_Version
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
 
 	/**
-	 * Get Rabatt-Schema.
-	 * Schema to calculate the trade discount percentage
+	 * Get Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
