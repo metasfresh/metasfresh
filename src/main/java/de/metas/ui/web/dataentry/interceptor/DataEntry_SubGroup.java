@@ -33,7 +33,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component
+@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_SubGroup")
 @Interceptor(I_DataEntry_SubGroup.class)
 public class DataEntry_SubGroup
 {

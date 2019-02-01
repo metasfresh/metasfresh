@@ -34,7 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component
+@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_Field")
 @Interceptor(I_DataEntry_Field.class)
 public class DataEntry_Field
 {
