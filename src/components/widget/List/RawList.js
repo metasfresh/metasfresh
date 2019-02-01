@@ -71,17 +71,21 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { list, mandatory, defaultValue, selected, emptyText } = this.props;
+    const { list, mandatory, defaultValue, selected, emptyText, listHash } = this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
     // If data in the list changed, we either opened or closed the selection dropdown.
     // If we're closing it (bluring), then we don't care about the whole thing.
     if (
-      !is(prevProps.list, list) &&
-      !(prevProps.isFocused && !this.props.isFocused)
+      // !is(prevProps.list, list) &&
+      listHash !== prevProps.listHash ||
+      !listHash && this.props.isFocused !== prevProps.isFocused
+      // !(prevProps.isFocused && this.props.isFocused)
     ) {
-      dropdownList = List(list);
+      console.log('RawList updated: ', prevProps.listHash, listHash, prevProps.isFocused, this.props.isFocused, this.props.properties[0].field)
+
+      dropdownList = list;
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
           caption: emptyText,
@@ -104,24 +108,42 @@ export class RawList extends PureComponent {
       } else {
         changedValues.selected = null;
       }
+
+      if (!changedValues.selected && dropdownList.size > 0) {
+        let newSelected = null;
+
+        if (prevProps.selected !== selected) {
+          newSelected = selected;
+        }
+
+        if (newSelected) {
+          changedValues = {
+            ...changedValues,
+            ...setSelectedValue(dropdownList, newSelected, defaultValue),
+          };
+        }
+      }
     }
 
-    if (!changedValues.selected && dropdownList.size > 0) {
-      let newSelected = null;
+    // if (!changedValues.selected && dropdownList.size > 0) {
+    //   let newSelected = null;
 
-      if (prevProps.selected !== selected) {
-        newSelected = selected;
-      }
+    //   if (prevProps.selected !== selected) {
+    //     newSelected = selected;
+    //   }
 
-      if (newSelected) {
-        changedValues = {
-          ...changedValues,
-          ...setSelectedValue(dropdownList, newSelected, defaultValue),
-        };
-      }
-    }
+    //   if (newSelected) {
+    //     changedValues = {
+    //       ...changedValues,
+    //       ...setSelectedValue(dropdownList, newSelected, defaultValue),
+    //     };
+    //   }
+    // }
 
     if (Object.keys(changedValues).length) {
+
+      console.log('FOCUS: ', changedValues, this.props.properties[0].field)
+
       this.setState(
         {
           ...changedValues,

@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 import { findKey } from 'lodash';
+import uuid from 'uuid/v4';
 
 import {
   dropdownRequest,
@@ -18,7 +19,8 @@ class ListWidget extends Component {
     super(props);
 
     this.state = {
-      list: null,
+      list: List(),
+      listHash: null,
       loading: false,
       selectedItem: '',
       autoFocus: props.autoFocus,
@@ -63,11 +65,11 @@ class ListWidget extends Component {
     if (prevProps.autoFocus !== autoFocus && !isToggled) {
       if (autoFocus) {
         this.handleFocus();
-        !doNotOpenOnFocus && list && list.size > 1 && this.activate();
+        !doNotOpenOnFocus && list.size > 1 && this.activate();
       } else {
         if (initialFocus && !defaultValue) {
           this.handleFocus();
-          !doNotOpenOnFocus && list && list.size > 1 && this.activate();
+          !doNotOpenOnFocus && list.size > 1 && this.activate();
         }
       }
     }
@@ -92,8 +94,11 @@ class ListWidget extends Component {
     } = this.props;
     const { listFocused } = this.state;
 
+    console.log('RequestLRistData: ', properties[0].field)
+
     this.setState({
       list: List(),
+      listHash: uuid(),
       loading: true,
     });
 
@@ -137,6 +142,7 @@ class ListWidget extends Component {
 
         this.setState({
           list: List(values),
+          listHash: uuid(),
           loading: false,
         });
 
@@ -147,6 +153,7 @@ class ListWidget extends Component {
       } else {
         this.setState({
           list: List(values),
+          listHash: uuid(),
           loading: false,
         });
       }
@@ -168,10 +175,12 @@ class ListWidget extends Component {
     const { onFocus, mandatory } = this.props;
     const { list, loading } = this.state;
 
+    console.log('handleFocus')
+
     this.focus();
     onFocus && onFocus();
 
-    if (!list && !loading) {
+    if (!list.size && !loading) {
       this.requestListData(mandatory, true);
     }
   };
@@ -189,7 +198,8 @@ class ListWidget extends Component {
       {
         autoFocus: false,
         listFocused: false,
-        list: null,
+        // list: List(),
+        // listHash: null,
       },
       () => {
         onBlur && onBlur();
@@ -207,7 +217,7 @@ class ListWidget extends Component {
     const { list, listToggled } = this.state;
     const { lookupList } = this.props;
 
-    if (list && !listToggled && !(lookupList && list.size < 1)) {
+    if (!listToggled && !(lookupList && list.size < 1)) {
       this.setState({
         listToggled: true,
       });
@@ -261,8 +271,10 @@ class ListWidget extends Component {
                 patchFields.lookupValuesStale === true ||
                 findKey(patchFields, ['widgetType', 'List'])
               ) {
+                console.log('WTF ?')
                 this.setState({
-                  list: null,
+                  list: List(),
+                  listHash: null,
                 });
               }
             }
@@ -286,6 +298,7 @@ class ListWidget extends Component {
     const { selected, lookupList } = this.props;
     const {
       list,
+      listHash,
       loading,
       selectedItem,
       autoFocus,
@@ -298,7 +311,8 @@ class ListWidget extends Component {
         {...this.props}
         autoFocus={autoFocus}
         loading={loading}
-        list={list || List()}
+        list={list}
+        listHash={listHash}
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}
