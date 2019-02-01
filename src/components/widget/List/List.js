@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 import { findKey } from 'lodash';
+import uuid from 'uuid/v4';
 
 import {
   dropdownRequest,
@@ -18,7 +19,8 @@ class ListWidget extends Component {
     super(props);
 
     this.state = {
-      list: null,
+      list: List(),
+      listHash: null,
       loading: false,
       selectedItem: '',
       autoFocus: props.autoFocus,
@@ -63,11 +65,11 @@ class ListWidget extends Component {
     if (prevProps.autoFocus !== autoFocus && !isToggled) {
       if (autoFocus) {
         this.handleFocus();
-        !doNotOpenOnFocus && list && list.size > 1 && this.activate();
+        !doNotOpenOnFocus && list.size > 1 && this.activate();
       } else {
         if (initialFocus && !defaultValue) {
           this.handleFocus();
-          !doNotOpenOnFocus && list && list.size > 1 && this.activate();
+          !doNotOpenOnFocus && list.size > 1 && this.activate();
         }
       }
     }
@@ -94,6 +96,7 @@ class ListWidget extends Component {
 
     this.setState({
       list: List(),
+      listHash: uuid(),
       loading: true,
     });
 
@@ -137,6 +140,7 @@ class ListWidget extends Component {
 
         this.setState({
           list: List(values),
+          listHash: uuid(),
           loading: false,
         });
 
@@ -147,6 +151,7 @@ class ListWidget extends Component {
       } else {
         this.setState({
           list: List(values),
+          listHash: uuid(),
           loading: false,
         });
       }
@@ -171,7 +176,7 @@ class ListWidget extends Component {
     this.focus();
     onFocus && onFocus();
 
-    if (!list && !loading) {
+    if (!list.size && !loading) {
       this.requestListData(mandatory, true);
     }
   };
@@ -189,7 +194,6 @@ class ListWidget extends Component {
       {
         autoFocus: false,
         listFocused: false,
-        list: null,
       },
       () => {
         onBlur && onBlur();
@@ -207,7 +211,7 @@ class ListWidget extends Component {
     const { list, listToggled } = this.state;
     const { lookupList } = this.props;
 
-    if (list && !listToggled && !(lookupList && list.size < 1)) {
+    if (!listToggled && !(lookupList && list.size < 1)) {
       this.setState({
         listToggled: true,
       });
@@ -223,6 +227,8 @@ class ListWidget extends Component {
       mainProperty,
       enableAutofocus,
       isModal,
+      widgetField,
+      id,
     } = this.props;
 
     if (enableAutofocus) {
@@ -231,7 +237,7 @@ class ListWidget extends Component {
 
     if (this.previousValue !== (option && option.caption)) {
       if (lookupList) {
-        const promise = onChange(properties[0].field, option);
+        const promise = onChange(properties[0].field, option, id);
         const mainPropertyField = mainProperty[0].field;
 
         this.setState({
@@ -260,7 +266,8 @@ class ListWidget extends Component {
                 findKey(patchFields, ['widgetType', 'List'])
               ) {
                 this.setState({
-                  list: null,
+                  list: List(),
+                  listHash: null,
                 });
               }
             }
@@ -275,7 +282,7 @@ class ListWidget extends Component {
           });
         }
       } else {
-        onChange(option);
+        onChange(widgetField, option, id);
       }
     }
   };
@@ -284,6 +291,7 @@ class ListWidget extends Component {
     const { selected, lookupList } = this.props;
     const {
       list,
+      listHash,
       loading,
       selectedItem,
       autoFocus,
@@ -296,7 +304,8 @@ class ListWidget extends Component {
         {...this.props}
         autoFocus={autoFocus}
         loading={loading}
-        list={list || List()}
+        list={list}
+        listHash={listHash}
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}
@@ -304,7 +313,7 @@ class ListWidget extends Component {
         onCloseDropdown={this.closeDropdownList}
         onFocus={this.handleFocus}
         onBlur={this.handleBlur}
-        onSelect={option => this.handleSelect(option)}
+        onSelect={this.handleSelect}
       />
     );
   }

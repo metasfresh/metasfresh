@@ -293,6 +293,7 @@ export class RawWidget extends Component {
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
       title: widgetValue,
+      id,
     };
 
     switch (widgetType) {
@@ -508,6 +509,7 @@ export class RawWidget extends Component {
             {...{
               attribute,
             }}
+            widgetField={widgetField}
             dataId={dataId}
             entity={entity}
             subentity={subentity}
@@ -522,7 +524,7 @@ export class RawWidget extends Component {
             tabId={tabId}
             onFocus={this.focus}
             onBlur={this.handleBlur}
-            onChange={option => this.handlePatch(widgetField, option, id)}
+            onChange={this.handlePatch}
             align={gridAlign}
             updated={updated}
             filterWidget={filterWidget}
