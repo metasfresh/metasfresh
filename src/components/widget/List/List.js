@@ -94,8 +94,6 @@ class ListWidget extends Component {
     } = this.props;
     const { listFocused } = this.state;
 
-    console.log('RequestLRistData: ', properties[0].field)
-
     this.setState({
       list: List(),
       listHash: uuid(),
