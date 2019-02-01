@@ -1,9 +1,5 @@
 package org.adempiere.util.lang.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
@@ -35,8 +31,11 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -52,11 +51,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.jgoodies.common.base.Objects;
 
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -383,6 +384,14 @@ public final class TableRecordReference implements ITableRecordReference
 	public String getTableName()
 	{
 		return tableName;
+	}
+
+	public void assertTableName(@NonNull final String expectedTableName)
+	{
+		if (!Objects.equals(getTableName(), expectedTableName))
+		{
+			throw new AdempiereException("Reference is expected to have '" + expectedTableName + "' table: " + this);
+		}
 	}
 
 	@Override

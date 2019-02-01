@@ -61,6 +61,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
@@ -542,7 +543,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setAD_Table_ID(pi.getTable_ID());
 		adPInstance.setRecord_ID(Util.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
 		adPInstance.setWhereClause(pi.getWhereClause());
-		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
+		adPInstance.setAD_Process_ID(pi.getAdProcessId().getRepoId());
 		adPInstance.setAD_Window_ID(pi.getAD_Window_ID());
 
 		final Language reportingLanguage = pi.getReportLanguage();
@@ -557,7 +558,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public PInstanceId createPInstanceId()
+	public PInstanceId createSelectionId()
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		final int adPInstanceId = DB.getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
@@ -565,20 +566,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public I_AD_PInstance createAD_PInstance(final int AD_Process_ID, final int AD_Table_ID, final int recordId)
+	public I_AD_PInstance createAD_PInstance(@NonNull final AdProcessId adProcessId)
 	{
 		final I_AD_PInstance adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
-		adPInstance.setAD_Process_ID(AD_Process_ID);
-		if (AD_Table_ID > 0)
-		{
-			adPInstance.setAD_Table_ID(AD_Table_ID);
-			adPInstance.setRecord_ID(recordId);
-		}
-		else
-		{
-			adPInstance.setAD_Table(null);
-			adPInstance.setRecord_ID(0); // mandatory
-		}
+		adPInstance.setAD_Process_ID(adProcessId.getRepoId());
+
+		adPInstance.setAD_Table(null);
+		adPInstance.setRecord_ID(0); // mandatory
 
 		final Properties ctx = Env.getCtx();
 		adPInstance.setAD_User_ID(Env.getAD_User_ID(ctx));

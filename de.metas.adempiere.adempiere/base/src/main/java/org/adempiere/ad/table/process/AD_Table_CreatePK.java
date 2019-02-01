@@ -3,6 +3,7 @@ package org.adempiere.ad.table.process;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /*
  * #%L
@@ -17,11 +18,11 @@ import de.metas.process.JavaProcess;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,11 +36,13 @@ import de.metas.process.JavaProcess;
 public class AD_Table_CreatePK extends JavaProcess
 {
 	@Override
-	protected String doIt() throws Exception
+	@RunOutOfTrx
+	protected String doIt()
 	{
 		final I_AD_Table adTable = getRecord(I_AD_Table.class);
 
-		new TablePrimaryKeyGenerator(getCtx())
+		TablePrimaryKeyGenerator.newInstance()
+				.migrateDataUsingIDServer(true)
 				.generateForTable(adTable);
 
 		return MSG_OK;

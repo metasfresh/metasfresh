@@ -46,6 +46,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
@@ -105,21 +106,21 @@ public final class JRClient
 	public JasperPrint createJasperPrint(final ProcessInfo pi)
 	{
 		final Language language = extractLanguage(pi);
-		return createJasperPrint(pi.getAD_Process_ID(), pi.getPinstanceId(), language);
+		return createJasperPrint(pi.getAdProcessId(), pi.getPinstanceId(), language);
 	}
 
-	private JasperPrint createJasperPrint(final int AD_Process_ID, final PInstanceId pinstanceId, final Language language)
+	private JasperPrint createJasperPrint(final AdProcessId adProcessId, final PInstanceId pinstanceId, final Language language)
 	{
-		return createJasperPrint0(AD_Process_ID, pinstanceId, language);
+		return createJasperPrint0(adProcessId, pinstanceId, language);
 	}
 
 	private JasperPrint createJasperPrint0(
-			final int AD_Process_ID,
+			final AdProcessId adProcessId,
 			final PInstanceId pinstanceId,
 			final Language language)
 	{
 		final IJasperServer server = serverSupplier.get();
-		final byte[] data = server.report(AD_Process_ID, pinstanceId.getRepoId(), language.getAD_Language(), OutputType.JasperPrint);
+		final byte[] data = server.report(adProcessId.getRepoId(), pinstanceId.getRepoId(), language.getAD_Language(), OutputType.JasperPrint);
 		try
 		{
 			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
@@ -133,10 +134,10 @@ public final class JRClient
 		}
 	}
 
-	private byte[] report(final int AD_Process_ID, final PInstanceId pinstanceId, final Language language, final OutputType outputType)
+	private byte[] report(final AdProcessId adProcessId, final PInstanceId pinstanceId, final Language language, final OutputType outputType)
 	{
 		final IJasperServer server = serverSupplier.get();
-		return server.report(AD_Process_ID, PInstanceId.toRepoId(pinstanceId), language.getAD_Language(), outputType);
+		return server.report(adProcessId.getRepoId(), PInstanceId.toRepoId(pinstanceId), language.getAD_Language(), outputType);
 	}
 
 	public byte[] report(final ProcessInfo pi)
@@ -154,7 +155,7 @@ public final class JRClient
 
 		final Language language = extractLanguage(pi);
 		final OutputType outputTypeEffective = Util.coalesce(outputType, pi.getJRDesiredOutputType());
-		final byte[] data = report(pi.getAD_Process_ID(), pi.getPinstanceId(), language, outputTypeEffective);
+		final byte[] data = report(pi.getAdProcessId(), pi.getPinstanceId(), language, outputTypeEffective);
 		return data;
 	}
 

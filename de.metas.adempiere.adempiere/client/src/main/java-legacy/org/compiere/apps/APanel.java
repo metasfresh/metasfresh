@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -130,6 +131,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.AdProcessId;
 import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessExecutionResult;
@@ -2522,11 +2524,10 @@ public class APanel extends CPanel
 	private void cmd_print(boolean printPreview)
 	{
 		// Get process defined for this tab
-		final int AD_Process_ID = m_curTab.getAD_Process_ID();
-		log.debug("cmd_print: AD_Process_ID={}", AD_Process_ID);
+		final AdProcessId printProcessId = m_curTab.getPrintProcessId();
 
 		// No report defined
-		if (AD_Process_ID <= 0)
+		if (printProcessId == null)
 		{
 			cmd_report();
 			return;
@@ -2535,7 +2536,7 @@ public class APanel extends CPanel
 		cmd_save(false);
 
 		ProcessDialog.builder()
-				.setAD_Process_ID(AD_Process_ID)
+				.setAD_Process_ID(printProcessId.getRepoId())
 				.setFromGridTab(m_curTab)
 				.setPrintPreview(printPreview)
 				.setProcessExecutionListener(this)
@@ -3101,7 +3102,7 @@ public class APanel extends CPanel
 
 		// log.debug("" + pi);
 		final boolean notPrint = pi != null
-				&& pi.getAD_Process_ID() != m_curTab.getAD_Process_ID()
+				&& !Objects.equals(pi.getAdProcessId(), m_curTab.getPrintProcessId())
 				&& pi.isReportingProcess() == false;
 
 		//

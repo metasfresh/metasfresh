@@ -19,11 +19,13 @@ package de.metas.process;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.function.Function;
 
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 /**
  * Immutable Process Parameter
@@ -228,6 +230,11 @@ public final class ProcessInfoParameter implements Serializable
 	{
 		return toInt(m_Parameter);
 	}	// getParameterAsInt
+	
+	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Function<Integer, T> mapper)
+	{
+		return mapper.apply(getParameterAsInt());
+	}
 
 	/**
 	 * Method getParameter as Int

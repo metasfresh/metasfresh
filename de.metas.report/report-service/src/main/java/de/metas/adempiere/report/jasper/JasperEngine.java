@@ -51,6 +51,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
@@ -165,7 +166,7 @@ public class JasperEngine extends AbstractReportEngine
 		}
 	}
 
-	private final JasperReport createJasperReport(final Properties ctx, final int adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
+	private final JasperReport createJasperReport(final Properties ctx, final AdProcessId adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
 	{
 		final String reportPath = getReportPath(adProcessId, jrParameters);
 		final InputStream jasperInputStream;
@@ -306,7 +307,7 @@ public class JasperEngine extends AbstractReportEngine
 		return outputType;
 	}
 
-	private final String getReportPath(final int adProcessId, final Map<String, Object> jrParameters) throws JRException
+	private final String getReportPath(final AdProcessId adProcessId, final Map<String, Object> jrParameters) throws JRException
 	{
 		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(adProcessId);
 		final String reportPath = process.getJasperReport();

@@ -19,6 +19,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.session.ISessionBL;
@@ -28,9 +29,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -43,6 +47,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -60,8 +65,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-
-import org.compiere.util.Util;
 
 /**
  * Process Instance informations.
@@ -90,12 +93,14 @@ public final class ProcessInfo implements Serializable
 		adProcessId = builder.getAD_Process_ID();
 		pinstanceId = builder.getPInstanceId();
 
-		adClientId = builder.getAD_Client_ID();
-		adOrgId = builder.getAD_Org_ID();
-		adUserId = builder.getAD_User_ID();
+		adClientId = builder.getAdClientId();
+		Check.assumeNotNull(adClientId, "Parameter adClientId is not null");
+		
+		adOrgId = builder.getAdOrgId();
+		adUserId = builder.getAdUserId();
 		adRoleId = builder.getAD_Role_ID();
 
-		adWindowId = builder.getAD_Window_ID();
+		adWindowId = builder.getAdWindowId();
 
 		title = builder.getTitle();
 
@@ -145,8 +150,7 @@ public final class ProcessInfo implements Serializable
 
 	/** Title of the Process/Report */
 	private final String title;
-	/** AD_Process_ID */
-	private final int adProcessId;
+	private final AdProcessId adProcessId;
 
 	/** Table ID if the Process */
 	private final int adTableId;
@@ -155,11 +159,11 @@ public final class ProcessInfo implements Serializable
 	private final Set<TableRecordReference> selectedIncludedRecords;
 
 	private final String whereClause;
-	private final int adClientId;
-	private final int adOrgId;
-	private final int adUserId;
+	private final ClientId adClientId;
+	private final OrgId adOrgId;
+	private final UserId adUserId;
 	private final int adRoleId;
-	private final int adWindowId;
+	private final AdWindowId adWindowId;
 
 	private final int windowNo;
 	private final int tabNo;
@@ -257,21 +261,11 @@ public final class ProcessInfo implements Serializable
 		result.setPInstanceId(pinstanceId);
 	}
 
-	/**
-	 * Method getAD_Process_ID
-	 *
-	 * @return int
-	 */
-	public int getAD_Process_ID()
+	public AdProcessId getAdProcessId()
 	{
 		return adProcessId;
 	}
 
-	/**
-	 * Method getClassName
-	 *
-	 * @return String or null
-	 */
 	public String getClassName()
 	{
 		return className.orElse(null);
@@ -472,15 +466,20 @@ public final class ProcessInfo implements Serializable
 	{
 		return title;
 	}
-
-	public int getAD_Client_ID()
+	
+	public ClientId getClientId()
 	{
 		return adClientId;
 	}
 
+	public int getAD_Client_ID()
+	{
+		return getClientId().getRepoId();
+	}
+
 	public int getAD_User_ID()
 	{
-		return adUserId;
+		return UserId.toRepoId(adUserId);
 	}
 
 	public int getAD_Role_ID()
@@ -490,7 +489,7 @@ public final class ProcessInfo implements Serializable
 
 	public int getAD_Window_ID()
 	{
-		return adWindowId;
+		return AdWindowId.toRepoId(adWindowId);
 	}
 
 	private static final ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
@@ -565,20 +564,16 @@ public final class ProcessInfo implements Serializable
 		return reportingProcess;
 	}
 
-	/**
-	 * Method getAD_Org_ID
-	 *
-	 * @return Integer
-	 */
-	// metas: c.ghita@metas.ro
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
 		return adOrgId;
 	}
-	// metas: end
 
-	// metas: cg
-	// 03040
+	public int getAD_Org_ID()
+	{
+		return OrgId.toRepoId(getOrgId());
+	}
+
 	/**
 	 * @return Parent's WindowNo or -1
 	 * @deprecated this only work in the context of the swing client.
@@ -598,7 +593,6 @@ public final class ProcessInfo implements Serializable
 	{
 		return this.tabNo;
 	}
-	// metas end
 
 	/**
 	 * @return the whereClause <b>but without org restrictions</b>
@@ -733,12 +727,12 @@ public final class ProcessInfo implements Serializable
 
 		private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
-		private int adProcessId;
+		private AdProcessId adProcessId;
 		private transient I_AD_Process _adProcess;
-		private Integer _adClientId;
-		private Integer _adUserId;
+		private ClientId _adClientId;
+		private UserId _adUserId;
 		private Integer _adRoleId;
-		private int _adWindowId = -1;
+		private AdWindowId _adWindowId = null;
 		private String title = null;
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
@@ -814,21 +808,21 @@ public final class ProcessInfo implements Serializable
 			//
 			// AD_Client, AD_Language
 			final IClientDAO clientDAO = Services.get(IClientDAO.class);
-			final int adClientId = getAD_Client_ID();
-			final I_AD_Client processClient = clientDAO.retriveClient(ctx, adClientId);
-			Env.setContext(processCtx, Env.CTXNAME_AD_Client_ID, processClient.getAD_Client_ID());
+			final ClientId adClientId = getAdClientId();
+			Env.setClientId(processCtx, adClientId);
 
 			final String contextLanguage = Env.getAD_Language(ctx);
-			final String languagetoUse = contextLanguage != null ? contextLanguage : processClient.getAD_Language();
-			Env.setContext(processCtx, Env.CTXNAME_AD_Language, languagetoUse);
+			final I_AD_Client processClient = clientDAO.getById(adClientId);
+			final String languageToUse = contextLanguage != null ? contextLanguage : processClient.getAD_Language();
+			Env.setContext(processCtx, Env.CTXNAME_AD_Language, languageToUse);
 
 			//
 			// AD_Org, M_Warehouse
-			final int adOrgId = getAD_Org_ID();
-			Env.setContext(processCtx, Env.CTXNAME_AD_Org_ID, adOrgId);
-			if (adOrgId > 0)
+			final OrgId adOrgId = getAdOrgId();
+			Env.setOrgId(processCtx, adOrgId);
+			if (!adOrgId.isAny())
 			{
-				final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(processCtx, adOrgId, ITrx.TRXNAME_None);
+				final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(processCtx, adOrgId.getRepoId(), ITrx.TRXNAME_None);
 				if (schedOrg.getM_Warehouse_ID() > 0)
 				{
 					Env.setContext(processCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getM_Warehouse_ID());
@@ -837,9 +831,9 @@ public final class ProcessInfo implements Serializable
 
 			//
 			// AD_User_ID, SalesRep_ID
-			final int adUserId = getAD_User_ID();
-			Env.setContext(processCtx, Env.CTXNAME_AD_User_ID, adUserId);
-			Env.setContext(processCtx, Env.CTXNAME_SalesRep_ID, adUserId);
+			final UserId adUserId = getAdUserId();
+			Env.setLoggedUserId(processCtx, adUserId);
+			Env.setSalesRepId(processCtx, adUserId);
 
 			//
 			// AD_Role
@@ -848,7 +842,7 @@ public final class ProcessInfo implements Serializable
 			{
 				// Use the first user role, which has access to our organization.
 				final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId, adOrgId)
+						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId.getRepoId(), adOrgId.getRepoId())
 						.orNull();
 				adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
 			}
@@ -880,7 +874,7 @@ public final class ProcessInfo implements Serializable
 			return processCtx;
 		}
 
-		private int getAD_Client_ID()
+		private ClientId getAdClientId()
 		{
 			if (_adClientId != null)
 			{
@@ -890,30 +884,30 @@ public final class ProcessInfo implements Serializable
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null)
 			{
-				return adPInstance.getAD_Client_ID();
+				return ClientId.ofRepoId(adPInstance.getAD_Client_ID());
 			}
 
-			return Env.getAD_Client_ID(getCtx());
+			return Env.getClientId(getCtx());
 		}
 
 		public ProcessInfoBuilder setAD_Client_ID(final int adClientId)
 		{
-			this._adClientId = adClientId;
+			this._adClientId = ClientId.ofRepoIdOrNull(adClientId);
 			return this;
 		}
 
-		private int getAD_Org_ID()
+		private OrgId getAdOrgId()
 		{
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null)
 			{
-				return adPInstance.getAD_Org_ID();
+				return OrgId.ofRepoId(adPInstance.getAD_Org_ID());
 			}
 
-			return Env.getAD_Org_ID(getCtx());
+			return Env.getOrgId(getCtx());
 		}
 
-		private int getAD_User_ID()
+		private UserId getAdUserId()
 		{
 			if (_adUserId != null)
 			{
@@ -923,15 +917,15 @@ public final class ProcessInfo implements Serializable
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null)
 			{
-				return adPInstance.getAD_User_ID();
+				return UserId.ofRepoId(adPInstance.getAD_User_ID());
 			}
 
-			return Env.getAD_User_ID(getCtx());
+			return Env.getLoggedUserId(getCtx());
 		}
 
 		public ProcessInfoBuilder setAD_User_ID(final int adUserId)
 		{
-			this._adUserId = adUserId;
+			this._adUserId = UserId.ofRepoIdOrNull(adUserId);
 			return this;
 		}
 
@@ -958,13 +952,13 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_Window_ID(int adWindowId)
 		{
-			_adWindowId = adWindowId;
+			_adWindowId = AdWindowId.ofRepoIdOrNull(adWindowId);
 			return this;
 		}
 
-		private int getAD_Window_ID()
+		private AdWindowId getAdWindowId()
 		{
-			if (_adWindowId > 0)
+			if (_adWindowId != null)
 			{
 				return _adWindowId;
 			}
@@ -972,9 +966,10 @@ public final class ProcessInfo implements Serializable
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null && adPInstance.getAD_Window_ID() > 0)
 			{
-				return adPInstance.getAD_Window_ID();
+				return AdWindowId.ofRepoId(adPInstance.getAD_Window_ID());
 			}
-			return _adWindowId;
+
+			return null;
 		}
 
 		private String getTitle()
@@ -1036,14 +1031,14 @@ public final class ProcessInfo implements Serializable
 			return pInstanceId;
 		}
 
-		private int getAD_Process_ID()
+		private AdProcessId getAD_Process_ID()
 		{
-			if (adProcessId <= 0)
+			if (adProcessId == null)
 			{
 				final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 				if (adPInstance != null)
 				{
-					adProcessId = adPInstance.getAD_Process_ID();
+					adProcessId = AdProcessId.ofRepoId(adPInstance.getAD_Process_ID());
 				}
 			}
 			return adProcessId;
@@ -1058,15 +1053,15 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_ProcessByValue(final String processValue)
 		{
-			final I_AD_Process adProcess = Services.get(IADProcessDAO.class).retriveProcessByValue(getCtx(), processValue);
+			final I_AD_Process adProcess = Services.get(IADProcessDAO.class).retrieveProcessByValue(getCtx(), processValue);
 			setAD_Process(adProcess);
 			return this;
 		}
 
 		public ProcessInfoBuilder setAD_ProcessByClassname(final String processClassname)
 		{
-			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(processClassname);
-			if (adProcessId <= 0)
+			final AdProcessId adProcessId = Services.get(IADProcessDAO.class).retrieveProcessIdByClassIfUnique(processClassname);
+			if (adProcessId == null)
 			{
 				throw new AdempiereException("@NotFound@ @AD_Process_ID@ (@Classname@: " + processClassname + ")");
 			}
@@ -1077,24 +1072,28 @@ public final class ProcessInfo implements Serializable
 
 		private I_AD_Process getAD_ProcessOrNull()
 		{
-			final int processId = getAD_Process_ID();
-			if (processId <= 0)
+			final AdProcessId processId = getAD_Process_ID();
+			if (processId == null)
 			{
 				return null;
 			}
-			if (_adProcess != null && _adProcess.getAD_Process_ID() != processId)
+			if (_adProcess != null && _adProcess.getAD_Process_ID() != processId.getRepoId())
 			{
 				_adProcess = null;
 			}
 			if (_adProcess == null)
 			{
-				final Properties ctx = Env.coalesce(getCtx());
-				_adProcess = InterfaceWrapperHelper.create(ctx, processId, I_AD_Process.class, ITrx.TRXNAME_None);
+				_adProcess = Services.get(IADProcessDAO.class).getById(processId);
 			}
 			return _adProcess;
 		}
 
 		public ProcessInfoBuilder setAD_Process_ID(final int adProcessId)
+		{
+			return setAD_Process_ID(AdProcessId.ofRepoIdOrNull(adProcessId));
+		}
+
+		public ProcessInfoBuilder setAD_Process_ID(final AdProcessId adProcessId)
 		{
 			this.adProcessId = adProcessId;
 			return this;
@@ -1652,7 +1651,7 @@ public final class ProcessInfo implements Serializable
 			//
 			// Get Organization Language if any (03040)
 			{
-				final Language lang = Services.get(ILanguageBL.class).getOrgLanguage(ctx, getAD_Org_ID());
+				final Language lang = Services.get(ILanguageBL.class).getOrgLanguage(ctx, getAdOrgId().getRepoId());
 				if (lang != null)
 				{
 					return lang;

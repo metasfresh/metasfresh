@@ -35,7 +35,7 @@ import de.metas.process.PInstanceId;
 public class PlainADPInstanceDAO extends ADPInstanceDAO
 {
 	@Override
-	public PInstanceId createPInstanceId()
+	public PInstanceId createSelectionId()
 	{
 		return PInstanceId.ofRepoId(POJOLookupMap.get().nextId(I_AD_PInstance.Table_Name));
 	}

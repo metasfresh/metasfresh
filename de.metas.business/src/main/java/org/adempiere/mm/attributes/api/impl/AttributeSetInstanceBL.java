@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -311,5 +312,17 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 
 		return attributeInstance;
+	}
+
+	@Override
+	public String getASIDescriptionById(final AttributeSetInstanceId asiId)
+	{
+		if (asiId.isNone())
+		{
+			return "";
+		}
+
+		I_M_AttributeSetInstance asi = Services.get(IAttributeDAO.class).getAttributeSetInstanceById(asiId);
+		return asi != null ? asi.getDescription() : "";
 	}
 }

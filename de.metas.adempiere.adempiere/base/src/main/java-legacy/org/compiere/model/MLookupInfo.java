@@ -317,7 +317,12 @@ public final class MLookupInfo implements Serializable, Cloneable
 	{
 		this.descriptionColumnSQL = TranslatableParameterizedString.of(CTXNAME_AD_Language,
 				descriptionColumnSQL_BaseLang,
-				descriptionColumnSQL_Trl);;
+				descriptionColumnSQL_Trl);
+	}
+
+	public String getActiveColumnSQL()
+	{
+		return getTableName() + ".IsActive";
 	}
 
 	/**

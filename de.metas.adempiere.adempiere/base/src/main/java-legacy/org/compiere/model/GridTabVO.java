@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -282,9 +283,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (vo.OrderByClause == null)
 				vo.OrderByClause = "";
 
-			vo.AD_Process_ID = rs.getInt("AD_Process_ID");
+			vo.printProcessId = AdProcessId.ofRepoIdOrNull(rs.getInt("AD_Process_ID"));
 			if (rs.wasNull())
-				vo.AD_Process_ID = 0;
+				vo.printProcessId = null;
 			vo.AD_Image_ID = rs.getInt("AD_Image_ID");
 			if (rs.wasNull())
 				vo.AD_Image_ID = 0;
@@ -472,7 +473,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Table High Volume	*/
 	public  boolean     IsHighVolume = false;
 	/** Process			*/
-	private int		    AD_Process_ID = 0;
+	private AdProcessId printProcessId;
 	/** Commit Warning	*/
 	private String CommitWarning;
 	private Map<String, String> commitWarningTrls = null;
@@ -712,7 +713,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.IsSecurityEnabled = IsSecurityEnabled;
 		clone.IsDeleteable = IsDeleteable;
 		clone.IsHighVolume = IsHighVolume;
-		clone.AD_Process_ID = AD_Process_ID;
+		clone.printProcessId = printProcessId;
 		clone.CommitWarning = CommitWarning;
 		clone.commitWarningTrls = commitWarningTrls == null ? null : new HashMap<>(commitWarningTrls);
 		clone.WhereClause = WhereClause;
@@ -1043,9 +1044,9 @@ public class GridTabVO implements Evaluatee, Serializable
 		commitWarningTrls.put(adLanguage, commitWarningTrl);
 	}
 
-	public int getPrint_Process_ID()
+	public AdProcessId getPrintProcessId()
 	{
-		return AD_Process_ID;
+		return printProcessId;
 	}
 
 	public boolean isReadOnly()

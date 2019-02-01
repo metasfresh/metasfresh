@@ -3,6 +3,10 @@ package de.metas.process;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
@@ -37,10 +41,11 @@ import com.google.common.collect.ImmutableSet;
  */
 public interface IProcessPreconditionsContext
 {
-	/**
-	 * @return underlying AD_Window_ID or <code>-1</code> if not available
-	 */
-	int getAD_Window_ID();
+	@Nullable
+	AdWindowId getAdWindowId();
+	
+	@Nullable
+	AdTabId getAdTabId();
 
 	/**
 	 * @return underlying table name or <code>null</code>

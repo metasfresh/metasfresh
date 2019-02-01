@@ -8,9 +8,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 
+import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /*
  * #%L
@@ -47,9 +47,9 @@ public class AD_Table_CreatePK_AllMissing extends JavaProcess
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final TablePrimaryKeyGenerator generator = new TablePrimaryKeyGenerator(getCtx());
+		final TablePrimaryKeyGenerator generator = TablePrimaryKeyGenerator.newInstance();
 		generator.generateForTablesIfPossible(retrieveTablesWithMissingPK());
 		return generator.getSummary();
 	}
