@@ -294,9 +294,7 @@ public class CalloutInvoice extends CalloutEngine
 		final I_C_InvoiceLine invoiceLine = calloutField.getModel(I_C_InvoiceLine.class);
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
-		final I_M_Product product = invoiceLine.getM_Product();
-		final int productID = product.getM_Product_ID();
-
+		final int productID = invoiceLine.getM_Product_ID();
 		if (productID <= 0)
 		{
 			// nothing to do
@@ -367,6 +365,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// 07216: Correctly set price and product UOM.
+		final I_M_Product product = invoiceLine.getM_Product();
 		invoiceLine.setC_UOM_ID(product.getC_UOM_ID());
 
 		//

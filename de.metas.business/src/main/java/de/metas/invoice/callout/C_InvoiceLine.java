@@ -68,38 +68,37 @@ public class C_InvoiceLine
 		invoiceBL.setLineNetAmt(invoiceLine);
 	}
 
+	@CalloutMethod(columnNames = I_C_InvoiceLine.COLUMNNAME_M_Product_ID)
+	public void setUomFromProduct(final I_C_InvoiceLine invoiceLine)
+	{
+		Services.get(IInvoiceBL.class).setProductAndUOM(invoiceLine, invoiceLine.getM_Product_ID());
+	}
+
 	/**
-	 * update prices on ASI or discount change
-	 *
-	 * @param invoiceLine
-	 * @param field
+	 * Update prices on ASI or discount change
 	 */
-	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_M_AttributeSetInstance_ID, I_C_InvoiceLine.COLUMNNAME_Discount })
-	public void onASIorDiscountChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
+	@CalloutMethod(columnNames = {
+			I_C_InvoiceLine.COLUMNNAME_M_AttributeSetInstance_ID,
+			I_C_InvoiceLine.COLUMNNAME_Discount })
+	public void onASIorDiscountChange(final I_C_InvoiceLine invoiceLine)
 	{
 		Services.get(IInvoiceLineBL.class).updatePrices(invoiceLine);
-
 	}
 
 	/**
 	 * Set the product as soon as the order line is set
-	 *
-	 * @param invoiceLine
-	 * @param field
 	 */
-	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID })
-	public void setProduct(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
+	@CalloutMethod(columnNames = I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
+	public void setProductFromOrderLine(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
 		if (InterfaceWrapperHelper.isNull(invoiceLine, I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID))
 		{
 			// set the product to null if the orderline was set to null
 			invoiceLine.setM_Product(null);
-
 			return;
 		}
 
 		final I_C_OrderLine ol = invoiceLine.getC_OrderLine();
-
 		final I_M_Product product = ol.getM_Product();
 
 		invoiceLine.setM_Product(product);

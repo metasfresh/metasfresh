@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -33,7 +30,6 @@ import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -41,7 +37,6 @@ import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
@@ -539,10 +534,6 @@ public class Login
 			//
 			// Load preferences
 			loadPreferences();
-
-			//
-			// Default Values
-			loadDefaults();
 		}
 		catch (Exception e)
 		{
@@ -612,99 +603,6 @@ public class Login
 				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
 				.forEach(ctx::setPreference);
 	}
-
-	private void loadDefaults() throws SQLException
-	{
-		log.debug("Default Values ...");
-
-		final String sqlDefaulValues = "SELECT t.TableName, c.ColumnName "
-				+ "FROM AD_Column c "
-				+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
-				+ "WHERE c.IsKey='Y' AND t.IsActive='Y'"
-				+ " AND EXISTS (SELECT * FROM AD_Column cc "
-				+ " WHERE ColumnName = 'IsDefault' AND t.AD_Table_ID=cc.AD_Table_ID AND cc.IsActive='Y')";
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sqlDefaulValues, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final String tableName = rs.getString(1);
-				final String columnName = rs.getString(2);
-				loadDefault(tableName, columnName);
-			}
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			pstmt = null;
-			rs = null;
-		}
-
-	}
-
-	/**
-	 * Load Default Value for Table into Context.
-	 *
-	 * @param TableName table name
-	 * @param ColumnName column name
-	 */
-	private void loadDefault(final String TableName, final String ColumnName)
-	{
-		if (TableName.startsWith("AD_Window")
-				|| TableName.startsWith("AD_PrintFormat")
-				|| TableName.startsWith("AD_Workflow"))
-		{
-			return;
-		}
-
-		final LoginContext ctx = getCtx();
-
-		String value = null;
-		//
-		String sql = "SELECT " + ColumnName + " FROM " + TableName	// most specific first
-				+ " WHERE IsDefault='Y' AND IsActive='Y' ORDER BY AD_Client_ID DESC, AD_Org_ID DESC";
-		sql = Env.getUserRolePermissions(ctx.getSessionContext()).addAccessSQL(sql, TableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				value = rs.getString(1);
-			}
-
-			// If there is more then one default value, we shall avoid having a default value in context at all
-			if (rs.next())
-			{
-				value = null;
-			}
-		}
-		catch (SQLException e)
-		{
-			log.error(TableName + " (" + sql + ")", e);
-			return;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		// Set Context Value
-		if (value != null && value.length() != 0)
-		{
-			if (I_C_DocType.Table_Name.equals(TableName))
-				ctx.setProperty("#C_DocTypeTarget_ID", value);
-			else
-				ctx.setProperty("#" + ColumnName, value);
-		}
-	}	// loadDefault
 
 	/**
 	 *

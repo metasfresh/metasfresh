@@ -266,15 +266,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 
-	private BigDecimal calculateQtyInvoicedInPriceUOM(final I_C_InvoiceLine invoiceLine)
+	private BigDecimal calculateQtyInvoicedInPriceUOM(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		Check.assumeNotNull(invoiceLine, "invoiceLine not null");
+		final BigDecimal qty = Check.assumeNotNull(invoiceLine.getQtyInvoiced(),
+				"qtyInvoiced may be not null; invoiceLine={}", invoiceLine);
 
-		final BigDecimal qty = invoiceLine.getQtyInvoiced();
-
-		Check.assumeNotNull(qty, "qty not null");
-
-		final I_C_UOM priceUOM = invoiceLine.getPrice_UOM();
 		if (invoiceLine.getPrice_UOM_ID() <= 0)
 		{
 			return qty;
@@ -287,6 +283,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
+		final I_C_UOM priceUOM = invoiceLine.getPrice_UOM();
 		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertFromProductUOM(ctx, productId, priceUOM, qty);
 
 		return qtyInPriceUOM;
@@ -303,9 +300,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		return createPricingContext(invoiceLine, priceListId, qtyInvoicedInPriceUOM);
 	}
 
-	public IEditablePricingContext createPricingContext(final I_C_InvoiceLine invoiceLine,
+	public IEditablePricingContext createPricingContext(@NonNull final I_C_InvoiceLine invoiceLine,
 			final PriceListId priceListId,
-			final BigDecimal priceQty)
+			@NonNull final BigDecimal priceQty)
 	{
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
