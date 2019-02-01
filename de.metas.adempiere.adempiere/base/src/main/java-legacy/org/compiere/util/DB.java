@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.sql.RowSet;
@@ -2324,10 +2325,13 @@ public final class DB
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
-	public static String buildSqlList(final Collection<? extends Object> paramsIn, final List<Object> paramsOut)
+	public static String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final List<Object> paramsOut)
 	{
-		Check.assumeNotNull(paramsOut, "paramsOut not null");
-
+		return buildSqlList(paramsIn, paramsOut::addAll);
+	}
+	
+	public static String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final Consumer<Collection<? extends Object>> paramsOutCollector)
+	{
 		if (paramsIn == null || paramsIn.isEmpty())
 		{
 			return SQL_EmptyList;
@@ -2340,7 +2344,7 @@ public final class DB
 			sql.append(",?");
 		}
 
-		paramsOut.addAll(paramsIn);
+		paramsOutCollector.accept(paramsIn);
 
 		return sql.insert(0, "(").append(")").toString();
 	}

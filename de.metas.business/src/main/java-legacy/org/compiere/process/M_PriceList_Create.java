@@ -10,15 +10,13 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 
-import de.metas.pricing.service.IPriceListBL;
 import de.metas.process.JavaProcess;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
  * Create product prices:
  * <ul>
- * <li>copy them from {@link I_M_PriceList_Version#getM_Pricelist_Version_Base()}
+ * <li>copy them from {@link I_M_PriceList_Version#getM_Pricelist_Version_Base_ID()}
  * <li>apply the discount schema: {@link I_M_PriceList_Version#getM_DiscountSchema()}
  * </ul>
  *
@@ -29,11 +27,7 @@ public class M_PriceList_Create extends JavaProcess
 {
 	// Services
 	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
-	private final transient IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-	// State
-	private I_M_PriceList_Version _targetPriceListVersion = null; // lazy
 
 	@Override
 	protected String doIt() throws Exception
@@ -90,15 +84,5 @@ public class M_PriceList_Create extends JavaProcess
 	private int getTargetPriceListVersion_ID()
 	{
 		return getRecord_ID();
-	}
-
-	private I_M_PriceList_Version getTargetPriceListVersion()
-	{
-		if (_targetPriceListVersion == null)
-		{
-			_targetPriceListVersion = getRecord(I_M_PriceList_Version.class);
-			Check.assumeNotNull(_targetPriceListVersion, "price list version not null");
-		}
-		return _targetPriceListVersion;
 	}
 }

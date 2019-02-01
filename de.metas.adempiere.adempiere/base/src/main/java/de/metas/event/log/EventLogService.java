@@ -56,13 +56,6 @@ public class EventLogService
 			500,
 			15 /* expireMinutes=15 because it's unlikely that event log records need to be in cache for longer periods of time */);
 
-	private final EventLogUserService eventLogUserService;
-
-	public EventLogService(@NonNull final EventLogUserService eventLogUserService)
-	{
-		this.eventLogUserService = eventLogUserService;
-	}
-
 	public Event loadEventForReposting(@NonNull final I_AD_EventLog eventLogRecord)
 	{
 		return loadEventForReposting(eventLogRecord, ImmutableList.of());
@@ -85,21 +78,12 @@ public class EventLogService
 				.create()
 				.listDistinct(I_AD_EventLog_Entry.COLUMNNAME_Classname, String.class);
 
-		final Event.Builder eventBuilderWithAdditionalInfo = createEventWithProcessedHandlers(eventFromStoredString, processedHandlers);
-
-		return eventLogUserService
-				.addEventLogAdvise(eventBuilderWithAdditionalInfo, false)
-				.build();
-	}
-
-	private Event.Builder createEventWithProcessedHandlers(
-			@NonNull final Event eventFromStoredString,
-			@NonNull final List<String> processedHandlers)
-	{
 		return eventFromStoredString.toBuilder()
 				.putPropertyFromObject(
 						EventLogUserService.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES,
-						processedHandlers);
+						processedHandlers)
+				.storeEvent(false)
+				.build();
 	}
 
 	public void storeEvent(

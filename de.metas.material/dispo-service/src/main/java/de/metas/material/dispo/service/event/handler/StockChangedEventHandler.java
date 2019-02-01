@@ -228,7 +228,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		return MaterialDescriptor.builder()
 				.date(date)
 				.productDescriptor(productDescriptor)
-				.customerId(0)
+				.customerId(null)
 				.warehouseId(event.getWarehouseId());
 	}
 

@@ -241,7 +241,7 @@ public class MaterialEventHandlerRegistryTests
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
 								.productDescriptor(orderedMaterial)
-								.bPartnerId(orderedMaterial.getCustomerId())
+								.bPartnerId(orderedMaterial.getCustomerId().getRepoId())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
 								.networkDistributionLineId(900)

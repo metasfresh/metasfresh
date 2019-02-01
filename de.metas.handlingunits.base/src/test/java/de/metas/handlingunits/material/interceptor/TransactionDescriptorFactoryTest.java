@@ -74,7 +74,7 @@ public class TransactionDescriptorFactoryTest
 		final TransactionDescriptor result = new TransactionDescriptorFactory().ofRecord(transactionRecord);
 
 		assertThat(result.getMovementQty()).isEqualByComparingTo("-10");
-		assertThat(result.getInoutLineId()).isEqualTo(inoutLine.getM_InOutLine_ID());
+		assertThat(result.getInoutLineId().getRepoId()).isEqualTo(inoutLine.getM_InOutLine_ID());
 		assertThat(result.getTransactionDate()).isEqualTo(asInstant(movementDate));
 	}
 

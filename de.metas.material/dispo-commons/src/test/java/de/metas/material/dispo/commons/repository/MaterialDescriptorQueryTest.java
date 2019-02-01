@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -57,7 +57,7 @@ public class MaterialDescriptorQueryTest
 
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(result.getCustomerId()).isEqualTo(BPARTNER_ID);
+		assertThat(result.getCustomer()).isEqualTo(BPartnerClassifier.specific(BPARTNER_ID));
 		assertThat(result.getTimeRangeStart()).isNull();
 		assertThat(result.getTimeRangeEnd()).isNull();
 
@@ -74,8 +74,8 @@ public class MaterialDescriptorQueryTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getStorageAttributesKey())
 				.isSameAs(AttributesKey.ALL);
-		assertThat(result.getCustomerId())
-				.isSameAs(AvailableToPromiseQuery.BPARTNER_ID_ANY);
+		assertThat(result.getCustomer())
+				.isSameAs(BPartnerClassifier.any());
 	}
 
 }

@@ -63,7 +63,7 @@ public class AvailableToPromiseResult
 				warehouseIds = ImmutableSet.of(AvailableToPromiseResultGroup.WAREHOUSE_ID_ANY);
 			}
 
-			final int bpartnerId = query.getBpartnerId();
+			final BPartnerClassifier bpartner = query.getBpartner();
 			final List<Integer> productIds = query.getProductIds();
 
 			for (final int warehouseId : warehouseIds)
@@ -77,7 +77,7 @@ public class AvailableToPromiseResult
 								.storageAttributesKey(storageAttributesKeyAndMatcher.getLeft())
 								.storageAttributesKeyMatcher(storageAttributesKeyAndMatcher.getRight())
 								.warehouseId(warehouseId)
-								.bpartnerId(bpartnerId)
+								.bpartner(bpartner)
 								.build());
 					}
 				}
@@ -182,7 +182,7 @@ public class AvailableToPromiseResult
 	{
 		boolean alreadyIncludedInMatchingGroup = false;
 
-		if (request.getBpartnerId() <= 0)
+		if(!request.getBpartner().isSpecificBPartner())
 		{
 			for (final AvailableToPromiseResultGroup resultGroup : resultGroups)
 			{
@@ -211,7 +211,7 @@ public class AvailableToPromiseResult
 				.productId(request.getProductId())
 				.storageAttributesKey(request.getStorageAttributesKey())
 				.warehouseId(request.getWarehouseId())
-				.bpartnerId(request.getBpartnerId())
+				.bpartner(request.getBpartner())
 //				.qty(request.getQty())
 //				.date(request.getDate())
 //				.seqNo(request.getSeqNo())
