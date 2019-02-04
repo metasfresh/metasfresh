@@ -259,7 +259,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date")
-	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final int priceListId, @NonNull final Date date)
+	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final PriceListId priceListId, @NonNull final Date date)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)

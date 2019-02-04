@@ -17,6 +17,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
@@ -68,7 +69,7 @@ public class ProductPriceImporter
 
 		if (request.getPrice().signum() >= 0)
 		{
-			final I_M_PriceList_Version plv = getCreatePriceListVersion(request.getPriceListId(), request.getValidDate());
+			final I_M_PriceList_Version plv = getCreatePriceListVersion(request);
 			createProductPriceOrUpdateExistentOne(plv);
 		}
 	}
@@ -80,9 +81,19 @@ public class ProductPriceImporter
 				&& request.getValidDate() != null;
 	}
 
-	private I_M_PriceList_Version getCreatePriceListVersion(final int priceListId, @NonNull final LocalDate validDate)
+	private I_M_PriceList_Version getCreatePriceListVersion(@NonNull final ProductPriceCreateRequest request)
 	{
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
+		final PriceListId priceListId = PriceListId.ofRepoId(request.getPriceListId());
+		@NonNull final LocalDate validDate = request.getValidDate();
+		final I_M_PriceList_Version plv;
+		if (request.isInitialImport())
+		{
+			plv = Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(priceListId, validDate, null);
+		}
+		else 
+		{
+			plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
+		}
 		return plv == null ? createPriceListVersion(priceListId, validDate) : plv;
 	}
 
@@ -108,12 +119,12 @@ public class ProductPriceImporter
 		return pp;
 	}
 
-	private I_M_PriceList_Version createPriceListVersion(final int priceListId, @NonNull final LocalDate validFrom)
+	private I_M_PriceList_Version createPriceListVersion(final PriceListId priceListId, @NonNull final LocalDate validFrom)
 	{
 		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
 		plv.setName(validFrom.toString());
 		plv.setValidFrom(TimeUtil.asTimestamp(validFrom));
-		plv.setM_PriceList_ID(priceListId);
+		plv.setM_PriceList_ID(priceListId.getRepoId());
 		plv.setProcessed(true);
 		save(plv);
 

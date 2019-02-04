@@ -534,4 +534,15 @@ public class MProductImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.warn("No Mandatory Pharma product category Name ={}", no);
 	}
+	
+	public void dbUpdateIsPriceCreated(@NonNull final String whereClause)
+	{
+		StringBuilder sql;
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET IsPriceCreated = 'Y' ")
+				.append(" WHERE 1=1 ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
 }
