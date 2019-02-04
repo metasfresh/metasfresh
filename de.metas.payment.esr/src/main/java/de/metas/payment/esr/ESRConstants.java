@@ -111,8 +111,7 @@ public final class ESRConstants
 	 *
 	 * @see #calculateCheckDigit(String, int, int)
 	 */
-	public static int[] CHECK_String =
-		{ 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
+	public static int[] CHECK_String = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
 
 	public static final String C_Async_Batch_InternalName = "ESRWizard";
 
@@ -123,17 +122,7 @@ public final class ESRConstants
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_Enabled,
 				true, // defaultValue
-				Env.getAD_Client_ID(ctx) // AD_Client_ID
-		);
+				Env.getAD_Client_ID(ctx),
+				Env.getAD_Org_ID(ctx));
 	}
-
-	/**
-	 * Sets (and persist in database) if the ESR module shall be enabled.
-	 */
-	public static final void setEnabled(final Properties ctx, final boolean enabled)
-	{
-		final int AD_Org_ID = Env.CTXVALUE_AD_Org_ID_System; // all orgs
-		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_Enabled, enabled, AD_Org_ID);
-	}
-
 }

@@ -70,7 +70,7 @@ public class ESRBL implements IESRBL
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public boolean appliesForESRDocumentRefId(final Object sourceModel)
+	public boolean appliesForESRDocumentRefId(@NonNull final Object sourceModel)
 	{
 		final String sourceTableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
 		Check.assume(I_C_Invoice.Table_Name.equals(sourceTableName), "Document " + sourceModel + " not supported");
@@ -120,7 +120,7 @@ public class ESRBL implements IESRBL
 			return false;
 		}
 
-		final I_C_BP_BankAccount bankAccountRecord = retrieveEsrBankAccount(invoiceRecord);
+		final I_C_BP_BankAccount bankAccountRecord = retrieveEsrBankAccountOfOrg(invoiceRecord);
 
 		final InvoiceReferenceNo invoiceReferenceString = InvoiceReferenceNos.createFor(invoiceRecord, bankAccountRecord);
 
@@ -144,7 +144,7 @@ public class ESRBL implements IESRBL
 		return true;
 	}
 
-	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
+	private I_C_BP_BankAccount retrieveEsrBankAccountOfOrg(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		// get the account number for the org of the invoice
 		final int orgID = invoiceRecord.getAD_Org_ID();
