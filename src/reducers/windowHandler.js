@@ -191,7 +191,7 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     case UPDATE_RAW_MODAL: {
-      const { windowId, data } = action.data;
+      const { windowId, data } = action;
 
       if (state.rawModal.windowId === windowId) {
         return {

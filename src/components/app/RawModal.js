@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
@@ -78,7 +79,7 @@ class RawModal extends Component {
     });
   };
 
-  handleClose = async () => {
+  handleClose = async type => {
     const {
       dispatch,
       closeCallback,
@@ -116,7 +117,7 @@ class RawModal extends Component {
 
     await this.removeModal();
 
-    await deleteView(windowType, viewId);
+    await deleteView(windowType, viewId, type);
   };
 
   removeModal = async () => {
@@ -140,13 +141,7 @@ class RawModal extends Component {
   };
 
   renderButtons = () => {
-    const {
-      modalTitle,
-      children,
-      modalDescription,
-      modalVisible,
-      rawModalVisible,
-    } = this.props;
+    const { modalVisible, rawModalVisible } = this.props;
     let { allowedCloseActions } = this.props;
     const { isTooltipShow } = this.state;
     const buttonsArray = [];
@@ -155,35 +150,36 @@ class RawModal extends Component {
       allowedCloseActions = ['DONE'];
     }
 
-    for () {
-      buttonsArray.
+    for (let i = 0; i < allowedCloseActions.length; i += 1) {
+      const name = allowedCloseActions[i];
+      const selector = `modal.actions.${name.toLowerCase()}`;
+
+      buttonsArray.push(
+        <button
+          key={`rawmodal-button-${name}`}
+          className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+          onClick={() => this.handleClose(name)}
+          tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
+          onMouseEnter={() => this.toggleTooltip(true)}
+          onMouseLeave={() => this.toggleTooltip(false)}
+        >
+          {counterpart.translate(selector)}
+          {isTooltipShow && (
+            <Tooltips
+              name={keymap[name]}
+              action={counterpart.translate(selector)}
+              type={''}
+            />
+          )}
+        </button>
+      );
     }
-    <button
-      className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
-      onClick={this.handleClose}
-      tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
-      onMouseEnter={() => this.toggleTooltip(true)}
-      onMouseLeave={() => this.toggleTooltip(false)}
-    >
-      {counterpart.translate('modal.actions.done')}
-      {isTooltipShow && (
-        <Tooltips
-          name={keymap.DONE}
-          action={counterpart.translate('modal.actions.done')}
-          type={''}
-        />
-      )}
-    </button>
-  }
+
+    return buttonsArray;
+  };
 
   render() {
-    const {
-      modalTitle,
-      children,
-      modalDescription,
-      modalVisible,
-    } = this.props;
-
+    const { modalTitle, children, modalDescription, modalVisible } = this.props;
     const { scrolled } = this.state;
 
     if (!children) {
@@ -195,9 +191,9 @@ class RawModal extends Component {
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
-              className={
-                'panel-modal-header ' + (scrolled ? 'header-shadow' : '')
-              }
+              className={classnames('panel-modal-header', {
+                'header-shadow': scrolled,
+              })}
             >
               <span className="panel-modal-header-title">
                 {modalTitle ? modalTitle : 'Modal'}
@@ -205,10 +201,7 @@ class RawModal extends Component {
                   {modalDescription ? modalDescription : ''}
                 </span>
               </span>
-
-              <div className="items-row-2">
-                {this.renderButtons()}
-              </div>
+              <div className="items-row-2">{this.renderButtons()}</div>
             </div>
             <Indicator />
             <div
@@ -220,7 +213,7 @@ class RawModal extends Component {
               {children}
             </div>
             <ModalContextShortcuts
-              apply={modalVisible ? null : () => this.handleClose()}
+              apply={modalVisible ? null : this.handleClose}
             />
           </div>
         </div>
@@ -238,7 +231,11 @@ const mapStateToProps = ({ windowHandler }) => ({
 
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  closeCallback: PropTypes.func,
   children: PropTypes.node,
+  allowedCloseActions: PropTypes.array,
+  windowType: PropTypes.string,
+  viewId: PropTypes.string,
   modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
