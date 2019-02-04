@@ -18,7 +18,6 @@ import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -66,13 +65,11 @@ public class M_Transaction_TransactionEventCreator
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final Builder<MaterialEvent> result = ImmutableList.builder();
+		final ImmutableList.Builder<MaterialEvent> result = ImmutableList.builder();
 
-		if (transaction.getInoutLineId() > 0)
+		if (transaction.getInoutLineId() != null)
 		{
-			final List<MaterialEvent> //
-			eventsForInOutLine = M_Transaction_InOutLineEventCreator.createEventsForInOutLine(transaction, deleted);
-			result.addAll(eventsForInOutLine);
+			result.addAll(createEventForInOutLine(transaction, deleted));
 		}
 		else if (transaction.getCostCollectorId() > 0)
 		{
@@ -89,6 +86,13 @@ public class M_Transaction_TransactionEventCreator
 		return result.build();
 	}
 
+	private List<MaterialEvent> createEventForInOutLine(
+			@NonNull final TransactionDescriptor transaction,
+			final boolean deleted)
+	{
+		return M_Transaction_InOutLineEventCreator.createEventsForInOutLine(transaction, deleted);
+	}
+
 	private List<MaterialEvent> createEventForCostCollector(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
@@ -99,10 +103,13 @@ public class M_Transaction_TransactionEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForCostCollector(costCollector, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // don't provide the ppOrder's bPartnerId unless we clarified that it's the customer for which the produced goods are reserved
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				// don't provide the ppOrder's bPartnerId unless we clarified that it's the customer for which the produced goods are reserved
+				.customerId(null)
+				.vendorId(null)
+				.build();
 
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -210,10 +217,13 @@ public class M_Transaction_TransactionEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForMovementLine(movementLine, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // the movement's bpartner (if set at all) is not the customer, but probably a shipper
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				// the movement's bpartner (if set at all) is not the customer nor a vendor, but probably a shipper
+				.customerId(null)
+				.vendorId(null)
+				.build();
 
 		final int ddOrderId = movementLine.getDD_OrderLine_ID() > 0
 				? movementLine.getDD_OrderLine().getDD_Order_ID()
@@ -264,10 +274,10 @@ public class M_Transaction_TransactionEventCreator
 				M_Transaction_HuDescriptor.INSTANCE.createHuDescriptorsForInventoryLine(inventoryLine, deleted);
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transaction,
-				0, // customerId
-				huDescriptors);
+		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.newMaterialDescriptors()
+				.transaction(transaction)
+				.huDescriptors(huDescriptors)
+				.build();
 
 		final ImmutableList.Builder<MaterialEvent> events = ImmutableList.builder();
 		for (final Entry<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptor : materialDescriptors.entrySet())

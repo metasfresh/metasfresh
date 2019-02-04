@@ -1,5 +1,7 @@
 package de.metas.inout.api.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,20 +15,22 @@ package de.metas.inout.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
+import lombok.NonNull;
 
 public class MaterialBalanceConfigBL implements IMaterialBalanceConfigBL
 {
@@ -34,15 +38,15 @@ public class MaterialBalanceConfigBL implements IMaterialBalanceConfigBL
 	private CopyOnWriteArrayList<IMaterialBalanceConfigMatcher> matchers = new CopyOnWriteArrayList<>();
 
 	@Override
-	public void addMaterialBalanceConfigMather(IMaterialBalanceConfigMatcher matcher)
+	public void addMaterialBalanceConfigMather(@NonNull final IMaterialBalanceConfigMatcher matcher)
 	{
 		matchers.add(matcher);
 	}
-	
-	@Override 
-	public CopyOnWriteArrayList<IMaterialBalanceConfigMatcher> retrieveMatchers()
+
+	@Override
+	public List<IMaterialBalanceConfigMatcher> retrieveMatchers()
 	{
-		return matchers;
+		return ImmutableList.copyOf(matchers);
 	}
 
 }

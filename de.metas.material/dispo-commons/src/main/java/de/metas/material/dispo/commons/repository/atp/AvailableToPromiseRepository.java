@@ -18,6 +18,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
@@ -135,14 +136,11 @@ public class AvailableToPromiseRepository
 	@VisibleForTesting
 	static AddToResultGroupRequest createAddToResultGroupRequest(final I_MD_Candidate_ATP_QueryResult stockRecord)
 	{
-		final int bPpartnerIdForRequest = stockRecord.getC_BPartner_Customer_ID() > 0
-				? stockRecord.getC_BPartner_Customer_ID()
-				: AvailableToPromiseQuery.BPARTNER_ID_ANY // records that have no bPartner-ID are applicable to any bpartner
-		;
+		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(stockRecord.getC_BPartner_Customer_ID());
 
 		return AddToResultGroupRequest.builder()
 				.productId(stockRecord.getM_Product_ID())
-				.bpartnerId(bPpartnerIdForRequest)
+				.bpartner(BPartnerClassifier.specificOrAny(customerId)) // records that have no bPartner-ID are applicable to any bpartner
 				.warehouseId(stockRecord.getM_Warehouse_ID())
 				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())

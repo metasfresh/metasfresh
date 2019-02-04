@@ -59,7 +59,7 @@ public class EventLogServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		eventLogService = new EventLogService(new EventLogUserService());
+		eventLogService = new EventLogService();
 
 		// @formatter:off
 		new Expectations()
@@ -87,7 +87,8 @@ public class EventLogServiceTest
 				.isEqualToNormalizingWhitespace("{\n" +
 						"  \"uuid\" : \"5fc6dbeb-aee4-4ac7-89ca-d31ff50d6421\",\n" +
 						"  \"when\" : 1514876894.521000000,\n" +
-						"  \"senderId\" : \"testSenderId\"\n" +
+						"  \"senderId\" : \"testSenderId\",\n" +
+						"  \"storeEvent\" : false\n" +
 						"}");
 
 		final List<I_AD_EventLog_Entry> eventLogEntryRecords = pojoLookupMap.getRecords(I_AD_EventLog_Entry.class);

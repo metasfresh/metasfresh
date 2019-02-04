@@ -69,13 +69,11 @@ public interface IUserDAO extends ISingletonService
 
 	/**
 	 * Fetch all system(login) user IDs
-	 *
+	 * 
 	 * @param ctx
 	 * @return AD_User_IDs
 	 */
 	List<Integer> retrieveSystemUserIds();
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
-
-	<T extends org.compiere.model.I_AD_User> T getById(int userId, Class<T> modelClass);
 }

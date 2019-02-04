@@ -16,13 +16,15 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -66,7 +68,7 @@ public class OrderAvailableToPromiseTool
 				.create()
 				.list();
 
-		if(orderLineRecords.isEmpty())
+		if (orderLineRecords.isEmpty())
 		{
 			return; // nothing to update
 		}
@@ -136,7 +138,7 @@ public class OrderAvailableToPromiseTool
 				.builder()
 				.productId(orderLineKey.getProductId())
 				.storageAttributesKey(orderLineKey.getAttributesKey())
-				.bpartnerId(orderLineKey.getBpartnerId())
+				.bpartner(orderLineKey.getBpartner())
 				.date(preparationDate)
 				.build();
 		return query;
@@ -147,18 +149,19 @@ public class OrderAvailableToPromiseTool
 	{
 		int productId;
 		AttributesKey attributesKey;
-		int bpartnerId;
+		BPartnerClassifier bpartner;
 
 		private static OrderLineKey forOrderLineRecord(@NonNull final I_C_OrderLine orderLineRecord)
 		{
 			final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(orderLineRecord, AttributesKey.ALL);
 
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()); // this column is mandatory and always > 0
+
 			return new OrderLineKey(
 					productDescriptor.getProductId(),
 					productDescriptor.getStorageAttributesKey(),
-					orderLineRecord.getC_BPartner_ID() // this column is mandatory and always > 0.
-			);
+					BPartnerClassifier.specific(bpartnerId));
 		}
 
 		private static OrderLineKey forResultGroup(@NonNull final AvailableToPromiseResultGroup resultGroup)
@@ -166,17 +169,17 @@ public class OrderAvailableToPromiseTool
 			return new OrderLineKey(
 					resultGroup.getProductId(),
 					resultGroup.getStorageAttributesKey(),
-					resultGroup.getBpartnerId());
+					resultGroup.getBpartner());
 		}
 
 		private OrderLineKey(
 				final int productId,
 				@NonNull final AttributesKey attributesKey,
-				final int bpartnerId)
+				@NonNull final BPartnerClassifier bpartner)
 		{
 			this.productId = productId;
 			this.attributesKey = attributesKey;
-			this.bpartnerId = bpartnerId;
+			this.bpartner = bpartner;
 		}
 	}
 }

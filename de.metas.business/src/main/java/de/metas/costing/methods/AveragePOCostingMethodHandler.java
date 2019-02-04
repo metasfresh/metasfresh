@@ -38,6 +38,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
@@ -102,7 +103,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final int receiptInOutLineId = request.getDocumentRef().getRecordId();
+		final InOutLineId receiptInOutLineId = InOutLineId.ofRepoId(request.getDocumentRef().getRecordId());
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
 				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
 		final CostAmount amt = costPrice.multiply(request.getQty());
@@ -176,7 +177,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.map(CostAmount::ofMoney);
 	}
 
-	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final int receiptInOutLineId)
+	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final InOutLineId receiptInOutLineId)
 	{
 		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 

@@ -19,6 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
@@ -32,7 +33,6 @@ import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;
-
 
 /*
  * #%L
@@ -72,6 +72,9 @@ public class M_ShipmentScheduleTest
 	@Mocked
 	private ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 
+	private static final BPartnerId BPARTNER_ID1 = BPartnerId.ofRepoId(40);
+	private static final BPartnerId BPARTNER_ID2 = BPartnerId.ofRepoId(45);
+
 	private static final BigDecimal ONE = BigDecimal.ONE;
 	private static final BigDecimal FOUR = new BigDecimal("4");
 	private static final BigDecimal FIVE = new BigDecimal("5");
@@ -92,8 +95,8 @@ public class M_ShipmentScheduleTest
 		oldShipmentSchedule.setQtyReserved(FOUR);
 		oldShipmentSchedule.setM_Product_ID(20);
 		oldShipmentSchedule.setM_Warehouse_ID(30);
-		oldShipmentSchedule.setC_BPartner_ID(40);
-		oldShipmentSchedule.setC_BPartner_Override_ID(45);
+		oldShipmentSchedule.setC_BPartner_ID(BPARTNER_ID1.getRepoId());
+		oldShipmentSchedule.setC_BPartner_Override_ID(BPARTNER_ID2.getRepoId());
 		save(oldShipmentSchedule);
 
 		shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
@@ -101,8 +104,8 @@ public class M_ShipmentScheduleTest
 		shipmentSchedule.setQtyReserved(FIVE); // increase by one
 		shipmentSchedule.setM_Product_ID(20);
 		shipmentSchedule.setM_Warehouse_ID(30);
-		shipmentSchedule.setC_BPartner_ID(40);
-		shipmentSchedule.setC_BPartner_Override_ID(45);
+		shipmentSchedule.setC_BPartner_ID(BPARTNER_ID1.getRepoId());
+		shipmentSchedule.setC_BPartner_Override_ID(BPARTNER_ID2.getRepoId());
 		save(shipmentSchedule);
 
 	}
@@ -125,7 +128,7 @@ public class M_ShipmentScheduleTest
 		final ShipmentScheduleCreatedEvent createdEvent = (ShipmentScheduleCreatedEvent)result;
 		assertThat(createdEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 
-		assertThat(createdEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(45);
+		assertThat(createdEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
@@ -173,7 +176,7 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleUpdatedEvent updatedEvent = (ShipmentScheduleUpdatedEvent)result;
 		assertThat(updatedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(updatedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(45);
+		assertThat(updatedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(updatedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
@@ -193,7 +196,7 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleDeletedEvent deletedEvent = (ShipmentScheduleDeletedEvent)result;
 		assertThat(deletedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(deletedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(45);
+		assertThat(deletedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(deletedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);

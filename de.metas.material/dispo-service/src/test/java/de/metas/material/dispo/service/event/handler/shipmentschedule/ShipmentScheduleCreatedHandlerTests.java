@@ -140,7 +140,7 @@ public class ShipmentScheduleCreatedHandlerTests
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
 
-		assertThat(allRecords).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
+		assertThat(allRecords).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId()));
 
 		final List<I_MD_Candidate_Demand_Detail> demandDetailRecords = POJOLookupMap.get().getRecords(I_MD_Candidate_Demand_Detail.class);
 		assertThat(demandDetailRecords).hasSize(1);

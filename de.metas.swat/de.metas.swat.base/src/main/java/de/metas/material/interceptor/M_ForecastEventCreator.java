@@ -11,6 +11,7 @@ import org.compiere.util.Util;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -80,7 +81,7 @@ public class M_ForecastEventCreator
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
-		final int customerId = Util.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID());
+		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(Util.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID()));
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(forecastLine.getDatePromised()))

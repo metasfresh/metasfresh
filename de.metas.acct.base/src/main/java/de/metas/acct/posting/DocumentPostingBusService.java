@@ -50,7 +50,7 @@ import lombok.NonNull;
 public class DocumentPostingBusService
 {
 	private static final Topic TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
-	public static final String PROPERTY_DocumentPostRequest = "DocumentPostRequest";
+	private static final String PROPERTY_DocumentPostRequest = "DocumentPostRequest";
 
 	// services
 	private static final Logger logger = LogManager.getLogger(DocumentPostingBusService.class);
@@ -80,11 +80,9 @@ public class DocumentPostingBusService
 	{
 		final String requestStr = SimpleObjectSerializer.get().serialize(request);
 
-		final Event.Builder metasfreshEventBuilder = Event.builder()
-				.putProperty(PROPERTY_DocumentPostRequest, requestStr);
-
-		return eventLogUserService
-				.addEventLogAdvise(metasfreshEventBuilder, true)
+		return Event.builder()
+				.putProperty(PROPERTY_DocumentPostRequest, requestStr)
+				.storeEvent()
 				.build();
 	}
 
