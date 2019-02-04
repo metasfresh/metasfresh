@@ -1,6 +1,7 @@
 import React from 'react';
 import { List } from 'immutable';
 import { mount, shallow } from 'enzyme';
+import uuid from 'uuid/v4';
 
 import RawList, { RawList as RawListBare } from '../../../../components/widget/List/RawList';
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
@@ -15,6 +16,7 @@ const createDummyProps = function(props, data) {
     onCloseDropdown: jest.fn(),
     ...props,
     list: List(data),
+    listHash: uuid(),
   };
 };
 
@@ -223,7 +225,7 @@ describe('RawList component', () => {
 
       focusDropdownSpy.mockClear();
 
-      wrapper.setProps({ isFocused: false, list: List([fixtures.data1.listData[0]]) });
+      wrapper.setProps({ isFocused: false });
       wrapper.update();
 
       expect(focusDropdownSpy).not.toHaveBeenCalled();
