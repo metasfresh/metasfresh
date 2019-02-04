@@ -20,21 +20,18 @@ class Device extends Component {
     this.sockClient = Stomp.Stomp.over(this.sock);
 
     this.sockClient.debug = null;
-    this.sockClient.connect(
-      {},
-      () => {
-        this.sockClient.subscribe(device.websocketEndpoint, msg => {
-          if (!this.state.valueChangeStopper) {
-            const body = JSON.parse(msg.body);
+    this.sockClient.connect({}, () => {
+      this.sockClient.subscribe(device.websocketEndpoint, msg => {
+        if (!this.state.valueChangeStopper) {
+          const body = JSON.parse(msg.body);
 
-            this.mounted &&
-              this.setState({
-                value: body.value,
-              });
-          }
-        });
-      }
-    );
+          this.mounted &&
+            this.setState({
+              value: body.value,
+            });
+        }
+      });
+    });
   }
 
   componentWillUnmount() {
