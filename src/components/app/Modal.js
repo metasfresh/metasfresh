@@ -434,9 +434,7 @@ class Modal extends Component {
                     : counterpart.translate('modal.actions.done')}
 
                   {isTooltipShow ===
-                    (modalType === 'process'
-                      ? keymap.CANCEL
-                      : keymap.DONE) && (
+                    (modalType === 'process' ? keymap.CANCEL : keymap.DONE) && (
                     <Tooltips
                       name={
                         modalType === 'process' ? keymap.CANCEL : keymap.DONE
