@@ -379,9 +379,9 @@ class Modal extends Component {
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
-              className={
-                'panel-modal-header ' + (scrolled ? 'header-shadow' : '')
-              }
+              className={classnames('panel-modal-header', {
+                'header-shadow': scrolled,
+              })}
             >
               <span className="panel-modal-header-title">
                 {modalTitle ? modalTitle : layout.caption}
@@ -390,12 +390,12 @@ class Modal extends Component {
               <div className="items-row-2">
                 {isNewDoc && (
                   <button
-                    className={`btn btn-meta-outline-secondary
-                                        btn-distance-3 btn-md ${
-                                          pending
-                                            ? 'tag-disabled disabled '
-                                            : ''
-                                        }`}
+                    className={classnames(
+                      'btn btn-meta-outline-secondary btn-distance-3 btn-md',
+                      {
+                        'tag-disabled disabled ': pending,
+                      }
+                    )}
                     onClick={this.removeModal}
                     tabIndex={0}
                     onMouseEnter={() => this.toggleTooltip(keymap.CANCEL)}
@@ -414,16 +414,17 @@ class Modal extends Component {
                 )}
 
                 <button
-                  className={
-                    `btn btn-meta-outline-secondary
-                                    btn-distance-3 btn-md ` +
-                    (pending ? 'tag-disabled disabled ' : '')
-                  }
+                  className={classnames(
+                    'btn btn-meta-outline-secondary btn-distance-3 btn-md',
+                    {
+                      'tag-disabled disabled ': pending,
+                    }
+                  )}
                   onClick={this.handleClose}
                   tabIndex={0}
                   onMouseEnter={() =>
                     this.toggleTooltip(
-                      modalType === 'process' ? keymap.CANCEL : keymap.APPLY
+                      modalType === 'process' ? keymap.CANCEL : keymap.DONE
                     )
                   }
                   onMouseLeave={this.toggleTooltip}
@@ -435,10 +436,10 @@ class Modal extends Component {
                   {isTooltipShow ===
                     (modalType === 'process'
                       ? keymap.CANCEL
-                      : keymap.APPLY) && (
+                      : keymap.DONE) && (
                     <Tooltips
                       name={
-                        modalType === 'process' ? keymap.CANCEL : keymap.APPLY
+                        modalType === 'process' ? keymap.CANCEL : keymap.DONE
                       }
                       action={
                         modalType === 'process'
@@ -452,21 +453,22 @@ class Modal extends Component {
 
                 {modalType === 'process' && (
                   <button
-                    className={
-                      `btn btn-meta-primary btn-distance-3
-                                        btn-md ` +
-                      (pending ? 'tag-disabled disabled' : '')
-                    }
+                    className={classnames(
+                      'btn btn-meta-outline-secondary btn-distance-3 btn-md',
+                      {
+                        'tag-disabled disabled ': pending,
+                      }
+                    )}
                     onClick={this.handleStart}
                     tabIndex={0}
-                    onMouseEnter={() => this.toggleTooltip(keymap.APPLY)}
+                    onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                     onMouseLeave={this.toggleTooltip}
                   >
                     {counterpart.translate('modal.actions.start')}
 
-                    {isTooltipShow === keymap.APPLY && (
+                    {isTooltipShow === keymap.DONE && (
                       <Tooltips
-                        name={keymap.APPLY}
+                        name={keymap.DONE}
                         action={counterpart.translate('modal.actions.start')}
                         type=""
                       />
@@ -479,8 +481,8 @@ class Modal extends Component {
             <Indicator isDocumentNotSaved={isDocumentNotSaved} />
 
             <div
-              className={`panel-modal-content js-panel-modal-content
-                            container-fluid`}
+              className="panel-modal-content js-panel-modal-content
+                            container-fluid"
               ref={c => {
                 if (c) {
                   c.focus();

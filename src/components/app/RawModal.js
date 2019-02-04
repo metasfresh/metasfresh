@@ -139,7 +139,7 @@ class RawModal extends Component {
     }
   };
 
-  render() {
+  renderButtons = () => {
     const {
       modalTitle,
       children,
@@ -147,8 +147,44 @@ class RawModal extends Component {
       modalVisible,
       rawModalVisible,
     } = this.props;
+    let { allowedCloseActions } = this.props;
+    const { isTooltipShow } = this.state;
+    const buttonsArray = [];
 
-    const { scrolled, isTooltipShow } = this.state;
+    if (!allowedCloseActions) {
+      allowedCloseActions = ['DONE'];
+    }
+
+    for () {
+      buttonsArray.
+    }
+    <button
+      className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+      onClick={this.handleClose}
+      tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
+      onMouseEnter={() => this.toggleTooltip(true)}
+      onMouseLeave={() => this.toggleTooltip(false)}
+    >
+      {counterpart.translate('modal.actions.done')}
+      {isTooltipShow && (
+        <Tooltips
+          name={keymap.DONE}
+          action={counterpart.translate('modal.actions.done')}
+          type={''}
+        />
+      )}
+    </button>
+  }
+
+  render() {
+    const {
+      modalTitle,
+      children,
+      modalDescription,
+      modalVisible,
+    } = this.props;
+
+    const { scrolled } = this.state;
 
     if (!children) {
       return null;
@@ -171,22 +207,7 @@ class RawModal extends Component {
               </span>
 
               <div className="items-row-2">
-                <button
-                  className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
-                  onClick={this.handleClose}
-                  tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
-                  onMouseEnter={() => this.toggleTooltip(true)}
-                  onMouseLeave={() => this.toggleTooltip(false)}
-                >
-                  {counterpart.translate('modal.actions.done')}
-                  {isTooltipShow && (
-                    <Tooltips
-                      name={keymap.APPLY}
-                      action={counterpart.translate('modal.actions.done')}
-                      type={''}
-                    />
-                  )}
-                </button>
+                {this.renderButtons()}
               </div>
             </div>
             <Indicator />
