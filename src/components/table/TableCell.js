@@ -185,6 +185,16 @@ class TableCell extends PureComponent {
           widgetData[0].precision
         )
       : null;
+    const description =
+      widgetData[0].value && widgetData[0].value.description
+        ? widgetData[0].value.description
+        : tdValue;
+    let tdTitle =
+      item.widgetType === 'YesNo' ||
+      item.widgetType === 'Switch' ||
+      item.widgetType === 'Color'
+        ? ''
+        : description;
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = DATE_FIELD_FORMATS[item.widgetType]
       ? TableCell.getDateFormat(item.widgetType)
@@ -266,13 +276,7 @@ class TableCell extends PureComponent {
                 extended: cellExtended,
               })}
               style={style}
-              title={
-                item.widgetType === 'YesNo' ||
-                item.widgetType === 'Switch' ||
-                item.widgetType === 'Color'
-                  ? ''
-                  : tdValue
-              }
+              title={tdTitle}
             >
               {tdValue}
             </div>

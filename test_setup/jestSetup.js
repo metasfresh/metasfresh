@@ -1,4 +1,4 @@
-import 'babel-polyfill';
+import '@babel/polyfill';
 import 'jest-localstorage-mock';
 import Enzyme, { shallow, render, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
@@ -23,9 +23,3 @@ global.config = {
   WS_URL: 'http://ws.test.url',
 };
 global.PLUGINS = [];
-
-Object.defineProperty(document, 'activeElement', {
-  value: function() {
-    return { nodeName: 'FOO' };
-  },
-});
