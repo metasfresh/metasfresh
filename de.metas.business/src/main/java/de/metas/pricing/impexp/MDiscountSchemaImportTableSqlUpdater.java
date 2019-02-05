@@ -53,7 +53,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		dbUpdateProducts(whereClause);
 		dbUpdateC_PaymentTerms(whereClause);
 		dbUpdateM_PricingSystems(whereClause);
-		dbUpdateDiscountSchemaBreaks(whereClause);
+		dbUpdateDiscountSchemaBreaks();
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -120,7 +120,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		logger.debug("Set C_PaymentTerm={}", no);
 	}
 
-	private void dbUpdateDiscountSchemaBreaks(@NonNull final String whereClause)
+	private void dbUpdateDiscountSchemaBreaks()
 	{
 		StringBuilder sql = new StringBuilder("UPDATE I_DiscountSchema i SET M_DiscountSchemaBreak_ID = dsb.M_DiscountSchemaBreak_ID ")
 				.append("FROM M_DiscountSchemaBreak dsb ")
