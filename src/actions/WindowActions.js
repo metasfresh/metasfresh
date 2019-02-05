@@ -583,16 +583,32 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   };
 }
 
+const getChangelogUrl = function(windowId, docId, tabId, rowId) {
+  return `${config.API_URL}/window/${windowId}/${docId}${
+    rowId && tabId ? `/${tabId}/${rowId}` : ''
+  }/changeLog`;
+};
+
 export function fetchChangeLog(windowId, docId, tabId, rowId) {
   return dispatch => {
-    const url = `${config.API_URL}/window/${windowId}/${docId}${
-      rowId && tabId ? `/${tabId}/${rowId}` : ''
-    }/changeLog`;
+    const parentUrl = getChangelogUrl(windowId, docId);
 
-    return axios.get(url).then(resp => {
+    return axios.get(parentUrl).then(async response => {
+      const data = response.data;
+      let rowData = null;
+
+      if (rowId) {
+        const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
+        rowData = await axios.get(childUrl).then(resp => resp.data);
+      }
+
+      if (rowData) {
+        data.rowsData = rowData;
+      }
+
       dispatch(
         initDataSuccess({
-          data: resp.data,
+          data,
           docId,
           scope: 'modal',
         })
