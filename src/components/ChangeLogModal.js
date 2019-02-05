@@ -26,6 +26,34 @@ export default class ChangeLogModal extends Component {
     );
   }
 
+  renderRowsData = () => {
+    const { data } = this.props;
+
+    if (data.rowsData) {
+      return (
+        <div className="panel panel-spaced changelog-rows">
+          <h5>Row:</h5>
+          <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
+            {this.renderField('Created By:', data.rowsData.createdByUsername)}
+            {this.renderField('Created On:', data.rowsData.createdTimestamp)}
+          </div>
+          <div className="panel panel-spaced panel-distance panel-bordered panel-secondary">
+            {this.renderField(
+              'Updated By:',
+              data.rowsData.lastChangedByUsername
+            )}
+            {this.renderField(
+              'Updated At:',
+              data.rowsData.lastChangedTimestamp
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   render() {
     const { data } = this.props;
 
@@ -39,6 +67,7 @@ export default class ChangeLogModal extends Component {
           {this.renderField('Updated By:', data.lastChangedByUsername)}
           {this.renderField('Updated At:', data.lastChangedTimestamp)}
         </div>
+        {this.renderRowsData()}
       </div>
     );
   }
