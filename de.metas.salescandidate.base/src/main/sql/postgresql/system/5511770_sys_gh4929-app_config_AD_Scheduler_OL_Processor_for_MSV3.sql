@@ -13,6 +13,6 @@ SET AD_Role_ID=1000000,
 
 -- then it runs, then also process C_OLCands with AD_InputDataSource_ID=1000001 /*MSV3-Order*/
 UPDATE AD_Ref_Table
-SET Updated=now(), Updatedby=99
+SET Updated=now(), Updatedby=99,
 	WhereClause='C_OLCand.AD_InputDataSource_ID IN (150/*EDI-ORDERS*/, 160/*Excel-Pricelist*/, 170/*SQL COPY Script*/, 1000001/*MSV3-Order*/) AND C_OLCand.Processed=''N'' AND C_OLCand.IsActive=''Y'' AND C_OLCand.IsError=''N'' AND C_OLCand.IsImportedWithIssues=''N'''
 WHERE AD_Reference_ID=540476;
