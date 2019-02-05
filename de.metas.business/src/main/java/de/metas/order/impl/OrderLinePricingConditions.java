@@ -3,7 +3,9 @@ package de.metas.order.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
@@ -58,11 +60,19 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	public void updateNoPriceConditionsColor(@NonNull final I_C_OrderLine orderLine)
 	{
 		final HasPricingConditions hasPricingConditions = hasPricingConditions(orderLine);
-		final int colorId = getColorId(hasPricingConditions);
+
+		final int colorId = getColorId(
+				hasPricingConditions,
+				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+				OrgId.ofRepoIdOrAny(orderLine.getAD_Org_ID()));
+
 		orderLine.setNoPriceConditionsColor_ID(colorId);
 	}
 
-	private int getColorId(final HasPricingConditions hasPricingConditions)
+	private int getColorId(
+			@NonNull final HasPricingConditions hasPricingConditions,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
 		if (hasPricingConditions == HasPricingConditions.YES)
 		{
@@ -70,11 +80,11 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		}
 		else if (hasPricingConditions == HasPricingConditions.TEMPORARY)
 		{
-			return getTemporaryPriceConditionsColorId();
+			return getTemporaryPriceConditionsColorId(clientId, orgId);
 		}
 		else if (hasPricingConditions == HasPricingConditions.NO)
 		{
-			return getNoPriceConditionsColorId();
+			return getNoPriceConditionsColorId(clientId, orgId);
 		}
 		else
 		{
@@ -83,19 +93,32 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	}
 
 	@Override
-	public int getTemporaryPriceConditionsColorId()
+	public int getTemporaryPriceConditionsColorId(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		return getColorIdBySysConfig(SYSCONFIG_TemporaryPriceConditionsColorName);
+		return getColorIdBySysConfig(SYSCONFIG_TemporaryPriceConditionsColorName, clientId, orgId);
 	}
 
-	private int getNoPriceConditionsColorId()
+	private int getNoPriceConditionsColorId(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		return getColorIdBySysConfig(SYSCONFIG_NoPriceConditionsColorName);
+		return getColorIdBySysConfig(SYSCONFIG_NoPriceConditionsColorName, clientId, orgId);
 	}
 
-	private int getColorIdBySysConfig(final String sysConfigName)
+	private int getColorIdBySysConfig(
+			@NonNull final String sysConfigName,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		final String colorName = Services.get(ISysConfigBL.class).getValue(sysConfigName, "-");
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final String colorName = sysConfigBL.getValue(
+				sysConfigName,
+				"-",
+				ClientId.toRepoId(clientId),
+				OrgId.toRepoId(orgId));
+
 		if (Check.isEmpty(colorName) || "-".equals(colorName))
 		{
 			return -1;
@@ -106,7 +129,10 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	@Override
 	public void failForMissingPricingConditions(final de.metas.adempiere.model.I_C_Order order)
 	{
-		final boolean mandatoryPricingConditions = isMandatoryPricingConditions();
+		final boolean mandatoryPricingConditions = isMandatoryPricingConditions(
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoIdOrAny(order.getAD_Org_ID()));
+
 		if (!mandatoryPricingConditions)
 		{
 			return;
@@ -124,9 +150,11 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		}
 	}
 
-	private boolean isMandatoryPricingConditions()
+	private boolean isMandatoryPricingConditions(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		final int noPriceConditionsColorId = getNoPriceConditionsColorId();
+		final int noPriceConditionsColorId = getNoPriceConditionsColorId(clientId, orgId);
 		return noPriceConditionsColorId > 0;
 	}
 

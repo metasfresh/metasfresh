@@ -8,6 +8,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.user.UserId;
 
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -42,6 +44,9 @@ import lombok.Value;
 @Value
 public class PricingConditionsBreak
 {
+	ClientId clientId;
+	OrgId orgId;
+
 	PricingConditionsBreakId id;
 	PricingConditionsBreakMatchCriteria matchCriteria;
 	int seqNo;
@@ -73,6 +78,8 @@ public class PricingConditionsBreak
 
 	@Builder(toBuilder = true)
 	public PricingConditionsBreak(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
 			final PricingConditionsBreakId id,
 			@NonNull final PricingConditionsBreakMatchCriteria matchCriteria,
 			final int seqNo,
@@ -87,6 +94,9 @@ public class PricingConditionsBreak
 			final UserId createdById,
 			final boolean hasChanges)
 	{
+		this.clientId = clientId;
+		this.orgId = orgId;
+
 		this.id = id;
 		this.matchCriteria = matchCriteria;
 		this.seqNo = seqNo;

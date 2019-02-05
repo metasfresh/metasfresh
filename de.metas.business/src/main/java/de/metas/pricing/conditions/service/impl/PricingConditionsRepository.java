@@ -191,6 +191,8 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				paymentDiscount);
 
 		return PricingConditionsBreak.builder()
+				.clientId(ClientId.ofRepoId(schemaBreakRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(schemaBreakRecord.getAD_Org_ID()))
 				.id(id)
 				.matchCriteria(toPricingConditionsBreakMatchCriteria(schemaBreakRecord))
 				.seqNo(schemaBreakRecord.getSeqNo())
