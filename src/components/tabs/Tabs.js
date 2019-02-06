@@ -19,6 +19,22 @@ class Tabs extends Component {
     };
   }
 
+  componentDidMount() {
+    this.props.dispatch(activateTab('master', this.state.selected));
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { dispatch } = this.props;
+
+    if (prevState.selected !== this.state.selected) {
+      dispatch(activateTab('master', this.state.selected));
+    }
+  }
+
+  componentWillUnmount() {
+    this.props.dispatch(unselectTab('master'));
+  }
+
   getSelected = (tab, selected, reverse) => {
     const { tabsByIds } = this.props;
     selected = selected.add(tab.tabId);
@@ -35,21 +51,6 @@ class Tabs extends Component {
 
     return selected;
   };
-
-  componentDidMount = () => {
-    this.props.dispatch(activateTab('master', this.state.selected));
-  };
-
-  componentDidUpdate = (prevProps, prevState) => {
-    const { dispatch } = this.props;
-    if (prevState.selected !== this.state.selected) {
-      dispatch(activateTab('master', this.state.selected));
-    }
-  };
-
-  componentWillUnmount() {
-    this.props.dispatch(unselectTab('master'));
-  }
 
   handleClick = (e, id) => {
     e.preventDefault();
@@ -144,22 +145,23 @@ class Tabs extends Component {
   };
 
   renderTabs = tabs => {
-    const { toggleTableFullScreen, fullScreen, windowType } = this.props;
+    const { toggleTableFullScreen, windowType } = this.props;
     const { selected } = this.state;
 
     return tabs.map(item => {
-      const itemWithProps = Object.assign({}, item, {
-        props: Object.assign({}, item.props, {
+      const itemWithProps = {
+        ...item,
+        props: {
+          ...item.props,
           toggleFullScreen: toggleTableFullScreen,
-          fullScreen: fullScreen,
-        }),
-      });
+        },
+      };
 
       if (selected.last() === item.key) {
         const { tabId, queryOnActivate, docId, orderBy } = item.props;
 
         return (
-          <div key={'pane' + item.key} className="tab-pane active">
+          <div key={'pane-' + item.key} className="tab-pane active">
             <Tab
               {...{
                 queryOnActivate,
