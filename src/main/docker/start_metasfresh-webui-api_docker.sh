@@ -8,14 +8,14 @@ db_port=${DB_PORT:-5432}
 db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
+db_connection_pool_max_size=${DB_CONNECTION_POOL_MAX_SIZE:-UNSET}
 
 # elastic search
 es_host=${ES_HOST:-search}
 es_port=${ES_PORT:-9300}
 
 # metasfresh-admin
-admin_host=${ADMIN_HOST:-localhost}
-admin_port=${ADMIN_PORT:-9090}
+admin_url=${METASFRESH_ADMIN_URL:-NONE}
 
 # app
 app_host=${APP_HOST:-app}
@@ -29,10 +29,10 @@ echo_variable_values()
  echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
+ echo "DB_CONNECTION_POOL_MAX_SIZE=${db_connection_pool_max_size}"
  echo "ES_HOST=${es_host}"
  echo "ES_PORT=${es_port}"
- echo "ADMIN_HOST=${admin_host}"
- echo "ADMIN_PORT=${admin_port}"
+ echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
 }
 
@@ -63,18 +63,38 @@ wait_dbms()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
+ if [ "$db_connection_pool_max_size" != "UNSET" ];
+ then
+ 	metasfresh_db_connectionpool_params="-Dc3p0.maxPoolSize=${db_connection_pool_max_size}"
+ else 
+	metasfresh_db_connectionpool_params=""
+ fi
+
+ if [ "$admin_url" != "NONE" ]; 
+ then
+	# see https://codecentric.github.io/spring-boot-admin/1.5.0/#spring-boot-admin-client
+	# spring.boot.admin.client.prefer-ip=true because within docker, the hostname is no help
+	metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
+ else
+	metasfresh_admin_params=""
+ fi
+
  local admin_url="http://${admin_host}:${admin_port}"
  local metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
 
  local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
+ # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
+ local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+
  cd /opt/metasfresh/metasfresh-webui-api/ \
  && java \
- -Xmx512M \
+ ${MEMORY_PARAMS} \
  -XX:+HeapDumpOnOutOfMemoryError \
  -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${es_params} \
  ${metasfresh_admin_params} \
+ ${metasfresh_db_connectionpool_params}\
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
