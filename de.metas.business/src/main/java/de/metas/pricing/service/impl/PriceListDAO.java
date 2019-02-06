@@ -2,6 +2,7 @@ package de.metas.pricing.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -111,6 +112,12 @@ public class PriceListDAO implements IPriceListDAO
 		return loadOutOfTrx(priceListVersionId, I_M_PriceList_Version.class);
 	}
 
+	@Override
+	public I_M_PriceList_Version getPriceListVersionByIdInTrx(final PriceListVersionId priceListVersionId)
+	{
+		return load(priceListVersionId, I_M_PriceList_Version.class);
+	}
+	
 	@Override
 	public Stream<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
 	{

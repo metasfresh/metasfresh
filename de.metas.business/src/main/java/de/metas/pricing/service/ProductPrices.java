@@ -94,7 +94,7 @@ public class ProductPrices
 
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
-		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionById(priceListVersionId);
+		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(priceListVersion, productId);
