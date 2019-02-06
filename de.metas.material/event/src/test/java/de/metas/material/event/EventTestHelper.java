@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -59,7 +60,7 @@ public class EventTestHelper
 
 	public static final int PRODUCT_ID = 24;
 
-	public static final int BPARTNER_ID = 25;
+	public static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(25);
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 

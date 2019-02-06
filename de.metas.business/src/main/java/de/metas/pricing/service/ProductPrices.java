@@ -1,8 +1,13 @@
 package de.metas.pricing.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,7 +60,6 @@ public class ProductPrices
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()
-				.setContextProvider(plv)
 				.setPriceListVersionId(priceListVersionId);
 	}
 
@@ -81,16 +85,19 @@ public class ProductPrices
 				.matches();
 	}
 
-	public static void assertIsNoMainPriceDuplicate(final I_M_ProductPrice productPrice)
+	public static void assertMainProductPriceIsNotDuplicate(final I_M_ProductPrice productPrice)
 	{
 		if (productPrice == null || !productPrice.isActive())
 		{
 			return;
 		}
 
-		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(
-				productPrice.getM_PriceList_Version(),
-				ProductId.ofRepoId(productPrice.getM_Product_ID()));
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
+		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionById(priceListVersionId);
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(priceListVersion, productId);
 
 		final boolean productPriceIsMainPrice = allMainPrices.stream()
 				.anyMatch(mainPrice -> mainPrice.getM_ProductPrice_ID() == productPrice.getM_ProductPrice_ID());
@@ -110,12 +117,10 @@ public class ProductPrices
 
 	private static List<I_M_ProductPrice> retrieveAllMainPrices(
 			@NonNull final I_M_PriceList_Version plv,
-			final ProductId productId)
+			@NonNull final ProductId productId)
 	{
-		final List<I_M_ProductPrice> allMainPrices = newMainProductPriceQuery(plv, productId)
-				.toQuery()
+		return newMainProductPriceQuery(plv, productId)
 				.list();
-		return allMainPrices;
 	}
 
 	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
@@ -193,6 +198,50 @@ public class ProductPrices
 		{
 			logger.info("Registered main product matcher: {}", matcher);
 		}
+	}
+
+	public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
+			@Nullable final I_M_PriceList_Version startPriceListVersion,
+			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper)
+	{
+		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
+
+		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
+		while (currentPriceListVersion != null)
+		{
+			// Stop here if the price list version was already considered
+			if (!checkedPriceListVersionIds.add(currentPriceListVersion.getM_PriceList_Version_ID()))
+			{
+				return null;
+			}
+
+			final T productPrice = productPriceMapper.apply(currentPriceListVersion);
+			if (productPrice != null)
+			{
+				return productPrice;
+			}
+
+			currentPriceListVersion = getBasePriceListVersionOrNull(currentPriceListVersion);
+		}
+
+		return null;
+	}
+
+	private static I_M_PriceList_Version getBasePriceListVersionOrNull(final I_M_PriceList_Version priceListVersion)
+	{
+		if (!priceListVersion.isFallbackToBasePriceListPrices())
+		{
+			return null;
+		}
+
+		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(priceListVersion.getM_Pricelist_Version_Base_ID());
+		if (basePriceListVersionId == null)
+		{
+			return null;
+		}
+
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		return priceListsRepo.getPriceListVersionById(basePriceListVersionId);
 	}
 
 }

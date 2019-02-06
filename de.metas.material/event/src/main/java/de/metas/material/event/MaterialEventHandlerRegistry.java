@@ -3,15 +3,16 @@ package de.metas.material.event;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
 
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -37,9 +38,11 @@ import lombok.NonNull;
  */
 
 @Service
-@SuppressWarnings(value = { "unchecked", "rawtypes" })
+@SuppressWarnings(value = { "rawtypes" })
 public class MaterialEventHandlerRegistry
 {
+	private static final Logger logger = LogManager.getLogger(MaterialEventHandlerRegistry.class);
+
 	private final ImmutableMultimap<Class, MaterialEventHandler> eventType2Handler;
 	private final EventLogUserService eventLogUserService;
 
@@ -48,32 +51,31 @@ public class MaterialEventHandlerRegistry
 			@NonNull final EventLogUserService eventLogUserService)
 	{
 		this.eventLogUserService = eventLogUserService;
-
-		final Builder<Class, MaterialEventHandler> builder = createEventHandlerMapping(handlers);
-		eventType2Handler = builder.build();
+		eventType2Handler = createEventHandlerMapping(handlers);
+		logger.info("Registered {}", eventType2Handler);
 	}
 
-	private Builder<Class, MaterialEventHandler> createEventHandlerMapping(
+	private ImmutableMultimap<Class, MaterialEventHandler> createEventHandlerMapping(
 			@NonNull final Optional<Collection<MaterialEventHandler>> handlers)
 	{
-		final Builder<Class, MaterialEventHandler> builder = ImmutableMultimap.builder();
+		final ImmutableMultimap.Builder<Class, MaterialEventHandler> builder = ImmutableMultimap.builder();
 		for (final MaterialEventHandler handler : handlers.orElse(ImmutableList.of()))
 		{
-			final Collection<Class<? extends MaterialEventHandler>> handeledEventType = //
-					handler.getHandeledEventType();
+			@SuppressWarnings("unchecked")
+			final Collection<Class<? extends MaterialEventHandler>> handeledEventType = handler.getHandeledEventType();
 
 			handeledEventType.forEach(type -> builder.put(type, handler));
 		}
-		return builder;
+		return builder.build();
 	}
 
 	public final void onEvent(@NonNull final MaterialEvent event)
 	{
-		final ImmutableCollection<MaterialEventHandler> handlersForEventClass = //
-				eventType2Handler.get(event.getClass());
+		final ImmutableCollection<MaterialEventHandler> handlersForEventClass = eventType2Handler.get(event.getClass());
 
 		handlersForEventClass.forEach(handler -> {
 
+			@SuppressWarnings("unchecked")
 			final InvokeHandlerandLogRequest request = InvokeHandlerandLogRequest.builder()
 					.handlerClass(handler.getClass())
 					.invokaction(() -> handler.handleEvent(event))

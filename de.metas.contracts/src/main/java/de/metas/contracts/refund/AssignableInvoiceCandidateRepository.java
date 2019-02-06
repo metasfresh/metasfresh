@@ -87,12 +87,12 @@ public class AssignableInvoiceCandidateRepository
 	@VisibleForTesting
 	public AssignableInvoiceCandidate saveNew(@NonNull final AssignableInvoiceCandidate assignableCandidate)
 	{
-		final I_C_Invoice_Candidate candidateRecord = newInstance(I_C_Invoice_Candidate.class);
-		saveRecord(candidateRecord);
+		final I_C_Invoice_Candidate assignableCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		saveRecord(assignableCandidateRecord);
 
 		return assignableCandidate
 				.toBuilder()
-				.id(InvoiceCandidateId.ofRepoId(candidateRecord.getC_Invoice_Candidate_ID()))
+				.id(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()))
 				.build();
 	}
 }

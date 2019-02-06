@@ -10,6 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.90
+# Features
+* metasfresh
+  * [#4894](https://github.com/metasfresh/metasfresh/issues/4894) BPartner Product statistics: LastShipmentDate, LastReceiptDate
+  * [#4903](https://github.com/metasfresh/metasfresh/issues/4903) Introduce AD_Table_Process.AD_Table_Process_ID primary key
+  * [#4906](https://github.com/metasfresh/metasfresh/issues/4906) Pricing: fallback to base price list version if any
+  * [#4911](https://github.com/metasfresh/metasfresh/issues/4911) Translate the C_BPartner label fields to German
+  * [#4915](https://github.com/metasfresh/metasfresh/issues/4915) Improve error handling when ID server is not correctly configured
+
+* metasfresh-webui-api
+  * [#1134](https://github.com/metasfresh/metasfresh-webui-api/issues/1134) Document included tab: provide actions to be displayed in included tab's top lane
+
+
 # metasfresh 5.89
 # Features
 * metasfresh

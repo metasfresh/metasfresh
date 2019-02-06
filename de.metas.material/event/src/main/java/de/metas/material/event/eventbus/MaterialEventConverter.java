@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
 import de.metas.event.SimpleObjectSerializer;
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.event.MaterialEvent;
 import lombok.NonNull;
 
@@ -39,14 +38,7 @@ import lombok.NonNull;
 @Service
 public class MaterialEventConverter
 {
-	public static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent";
-
-	private final EventLogUserService eventLogUserService;
-
-	public MaterialEventConverter(@NonNull final EventLogUserService eventLogUserService)
-	{
-		this.eventLogUserService = eventLogUserService;
-	}
+	private static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent";
 
 	public MaterialEvent toMaterialEvent(@NonNull final Event metasfreshEvent)
 	{
@@ -67,13 +59,9 @@ public class MaterialEventConverter
 	{
 		final String eventStr = SimpleObjectSerializer.get().serialize(event);
 
-		final Event.Builder metasfreshEventBuilder = Event.builder()
-				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr);
-
-		final Event metasfreshEvent = eventLogUserService
-				.addEventLogAdvise(metasfreshEventBuilder, true)
+		return Event.builder()
+				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)
+				.storeEvent()
 				.build();
-
-		return metasfreshEvent;
 	}
 }

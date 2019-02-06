@@ -8,7 +8,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -53,7 +52,7 @@ public final class AvailableToPromiseResultGroup
 	private final int productId;
 	private final AttributesKey storageAttributesKey;
 	private final Predicate<AttributesKey> storageAttributesKeyMatcher;
-	private final int bpartnerId;
+	private final BPartnerClassifier bpartner;
 	private BigDecimal qty;
 
 	private boolean empty;
@@ -70,7 +69,7 @@ public final class AvailableToPromiseResultGroup
 			final int productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@Nullable final Predicate<AttributesKey> storageAttributesKeyMatcher,
-			final int bpartnerId)
+			@NonNull final BPartnerClassifier bpartner)
 	{
 		this.warehouseId = warehouseId > 0 ? warehouseId : WAREHOUSE_ID_ANY;
 		this.productId = Check.assumeGreaterThanZero(productId, "productId");
@@ -81,16 +80,7 @@ public final class AvailableToPromiseResultGroup
 
 		this.qty = ZERO;
 
-		if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY
-				|| bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE
-				|| bpartnerId > 0)
-		{
-			this.bpartnerId = bpartnerId;
-		}
-		else
-		{
-			throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
-		}
+		this.bpartner = bpartner;
 	}
 
 	public boolean isMatchting(@NonNull final AddToResultGroupRequest request)
@@ -105,7 +95,7 @@ public final class AvailableToPromiseResultGroup
 			return false;
 		}
 
-		if (!isBPartnerMatching(request.getBpartnerId()))
+		if (!bpartner.isMatching(request.getBpartner()))
 		{
 			return false;
 		}
@@ -139,8 +129,7 @@ public final class AvailableToPromiseResultGroup
 			return false; // only matching requests were ever included
 		}
 
-		final boolean requestHasBPartnerId = request.getBpartnerId() > 0;
-		if (requestHasBPartnerId)
+		if (request.getBpartner().isSpecificBPartner())
 		{
 			return false;
 		}
@@ -173,11 +162,6 @@ public final class AvailableToPromiseResultGroup
 	{
 		return warehouseId == WAREHOUSE_ID_ANY
 				|| warehouseId == warehouseIdToMatch;
-	}
-
-	private boolean isBPartnerMatching(final int bpartnerIdToMatch)
-	{
-		return AvailableToPromiseQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
 	}
 
 	private boolean isStorageAttributesKeyMatching(final AttributesKey storageAttributesKeyToMatch)

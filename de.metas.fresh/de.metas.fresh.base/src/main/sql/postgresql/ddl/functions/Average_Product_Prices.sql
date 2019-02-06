@@ -56,7 +56,18 @@ SELECT
 		2) 
 		AS Preis
 	,COALESCE((CASE WHEN c.iso_code != 'CHF'
-		THEN ROUND(currencyConvert(ic.PriceActual_Net_Effective * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
+		THEN ROUND(currencyConvert(COALESCE( 
+			(SELECT avg(il.PriceEntered) 
+					FROM C_Invoice_Line_Alloc ila 
+					JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
+					JOIN C_Invoice i ON il.C_Invoice_Id = i.C_Invoice_ID 
+					WHERE ic.C_Invoice_Candidate_ID = ila.C_Invoice_Candidate_ID
+						AND i.docstatus in ('CO', 'CL')
+						AND ila.isActive = 'Y'
+						AND i.IsActive = 'Y'
+						AND il.IsActive = 'Y'
+			),  
+			ic.PriceActual_Net_Effective) * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
 			, ic.C_Currency_ID -- p_curfrom_id
 			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'CHF') -- p_curto_id
 			, p_dateto -- p_convdate -- date to 
@@ -64,7 +75,19 @@ SELECT
 			, ic.AD_Client_ID
 			, ic.AD_Org_ID --ad_org_id
 			), 2)::text
-		ELSE ROUND(ic.PriceActual_Net_Effective * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty), 2)::text
+		ELSE ROUND(
+		COALESCE( 
+			(SELECT avg(il.PriceEntered) 
+					FROM C_Invoice_Line_Alloc ila 
+					JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
+					JOIN C_Invoice i ON il.C_Invoice_Id = i.C_Invoice_ID 
+					WHERE ic.C_Invoice_Candidate_ID = ila.C_Invoice_Candidate_ID
+						AND i.docstatus in ('CO', 'CL')
+						AND ila.isActive = 'Y'
+						AND i.IsActive = 'Y'
+						AND il.IsActive = 'Y'
+			),  
+			ic.PriceActual_Net_Effective) * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty), 2)::text
 	END ), 'Missing Conversion'::text ) AS BetragCHF
 	
 	
