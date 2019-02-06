@@ -39,6 +39,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -157,4 +158,8 @@ public interface IPriceListDAO extends ISingletonService
 	Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(PriceListVersionId priceListVersionId);
 
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
+
+	CurrencyId getCurrencyIdByPriceListVersionId(PriceListVersionId priceListVersionId);
+
+	CurrencyId getCurrencyIdByPriceListId(PriceListId priceListId);
 }

@@ -44,6 +44,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -454,5 +455,20 @@ public class PriceListDAO implements IPriceListDAO
 				.map(PriceListVersionId::ofRepoId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public CurrencyId getCurrencyIdByPriceListVersionId(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final I_M_PriceList_Version plv = getPriceListVersionById(priceListVersionId);
+		final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
+		return getCurrencyIdByPriceListId(priceListId);
+	}
+
+	@Override
+	public CurrencyId getCurrencyIdByPriceListId(@NonNull PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = getById(priceListId);
+		return CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 	}
 }
