@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
+import { topActionsRequest } from '../../api';
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
 
@@ -13,8 +14,23 @@ class TableFilter extends Component {
 
     this.state = {
       isTooltipShow: false,
+      actions: [],
     };
   }
+
+  componentDidMount() {
+    this.getActions();
+  }
+
+  getActions = () => {
+    const { tabId, docType, docId } = this.props;
+
+    topActionsRequest(docType, docId, tabId).then(({ data }) => {
+      this.setState({
+        actions: data.actions,
+      });
+    });
+  };
 
   showTooltip = () => {
     this.setState({
@@ -49,8 +65,7 @@ class TableFilter extends Component {
       modalVisible,
       wrapperHeight,
     } = this.props;
-
-    const { isTooltipShow } = this.state;
+    const { isTooltipShow, actions } = this.state;
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
@@ -92,6 +107,17 @@ class TableFilter extends Component {
                 )}
               </button>
             )}
+            {!isBatchEntry &&
+              actions.length &&
+              actions.map(action => (
+                <button
+                  key={`top-action-${action.processId}`}
+                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                  tabIndex={tabIndex}
+                >
+                  {action.caption}
+                </button>
+              ))}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
