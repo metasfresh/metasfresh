@@ -761,19 +761,19 @@ class Table extends Component {
 
   getProductRange = id => {
     const { keyProperty } = this.props;
-    const { rows } = this.state;
+    const { rows, selected } = this.state;
     let arrayIndex;
     let selectIdA;
     let selectIdB;
 
     arrayIndex = rows.map(item => item[keyProperty]);
     selectIdA = arrayIndex.findIndex(x => x === id);
-    selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0]);
+    selectIdB = arrayIndex.findIndex(x => x === selected[0]);
 
-    let selected = [selectIdA, selectIdB];
+    const selectedArr = [selectIdA, selectIdB];
 
-    selected.sort((a, b) => a - b);
-    return arrayIndex.slice(selected[0], selected[1] + 1);
+    selectedArr.sort((a, b) => a - b);
+    return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
   };
 
   handleBatchEntryToggle = () => {

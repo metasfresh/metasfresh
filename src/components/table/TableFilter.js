@@ -16,9 +16,21 @@ class TableFilter extends Component {
     };
   }
 
-  toggleTooltip = (key = null) => {
+  showTooltip = () => {
+    this.setState({
+      isTooltipShow: keymap.TOGGLE_QUICK_INPUT,
+    });
+  };
+
+  hideTooltip = (key = null) => {
     this.setState({
       isTooltipShow: key,
+    });
+  };
+
+  showExpandTooltip = () => {
+    this.setState({
+      isTooltipShow: keymap.TOGGLE_EXPAND,
     });
   };
 
@@ -58,10 +70,8 @@ class TableFilter extends Component {
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={handleBatchEntryToggle}
-                onMouseEnter={() =>
-                  this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
-                }
-                onMouseLeave={this.toggleTooltip}
+                onMouseEnter={this.showTooltip}
+                onMouseLeave={this.hideTooltip}
                 tabIndex={tabIndex}
               >
                 {isBatchEntry
@@ -100,8 +110,8 @@ class TableFilter extends Component {
           <button
             className="btn-icon btn-meta-outline-secondary pointer"
             onClick={() => toggleFullScreen(!fullScreen)}
-            onMouseEnter={() => this.toggleTooltip(keymap.TOGGLE_EXPAND)}
-            onMouseLeave={this.toggleTooltip}
+            onMouseEnter={this.showExpandTooltip}
+            onMouseLeave={this.hideTooltip}
             tabIndex="-1"
           >
             {fullScreen ? (
