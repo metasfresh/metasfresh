@@ -5,8 +5,56 @@ import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
 import { topActionsRequest } from '../../api';
+import { openModal } from '../../actions/WindowActions';
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
+
+class ActionButton extends Component {
+  static propTypes = {
+    action: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
+  };
+
+  handleClick = () => {
+    const { dispatch, action, docId, tabId } = this.props;
+
+    if (action.disabled) {
+      return;
+    }
+
+    dispatch(
+      openModal(
+        action.caption,
+        action.processId,
+        'process',
+        tabId,
+        null,
+        false,
+        null,
+        docId,
+        null,
+        null,
+        null,
+        null
+      )
+    );
+  };
+
+  render() {
+    const { action, tabIndex } = this.props;
+
+    return (
+      <button
+        onClick={this.handleClick}
+        className="btn btn-meta-outline-secondary btn-distance btn-sm"
+        tabIndex={tabIndex}
+        title={action.description}
+      >
+        {action.caption}
+      </button>
+    );
+  }
+}
 
 class TableFilter extends Component {
   constructor(props) {
@@ -52,6 +100,7 @@ class TableFilter extends Component {
 
   render() {
     const {
+      dispatch,
       openModal,
       toggleFullScreen,
       fullScreen,
@@ -110,13 +159,10 @@ class TableFilter extends Component {
             {!isBatchEntry &&
               actions.length &&
               actions.map(action => (
-                <button
+                <ActionButton
+                  {...{ dispatch, tabIndex, action }}
                   key={`top-action-${action.processId}`}
-                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                  tabIndex={tabIndex}
-                >
-                  {action.caption}
-                </button>
+                />
               ))}
           </div>
           {supportQuickInput &&

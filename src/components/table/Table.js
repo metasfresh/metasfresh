@@ -1198,6 +1198,7 @@ class Table extends Component {
                     tabIndex,
                     isBatchEntry,
                     supportQuickInput,
+                    selected,
                   }}
                   docType={type}
                   tabId={tabid}
