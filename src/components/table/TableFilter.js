@@ -109,7 +109,7 @@ class TableFilter extends Component {
         {
           <button
             className="btn-icon btn-meta-outline-secondary pointer"
-            onClick={() => toggleFullScreen(!fullScreen)}
+            onClick={toggleFullScreen}
             onMouseEnter={this.showExpandTooltip}
             onMouseLeave={this.hideTooltip}
             tabIndex="-1"

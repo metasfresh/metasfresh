@@ -1321,7 +1321,7 @@ class Table extends Component {
         {allowShortcut && !readonly && (
           <TableContextShortcuts
             handleToggleQuickInput={this.handleBatchEntryToggle}
-            handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+            handleToggleExpand={toggleFullScreen}
           />
         )}
       </div>
