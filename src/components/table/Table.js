@@ -1166,9 +1166,9 @@ class Table extends Component {
                 updateDocList,
               }}
               selected={selected || [undefined]}
-              blur={() => this.closeContextMenu()}
+              blur={this.closeContextMenu}
               tabId={tabid}
-              deselect={() => this.deselectAllProducts()}
+              deselect={this.deselectAllProducts}
               handleFieldEdit={() => {
                 if (contextMenu.supportFieldEdit && selected.length === 1) {
                   this.handleFieldEdit(selected, contextMenu.fieldName);
@@ -1180,7 +1180,7 @@ class Table extends Component {
               handleOpenNewTab={() => handleOpenNewTab(selected, type)}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
-                  ? () => this.handleDelete()
+                  ? this.handleDelete
                   : null
               }
               handleZoomInto={this.handleZoomInto}
@@ -1301,17 +1301,17 @@ class Table extends Component {
             handleAdvancedEdit={
               selected && selected.length > 0 && selected[0]
                 ? () => this.handleAdvancedEdit(type, tabid, selected)
-                : ''
+                : undefined
             }
             handleOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
                 ? () => handleOpenNewTab(selected, type)
-                : ''
+                : undefined
             }
             handleDelete={
               selected && selected.length > 0 && selected[0]
-                ? () => this.handleDelete()
-                : ''
+                ? this.handleDelete
+                : undefined
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
