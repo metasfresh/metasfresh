@@ -88,10 +88,14 @@ public class RefundTestTools
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
 
 	private static final LocalDate ASSIGNABLE_CANDIDATE_INVOICE_DATE = LocalDate.now();
-	public static final LocalDate CONTRACT_START_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.minusDays(2);
-	public static final LocalDate CONTRACT_END_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(2);
+	private static final LocalDate REFUND_CANDIDATE_INVOICE_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(1);
 
-	// private static final ProductId PRODUCT_ID = ProductId.ofRepoId(20);
+	public static final LocalDate CONTRACT_START_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.minusDays(2);
+	public static final LocalDate CONTRACT_END_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(10);
+
+	// we want this day of month to be after REFUND_CANDIDATE_INVOICE_DATE,
+	// because otherwise the refund candidate we create in here is not found to be a match when searched for via ASSIGNABLE_CANDIDATE_INVOICE_DATE
+	private static final int INVOICE_SCHEDULE_DAY_OF_MONTH = (REFUND_CANDIDATE_INVOICE_DATE.getDayOfMonth() + 4) % 30;
 
 	@Getter
 	private final Currency currency;
@@ -140,7 +144,7 @@ public class RefundTestTools
 
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
 		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
-		invoiceScheduleRecord.setInvoiceDay(5);
+		invoiceScheduleRecord.setInvoiceDay(INVOICE_SCHEDULE_DAY_OF_MONTH);
 		invoiceScheduleRecord.setInvoiceDistance(1);
 		saveRecord(invoiceScheduleRecord);
 
@@ -189,14 +193,12 @@ public class RefundTestTools
 		Check.assumeNotNull(refundContract.getId(),
 				"The given refundContract has to be persisted (i.e. id!=null); refundContract={}", refundContract);
 
-		final LocalDate invoiceableFromDate = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(1);
-
 		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this classe's constructor
 		invoiceCandidateRecord.setM_Product(productRecord);
 		invoiceCandidateRecord.setPriceActual(HUNDRED);
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
-		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(invoiceableFromDate));
+		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(REFUND_CANDIDATE_INVOICE_DATE));
 		invoiceCandidateRecord.setRecord_ID(refundContract.getId().getRepoId());
 		invoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
@@ -214,9 +216,9 @@ public class RefundTestTools
 	 */
 	public RefundContract createRefundContract_APPLY_TO_ALL_QTIES()
 	{
-//		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
-//		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
-//		saveRecord(invoiceScheduleRecord);
+		// final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+		// invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		// saveRecord(invoiceScheduleRecord);
 
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
