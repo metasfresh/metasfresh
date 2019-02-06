@@ -38,3 +38,17 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2019-02-06 12:17:2
 UPDATE AD_Process SET Name='Etiketten erstellen',Updated=TO_TIMESTAMP('2019-02-06 12:17:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541044
 ;
 
+
+
+-- 2019-02-06T17:10:46.830
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540672
+;
+
+-- 2019-02-06T17:11:22.477
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541044,540970,540673,TO_TIMESTAMP('2019-02-06 17:11:22','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y',TO_TIMESTAMP('2019-02-06 17:11:22','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+
+
+
