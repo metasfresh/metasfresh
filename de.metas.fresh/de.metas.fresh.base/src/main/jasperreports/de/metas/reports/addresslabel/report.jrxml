@@ -62,13 +62,6 @@ where cmpg_contact.mktg_campaign_id = $P{RECORD_ID}
 					<pen lineWidth="0.5"/>
 				</graphicElement>
 			</rectangle>
-			<staticText>
-				<reportElement key="textField-10" mode="Transparent" x="17" y="13" width="50" height="21" uuid="d98762a5-96bb-4111-822b-caa2a878d6bb"/>
-				<textElement verticalAlignment="Middle" markup="none">
-					<font fontName="SansSerif" size="12" isBold="true" isUnderline="false"/>
-				</textElement>
-				<text><![CDATA[P.P.]]></text>
-			</staticText>
 			<textField>
 				<reportElement key="textField-10" mode="Transparent" x="48" y="13" width="88" height="21" uuid="4a8fe744-5240-4e34-9768-a69d4e10382d"/>
 				<textElement verticalAlignment="Middle" markup="none">
@@ -77,13 +70,20 @@ where cmpg_contact.mktg_campaign_id = $P{RECORD_ID}
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_addressline}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement key="textField-10" mode="Transparent" x="144" y="13" width="48" height="20" uuid="d98762a5-96bb-4111-822b-caa2a878d6bb"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
-					<font fontName="SansSerif" size="7" isBold="false" isUnderline="false"/>
+			<textField>
+				<reportElement x="17" y="13" width="50" height="21" uuid="5d047808-06cc-4256-a5de-de0faf39e259"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Post CH AG]]></text>
-			</staticText>
+				<textFieldExpression><![CDATA[$R{paid}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="144" y="13" width="48" height="21" uuid="5308ad17-f0fa-4662-b9e2-dc23059fd191"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{post}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
