@@ -16,7 +16,7 @@ class ActionButton extends Component {
   };
 
   handleClick = () => {
-    const { dispatch, action, docId, tabId } = this.props;
+    const { dispatch, action, docId, tabId, docType } = this.props;
 
     if (action.disabled) {
       return;
@@ -30,8 +30,8 @@ class ActionButton extends Component {
         tabId,
         null,
         false,
-        null,
-        docId,
+        docType,
+        [docId],
         null,
         null,
         null,
@@ -107,6 +107,7 @@ class TableFilter extends Component {
       docType,
       docId,
       tabId,
+      selected,
       isBatchEntry,
       handleBatchEntryToggle,
       supportQuickInput,
@@ -160,7 +161,15 @@ class TableFilter extends Component {
               actions.length &&
               actions.map(action => (
                 <ActionButton
-                  {...{ dispatch, tabIndex, action }}
+                  {...{
+                    dispatch,
+                    tabIndex,
+                    action,
+                    docId,
+                    tabId,
+                    docType,
+                    selected,
+                  }}
                   key={`top-action-${action.processId}`}
                 />
               ))}
