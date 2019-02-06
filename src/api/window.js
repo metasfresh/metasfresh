@@ -41,3 +41,9 @@ export function getAttributesInstance(
     },
   });
 }
+
+export function topActionsRequest(windowId, documentId, tabId) {
+  return get(`
+    ${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions
+  `);
+}
