@@ -53,7 +53,7 @@ const keymaps = {
   COMPLETE_STATUS: `${mod}+U`,
 
   /* Modal context */
-  APPLY: `${mod}+Enter`,
+  DONE: `${mod}+Enter`,
   CANCEL: 'Escape',
 };
 
