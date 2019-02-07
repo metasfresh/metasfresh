@@ -16,7 +16,7 @@ class ActionButton extends Component {
   };
 
   handleClick = () => {
-    const { dispatch, action, docId, tabId, docType } = this.props;
+    const { dispatch, action, docId } = this.props;
 
     if (action.disabled) {
       return;
@@ -27,10 +27,10 @@ class ActionButton extends Component {
         action.caption,
         action.processId,
         'process',
-        tabId,
+        null,
         null,
         false,
-        docType,
+        null,
         [docId],
         null,
         null,
