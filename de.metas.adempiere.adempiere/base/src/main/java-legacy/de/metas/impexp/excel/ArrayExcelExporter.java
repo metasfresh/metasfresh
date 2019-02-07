@@ -35,6 +35,7 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	private final Properties m_ctx;
 	private final List<List<Object>> m_data;
 	private final List<String> m_columnHeaders;
+	private final boolean translateHeaders;
 
 	@Builder
 	private ArrayExcelExporter(
@@ -42,13 +43,15 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 			@Nullable final ExcelExportConstants constants,
 			@Nullable final Properties ctx,
 			@NonNull final List<List<Object>> data,
-			@Nullable final List<String> columnHeaders)
+			@Nullable final List<String> columnHeaders,
+			@Nullable final Boolean translateHeaders)
 	{
 		super(excelFormat, constants);
 
 		m_ctx = ctx != null ? ctx : Env.getCtx();
 		m_data = data;
 		m_columnHeaders = columnHeaders;
+		this.translateHeaders = translateHeaders != null ? translateHeaders : true;
 	}
 
 	@Override
@@ -85,8 +88,15 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 			headerName = m_columnHeaders.get(col);
 		}
 
-		final String adLanguage = getLanguage().getAD_Language();
-		return msgBL.translatable(headerName).translate(adLanguage);
+		if (translateHeaders)
+		{
+			final String adLanguage = getLanguage().getAD_Language();
+			return msgBL.translatable(headerName).translate(adLanguage);
+		}
+		else
+		{
+			return headerName;
+		}
 	}
 
 	@Override
