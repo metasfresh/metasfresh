@@ -161,7 +161,7 @@ public final class Env
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
 		// works in my debugging-session (without system.exit), but doesn't (always!) works on lx-term01 (x2go)
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			System.exit(status);
 		}
@@ -175,7 +175,7 @@ public final class Env
 	public static void reset(final boolean finalCall)
 	{
 		s_log.info("Reseting environment (finalCall={})", finalCall);
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final boolean preserveMainWindow = !finalCall;
 			windows.closeAll(preserveMainWindow);
@@ -197,7 +197,7 @@ public final class Env
 		CacheMgt.get().reset();
 
 		// Close datasource(s)
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			DB.closeTarget();
 		}
@@ -205,7 +205,7 @@ public final class Env
 		// Reset Role Access
 		if (!finalCall)
 		{
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 				DB.setDBTarget(CConnection.get());
 
 			// NOTE: there is no need to reset the role because cache was reset
@@ -1624,7 +1624,7 @@ public final class Env
 		removeContextForPrefix(ctx, ctxWindowPrefix);
 
 		//
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 			removeWindow(WindowNo);
 	}	// clearWinContext
 

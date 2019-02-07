@@ -65,7 +65,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 {
 	private static final String CONFIG_UseNativeConverter = "org.compiere.db.DB_PostgreSQL.UseNativeConverter";
 	private static final String CONFIG_UseNativeConverter_DefaultValue = "true";
-	private static final String CONFIG_CheckoutTimeout = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
+	private static final String CONFIG_CheckoutTimeout_SwingClient = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -567,11 +567,12 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			// cpds.setTestConnectionOnCheckout(true);
 			cpds.setAcquireRetryAttempts(2);
 
-			// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
-			cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout, 20 * 1000));
 
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 			{
+				// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
+				cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
+
 				cpds.setInitialPoolSize(1);
 				cpds.setMinPoolSize(1);
 				cpds.setMaxPoolSize(20);

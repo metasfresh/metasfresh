@@ -90,7 +90,7 @@ public class SessionBL implements ISessionBL
 
 		//
 		// Set Client Info if available - 04442
-		if ((Ini.isClient())  // task 08569: only try it if we are running in any client mode
+		if ((Ini.isSwingClient())  // task 08569: only try it if we are running in any client mode
 				&& Services.isAvailable(IClientUI.class))
 		{
 			sessionPO.setClient_Info(Services.get(IClientUI.class).getClientInfo());

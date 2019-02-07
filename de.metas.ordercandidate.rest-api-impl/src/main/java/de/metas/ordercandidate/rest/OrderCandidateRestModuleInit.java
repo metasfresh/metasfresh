@@ -42,7 +42,7 @@ public class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			ensureDataSourceExists();
 		}
