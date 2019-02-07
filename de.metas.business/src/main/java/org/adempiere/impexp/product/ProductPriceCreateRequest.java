@@ -47,5 +47,5 @@ public class ProductPriceCreateRequest
 	@NonNull
 	private final LocalDate validDate;
 	private final int taxCategoryId;
-	private final boolean isInitialImport;
+	private final boolean useNewestPriceListversion;
 }

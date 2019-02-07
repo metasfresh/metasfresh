@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
@@ -159,4 +160,6 @@ public interface IPriceListDAO extends ISingletonService
 	Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(PriceListVersionId priceListVersionId);
 
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
+
+	I_M_PriceList_Version getCreatePriceListVersion(ProductPriceCreateRequest request);
 }

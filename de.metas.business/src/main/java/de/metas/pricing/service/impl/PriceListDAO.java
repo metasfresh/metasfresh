@@ -1,8 +1,10 @@
 package de.metas.pricing.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -24,6 +26,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.location.CountryId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -461,5 +464,42 @@ public class PriceListDAO implements IPriceListDAO
 				.map(PriceListVersionId::ofRepoId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
+	}
+	
+	@Override
+	public I_M_PriceList_Version getCreatePriceListVersion(@NonNull final ProductPriceCreateRequest request)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoId(request.getPriceListId());
+		@NonNull final LocalDate validDate = request.getValidDate();
+		final I_M_PriceList_Version plv;
+		if (request.isUseNewestPriceListversion())
+		{
+			plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId.getRepoId());
+		}
+		else 
+		{
+			plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
+		}
+		return plv == null ? createPriceListVersion(priceListId, validDate) : plv;
+	}
+
+	private I_M_PriceList_Version createPriceListVersion(final PriceListId priceListId, @NonNull final LocalDate validFrom)
+	{
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
+		plv.setName(validFrom.toString());
+		plv.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		plv.setM_PriceList_ID(priceListId.getRepoId());
+		plv.setProcessed(true);
+		save(plv);
+
+		// now set the previous one as base list
+		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv);
+		if (previousPlv != null)
+		{
+			plv.setM_Pricelist_Version_Base(previousPlv);
+			save(plv);
+		}
+
+		return plv;
 	}
 }

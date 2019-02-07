@@ -1,5 +1,9 @@
 package de.metas.pricing.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -10,7 +14,9 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -244,4 +250,25 @@ public class ProductPrices
 		return priceListsRepo.getPriceListVersionById(basePriceListVersionId);
 	}
 
+	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
+	{
+		final BigDecimal price = ppRequest.getPrice();
+		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, ProductId.ofRepoId(ppRequest.getProductId()));
+		if (pp == null)
+		{
+			pp = newInstance(I_M_ProductPrice.class, plv);
+		}
+
+		pp.setM_PriceList_Version(plv);
+		pp.setM_Product_ID(ppRequest.getProductId());
+		pp.setPriceLimit(price);
+		pp.setPriceList(price);
+		pp.setPriceStd(price);
+		final I_C_UOM uom = InterfaceWrapperHelper.load(ppRequest.getProductId(), I_M_Product.class).getC_UOM();
+		pp.setC_UOM(uom);
+		pp.setC_TaxCategory_ID(ppRequest.getTaxCategoryId());
+		save(pp);
+
+		return pp;
+	}
 }

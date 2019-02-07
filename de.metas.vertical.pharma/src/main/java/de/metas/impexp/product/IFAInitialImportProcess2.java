@@ -285,7 +285,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
-				.isInitialImport(true)
+				.useNewestPriceListversion(true)
 				.price(importRecord.getA01KAEP())
 				.priceListId(importRecord.getKAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
@@ -305,7 +305,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
-				.isInitialImport(true)
+				.useNewestPriceListversion(true)
 				.price(importRecord.getA01APU())
 				.priceListId(importRecord.getAPU_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
@@ -325,7 +325,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
-				.isInitialImport(true)
+				.useNewestPriceListversion(true)
 				.price(importRecord.getA01AEP())
 				.priceListId(importRecord.getAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
@@ -345,7 +345,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
-				.isInitialImport(true)
+				.useNewestPriceListversion(true)
 				.price(importRecord.getA01AVP())
 				.priceListId(importRecord.getAVP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
@@ -365,7 +365,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
-				.isInitialImport(true)
+				.useNewestPriceListversion(true)
 				.price(importRecord.getA01UVP())
 				.priceListId(importRecord.getUVP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
@@ -385,7 +385,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
-				.isInitialImport(true)
+				.useNewestPriceListversion(true)
 				.price(importRecord.getA01ZBV())
 				.priceListId(importRecord.getZBV_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
