@@ -76,6 +76,7 @@ public class JsonConverters
 				.orgId(orgId)
 				//
 				.dataSourceInternalName(request.getDataSourceInternalName())
+				.dataDestInternalName(request.getDataDestInternalName())
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
 				//

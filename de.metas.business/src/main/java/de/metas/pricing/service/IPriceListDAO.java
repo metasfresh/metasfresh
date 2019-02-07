@@ -157,4 +157,6 @@ public interface IPriceListDAO extends ISingletonService
 	Iterator<I_M_ProductPrice> retrieveProductPricesOrderedBySeqNoAndProductIdAndMatchSeqNo(PriceListVersionId priceListVersionId);
 
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
+
+	I_M_PriceList getPriceListByPriceListVersionId(PriceListVersionId priceListVersionId);
 }
