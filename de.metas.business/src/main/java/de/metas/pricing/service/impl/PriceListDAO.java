@@ -455,4 +455,12 @@ public class PriceListDAO implements IPriceListDAO
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public I_M_PriceList getPriceListByPriceListVersionId(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final I_M_PriceList_Version plv = getPriceListVersionById(priceListVersionId);
+		final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
+		return getById(priceListId);
+	}
 }
