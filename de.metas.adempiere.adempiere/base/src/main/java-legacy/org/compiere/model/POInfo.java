@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -69,7 +70,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Please consider using {@link #getPOInfo(int)}.
-	 * 
+	 *
 	 * @param ctx_NOTUSED context
 	 * @param AD_Table_ID AD_Table_ID
 	 * @return POInfo
@@ -88,7 +89,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Please consider using {@link #getPOInfo(String)}.
-	 * 
+	 *
 	 * @param ctx_NOTUSED
 	 * @param tableName
 	 * @return POInfo
@@ -101,7 +102,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Please consider using {@link #getPOInfo(int)}.
-	 * 
+	 *
 	 * @param ctx_NOTUSED context
 	 * @param AD_Table_ID AD_Table_ID
 	 * @param trxName Transaction name
@@ -114,13 +115,19 @@ public final class POInfo implements Serializable
 			@Override
 			public Optional<POInfo> call()
 			{
+				final Stopwatch stopwatch = Stopwatch.createStarted();
 				final POInfo poInfo = new POInfo(AD_Table_ID, trxName);
+				stopwatch.stop();
+
 				final boolean valid = poInfo.getColumnCount() > 0;
 				if (!valid)
 				{
+					logger.debug("Found no valid POInfo for AD_Table_ID={}; it took {}; add 'absent' result to cache; trxName={}", AD_Table_ID, stopwatch, trxName);
 					return Optional.absent();
 				}
 				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
+
+				logger.debug("Found POInfo for AD_Table_ID={} (TableName={}); it took {}; add result to cache; trxName={}", AD_Table_ID, poInfo.getTableName(),stopwatch, trxName);
 
 				// Update the cache by tablename
 				s_cacheByTableNameUC.put(poInfo.getTableNameUC(), poInfoOptional);
@@ -132,7 +139,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Please consider using {@link #getPOInfo(String)}.
-	 * 
+	 *
 	 * @param ctx_NOTUSED
 	 * @param tableName
 	 * @param trxName
@@ -149,18 +156,22 @@ public final class POInfo implements Serializable
 		final String tableNameUC = tableName.toUpperCase();
 		return s_cacheByTableNameUC.get(tableNameUC, new Callable<Optional<POInfo>>()
 		{
-
 			@Override
 			public Optional<POInfo> call()
 			{
+				final Stopwatch stopwatch = Stopwatch.createStarted();
 				final POInfo poInfo = new POInfo(tableName, trxName);
+				stopwatch.stop();
+
 				final boolean valid = poInfo.getColumnCount() > 0;
 				if (!valid)
 				{
+					logger.debug("Found no valid POInfo for TableNameUC={}; it took {}; add 'absent' result to cache; trxName={}", tableNameUC, stopwatch, trxName);
 					return Optional.absent();
 				}
 				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
 
+				logger.debug("Loaded POInfo for TableName={} (AD_Table_ID={}); it took {}; add result to cache; trxName={}", tableName, poInfo.getAD_Table_ID(), stopwatch, trxName);
 				// Update the cache by AD_Table_ID
 				s_cache.put(poInfo.getAD_Table_ID(), poInfoOptional);
 
@@ -186,7 +197,7 @@ public final class POInfo implements Serializable
 
 	/**************************************************************************
 	 * Create Persistent Info
-	 * 
+	 *
 	 * @param AD_Table_ID AD_ Table_ID
 	 * @param trxName transaction name
 	 */
@@ -217,7 +228,7 @@ public final class POInfo implements Serializable
 	private ImmutableList<String> m_keyColumnNames;
 	/**
 	 * Single Primary Key.
-	 * 
+	 *
 	 * If table has composed primary key, this variable will be set to null
 	 */
 	private String m_keyColumnName = null;
@@ -237,7 +248,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Load Table/Column Info into this instance. If the select returns no result, nothing is loaded and no error is raised.
-	 * 
+	 *
 	 * @param trxName
 	 */
 	private final void loadInfo(final String trxName)
@@ -458,7 +469,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return String Representation
 	 */
 	@Override
@@ -469,7 +480,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * String representation for index
-	 * 
+	 *
 	 * @param index column index
 	 * @return String Representation
 	 */
@@ -482,7 +493,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Table Name
-	 * 
+	 *
 	 * @return Table Name
 	 */
 	public String getTableName()
@@ -498,7 +509,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get AD_Table_ID
-	 * 
+	 *
 	 * @return AD_Table_ID
 	 */
 	public int getAD_Table_ID()
@@ -512,7 +523,7 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return single primary key or null
 	 */
 	public String getKeyColumnName()
@@ -535,7 +546,7 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return list column names which compose the primary key or empty list; never return null
 	 */
 	public List<String> getKeyColumnNames()
@@ -545,7 +556,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Creates a new array copy of {@link #getKeyColumnNames()}
-	 * 
+	 *
 	 * @return array of key column names
 	 */
 	public String[] getKeyColumnNamesAsArray()
@@ -570,7 +581,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Gets Table Access Level as integer.
-	 * 
+	 *
 	 * @return {@link TableAccessLevel#getAccessLevelInt()}
 	 * @deprecated Please use {@link #getAccessLevel()}
 	 */
@@ -582,7 +593,7 @@ public final class POInfo implements Serializable
 
 	/**************************************************************************
 	 * Get ColumnCount
-	 * 
+	 *
 	 * @return column count
 	 */
 	public int getColumnCount()
@@ -591,7 +602,7 @@ public final class POInfo implements Serializable
 	}   // getColumnCount
 
 	/**
-	 * 
+	 *
 	 * @param columnName
 	 * @return true if given column name exists
 	 */
@@ -603,7 +614,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Index
-	 * 
+	 *
 	 * @param ColumnName column name
 	 * @return index of column with ColumnName or -1 if not found
 	 */
@@ -621,7 +632,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Index
-	 * 
+	 *
 	 * @param AD_Column_ID column
 	 * @return index of column with ColumnName or -1 if not found
 	 */
@@ -641,7 +652,7 @@ public final class POInfo implements Serializable
 		//
 		// Fallback: for some reason column index was not found
 		// => iterate columns and try to get it
-		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", new Object[] { AD_Column_ID, this });
+		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", AD_Column_ID, this);
 		for (int i = 0; i < m_columns.length; i++)
 		{
 			if (AD_Column_ID == m_columns[i].AD_Column_ID)
@@ -667,7 +678,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column
-	 * 
+	 *
 	 * @param index index
 	 * @return column
 	 */
@@ -689,7 +700,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Name
-	 * 
+	 *
 	 * @param index index
 	 * @return ColumnName column name
 	 */
@@ -702,7 +713,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column SQL or Column Name, including the "AS ColumnName"
-	 * 
+	 *
 	 * @param index column index
 	 */
 	public String getColumnSqlForSelect(final int index)
@@ -718,7 +729,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column SQL or Column Name, including the "AS ColumnName".
-	 * 
+	 *
 	 * @param columnName
 	 */
 	public String getColumnSqlForSelect(final String columnName)
@@ -733,7 +744,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column SQL or Column Name, without the "AS ColumnName"
-	 * 
+	 *
 	 * @param index
 	 * @see #getColumnSqlForSelect(int)
 	 */
@@ -750,7 +761,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column SQL or Column Name, without the "AS ColumnName"
-	 * 
+	 *
 	 * @param columnName
 	 * @see #getColumnSqlForSelect(String)
 	 */
@@ -766,7 +777,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column Virtual?
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column is virtual
 	 */
@@ -804,7 +815,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Label
-	 * 
+	 *
 	 * @param index index
 	 * @return column label
 	 */
@@ -817,7 +828,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Description
-	 * 
+	 *
 	 * @param index index
 	 * @return column description
 	 */
@@ -830,7 +841,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Class
-	 * 
+	 *
 	 * @param index index
 	 * @return Class
 	 */
@@ -843,7 +854,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Class
-	 * 
+	 *
 	 * @param columnName
 	 * @return Class
 	 */
@@ -859,7 +870,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Display Type
-	 * 
+	 *
 	 * @param index index
 	 * @return DisplayType
 	 */
@@ -882,7 +893,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column Default Logic
-	 * 
+	 *
 	 * @param index index
 	 * @return Default Logic
 	 */
@@ -895,7 +906,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column Mandatory
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column mandatory
 	 */
@@ -911,7 +922,7 @@ public final class POInfo implements Serializable
 	//
 	/**
 	 * Returns the columns <code>AD_Reference_Value_ID</code>.
-	 * 
+	 *
 	 * @param index index
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
@@ -924,7 +935,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Returns the columns <code>AD_Reference_Value_ID</code>.
-	 * 
+	 *
 	 * @param columnName
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
@@ -952,7 +963,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column Updateable
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column updateable
 	 */
@@ -965,7 +976,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column Updateable
-	 * 
+	 *
 	 * @param columnName
 	 * @return true if column updateable
 	 */
@@ -977,9 +988,9 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Set all columns updateable
-	 * 
+	 *
 	 * @param updateable updateable
-	 * 
+	 *
 	 * @deprecated This method will be deleted in future because our {@link POInfo} has to be immutable.
 	 */
 	@Deprecated
@@ -1023,7 +1034,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column Key
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column is the key
 	 */
@@ -1035,7 +1046,7 @@ public final class POInfo implements Serializable
 	}   // isKey
 
 	/**
-	 * 
+	 *
 	 * @param columnName
 	 * @return true if column is the key
 	 */
@@ -1051,7 +1062,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column Parent
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column is a Parent
 	 */
@@ -1070,7 +1081,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is Column (data) Encrypted
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column is encrypted
 	 */
@@ -1083,7 +1094,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Is allowed logging on this column
-	 * 
+	 *
 	 * @param index index
 	 * @return true if column is allowed to be logged
 	 */
@@ -1096,7 +1107,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column FieldLength
-	 * 
+	 *
 	 * @param index index
 	 * @return field length
 	 */
@@ -1109,7 +1120,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Get Column FieldLength
-	 * 
+	 *
 	 * @param columnName Column Name
 	 * @return field length or 0
 	 */
@@ -1125,7 +1136,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Validate Content
-	 * 
+	 *
 	 * @param index index
 	 * @param value new Value
 	 * @return null if all valid otherwise error message
@@ -1226,7 +1237,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Build select clause (i.e. SELECT column names FROM TableName)
-	 * 
+	 *
 	 * @return string builder
 	 */
 	public StringBuilder buildSelect()
@@ -1269,7 +1280,7 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return if table save log
 	 */
 	public boolean isChangeLog()
@@ -1300,7 +1311,7 @@ public final class POInfo implements Serializable
 	/**
 	 * Makes sure that a POInfo with the given <code>tableName</code> is not cached (anymore). This method can be used to make sure that a subsequent call of one of any <code>getPOInfo(...)</code>
 	 * method causes a reload from DB.
-	 * 
+	 *
 	 * @param tableName if there is a cached POInfo instance whose {@link #getTableName()} method returns this string, it is removed from cache
 	 */
 	public static void removeFromCache(final String tableName)
@@ -1322,7 +1333,7 @@ public final class POInfo implements Serializable
 	/**
 	 * Makes sure that a POInfo with the given <code>AD_Table_ID</code> is not cached (anymore). This method can be used to make sure that a subsequent call of one of any <code>getPOInfo(...)</code>
 	 * method causes a reload from DB.
-	 * 
+	 *
 	 * @param AD_Table_ID if there is a cached POInfo instance whose {@link #getAD_Table_ID()} method returns this int, it is removed from cache
 	 */
 	public static void removeFromCache(final int AD_Table_ID)
@@ -1341,7 +1352,7 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Shall we generate auto-sequence for given String column
-	 * 
+	 *
 	 * @param index
 	 * @return true if we shall generate auto-sequence
 	 */
@@ -1354,7 +1365,7 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if we shall re-load the model after save
 	 */
 	public boolean isLoadAfterSave()
@@ -1365,10 +1376,10 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Gets SQL to be used when loading from model table
-	 * 
+	 *
 	 * The returned SQL will look like: <br>
 	 * SELECT columnName1, columnName2, (SELECT ...) as VirtualColumn3 FROM TableName
-	 * 
+	 *
 	 * @return SELECT ... FROM TableName
 	 */
 	/* package */String getSqlSelect()
@@ -1380,7 +1391,7 @@ public final class POInfo implements Serializable
 	 * Gets SQL to be used when loading a record
 	 * <p>
 	 * e.g. SELECT columnNames FROM TableName WHERE KeyColumn1=? AND KeyColumn2=?
-	 * 
+	 *
 	 * @return SELECT SQL for loading
 	 */
 	/* package */String getSqlSelectByKeys()
@@ -1399,9 +1410,9 @@ public final class POInfo implements Serializable
 
 	/**
 	 * Gets SQL Where Clause by KeyColumns.
-	 * 
+	 *
 	 * NOTE: values are parameterized
-	 * 
+	 *
 	 * @return SQL where clause (e.g. KeyColumn_ID=?)
 	 */
 	public String getSqlWhereClauseByKeys()
@@ -1423,10 +1434,10 @@ public final class POInfo implements Serializable
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Checks if given column can be stale
-	 * 
+	 *
 	 * @param columnIndex
 	 * @return false if the given column can NEVER get staled after a save
 	 */
@@ -1441,7 +1452,7 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if there is at least one column which is staleable
 	 */
 	/* package */boolean hasStaleableColumns()

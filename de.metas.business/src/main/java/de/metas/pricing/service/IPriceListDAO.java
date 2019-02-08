@@ -162,4 +162,6 @@ public interface IPriceListDAO extends ISingletonService
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
 
 	I_M_PriceList_Version getCreatePriceListVersion(ProductPriceCreateRequest request);
+
+	I_M_PriceList getPriceListByPriceListVersionId(PriceListVersionId priceListVersionId);
 }
