@@ -24,6 +24,11 @@ admin_url=${METASFRESH_ADMIN_URL:-NONE}
 # self
 app_host=${APP_HOST:-app}
 
+# debug
+debug_port=${DEBUG_PORT:-8790}
+debug_suspend=${DEBUG_SUSPEND:-n}
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
 echo_variable_values()
 {
  echo "Note: all these variables can be set from outside."
@@ -34,6 +39,9 @@ echo_variable_values()
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
  echo "DB_CONNECTION_POOL_MAX_SIZE=${db_connection_pool_max_size}"
+ echo "DEBUG_PORT=${debug_port}"
+ echo "DEBUG_SUSPEND=${debug_suspend}"
+ echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "ES_HOST=${es_host}"
  echo "ES_PORT=${es_port}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
@@ -44,7 +52,7 @@ set_properties()
 {
  local prop_file="$1"
  if [[ $(cat $prop_file | grep FOO | wc -l) -ge "1" ]]; then
-	sed -Ei "s/FOO_DBMS/${db_host}/g" $prop_file
+	sed -Ei "s/FOO_DBMS_HOST/${db_host}/g" $prop_file
 	sed -Ei "s/FOO_DBMS_PORT/${db_port}/g" $prop_file
 	sed -Ei "s/FOO_DB_NAME/${db_name}/g" $prop_file
 	sed -Ei "s/FOO_DB_USER/${db_user}/g" $prop_file
@@ -85,11 +93,18 @@ run_metasfresh()
  ${metasfresh_db_connectionpool_params} \
  ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh.properties \
- -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 \
- -jar metasfresh-app.jar
+ -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo_variable_values
+
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	set -x
+fi
 
 set_properties /opt/metasfresh/metasfresh.properties
 set_properties /opt/metasfresh/local_settings.properties
