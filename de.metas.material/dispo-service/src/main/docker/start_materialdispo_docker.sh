@@ -16,6 +16,11 @@ admin_url=${METASFRESH_ADMIN_URL:-NONE}
 # app
 app_host=${APP_HOST:-app}
 
+
+debug_port=${DEBUG_PORT:-8790}
+debug_suspend=${DEBUG_SUSPEND:-n}
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
 echo_variable_values()
 {
  echo "Note: all these variables can be set using the -e parameter."
@@ -26,6 +31,9 @@ echo_variable_values()
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
  echo "DB_CONNECTION_POOL_MAX_SIZE=${db_connection_pool_max_size}"
+ echo "DEBUG_PORT=${debug_port}"
+ echo "DEBUG_SUSPEND=${debug_suspend}"
+ echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
 }
@@ -35,7 +43,7 @@ set_properties()
  echo "set_properties BEGIN"
  local prop_file="$1"
  if [[ $(cat $prop_file | grep FOO | wc -l) -ge "1" ]]; then
-	sed -Ei "s/FOO_DBMS/${db_host}/g" $prop_file
+	sed -Ei "s/FOO_DBMS_HOST/${db_host}/g" $prop_file
 	sed -Ei "s/FOO_DBMS_PORT/${db_port}/g" $prop_file
 	sed -Ei "s/FOO_DB_NAME/${db_name}/g" $prop_file
 	sed -Ei "s/FOO_DB_USER/${db_user}/g" $prop_file
@@ -77,15 +85,24 @@ run_metasfresh()
  local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
 
  cd /opt/metasfresh/metasfresh-material-dispo/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
- ${MEMORY_PARAMS} \
- -XX:+HeapDumpOnOutOfMemoryError \
- -DPropertyFile=/opt/metasfresh/metasfresh-material-dispo/metasfresh.properties \
- -Djava.security.egd=file:/dev/./urandom \
- ${metasfresh_db_connectionpool_params} \
- ${metasfresh_admin_params} \
- -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8790 \
+ ${MEMORY_PARAMS}\
+ -XX:+HeapDumpOnOutOfMemoryError\
+ -DPropertyFile=/opt/metasfresh/metasfresh-material-dispo/metasfresh.properties\
+ -Djava.security.egd=file:/dev/./urandom\
+ ${metasfresh_db_connectionpool_params}\
+ ${metasfresh_admin_params}\
+ -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  -jar metasfresh-material-dispo.jar
 }
+
+echo_variable_values
+
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	set -x
+fi
 
 set_properties /opt/metasfresh/metasfresh-material-dispo/metasfresh.properties
 
