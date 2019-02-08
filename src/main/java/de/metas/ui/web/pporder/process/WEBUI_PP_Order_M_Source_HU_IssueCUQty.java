@@ -75,25 +75,38 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedRowIds().isSingleDocumentId())
+		if (getSelectedRowIds().isSingleDocumentId())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
+			return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
 		}
-
-		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
-
-		return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
+		else
+		{
+			final boolean anyHuMatches = streamPPOrderLineRows()
+					.anyMatch(row -> WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(row).isAccepted());
+			if (anyHuMatches)
+			{
+				return ProcessPreconditionsResolution.accept();
+			}
+			return ProcessPreconditionsResolution.reject();
+		}
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PPOrderLineRow row = getSingleSelectedRow();
+		streamPPOrderLineRows().forEach(row -> issue(row));
+		getView().invalidateAll();
+		return MSG_OK;
+	}
 
+	private void issue(final PPOrderLineRow row)
+	{
 		final List<I_M_Source_HU> sourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 		if (sourceHus.isEmpty())
 		{
-			throw new AdempiereException("@NoSelection@");
+			new AdempiereException("@NoSelection@" + row).throwIfDeveloperModeOrLogWarningElse(logger);
+			return;
 		}
 
 		final Map<Integer, I_M_Source_HU> huId2SourceHu = new HashMap<>();
@@ -132,11 +145,6 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.setOrderId(ppOrderId)
 				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the CUs we split
 				.createIssues(extractedCUs);
-
-		getView().invalidateAll();
-		ppOrderView.invalidateAll();
-
-		return MSG_OK;
 	}
 
 	@Override
