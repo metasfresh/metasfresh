@@ -252,7 +252,7 @@ public class ProductPrices
 
 	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
-		final BigDecimal price = ppRequest.getPrice();
+		final BigDecimal price = ppRequest.getPrice().setScale(2);
 		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, ProductId.ofRepoId(ppRequest.getProductId()));
 		if (pp == null)
 		{
