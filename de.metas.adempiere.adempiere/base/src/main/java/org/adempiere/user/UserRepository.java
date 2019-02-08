@@ -43,6 +43,11 @@ public class UserRepository
 	public User getById(@NonNull final UserId userId)
 	{
 		final I_AD_User userRecord = loadOutOfTrx(userId.getRepoId(), I_AD_User.class);
+
+		if(userRecord == null)
+		{
+			return null;
+		}
 		return ofRecord(userRecord);
 	}
 
