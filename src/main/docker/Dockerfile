@@ -27,8 +27,8 @@ COPY ./metasfresh-webui-api.jar /opt/metasfresh/metasfresh-webui-api/metasfresh-
 # Note that the skript start_materialdispo_docker.sh is adapted to the exploded jar.
 # Note2 that we need unzip; jar doesn't work, thx to https://stackoverflow.com/a/39653862/1012103
 RUN cd /opt/metasfresh/metasfresh-webui-api \
- && (unzip -q /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api || echo "Ignore exit code $? because spring boot's uber jar starts with a shell script") \
- && rm /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api
+ && (unzip -q /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api.jar || echo "Ignore exit code $? because spring boot's uber jar starts with a shell script") \
+ && rm /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api.jar
 
 COPY configs/logback-spring.xml /opt/metasfresh/metasfresh-webui-api/
 COPY configs/metasfresh.properties /opt/metasfresh/metasfresh-webui-api/
