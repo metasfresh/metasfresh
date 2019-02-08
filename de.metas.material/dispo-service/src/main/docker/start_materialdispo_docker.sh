@@ -84,6 +84,8 @@ run_metasfresh()
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
  local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
 
+ # note that we assume the spring-boot uber jar was exploded into the docker image
+
  cd /opt/metasfresh/metasfresh-material-dispo/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${MEMORY_PARAMS}\
  -XX:+HeapDumpOnOutOfMemoryError\
@@ -92,7 +94,7 @@ run_metasfresh()
  ${metasfresh_db_connectionpool_params}\
  ${metasfresh_admin_params}\
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- -jar metasfresh-material-dispo.jar
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo_variable_values
