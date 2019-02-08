@@ -42,6 +42,7 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -146,7 +147,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 
-	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId);
+	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, Set<ProductId> productIdsToExclude);
 
 	/**
 	 * Retrieves product prices records of the given price list version
@@ -159,4 +160,14 @@ public interface IPriceListDAO extends ISingletonService
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
 
 	I_M_PriceList getPriceListByPriceListVersionId(PriceListVersionId priceListVersionId);
+
+	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
+
+	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion);
+
+	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion);
+
+	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
+
+	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
 }

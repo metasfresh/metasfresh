@@ -2,6 +2,7 @@ package de.metas.pricing.service;
 
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.adempiere.location.CountryId;
 import org.compiere.model.I_M_PriceList;
@@ -80,6 +81,12 @@ public class PriceListsCollection
 
 	public ImmutableSet<PriceListId> filterAndListIds(@NonNull final Set<CountryId> countryIds)
 	{
+		return filterAndStreamIds(countryIds)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Stream<PriceListId> filterAndStreamIds(@NonNull final Set<CountryId> countryIds)
+	{
 		Check.assumeNotEmpty(countryIds, "countryIds is not empty");
 
 		return getPriceLists()
@@ -88,7 +95,7 @@ public class PriceListsCollection
 						.countryIds(ImmutableSet.copyOf(countryIds))
 						.build())
 				.map(priceList -> PriceListId.ofRepoId(priceList.getM_PriceList_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+				.distinct();
 	}
 
 	@Value
