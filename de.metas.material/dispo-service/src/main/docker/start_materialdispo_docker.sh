@@ -55,7 +55,7 @@ set_properties()
  
 wait_dbms()
 {
- until nc -z $DB_HOST 5432
+ until nc -z ${db_host} ${db_port}
  do
    sleep 1
  done
