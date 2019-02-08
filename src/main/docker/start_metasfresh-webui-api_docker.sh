@@ -116,7 +116,9 @@ run_metasfresh()
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
- org.springframework.boot.loader.JarLauncher
+ org.springframework.boot.loader.JarLauncher \
+ || sleep 30m
+
 }
 
 echo_variable_values
