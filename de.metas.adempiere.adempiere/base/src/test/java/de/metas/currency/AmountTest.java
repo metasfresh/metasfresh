@@ -1,16 +1,16 @@
 package de.metas.currency;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 
-import de.metas.util.NumberUtils;
-import lombok.NonNull;
-import lombok.Value;
+import org.junit.Test;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,26 +28,17 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * Amount datatype: a {@link BigDecimal} value and a currency code.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Value
-public final class Amount
+public class AmountTest
 {
-	public static Amount of(@NonNull final BigDecimal value, @NonNull String currencyCode)
+	@Test
+	public void testEquals()
 	{
-		return new Amount(value, currencyCode);
+		assertThat(euro("11.00000000000000000"))
+				.isEqualTo(euro("11"));
 	}
 
-	BigDecimal value;
-	String currencyCode;
-
-	private Amount(@NonNull final BigDecimal value, @NonNull String currencyCode)
+	private Amount euro(final String amt)
 	{
-		this.value = NumberUtils.stripTrailingDecimalZeros(value);
-		this.currencyCode = currencyCode;
+		return Amount.of(new BigDecimal(amt), "EUR");
 	}
 }
