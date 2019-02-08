@@ -16,7 +16,7 @@ admin_url=${METASFRESH_ADMIN_URL:-NONE}
 # app
 app_host=${APP_HOST:-app}
 
-
+# debug
 debug_port=${DEBUG_PORT:-8790}
 debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}

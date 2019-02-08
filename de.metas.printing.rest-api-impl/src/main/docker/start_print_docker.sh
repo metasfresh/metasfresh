@@ -103,7 +103,7 @@ java \
  -Djava.security.egd=file:/dev/./urandom\
  -Dserver.port=${server_port}\
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- -jar metasfresh-print.jar
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo_variable_values

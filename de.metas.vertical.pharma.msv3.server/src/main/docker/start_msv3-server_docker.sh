@@ -106,7 +106,7 @@ MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
  -Dmsv3server.startup.requestAllData=${request_all_data_on_startup} \
  -Dmsv3server.startup.requestConfigData=${request_config_data_on_startup} \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- -jar de.metas.vertical.pharma.msv3.server.jar
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo "*********************************"
