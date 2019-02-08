@@ -1,5 +1,9 @@
 package de.metas.pricing.service;
 
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import lombok.Builder;
@@ -36,4 +40,7 @@ public class CopyProductPriceRequest
 	ProductPriceId copyFromProductPriceId;
 	@NonNull
 	PriceListVersionId copyToPriceListVersionId;
+
+	@Nullable
+	BigDecimal priceStd;
 }
