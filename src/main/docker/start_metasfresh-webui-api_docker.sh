@@ -14,6 +14,12 @@ db_connection_pool_max_size=${DB_CONNECTION_POOL_MAX_SIZE:-UNSET}
 es_host=${ES_HOST:-search}
 es_port=${ES_PORT:-9300}
 
+# rabbitmq
+rabbitmq_host=${RABBITMQ_HOST:-localhost}
+rabbitmq_port=${RABBITMQ_PORT:-5672}
+rabbitmq_user=${RABBITMQ_USER:-guest}
+rabbitmq_password=${RABBITMQ_PASSWORD:-$(echo $secret_rabbitmq_password)}
+
 # metasfresh-admin
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 
@@ -30,6 +36,12 @@ echo_variable_values()
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
  echo "DB_CONNECTION_POOL_MAX_SIZE=${db_connection_pool_max_size}"
+ echo ""
+ echo "RABBITMQ_HOST=${rabbitmq_host}"
+ echo "RABBITMQ_PORT=${rabbitmq_port}"
+ echo "RABBITMQ_USER=${rabbitmq_user}"
+ echo "RABBITMQ_PASSWORD=*******"
+ echo ""
  echo "ES_HOST=${es_host}"
  echo "ES_PORT=${es_port}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
@@ -84,6 +96,11 @@ run_metasfresh()
 
  local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
+ local rabbitmq_params= "-Dspring.rabbitmq.host=${rabbitmq_host}\
+ -Dspring.rabbitmq.port=${rabbitmq_port}\
+ -Dspring.rabbitmq.username=${rabbitmq_user}\
+ -Dspring.rabbitmq.password=${rabbitmq_password}"
+
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
  local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
 
@@ -93,6 +110,7 @@ run_metasfresh()
  -XX:+HeapDumpOnOutOfMemoryError \
  -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${es_params} \
+ ${rabbitmq_params} \
  ${metasfresh_admin_params} \
  ${metasfresh_db_connectionpool_params}\
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \

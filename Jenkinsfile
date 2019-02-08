@@ -118,7 +118,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <ul>
 <li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${MF_VERSION}.jar</a></li>
 <li>A docker image which you can run in docker via<br>
-<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${publishedDockerImageName}</code></li>
+<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${misc.mkDockerTag(MF_VERSION)} ${publishedDockerImageName}</code></li>
 </ul>"""
 
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh-webui-api_repo')
