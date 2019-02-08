@@ -42,7 +42,7 @@ set_properties()
  echo "set_properties BEGIN"
  local prop_file="$1"
  if [[ $(cat $prop_file | grep FOO | wc -l) -ge "1" ]]; then
-	sed -Ei "s/FOO_DBMS/${db_host}/g" $prop_file
+	sed -Ei "s/FOO_DBMS_HOST/${db_host}/g" $prop_file
 	sed -Ei "s/FOO_DBMS_PORT/${db_port}/g" $prop_file
 	sed -Ei "s/FOO_DB_NAME/${db_name}/g" $prop_file
 	sed -Ei "s/FOO_DB_USER/${db_user}/g" $prop_file
@@ -54,7 +54,7 @@ set_properties()
 
 wait_dbms()
 {
- until nc -z $DB_HOST 5432
+ until nc -z ${db_host} ${db_port}
  do
    sleep 1
  done
@@ -98,7 +98,7 @@ run_metasfresh()
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
- -jar metasfresh-webui-api.jar
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo_variable_values
