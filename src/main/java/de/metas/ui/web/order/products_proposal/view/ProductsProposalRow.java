@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.currency.Amount;
+import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
@@ -69,6 +70,11 @@ public class ProductsProposalRow implements IViewRow
 	private final Integer lastShipmentDays;
 
 	private final DocumentId id;
+	@Getter
+	private final ProductPriceId productPriceId;
+	@Getter
+	private final ProductPriceId copiedFromProductPriceId;
+
 	private ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
 	@Builder(toBuilder = true)
@@ -78,7 +84,9 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final String asiDescription,
 			@NonNull final Amount price,
 			@Nullable final BigDecimal qty,
-			@Nullable final Integer lastShipmentDays)
+			@Nullable final Integer lastShipmentDays,
+			@Nullable final ProductPriceId productPriceId,
+			@Nullable final ProductPriceId copiedFromProductPriceId)
 	{
 		this.id = id;
 		this.product = product;
@@ -87,6 +95,8 @@ public class ProductsProposalRow implements IViewRow
 		this.currencyCode = price.getCurrencyCode();
 		this.qty = qty;
 		this.lastShipmentDays = lastShipmentDays;
+		this.productPriceId = productPriceId;
+		this.copiedFromProductPriceId = copiedFromProductPriceId;
 	}
 
 	@Override
@@ -143,5 +153,11 @@ public class ProductsProposalRow implements IViewRow
 		{
 			return toBuilder().lastShipmentDays(lastShipmentDays).build();
 		}
+	}
+
+	public boolean isCopiedFromButNotSaved()
+	{
+		return getCopiedFromProductPriceId() != null
+				&& getProductPriceId() == null;
 	}
 }

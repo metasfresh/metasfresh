@@ -1,11 +1,19 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
@@ -46,11 +54,17 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	}
 
 	private final ProductsProposalRowsData rowsData;
+	private final ImmutableList<RelatedProcessDescriptor> processes;
+	private final ViewId initialViewId;
+	private final ViewId parentViewId;
 
 	@Builder
 	private ProductsProposalView(
 			@NonNull final WindowId windowId,
-			@NonNull final ProductsProposalRowsData rowsData)
+			@NonNull final ProductsProposalRowsData rowsData,
+			@Nullable final List<RelatedProcessDescriptor> processes,
+			@Nullable final ViewId initialViewId,
+			@Nullable final ViewId parentViewId)
 	{
 		super(
 				ViewId.random(windowId),
@@ -59,6 +73,10 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				NullDocumentFilterDescriptorsProvider.instance);
 
 		this.rowsData = rowsData;
+		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
+
+		this.initialViewId = initialViewId;
+		this.parentViewId = parentViewId;
 	}
 
 	@Override
@@ -79,9 +97,46 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return processes;
+	}
+
+	public ViewId getInitialViewId()
+	{
+		return initialViewId != null ? initialViewId : getViewId();
+	}
+
+	@Override
+	public ViewId getParentViewId()
+	{
+		return parentViewId;
+	}
+
 	public OrderId getOrderId()
 	{
 		return rowsData.getOrderId();
+	}
+
+	public BPartnerId getBpartnerId()
+	{
+		return rowsData.getBpartnerId();
+	}
+
+	public SOTrx getSoTrx()
+	{
+		return rowsData.getSoTrx();
+	}
+
+	public Set<ProductId> getProductIds()
+	{
+		return rowsData.getProductIds();
+	}
+
+	public PriceListVersionId getSinglePriceListVersionIdOrNull()
+	{
+		return rowsData.getSinglePriceListVersionIdOrNull();
 	}
 
 	public List<ProductsProposalRow> getRowsWithQtySet()
@@ -91,4 +146,16 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				.filter(ProductsProposalRow::isQtySet)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public void addRows(@NonNull final List<ProductsProposalRow> rows)
+	{
+		rowsData.copyAndAddRows(rows);
+		invalidateAll();
+	}
+
+	public void patchViewRow(@NonNull final DocumentId rowId, @NonNull final ProductsProposalRowChangeRequest request)
+	{
+		rowsData.patchRow(rowId, request);
+	}
+
 }

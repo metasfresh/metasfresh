@@ -40,6 +40,11 @@ public class ProductsProposalRowReducers
 			newRowBuilder.qty(request.getQty().orElse(null));
 		}
 
+		if (request.getProductPriceId() != null)
+		{
+			newRowBuilder.productPriceId(request.getProductPriceId().orElse(null));
+		}
+
 		return newRowBuilder.build();
 	}
 
