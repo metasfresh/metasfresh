@@ -1,5 +1,9 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.math.BigDecimal;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow.ProductsProposalRowBuilder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -38,6 +42,17 @@ public class ProductsProposalRowReducers
 		if (request.getQty() != null)
 		{
 			newRowBuilder.qty(request.getQty().orElse(null));
+		}
+
+		if (request.getPrice() != null)
+		{
+			if (request.isUserChange() && !row.isPriceEditable())
+			{
+				throw new AdempiereException("Price is not editable")
+						.setParameter("row", row);
+			}
+
+			newRowBuilder.price(request.getPrice().orElse(BigDecimal.ZERO));
 		}
 
 		if (request.getProductPriceId() != null)

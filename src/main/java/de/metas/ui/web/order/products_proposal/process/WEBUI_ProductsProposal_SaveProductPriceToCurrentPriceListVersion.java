@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.process;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import de.metas.pricing.PriceListVersionId;
@@ -89,8 +90,12 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 		final ProductPriceId productPriceId = pricesListsRepo.copyProductPrice(CopyProductPriceRequest.builder()
 				.copyFromProductPriceId(row.getCopiedFromProductPriceId())
 				.copyToPriceListVersionId(priceListVersionId)
+				.priceStd(row.getPrice().getValue())
 				.build());
 
-		view.patchViewRow(row.getId(), ProductsProposalRowChangeRequest.rowWasSaved(productPriceId));
+		view.patchViewRow(row.getId(), ProductsProposalRowChangeRequest.builder()
+				.productPriceId(Optional.of(productPriceId))
+				.standardPrice(Optional.of(row.getPrice()))
+				.build());
 	}
 }

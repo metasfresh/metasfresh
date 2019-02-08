@@ -46,7 +46,7 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = "_fieldNameAndJsonValues")
+@ToString(exclude = { "_jsonValuesByFieldName", "_renderModeByFieldName" })
 public class ProductsProposalRow implements IViewRow
 {
 	@ViewColumn(seqNo = 10, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
@@ -55,8 +55,9 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(seqNo = 20, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
 	private final String asiDescription;
 
-	@ViewColumn(seqNo = 30, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
-	private final Amount price;
+	public static final String FIELD_Price = "price";
+	@ViewColumn(seqNo = 30, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
+	private final BigDecimal price;
 
 	@ViewColumn(seqNo = 40, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
 	private final String currencyCode;
@@ -74,27 +75,36 @@ public class ProductsProposalRow implements IViewRow
 	private final ProductPriceId productPriceId;
 	@Getter
 	private final ProductPriceId copiedFromProductPriceId;
+	private final Amount standardPrice;
 
-	private ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+	private ImmutableMap<String, Object> _jsonValuesByFieldName; // lazy
+	private ImmutableMap<String, ViewEditorRenderMode> _renderModeByFieldName; // lazy
 
 	@Builder(toBuilder = true)
 	private ProductsProposalRow(
 			@NonNull final DocumentId id,
 			@NonNull final LookupValue product,
 			@Nullable final String asiDescription,
-			@NonNull final Amount price,
+			@NonNull final Amount standardPrice,
+			@Nullable final BigDecimal price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final ProductPriceId productPriceId,
 			@Nullable final ProductPriceId copiedFromProductPriceId)
 	{
 		this.id = id;
+
 		this.product = product;
 		this.asiDescription = asiDescription;
-		this.price = price;
-		this.currencyCode = price.getCurrencyCode();
+
+		this.standardPrice = standardPrice;
+		this.currencyCode = standardPrice.getCurrencyCode();
+		this.price = price != null ? price : standardPrice.getValue();
+
 		this.qty = qty;
+
 		this.lastShipmentDays = lastShipmentDays;
+
 		this.productPriceId = productPriceId;
 		this.copiedFromProductPriceId = copiedFromProductPriceId;
 	}
@@ -102,11 +112,47 @@ public class ProductsProposalRow implements IViewRow
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
-		if (_fieldNameAndJsonValues == null)
+		ImmutableMap<String, Object> jsonValuesByFieldName = _jsonValuesByFieldName;
+		if (jsonValuesByFieldName == null)
 		{
-			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
+			jsonValuesByFieldName = _jsonValuesByFieldName = ViewColumnHelper.extractJsonMap(this);
 		}
-		return _fieldNameAndJsonValues;
+		return jsonValuesByFieldName;
+	}
+
+	@Override
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		ImmutableMap<String, ViewEditorRenderMode> renderModeByFieldName = _renderModeByFieldName;
+		if (renderModeByFieldName == null)
+		{
+			renderModeByFieldName = _renderModeByFieldName = buildViewEditorRenderModeByFieldName();
+		}
+		return renderModeByFieldName;
+	}
+
+	private ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName()
+	{
+		final ImmutableMap.Builder<String, ViewEditorRenderMode> builder = ImmutableMap.builder();
+
+		builder.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS);
+		if (isCopiedFromButNotSaved())
+		{
+			builder.put(FIELD_Price, ViewEditorRenderMode.ALWAYS);
+		}
+
+		return builder.build();
+	}
+
+	public boolean isPriceEditable()
+	{
+		return isFieldEditable(FIELD_Price);
+	}
+
+	private boolean isFieldEditable(final String fieldName)
+	{
+		final ViewEditorRenderMode renderMode = getViewEditorRenderModeByFieldName().get(FIELD_Price);
+		return renderMode != null ? renderMode.isEditable() : false;
 	}
 
 	@Override
@@ -159,5 +205,15 @@ public class ProductsProposalRow implements IViewRow
 	{
 		return getCopiedFromProductPriceId() != null
 				&& getProductPriceId() == null;
+	}
+
+	public boolean isManualPrice()
+	{
+		return price.compareTo(standardPrice.getValue()) != 0;
+	}
+
+	public Amount getPrice()
+	{
+		return Amount.of(price, currencyCode);
 	}
 }

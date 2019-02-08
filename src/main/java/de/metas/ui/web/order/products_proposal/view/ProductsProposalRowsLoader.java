@@ -153,7 +153,7 @@ final class ProductsProposalRowsLoader
 				.id(id)
 				.product(product)
 				.asiDescription(attributeSetInstanceBL.getASIDescriptionById(asiId))
-				.price(Amount.of(record.getPriceStd(), currencyCode))
+				.standardPrice(Amount.of(record.getPriceStd(), currencyCode))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
