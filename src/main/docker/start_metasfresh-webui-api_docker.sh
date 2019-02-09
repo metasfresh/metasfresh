@@ -96,7 +96,7 @@ run_metasfresh()
 
  local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
- local rabbitmq_params= "-Dspring.rabbitmq.host=${rabbitmq_host}\
+ local rabbitmq_params="-Dspring.rabbitmq.host=${rabbitmq_host}\
  -Dspring.rabbitmq.port=${rabbitmq_port}\
  -Dspring.rabbitmq.username=${rabbitmq_user}\
  -Dspring.rabbitmq.password=${rabbitmq_password}"
