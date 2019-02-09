@@ -101,8 +101,8 @@ run_metasfresh()
  -Dspring.rabbitmq.username=${rabbitmq_user}\
  -Dspring.rabbitmq.password=${rabbitmq_password}"
 
- # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
- local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+ # thx to https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e
+ local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAM=$(( $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes) * 100 / 70 )) -XX:MaxRAMFraction=1"
 
  cd /opt/metasfresh/metasfresh-webui-api/ \
  && java \
@@ -117,7 +117,7 @@ run_metasfresh()
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
  org.springframework.boot.loader.JarLauncher \
- || sleep 30m
+ || ( echo "java returned with exit code $?; sleeping for 30m" && sleep 30m )
 
 }
 
