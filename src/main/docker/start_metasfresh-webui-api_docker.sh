@@ -102,7 +102,8 @@ run_metasfresh()
  -Dspring.rabbitmq.password=${rabbitmq_password}"
 
  # thx to https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e
- local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAM=$(( $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes) * 100 / 70 )) -XX:MaxRAMFraction=1"
+ #local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAM=$(( $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes) * 100 / 70 )) -XX:MaxRAMFraction=1"
+ local MEMORY_PARAMS="-Xmx512M"
 
  cd /opt/metasfresh/metasfresh-webui-api/ \
  && java \
