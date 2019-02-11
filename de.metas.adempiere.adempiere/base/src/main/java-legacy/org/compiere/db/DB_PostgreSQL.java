@@ -452,6 +452,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			final int numConnections = m_ds.getNumBusyConnections();
 			if (numConnections >= m_maxbusyconnectionsThreshold && m_maxbusyconnectionsThreshold > 0)
 			{
+				// metas-ts: i think running the finalizer won't be a big help, but anyways, exhausting the connection pool is usally an issue
+				// suggestions to consider:
+				// * allow it to be configured for certain scenarios
+				// * only log, but don't even try the finalizing
 				final String statusBefore = getStatus();
 
 				// hengsin: make a best effort to reclaim leak connection
