@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.adempiere.uom.UomId;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
@@ -44,8 +45,6 @@ import lombok.NonNull;
  */
 public interface IPricingResult
 {
-	int NO_PRECISION = -1;
-
 	CurrencyId getCurrencyId();
 
 	void setCurrencyId(CurrencyId currencyId);
@@ -88,9 +87,9 @@ public interface IPricingResult
 
 	void setDiscount(Percent discount);
 
-	int getPrecision();
+	CurrencyPrecision getPrecision();
 
-	void setPrecision(int precision);
+	void setPrecision(CurrencyPrecision precision);
 
 	boolean isTaxIncluded();
 

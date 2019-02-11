@@ -9,9 +9,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,7 +42,7 @@ import lombok.Value;
 @Value
 public class PriceAndDiscount
 {
-	public static PriceAndDiscount of(final I_C_OrderLine orderLine, final int precision)
+	public static PriceAndDiscount of(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
 	{
 		return builder()
 				.precision(precision)
@@ -56,7 +56,7 @@ public class PriceAndDiscount
 	BigDecimal priceEntered;
 	BigDecimal priceActual;
 	Percent discount;
-	int precision;
+	CurrencyPrecision precision;
 	BigDecimal priceLimit;
 
 	boolean priceLimitEnforced;
@@ -67,15 +67,15 @@ public class PriceAndDiscount
 			BigDecimal priceEntered,
 			BigDecimal priceActual,
 			Percent discount,
-			int precision,
+			CurrencyPrecision precision,
 			BigDecimal priceLimit,
 			boolean priceLimitEnforced,
 			String priceLimitEnforceExplanation)
 	{
-		this.precision = precision >= 0 ? precision : 2;
-		this.priceEntered = Util.coalesce(priceEntered, ZERO).setScale(precision, RoundingMode.HALF_UP);
-		this.priceActual = Util.coalesce(priceActual, ZERO).setScale(precision, RoundingMode.HALF_UP);
-		this.priceLimit = Util.coalesce(priceLimit, ZERO).setScale(precision, RoundingMode.HALF_UP);
+		this.precision = precision != null ? precision : CurrencyPrecision.ofInt(2);
+		this.priceEntered = this.precision.round(Util.coalesce(priceEntered, ZERO));
+		this.priceActual = this.precision.round(Util.coalesce(priceActual, ZERO));
+		this.priceLimit = this.precision.round(Util.coalesce(priceLimit, ZERO));
 
 		this.discount = Util.coalesce(discount, Percent.ZERO);
 		this.priceLimitEnforced = priceLimitEnforced;
@@ -126,7 +126,7 @@ public class PriceAndDiscount
 
 	public PriceAndDiscount updatePriceActual()
 	{
-		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, precision);
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, precision.toInt());
 		return toBuilder().priceActual(priceActual).build();
 	}
 
@@ -140,7 +140,7 @@ public class PriceAndDiscount
 		return updatePriceActual();
 	}
 
-	public static Percent calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
+	public static Percent calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final CurrencyPrecision precision)
 	{
 		if (priceEntered.signum() == 0)
 		{
@@ -148,7 +148,7 @@ public class PriceAndDiscount
 		}
 
 		final BigDecimal delta = priceEntered.subtract(priceActual);
-		return Percent.of(delta, priceEntered, precision);
+		return Percent.of(delta, priceEntered, precision.toInt());
 	}
 
 	public static BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(

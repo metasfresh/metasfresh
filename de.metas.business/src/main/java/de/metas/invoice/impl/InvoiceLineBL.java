@@ -51,6 +51,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
@@ -373,15 +374,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+			final CurrencyPrecision stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
-			BigDecimal lineNetAmt = convertedQty.multiply(line.getPriceActual());
-
-			if (lineNetAmt.scale() > stdPrecision)
-			{
-				lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
-			}
-			logger.info("LineNetAmt=" + lineNetAmt);
+			BigDecimal lineNetAmt = stdPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
+			logger.debug("LineNetAmt={}", lineNetAmt);
 			line.setLineNetAmt(lineNetAmt);
 		}
 	}
@@ -445,7 +441,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	}
 
-	private void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final int precision)
+	private static void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final CurrencyPrecision precision)
 	{
 		final BigDecimal discount = invoiceLine.getDiscount();
 		final BigDecimal priceEntered = invoiceLine.getPriceEntered();
@@ -457,16 +453,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 		else
 		{
-			final int precisionToUse;
-			if (precision >= 0)
+			final CurrencyPrecision precisionToUse;
+			if (precision != null)
 			{
 				precisionToUse = precision;
 			}
 			else
 			{
 				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-
-				precisionToUse = invoice.getM_PriceList().getPricePrecision();
+				precisionToUse = CurrencyPrecision.ofInt(invoice.getM_PriceList().getPricePrecision());
 			}
 
 			priceActual = subtractDiscount(priceEntered, discount, precisionToUse);
@@ -475,12 +470,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setPriceActual(priceActual);
 	}
 
-	private BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
+	private static BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final CurrencyPrecision precision)
 	{
 		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
+		multiplier = multiplier.divide(Env.ONEHUNDRED, precision.toInt() * 3, RoundingMode.HALF_UP);
 
-		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
+		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		return result;
 	}
 }

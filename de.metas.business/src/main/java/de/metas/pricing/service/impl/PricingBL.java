@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
@@ -300,13 +301,10 @@ public class PricingBL implements IPricingBL
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final PricingResult result)
 	{
-		if (pricingCtx.getPriceListId() != null && result.getPrecision() == IPricingResult.NO_PRECISION)
+		if (pricingCtx.getPriceListId() != null && result.getPrecision() == null)
 		{
-			final int precision = getPricePrecision(pricingCtx.getPriceListId());
-			if (precision >= 0)
-			{
-				result.setPrecision(precision);
-			}
+			final CurrencyPrecision precision = getPricePrecision(pricingCtx.getPriceListId());
+			result.setPrecision(precision);
 		}
 		result.updatePriceScales();
 	}
@@ -452,7 +450,7 @@ public class PricingBL implements IPricingBL
 		return null;
 	}
 
-	private final int getPricePrecision(@NonNull final PriceListId priceListId)
+	private final CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
 		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}

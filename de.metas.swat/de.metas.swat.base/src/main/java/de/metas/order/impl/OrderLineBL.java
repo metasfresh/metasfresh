@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
@@ -57,6 +56,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -314,13 +314,10 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = ol.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
-		final int precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
 		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
-		if (lineNetAmt.scale() > precision)
-		{
-			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
-		}
+		lineNetAmt = precision.roundIfNeeded(lineNetAmt);
 
 		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);
@@ -413,7 +410,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updatePriceActual(final I_C_OrderLine orderLine, final int precision)
+	public void updatePriceActual(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
 	{
 		final BigDecimal priceActual = PriceAndDiscount.of(orderLine, precision)
 				.updatePriceActual()

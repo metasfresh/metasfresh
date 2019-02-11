@@ -23,7 +23,6 @@ package de.metas.pricing.service.impl;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +32,7 @@ import javax.annotation.Nullable;
 
 import org.compiere.util.Util;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
@@ -98,7 +98,7 @@ class PricingResult implements IPricingResult
 
 	@Setter
 	@Getter
-	private int precision = NO_PRECISION;
+	private CurrencyPrecision precision;
 
 	@Setter
 	@Getter
@@ -220,10 +220,11 @@ class PricingResult implements IPricingResult
 
 	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)
 	{
-		if (priceToRound == null || precision < 0)
+		if (priceToRound == null || precision == null)
 		{
 			return priceToRound;
 		}
-		return priceToRound.setScale(precision, RoundingMode.HALF_UP);
+
+		return precision.round(priceToRound);
 	}
 }

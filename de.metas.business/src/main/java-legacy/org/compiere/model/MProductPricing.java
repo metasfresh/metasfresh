@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 
 import org.slf4j.Logger;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -157,16 +158,6 @@ public class MProductPricing
 	}	// setPriceDate
 
 	/**
-	 * Get Precision
-	 * 
-	 * @return precision - -1 = no rounding
-	 */
-	public int getPrecision()
-	{
-		return result.getPrecision();
-	}	// getPrecision
-
-	/**
 	 * Round
 	 * 
 	 * @param bd number
@@ -174,11 +165,10 @@ public class MProductPricing
 	 */
 	private BigDecimal round(BigDecimal bd)
 	{
-		final int precision = result.getPrecision();
-		if (precision != IPricingResult.NO_PRECISION	// -1 = no rounding
-				&& bd.scale() > precision)
+		final CurrencyPrecision precision = result.getPrecision();
+		if (precision != null)
 		{
-			return bd.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			return precision.roundIfNeeded(bd);
 		}
 		return bd;
 	}	// round
@@ -268,7 +258,7 @@ public class MProductPricing
 	public BigDecimal mkPriceStdMinusDiscount()
 	{
 		calculatePrice(false);
-		return result.getDiscount().subtractFromBase(result.getPriceStd(), result.getPrecision());
+		return result.getDiscount().subtractFromBase(result.getPriceStd(), result.getPrecision().toInt());
 	}
 
 	@Override
