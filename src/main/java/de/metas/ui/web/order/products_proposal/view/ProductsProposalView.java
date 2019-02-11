@@ -14,6 +14,7 @@ import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
@@ -158,4 +159,15 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		rowsData.patchRow(rowId, request);
 	}
 
+	public ProductsProposalView filter(final ProductsProposalViewFilter filter)
+	{
+		rowsData.filter(filter);
+		return this;
+	}
+
+	@Override
+	public List<DocumentFilter> getFilters()
+	{
+		return ProductsProposalViewFilters.toDocumentFilters(rowsData.getFilter());
+	}
 }

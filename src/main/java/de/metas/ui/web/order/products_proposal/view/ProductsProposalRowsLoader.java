@@ -68,6 +68,17 @@ import lombok.Singular;
 
 final class ProductsProposalRowsLoader
 {
+	public static ProductsProposalRowsLoaderBuilder prepareFrom(final ProductsProposalRowsData rowsData)
+	{
+		return ProductsProposalRowsLoader.builder()
+				.priceListVersionIds(rowsData.getPriceListVersionIds())
+				// TODO .productIdsToExclude(rowsData.getPr)
+				// TODO .bpartnerProductStatsService(bpartnerProductStatsService)
+				.bpartnerId(rowsData.getBpartnerId())
+				.soTrx(rowsData.getSoTrx())
+				.orderId(rowsData.getOrderId());
+	}
+
 	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);

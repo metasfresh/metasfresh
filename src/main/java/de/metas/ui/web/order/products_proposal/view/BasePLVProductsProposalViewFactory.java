@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -15,8 +16,11 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -71,6 +75,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
 				.removeElementByFieldName(ProductsProposalRow.FIELD_Qty)
 				.clearViewCloseActions()
+				.setFilters(ProductsProposalViewFilters.getDescriptors().getAll())
 				.build();
 	}
 
@@ -117,4 +122,17 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				createProcessDescriptor(WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList.class));
 	}
 
+	@Override
+	public ProductsProposalView filterView(
+			final IView view,
+			final JSONFilterViewRequest filterViewRequest,
+			final Supplier<IViewsRepository> viewsRepo)
+	{
+		final ProductsProposalView productsProposalView = ProductsProposalView.cast(view);
+		final ProductsProposalViewFilter filter = ProductsProposalViewFilters.extractPackageableViewFilterVO(filterViewRequest);
+
+		productsProposalView.filter(filter);
+
+		return productsProposalView;
+	}
 }
