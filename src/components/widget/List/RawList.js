@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import { is, List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
@@ -71,17 +70,24 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { list, mandatory, defaultValue, selected, emptyText } = this.props;
+    const {
+      list,
+      mandatory,
+      defaultValue,
+      selected,
+      emptyText,
+      listHash,
+    } = this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
     // If data in the list changed, we either opened or closed the selection dropdown.
     // If we're closing it (bluring), then we don't care about the whole thing.
     if (
-      !is(prevProps.list, list) &&
-      !(prevProps.isFocused && !this.props.isFocused)
+      listHash !== prevProps.listHash ||
+      (!listHash && this.props.isFocused !== prevProps.isFocused)
     ) {
-      dropdownList = List(list);
+      dropdownList = list;
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
           caption: emptyText,
@@ -104,20 +110,20 @@ export class RawList extends PureComponent {
       } else {
         changedValues.selected = null;
       }
-    }
 
-    if (!changedValues.selected && dropdownList.size > 0) {
-      let newSelected = null;
+      if (!changedValues.selected && dropdownList.size > 0) {
+        let newSelected = null;
 
-      if (prevProps.selected !== selected) {
-        newSelected = selected;
-      }
+        if (prevProps.selected !== selected) {
+          newSelected = selected;
+        }
 
-      if (newSelected) {
-        changedValues = {
-          ...changedValues,
-          ...setSelectedValue(dropdownList, newSelected, defaultValue),
-        };
+        if (newSelected) {
+          changedValues = {
+            ...changedValues,
+            ...setSelectedValue(dropdownList, newSelected, defaultValue),
+          };
+        }
       }
     }
 
@@ -398,6 +404,7 @@ RawList.propTypes = {
   clearable: PropTypes.bool,
   // Immutable List
   list: PropTypes.object,
+  listHash: PropTypes.string,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,
