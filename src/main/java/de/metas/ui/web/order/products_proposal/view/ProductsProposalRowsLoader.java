@@ -1,7 +1,12 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -12,21 +17,29 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.product.stats.BPartnerProductStats;
+import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.currency.Amount;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -55,47 +68,60 @@ import lombok.Singular;
 
 final class ProductsProposalRowsLoader
 {
+	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final LookupDataSource productLookup;
 
 	private final ImmutableSet<PriceListId> priceListIds;
 	private final LocalDate date;
 	private final OrderId orderId;
+	private final BPartnerId bpartnerId;
+	private final SOTrx soTrx;
 
-	private final LookupDataSource productLookup;
+	private final ZonedDateTime now = SystemTime.asZonedDateTime();
 
 	@Builder
-	public ProductsProposalRowsLoader(
+	private ProductsProposalRowsLoader(
+			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 			@NonNull @Singular final ImmutableSet<PriceListId> priceListIds,
 			@NonNull final LocalDate date,
-			@Nullable final OrderId orderId)
+			@Nullable final OrderId orderId,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final SOTrx soTrx)
 	{
 		Check.assumeNotEmpty(priceListIds, "priceListIds is not empty");
+
+		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 
 		this.priceListIds = priceListIds;
 		this.date = date;
 
-		// final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
-		// currencyCode = currenciesRepo.getISOCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
-
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
-		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
-
 		this.orderId = orderId;
+		this.bpartnerId = bpartnerId;
+		this.soTrx = soTrx;
 	}
 
 	public ProductsProposalRowsData load()
 	{
-		final ImmutableList<ProductsProposalRow> rows = priceListIds.stream()
-				.flatMap(this::loadAndStreamRowsForPriceListId)
-				.sorted(Comparator.comparing(ProductsProposalRow::getProductName))
-				.collect(ImmutableList.toImmutableList());
+		List<ProductsProposalRow> rows = loadRows();
+		rows = updateLastShipmentDays(rows);
 
 		return ProductsProposalRowsData.builder()
 				.rows(rows)
 				.orderId(orderId)
 				.build();
+	}
+
+	private List<ProductsProposalRow> loadRows()
+	{
+		return priceListIds.stream()
+				.flatMap(this::loadAndStreamRowsForPriceListId)
+				.sorted(Comparator.comparing(ProductsProposalRow::getProductName))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Stream<ProductsProposalRow> loadAndStreamRowsForPriceListId(final PriceListId priceListId)
@@ -104,20 +130,27 @@ final class ProductsProposalRowsLoader
 		final String currencyCode = getCurrencyCodeByPriceListId(priceListId);
 
 		return priceListsRepo.retrieveProductPrices(priceListVersionId)
-				.map(productPriceRecord -> toProductsProposalRow(productPriceRecord, currencyCode));
+				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord, currencyCode))
+				.filter(Predicates.notNull());
 	}
 
-	private ProductsProposalRow toProductsProposalRow(final I_M_ProductPrice record, final String currencyCode)
+	private ProductsProposalRow toProductsProposalRowOrNull(final I_M_ProductPrice record, final String currencyCode)
 	{
+		final LookupValue product = productLookup.findById(record.getM_Product_ID());
+		if (!product.isActive())
+		{
+			return null;
+		}
+
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 
 		return ProductsProposalRow.builder()
 				.id(DocumentId.of(record.getM_ProductPrice_ID()))
-				.product(productLookup.findById(record.getM_Product_ID()))
+				.product(product)
 				.asiDescription(attributeSetInstanceBL.getASIDescriptionById(asiId))
 				.price(Amount.of(record.getPriceStd(), currencyCode))
 				.qty(null)
-				.lastShipmentDays(null) // TODO
+				.lastShipmentDays(null) // will be populated later
 				.build();
 	}
 
@@ -125,5 +158,52 @@ final class ProductsProposalRowsLoader
 	{
 		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
 		return currenciesRepo.getISOCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+	}
+
+	private List<ProductsProposalRow> updateLastShipmentDays(final List<ProductsProposalRow> rows)
+	{
+		final Set<ProductId> productIds = rows.stream().map(ProductsProposalRow::getProductId).collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, BPartnerProductStats> statsByProductId = bpartnerProductStatsService.getByPartnerAndProducts(bpartnerId, productIds);
+
+		return rows.stream()
+				.map(row -> updateRowFromStats(row, statsByProductId.get(row.getProductId())))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ProductsProposalRow updateRowFromStats(
+			@NonNull final ProductsProposalRow row,
+			@Nullable final BPartnerProductStats stats)
+	{
+		final Integer lastShipmentOrReceiptInDays = calculateLastShipmentOrReceiptInDays(stats);
+		return row.withLastShipmentDays(lastShipmentOrReceiptInDays);
+	}
+
+	private Integer calculateLastShipmentOrReceiptInDays(final BPartnerProductStats stats)
+	{
+		if (stats == null)
+		{
+			return null;
+		}
+
+		final ZonedDateTime lastShipmentOrReceiptDate = extractLastShipmentOrReceiptDate(stats);
+		if (lastShipmentOrReceiptDate == null)
+		{
+			return null;
+		}
+
+		return (int)Duration.between(lastShipmentOrReceiptDate, now).toDays();
+	}
+
+	private ZonedDateTime extractLastShipmentOrReceiptDate(final BPartnerProductStats stats)
+	{
+		if (soTrx.isSales())
+		{
+			return stats.getLastShipmentDate();
+		}
+		else
+		{
+			return stats.getLastReceiptDate();
+		}
 	}
 }

@@ -111,11 +111,11 @@ public abstract class LookupValue
 		}
 		if (id instanceof Integer)
 		{
-			return new IntegerLookupValue((int)id, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */);
+			return new IntegerLookupValue((int)id, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
 		}
 		else
 		{
-			return new StringLookupValue(id.toString(), ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */);
+			return new StringLookupValue(id.toString(), ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
 		}
 	}
 
@@ -177,6 +177,7 @@ public abstract class LookupValue
 	protected final Object id;
 	protected final ITranslatableString displayName;
 	protected final ITranslatableString description;
+	private final Boolean active;
 
 	private final ImmutableMap<String, Object> additionalAttributes;
 
@@ -184,12 +185,14 @@ public abstract class LookupValue
 			@NonNull final Object id,
 			@Nullable final ITranslatableString displayName,
 			@Nullable final ITranslatableString description,
-			final Map<String, Object> additionalAttributes)
+			@Nullable final Map<String, Object> additionalAttributes,
+			@Nullable final Boolean active)
 	{
 		this.id = id;
 		this.displayName = displayName == null ? ImmutableTranslatableString.empty() : displayName;
 		this.description = description == null ? ImmutableTranslatableString.empty() : description;
 		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
+		this.active = active;
 	}
 
 	@Override
@@ -201,6 +204,7 @@ public abstract class LookupValue
 				.add("displayName", displayName)
 				.add("description", description)
 				.add("additionalAttributes", additionalAttributes)
+				.add("active", active)
 				.toString();
 	}
 
@@ -251,6 +255,17 @@ public abstract class LookupValue
 	public ITranslatableString getDescriptionTrl()
 	{
 		return description;
+	}
+
+	public final boolean isActive()
+	{
+		final Boolean active = getActive();
+		return active == null || active.booleanValue();
+	}
+
+	protected Boolean getActive()
+	{
+		return active;
 	}
 
 	public final Object getId()
@@ -358,7 +373,7 @@ public abstract class LookupValue
 	{
 		public static final StringLookupValue of(final String value, final String displayName)
 		{
-			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */);
+			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */, true/* active */);
 		}
 
 		public static final StringLookupValue of(
@@ -366,12 +381,17 @@ public abstract class LookupValue
 				final ITranslatableString displayName,
 				final ITranslatableString helpText)
 		{
-			return new StringLookupValue(id, displayName, helpText, null/* attributes */);
+			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */);
 		}
 
 		public static final StringLookupValue unknown(final String value)
 		{
-			return new StringLookupValue(value, ImmutableTranslatableString.constant("<" + value + ">"), null/* description */, null/* attributes */);
+			return new StringLookupValue(
+					value,
+					ImmutableTranslatableString.constant("<" + value + ">"),
+					null/* description */,
+					null/* attributes */,
+					false/* not active */);
 		}
 
 		private Integer idInt; // lazy
@@ -381,17 +401,23 @@ public abstract class LookupValue
 				@NonNull final String id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
-				@Singular final Map<String, Object> attributes)
+				@Singular final Map<String, Object> attributes,
+				final Boolean active)
 		{
-			super(id, displayName, description, attributes);
+			super(id,
+					displayName,
+					description,
+					attributes,
+					active);
 		}
 
 		@Override
 		public int getIdAsInt()
 		{
+			Integer idInt = this.idInt;
 			if (idInt == null)
 			{
-				idInt = Integer.parseInt((String)id);
+				idInt = this.idInt = Integer.parseInt((String)id);
 			}
 			return idInt;
 		}
@@ -409,7 +435,8 @@ public abstract class LookupValue
 					id,
 					ImmutableTranslatableString.anyLanguage(displayName),
 					null /* helpText */,
-					null/* attributes */);
+					null/* attributes */,
+					null/* active */);
 		}
 
 		public static final IntegerLookupValue of(
@@ -417,7 +444,12 @@ public abstract class LookupValue
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString helpText)
 		{
-			return new IntegerLookupValue(id, displayName, helpText, null/* attributes */);
+			return new IntegerLookupValue(
+					id,
+					displayName,
+					helpText,
+					null/* attributes */,
+					null/* active */);
 		}
 
 		public static final IntegerLookupValue of(
@@ -425,7 +457,12 @@ public abstract class LookupValue
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString helpText)
 		{
-			return new IntegerLookupValue(id.getRepoId(), displayName, helpText, null/* attributes */);
+			return new IntegerLookupValue(
+					id.getRepoId(),
+					displayName,
+					helpText,
+					null/* attributes */,
+					null/* active */);
 		}
 
 		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
@@ -434,10 +471,13 @@ public abstract class LookupValue
 			{
 				return null;
 			}
-			return new IntegerLookupValue(stringLookupValue.getIdAsInt(),
+
+			return new IntegerLookupValue(
+					stringLookupValue.getIdAsInt(),
 					stringLookupValue.displayName,
 					stringLookupValue.description,
-					null /* attributes */);
+					null /* attributes */,
+					stringLookupValue.getActive());
 		}
 
 		public static final IntegerLookupValue unknown(final int id)
@@ -446,7 +486,8 @@ public abstract class LookupValue
 					id,
 					ImmutableTranslatableString.constant("<" + id + ">"),
 					null/* description */,
-					null/* attributes */);
+					null/* attributes */,
+					false/* not active */);
 		}
 
 		@Builder
@@ -454,9 +495,14 @@ public abstract class LookupValue
 				final int id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
-				@Singular final Map<String, Object> attributes)
+				@Singular final Map<String, Object> attributes,
+				final Boolean active)
 		{
-			super(id, displayName, description, attributes);
+			super(id,
+					displayName,
+					description,
+					attributes,
+					active);
 		}
 
 		@Override

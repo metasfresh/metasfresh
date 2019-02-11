@@ -2,6 +2,7 @@ package de.metas.ui.web.order.products_proposal.view;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -130,5 +131,17 @@ public class ProductsProposalRow implements IViewRow
 	{
 		final BigDecimal qty = getQty();
 		return qty != null && qty.signum() != 0;
+	}
+
+	public ProductsProposalRow withLastShipmentDays(final Integer lastShipmentDays)
+	{
+		if (Objects.equals(this.lastShipmentDays, lastShipmentDays))
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder().lastShipmentDays(lastShipmentDays).build();
+		}
 	}
 }

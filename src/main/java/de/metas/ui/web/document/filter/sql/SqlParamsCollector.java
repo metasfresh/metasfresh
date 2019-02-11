@@ -1,6 +1,7 @@
 package de.metas.ui.web.document.filter.sql;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -116,7 +117,7 @@ public final class SqlParamsCollector
 	 * 
 	 * @param sqlParams
 	 */
-	/* package */ void collectAll(final List<Object> sqlParams)
+	public void collectAll(final Collection<? extends Object> sqlParams)
 	{
 		if (sqlParams == null || sqlParams.isEmpty())
 		{

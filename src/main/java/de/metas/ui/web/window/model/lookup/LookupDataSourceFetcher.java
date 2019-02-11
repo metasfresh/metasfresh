@@ -35,7 +35,10 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 public interface LookupDataSourceFetcher
 {
-	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.of(-1, "");
+	LookupValue LOOKUPVALUE_NULL = IntegerLookupValue.builder()
+			.id(-1)
+			.active(false)
+			.build();
 
 	boolean isNumericKey();
 

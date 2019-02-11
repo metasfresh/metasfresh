@@ -158,6 +158,7 @@ public class DebugRestController
 		userSession.assertLoggedIn();
 
 		userSession.setShowColumnNamesForCaption(DisplayType.toBoolean(showColumnNamesForCaptionStr));
+		cacheReset();
 	}
 
 	@RequestMapping(value = "/allowDeprecatedRestAPI", method = RequestMethod.PUT)

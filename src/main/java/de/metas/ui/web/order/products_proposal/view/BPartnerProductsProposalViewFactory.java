@@ -3,12 +3,15 @@ package de.metas.ui.web.order.products_proposal.view;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -21,6 +24,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,9 +54,14 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	public static final String WINDOW_ID_STRING = "bpartnerProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	protected BPartnerProductsProposalViewFactory()
+	private final BPartnerProductStatsService bpartnerProductStatsService;
+
+	protected BPartnerProductsProposalViewFactory(
+			@NonNull final BPartnerProductStatsService bpartnerProductStatsService)
 	{
 		super(WINDOW_ID);
+
+		this.bpartnerProductStatsService = bpartnerProductStatsService;
 	}
 
 	@Override
@@ -79,33 +88,40 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 
 		recordRef.assertTableName(I_C_BPartner.Table_Name);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(recordRef.getRecord_ID());
-		I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
+		final Set<CountryId> countryIds = bpartnersRepo.retrieveBPartnerLocationCountryIds(bpartnerId);
+		if (countryIds.isEmpty())
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
+		}
 
-		final PricingSystemId pricingSystemId = extractPricingSystemId(bpartnerRecord);
-		final Set<PriceListId> priceListIds = priceListsRepo.retrievePriceListIds(pricingSystemId);
-
-		return ProductsProposalRowsLoader.builder()
-				.priceListIds(priceListIds)
-				.date(SystemTime.asLocalDate())
-				.build();
-	}
-
-	private PricingSystemId extractPricingSystemId(I_C_BPartner bpartnerRecord)
-	{
+		final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
 		PricingSystemId pricingSystemId = null;
+		SOTrx soTrx = null;
 		if (bpartnerRecord.isCustomer())
 		{
 			pricingSystemId = PricingSystemId.ofRepoIdOrNull(bpartnerRecord.getM_PricingSystem_ID());
+			soTrx = SOTrx.SALES;
 		}
 		if (pricingSystemId == null && bpartnerRecord.isVendor())
 		{
 			pricingSystemId = PricingSystemId.ofRepoIdOrNull(bpartnerRecord.getPO_PricingSystem_ID());
+			soTrx = SOTrx.PURCHASE;
 		}
 		if (pricingSystemId == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@");
 		}
-		return pricingSystemId;
+
+		final Set<PriceListId> priceListIds = priceListsRepo.retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
+				.filterAndListIds(countryIds);
+
+		return ProductsProposalRowsLoader.builder()
+				.bpartnerProductStatsService(bpartnerProductStatsService)
+				.priceListIds(priceListIds)
+				.date(SystemTime.asLocalDate())
+				.bpartnerId(bpartnerId)
+				.soTrx(soTrx)
+				.build();
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -205,14 +206,15 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		final String sqlForFetchingLookupById = sqlForFetchingLookupByIdExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
 
-		final String[] nameAndDescription = DB.getSQLValueArrayEx(ITrx.TRXNAME_None, sqlForFetchingLookupById, id);
-		if (nameAndDescription == null || nameAndDescription.length == 0)
+		final String[] nameAndDescriptionAndActive = DB.getSQLValueArrayEx(ITrx.TRXNAME_None, sqlForFetchingLookupById, id);
+		if (nameAndDescriptionAndActive == null || nameAndDescriptionAndActive.length == 0)
 		{
 			return LOOKUPVALUE_NULL;
 		}
 
-		final String displayName = nameAndDescription[0];
-		final String description = nameAndDescription.length > 1 ? nameAndDescription[1] : null;
+		final String displayName = nameAndDescriptionAndActive[0];
+		final String description = nameAndDescriptionAndActive.length >= 2 ? nameAndDescriptionAndActive[1] : null;
+		final boolean active = nameAndDescriptionAndActive.length >= 3 ? StringUtils.toBoolean(nameAndDescriptionAndActive[2]) : true;
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
@@ -233,12 +235,22 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		if (id instanceof Integer)
 		{
 			final Integer idInt = (Integer)id;
-			return IntegerLookupValue.of(idInt, displayNameTrl, descriptionTrl);
+			return IntegerLookupValue.builder()
+					.id(idInt)
+					.displayName(displayNameTrl)
+					.description(descriptionTrl)
+					.active(active)
+					.build();
 		}
 		else
 		{
 			final String idString = id.toString();
-			return StringLookupValue.of(idString, displayNameTrl, descriptionTrl);
+			return StringLookupValue.builder()
+					.id(idString)
+					.displayName(displayNameTrl)
+					.description(descriptionTrl)
+					.active(active)
+					.build();
 		}
 	}
 }
