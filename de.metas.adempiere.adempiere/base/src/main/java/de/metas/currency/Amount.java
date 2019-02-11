@@ -2,6 +2,7 @@ package de.metas.currency;
 
 import java.math.BigDecimal;
 
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,11 +34,20 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Value(staticConstructor = "of")
+@Value
 public final class Amount
 {
-	@NonNull
-	private final BigDecimal value;
-	@NonNull
-	private final String currencyCode;
+	public static Amount of(@NonNull final BigDecimal value, @NonNull String currencyCode)
+	{
+		return new Amount(value, currencyCode);
+	}
+
+	BigDecimal value;
+	String currencyCode;
+
+	private Amount(@NonNull final BigDecimal value, @NonNull String currencyCode)
+	{
+		this.value = NumberUtils.stripTrailingDecimalZeros(value);
+		this.currencyCode = currencyCode;
+	}
 }
