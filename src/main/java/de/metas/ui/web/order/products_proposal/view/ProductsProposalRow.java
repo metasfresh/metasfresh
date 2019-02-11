@@ -19,6 +19,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -215,5 +216,16 @@ public class ProductsProposalRow implements IViewRow
 	public Amount getPrice()
 	{
 		return Amount.of(price, currencyCode);
+	}
+
+	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
+	{
+		if (!Check.isEmpty(filter.getProductName())
+				&& !getProductName().toLowerCase().contains(filter.getProductName().toLowerCase()))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

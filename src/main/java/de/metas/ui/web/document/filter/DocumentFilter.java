@@ -300,6 +300,12 @@ public final class DocumentFilter
 			return setCaption(ImmutableTranslatableString.constant(caption));
 		}
 
+		public boolean hasParameters()
+		{
+			return !Check.isEmpty(parameters)
+					|| !Check.isEmpty(internalParameterNames);
+		}
+
 		public Builder setParameters(final List<DocumentFilterParam> parameters)
 		{
 			this.parameters = parameters;
