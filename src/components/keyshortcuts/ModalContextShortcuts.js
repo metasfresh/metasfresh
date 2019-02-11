@@ -4,7 +4,7 @@ import { Shortcut } from '../keyshortcuts';
 
 export default class ModalContextShortcuts extends Component {
   handlers = {
-    APPLY: event => {
+    DONE: event => {
       event.preventDefault();
 
       const { visibleFilter, apply } = this.props;
@@ -36,7 +36,7 @@ export default class ModalContextShortcuts extends Component {
 
   render() {
     return [
-      <Shortcut key="APPLY" name="APPLY" handler={this.handlers.APPLY} />,
+      <Shortcut key="DONE" name="DONE" handler={this.handlers.DONE} />,
       <Shortcut key="CANCEL" name="CANCEL" handler={this.handlers.CANCEL} />,
     ];
   }

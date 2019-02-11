@@ -154,6 +154,7 @@ class Container extends Component {
             <RawModal
               modalTitle={modalTitle}
               modalDescription={modalDescription}
+              allowedCloseActions={rawModal.allowedCloseActions}
               windowType={rawModal.windowId}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}

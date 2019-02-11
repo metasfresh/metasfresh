@@ -451,7 +451,7 @@ class FiltersItem extends Component {
                 {isTooltipShow && (
                   <Tooltips
                     className="filter-tooltip"
-                    name={keymap.APPLY}
+                    name={keymap.DONE}
                     action={counterpart.translate('window.apply.caption')}
                     type={''}
                   />

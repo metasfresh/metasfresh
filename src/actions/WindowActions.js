@@ -39,6 +39,7 @@ import {
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
   UPDATE_MODAL,
+  UPDATE_RAW_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
@@ -97,6 +98,14 @@ export function openRawModal(windowId, viewId, profileId) {
     windowId: windowId,
     viewId: viewId,
     profileId: profileId,
+  };
+}
+
+export function updateRawModal(windowType, data) {
+  return {
+    type: UPDATE_RAW_MODAL,
+    windowId: windowType,
+    data: { ...data },
   };
 }
 
