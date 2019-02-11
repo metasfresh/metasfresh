@@ -51,6 +51,18 @@ public class UserRepository
 		return ofRecord(userRecord);
 	}
 
+
+	public User getByIdInTrx(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = load(userId.getRepoId(), I_AD_User.class);
+
+		if(userRecord == null)
+		{
+			return null;
+		}
+		return ofRecord(userRecord);
+	}
+
 	public User ofRecord(@NonNull final I_AD_User userRecord)
 	{
 		final IUserBL userBL = Services.get(IUserBL.class);

@@ -66,16 +66,11 @@ public class AD_User
 		this.campaignService = campaignService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
 	public void onChangeNewsletter(final I_AD_User userRecord)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		if (InterfaceWrapperHelper.isNew(userRecord))
-		{
-			return;
-		}
-		
 		final boolean isNewsletter = userRecord.isNewsletter();
 
 		final Optional<CampaignId> defaultcampaignId = campaignRepository.getDefaultNewsletterCampaignId(userRecord.getAD_Org_ID());

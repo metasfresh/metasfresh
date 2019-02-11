@@ -1,6 +1,6 @@
 package org.adempiere.user.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -302,7 +302,7 @@ public class UserDAO implements IUserDAO
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T getById(final int userId, final Class<T> modelClass)
 	{
-		final T user = loadOutOfTrx(userId, modelClass);
+		final T user = load(userId, modelClass);
 		return user;
 	}
 }
