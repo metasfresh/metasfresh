@@ -151,7 +151,7 @@ public class ProductsProposalRow implements IViewRow
 
 	private boolean isFieldEditable(final String fieldName)
 	{
-		final ViewEditorRenderMode renderMode = getViewEditorRenderModeByFieldName().get(FIELD_Price);
+		final ViewEditorRenderMode renderMode = getViewEditorRenderModeByFieldName().get(fieldName);
 		return renderMode != null ? renderMode.isEditable() : false;
 	}
 
