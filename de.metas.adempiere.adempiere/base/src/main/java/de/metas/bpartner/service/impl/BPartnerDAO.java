@@ -1069,4 +1069,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder;
 
 	}
+
+	@Override
+	public BPGroupId getBPGroupIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID());
+	}
 }
