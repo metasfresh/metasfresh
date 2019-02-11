@@ -64,11 +64,13 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final Logger logger = LogManager.getLogger(WEBUI_PP_Order_Template.class);
+	private final Logger logger = LogManager.getLogger(WEBUI_PP_Order_M_Source_HU_IssueCUQty.class);
 	
 	private final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";
+	
+	private static final String PARAM_IsShowAllParams = "IsShowAllParams";
 
 	/**
 	 * Qty CU to be issued
@@ -79,7 +81,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedRowIds().isSingleDocumentId())
+		if (isSingleSelectedRow())
 		{
 			final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
 			return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
@@ -103,6 +105,11 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		getView().invalidateAll();
 		return MSG_OK;
 	}
+	
+	private boolean isSingleSelectedRow()
+	{
+		return getSelectedRowIds().isSingleDocumentId();
+	}
 
 	private void issue(final PPOrderLineRow row)
 	{
@@ -120,12 +127,14 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
+		
+		final BigDecimal qty = isSingleSelectedRow() ? qtyCU : computeQtyToIssue(row);
 
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest
 				.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
 				.productId(row.getProductId())
-				.qtyCU(Quantity.of(qtyCU, row.getUom()))
+				.qtyCU(Quantity.of(qty, row.getUom()))
 				.build();
 
 		final EmptyHUListener emptyHUListener = EmptyHUListener
@@ -154,9 +163,13 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		if (PARAM_QtyCU.equals(parameter.getColumnName()) && isSingleSelectedRow())
 		{
-			return computeQtyToIssue();
+			return computeQtyToIssue(getSingleSelectedRow());
+		}
+		else if (PARAM_IsShowAllParams.equals(parameter.getColumnName()))
+		{
+			return isSingleSelectedRow();
 		}
 		else
 		{
@@ -164,10 +177,8 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		}
 	}
 
-	private BigDecimal computeQtyToIssue()
+	private BigDecimal computeQtyToIssue(final PPOrderLineRow row)
 	{
-		final PPOrderLineRow row = getSingleSelectedRow();
-
 		final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 		final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
