@@ -54,7 +54,7 @@ public class C_BPartner_QuickInput
 		}
 
 
-		final I_AD_User userRecord = userDAO.getById(quickInput.getAD_User_ID(), I_AD_User.class);
+		final I_AD_User userRecord = userDAO.getByIdInTrx(quickInput.getAD_User_ID(), I_AD_User.class);
 
 		if(userRecord == null)
 		{

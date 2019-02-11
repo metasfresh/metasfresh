@@ -300,7 +300,7 @@ public class UserDAO implements IUserDAO
 
 
 	@Override
-	public <T extends org.compiere.model.I_AD_User> T getById(final int userId, final Class<T> modelClass)
+	public <T extends org.compiere.model.I_AD_User> T getByIdInTrx(final int userId, final Class<T> modelClass)
 	{
 		final T user = load(userId, modelClass);
 		return user;
