@@ -77,5 +77,5 @@ public interface IUserDAO extends ISingletonService
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
 
-	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(int userId, Class<T> modelClass);
+	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
 }

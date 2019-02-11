@@ -823,7 +823,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orElse(null);
 	}
 
-	public List<I_C_BPartner_Location> retrieveBPartnerLocationsInTrx(final BPartnerId bpartnerId)
+	private List<I_C_BPartner_Location> retrieveBPartnerLocationsInTrx(final BPartnerId bpartnerId)
 	{
 		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 	}

@@ -2,8 +2,8 @@ package de.metas.marketing.base.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.User;
+import org.adempiere.user.UserId;
 import org.adempiere.user.UserRepository;
 import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
@@ -37,7 +37,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_BPartner_QuickInput.class)
-@Component()
+@Component("de.metas.marketing.base.model.interceptor.C_BPartner_QuickInput")
 public class C_BPartner_QuickInput
 {
 	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
@@ -47,22 +47,15 @@ public class C_BPartner_QuickInput
 	{
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-		if(InterfaceWrapperHelper.isNew(quickInput))
+		final int userRecordId = quickInput.getAD_User_ID();
+		if (userRecordId <= 0)
 		{
-			// nothing to do yet
 			return;
 		}
 
-
-		final I_AD_User userRecord = userDAO.getByIdInTrx(quickInput.getAD_User_ID(), I_AD_User.class);
-
-		if(userRecord == null)
-		{
-			// nothing to do
-			return;
-		}
+		final I_AD_User userRecord = userDAO.getByIdInTrx(UserId.ofRepoId(userRecordId), I_AD_User.class);
 
 		final User user = userRepository.ofRecord(userRecord);
-		userRepository.save(user);
+		//userRepository.save(user);
 	}
 }

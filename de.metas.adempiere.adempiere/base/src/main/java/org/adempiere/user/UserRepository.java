@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -43,10 +44,8 @@ public class UserRepository
 	{
 		final I_AD_User userRecord = load(userId.getRepoId(), I_AD_User.class);
 
-		if(userRecord == null)
-		{
-			return null;
-		}
+		Check.assumeNotNull(userRecord, "UserRecord not null");
+
 		return ofRecord(userRecord);
 	}
 
