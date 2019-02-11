@@ -1,13 +1,8 @@
 package de.metas.event.log;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Collection;
 
 import javax.annotation.Nullable;
-
-import java.util.Collection;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -15,13 +10,16 @@ import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import de.metas.event.Event;
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.event.log.impl.EventLogLoggable;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -55,8 +53,6 @@ import de.metas.util.StringUtils;
 public class EventLogUserService
 {
 	public static final String PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES = "EventStore_ProcessedByHandlerClassNames";
-
-	public static final String PROPERTY_STORE_THIS_EVENT = "EventStore_StoreThisEvent";
 
 	@Value
 	public static class EventLogEntryRequest
@@ -100,23 +96,6 @@ public class EventLogUserService
 				return this;
 			}
 		}
-	}
-
-	/**
-	 * Before <b>posting</b> an event, you can use this method to tell the system, that the event shall be stored.
-	 * <p>
-	 * Note: even if an event was not prepared by this method, you can still store log messages,
-	 * but there won't be event data needed to <i>replay</i> the event in question.
-	 *
-	 * @param eventbuilder
-	 * @param adviseValue
-	 * @return
-	 */
-	public Event.Builder addEventLogAdvise(
-			@NonNull final Event.Builder eventbuilder,
-			final boolean adviseValue)
-	{
-		return eventbuilder.putProperty(PROPERTY_STORE_THIS_EVENT, adviseValue);
 	}
 
 	/**

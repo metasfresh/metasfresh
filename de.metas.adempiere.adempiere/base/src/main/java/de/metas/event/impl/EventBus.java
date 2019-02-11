@@ -1,9 +1,5 @@
 package de.metas.event.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +26,8 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
@@ -44,10 +42,10 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
-import de.metas.event.log.EventLogSystemBusTools;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 final class EventBus implements IEventBus
 {
@@ -270,18 +268,18 @@ final class EventBus implements IEventBus
 			@NonNull final Event event)
 	{
 		// even if the event(-data) is not stored, we allow all listeners/handlers to add log entries.
-		final EventLogEntryCollector collector = EventLogSystemBusTools.provideEventLogEntryCollectorForCurrentThread(event);
+		final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event);
 		try
 		{
 			eventListener.onEvent(this, event);
 		}
-		catch (final RuntimeException e)
+		catch (final RuntimeException ex)
 		{
 			if (!Adempiere.isUnitTestMode())
 			{
 				final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
 				eventLogUserService
-						.newErrorLogEntry(eventListener.getClass(), e)
+						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();
 			}
 		}

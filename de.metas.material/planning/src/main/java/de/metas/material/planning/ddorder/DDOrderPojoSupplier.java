@@ -19,7 +19,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -121,7 +120,7 @@ public class DDOrderPojoSupplier
 			return ImmutableList.of();
 		}
 
-		final Instant supplyDateFinishSchedule = TimeUtil.asInstant(request.getDemandDate());
+		final Instant supplyDateFinishSchedule = request.getDemandDate();
 
 		int M_Shipper_ID = -1;
 		// I_DD_Order order = null;

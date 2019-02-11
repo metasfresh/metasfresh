@@ -1,11 +1,12 @@
 package de.metas.handlingunits;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -61,5 +62,10 @@ public class HUPIItemProductId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final HUPIItemProductId id1, final HUPIItemProductId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

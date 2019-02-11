@@ -6,11 +6,15 @@ import static org.compiere.util.TimeUtil.getDay;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Transaction;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.inout.InOutLineId;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -37,19 +41,23 @@ import lombok.NonNull;
 
 public class TransactionDescriptorFactory
 {
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	
 	@VisibleForTesting
 	public TransactionDescriptor ofRecord(@NonNull final I_M_Transaction record)
 	{
+		final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(record.getM_Locator_ID());
+		
 		return TransactionDescriptor
 				.builder()
 				.eventDescriptor(EventDescriptor.createNew(record))
 				.productId(record.getM_Product_ID())
 				.transactionId(record.getM_Transaction_ID())
-				.warehouseId(record.getM_Locator().getM_Warehouse_ID())
+				.warehouseId(warehouseId.getRepoId())
 				.transactionDate(extractTransactionDate(record))
 				.movementQty(record.getMovementQty())
 				.costCollectorId(record.getPP_Cost_Collector_ID())
-				.inoutLineId(record.getM_InOutLine_ID())
+				.inoutLineId(InOutLineId.ofRepoIdOrNull(record.getM_InOutLine_ID()))
 				.movementLineId(record.getM_MovementLine_ID())
 				.inventoryLineId(record.getM_InventoryLine_ID())
 				.movementType(record.getMovementType())

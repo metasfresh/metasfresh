@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
@@ -43,7 +44,7 @@ public class SupplyRequiredHandlerUtils
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
-		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
+		final BPartnerId descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getCustomerId();
 
 		final int productId = supplyRequiredDescriptor.getMaterialDescriptor().getProductId();
 		final I_M_Product product = load(productId, I_M_Product.class);
@@ -53,7 +54,7 @@ public class SupplyRequiredHandlerUtils
 		return MaterialRequest.builder()
 				.qtyToSupply(Quantity.of(qtyToSupply, product.getC_UOM()))
 				.mrpContext(mrpContext)
-				.mrpDemandBPartnerId(descriptorBPartnerId > 0 ? descriptorBPartnerId : -1)
+				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(descriptorBPartnerId, -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 				.build();

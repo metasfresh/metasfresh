@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
@@ -61,8 +62,8 @@ import de.metas.material.event.forecast.ForecastLine;
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
-	private static final int BPARTNER_ID_OF_FORECAST = 50;
-	private static final int BPARTNER_ID_OF_FIRST_FORECAST_LINE = 51;
+	private static final BPartnerId BPARTNER_ID_OF_FORECAST = BPartnerId.ofRepoId(50);
+	private static final BPartnerId BPARTNER_ID_OF_FIRST_FORECAST_LINE = BPartnerId.ofRepoId(51);
 
 	@Rule
 	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
@@ -78,7 +79,7 @@ public class M_ForecastEventCreatorTest
 	{
 		final I_M_Forecast forecastModel = newInstance(I_M_Forecast.class);
 		forecastModel.setDocStatus(IDocument.STATUS_NotApproved); //
-		forecastModel.setC_BPartner_ID(BPARTNER_ID_OF_FORECAST);
+		forecastModel.setC_BPartner_ID(BPARTNER_ID_OF_FORECAST.getRepoId());
 		save(forecastModel);
 
 		final I_M_ForecastLine forecastLineRecord1;
@@ -90,7 +91,7 @@ public class M_ForecastEventCreatorTest
 
 			forecastLineRecord1 = newInstance(I_M_ForecastLine.class);
 			forecastLineRecord1.setM_Forecast(forecastModel);
-			forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
+			forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE.getRepoId());
 			forecastLineRecord1.setDatePromised(TimeUtil.parseTimestamp("2017-10-21"));
 			forecastLineRecord1.setQty(new BigDecimal("21"));
 			forecastLineRecord1.setM_Product(product1);

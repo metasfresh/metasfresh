@@ -34,8 +34,8 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IMaterialBalanceConfigDAO;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
+import de.metas.inout.api.MaterialBalanceConfig;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
 import de.metas.util.Services;
 
@@ -62,7 +62,7 @@ public class MaterialBalanceDetailBL implements IMaterialBalanceDetailBL
 		{
 			final I_M_InOutLine line = lines.next();
 
-			final I_M_Material_Balance_Config balanceConfig = materialBalanceConfigDAO.retrieveFitBalanceConfig(line);
+			final MaterialBalanceConfig balanceConfig = materialBalanceConfigDAO.retrieveFitBalanceConfig(line);
 
 			if (balanceConfig == null)
 			{
@@ -77,7 +77,7 @@ public class MaterialBalanceDetailBL implements IMaterialBalanceDetailBL
 	}
 
 	@Override
-	public void resetMaterialDetailsForConfigAndDate(final I_M_Material_Balance_Config config, final Timestamp resetDate)
+	public void resetMaterialDetailsForConfigAndDate(final MaterialBalanceConfig config, final Timestamp resetDate)
 	{
 		// services
 		final IMaterialBalanceDetailDAO materialBalanceDAO = Services.get(IMaterialBalanceDetailDAO.class);

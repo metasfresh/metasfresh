@@ -186,7 +186,7 @@ public class M_ShipmentSchedule
 				.date(TimeUtil.asInstant(preparationDate))
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule).getRepoId())
-				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule).getRepoId())
+				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.quantity(orderedQuantity)
 				.build();
 		return orderedMaterial;

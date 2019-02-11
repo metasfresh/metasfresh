@@ -33,12 +33,12 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
@@ -93,25 +93,13 @@ public interface IBPartnerDAO extends ISingletonService
 
 	boolean exists(BPartnerLocationId bpartnerLocationId);
 
-	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
-
-	default List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
-	{
-		return retrieveBPartnerLocations(bpartnerId.getRepoId());
-	}
+	List<I_C_BPartner_Location> retrieveBPartnerLocations(BPartnerId bpartnerId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
 
-	default Set<Integer> retrieveBPartnerLocationCountryIds(@NonNull final BPartnerId bpartnerId)
-	{
-		return retrieveBPartnerLocations(bpartnerId)
-				.stream()
-				.map(I_C_BPartner_Location::getC_Location)
-				.map(I_C_Location::getC_Country_ID)
-				.collect(ImmutableSet.toImmutableSet());
-	}
+	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending

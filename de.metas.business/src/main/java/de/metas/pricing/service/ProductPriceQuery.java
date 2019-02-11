@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
@@ -27,6 +28,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,7 +62,6 @@ public class ProductPriceQuery
 {
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
 
-	private Object _contextProvider;
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
 
@@ -92,6 +93,11 @@ public class ProductPriceQuery
 				.toString();
 	}
 
+	public List<I_M_ProductPrice> list()
+	{
+		return toQuery().list();
+	}
+
 	/** @return first matching product price or null */
 	public I_M_ProductPrice firstMatching()
 	{
@@ -113,14 +119,21 @@ public class ProductPriceQuery
 	}
 
 	/** @return true if there is at least one product price that matches */
-	public boolean matches()
+	boolean matches()
 	{
 		return toQuery().match();
 	}
 
-	public I_M_ProductPrice retrieveDefault(final boolean strictDefault)
+	public <T extends I_M_ProductPrice> T retrieveStrictDefault(@NonNull final Class<T> type)
 	{
-		return retrieveDefault(strictDefault, I_M_ProductPrice.class);
+		boolean strictDefault = true;
+		return retrieveDefault(strictDefault, type);
+	}
+
+	public <T extends I_M_ProductPrice> T retrieveDefault(@NonNull final Class<T> type)
+	{
+		boolean strictDefault = false;
+		return retrieveDefault(strictDefault, type);
 	}
 
 	/**
@@ -130,7 +143,7 @@ public class ProductPriceQuery
 	 * 			@param type
 	 * @return
 	 */
-	public <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, final Class<T> type)
+	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
 		if (strictDefault)
@@ -170,15 +183,15 @@ public class ProductPriceQuery
 		return strictDefaultSecondTry;
 	}
 
-	public IQuery<I_M_ProductPrice> toQuery()
+	private IQuery<I_M_ProductPrice> toQuery()
 	{
 		return toQueryBuilder().create();
 	}
 
-	public IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
+	private IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice.class, getContextProvider())
+				.createQueryBuilder(I_M_ProductPrice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getPriceListVersionId())
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getProductId());
@@ -226,19 +239,7 @@ public class ProductPriceQuery
 		return queryBuilder;
 	}
 
-	public ProductPriceQuery setContextProvider(final Object contextProvider)
-	{
-		_contextProvider = contextProvider;
-		return this;
-	}
-
-	private Object getContextProvider()
-	{
-		Check.assumeNotNull(_contextProvider, "Parameter contextProvider is not null for {}", this);
-		return _contextProvider;
-	}
-
-	public ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
+	ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
 		this._priceListVersionId = priceListVersionId;
 		return this;
@@ -426,11 +427,10 @@ public class ProductPriceQuery
 		private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		private final I_M_AttributeSetInstance _asi;
-		private transient Map<Integer, I_M_AttributeInstance> _asiAttributes;
+		private transient ImmutableMap<Integer, I_M_AttributeInstance> _asiAttributes;
 
-		private ASIProductPriceAttributesFilter(final I_M_AttributeSetInstance asi)
+		private ASIProductPriceAttributesFilter(@NonNull final I_M_AttributeSetInstance asi)
 		{
-			Check.assumeNotNull(asi, "Parameter asi is not null");
 			_asi = asi;
 		}
 

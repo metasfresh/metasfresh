@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.IdConstants;
@@ -334,7 +335,7 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 
-		candidateRecord.setC_BPartner_Customer_ID(materialDescriptor.getCustomerId());
+		candidateRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(materialDescriptor.getCustomerId()));
 
 		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
 		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());

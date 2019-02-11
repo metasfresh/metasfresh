@@ -1,7 +1,5 @@
 package de.metas.product;
 
-import lombok.Value;
-
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -10,12 +8,15 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -44,6 +45,7 @@ public class ProductId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static ProductId ofRepoId(final int repoId)
 	{
 		return new ProductId(repoId);
@@ -83,6 +85,13 @@ public class ProductId implements RepoIdAware
 	private ProductId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "productId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public TableRecordReference toTableRecordReference()

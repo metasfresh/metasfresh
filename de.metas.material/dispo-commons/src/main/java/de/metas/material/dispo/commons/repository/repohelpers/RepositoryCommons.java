@@ -22,7 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -169,21 +169,21 @@ public class RepositoryCommons
 			atLeastOneFilterAdded = true;
 		}
 
-		final int customerId = materialDescriptorQuery.getCustomerId();
-		if (customerId > 0)
+		final BPartnerClassifier customer = materialDescriptorQuery.getCustomer();
+		if (customer.isSpecificBPartner())
 		{
 			final CustomerIdOperator customerIdOperator = materialDescriptorQuery.getCustomerIdOperator();
 			if (CustomerIdOperator.GIVEN_ID_ONLY.equals(customerIdOperator))
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, customerId);
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, customer.getBpartnerId());
 			}
 			else if (CustomerIdOperator.GIVEN_ID_OR_NULL.equals(customerIdOperator))
 			{
-				builder.addInArrayFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, customerId, null);
+				builder.addInArrayFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, customer.getBpartnerId(), null);
 			}
 			atLeastOneFilterAdded = true;
 		}
-		else if (customerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		else if (customer.isNone())
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_Customer_ID, null);
 			atLeastOneFilterAdded = true;

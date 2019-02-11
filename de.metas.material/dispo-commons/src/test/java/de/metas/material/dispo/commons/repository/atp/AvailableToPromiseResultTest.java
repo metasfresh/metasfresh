@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
@@ -135,20 +136,20 @@ public class AvailableToPromiseResultTest
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.build();
 		final AvailableToPromiseResultGroup emptyResult2 = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(2))
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.build();
 		final AvailableToPromiseResult stockResult = new AvailableToPromiseResult(ImmutableList.of(emptyResult1, emptyResult2));
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.qty(BigDecimal.ONE)
 				.seqNo(1)
 				.date(NOW);
@@ -175,14 +176,14 @@ public class AvailableToPromiseResultTest
 		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.qty(BigDecimal.ONE)
 				.seqNo(1)
 				.date(NOW);
@@ -203,14 +204,14 @@ public class AvailableToPromiseResultTest
 		final AvailableToPromiseResultGroup group = AvailableToPromiseResultGroup.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
-				.bpartnerId(200)
+				.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 				.qty(BigDecimal.ONE)
 				.seqNo(1)
 				.date(NOW);
@@ -236,7 +237,7 @@ public class AvailableToPromiseResultTest
 				AvailableToPromiseResultGroup.builder()
 						.productId(PRODUCT_ID)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-						.bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_ANY)
+						.bpartner(BPartnerClassifier.any())
 						.build()));
 
 		final AddToResultGroupRequest resultAddRequest = AvailableToPromiseRepository.createAddToResultGroupRequest(stockRecord);

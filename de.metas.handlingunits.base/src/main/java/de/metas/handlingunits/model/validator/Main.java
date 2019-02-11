@@ -1,7 +1,5 @@
 package de.metas.handlingunits.model.validator;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -105,6 +103,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public final class Main extends AbstractModuleInterceptor
 {
@@ -171,7 +170,7 @@ public final class Main extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
 
-		engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE, client);
+		// engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE, client); // converted to spring component
 
 		//
 		// 08255: M_ShipmentSchedule update qtys

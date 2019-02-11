@@ -55,8 +55,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
+import org.compiere.model.MTransaction;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_M_Transaction;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
@@ -262,9 +264,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		// costEngine.createRateVariances(this);
 		// costEngine.createMethodVariances(this);
 		// }
-		
+
 		// Reverse Rate and Method Variances
-		if(isReversal)
+		if (isReversal)
 		{
 			// Get the initial cost collector (which is reversed by this one)
 			final I_PP_Cost_Collector ccOriginal = getReversal();
@@ -291,10 +293,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	{
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+		final String mtrxMovementType;
 
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
 			final I_C_UOM uom = Services.get(IPPCostCollectorBL.class).getStockingUOM(this);
+			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus;
 
 			ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
 					.orderBOMLineId(orderBOMLineId)
@@ -308,6 +312,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 		else if (costCollectorType.isMaterialReceipt())
 		{
+			mtrxMovementType = X_M_Transaction.MOVEMENTTYPE_WorkOrderPlus;
+
 			// Update PP Order Qtys
 			final I_PP_Order order = getPP_Order();
 			order.setQtyDelivered(order.getQtyDelivered().add(getMovementQty()));
@@ -335,6 +341,19 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		{
 			throw new AdempiereException("Unknown issue/receipt cost collector type: " + costCollectorType);
 		}
+
+		//
+		final MTransaction mtrx = new MTransaction(getCtx(),
+				getAD_Org_ID(),
+				mtrxMovementType,
+				getM_Locator_ID(),
+				getM_Product_ID(),
+				getM_AttributeSetInstance_ID(),
+				getMovementQty(),
+				getMovementDate(),
+				get_TrxName());
+		mtrx.setPP_Cost_Collector_ID(getPP_Cost_Collector_ID());
+		InterfaceWrapperHelper.save(mtrx);
 	}
 
 	private void completeIt_ActivityControl()

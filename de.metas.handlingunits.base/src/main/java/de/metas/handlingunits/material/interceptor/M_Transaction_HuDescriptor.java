@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
@@ -25,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.IHUContextFactory;
@@ -33,12 +37,14 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -72,10 +78,11 @@ public class M_Transaction_HuDescriptor
 	}
 
 	public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(
-			@NonNull final I_M_InOutLine inOutLine,
+			@NonNull final InOutAndLineId inOutLineId,
 			final boolean deleted)
 	{
-		return createHUDescriptorsForModel(inOutLine, deleted);
+		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineId.getInOutLineId());
+		return createHUDescriptorsForModel(inOutLineRef, deleted);
 	}
 
 	public ImmutableList<HUDescriptor> createHuDescriptorsForCostCollector(
@@ -169,9 +176,11 @@ public class M_Transaction_HuDescriptor
 		return ImmutablePair.of(attributesKey, asi.getM_AttributeSetInstance_ID());
 	}
 
-	public Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
+	@Builder(builderMethodName = "newMaterialDescriptors", builderClassName = "_MaterialDescriptorsBuilder")
+	private Map<MaterialDescriptor, Collection<HUDescriptor>> createMaterialDescriptors(
 			@NonNull final TransactionDescriptor transaction,
-			final int customerId,
+			@Nullable final BPartnerId customerId,
+			@Nullable final BPartnerId vendorId,
 			@NonNull final Collection<HUDescriptor> huDescriptors)
 	{
 		// aggregate HUDescriptors based on their product & attributes
@@ -195,11 +204,13 @@ public class M_Transaction_HuDescriptor
 					.date(transaction.getTransactionDate())
 					.productDescriptor(entry.getKey())
 					.customerId(customerId)
+					.vendorId(vendorId)
 					.quantity(quantity)
 					.build();
 
 			result.put(materialDescriptor, entry.getValue());
 		}
+
 		return result.build();
 	}
 

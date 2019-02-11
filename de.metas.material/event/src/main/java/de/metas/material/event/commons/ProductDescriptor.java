@@ -87,8 +87,6 @@ public class ProductDescriptor
 				"Given parameter productId=%s needs to be >0", productId);
 		Preconditions.checkArgument(attributeSetInstanceId >= -1,
 				"Given parameter attributeSetInstanceId needs to >=-1");
-		Preconditions.checkNotNull(storageAttributesKey,
-				"Given storageAttributeKey date needs to not-null");
 
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;

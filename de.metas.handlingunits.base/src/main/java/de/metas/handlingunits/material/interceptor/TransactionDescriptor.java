@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.compiere.model.I_M_Transaction;
 
+import de.metas.inout.InOutLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import lombok.Builder;
@@ -47,7 +48,7 @@ public class TransactionDescriptor
 	int transactionId;
 	int warehouseId;
 	int costCollectorId;
-	int inoutLineId;
+	InOutLineId inoutLineId;
 	int movementLineId;
 	int inventoryLineId;
 	Instant transactionDate;
@@ -65,7 +66,7 @@ public class TransactionDescriptor
 			Instant transactionDate,
 			BigDecimal movementQty,
 			int costCollectorId,
-			int inoutLineId,
+			InOutLineId inoutLineId,
 			int movementLineId,
 			int inventoryLineId,
 			String movementType,

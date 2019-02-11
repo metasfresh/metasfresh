@@ -4,6 +4,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.pricing.service.ProductPrices;
 import lombok.NonNull;
@@ -36,17 +37,12 @@ import lombok.NonNull;
  * @task Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
  */
 @Interceptor(I_M_ProductPrice.class)
+@Component
 public class M_ProductPrice
 {
-	public static final M_ProductPrice INSTANCE = new M_ProductPrice();
-
-	private M_ProductPrice()
-	{
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void assertIsNoMainPriceDuplicate(@NonNull final I_M_ProductPrice productPrice)
+	public void assertMainProductPriceIsNotDuplicate(@NonNull final I_M_ProductPrice productPrice)
 	{
-		ProductPrices.assertIsNoMainPriceDuplicate(productPrice);
+		ProductPrices.assertMainProductPriceIsNotDuplicate(productPrice);
 	}
 }

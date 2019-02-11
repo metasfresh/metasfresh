@@ -50,6 +50,7 @@ public class ExportToExcelProcess extends JavaProcess
 		final File tempFile = ArrayExcelExporter.builder()
 				.ctx(getCtx())
 				.data(data)
+				.translateHeaders(getProcessInfo().isTranslateExcelHeaders())
 				.build()
 				.exportToTempFile();
 
@@ -62,7 +63,7 @@ public class ExportToExcelProcess extends JavaProcess
 	{
 		return getProcessInfo().getSQLStatement().orElseThrow(() -> new FillMandatoryException("SQLStatement"));
 	}
-
+	
 	private Evaluatee getEvalContext()
 	{
 		final List<Evaluatee> contexts = new ArrayList<>();
