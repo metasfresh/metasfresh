@@ -220,15 +220,12 @@ public class ProductsProposalRow implements IViewRow
 
 	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
 	{
-		System.out.println("Check is matching: " + getProductName() + ", filter=" + filter);
 		if (!Check.isEmpty(filter.getProductName())
 				&& !getProductName().toLowerCase().contains(filter.getProductName().toLowerCase()))
 		{
-			System.out.println("\t=> NOT matching");
 			return false;
 		}
 
-		System.out.println("\t=> MATCHING");
 		return true;
 	}
 }
