@@ -9,6 +9,7 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -22,6 +23,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -62,6 +64,8 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final Logger logger = LogManager.getLogger(WEBUI_PP_Order_Template.class);
+	
 	private final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";

@@ -2,7 +2,6 @@ package de.metas.ui.web.pporder.process;
 
 import java.util.stream.Stream;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -11,7 +10,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.view.IViewRow;
 
 /*
  * #%L
@@ -45,8 +43,6 @@ public abstract class WEBUI_PP_Order_Template
 		extends ViewBasedProcessTemplate
 // implements IProcessPrecondition // let the extending class activate this interface
 {
-	protected static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_Template.class);
-	
 	@Override
 	protected final PPOrderLinesView getView()
 	{
@@ -62,20 +58,7 @@ public abstract class WEBUI_PP_Order_Template
 	protected final Stream<PPOrderLineRow> streamPPOrderLineRows()
 	{
 		return streamSelectedRows()
-				.map(row -> toPPOrderLineRowOrNull(row))
+				.map(row -> PPOrderLineRow.cast(row))
 				.filter(Predicates.notNull());
-	}
-	
-	protected final PPOrderLineRow toPPOrderLineRowOrNull(final IViewRow row)
-	{
-		if (row instanceof PPOrderLineRow)
-		{
-			return PPOrderLineRow.cast(row);
-		}
-		else
-		{
-			new AdempiereException("Row type not supported: " + row).throwIfDeveloperModeOrLogWarningElse(logger);
-			return null;
-		}
 	}
 }
