@@ -64,6 +64,14 @@ class TableItem extends PureComponent {
     }
   };
 
+  handleDoubleClick = () => {
+    const { rowId, onDoubleClick, supportOpenRecord } = this.props;
+
+    if (supportOpenRecord) {
+      onDoubleClick && onDoubleClick(rowId);
+    }
+  };
+
   handleKeyDown = (e, property, widgetData) => {
     const { changeListenOnTrue } = this.props;
     const { listenOnKeys, edited } = this.state;
@@ -467,7 +475,6 @@ class TableItem extends PureComponent {
       key,
       isSelected,
       onClick,
-      onDoubleClick,
       odd,
       indentSupported,
       indent,
@@ -483,7 +490,7 @@ class TableItem extends PureComponent {
       <tr
         key={key}
         onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onDoubleClick={this.handleDoubleClick}
         className={classnames({
           'row-selected': isSelected,
           'tr-odd': odd,
