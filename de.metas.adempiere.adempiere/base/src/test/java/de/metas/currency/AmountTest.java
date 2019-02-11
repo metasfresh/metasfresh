@@ -1,53 +1,44 @@
-package de.metas.pricing;
+package de.metas.currency;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+
+import org.junit.Test;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-public class PriceListVersionId implements RepoIdAware
+public class AmountTest
 {
-	public static PriceListVersionId ofRepoId(final int repoId)
+	@Test
+	public void testEquals()
 	{
-		return new PriceListVersionId(repoId);
+		assertThat(euro("11.00000000000000000"))
+				.isEqualTo(euro("11"));
 	}
 
-	public static PriceListVersionId ofRepoIdOrNull(final int repoId)
+	private Amount euro(final String amt)
 	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
-
-	int repoId;
-
-	private PriceListVersionId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_PriceList_Version_ID");
-	}
-
-	public static int toRepoId(final PriceListVersionId id)
-	{
-		return id != null ? id.getRepoId() : -1;
+		return Amount.of(new BigDecimal(amt), "EUR");
 	}
 }
