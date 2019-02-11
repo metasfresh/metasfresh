@@ -208,7 +208,7 @@ final class CreatePPOrderCostsCommand
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomComponentType);
 		final Percent coProductCostDistributionPercent = trxType.isCoProduct()
-				? null // TODO
+				? Percent.of("0.01") //TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
 				: null;
 
 		return PPOrderCostCandidate.builder()
