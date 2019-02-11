@@ -34,8 +34,12 @@ export function browseViewRequest({
   );
 }
 
-export function deleteView(windowId, viewId) {
-  return del(`${config.API_URL}/documentView/${windowId}/${viewId}`);
+export function deleteView(windowId, viewId, action) {
+  return del(
+    `${config.API_URL}/documentView/${windowId}/${viewId}${
+      action ? `?action=${action}` : ''
+    }`
+  );
 }
 
 export function createViewRequest({

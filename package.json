@@ -65,7 +65,7 @@
     "babel-plugin-dynamic-import-node": "2.2.0",
     "common-tags": "1.4.0",
     "css-loader": "1.0.1",
-    "cypress": "^3.1.4",
+    "cypress": "^3.1.5",
     "enzyme": "3.7.0",
     "enzyme-adapter-react-16": "1.6.0",
     "enzyme-wait": "1.0.9",

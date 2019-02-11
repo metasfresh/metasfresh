@@ -42,6 +42,7 @@ import {
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
   UPDATE_MODAL,
+  UPDATE_RAW_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
@@ -172,6 +173,17 @@ export default function windowHandler(state = initialState, action) {
           id: action.payload.id,
         },
       };
+    case OPEN_RAW_MODAL:
+      return {
+        ...state,
+        rawModal: {
+          ...state.rawModal,
+          visible: true,
+          windowId: action.windowId,
+          viewId: action.viewId,
+          profileId: action.profileId,
+        },
+      };
     case UPDATE_MODAL:
       return {
         ...state,
@@ -181,6 +193,33 @@ export default function windowHandler(state = initialState, action) {
           dataId: action.dataId,
         },
       };
+    case UPDATE_RAW_MODAL: {
+      const { windowId, data } = action;
+
+      if (state.rawModal.windowId === windowId) {
+        return {
+          ...state,
+          rawModal: {
+            ...state.rawModal,
+            ...data,
+          },
+        };
+      } else {
+        return state;
+      }
+    }
+    case CLOSE_RAW_MODAL:
+      return {
+        ...state,
+        rawModal: {
+          ...state.rawModal,
+          visible: false,
+          windowId: null,
+          viewId: null,
+          profileId: null,
+        },
+      };
+
     case CLOSE_PROCESS_MODAL:
       if (state.modal.modalType === 'process') {
         return {
@@ -542,29 +581,6 @@ export default function windowHandler(state = initialState, action) {
         latestNewDocument: action.id,
       };
 
-    // RAW Modal
-    case CLOSE_RAW_MODAL:
-      return {
-        ...state,
-        rawModal: {
-          ...state.rawModal,
-          visible: false,
-          windowId: null,
-          viewId: null,
-          profileId: null,
-        },
-      };
-    case OPEN_RAW_MODAL:
-      return {
-        ...state,
-        rawModal: {
-          ...state.rawModal,
-          visible: true,
-          windowId: action.windowId,
-          viewId: action.viewId,
-          profileId: action.profileId,
-        },
-      };
     case OPEN_FILTER_BOX:
       return {
         ...state,
