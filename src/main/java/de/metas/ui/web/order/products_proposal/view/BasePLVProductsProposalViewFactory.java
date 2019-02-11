@@ -70,6 +70,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				.setCaption(caption)
 				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
 				.removeElementByFieldName(ProductsProposalRow.FIELD_Qty)
+				.clearViewCloseActions()
 				.build();
 	}
 

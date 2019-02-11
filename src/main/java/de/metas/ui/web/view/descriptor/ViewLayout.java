@@ -747,6 +747,12 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public Builder clearViewCloseActions()
+		{
+			allowedViewCloseActions = new LinkedHashSet<>();
+			return this;
+		}
+
 		public Builder allowViewCloseAction(@NonNull final ViewCloseAction viewCloseAction)
 		{
 			if (allowedViewCloseActions == null)
