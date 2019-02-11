@@ -129,8 +129,6 @@ public interface IPricingResult
 
 	void addPricingRuleApplied(IPricingRule rule);
 
-	List<IPricingRule> getPricingRulesApplied();
-
 	int getC_TaxCategory_ID();
 
 	void setC_TaxCategory_ID(int C_TaxCategory_ID);
@@ -160,13 +158,6 @@ public interface IPricingResult
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
 	LocalDate getPriceDate();
-
-	/**
-	 * See {@link #getPriceDate()}.
-	 *
-	 * @param priceDate
-	 */
-	void setPriceDate(LocalDate priceDate);
 
 	boolean isPriceEditable();
 

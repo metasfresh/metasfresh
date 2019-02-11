@@ -46,6 +46,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -64,6 +65,8 @@ import lombok.ToString;
 @ToString
 class PricingResult implements IPricingResult
 {
+	@Getter
+	@Setter
 	private boolean calculated = false;
 
 	@Getter
@@ -106,18 +109,42 @@ class PricingResult implements IPricingResult
 	@Getter
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
+	@Setter
+	@Getter
 	private boolean enforcePriceLimit = false;
-	private boolean taxIncluded = false;
-	private boolean isUseDiscountSchema = false;
-	private boolean disallowDiscount = false;
-	private LocalDate priceDate = null;
 
-	private boolean isPriceEditable = true;
-	private boolean isDiscountEditable = true;
+	@Setter
+	@Getter
+	private boolean taxIncluded = false;
+
+	@Setter
+	@Getter
+	private boolean usesDiscountSchema = false;
+	@Setter
+	@Getter
+	private boolean disallowDiscount = false;
+
+	@Getter
+	private final LocalDate priceDate;
+
+	@Setter
+	@Getter
+	private boolean priceEditable = true;
+
+	@Setter
+	@Getter
+	private boolean discountEditable = true;
 
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
+
+	@Builder
+	private PricingResult(
+			@NonNull final LocalDate priceDate)
+	{
+		this.priceDate = priceDate;
+	}
 
 	/**
 	 * @return the c_UOM_ID
@@ -146,9 +173,6 @@ class PricingResult implements IPricingResult
 		return Util.coalesce(discount, Percent.ZERO);
 	}
 
-	/**
-	 * @param discount the discount to set
-	 */
 	@Override
 	public void setDiscount(final Percent discount)
 	{
@@ -156,112 +180,10 @@ class PricingResult implements IPricingResult
 		this.discount = discount;
 	}
 
-	/**
-	 * @return the enforcePriceLimit
-	 */
-	@Override
-	public boolean isEnforcePriceLimit()
-	{
-		return enforcePriceLimit;
-	}
-
-	/**
-	 * @param enforcePriceLimit the enforcePriceLimit to set
-	 */
-	@Override
-	public void setEnforcePriceLimit(final boolean enforcePriceLimit)
-	{
-		this.enforcePriceLimit = enforcePriceLimit;
-	}
-
-	/**
-	 * @return the taxIncluded
-	 */
-	@Override
-	public boolean isTaxIncluded()
-	{
-		return taxIncluded;
-	}
-
-	/**
-	 * @param taxIncluded the taxIncluded to set
-	 */
-	@Override
-	public void setTaxIncluded(final boolean taxIncluded)
-	{
-		this.taxIncluded = taxIncluded;
-	}
-
-	/**
-	 * @return true f a discountSchema is set, false otherwise
-	 */
-	@Override
-	public boolean isUsesDiscountSchema()
-	{
-		return isUseDiscountSchema;
-	}
-
-	/**
-	 * @param wether of not a discount schema is used
-	 */
-	@Override
-	public void setUsesDiscountSchema(final boolean discountSchema)
-	{
-		isUseDiscountSchema = discountSchema;
-	}
-
-	/**
-	 * @return the calculated
-	 */
-	@Override
-	public boolean isCalculated()
-	{
-		return calculated;
-	}
-
-	/**
-	 * @param calculated the calculated to set
-	 */
-	@Override
-	public void setCalculated(final boolean calculated)
-	{
-		this.calculated = calculated;
-	}
-
-	@Override
-	public LocalDate getPriceDate()
-	{
-		return priceDate;
-	}
-
-	@Override
-	public void setPriceDate(final LocalDate priceDate)
-	{
-		this.priceDate = priceDate;
-	}
-
 	@Override
 	public void addPricingRuleApplied(@NonNull IPricingRule rule)
 	{
 		rulesApplied.add(rule);
-	}
-
-	@Override
-	public List<IPricingRule> getPricingRulesApplied()
-	{
-		return rulesApplied;
-	}
-
-	@Override
-	public boolean isDisallowDiscount()
-	{
-		return disallowDiscount;
-	}
-
-	@Override
-	public void setDisallowDiscount(final boolean disallowDiscount)
-	{
-		this.disallowDiscount = disallowDiscount;
 	}
 
 	@Override
@@ -291,30 +213,6 @@ class PricingResult implements IPricingResult
 		}
 
 		pricingAttributes.addAll(pricingAttributesToAdd);
-	}
-
-	@Override
-	public void setPriceEditable(final boolean isPriceEditable)
-	{
-		this.isPriceEditable = isPriceEditable;
-	}
-
-	@Override
-	public boolean isPriceEditable()
-	{
-		return isPriceEditable;
-	}
-
-	@Override
-	public void setDiscountEditable(final boolean isDiscountEditable)
-	{
-		this.isDiscountEditable = isDiscountEditable;
-	}
-
-	@Override
-	public boolean isDiscountEditable()
-	{
-		return isDiscountEditable;
 	}
 
 	/**

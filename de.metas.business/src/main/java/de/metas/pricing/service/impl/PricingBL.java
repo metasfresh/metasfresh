@@ -377,14 +377,16 @@ public class PricingBL implements IPricingBL
 	@Override
 	public PricingResult createInitialResult(@NonNull final IPricingContext pricingCtx)
 	{
-		final PricingResult result = new PricingResult();
+		final PricingResult result = PricingResult.builder()
+				.priceDate(pricingCtx.getPriceDate())
+				.build();
+
 		result.setPricingSystemId(pricingCtx.getPricingSystemId());
 		result.setPriceListId(pricingCtx.getPriceListId());
 		result.setPriceListVersionId(pricingCtx.getPriceListVersionId());
 		result.setProductId(pricingCtx.getProductId());
 		result.setCurrencyId(pricingCtx.getCurrencyId());
 		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
-		result.setPriceDate(pricingCtx.getPriceDate());
 
 		result.setCalculated(false);
 
