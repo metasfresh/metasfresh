@@ -81,6 +81,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -226,12 +227,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public int getC_TaxCategory_ID(final org.compiere.model.I_C_OrderLine orderLine)
+	public TaxCategoryId getTaxCategoryId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		// In case we have a charge, use the tax category from charge
 		if (orderLine.getC_Charge_ID() > 0)
 		{
-			return orderLine.getC_Charge().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoId(orderLine.getC_Charge().getC_TaxCategory_ID());
 		}
 
 		final OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);

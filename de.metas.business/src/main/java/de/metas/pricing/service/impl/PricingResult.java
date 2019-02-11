@@ -44,6 +44,7 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -88,7 +89,9 @@ class PricingResult implements IPricingResult
 	@Setter
 	@Getter
 	private PriceListVersionId priceListVersionId;
-	private int C_TaxCategory_ID = -1;
+	@Setter
+	@Getter
+	private TaxCategoryId taxCategoryId;
 	@Setter
 	@Getter
 	private PricingConditionsResult pricingConditions;
@@ -184,18 +187,6 @@ class PricingResult implements IPricingResult
 	public void addPricingRuleApplied(@NonNull IPricingRule rule)
 	{
 		rulesApplied.add(rule);
-	}
-
-	@Override
-	public int getC_TaxCategory_ID()
-	{
-		return C_TaxCategory_ID;
-	}
-
-	@Override
-	public void setC_TaxCategory_ID(final int C_TaxCategory_ID)
-	{
-		this.C_TaxCategory_ID = C_TaxCategory_ID;
 	}
 
 	@Override

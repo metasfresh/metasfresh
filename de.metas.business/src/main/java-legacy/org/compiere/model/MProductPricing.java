@@ -29,6 +29,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
@@ -297,7 +298,7 @@ public class MProductPricing
 
 	public int getC_TaxCategory_ID()
 	{
-		return result.getC_TaxCategory_ID();
+		return TaxCategoryId.toRepoId(result.getTaxCategoryId());
 	}
 	
 	public boolean isManualPrice()

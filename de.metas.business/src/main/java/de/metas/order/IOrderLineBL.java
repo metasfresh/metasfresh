@@ -35,6 +35,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 
@@ -120,7 +121,7 @@ public interface IOrderLineBL extends ISingletonService
 	 *
 	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 */
-	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
+	TaxCategoryId getTaxCategoryId(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 

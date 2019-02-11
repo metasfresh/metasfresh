@@ -37,6 +37,7 @@ import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -452,7 +453,7 @@ class OrderLinePriceCalculator
 		return true;
 	}
 
-	public int computeTaxCategoryId()
+	public TaxCategoryId computeTaxCategoryId()
 	{
 		final IPricingContext pricingCtx = createPricingContext()
 				.setDisallowDiscount(true); // don't bother computing discounts; we know that the tax category is not related to them.
@@ -464,7 +465,7 @@ class OrderLinePriceCalculator
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
 		}
 
-		return pricingResult.getC_TaxCategory_ID();
+		return pricingResult.getTaxCategoryId();
 	}
 
 	public IPricingResult computePrices()

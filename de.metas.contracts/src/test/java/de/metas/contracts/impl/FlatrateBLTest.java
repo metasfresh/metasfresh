@@ -72,6 +72,7 @@ import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -229,7 +230,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 				final Properties ctx = Env.getCtx();
 
-				final int taxCategoryId = -1;
+				final TaxCategoryId taxCategoryId = null;
 				final boolean isSOTrx = true;
 
 				taxBL.getTax(

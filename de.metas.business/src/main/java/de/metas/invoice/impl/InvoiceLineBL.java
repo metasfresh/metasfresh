@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
-import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,6 +65,8 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -96,12 +97,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public boolean setTax(final Properties ctx, final org.compiere.model.I_C_InvoiceLine il, final String trxName)
 	{
-		int taxCategoryId = il.getC_TaxCategory_ID();
-		if (taxCategoryId <= 0 && il.getM_Product_ID() > 0)
+		TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(il.getC_TaxCategory_ID());
+		if (taxCategoryId == null && il.getM_Product_ID() > 0)
 		{
 			// NOTE: we can retrieve the tax category only if we have a product
-			taxCategoryId = getC_TaxCategory_ID(il);
-			il.setC_TaxCategory_ID(taxCategoryId);
+			taxCategoryId = getTaxCategoryId(il);
+			il.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
 		}
 
 		if (il.getM_InOutLine_ID() <= 0)
@@ -175,13 +176,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public int getC_TaxCategory_ID(final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public TaxCategoryId getTaxCategoryId(final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		// FIXME: we need to retrieve the C_TaxCategory_ID by using Pricing Engine
 
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return invoiceLine.getC_Charge().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -193,7 +194,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// Fallback: try getting from Order Line
 		if (invoiceLine.getC_OrderLine_ID() > 0)
 		{
-			return invoiceLine.getC_OrderLine().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoIdOrNull(invoiceLine.getC_OrderLine().getC_TaxCategory_ID());
 		}
 
 		// Fallback: try getting from Invoice -> Order
@@ -205,7 +206,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		throw new TaxCategoryNotFoundException(invoiceLine);
 	}
 
-	private int getTaxCategoryFromProductPrice(
+	private TaxCategoryId getTaxCategoryFromProductPrice(
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
@@ -227,10 +228,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
-		return productPrice.getC_TaxCategory_ID();
+		return TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 	}
 
-	private int getTaxCategoryFromOrder(
+	private TaxCategoryId getTaxCategoryFromOrder(
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
@@ -256,7 +257,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_M_ProductPrice productPrice = Optional
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
-		return productPrice.getC_TaxCategory_ID();
+		return TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 	}
 
 	@Override

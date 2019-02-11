@@ -34,6 +34,7 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -129,9 +130,9 @@ public interface IPricingResult
 
 	void addPricingRuleApplied(IPricingRule rule);
 
-	int getC_TaxCategory_ID();
+	TaxCategoryId getTaxCategoryId();
 
-	void setC_TaxCategory_ID(int C_TaxCategory_ID);
+	void setTaxCategoryId(TaxCategoryId taxCategoryId);
 
 	ProductId getProductId();
 

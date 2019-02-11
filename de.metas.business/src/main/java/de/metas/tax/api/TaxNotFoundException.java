@@ -1,29 +1,15 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 2009 SC ARHIPAC SERVICE SRL. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- *****************************************************************************/
-package org.adempiere.exceptions;
+package de.metas.tax.api;
 
 import java.time.LocalDate;
 import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Charge;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MLocation;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -32,26 +18,23 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
-
 import lombok.Builder;
 
 /**
  * Throw by Tax Engine where no tax found for given criteria
- *
- * @author Teo Sarca, www.arhipac.ro
- *         <li>FR [ 2758097 ] Implement TaxNotFoundException
  */
+@SuppressWarnings("serial")
 public class TaxNotFoundException extends AdempiereException
 {
-	private static final long serialVersionUID = -5471615720092096644L;
+	private static final String MSG_TaxNotFound = "TaxNotFound";
 
-	public static final String MSG_TaxNotFound = "TaxNotFound";
-
-	private final int productId;
+	private final ProductId productId;
 	private final int chargeId;
 
-	private final int taxCategoryId;
+	private final TaxCategoryId taxCategoryId;
 	private final Boolean isSOTrx;
 
 	private final OrgId orgId;
@@ -69,9 +52,9 @@ public class TaxNotFoundException extends AdempiereException
 	@Builder
 	private TaxNotFoundException(
 			final String adMessage,
-			final int productId,
+			final ProductId productId,
 			final int chargeId,
-			final int taxCategoryId,
+			final TaxCategoryId taxCategoryId,
 			final Boolean isSOTrx,
 			//
 			final OrgId orgId,
@@ -89,12 +72,12 @@ public class TaxNotFoundException extends AdempiereException
 		super(ImmutableTranslatableString.empty());
 
 		this.productId = productId;
-		setParameter("productId", productId > 0 ? productId : null);
+		setParameter("productId", productId);
 		this.chargeId = chargeId;
 		setParameter("chargeId", chargeId > 0 ? chargeId : null);
 
 		this.taxCategoryId = taxCategoryId;
-		setParameter("taxCategoryId", taxCategoryId > 0 ? taxCategoryId : null);
+		setParameter("taxCategoryId", taxCategoryId);
 		this.isSOTrx = isSOTrx;
 		setParameter("isSOTrx", isSOTrx);
 
@@ -127,11 +110,10 @@ public class TaxNotFoundException extends AdempiereException
 		message.appendADMessage(MSG_TaxNotFound);
 
 		//
-		if (productId > 0)
+		if (productId != null)
 		{
-			final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
-			final String productValue = product != null ? product.getValue() : "<" + productId + ">";
-			message.append(" - ").appendADElement("M_Product_ID").append(": ").append(productValue);
+			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+			message.append(" - ").appendADElement("M_Product_ID").append(": ").append(productName);
 		}
 		if (chargeId > 0)
 		{
@@ -140,9 +122,9 @@ public class TaxNotFoundException extends AdempiereException
 		}
 
 		//
-		if (taxCategoryId > 0)
+		if (taxCategoryId != null)
 		{
-			final String taxCategoryName = getTaxCategoryString(taxCategoryId);
+			final ITranslatableString taxCategoryName = Services.get(ITaxDAO.class).getTaxCategoryNameById(taxCategoryId);
 			message.append(" - ").appendADElement("C_TaxCategory_ID").append(": ").append(taxCategoryName);
 		}
 
@@ -194,21 +176,6 @@ public class TaxNotFoundException extends AdempiereException
 		//
 		//
 		return message.build();
-	}
-
-	private static final String getTaxCategoryString(final int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID <= 0)
-		{
-			return "?";
-		}
-		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.loadOutOfTrx(C_TaxCategory_ID, I_C_TaxCategory.class);
-		if (taxCategory == null)
-		{
-			return "?";
-		}
-
-		return taxCategory.getName();
 	}
 
 	private static final String getLocationString(final int locationId, final CountryId fallbackCountryId)

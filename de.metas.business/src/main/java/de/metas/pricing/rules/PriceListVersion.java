@@ -15,6 +15,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -68,7 +69,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
 		result.setTaxIncluded(priceList.isTaxIncluded());
-		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setPriceListVersionId(resultPriceListVersionId);
 		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
 		result.setCalculated(true);

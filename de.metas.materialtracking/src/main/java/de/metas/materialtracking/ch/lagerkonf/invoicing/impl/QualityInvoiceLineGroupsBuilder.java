@@ -1157,14 +1157,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 
-		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getC_TaxCategory_ID() <= 0,
+		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null,
 				"pricingResult {} which was created from pricingCtx {} has calculated=false and/or least contains no C_TaxCategory_ID; the referenced model is {}",
 				pricingResult, pricingCtx, pricingCtx.getReferencedObject());
 
 		final int pricePrecision = pricingResult.getPrecision();
 		final BigDecimal priceToSet = price.setScale(pricePrecision, RoundingMode.HALF_UP);
 
-		pricingResult.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		pricingResult.setTaxCategoryId(pricingResult.getTaxCategoryId());
 		pricingResult.setPriceStd(priceToSet);
 		pricingResult.setPriceLimit(priceToSet);
 		pricingResult.setPriceList(priceToSet);

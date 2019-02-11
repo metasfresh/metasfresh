@@ -33,6 +33,7 @@ import org.compiere.util.Env;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import lombok.ToString;
 
 /**
@@ -108,7 +109,7 @@ public class MockedPricingRule implements IPricingRule
 
 		result.setPrecision(precision);
 
-		result.setC_TaxCategory_ID(100);
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(100));
 
 		final I_C_UOM priceUOM = productId2priceUOM.get(productId);
 		if (priceUOM != null)
