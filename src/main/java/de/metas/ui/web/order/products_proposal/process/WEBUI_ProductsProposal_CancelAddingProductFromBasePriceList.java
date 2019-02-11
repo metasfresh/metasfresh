@@ -1,12 +1,4 @@
-package de.metas.ui.web.order.products_proposal.view;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import de.metas.currency.Amount;
-import de.metas.pricing.ProductPriceId;
-import lombok.Builder;
-import lombok.Value;
+package de.metas.ui.web.order.products_proposal.process;
 
 /*
  * #%L
@@ -30,13 +22,13 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ProductsProposalRowChangeRequest
+public class WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList extends ProductsProposalViewBasedProcess
 {
-	boolean userChange;
-	Optional<BigDecimal> qty;
-	Optional<BigDecimal> price;
-	Optional<Amount> standardPrice;
-	Optional<ProductPriceId> productPriceId;
+	@Override
+	protected String doIt()
+	{
+		closeAllViewsAndShowInitialView();
+
+		return MSG_OK;
+	}
 }

@@ -30,7 +30,7 @@ public enum ViewEditorRenderMode
 	/** Read-only */
 	NEVER("never"),
 
-	/**	after a right-click */
+	/** after a right-click */
 	ON_DEMAND("on-demand"),
 
 	ALWAYS("always");
@@ -45,5 +45,10 @@ public enum ViewEditorRenderMode
 	public String toJson()
 	{
 		return json;
+	}
+
+	public boolean isEditable()
+	{
+		return this == ON_DEMAND || this == ALWAYS;
 	}
 }
