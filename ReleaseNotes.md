@@ -10,6 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.91
+# Features
+* metasfresh
+  * [#4941](https://github.com/metasfresh/metasfresh/issues/4941) Add option to not translate words that exist as elements or messages
+  * [#4935](https://github.com/metasfresh/metasfresh/issues/4935) Create MTransaction when completing cost collector of type issue/receipt
+  * [#4936](https://github.com/metasfresh/metasfresh/issues/4936) Use latest c3p0 and postgres driver
+
+* metasfresh-webui-frontend
+  * [#2169](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2169) Host google fonts locally
+  * [#2158](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2158) Modal view: Cancel button support
+
+# Fixes
+
 # metasfresh 5.90
 # Features
 * metasfresh
