@@ -107,6 +107,7 @@ public class CampaignPricingRule implements IPricingRule
 	private static void updateResult(final IPricingResult result, final CampaignPrice campaignPrice)
 	{
 		result.setCalculated(true);
+		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
 		result.setPriceStd(campaignPrice.getPriceStd().getValue());
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
