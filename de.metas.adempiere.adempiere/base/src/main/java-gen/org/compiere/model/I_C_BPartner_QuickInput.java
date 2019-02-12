@@ -233,7 +233,7 @@ public interface I_C_BPartner_QuickInput
     public static final String COLUMNNAME_C_BPartner_QuickInput_ID = "C_BPartner_QuickInput_ID";
 
 	/**
-	 * Set Anrede.
+	 * Set Anrede (ID).
 	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
@@ -243,7 +243,7 @@ public interface I_C_BPartner_QuickInput
 	public void setC_Greeting_ID (int C_Greeting_ID);
 
 	/**
-	 * Get Anrede.
+	 * Get Anrede (ID).
 	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
@@ -494,6 +494,29 @@ public interface I_C_BPartner_QuickInput
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_IsCustomer = new org.adempiere.model.ModelColumn<I_C_BPartner_QuickInput, Object>(I_C_BPartner_QuickInput.class, "IsCustomer", null);
     /** Column name IsCustomer */
     public static final String COLUMNNAME_IsCustomer = "IsCustomer";
+
+	/**
+	 * Set Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsNewsletter (boolean IsNewsletter);
+
+	/**
+	 * Get Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isNewsletter();
+
+    /** Column definition for IsNewsletter */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_IsNewsletter = new org.adempiere.model.ModelColumn<I_C_BPartner_QuickInput, Object>(I_C_BPartner_QuickInput.class, "IsNewsletter", null);
+    /** Column name IsNewsletter */
+    public static final String COLUMNNAME_IsNewsletter = "IsNewsletter";
 
 	/**
 	 * Set Lieferant.

@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1117827995L;
+	private static final long serialVersionUID = 856310155L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 			setIsDefaultContact (false); // N
 			setIsFullBPAccess (true); // Y
 			setIsInPayroll (false); // N
+			setIsNewsletter (false); // N
 			setIsPurchaseContact_Default (false); // N
 			setIsSalesContact_Default (false); // N
 			setIsShipToContact_Default (false); // N
@@ -313,9 +314,9 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
-	/** Set Anrede.
+	/** Set Anrede (ID).
 		@param C_Greeting_ID 
-		Greeting to print on correspondence
+		Anrede zum Druck auf Korrespondenz
 	  */
 	@Override
 	public void setC_Greeting_ID (int C_Greeting_ID)
@@ -326,8 +327,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
 	}
 
-	/** Get Anrede.
-		@return Greeting to print on correspondence
+	/** Get Anrede (ID).
+		@return Anrede zum Druck auf Korrespondenz
 	  */
 	@Override
 	public int getC_Greeting_ID () 
@@ -811,6 +812,29 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isLoginAsHostKey () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsLoginAsHostKey);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Newsletter.
+		@param IsNewsletter Newsletter	  */
+	@Override
+	public void setIsNewsletter (boolean IsNewsletter)
+	{
+		set_Value (COLUMNNAME_IsNewsletter, Boolean.valueOf(IsNewsletter));
+	}
+
+	/** Get Newsletter.
+		@return Newsletter	  */
+	@Override
+	public boolean isNewsletter () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNewsletter);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
