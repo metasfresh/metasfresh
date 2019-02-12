@@ -343,7 +343,8 @@ export class DocumentList extends Component {
             },
             () => {
               const { allowedCloseActions } = response.data;
-              if (allowedCloseActions && allowedCloseActions.length) {
+
+              if (allowedCloseActions) {
                 dispatch(updateRawModal(windowType, { allowedCloseActions }));
               }
 

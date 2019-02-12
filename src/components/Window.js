@@ -37,16 +37,78 @@ class Window extends PureComponent {
     });
   };
 
+  getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
+    const { type } = this.props.layout;
+    const { rowData, newRow, tabsInfo, sort } = this.props;
+
+    tabs.forEach(elem => {
+      const {
+        tabid,
+        tabId,
+        caption,
+        description,
+        elements,
+        internalName,
+        emptyResultText,
+        emptyResultHint,
+        queryOnActivate,
+        supportQuickInput,
+        defaultOrderBys,
+      } = elem;
+      elem.tabIndex = this.tabIndex.tabs;
+      if (parentTab) {
+        elem.parentTab = parentTab;
+      }
+
+      tabsByIds[elem.tabId] = elem;
+      tabsArray.push(
+        <Table
+          {...{
+            caption,
+            description,
+            rowData,
+            tabid,
+            tabId,
+            type,
+            sort,
+            newRow,
+            internalName,
+          }}
+          entity="window"
+          keyProperty="rowId"
+          key={tabId}
+          cols={elements}
+          orderBy={defaultOrderBys}
+          docId={dataId}
+          emptyText={emptyResultText}
+          emptyHint={emptyResultHint}
+          tabIndex={this.tabIndex.tabs}
+          queryOnActivate={queryOnActivate}
+          supportQuickInput={supportQuickInput}
+          tabInfo={tabsInfo && tabsInfo[tabid]}
+          disconnectFromState={true}
+        />
+      );
+
+      if (elem.tabs) {
+        this.getTabs(elem.tabs, dataId, tabsArray, tabsByIds, tabId);
+      }
+    });
+  };
+
   renderTabs = tabs => {
     const { type } = this.props.layout;
-    const { data, rowData, newRow, tabsInfo, sort } = this.props;
+    const { data } = this.props;
     const { fullScreen } = this.state;
+    const tabsArray = [];
+    const tabsByIds = {};
 
     if (!Object.keys(data).length) {
       return;
     }
 
     const dataId = data.ID && data.ID.value;
+    this.getTabs(tabs, dataId, tabsArray, tabsByIds, null);
 
     return (
       <Tabs
@@ -54,48 +116,9 @@ class Window extends PureComponent {
         toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
         windowType={type}
+        {...{ tabs, tabsByIds }}
       >
-        {tabs.map(elem => {
-          const {
-            tabid,
-            caption,
-            description,
-            elements,
-            internalName,
-            emptyResultText,
-            emptyResultHint,
-            queryOnActivate,
-            supportQuickInput,
-            defaultOrderBys,
-          } = elem;
-          return (
-            <Table
-              {...{
-                caption,
-                description,
-                rowData,
-                tabid,
-                type,
-                sort,
-                newRow,
-                internalName,
-              }}
-              entity="window"
-              keyProperty="rowId"
-              key={tabid}
-              cols={elements}
-              orderBy={defaultOrderBys}
-              docId={dataId}
-              emptyText={emptyResultText}
-              emptyHint={emptyResultHint}
-              tabIndex={this.tabIndex.tabs}
-              queryOnActivate={queryOnActivate}
-              supportQuickInput={supportQuickInput}
-              tabInfo={tabsInfo && tabsInfo[tabid]}
-              disconnectFromState={true}
-            />
-          );
-        })}
+        {tabsArray}
       </Tabs>
     );
   };
