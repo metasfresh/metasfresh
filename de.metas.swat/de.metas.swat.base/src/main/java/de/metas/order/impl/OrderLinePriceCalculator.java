@@ -283,7 +283,7 @@ class OrderLinePriceCalculator
 		pricingCtx.setConvertPriceToContextUOM(isConvertPriceToContextUOM(request, pricingCtx.isConvertPriceToContextUOM()));
 
 		//
-		// Pricing System / List / Country
+		// Pricing System / List / Country / Currency
 		{
 			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
 			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
@@ -292,6 +292,7 @@ class OrderLinePriceCalculator
 			pricingCtx.setPriceListId(priceListId);
 			pricingCtx.setPriceListVersionId(null);
 			pricingCtx.setC_Country_ID(countryId);
+			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 		}
 
 		//
