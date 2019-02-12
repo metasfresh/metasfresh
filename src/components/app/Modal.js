@@ -487,6 +487,11 @@ class Modal extends Component {
                 }
               }}
             >
+              {layout.description && (
+                <div className="modal-top-description">
+                  {layout.description}
+                </div>
+              )}
               {this.renderModalBody()}
             </div>
             {layout.layoutType !== 'singleOverlayField' && (
