@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.Util;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,8 +22,8 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.NonNull;
 
 /*
@@ -60,23 +62,36 @@ public final class JSONDocumentLayoutTab
 			@NonNull final JSONOptions jsonOpts)
 	{
 		final Collection<DocumentFilterDescriptor> filters = null;
-		return details.stream()
-				.map(detail -> new JSONDocumentLayoutTab(detail, filters, jsonOpts))
-				.filter(jsonDetail -> jsonDetail.hasElements() || !jsonDetail.subTabs.isEmpty())
-				.collect(GuavaCollectors.toImmutableList());
+
+		// note: this used to be implemented with stream, but that was too cumbersome to debug
+		final ImmutableList.Builder<JSONDocumentLayoutTab> result = ImmutableList.builder();
+		for (final DocumentLayoutDetailDescriptor detail : details)
+		{
+			final JSONDocumentLayoutTab jsonTab = new JSONDocumentLayoutTab(detail, filters, jsonOpts);
+			if (isTabEmpty(jsonTab))
+			{
+				continue;
+			}
+			result.add(jsonTab);
+		}
+		return result.build();
+	}
+
+	private static boolean isTabEmpty(@NonNull final JSONDocumentLayoutTab tab)
+	{
+		final boolean singleRowDetailLayout = Util.coalesce(tab.singleRowDetailLayout, false);
+		if (singleRowDetailLayout)
+		{
+			return tab.sections.isEmpty();
+		}
+		return tab.elements.isEmpty() && tab.subTabs.isEmpty();
 	}
 
 	@JsonProperty("windowId")
 	private final WindowId windowId;
-	@Deprecated
-	@JsonProperty("type")
-	private final WindowId type;
 
 	@JsonProperty("tabId")
 	private final DetailId tabId;
-	@Deprecated
-	@JsonProperty("tabid")
-	private final DetailId tabid;
 
 	@JsonProperty("internalName")
 	@JsonInclude(Include.NON_EMPTY)
@@ -98,13 +113,20 @@ public final class JSONDocumentLayoutTab
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String emptyResultHint;
 
+	/** Filled unless {@link #singleRowDetailLayout} is {@code true}. */
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
+	/** Filled unless {@link #singleRowDetailLayout} is {@code true}. */
 	@JsonProperty("tabs")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutTab> subTabs;
+
+	/** Filled if {@link #singleRowDetailLayout} is {@code true}. */
+	@JsonProperty("sections")
+	@JsonInclude(Include.NON_EMPTY)
+	private final List<JSONDocumentLayoutSection> sections;
 
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -120,6 +142,13 @@ public final class JSONDocumentLayoutTab
 	@JsonProperty("queryOnActivate")
 	private final boolean queryOnActivate;
 
+	@ApiModelProperty(allowEmptyValue = true, //
+			value = "If set to true, then frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
+					+ "If empty, assume false.")
+	@JsonProperty("singleRowDetailView")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean singleRowDetailLayout;
+
 	private JSONDocumentLayoutTab(
 			@NonNull final DocumentLayoutDetailDescriptor includedTabLayout,
 			@Nullable final Collection<DocumentFilterDescriptor> filters,
@@ -131,10 +160,8 @@ public final class JSONDocumentLayoutTab
 		queryOnActivate = includedTabLayout.isQueryOnActivate();
 
 		windowId = includedTabLayout.getWindowId();
-		type = windowId;
 
-		this.tabId = includedTabLayout.getDetailId();
-		tabid = tabId;
+		tabId = includedTabLayout.getDetailId();
 
 		internalName = includedTabLayout.getInternalName();
 
@@ -156,25 +183,41 @@ public final class JSONDocumentLayoutTab
 
 		this.description = includedTabLayout.getDescription(adLanguage);
 
-		if (gridLayout != null)
+		if (includedTabLayout.isSingleRowDetailLayout())
 		{
-			this.emptyResultText = gridLayout.getEmptyResultText(adLanguage);
-			this.emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
+			this.sections = JSONDocumentLayoutSection.ofSectionsList(includedTabLayout.getSingleRowLayout().getSections(), jsonOpts);
+			this.subTabs = ImmutableList.of();
 
-			this.elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
-			this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
-		}
-		else
-		{
 			this.emptyResultText = null;
 			this.emptyResultHint = null;
-
 			this.elements = ImmutableList.of();
 			this.defaultOrderBys = ImmutableList.of();
 		}
+		else
+		{
+			this.sections = ImmutableList.of();
+			this.subTabs = JSONDocumentLayoutTab.ofList(includedTabLayout.getSubTabLayouts(), jsonOpts);
+
+			if (gridLayout != null)
+			{
+				this.emptyResultText = gridLayout.getEmptyResultText(adLanguage);
+				this.emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
+				this.elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
+				this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
+			}
+			else
+			{
+				this.emptyResultText = null;
+				this.emptyResultHint = null;
+				this.elements = ImmutableList.of();
+				this.defaultOrderBys = ImmutableList.of();
+			}
+		}
+
+		// false=>null; because true is a very special case, let's not clutter our JSON with another property that's false almost all the time
+		singleRowDetailLayout = includedTabLayout.isSingleRowDetailLayout() ? true : null;
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-		this.subTabs = JSONDocumentLayoutTab.ofList(includedTabLayout.getSubTabLayouts(), jsonOpts);
 	}
 
 	@Override
@@ -188,10 +231,5 @@ public final class JSONDocumentLayoutTab
 				.add("filters", filters.isEmpty() ? null : filters)
 				.add("defaultOrderBys", defaultOrderBys.isEmpty() ? null : defaultOrderBys)
 				.toString();
-	}
-
-	private boolean hasElements()
-	{
-		return !elements.isEmpty();
 	}
 }

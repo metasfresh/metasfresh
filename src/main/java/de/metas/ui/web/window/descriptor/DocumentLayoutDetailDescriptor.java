@@ -61,6 +61,10 @@ public final class DocumentLayoutDetailDescriptor
 	private final boolean supportQuickInput;
 	private final boolean queryOnActivate;
 
+	/** May be {@code true} for a tab that can have just zero or one record and that shall be displayed in detail (i.e. not grid) layout. */
+	@Getter
+	private final boolean singleRowDetailLayout;
+
 	@Getter
 	private final List<DocumentLayoutDetailDescriptor> subTabLayouts;
 
@@ -82,6 +86,8 @@ public final class DocumentLayoutDetailDescriptor
 		queryOnActivate = builder.queryOnActivate;
 
 		subTabLayouts = builder.subTabLayouts;
+
+		singleRowDetailLayout = builder.singleRowDetailLayout;
 	}
 
 	@Override
@@ -122,8 +128,11 @@ public final class DocumentLayoutDetailDescriptor
 	public boolean isEmpty()
 	{
 		final boolean hasSubLayouts = !Check.isEmpty(subTabLayouts);
-		final boolean hasFields = gridLayout != null && gridLayout.hasElements()
-				&& singleRowLayout != null && !singleRowLayout.isEmpty();
+
+		final boolean hasGridLayout = gridLayout != null && gridLayout.hasElements();
+		final boolean hasDetailLayout = singleRowLayout != null && !singleRowLayout.isEmpty();
+
+		final boolean hasFields = (singleRowDetailLayout || hasGridLayout) && hasDetailLayout;
 
 		return !hasSubLayouts && !hasFields;
 	}
@@ -160,6 +169,8 @@ public final class DocumentLayoutDetailDescriptor
 		private boolean supportQuickInput;
 
 		private boolean queryOnActivate;
+
+		private boolean singleRowDetailLayout = false;
 
 		private final List<DocumentLayoutDetailDescriptor> subTabLayouts = new ArrayList<>();
 
@@ -221,6 +232,13 @@ public final class DocumentLayoutDetailDescriptor
 		{
 			this.singleRowLayout = singleRowLayout;
 			singleRowLayout.setWindowId(windowId);
+			return this;
+		}
+
+		/** The default is {@code false} */
+		public Builder singleRowDetailLayout(final boolean singleRowDetailLayout)
+		{
+			this.singleRowDetailLayout = singleRowDetailLayout;
 			return this;
 		}
 

@@ -1,8 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.element.api.AdTabId;
@@ -42,7 +45,7 @@ import lombok.NonNull;
 @Immutable
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class DetailId
+public final class DetailId implements Comparable<DetailId>
 {
 	public static DetailId fromAD_Tab_ID(final int adTabId)
 	{
@@ -115,5 +118,16 @@ public final class DetailId
 	public AdTabId toAdTabId()
 	{
 		return adTabId;
+	}
+
+	@Override
+	public int compareTo(@Nullable final DetailId o)
+	{
+		if (o == null)
+		{
+			return 1;
+		}
+
+		return Objects.compare(toJson(), o.toJson(), Comparator.naturalOrder());
 	}
 }

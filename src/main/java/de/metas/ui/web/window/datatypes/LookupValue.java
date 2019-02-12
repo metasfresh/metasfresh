@@ -373,7 +373,12 @@ public abstract class LookupValue
 	{
 		public static final StringLookupValue of(final String value, final String displayName)
 		{
-			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */, true/* active */);
+			return new StringLookupValue(
+					value,
+					ImmutableTranslatableString.constant(displayName),
+					null/* helpText */,
+					null/* attributes */,
+					true/* active */);
 		}
 
 		public static final StringLookupValue of(

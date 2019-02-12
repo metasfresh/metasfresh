@@ -11,13 +11,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryField;
+import de.metas.dataentry.DataEntryField.Type;
 import de.metas.dataentry.DataEntryGroup;
 import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.DataEntryRepository;
 import de.metas.dataentry.DataEntrySubGroup;
 import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -34,6 +34,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -131,8 +132,6 @@ public class DataEntryTabLoader
 				.queryOnActivate(true)
 				.supportQuickInput(false);
 
-		final ViewLayout.Builder viewLayout = ViewLayout
-				.builder();
 
 		final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor
 				.builder();
@@ -147,9 +146,6 @@ public class DataEntryTabLoader
 		final List<DataEntryField> fields = dataEntrySubGroup.getDataEntryFields();
 		for (final DataEntryField field : fields)
 		{
-			final DocumentLayoutElementDescriptor.Builder elementForGridLayout = createFieldElementDescriptor(field);
-			viewLayout.addElement(elementForGridLayout);
-
 			// note that each element builder can be used/"consumed" only ones
 			final DocumentLayoutElementDescriptor.Builder elementForSingleRowLayout = createFieldElementDescriptor(field);
 			final DocumentLayoutElementLineDescriptor.Builder elementLine = DocumentLayoutElementLineDescriptor
@@ -160,7 +156,7 @@ public class DataEntryTabLoader
 					.addElementLine(elementLine);
 			column.addElementGroup(elementGroup);
 		}
-		subGroupDescriptor.gridLayout(viewLayout);
+		subGroupDescriptor.singleRowDetailLayout(true);
 		subGroupDescriptor.singleRowLayout(singleRowLayout);
 
 		return subGroupDescriptor.build();
@@ -338,10 +334,22 @@ public class DataEntryTabLoader
 				createFieldNameFor(dataEntryField),
 				dataEntryField.isMandatory());
 
+		final LookupDescriptorProvider fieldLookupDescriptorProvider;
+		if (Type.LIST.equals(dataEntryField.getType()))
+		{
+			final DataEntryListValueLookupDescriptor lookupDescriptor = DataEntryListValueLookupDescriptor.of(dataEntryField.getListValues());
+			fieldLookupDescriptorProvider = LookupDescriptorProvider.singleton(lookupDescriptor);
+		}
+		else
+		{
+			fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
+		}
+
 		return DocumentFieldDescriptor.builder(createFieldNameFor(dataEntryField))
 				.setCaption(dataEntryField.getCaption())
 				.setDescription(dataEntryField.getDescription())
 				.setWidgetType(ofFieldType(dataEntryField.getType()))
+				.setLookupDescriptorProvider(fieldLookupDescriptorProvider)
 				.addCharacteristic(Characteristic.PublicField)
 				.setDataBinding(dataBinding);
 	}

@@ -1,0 +1,1014 @@
+de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createGroupEntityDescriptors_verify_DocumentEntityDescriptor=[
+  [
+    {
+      "AD_Tab_ID" : {
+        "isPresent" : false,
+        "present" : false,
+        "value" : 0
+      },
+      "_fieldNamesByCharacteristic" : { },
+      "allowCreateNewLogic" : "1=0",
+      "allowDeleteLogic" : "1=0",
+      "calloutsEnabled" : false,
+      "caption" : {
+        "anyLanguage" : false,
+        "value" : "dataEntryGroup_caption"
+      },
+      "cloneEnabled" : false,
+      "dataBinding" : {
+        "@class" : "de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor",
+        "versioningSupported" : false
+      },
+      "defaultTableCalloutsEnabled" : false,
+      "dependencies" : {
+        "type2name2dependencies" : { }
+      },
+      "description" : {
+        "anyLanguage" : false,
+        "value" : "dataEntryGroup_description"
+      },
+      "detailId" : "10",
+      "displayLogic" : "1=1",
+      "documentType" : "Window",
+      "documentTypeId" : "5",
+      "fields" : { },
+      "filterDescriptors" : {
+        "descriptorsByFilterId" : { }
+      },
+      "id" : "Window-5-10",
+      "idFields" : [ ],
+      "includedEntitiesByDetailId" : {
+        "40" : {
+          "AD_Tab_ID" : {
+            "isPresent" : false,
+            "present" : false,
+            "value" : 0
+          },
+          "_fieldNamesByCharacteristic" : { },
+          "allowCreateNewLogic" : "1=1",
+          "allowDeleteLogic" : "1=1",
+          "calloutsEnabled" : false,
+          "caption" : {
+            "anyLanguage" : false,
+            "value" : "dataEntrySubGroup_caption"
+          },
+          "cloneEnabled" : false,
+          "dataBinding" : {
+            "@class" : "de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor",
+            "versioningSupported" : false
+          },
+          "defaultTableCalloutsEnabled" : false,
+          "dependencies" : {
+            "type2name2dependencies" : { }
+          },
+          "description" : {
+            "anyLanguage" : false,
+            "value" : "dataEntrySubGroup_description"
+          },
+          "detailId" : "40",
+          "displayLogic" : "1=1",
+          "documentType" : "Window",
+          "documentTypeId" : "5",
+          "fields" : {
+            "31" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "stringField1_caption"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "31",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : false
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : false,
+                "value" : "stringField1_description"
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=1",
+              "fieldName" : "31",
+              "key" : false,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=0",
+              "supportZoomInto" : false,
+              "valueClass" : "java.lang.String",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "Text"
+            },
+            "32" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "numberField1_caption"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "32",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : false
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : false,
+                "value" : "numberField1_description"
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=1",
+              "fieldName" : "32",
+              "key" : false,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=0",
+              "supportZoomInto" : false,
+              "valueClass" : "java.math.BigDecimal",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "Number"
+            },
+            "33" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "dateField1_caption"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "33",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : false
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : false,
+                "value" : "dateField1_description"
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=1",
+              "fieldName" : "33",
+              "key" : false,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=0",
+              "supportZoomInto" : false,
+              "valueClass" : "java.time.LocalDate",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "Date"
+            },
+            "34" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "yesNoField1_caption"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "34",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : false
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : false,
+                "value" : "yesNoField1_description"
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=1",
+              "fieldName" : "34",
+              "key" : false,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=0",
+              "supportZoomInto" : false,
+              "valueClass" : "java.lang.Boolean",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "YesNo"
+            },
+            "35" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "listField1_caption"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "35",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : false
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : false,
+                "value" : "listField1_description"
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=1",
+              "fieldName" : "35",
+              "key" : false,
+              "lookupDescriptorProvider" : {
+                "arg$1" : {
+                  "dataEntryListValueDataSourceFetcher" : {
+                    "cached" : true,
+                    "dataEntryFieldId" : {
+                      "repoId" : 35
+                    },
+                    "dependsOnContextVariables" : [
+                      {
+                        "defaultValue" : "-1",
+                        "explicitGlobal" : false,
+                        "name" : "DataEntry_Field_ID"
+                      }
+                    ],
+                    "id2listValue" : {
+                      "DataEntryListValueId(repoId=41)" : {
+                        "active" : true,
+                        "description" : {
+                          "anyLanguage" : false,
+                          "value" : "listValue1_description"
+                        },
+                        "displayName" : {
+                          "anyLanguage" : false,
+                          "value" : "listValue1_name"
+                        },
+                        "id" : 41
+                      },
+                      "DataEntryListValueId(repoId=42)" : {
+                        "active" : true,
+                        "description" : {
+                          "anyLanguage" : false,
+                          "value" : "listValue2_description"
+                        },
+                        "displayName" : {
+                          "anyLanguage" : false,
+                          "value" : "listValue2_name"
+                        },
+                        "id" : 42
+                      }
+                    },
+                    "numericKey" : false
+                  },
+                  "highVolume" : false,
+                  "numericKey" : true
+                },
+                "numericKey" : true
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=0",
+              "supportZoomInto" : true,
+              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "List"
+            },
+            "DataEntry_Record_ID" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "DataEntry_Record_ID"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "DataEntry_Record_ID",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : true
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : true,
+                "value" : ""
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=0",
+              "fieldName" : "DataEntry_Record_ID",
+              "key" : true,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=1",
+              "supportZoomInto" : true,
+              "valueClass" : "java.lang.Integer",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "Integer"
+            },
+            "documentLinkColumnName" : {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "documentLinkColumnName"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "documentLinkColumnName",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : true
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : true,
+                "value" : ""
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=0",
+              "fieldName" : "documentLinkColumnName",
+              "key" : false,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=1",
+              "parentLink" : true,
+              "parentLinkFieldName" : "documentLinkColumnName",
+              "readonlyLogic" : "1=1",
+              "supportZoomInto" : false,
+              "valueClass" : "java.lang.Integer",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "Integer"
+            }
+          },
+          "filterDescriptors" : {
+            "descriptorsByFilterId" : { }
+          },
+          "id" : "Window-5-40",
+          "idFields" : [
+            {
+              "allowShowPassword" : false,
+              "alwaysUpdateable" : false,
+              "calculated" : false,
+              "callouts" : [ ],
+              "caption" : {
+                "anyLanguage" : false,
+                "value" : "DataEntry_Record_ID"
+              },
+              "characteristics" : [
+                "PublicField"
+              ],
+              "dataBinding" : {
+                "present" : true,
+                "value" : {
+                  "columnName" : "DataEntry_Record_ID",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true,
+                  "mandatory" : true
+                }
+              },
+              "defaultFilterField" : false,
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "description" : {
+                "anyLanguage" : true,
+                "value" : ""
+              },
+              "detailId" : "40",
+              "displayLogic" : "1=0",
+              "fieldName" : "DataEntry_Record_ID",
+              "key" : true,
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "mandatoryLogic" : "1=0",
+              "parentLink" : false,
+              "readonlyLogic" : "1=1",
+              "supportZoomInto" : true,
+              "valueClass" : "java.lang.Integer",
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "widgetType" : "Integer"
+            }
+          ],
+          "includedEntitiesByDetailId" : { },
+          "internalName" : "dataEntrySubGroup_internalName",
+          "parentLinkField" : {
+            "allowShowPassword" : false,
+            "alwaysUpdateable" : false,
+            "calculated" : false,
+            "callouts" : [ ],
+            "caption" : {
+              "anyLanguage" : false,
+              "value" : "documentLinkColumnName"
+            },
+            "characteristics" : [
+              "PublicField"
+            ],
+            "dataBinding" : {
+              "present" : true,
+              "value" : {
+                "columnName" : "documentLinkColumnName",
+                "defaultOrderBy" : false,
+                "defaultOrderByAscending" : true,
+                "mandatory" : true
+              }
+            },
+            "defaultFilterField" : false,
+            "defaultValueExpression" : {
+              "present" : false
+            },
+            "dependencies" : {
+              "type2name2dependencies" : { }
+            },
+            "description" : {
+              "anyLanguage" : true,
+              "value" : ""
+            },
+            "detailId" : "40",
+            "displayLogic" : "1=0",
+            "fieldName" : "documentLinkColumnName",
+            "key" : false,
+            "lookupDescriptorProvider" : {
+              "numericKey" : false
+            },
+            "mandatoryLogic" : "1=1",
+            "parentLink" : true,
+            "parentLinkFieldName" : "documentLinkColumnName",
+            "readonlyLogic" : "1=1",
+            "supportZoomInto" : false,
+            "valueClass" : "java.lang.Integer",
+            "virtualField" : false,
+            "virtualFieldValueProvider" : {
+              "present" : false
+            },
+            "widgetType" : "Integer"
+          },
+          "printable" : false,
+          "readonlyLogic" : "1=0",
+          "soTrx" : {
+            "present" : false
+          },
+          "tableName" : {
+            "present" : false
+          }
+        }
+      },
+      "internalName" : "dataEntryGroup_internalName",
+      "printable" : false,
+      "readonlyLogic" : "1=0",
+      "soTrx" : {
+        "present" : false
+      },
+      "tableName" : {
+        "present" : false
+      }
+    }
+  ]
+]
+
+
+de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor=[
+  [
+    {
+      "caption" : {
+        "anyLanguage" : false,
+        "value" : "dataEntryGroup_caption"
+      },
+      "description" : {
+        "anyLanguage" : false,
+        "value" : "dataEntryGroup_description"
+      },
+      "detailId" : "10",
+      "empty" : false,
+      "internalName" : "dataEntryGroup_internalName",
+      "queryOnActivate" : true,
+      "singleRowDetailLayout" : false,
+      "subTabLayouts" : [
+        {
+          "caption" : {
+            "anyLanguage" : false,
+            "value" : "dataEntrySubGroup_caption"
+          },
+          "description" : {
+            "anyLanguage" : false,
+            "value" : "dataEntrySubGroup_description"
+          },
+          "detailId" : "40",
+          "empty" : false,
+          "internalName" : "dataEntrySubGroup_internalName",
+          "queryOnActivate" : true,
+          "singleRowDetailLayout" : true,
+          "singleRowLayout" : {
+            "caption" : {
+              "anyLanguage" : true,
+              "value" : ""
+            },
+            "description" : {
+              "anyLanguage" : true,
+              "value" : ""
+            },
+            "empty" : false,
+            "sections" : [
+              {
+                "caption" : {
+                  "anyLanguage" : true,
+                  "value" : ""
+                },
+                "columns" : [
+                  {
+                    "elementGroups" : [
+                      {
+                        "elementLines" : [
+                          {
+                            "elements" : [
+                              {
+                                "advancedField" : false,
+                                "allowShowPassword" : false,
+                                "caption" : {
+                                  "anyLanguage" : false,
+                                  "value" : "stringField1_caption"
+                                },
+                                "description" : {
+                                  "anyLanguage" : false,
+                                  "value" : "stringField1_description"
+                                },
+                                "fields" : [
+                                  {
+                                    "devices" : [ ],
+                                    "emptyText" : {
+                                      "anyLanguage" : true,
+                                      "value" : ""
+                                    },
+                                    "field" : "31",
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "publicField" : true,
+                                    "supportZoomInto" : false
+                                  }
+                                ],
+                                "gridElement" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "restrictToMediaTypes" : [ ],
+                                "viewAllowSorting" : true,
+                                "viewEditorRenderMode" : "ALWAYS",
+                                "widgetType" : "Text"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "elementLines" : [
+                          {
+                            "elements" : [
+                              {
+                                "advancedField" : false,
+                                "allowShowPassword" : false,
+                                "caption" : {
+                                  "anyLanguage" : false,
+                                  "value" : "numberField1_caption"
+                                },
+                                "description" : {
+                                  "anyLanguage" : false,
+                                  "value" : "numberField1_description"
+                                },
+                                "fields" : [
+                                  {
+                                    "devices" : [ ],
+                                    "emptyText" : {
+                                      "anyLanguage" : true,
+                                      "value" : ""
+                                    },
+                                    "field" : "32",
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "publicField" : true,
+                                    "supportZoomInto" : false
+                                  }
+                                ],
+                                "gridElement" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "restrictToMediaTypes" : [ ],
+                                "viewAllowSorting" : true,
+                                "viewEditorRenderMode" : "ALWAYS",
+                                "widgetType" : "Number"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "elementLines" : [
+                          {
+                            "elements" : [
+                              {
+                                "advancedField" : false,
+                                "allowShowPassword" : false,
+                                "caption" : {
+                                  "anyLanguage" : false,
+                                  "value" : "dateField1_caption"
+                                },
+                                "description" : {
+                                  "anyLanguage" : false,
+                                  "value" : "dateField1_description"
+                                },
+                                "fields" : [
+                                  {
+                                    "devices" : [ ],
+                                    "emptyText" : {
+                                      "anyLanguage" : true,
+                                      "value" : ""
+                                    },
+                                    "field" : "33",
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "publicField" : true,
+                                    "supportZoomInto" : false
+                                  }
+                                ],
+                                "gridElement" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "restrictToMediaTypes" : [ ],
+                                "viewAllowSorting" : true,
+                                "viewEditorRenderMode" : "ALWAYS",
+                                "widgetType" : "Date"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "elementLines" : [
+                          {
+                            "elements" : [
+                              {
+                                "advancedField" : false,
+                                "allowShowPassword" : false,
+                                "caption" : {
+                                  "anyLanguage" : false,
+                                  "value" : "yesNoField1_caption"
+                                },
+                                "description" : {
+                                  "anyLanguage" : false,
+                                  "value" : "yesNoField1_description"
+                                },
+                                "fields" : [
+                                  {
+                                    "devices" : [ ],
+                                    "emptyText" : {
+                                      "anyLanguage" : true,
+                                      "value" : ""
+                                    },
+                                    "field" : "34",
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "publicField" : true,
+                                    "supportZoomInto" : false
+                                  }
+                                ],
+                                "gridElement" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "restrictToMediaTypes" : [ ],
+                                "viewAllowSorting" : true,
+                                "viewEditorRenderMode" : "ALWAYS",
+                                "widgetType" : "YesNo"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "elementLines" : [
+                          {
+                            "elements" : [
+                              {
+                                "advancedField" : false,
+                                "allowShowPassword" : false,
+                                "caption" : {
+                                  "anyLanguage" : false,
+                                  "value" : "listField1_caption"
+                                },
+                                "description" : {
+                                  "anyLanguage" : false,
+                                  "value" : "listField1_description"
+                                },
+                                "fields" : [
+                                  {
+                                    "devices" : [ ],
+                                    "emptyText" : {
+                                      "anyLanguage" : true,
+                                      "value" : ""
+                                    },
+                                    "field" : "35",
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "publicField" : true,
+                                    "supportZoomInto" : false
+                                  }
+                                ],
+                                "gridElement" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "restrictToMediaTypes" : [ ],
+                                "viewAllowSorting" : true,
+                                "viewEditorRenderMode" : "ALWAYS",
+                                "widgetType" : "List"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "description" : {
+                  "anyLanguage" : true,
+                  "value" : ""
+                }
+              }
+            ],
+            "windowId" : "5"
+          },
+          "subTabLayouts" : [ ],
+          "supportQuickInput" : false,
+          "windowId" : "5"
+        }
+      ],
+      "supportQuickInput" : false,
+      "windowId" : "5"
+    }
+  ]
+]
+
+
+de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createLayoutDescriptors_verify_JSONDocumentLayoutTab=[
+  [
+    {
+      "caption" : "dataEntryGroup_caption",
+      "description" : "dataEntryGroup_description",
+      "internalName" : "dataEntryGroup_internalName",
+      "queryOnActivate" : true,
+      "supportQuickInput" : false,
+      "tabId" : "10",
+      "tabs" : [
+        {
+          "caption" : "dataEntrySubGroup_caption",
+          "description" : "dataEntrySubGroup_description",
+          "internalName" : "dataEntrySubGroup_internalName",
+          "queryOnActivate" : true,
+          "sections" : [
+            {
+              "columns" : [
+                {
+                  "elementGroups" : [
+                    {
+                      "elementsLine" : [
+                        {
+                          "elements" : [
+                            {
+                              "caption" : "stringField1_caption",
+                              "description" : "stringField1_description",
+                              "fields" : [
+                                {
+                                  "field" : "31"
+                                }
+                              ],
+                              "viewEditorRenderMode" : "always",
+                              "widgetType" : "Text"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "elementsLine" : [
+                        {
+                          "elements" : [
+                            {
+                              "caption" : "numberField1_caption",
+                              "description" : "numberField1_description",
+                              "fields" : [
+                                {
+                                  "field" : "32"
+                                }
+                              ],
+                              "viewEditorRenderMode" : "always",
+                              "widgetType" : "Number"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "elementsLine" : [
+                        {
+                          "elements" : [
+                            {
+                              "caption" : "dateField1_caption",
+                              "description" : "dateField1_description",
+                              "fields" : [
+                                {
+                                  "field" : "33"
+                                }
+                              ],
+                              "viewEditorRenderMode" : "always",
+                              "widgetType" : "Date"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "elementsLine" : [
+                        {
+                          "elements" : [
+                            {
+                              "caption" : "yesNoField1_caption",
+                              "description" : "yesNoField1_description",
+                              "fields" : [
+                                {
+                                  "field" : "34"
+                                }
+                              ],
+                              "viewEditorRenderMode" : "always",
+                              "widgetType" : "YesNo"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "elementsLine" : [
+                        {
+                          "elements" : [
+                            {
+                              "caption" : "listField1_caption",
+                              "description" : "listField1_description",
+                              "fields" : [
+                                {
+                                  "field" : "35"
+                                }
+                              ],
+                              "viewEditorRenderMode" : "always",
+                              "widgetType" : "List"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "singleRowDetailView" : true,
+          "supportQuickInput" : false,
+          "tabId" : "40",
+          "windowId" : "5"
+        }
+      ],
+      "windowId" : "5"
+    }
+  ]
+]

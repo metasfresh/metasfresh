@@ -132,7 +132,7 @@
 			<artifactId>metasfresh-pharma</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
 			<artifactId>metasfresh-pharma.msv3.server-peer-metasfresh</artifactId>
@@ -255,6 +255,18 @@
 			<version>1.2.7</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Using our own artifact, see 
+			https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
+			and 
+			https://github.com/json-snapshot/json-snapshot.github.io/issues/9#issuecomment-462880359 -->
+		<dependency>
+			<groupId>io.github.json-snapshot</groupId>
+			<artifactId>json-snapshot-PR</artifactId>
+			<version>1.0.16</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

@@ -18,7 +18,6 @@ import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.util.Check;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -57,7 +56,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	 */
 	public static enum LookupSource
 	{
-		lookup, list,
+		lookup,
+
+		list,
 
 		text
 	};

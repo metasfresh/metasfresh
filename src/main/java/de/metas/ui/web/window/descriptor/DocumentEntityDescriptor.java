@@ -59,6 +59,7 @@ import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -111,7 +112,7 @@ public class DocumentEntityDescriptor
 	private final DocumentFieldDescriptor parentLinkField;
 
 	private final ImmutableMap<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
-	private final IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
+	private final transient IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
@@ -123,7 +124,7 @@ public class DocumentEntityDescriptor
 	// Callouts
 	private final boolean calloutsEnabled;
 	private final boolean defaultTableCalloutsEnabled;
-	private final ICalloutExecutor calloutExecutorFactory;
+	private final transient ICalloutExecutor calloutExecutorFactory;
 
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 
@@ -133,6 +134,9 @@ public class DocumentEntityDescriptor
 	private final OptionalInt AD_Tab_ID;
 	private final Optional<String> tableName;
 	private final Optional<SOTrx> soTrx;
+
+	@Getter
+	private final boolean cloneEnabled;
 
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
@@ -174,6 +178,8 @@ public class DocumentEntityDescriptor
 		AD_Tab_ID = builder.getAD_Tab_ID();
 		tableName = builder.getTableName();
 		soTrx = builder.getSOTrx();
+
+		cloneEnabled = builder.isCloneEnabled();
 	}
 
 	@Override
@@ -458,22 +464,6 @@ public class DocumentEntityDescriptor
 		return printProcessId != null;
 	}
 
-	public boolean isCloneEnabled()
-	{
-		if (!CopyRecordFactory.isEnabled())
-		{
-			return false;
-		}
-
-		final String tableName = getTableNameOrNull();
-		if (tableName == null)
-		{
-			return false;
-		}
-
-		return CopyRecordFactory.isEnabledForTableName(tableName);
-	}
-
 	//
 	//
 	// -----------------------------------------------------------------------------------------------------------------------
@@ -513,6 +503,8 @@ public class DocumentEntityDescriptor
 		private boolean _defaultTableCalloutsEnabled = true; // enabled by default
 
 		private AdProcessId _printProcessId = null;
+
+		private Boolean _cloneEnabled = null;
 
 		// Legacy
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
@@ -1107,6 +1099,35 @@ public class DocumentEntityDescriptor
 		private AdProcessId getPrintProcessId()
 		{
 			return _printProcessId;
+		}
+
+		public Builder setCloneEnabled(final boolean cloneEnabled)
+		{
+			_cloneEnabled = cloneEnabled;
+			return this;
+		}
+
+		private boolean isCloneEnabled()
+		{
+			if (_cloneEnabled != null)
+			{
+				return _cloneEnabled;
+			}
+			return isCloneEnabled(_tableName);
+		}
+
+		private static boolean isCloneEnabled(@Nullable final Optional<String> tableName)
+		{
+			if (tableName == null || !tableName.isPresent())
+			{
+				return false;
+			}
+
+			if (!CopyRecordFactory.isEnabled())
+			{
+				return false;
+			}
+			return CopyRecordFactory.isEnabledForTableName(tableName.get());
 		}
 
 		public List<DocumentQueryOrderBy> getDefaultOrderBys()

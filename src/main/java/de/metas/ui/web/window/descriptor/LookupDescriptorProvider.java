@@ -3,8 +3,8 @@ package de.metas.ui.web.window.descriptor;
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.metas.util.Check;
 import de.metas.util.Functions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,7 +30,7 @@ import de.metas.util.Functions;
 
 /**
  * Provides {@link LookupDescriptor} for a given {@link LookupScope}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -38,9 +38,8 @@ import de.metas.util.Functions;
 public interface LookupDescriptorProvider
 {
 	/** @return provider which returns given {@link LookupDescriptor} for any scope */
-	static LookupDescriptorProvider singleton(final LookupDescriptor lookupDescriptor)
+	static LookupDescriptorProvider singleton(@NonNull final LookupDescriptor lookupDescriptor)
 	{
-		Check.assumeNotNull(lookupDescriptor, "Parameter lookupDescriptor is not null");
 		return (scope) -> lookupDescriptor;
 	}
 
@@ -66,7 +65,12 @@ public interface LookupDescriptorProvider
 
 	default boolean isNumericKey()
 	{
-		return provideForScope(LookupScope.DocumentField).isNumericKey();
+		final LookupDescriptor descriptorForScope = provideForScope(LookupScope.DocumentField);
+		if (descriptorForScope == null)
+		{
+			return false;
+		}
+		return descriptorForScope.isNumericKey();
 	}
 
 	default Optional<String> getTableName()

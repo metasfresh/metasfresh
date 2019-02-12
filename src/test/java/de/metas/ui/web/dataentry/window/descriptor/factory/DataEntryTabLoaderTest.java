@@ -1,12 +1,17 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryField;
@@ -15,17 +20,17 @@ import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryGroup;
 import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.DataEntryGroupId;
+import de.metas.dataentry.DataEntryListValue;
+import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroup;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import io.github.jsonSnapshot.SnapshotConfig;
 
 /*
  * #%L
@@ -60,48 +65,66 @@ public class DataEntryTabLoaderTest
 		jsonOptions = JSONOptions.builder(null).setAD_LanguageIfNotEmpty("en_US").build();
 	}
 
-	@Test
-	public void createLayoutDescriptors()
+	@BeforeClass
+	public static void beforeAll()
 	{
-		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
+		start(new SnapshotConfig()
+		{
+			@Override
+			public String getFilePath()
+			{
+				return "src/test/resource/";
+			}
+		});
+	}
 
-		final List<DocumentLayoutDetailDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
-				.createLayoutDescriptors(ImmutableList.of(dataEntryGroup));
-
-		assertThat(descriptors).hasSize(1);
-		assertThat(descriptors.isEmpty()).isFalse();
-		assertThat(descriptors.get(0).getSubTabLayouts()).hasSize(1);
-
-		final DocumentLayoutDetailDescriptor subTabLayout = descriptors.get(0).getSubTabLayouts().get(0);
-		assertThat(subTabLayout.getSingleRowLayout().isEmpty()).isFalse();
-		assertThat(subTabLayout.isEmpty()).isFalse();
-
-		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonOptions);
-		assertThat(jsonTabs).hasSize(1);
+	@AfterClass
+	public static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
-	public void createGroupEntityDescriptors()
+	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor() throws JsonProcessingException
 	{
 		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
 
+		// invoke the method under test
+		final List<DocumentLayoutDetailDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
+				.createLayoutDescriptors(ImmutableList.of(dataEntryGroup));
+
+	expect(descriptors).toMatchSnapshot();
+	}
+
+	@Test
+	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab() throws JsonProcessingException
+	{
+		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
+
+		// invoke the method under test
+		final List<DocumentLayoutDetailDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
+				.createLayoutDescriptors(ImmutableList.of(dataEntryGroup));
+
+		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonOptions);
+		expect(jsonTabs).toMatchSnapshot();
+	}
+
+	@Test
+	public void createGroupEntityDescriptors_verify_DocumentEntityDescriptor()
+	{
+		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
+
+		// invoke the method under test
 		final List<DocumentEntityDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
 				.createGroupEntityDescriptors(ImmutableList.of(dataEntryGroup));
 
-		assertThat(descriptors).hasSize(1);
-		assertThat(descriptors.isEmpty()).isFalse();
-
-		assertThat(descriptors.get(0).getFields()).isEmpty();
-		final DocumentEntityDescriptor includedEntity = descriptors.get(0).getIncludedEntityByDetailId(DetailId.fromAD_Tab_ID(20 * 2));
-		assertThat(includedEntity).isNotNull();
-
-		final DocumentFieldDescriptor parentLinkField = includedEntity.getParentLinkFieldOrNull();
-		assertThat(parentLinkField.getFieldName()).isEqualTo("documentLinkColumnName");
-
+		expect(descriptors).toMatchSnapshot();
 	}
 
 	private DataEntryGroup createSimpleDataEntryGroup()
 	{
+		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
+
 		final DataEntryGroup dataEntryGroup = DataEntryGroup
 				.builder()
 				.id(DataEntryGroupId.ofRepoId(10))
@@ -116,39 +139,45 @@ public class DataEntryTabLoaderTest
 						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(31))
-								.caption(ImmutableTranslatableString.constant("dataEntryField1_caption"))
-								.description(ImmutableTranslatableString.constant("dataEntryField1_description"))
+								.caption(ImmutableTranslatableString.constant("stringField1_caption"))
+								.description(ImmutableTranslatableString.constant("stringField1_description"))
 								.type(Type.STRING)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(32))
-								.caption(ImmutableTranslatableString.constant("dataEntryField2_caption"))
-								.description(ImmutableTranslatableString.constant("dataEntryField2_description"))
+								.caption(ImmutableTranslatableString.constant("numberField1_caption"))
+								.description(ImmutableTranslatableString.constant("numberField1_description"))
 								.type(Type.NUMBER)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(33))
-								.caption(ImmutableTranslatableString.constant("dataEntryField3_caption"))
-								.description(ImmutableTranslatableString.constant("dataEntryField3_description"))
+								.caption(ImmutableTranslatableString.constant("dateField1_caption"))
+								.description(ImmutableTranslatableString.constant("dateField1_description"))
 								.type(Type.DATE)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(34))
-								.caption(ImmutableTranslatableString.constant("dataEntryField4_caption"))
-								.description(ImmutableTranslatableString.constant("dataEntryField4_description"))
+								.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
+								.description(ImmutableTranslatableString.constant("yesNoField1_description"))
 								.type(Type.YESNO)
 								.build())
 
-						// TODO make it work for lists!
-						// .dataEntryField(DataEntryField.builder()
-						// .id(DataEntryFieldId.ofRepoId(35))
-						// .caption(ImmutableTranslatableString.constant("dataEntryField5_caption"))
-						// .description(ImmutableTranslatableString.constant("dataEntryField5_description"))
-						// .type(Type.LIST)
-						// .listValue(new DataEntryListValue(
-						// ImmutableTranslatableString.constant("listValue_name"),
-						// ImmutableTranslatableString.constant("listValue_description")))
-						// .build())
+						.dataEntryField(DataEntryField.builder()
+								.id(dataEntryListFieldId)
+								.caption(ImmutableTranslatableString.constant("listField1_caption"))
+								.description(ImmutableTranslatableString.constant("listField1_description"))
+								.type(Type.LIST)
+								.listValue(new DataEntryListValue(
+										DataEntryListValueId.ofRepoId(41),
+										dataEntryListFieldId,
+										ImmutableTranslatableString.constant("listValue1_name"),
+										ImmutableTranslatableString.constant("listValue1_description")))
+								.listValue(new DataEntryListValue(
+										DataEntryListValueId.ofRepoId(42),
+										dataEntryListFieldId,
+										ImmutableTranslatableString.constant("listValue2_name"),
+										ImmutableTranslatableString.constant("listValue2_description")))
+								.build())
 						.build())
 				.build();
 		return dataEntryGroup;
