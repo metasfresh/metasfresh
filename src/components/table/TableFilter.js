@@ -13,7 +13,7 @@ class ActionButton extends Component {
   static propTypes = {
     action: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    docId: PropTypes.string,
+    docId: PropTypes.number,
     tabIndex: PropTypes.number,
   };
 
@@ -159,22 +159,22 @@ class TableFilter extends Component {
                 )}
               </button>
             )}
-            {!isBatchEntry &&
-              actions.length &&
-              actions.map(action => (
-                <ActionButton
-                  {...{
-                    dispatch,
-                    tabIndex,
-                    action,
-                    docId,
-                    tabId,
-                    docType,
-                    selected,
-                  }}
-                  key={`top-action-${action.processId}`}
-                />
-              ))}
+            {!isBatchEntry && actions.length
+              ? actions.map(action => (
+                  <ActionButton
+                    {...{
+                      dispatch,
+                      tabIndex,
+                      action,
+                      docId,
+                      tabId,
+                      docType,
+                      selected,
+                    }}
+                    key={`top-action-${action.processId}`}
+                  />
+                ))
+              : null}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
