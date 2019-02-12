@@ -55,6 +55,10 @@ public class C_BPartner_QuickInput
 
 		final I_AD_User userRecord = userDAO.getByIdInTrx(UserId.ofRepoId(userRecordId), I_AD_User.class);
 
+		userRecord.setIsNewsletter(quickInput.isNewsletter());
+
 		final User user = userRepository.ofRecord(userRecord);
+
+		userRepository.save(user);
 	}
 }
