@@ -11,7 +11,6 @@ import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
@@ -65,8 +64,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 	@Override
 	protected ViewLayout createViewLayout(final ViewLayoutKey key)
 	{
-		final ITranslatableString caption = Services.get(IADProcessDAO.class)
-				.retrieveProcessNameByClassIfUnique(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class)
+		final ITranslatableString caption = getProcessCaption(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class)
 				.orElse(null);
 
 		return ViewLayout.builder()

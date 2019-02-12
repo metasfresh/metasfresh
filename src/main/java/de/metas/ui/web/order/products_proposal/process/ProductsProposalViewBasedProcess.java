@@ -61,6 +61,12 @@ public abstract class ProductsProposalViewBasedProcess extends ViewBasedProcessT
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	protected final ProductsProposalRow getSingleSelectedRow()
+	{
+		return ProductsProposalRow.cast(super.getSingleSelectedRow());
+	}
+
 	protected final ViewId getInitialViewId()
 	{
 		return getView().getInitialViewId();

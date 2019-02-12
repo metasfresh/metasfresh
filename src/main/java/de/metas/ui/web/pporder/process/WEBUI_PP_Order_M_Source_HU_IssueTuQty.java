@@ -58,41 +58,27 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedRowIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
-			final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
-
-			if (singleSelectedRow.isProcessed())
-			{
-				final String internalReason = StringUtils.formatMessage("The selected row is already processed; row={}", singleSelectedRow);
-				return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
-			}
-
-			return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
-		}
-		else
-		{
-			final boolean anyHuMatches = streamPPOrderLineRows()
-					.anyMatch(row -> WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(row).isAccepted() && !row.isProcessed());
-			if (anyHuMatches)
-			{
-				return ProcessPreconditionsResolution.accept();
-			}
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
+		final PPOrderLineRow singleSelectedRow = getSingleSelectedRow();
+
+		if (singleSelectedRow.isProcessed())
+		{
+			final String internalReason = StringUtils.formatMessage("The selected row is already processed; row={}", singleSelectedRow);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+		}
+
+		return WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(singleSelectedRow);
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		streamPPOrderLineRows().forEach(row -> issue(row));
-		getView().invalidateAll();
-		return MSG_OK;
-	}
+		final PPOrderLineRow row = getSingleSelectedRow();
 
-	private void issue(final PPOrderLineRow row)
-	{
 		final List<I_M_Source_HU> sourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 		if (sourceHus.isEmpty())
 		{
@@ -131,5 +117,10 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 				.createIssueProducer()
 				.setOrderId(ppOrderId)
 				.createIssues(extractedTUs);
+
+		getView().invalidateAll();
+		ppOrderView.invalidateAll();
+
+		return MSG_OK;
 	}
 }

@@ -50,6 +50,11 @@ import lombok.ToString;
 @ToString(exclude = { "_jsonValuesByFieldName", "_renderModeByFieldName" })
 public class ProductsProposalRow implements IViewRow
 {
+	public static final ProductsProposalRow cast(final IViewRow row)
+	{
+		return (ProductsProposalRow)row;
+	}
+
 	@ViewColumn(seqNo = 10, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
 	private final LookupValue product;
 
