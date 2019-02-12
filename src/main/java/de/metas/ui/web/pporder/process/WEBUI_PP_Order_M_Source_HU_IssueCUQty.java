@@ -203,9 +203,15 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				return BigDecimal.ZERO;
 			}
 
-			final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
-
-			return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
+			if (row.isProcessed())
+			{
+				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
+				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
+			}
+			else
+			{
+				return qtyLeftToIssue;
+			}
 
 		}
 		else
