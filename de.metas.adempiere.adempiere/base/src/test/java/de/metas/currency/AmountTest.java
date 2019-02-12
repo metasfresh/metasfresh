@@ -1,10 +1,16 @@
-package de.metas.marketing.base.model;
+package de.metas.currency;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+
+import org.junit.Test;
 
 /*
  * #%L
- * marketing-base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +28,17 @@ package de.metas.marketing.base.model;
  * #L%
  */
 
-public interface I_AD_User extends org.compiere.model.I_AD_User
+public class AmountTest
 {
-	String COLUMNNAME_IsNewsletter = "IsNewsletter";
+	@Test
+	public void testEquals()
+	{
+		assertThat(euro("11.00000000000000000"))
+				.isEqualTo(euro("11"));
+	}
 
-	boolean isNewsletter();
-
-	void setIsNewsletter(boolean IsNewsletter);
+	private Amount euro(final String amt)
+	{
+		return Amount.of(new BigDecimal(amt), "EUR");
+	}
 }

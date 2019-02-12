@@ -58,7 +58,7 @@ public class UserService
 			return; // no user to update the email
 		}
 
-		final User user = userRepo.getById(userId);
+		final User user = userRepo.getByIdInTrx(userId);
 
 		final boolean updateUserMail = isFitForUpdate(user.getEmailAddress(), oldContactPersonMail);
 		final boolean updateUserLanguage = isFitForUpdate(user.getUserLanguage(), oldContactPersonLanguage);

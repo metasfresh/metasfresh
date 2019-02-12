@@ -210,6 +210,13 @@ public class ProductPrices
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper)
 	{
+		if (startPriceListVersion == null)
+		{
+			return null;
+		}
+
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+
 		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
 
 		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
@@ -227,7 +234,7 @@ public class ProductPrices
 				return productPrice;
 			}
 
-			currentPriceListVersion = getBasePriceListVersionOrNull(currentPriceListVersion);
+			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion);
 		}
 
 		return null;

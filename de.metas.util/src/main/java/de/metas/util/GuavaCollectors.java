@@ -297,6 +297,21 @@ public final class GuavaCollectors
 		return Collector.of(mapSupplier, accumulator, combiner, finisher);
 	}
 
+	public static <K, V, M extends Map<K, V>> Collector<V, ?, M> toMapByKey(
+			final Supplier<M> mapSupplier,
+			final Function<V, K> keyMapper)
+	{
+		final BinaryOperator<V> mergeFunction = (u, v) -> {
+			// throw new IllegalStateException("Duplicate keys: " + u + ", " + v);
+			return v; // keep last
+		};
+		return Collectors.toMap(
+				keyMapper,
+				Function.identity(),// valueMapper
+				mergeFunction, // mergeFunction
+				mapSupplier);
+	}
+
 	public static <K, V> Collector<Entry<K, V>, ?, HashMap<K, V>> toHashMap()
 	{
 		return toMap(HashMap::new);
