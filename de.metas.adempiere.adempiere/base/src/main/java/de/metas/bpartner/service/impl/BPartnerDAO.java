@@ -815,12 +815,17 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		return retrieveBPartnerLocations(bpartnerId)
+		return retrieveBPartnerLocationsInTrx(bpartnerId)
 				.stream()
 				.filter(I_C_BPartner_Location::isBillToDefault)
 				.findFirst()
 				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
 				.orElse(null);
+	}
+
+	private List<I_C_BPartner_Location> retrieveBPartnerLocationsInTrx(final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
