@@ -1,10 +1,17 @@
 package de.metas.pricing.service;
 
+import org.adempiere.util.reflect.ClassReference;
+
+import de.metas.pricing.rules.IPricingRule;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +29,13 @@ package de.metas.pricing.service;
  * #L%
  */
 
-import java.util.List;
-
-import de.metas.util.ISingletonService;
-
-public interface IPricingDAO extends ISingletonService
+@Value
+@Builder
+public class PricingRuleDescriptor
 {
-	List<PricingRuleDescriptor> getPricingRules();
+	@NonNull
+	String name;
+
+	@NonNull
+	ClassReference<? extends IPricingRule> pricingRuleClass;
 }
