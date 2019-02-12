@@ -1,4 +1,49 @@
 import currentDevice from 'current-device';
+import PropTypes from 'prop-types';
+
+const propTypes = {
+  // from @connect
+  dispatch: PropTypes.func.isRequired,
+
+  // from <DocumentList>
+  autofocus: PropTypes.bool,
+  rowEdited: PropTypes.bool,
+  onSelectionChanged: PropTypes.func,
+  onRowEdited: PropTypes.func,
+  defaultSelected: PropTypes.array,
+  disableOnClickOutside: PropTypes.func,
+  limitOnClickOutside: PropTypes.bool,
+  supportOpenRecord: PropTypes.bool,
+};
+
+export function constructorFn(props) {
+  const { defaultSelected, rowEdited } = props;
+
+  this.state = {
+    selected:
+      defaultSelected && defaultSelected !== null
+        ? defaultSelected
+        : [undefined],
+    listenOnKeys: true,
+    contextMenu: {
+      open: false,
+      x: 0,
+      y: 0,
+      fieldName: null,
+      supportZoomInto: false,
+      supportFieldEdit: false,
+    },
+    promptOpen: false,
+    isBatchEntry: false,
+    rows: [],
+    collapsedRows: [],
+    collapsedParentsRows: [],
+    pendingInit: true,
+    collapsedArrayMap: [],
+    rowEdited: rowEdited,
+    tableRefreshToggle: false,
+  };
+}
 
 export function getSizeClass(col) {
   const { widgetType, size } = col;
@@ -59,3 +104,5 @@ export function shouldRenderColumn(column) {
 
   return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
 }
+
+export { propTypes };

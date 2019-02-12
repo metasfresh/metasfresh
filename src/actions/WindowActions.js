@@ -413,7 +413,7 @@ export function removeSelectedTableItems({ windowType, viewId }) {
 export function selectTableItems({ ids, windowType, viewId }) {
   return {
     type: SELECT_TABLE_ITEMS,
-    payload: { ids, windowType, viewId },
+    payload: { ids, windowType, viewId: viewId || windowType },
   };
 }
 
