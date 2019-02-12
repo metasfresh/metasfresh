@@ -4,7 +4,9 @@ import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -27,6 +29,8 @@ import lombok.NonNull;
  */
 public class PriceListVersion extends AbstractPriceListBasedRule
 {
+	private static final Logger logger = LogManager.getLogger(PriceListVersion.class);
+
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -48,7 +52,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(), ctxPriceListVersion);
 		if (productPrice == null)
 		{
-			log.trace("Not found (PLV)");
+			logger.trace("Not found (PLV)");
 			return;
 		}
 
