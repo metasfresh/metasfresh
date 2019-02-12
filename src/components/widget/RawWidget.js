@@ -614,7 +614,7 @@ export class RawWidget extends Component {
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
+              this.getClassNames() + (isEdited ? 'input-focused ' : '') + 'number-field'
             }
           >
             {subentity === 'quickInput' ? (
@@ -634,7 +634,7 @@ export class RawWidget extends Component {
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
+              this.getClassNames() + (isEdited ? 'input-focused ' : '') + 'number-field'
             }
           >
             <input {...widgetProperties} type="number" />

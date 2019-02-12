@@ -209,6 +209,13 @@ class TableItem extends PureComponent {
     });
   };
 
+  handleClickOutside = e => {
+    const { changeListenOnTrue } = this.props;
+
+    this.handleEditProperty(e);
+    changeListenOnTrue();
+  };
+
   renderCells = () => {
     const {
       cols,
@@ -219,7 +226,6 @@ class TableItem extends PureComponent {
       tabId,
       mainTable,
       newRow,
-      changeListenOnTrue,
       tabIndex,
       entity,
       getSizeClass,
@@ -251,14 +257,22 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
-            let isEditable =
+            let showWidget =
               (cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode ===
                   VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+            const isEditable =
+              (cells &&
+                cells[property] &&
+                cells[property].viewEditorRenderMode ===
+                  VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
+              item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
+
+            console.log('isEditable: ', isEditable, cells[property], item.viewEditorRenderMode)
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -280,7 +294,7 @@ class TableItem extends PureComponent {
               return -1;
             });
             // HACK: Color fields should always be readonly
-            isEditable = item.widgetType === 'Color' ? false : isEditable;
+            showWidget = item.widgetType === 'Color' ? false : isEditable;
 
             return (
               <TableCell
@@ -299,20 +313,19 @@ class TableItem extends PureComponent {
                   mainTable,
                   viewId,
                   extendLongText,
+                  isEditable,
+                  showWidget,
+                  cellsExtended,
+                  isEdited,
                 }}
-                cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
-                isEdited={isEdited}
                 handleDoubleClick={e => {
                   if (isEditable) {
                     this.handleEditProperty(e, property, true, widgetData[0]);
                   }
                 }}
-                onClickOutside={e => {
-                  this.handleEditProperty(e);
-                  changeListenOnTrue();
-                }}
+                onClickOutside={this.handleClickOutside}
                 onCellChange={this.onCellChange}
                 onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}

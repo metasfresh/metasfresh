@@ -175,6 +175,7 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
+      showWidget,
     } = this.props;
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
@@ -242,7 +243,7 @@ class TableCell extends PureComponent {
           }
         )}
       >
-        {isEdited ? (
+        {isEdited || showWidget ? (
           <MasterWidget
             {...item}
             entity={mainTable ? 'window' : entity}
