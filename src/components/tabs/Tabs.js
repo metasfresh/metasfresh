@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { Set } from 'immutable';
 
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
@@ -9,19 +10,40 @@ import Tab from './Tab';
 class Tabs extends Component {
   constructor(props) {
     super(props);
+
+    const firstTab = props.tabsByIds[props.children[0].key];
+    const selected = this.getSelected(firstTab, Set());
+
     this.state = {
-      selected: props.children[0].key,
+      selected,
     };
   }
 
+  getSelected = (tab, selected, reverse) => {
+    const { tabsByIds } = this.props;
+    selected = selected.add(tab.tabId);
+
+    if (!reverse) {
+      if (tab.tabs) {
+        selected = this.getSelected(tab.tabs[0], selected);
+      }
+    } else {
+      if (tab.parentTab) {
+        selected = this.getSelected(tabsByIds[tab.parentTab], selected, true);
+      }
+    }
+
+    return selected;
+  };
+
   componentDidMount = () => {
-    this.props.dispatch(activateTab('master', this.state.selected));
+    this.props.dispatch(activateTab('master', this.state.selected.last()));
   };
 
   componentDidUpdate = (prevProps, prevState) => {
     const { dispatch } = this.props;
     if (prevState.selected !== this.state.selected) {
-      dispatch(activateTab('master', this.state.selected));
+      dispatch(activateTab('master', this.state.selected.last()));
     }
   };
 
@@ -31,8 +53,21 @@ class Tabs extends Component {
 
   handleClick = (e, id) => {
     e.preventDefault();
+
+    const firstTab = this.props.tabsByIds[id];
+    let reverse = false;
+
+    if (firstTab.parentTab) {
+      reverse = true;
+    }
+    let selected = this.getSelected(firstTab, Set(), reverse);
+
+    if (firstTab.parentTab) {
+      selected = selected.reverse();
+    }
+
     this.setState({
-      selected: id,
+      selected,
     });
   };
 
@@ -42,29 +77,70 @@ class Tabs extends Component {
     }
   };
 
-  renderPills = pills => {
+  renderNestedPills = (parentItem, maxWidth, level, nestedPills) => {
+    const pillsArray = parentItem.tabs.map(item => {
+      if (item.tabs) {
+        this.renderNestedPills(item, maxWidth, level++, nestedPills);
+      }
+
+      return this.renderPill(item, maxWidth);
+    });
+
+    nestedPills[level] = [
+      <ul
+        key={`nested-tabs-${parentItem.tabId}`}
+        className="nav nav-tabs nested-tabs"
+      >
+        {pillsArray}
+      </ul>,
+    ];
+  };
+
+  renderPill = (item, maxWidth) => {
     const { tabIndex, modalVisible } = this.props;
-    const maxWidth = 95 / pills.length + '%';
     const { selected } = this.state;
 
-    return pills.map(item => {
-      return (
-        <li
-          id={`tab_${item.props.internalName}`}
-          className="nav-item"
-          key={'tab' + item.key}
-          onClick={e => this.handleClick(e, item.key)}
-          tabIndex={modalVisible ? -1 : tabIndex}
-          onKeyDown={e => this.handlePillKeyDown(e, item.key)}
-          style={{ maxWidth }}
-          title={item.props.description || item.props.caption}
+    return (
+      <li
+        id={`tab_${item.internalName}`}
+        className="nav-item"
+        key={'tab-' + item.tabId}
+        onClick={e => this.handleClick(e, item.tabId)}
+        tabIndex={modalVisible ? -1 : tabIndex}
+        onKeyDown={e => this.handlePillKeyDown(e, item.tabId)}
+        style={{ maxWidth }}
+        title={item.description || item.caption}
+      >
+        <a
+          className={classnames('nav-link', {
+            active: selected.has(item.tabId),
+          })}
         >
-          <a className={'nav-link ' + (selected === item.key ? 'active' : '')}>
-            {item.props.caption}
-          </a>
-        </li>
-      );
+          {item.caption}
+        </a>
+      </li>
+    );
+  };
+
+  renderPills = pills => {
+    const maxWidth = 95 / pills.length + '%';
+    const { selected } = this.state;
+    const nestedPills = [];
+
+    const pillsArray = pills.map(item => {
+      if (item.tabs && selected.has(item.tabId)) {
+        this.renderNestedPills(item, maxWidth, 0, nestedPills);
+      }
+
+      return this.renderPill(item, maxWidth);
     });
+
+    return (
+      <div className="tabs-wrap">
+        <ul className="nav nav-tabs mt-1">{pillsArray}</ul>
+        {nestedPills}
+      </div>
+    );
   };
 
   renderTabs = tabs => {
@@ -79,15 +155,15 @@ class Tabs extends Component {
         }),
       });
 
-      if (selected == item.key) {
-        const { tabid, queryOnActivate, docId, orderBy } = item.props;
+      if (selected.last() === item.key) {
+        const { tabId, queryOnActivate, docId, orderBy } = item.props;
 
         return (
           <div key={'pane' + item.key} className="tab-pane active">
             <Tab
               {...{
                 queryOnActivate,
-                tabid,
+                tabId,
                 docId,
                 windowType,
                 orderBy,
@@ -104,7 +180,7 @@ class Tabs extends Component {
   };
 
   render() {
-    const { children, fullScreen } = this.props;
+    const { children, fullScreen, tabs } = this.props;
 
     return (
       <div
@@ -112,7 +188,7 @@ class Tabs extends Component {
           'tabs-fullscreen container-fluid': fullScreen,
         })}
       >
-        <ul className="nav nav-tabs mt-1">{this.renderPills(children)}</ul>
+        {this.renderPills(tabs)}
         <div className="tab-content" ref={c => (this.tabContent = c)}>
           {this.renderTabs(children)}
         </div>
@@ -122,6 +198,9 @@ class Tabs extends Component {
 }
 
 Tabs.propTypes = {
+  tabs: PropTypes.array,
+  parentTab: PropTypes.string,
+  children: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
 };
