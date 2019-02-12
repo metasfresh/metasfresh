@@ -38,12 +38,11 @@ class Window extends PureComponent {
   };
 
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
-    const { type } = this.props.layout;
+    const { windowId } = this.props.layout;
     const { rowData, newRow, tabsInfo, sort } = this.props;
 
     tabs.forEach(elem => {
       const {
-        tabid,
         tabId,
         caption,
         description,
@@ -67,9 +66,8 @@ class Window extends PureComponent {
             caption,
             description,
             rowData,
-            tabid,
             tabId,
-            type,
+            windowId,
             sort,
             newRow,
             internalName,
@@ -85,7 +83,7 @@ class Window extends PureComponent {
           tabIndex={this.tabIndex.tabs}
           queryOnActivate={queryOnActivate}
           supportQuickInput={supportQuickInput}
-          tabInfo={tabsInfo && tabsInfo[tabid]}
+          tabInfo={tabsInfo && tabsInfo[tabId]}
           disconnectFromState={true}
         />
       );
