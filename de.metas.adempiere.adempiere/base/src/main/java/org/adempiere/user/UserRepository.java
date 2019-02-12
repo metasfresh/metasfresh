@@ -1,7 +1,6 @@
 package org.adempiere.user;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -40,9 +40,12 @@ import lombok.NonNull;
 @Repository
 public class UserRepository
 {
-	public User getById(@NonNull final UserId userId)
+	public User getByIdInTrx(@NonNull final UserId userId)
 	{
-		final I_AD_User userRecord = loadOutOfTrx(userId.getRepoId(), I_AD_User.class);
+		final I_AD_User userRecord = load(userId.getRepoId(), I_AD_User.class);
+
+		Check.assumeNotNull(userRecord, "UserRecord not null");
+
 		return ofRecord(userRecord);
 	}
 
