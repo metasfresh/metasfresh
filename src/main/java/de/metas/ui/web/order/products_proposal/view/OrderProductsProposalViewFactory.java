@@ -1,10 +1,13 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
@@ -13,8 +16,13 @@ import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -86,15 +94,16 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		final OrderId orderId = OrderId.ofRepoId(recordRef.getRecord_ID());
 
 		final I_C_Order orderRecord = ordersRepo.getById(orderId);
-		final LocalDate date = TimeUtil.asLocalDate(orderRecord.getDatePromised());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
-		final PriceListId priceListId = PriceListId.ofRepoId(orderRecord.getM_PriceList_ID());
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
+
+		final PriceListId priceListId = PriceListId.ofRepoId(orderRecord.getM_PriceList_ID());
+		final LocalDate date = TimeUtil.asLocalDate(orderRecord.getDatePromised());
+		final PriceListVersionId priceListVersionId = Services.get(IPriceListDAO.class).retrievePriceListVersionId(priceListId, date);
 
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
-				.priceListId(priceListId)
-				.date(date)
+				.priceListVersionId(priceListVersionId)
 				.orderId(orderId)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
@@ -102,7 +111,15 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	}
 
 	@Override
-	protected void beforeViewClose(final ViewId viewId, final ViewCloseAction closeAction)
+	protected List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
+	{
+		return ImmutableList.of(
+				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class),
+				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class));
+	}
+
+	@Override
+	protected void beforeViewClose(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
 	{
 		if (ViewCloseAction.DONE.equals(closeAction))
 		{

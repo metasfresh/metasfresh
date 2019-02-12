@@ -103,6 +103,12 @@ final class OrderLinesFromProductProposalsProducer
 				.overridePartner(false)
 				.asiCopyMode(ASICopyMode.CopyID) // because we just created the ASI
 				.copyTo(orderLinePackingAware);
+
+		if (fromRow.isManualPrice())
+		{
+			newOrderLine.setIsManualPrice(true);
+			newOrderLine.setPriceEntered(fromRow.getPrice().getValue());
+		}
 	}
 
 	private IHUPackingAware createHUPackingAware(

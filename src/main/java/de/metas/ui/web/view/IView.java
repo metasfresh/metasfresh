@@ -86,14 +86,8 @@ public interface IView
 
 	DocumentId getParentRowId();
 
-	/** @return true if this is an included view */
-	default boolean isIncludedView()
-	{
-		return getParentViewId() != null;
-	}
-
 	long size();
-	
+
 	default boolean isAllowClosingPerUserRequest()
 	{
 		return true;

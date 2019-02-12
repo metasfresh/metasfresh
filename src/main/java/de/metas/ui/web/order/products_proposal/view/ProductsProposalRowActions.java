@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,13 +35,19 @@ public class ProductsProposalRowActions
 {
 	public static ProductsProposalRowChangeRequest toChangeRequest(final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final ProductsProposalRowChangeRequestBuilder builder = ProductsProposalRowChangeRequest.builder();
+		final ProductsProposalRowChangeRequestBuilder builder = ProductsProposalRowChangeRequest.builder()
+				.userChange(true);
+
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
 			final String fieldName = fieldChangeRequest.getPath();
 			if (ProductsProposalRow.FIELD_Qty.equals(fieldName))
 			{
 				builder.qty(Optional.ofNullable(fieldChangeRequest.getValueAsBigDecimal()));
+			}
+			else if (ProductsProposalRow.FIELD_Price.equals(fieldName))
+			{
+				builder.price(Optional.of(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO)));
 			}
 		}
 

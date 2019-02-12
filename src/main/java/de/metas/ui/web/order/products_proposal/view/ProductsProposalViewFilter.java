@@ -1,10 +1,5 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import de.metas.currency.Amount;
-import de.metas.pricing.ProductPriceId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,13 +25,14 @@ import lombok.Value;
  * #L%
  */
 
-@Value
 @Builder
-public class ProductsProposalRowChangeRequest
+@Value
+public class ProductsProposalViewFilter
 {
-	boolean userChange;
-	Optional<BigDecimal> qty;
-	Optional<BigDecimal> price;
-	Optional<Amount> standardPrice;
-	Optional<ProductPriceId> productPriceId;
+	public static final ProductsProposalViewFilter ANY = builder().build();
+
+	public static final String FILTER_ID = "defaultFilter";
+	static final String PARAM_ProductName = "ProductName";
+
+	String productName;
 }

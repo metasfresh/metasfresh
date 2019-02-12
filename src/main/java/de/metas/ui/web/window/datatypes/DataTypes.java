@@ -210,7 +210,9 @@ public final class DataTypes
 						+ "\n Target type: " + targetType
 						+ "\n Source type: " + value.getClass()
 						+ "\n Value: " + value
-						+ "\n LookupDataSource: " + lookupDataSource);
+						+ "\n LookupDataSource: " + lookupDataSource
+						+ "\n\n Suggestions:"
+						+ "\n * if the call is coming from a proxy interface, try using right type (e.g. IntegerLookupValue instead of LookupValue).");
 				return cast(value);
 			}
 			else

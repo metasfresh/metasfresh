@@ -1,9 +1,11 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -13,14 +15,21 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -49,37 +58,51 @@ import lombok.NonNull;
 
 public class ProductsProposalRowsData implements IEditableRowsData<ProductsProposalRow>
 {
-	private final ImmutableList<DocumentId> rowIds; // used to preserve the order
-	private final ConcurrentMap<DocumentId, ProductsProposalRow> rowsById;
+	private final DocumentIdIntSequence nextRowIdSequence;
 
+	private ArrayList<DocumentId> rowIdsOrderedAndFiltered;
+	private final ArrayList<DocumentId> rowIdsOrdered; // used to preserve the order
+	private final HashMap<DocumentId, ProductsProposalRow> rowsById;
+
+	private final ImmutableSet<PriceListVersionId> priceListVersionIds;
 	@Getter
 	private final OrderId orderId;
+	@Getter
+	private final BPartnerId bpartnerId;
+	@Getter
+	private final SOTrx soTrx;
+
+	private ProductsProposalViewFilter filter = ProductsProposalViewFilter.ANY;
 
 	@Builder
 	private ProductsProposalRowsData(
+			@NonNull final DocumentIdIntSequence nextRowIdSequence,
 			@NonNull final List<ProductsProposalRow> rows,
-			@Nullable final OrderId orderId)
+			@NonNull final ImmutableSet<PriceListVersionId> priceListVersionIds,
+			@Nullable final OrderId orderId,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final SOTrx soTrx)
 	{
-		rowIds = rows.stream()
+		this.nextRowIdSequence = nextRowIdSequence;
+
+		rowIdsOrdered = rows.stream()
 				.map(ProductsProposalRow::getId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.toCollection(ArrayList::new));
+		rowIdsOrderedAndFiltered = new ArrayList<>(rowIdsOrdered);
 
 		rowsById = rows.stream()
-				.collect(Collectors.toConcurrentMap(ProductsProposalRow::getId, Function.identity()));
+				.collect(GuavaCollectors.toMapByKey(HashMap::new, ProductsProposalRow::getId));
 
+		this.priceListVersionIds = priceListVersionIds;
 		this.orderId = orderId;
+		this.bpartnerId = bpartnerId;
+		this.soTrx = soTrx;
 	}
 
 	@Override
-	public int size()
+	public synchronized int size()
 	{
-		return rowIds.size();
-	}
-
-	@Override
-	public ImmutableMap<DocumentId, ProductsProposalRow> getDocumentId2TopLevelRows()
-	{
-		return ImmutableMap.copyOf(rowsById);
+		return rowIdsOrderedAndFiltered.size();
 	}
 
 	@Override
@@ -89,9 +112,17 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	}
 
 	@Override
-	public ImmutableList<ProductsProposalRow> getTopLevelRows()
+	public synchronized ImmutableMap<DocumentId, ProductsProposalRow> getDocumentId2TopLevelRows()
 	{
-		return rowIds.stream()
+		return rowIdsOrderedAndFiltered.stream()
+				.map(rowsById::get)
+				.collect(GuavaCollectors.toImmutableMapByKey(ProductsProposalRow::getId));
+	}
+
+	@Override
+	public synchronized ImmutableList<ProductsProposalRow> getTopLevelRows()
+	{
+		return rowIdsOrderedAndFiltered.stream()
 				.map(rowsById::get)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -120,9 +151,14 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.copyAndChange(request, row));
 	}
 
-	private void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsProposalRow> mapper)
+	public void patchRow(@NonNull final DocumentId rowId, @NonNull ProductsProposalRowChangeRequest request)
 	{
-		if (!rowIds.contains(rowId))
+		changeRow(rowId, row -> ProductsProposalRowReducers.copyAndChange(request, row));
+	}
+
+	private synchronized void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsProposalRow> mapper)
+	{
+		if (!rowIdsOrderedAndFiltered.contains(rowId))
 		{
 			throw new EntityNotFoundException(rowId.toJson());
 		}
@@ -137,4 +173,73 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		});
 	}
 
+	public ImmutableSet<PriceListVersionId> getPriceListVersionIds()
+	{
+		return priceListVersionIds;
+	}
+
+	public PriceListVersionId getSinglePriceListVersionIdOrNull()
+	{
+		return priceListVersionIds.size() == 1
+				? priceListVersionIds.iterator().next()
+				: null;
+	}
+
+	public synchronized Set<ProductId> getProductIds()
+	{
+		return rowsById.values()
+				.stream()
+				.map(ProductsProposalRow::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void copyAndAddRows(@NonNull final List<ProductsProposalRow> rows)
+	{
+		rows.forEach(this::copyAndAddRow);
+	}
+
+	public void copyAndAddRow(@NonNull final ProductsProposalRow row)
+	{
+		addRow(row.toBuilder()
+				.id(nextRowIdSequence.nextDocumentId())
+				.productPriceId(null)
+				.copiedFromProductPriceId(row.getProductPriceId())
+				.build());
+	}
+
+	private synchronized void addRow(final ProductsProposalRow row)
+	{
+		rowIdsOrderedAndFiltered.add(0, row.getId()); // add first
+		rowIdsOrdered.add(0, row.getId()); // add first
+
+		rowsById.put(row.getId(), row);
+	}
+
+	public synchronized ImmutableList<ProductsProposalRow> getRowsToBeCopiedIntoCurrentPriceListVersion()
+	{
+		return rowsById.values()
+				.stream()
+				.filter(ProductsProposalRow::isCopiedFromButNotSaved)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public synchronized ProductsProposalViewFilter getFilter()
+	{
+		return filter;
+	}
+
+	public synchronized void filter(@NonNull final ProductsProposalViewFilter filter)
+	{
+		if (Objects.equals(this.filter, filter))
+		{
+			return;
+		}
+
+		this.filter = filter;
+
+		rowIdsOrderedAndFiltered = rowIdsOrdered
+				.stream()
+				.filter(rowId -> rowsById.get(rowId).isMatching(filter))
+				.collect(Collectors.toCollection(ArrayList::new));
+	}
 }

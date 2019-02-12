@@ -1,5 +1,12 @@
 package de.metas.ui.web.pporder.process;
 
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+
+import com.google.common.base.Predicates;
+
+import de.metas.logging.LogManager;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -46,5 +53,12 @@ public abstract class WEBUI_PP_Order_Template
 	protected final PPOrderLineRow getSingleSelectedRow()
 	{
 		return PPOrderLineRow.cast(super.getSingleSelectedRow());
+	}
+	
+	protected final Stream<PPOrderLineRow> streamPPOrderLineRows()
+	{
+		return streamSelectedRows()
+				.map(row -> PPOrderLineRow.cast(row))
+				.filter(Predicates.notNull());
 	}
 }

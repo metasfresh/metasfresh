@@ -203,15 +203,7 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 	public PricingConditionsView filterView(
 			@NonNull final IView view,
 			@NonNull final JSONFilterViewRequest filterViewRequest,
-			Supplier<IViewsRepository> viewsRepo_IGNORED)
-	{
-		return filterView(view, filterViewRequest);
-	}
-
-	@Override
-	public final PricingConditionsView filterView(
-			@NonNull final IView view,
-			@NonNull final JSONFilterViewRequest filterViewRequest)
+			final Supplier<IViewsRepository> viewsRepo_IGNORED)
 	{
 		return PricingConditionsView.cast(view)
 				.filter(filtersFactory.extractFilters(filterViewRequest));

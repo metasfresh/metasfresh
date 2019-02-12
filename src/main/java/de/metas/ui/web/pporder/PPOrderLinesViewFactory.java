@@ -1,6 +1,7 @@
 package de.metas.ui.web.pporder;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -22,6 +23,7 @@ import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -97,7 +99,10 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	}
 
 	@Override
-	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest)
+	public IView filterView(
+			final IView view, 
+			final JSONFilterViewRequest filterViewRequest,
+			final Supplier<IViewsRepository> viewsRepo)
 	{
 		throw new AdempiereException("View does not support filtering")
 				.setParameter("view", view)

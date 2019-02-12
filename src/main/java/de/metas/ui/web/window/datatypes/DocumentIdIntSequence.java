@@ -1,12 +1,8 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.window.datatypes;
 
-import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import de.metas.currency.Amount;
-import de.metas.pricing.ProductPriceId;
-import lombok.Builder;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
@@ -30,13 +26,25 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ProductsProposalRowChangeRequest
+/**
+ * {@link DocumentId} sequence.
+ */
+@ToString
+public final class DocumentIdIntSequence
 {
-	boolean userChange;
-	Optional<BigDecimal> qty;
-	Optional<BigDecimal> price;
-	Optional<Amount> standardPrice;
-	Optional<ProductPriceId> productPriceId;
+	public static DocumentIdIntSequence newInstance()
+	{
+		return new DocumentIdIntSequence();
+	}
+
+	private final AtomicInteger nextInt = new AtomicInteger(1);
+
+	private DocumentIdIntSequence()
+	{
+	}
+
+	public DocumentId nextDocumentId()
+	{
+		return DocumentId.of(nextInt.getAndIncrement());
+	}
 }
