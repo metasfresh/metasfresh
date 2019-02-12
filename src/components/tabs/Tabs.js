@@ -19,17 +19,16 @@ class Tabs extends Component {
     };
   }
 
-  componentDidMount() {
-    this.props.dispatch(activateTab('master', this.state.selected));
-  }
+  componentDidMount = () => {
+    this.props.dispatch(activateTab('master', this.state.selected.last()));
+  };
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate = (prevProps, prevState) => {
     const { dispatch } = this.props;
-
     if (prevState.selected !== this.state.selected) {
-      dispatch(activateTab('master', this.state.selected));
+      dispatch(activateTab('master', this.state.selected.last()));
     }
-  }
+  };
 
   componentWillUnmount() {
     this.props.dispatch(unselectTab('master'));

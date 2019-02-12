@@ -24,6 +24,7 @@ import {
 import {
   connectWS,
   disconnectWS,
+  updateRawModal,
   indicatorState,
   selectTableItems,
   deselectTableItems,
@@ -326,6 +327,7 @@ export class DocumentList extends Component {
     const {
       windowType,
       type,
+      dispatch,
       viewProfileId,
       setModalTitle,
       setNotFound,
@@ -340,6 +342,12 @@ export class DocumentList extends Component {
               layout: response.data,
             },
             () => {
+              const { allowedCloseActions } = response.data;
+
+              if (allowedCloseActions) {
+                dispatch(updateRawModal(windowType, { allowedCloseActions }));
+              }
+
               if (viewId) {
                 this.connectWebSocket(viewId);
 
