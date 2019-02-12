@@ -204,6 +204,13 @@ public class ProductPrices
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper)
 	{
+		if (startPriceListVersion == null)
+		{
+			return null;
+		}
+
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+
 		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
 
 		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
@@ -221,27 +228,9 @@ public class ProductPrices
 				return productPrice;
 			}
 
-			currentPriceListVersion = getBasePriceListVersionOrNull(currentPriceListVersion);
+			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion);
 		}
 
 		return null;
 	}
-
-	private static I_M_PriceList_Version getBasePriceListVersionOrNull(final I_M_PriceList_Version priceListVersion)
-	{
-		if (!priceListVersion.isFallbackToBasePriceListPrices())
-		{
-			return null;
-		}
-
-		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(priceListVersion.getM_Pricelist_Version_Base_ID());
-		if (basePriceListVersionId == null)
-		{
-			return null;
-		}
-
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		return priceListsRepo.getPriceListVersionById(basePriceListVersionId);
-	}
-
 }

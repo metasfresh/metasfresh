@@ -8,18 +8,18 @@ import lombok.Value;
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,26 +27,26 @@ import lombok.Value;
  */
 
 @Value
-public class PriceListVersionId implements RepoIdAware
+public class ProductPriceId implements RepoIdAware
 {
-	public static PriceListVersionId ofRepoId(final int repoId)
+	public static ProductPriceId ofRepoId(final int repoId)
 	{
-		return new PriceListVersionId(repoId);
+		return new ProductPriceId(repoId);
 	}
 
-	public static PriceListVersionId ofRepoIdOrNull(final int repoId)
+	public static ProductPriceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;
 
-	private PriceListVersionId(final int repoId)
+	private ProductPriceId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_PriceList_Version_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_ProductPrice_ID");
 	}
 
-	public static int toRepoId(final PriceListVersionId id)
+	public static int toRepoId(final ProductPriceId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
