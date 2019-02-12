@@ -20,7 +20,6 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_BPartner_ProductsProposal_Launcher;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
@@ -74,8 +73,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	@Override
 	protected ViewLayout createViewLayout(ViewLayoutKey key)
 	{
-		final ITranslatableString caption = Services.get(IADProcessDAO.class)
-				.retrieveProcessNameByClassIfUnique(WEBUI_BPartner_ProductsProposal_Launcher.class)
+		final ITranslatableString caption = getProcessCaption(WEBUI_BPartner_ProductsProposal_Launcher.class)
 				.orElse(null);
 
 		return ViewLayout.builder()

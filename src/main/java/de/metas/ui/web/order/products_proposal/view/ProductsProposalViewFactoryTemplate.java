@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -11,8 +12,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import de.metas.cache.CCache;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -91,6 +94,12 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 	}
 
 	protected abstract ViewLayout createViewLayout(final ViewLayoutKey key);
+
+	protected <T extends JavaProcess> Optional<ITranslatableString> getProcessCaption(@NonNull final Class<T> processClass)
+	{
+		return Services.get(IADProcessDAO.class)
+				.retrieveProcessNameByClassIfUnique(processClass);
+	}
 
 	public final CreateViewRequest createViewRequest(final TableRecordReference recordRef)
 	{
