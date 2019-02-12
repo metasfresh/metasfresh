@@ -1,11 +1,13 @@
 package de.metas.dataentry;
 
-import de.metas.i18n.ITranslatableString;
+import static de.metas.util.Check.assumeGreaterThanZero;
+
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -16,22 +18,27 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-public class DataEntryListValue
+public class DataEntryListValueId implements RepoIdAware
 {
-	DataEntryListValueId id;
+	public static DataEntryListValueId ofRepoId(final int repoId)
+	{
+		return new DataEntryListValueId(repoId);
+	}
 
-	DataEntryFieldId dataEntryFieldId;
+	int repoId;
 
-	ITranslatableString name;
-	ITranslatableString description;
+	public DataEntryListValueId(final int repoId)
+	{
+		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+	}
 }

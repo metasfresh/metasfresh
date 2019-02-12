@@ -205,9 +205,12 @@ public class DataEntryRepository
 				.build();
 	}
 
-	private DataEntryListValue ofRecord(I_DataEntry_ListValue listValueRecord)
+	private DataEntryListValue ofRecord(@NonNull final I_DataEntry_ListValue listValueRecord)
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(listValueRecord);
+
+		final DataEntryListValueId id = DataEntryListValueId.ofRepoId(listValueRecord.getDataEntry_ListValue_ID());
+		final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(listValueRecord.getDataEntry_Field_ID());
 
 		final ITranslatableString nameTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Name, listValueRecord.getName());
@@ -215,6 +218,7 @@ public class DataEntryRepository
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Description, listValueRecord.getDescription());
 
-		return new DataEntryListValue(nameTrl, descriptionTrl);
+
+		return new DataEntryListValue(id, dataEntryFieldId, nameTrl, descriptionTrl);
 	}
 }

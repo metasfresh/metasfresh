@@ -8,6 +8,8 @@ import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutException;
 
+import lombok.ToString;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,13 +33,13 @@ import org.adempiere.ad.callout.exceptions.CalloutException;
  */
 
 @Immutable
+@ToString
 public final class NullCalloutExecutor implements ICalloutExecutor
 {
 	public static final transient NullCalloutExecutor instance = new NullCalloutExecutor();
 
 	private NullCalloutExecutor()
 	{
-		super();
 	}
 
 	@Override
