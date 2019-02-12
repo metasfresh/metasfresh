@@ -55,38 +55,47 @@ class Window extends PureComponent {
         defaultOrderBys,
       } = elem;
       elem.tabIndex = this.tabIndex.tabs;
+
       if (parentTab) {
         elem.parentTab = parentTab;
       }
 
+      const renderSingle =
+        rowData.size && rowData.get(`${tabId}`).size === 1 ? true : false;
+
       tabsByIds[elem.tabId] = elem;
-      tabsArray.push(
-        <Table
-          {...{
-            caption,
-            description,
-            rowData,
-            tabId,
-            windowId,
-            sort,
-            newRow,
-            internalName,
-          }}
-          entity="window"
-          keyProperty="rowId"
-          key={tabId}
-          cols={elements}
-          orderBy={defaultOrderBys}
-          docId={dataId}
-          emptyText={emptyResultText}
-          emptyHint={emptyResultHint}
-          tabIndex={this.tabIndex.tabs}
-          queryOnActivate={queryOnActivate}
-          supportQuickInput={supportQuickInput}
-          tabInfo={tabsInfo && tabsInfo[tabId]}
-          disconnectFromState={true}
-        />
-      );
+
+      if (renderSingle) {
+        tabsArray.push(<div key={tabId}>Single entry ! </div>);
+      } else {
+        tabsArray.push(
+          <Table
+            {...{
+              caption,
+              description,
+              rowData,
+              tabId,
+              windowId,
+              sort,
+              newRow,
+              internalName,
+            }}
+            entity="window"
+            keyProperty="rowId"
+            key={tabId}
+            cols={elements}
+            orderBy={defaultOrderBys}
+            docId={dataId}
+            emptyText={emptyResultText}
+            emptyHint={emptyResultHint}
+            tabIndex={this.tabIndex.tabs}
+            queryOnActivate={queryOnActivate}
+            supportQuickInput={supportQuickInput}
+            tabInfo={tabsInfo && tabsInfo[tabId]}
+            disconnectFromState={true}
+          />
+        );
+      }
 
       if (elem.tabs) {
         this.getTabs(elem.tabs, dataId, tabsArray, tabsByIds, tabId);
@@ -95,7 +104,7 @@ class Window extends PureComponent {
   };
 
   renderTabs = tabs => {
-    const { type } = this.props.layout;
+    const { windowId } = this.props.layout;
     const { data } = this.props;
     const { fullScreen } = this.state;
     const tabsArray = [];
@@ -113,7 +122,7 @@ class Window extends PureComponent {
         tabIndex={this.tabIndex.tabs}
         toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
-        windowType={type}
+        windowId={windowId}
         {...{ tabs, tabsByIds }}
       >
         {tabsArray}
@@ -137,6 +146,7 @@ class Window extends PureComponent {
   renderColumns = (columns, isSectionFirst) => {
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
+
     return columns.map((elem, id) => {
       const isFirst = id === 0 && isSectionFirst;
       const elementGroups = elem.elementGroups;
@@ -150,6 +160,7 @@ class Window extends PureComponent {
 
   renderElementGroups = (group, isFirst) => {
     const { isModal } = this.props;
+
     return group.map((elem, id) => {
       const { type, elementsLine } = elem;
       const shouldBeFocused = isFirst && id === 0;
@@ -231,7 +242,7 @@ class Window extends PureComponent {
   }
 
   renderElements = (elements, tabIndex, isFocused) => {
-    const { type } = this.props.layout;
+    const { windowId } = this.props.layout;
     const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
     const { fullScreen } = this.state;
 
@@ -249,7 +260,7 @@ class Window extends PureComponent {
           }}
           entity="window"
           key={'element' + id}
-          windowType={type}
+          windowType={windowId}
           dataId={dataId}
           widgetData={widgetData}
           isModal={!!modal}
