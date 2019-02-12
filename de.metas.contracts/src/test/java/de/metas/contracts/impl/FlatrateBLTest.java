@@ -116,6 +116,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_PricingRule pricingRule = newInstance(I_C_PricingRule.class);
 		pricingRule.setSeqNo(10);
 		pricingRule.setClassname(MockedPricingRule.class.getName());
+		pricingRule.setName(pricingRule.getClassname());
 		save(pricingRule);
 
 		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
