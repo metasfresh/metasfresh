@@ -3,12 +3,9 @@ package de.metas.pricing.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-=======
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
->>>>>>> master
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -128,9 +125,6 @@ public class PriceListDAO implements IPriceListDAO
 		return load(priceListVersionId, I_M_PriceList_Version.class);
 	}
 	
-	@Override
-	public Stream<I_M_ProductPrice> retrieveProductPrices(@NonNull final PriceListVersionId priceListVersionId)
-
 	public Stream<I_M_ProductPrice> retrieveProductPrices(
 			@NonNull final PriceListVersionId priceListVersionId,
 			final Set<ProductId> productIdsToExclude)
