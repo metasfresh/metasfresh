@@ -160,6 +160,11 @@
     color: $brand-font-color;
 }
 
+.modal-top-description {
+    font-size: 14px;
+    padding-top: 10px;
+}
+
 .panel-inline>* {
     display: inline-block;
 }

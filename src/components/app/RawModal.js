@@ -147,7 +147,7 @@ class RawModal extends Component {
     const buttonsArray = [];
 
     if (!allowedCloseActions) {
-      allowedCloseActions = ['DONE'];
+      allowedCloseActions = [];
     }
 
     for (let i = 0; i < allowedCloseActions.length; i += 1) {
