@@ -88,13 +88,14 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		}
 		else
 		{
-			final boolean anyHuMatches = streamPPOrderLineRows()
-					.anyMatch(row -> WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(row).isAccepted());
-			if (anyHuMatches)
+			final boolean allMatch = streamPPOrderLineRows()
+					.allMatch(row -> WEBUI_PP_Order_ProcessHelper.checkIssueSourceDefaultPreconditionsApplicable(row).isAccepted());
+			if (allMatch)
 			{
 				return ProcessPreconditionsResolution.accept();
 			}
-			return ProcessPreconditionsResolution.reject();
+			
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 	}
 
