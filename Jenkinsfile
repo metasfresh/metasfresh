@@ -123,9 +123,9 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 		build job: jobName,
 	     parameters: [
 	       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-	       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
+	       string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
 	       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-	       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
+	       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-procurement-webui'),
 	       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
 	       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 	     ], wait: false
