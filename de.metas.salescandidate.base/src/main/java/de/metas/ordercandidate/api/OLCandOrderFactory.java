@@ -5,9 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.Builder;
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -37,6 +34,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -54,6 +52,8 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -295,7 +295,7 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice() || candidate.isManualDiscount())
 			{
 				final int currencyId = candidate.getC_Currency_ID();
-				final int stdPrecision = currencyDAO.getStdPrecision(ctx, currencyId); // FIXME: use price list's precision
+				final CurrencyPrecision stdPrecision = CurrencyPrecision.ofInt(currencyDAO.getStdPrecision(ctx, currencyId)); // FIXME: use price list's precision
 				orderLineBL.updatePriceActual(currentOrderLine, stdPrecision);
 			}
 		}
