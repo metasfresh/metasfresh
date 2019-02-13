@@ -2,8 +2,6 @@ package de.metas.ui.web.window.descriptor;
 
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import de.metas.ui.web.window.model.DocumentsRepository;
 
 /*
@@ -28,14 +26,13 @@ import de.metas.ui.web.window.model.DocumentsRepository;
  * #L%
  */
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 public interface DocumentEntityDataBindingDescriptor
 {
 	/**
 	 * @return repository or might throw exception if the repository is not configured
 	 */
 	DocumentsRepository getDocumentsRepository();
-	
+
 	/**
 	 * @return true if repository versioning is supported for this entity
 	 */

@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.slf4j.Logger;
@@ -100,8 +101,10 @@ import de.metas.util.Check;
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
 
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(AD_Window_ID);
+
 		ADTabLoader.builder()
-				.adWindowId(AD_Window_ID)
+				.adWindowId(adWindowId.getRepoId())
 				.rootLayoutFactory(rootLayoutFactory)
 				.layoutBuilder(layoutBuilder)
 				.build()
@@ -109,7 +112,7 @@ import de.metas.util.Check;
 
 		final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader
 				.builder()
-				.adWindowId(AD_Window_ID)
+				.adWindowId(adWindowId)
 				.windowId(rootLayoutFactory.documentEntity().getWindowId())
 				.build();
 		final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();

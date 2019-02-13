@@ -6,6 +6,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -58,11 +59,19 @@ public class DataEntryTabLoaderTest
 {
 
 	private JSONOptions jsonOptions;
+	private DataEntryTabLoader dataEntryTabLoader;
 
 	@Before
 	public void init()
 	{
 		jsonOptions = JSONOptions.builder(null).setAD_LanguageIfNotEmpty("en_US").build();
+
+		final int windowIdInt = 5;
+		dataEntryTabLoader = DataEntryTabLoader
+				.builder()
+				.adWindowId(AdWindowId.ofRepoId(windowIdInt))
+				.windowId(WindowId.of(windowIdInt))
+				.build();
 	}
 
 	@BeforeClass
@@ -90,10 +99,10 @@ public class DataEntryTabLoaderTest
 		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
 
 		// invoke the method under test
-		final List<DocumentLayoutDetailDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
+		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
 				.createLayoutDescriptors(ImmutableList.of(dataEntryGroup));
 
-	expect(descriptors).toMatchSnapshot();
+		expect(descriptors).toMatchSnapshot();
 	}
 
 	@Test
@@ -102,7 +111,7 @@ public class DataEntryTabLoaderTest
 		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
 
 		// invoke the method under test
-		final List<DocumentLayoutDetailDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
+		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
 				.createLayoutDescriptors(ImmutableList.of(dataEntryGroup));
 
 		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonOptions);
@@ -115,7 +124,7 @@ public class DataEntryTabLoaderTest
 		final DataEntryGroup dataEntryGroup = createSimpleDataEntryGroup();
 
 		// invoke the method under test
-		final List<DocumentEntityDescriptor> descriptors = new DataEntryTabLoader(5, WindowId.of(5))
+		final List<DocumentEntityDescriptor> descriptors = dataEntryTabLoader
 				.createGroupEntityDescriptors(ImmutableList.of(dataEntryGroup));
 
 		expect(descriptors).toMatchSnapshot();

@@ -1,5 +1,7 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import lombok.Value;
 
@@ -26,6 +28,7 @@ import lombok.Value;
  */
 
 @Value
+@JsonPropertyOrder(alphabetic = true)
 public class DataEntryFieldBindingDescriptor implements DocumentFieldDataBindingDescriptor
 {
 	String columnName;

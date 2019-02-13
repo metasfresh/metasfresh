@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.compiere.Adempiere;
 
@@ -63,13 +64,20 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class DataEntryTabLoader
 {
-	int adWindowId;
+	AdWindowId adWindowId;
 
-	@NonNull
-	final WindowId windowId;
+	WindowId windowId;
+
+	@Builder
+	private DataEntryTabLoader(
+			@NonNull final AdWindowId adWindowId,
+			@NonNull final WindowId windowId)
+	{
+		this.adWindowId = adWindowId;
+		this.windowId = windowId;
+	}
 
 	public List<DocumentLayoutDetailDescriptor> loadDocumentLayout()
 	{
@@ -131,7 +139,6 @@ public class DataEntryTabLoader
 				.internalName(dataEntrySubGroup.getInternalName())
 				.queryOnActivate(true)
 				.supportQuickInput(false);
-
 
 		final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor
 				.builder();
@@ -240,7 +247,7 @@ public class DataEntryTabLoader
 
 		final DocumentEntityDescriptor documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
-				.setDocumentType(DocumentType.Window, getAdWindowId())
+				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
 				.setDetailId(createDetailIdFor(dataEntryGroup))
 				.setInternalName(dataEntryGroup.getInternalName())
 				.setCaption(dataEntryGroup.getCaption())
@@ -270,7 +277,7 @@ public class DataEntryTabLoader
 
 		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
-				.setDocumentType(DocumentType.Window, getAdWindowId())
+				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
 				.setDetailId(createDetailIdFor(dataEntrySubGroup))
 				.setInternalName(dataEntrySubGroup.getInternalName())
 				.setCaption(dataEntrySubGroup.getCaption())
@@ -363,5 +370,4 @@ public class DataEntryTabLoader
 	{
 		return DetailId.fromAD_Tab_ID(dataEntrySubGroup.getId().getRepoId() * 2); // TODO allow detail-ID with letter-prefix?
 	}
-
 }
