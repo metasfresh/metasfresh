@@ -28,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-@JsonPropertyOrder(alphabetic = true)
+@JsonPropertyOrder(value = { "columnName", "defaultOrderBy", "defaultOrderByAscending", "mandatory" }) // needs to be specified for snapshot testing
 public class DataEntryFieldBindingDescriptor implements DocumentFieldDataBindingDescriptor
 {
 	String columnName;

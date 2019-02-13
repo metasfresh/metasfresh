@@ -9,6 +9,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "_fieldNamesByCharacteristic" : { },
       "allowCreateNewLogic" : "1=0",
       "allowDeleteLogic" : "1=0",
+      "allowQuickInput" : false,
       "calloutsEnabled" : false,
       "caption" : {
         "anyLanguage" : false,
@@ -46,6 +47,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "_fieldNamesByCharacteristic" : { },
           "allowCreateNewLogic" : "1=1",
           "allowDeleteLogic" : "1=1",
+          "allowQuickInput" : false,
           "calloutsEnabled" : false,
           "caption" : {
             "anyLanguage" : false,
