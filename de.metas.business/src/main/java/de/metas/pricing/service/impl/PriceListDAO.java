@@ -358,7 +358,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version retrieveNewestPriceListVersion(final int priceListId)
+	public I_M_PriceList_Version retrieveNewestPriceListVersion(final PriceListId priceListId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)
@@ -486,7 +486,7 @@ public class PriceListDAO implements IPriceListDAO
 		final I_M_PriceList_Version plv;
 		if (request.isUseNewestPriceListversion())
 		{
-			plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId.getRepoId());
+			plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
 		}
 		else 
 		{

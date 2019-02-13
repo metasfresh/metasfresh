@@ -240,23 +240,6 @@ public class ProductPrices
 		return null;
 	}
 
-	private static I_M_PriceList_Version getBasePriceListVersionOrNull(final I_M_PriceList_Version priceListVersion)
-	{
-		if (!priceListVersion.isFallbackToBasePriceListPrices())
-		{
-			return null;
-		}
-
-		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(priceListVersion.getM_Pricelist_Version_Base_ID());
-		if (basePriceListVersionId == null)
-		{
-			return null;
-		}
-
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		return priceListsRepo.getPriceListVersionById(basePriceListVersionId);
-	}
-
 	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
 		final BigDecimal price = ppRequest.getPrice().setScale(2);

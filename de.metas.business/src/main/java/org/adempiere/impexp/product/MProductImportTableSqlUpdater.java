@@ -536,12 +536,12 @@ public class MProductImportTableSqlUpdater
 		logger.warn("No Mandatory Pharma product category Name ={}", no);
 	}
 	
-	public void dbUpdateIsPriceCreated(@NonNull final String whereClause)
+	public void dbUpdateIsPriceCreated(@NonNull final String whereClause, @NonNull final String columnname)
 	{
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET IsPriceCreated = 'Y' ")
+				.append(" SET " + columnname +" = 'Y' ")
 				.append(" WHERE 1=1 ")
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);

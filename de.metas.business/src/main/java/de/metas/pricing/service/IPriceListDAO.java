@@ -140,7 +140,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(PriceListId priceListId, Date date);
 
-	I_M_PriceList_Version retrieveNewestPriceListVersion(int priceListId);
+	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
 	String getPricingSystemName(final PricingSystemId pricingSystemId);
 

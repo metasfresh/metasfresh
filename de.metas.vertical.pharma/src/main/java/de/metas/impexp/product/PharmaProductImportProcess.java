@@ -29,6 +29,7 @@ import org.compiere.model.X_I_Product;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxDAO;
@@ -156,7 +157,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				});
 
 		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' " + getWhereClause();
-		MProductImportTableSqlUpdater.dbUpdateIsPriceCreated(whereClause);
+		MProductImportTableSqlUpdater.dbUpdateIsPriceCreated(whereClause, I_I_Pharma_Product.COLUMNNAME_IsPriceCreated);
 	}
 
 	private List<I_M_PriceList_Version> retrieveLatestPriceListVersion()
@@ -165,7 +166,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 		final List<I_M_PriceList> matchedPriceList = retrievePriceLists();
 		matchedPriceList.forEach(priceList -> {
-			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceList.getM_PriceList_ID());
+			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
 			if (plv != null)
 			{
 				priceListVersions.add(plv);
