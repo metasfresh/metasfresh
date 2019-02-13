@@ -742,19 +742,19 @@ class Table extends Component {
 
   getProductRange = id => {
     const { keyProperty } = this.props;
-    const { rows } = this.state;
+    const { rows, selected } = this.state;
     let arrayIndex;
     let selectIdA;
     let selectIdB;
 
     arrayIndex = rows.map(item => item[keyProperty]);
     selectIdA = arrayIndex.findIndex(x => x === id);
-    selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0]);
+    selectIdB = arrayIndex.findIndex(x => x === selected[0]);
 
-    let selected = [selectIdA, selectIdB];
+    const selectedArr = [selectIdA, selectIdB];
 
-    selected.sort((a, b) => a - b);
-    return arrayIndex.slice(selected[0], selected[1] + 1);
+    selectedArr.sort((a, b) => a - b);
+    return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
   };
 
   handleBatchEntryToggle = () => {
@@ -1143,9 +1143,9 @@ class Table extends Component {
                 updateDocList,
               }}
               selected={selected || [undefined]}
-              blur={() => this.closeContextMenu()}
+              blur={this.closeContextMenu}
               tabId={tabId}
-              deselect={() => this.deselectAllProducts()}
+              deselect={this.deselectAllProducts}
               handleFieldEdit={() => {
                 if (contextMenu.supportFieldEdit && selected.length === 1) {
                   this.handleFieldEdit(selected, contextMenu.fieldName);
@@ -1157,7 +1157,7 @@ class Table extends Component {
               onOpenNewTab={handleOpenNewTab}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
-                  ? () => this.handleDelete()
+                  ? this.handleDelete
                   : null
               }
               handleZoomInto={this.handleZoomInto}
@@ -1175,6 +1175,7 @@ class Table extends Component {
                     tabIndex,
                     isBatchEntry,
                     supportQuickInput,
+                    selected,
                   }}
                   docType={windowId}
                   tabId={tabId}
@@ -1278,17 +1279,17 @@ class Table extends Component {
             handleAdvancedEdit={
               selected && selected.length > 0 && selected[0]
                 ? () => this.handleAdvancedEdit(windowId, tabId, selected)
-                : ''
+                : undefined
             }
             handleOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
                 ? () => handleOpenNewTab(selected, windowId)
-                : ''
+                : undefined
             }
             handleDelete={
               selected && selected.length > 0 && selected[0]
-                ? () => this.handleDelete()
-                : ''
+                ? this.handleDelete
+                : undefined
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
@@ -1298,7 +1299,7 @@ class Table extends Component {
         {allowShortcut && !readonly && (
           <TableContextShortcuts
             handleToggleQuickInput={this.handleBatchEntryToggle}
-            handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+            handleToggleExpand={toggleFullScreen}
           />
         )}
       </div>

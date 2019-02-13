@@ -37,6 +37,7 @@ class Tab extends Component {
 
 Tab.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  children: PropTypes.any,
 };
 
 export default connect()(Tab);

@@ -4,8 +4,59 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
+import { topActionsRequest } from '../../api';
+import { openModal } from '../../actions/WindowActions';
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
+
+class ActionButton extends Component {
+  static propTypes = {
+    action: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    docId: PropTypes.number,
+    tabIndex: PropTypes.number,
+  };
+
+  handleClick = () => {
+    const { dispatch, action, docId } = this.props;
+
+    if (action.disabled) {
+      return;
+    }
+
+    dispatch(
+      openModal(
+        action.caption,
+        action.processId,
+        'process',
+        null,
+        null,
+        false,
+        null,
+        [docId],
+        null,
+        null,
+        null,
+        null
+      )
+    );
+  };
+
+  render() {
+    const { action, tabIndex } = this.props;
+
+    return (
+      <button
+        onClick={this.handleClick}
+        className="btn btn-meta-outline-secondary btn-distance btn-sm"
+        tabIndex={tabIndex}
+        title={action.description}
+      >
+        {action.caption}
+      </button>
+    );
+  }
+}
 
 class TableFilter extends Component {
   constructor(props) {
@@ -13,23 +64,52 @@ class TableFilter extends Component {
 
     this.state = {
       isTooltipShow: false,
+      actions: [],
     };
   }
 
-  toggleTooltip = (key = null) => {
+  componentDidMount() {
+    this.getActions();
+  }
+
+  getActions = () => {
+    const { tabId, docType, docId } = this.props;
+
+    topActionsRequest(docType, docId, tabId).then(({ data }) => {
+      this.setState({
+        actions: data.actions,
+      });
+    });
+  };
+
+  showTooltip = () => {
+    this.setState({
+      isTooltipShow: keymap.TOGGLE_QUICK_INPUT,
+    });
+  };
+
+  hideTooltip = (key = null) => {
     this.setState({
       isTooltipShow: key,
     });
   };
 
+  showExpandTooltip = () => {
+    this.setState({
+      isTooltipShow: keymap.TOGGLE_EXPAND,
+    });
+  };
+
   render() {
     const {
+      dispatch,
       openModal,
       toggleFullScreen,
       fullScreen,
       docType,
       docId,
       tabId,
+      selected,
       isBatchEntry,
       handleBatchEntryToggle,
       supportQuickInput,
@@ -37,8 +117,7 @@ class TableFilter extends Component {
       modalVisible,
       wrapperHeight,
     } = this.props;
-
-    const { isTooltipShow } = this.state;
+    const { isTooltipShow, actions } = this.state;
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
@@ -58,10 +137,8 @@ class TableFilter extends Component {
               <button
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={handleBatchEntryToggle}
-                onMouseEnter={() =>
-                  this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
-                }
-                onMouseLeave={this.toggleTooltip}
+                onMouseEnter={this.showTooltip}
+                onMouseLeave={this.hideTooltip}
                 tabIndex={tabIndex}
               >
                 {isBatchEntry
@@ -82,6 +159,22 @@ class TableFilter extends Component {
                 )}
               </button>
             )}
+            {!isBatchEntry && actions.length
+              ? actions.map(action => (
+                  <ActionButton
+                    {...{
+                      dispatch,
+                      tabIndex,
+                      action,
+                      docId,
+                      tabId,
+                      docType,
+                      selected,
+                    }}
+                    key={`top-action-${action.processId}`}
+                  />
+                ))
+              : null}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
@@ -99,9 +192,9 @@ class TableFilter extends Component {
         {
           <button
             className="btn-icon btn-meta-outline-secondary pointer"
-            onClick={() => toggleFullScreen(!fullScreen)}
-            onMouseEnter={() => this.toggleTooltip(keymap.TOGGLE_EXPAND)}
-            onMouseLeave={this.toggleTooltip}
+            onClick={toggleFullScreen}
+            onMouseEnter={this.showExpandTooltip}
+            onMouseLeave={this.hideTooltip}
             tabIndex="-1"
           >
             {fullScreen ? (
