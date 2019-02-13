@@ -260,13 +260,26 @@
 			https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
 			and 
 			https://github.com/json-snapshot/json-snapshot.github.io/issues/9#issuecomment-462880359 -->
+		<!-- This lib has two different versions (1.2.0 and 1.3.2) of junit-platform-commons in its dependency tree
+			that's why we exclude them and then explicitly add 1.3.2 -->
 		<dependency>
 			<groupId>io.github.json-snapshot</groupId>
 			<artifactId>json-snapshot-PR</artifactId>
 			<version>1.0.16</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.platform</groupId>
+					<artifactId>junit-platform-commons</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-commons</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
