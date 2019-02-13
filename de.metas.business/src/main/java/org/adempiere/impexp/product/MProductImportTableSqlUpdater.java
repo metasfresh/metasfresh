@@ -542,7 +542,7 @@ public class MProductImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + columnname +" = 'Y' ")
-				.append(" WHERE 1=1 ")
+				.append(" WHERE 1=1 AND ")
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}

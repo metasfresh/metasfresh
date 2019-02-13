@@ -163,7 +163,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 					productPriceCloning.cloneProductPrice();
 				});
 
-		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' AND " + getWhereClause();
+		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' ";
 		MProductImportTableSqlUpdater.dbUpdateIsPriceCreated(whereClause, I_I_Pharma_Product.COLUMNNAME_IsPriceCreated);
 	}
 
