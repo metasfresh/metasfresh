@@ -64,6 +64,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -76,7 +77,6 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MOrder;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
@@ -418,7 +418,7 @@ public class VOrderPlanning extends CPanel
 	private String find()
 	{
 		int AD_Window_ID = MTable.get(Env.getCtx(), MOrder.Table_ID).getAD_Window_ID();
-		int AD_Tab_ID = MTab.getTab_ID(AD_Window_ID, "Order");
+		int AD_Tab_ID = getTab_ID(AD_Window_ID, "Order");
 		//
 		Find find = Find.builder()
 				.setParentFrame(SwingUtils.getFrame(this))
@@ -436,6 +436,19 @@ public class VOrderPlanning extends CPanel
 		else
 			return "";
 	}
+
+	// begin e-evolution vpj-cd
+	/**
+	 * 	get Tab ID
+	 *	@param String AD_Window_ID
+	 *	@param String TabName
+	 *	@return int retValue
+	 */
+	private static int getTab_ID(int AD_Window_ID , String TabName) {
+		String SQL = "SELECT AD_Tab_ID FROM AD_Tab WHERE AD_Window_ID= ?  AND Name = ?";
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, SQL, AD_Window_ID, TabName);
+	}
+	//end vpj-cd e-evolution
 
 	/*
 	 * private MField[] getFields()
