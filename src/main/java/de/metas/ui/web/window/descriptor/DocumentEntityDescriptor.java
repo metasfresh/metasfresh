@@ -105,6 +105,7 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression allowDeleteLogic;
 	private final ILogicExpression readonlyLogic;
 	private final ILogicExpression displayLogic;
+	private final boolean allowQuickInput;
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	private final ImmutableList<DocumentFieldDescriptor> idFields;
@@ -146,6 +147,7 @@ public class DocumentEntityDescriptor
 		allowDeleteLogic = builder.getAllowDeleteLogic();
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
+		allowQuickInput = builder.isAllowQuickInput();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
@@ -268,6 +270,11 @@ public class DocumentEntityDescriptor
 	public ILogicExpression getDisplayLogic()
 	{
 		return displayLogic;
+	}
+
+	public boolean isAllowQuickInput()
+	{
+		return allowQuickInput;
 	}
 
 	public boolean hasIdFields()
@@ -506,6 +513,7 @@ public class DocumentEntityDescriptor
 		private ILogicExpression _allowDeleteLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
+		private boolean _allowQuickInput = false;
 
 		//
 		// Callouts
@@ -1001,6 +1009,17 @@ public class DocumentEntityDescriptor
 		private ILogicExpression getReadonlyLogic()
 		{
 			return _readonlyLogic;
+		}
+
+		public Builder setAllowQuickInput(final boolean allowQuickInput)
+		{
+			this._allowQuickInput = allowQuickInput;
+			return this;
+		}
+
+		public boolean isAllowQuickInput()
+		{
+			return _allowQuickInput;
 		}
 
 		/**
