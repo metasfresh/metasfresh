@@ -50,6 +50,8 @@
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
+		<jackson.version>2.9.8</jackson.version>
+
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -72,24 +74,24 @@
 		<module>de.metas.adempiere.libero.liberoHR</module>
 
 		<module>de.metas.acct.base</module>
-		
+
 		<module>de.metas.async</module>
 
 		<module>de.metas.aggregation</module>
 
 		<module>de.metas.business</module>
-		
+
 
 		<module>de.metas.jax.rs</module>
 
 		<module>de.metas.report</module>
-		
+
 		<module>de.metas.device.adempiere</module>
 		<module>de.metas.device.api</module>
 		<module>de.metas.device.scales</module>
 
 		<module>de.metas.dimension</module> <!-- task 08681 -->
-		
+
 		<module>de.metas.document.archive.api</module>
 		<module>de.metas.document.archive</module>
 
@@ -98,11 +100,11 @@
 
 		<module>de.metas.dunning_gateway.api</module>
 		<module>de.metas.dunning_gateway.spi</module>
-		
+
 		<module>de.metas.dlm</module>
 
 		<module>de.metas.edi</module>
-		
+
 		<module>de.metas.elasticsearch</module>
 		<module>de.metas.elasticsearch.server</module>
 
@@ -111,7 +113,7 @@
 
 		<module>de.metas.invoice_gateway.api</module>
 		<module>de.metas.invoice_gateway.spi</module>
-		
+
 		<module>de.metas.inbound.mail</module>
 
 		<module>de.metas.fresh</module>
@@ -126,7 +128,7 @@
 		<module>de.metas.handlingunits.client</module>
 
 		<module>de.metas.order.rest-api</module>
-		
+
 		<module>de.metas.ordercandidate.rest-api</module>
 		<module>de.metas.ordercandidate.rest-api-impl</module>
 
@@ -158,7 +160,7 @@
 		<!-- commented out because we don't include it in any distribution 
 		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
 		-->
-		
+
 		<module>de.metas.ui.web.base</module>
 
 		<module>de.metas.util</module>
@@ -175,17 +177,29 @@
 		<module>de.metas.vertical.pharma.msv3.server</module>
 		<module>de.metas.vertical.pharma.msv3.server-peer</module>
 		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
-		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>		
+		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>
 
 		<module>vertical-healthcare_ch</module>
 
-
 	</modules>
-
-
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>42.2.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
 			<!-- Import dependency management from Spring Boot -->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>

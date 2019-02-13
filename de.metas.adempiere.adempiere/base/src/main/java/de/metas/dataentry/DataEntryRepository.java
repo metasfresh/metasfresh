@@ -5,6 +5,7 @@ import static de.metas.util.Check.fail;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Tab;
@@ -50,7 +51,7 @@ import lombok.NonNull;
 @Repository
 public class DataEntryRepository
 {
-	public List<DataEntryGroup> getByWindowId(final int adWindowId)
+	public List<DataEntryGroup> getByWindowId(final AdWindowId adWindowId)
 	{
 		final List<I_DataEntry_Group> groupRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Group.class)
