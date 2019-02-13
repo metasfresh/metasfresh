@@ -14,7 +14,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 961683719L;
+	private static final long serialVersionUID = 304317719L;
 
     /** Standard Constructor */
     public X_AD_Tab (Properties ctx, int AD_Tab_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 			setAD_Tab_ID (0);
 			setAD_Table_ID (0);
 			setAD_Window_ID (0);
+			setAllowQuickInput (true); // Y
 			setEntityType (null); // U
 			setHasTree (false);
 			setIsAdvancedTab (false); // N
@@ -415,6 +416,29 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Schnelleingabe abschalten.
+		@param AllowQuickInput Schnelleingabe abschalten	  */
+	@Override
+	public void setAllowQuickInput (boolean AllowQuickInput)
+	{
+		set_Value (COLUMNNAME_AllowQuickInput, Boolean.valueOf(AllowQuickInput));
+	}
+
+	/** Get Schnelleingabe abschalten.
+		@return Schnelleingabe abschalten	  */
+	@Override
+	public boolean isAllowQuickInput () 
+	{
+		Object oo = get_Value(COLUMNNAME_AllowQuickInput);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Speicherwarnung.
