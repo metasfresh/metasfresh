@@ -221,6 +221,7 @@ import lombok.NonNull;
 				.setAllowCreateNewLogic(allowCreateNewLogic)
 				.setAllowDeleteLogic(allowDeleteLogic)
 				.setDisplayLogic(displayLogic)
+				.setAllowQuickInput(gridTabVO.isAllowQuickInput())
 				//
 				.setDataBinding(dataBinding)
 				.setHighVolume(gridTabVO.IsHighVolume)
