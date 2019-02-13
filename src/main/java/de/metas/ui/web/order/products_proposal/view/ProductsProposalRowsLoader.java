@@ -68,17 +68,6 @@ import lombok.Singular;
 
 final class ProductsProposalRowsLoader
 {
-	public static ProductsProposalRowsLoaderBuilder prepareFrom(final ProductsProposalRowsData rowsData)
-	{
-		return ProductsProposalRowsLoader.builder()
-				.priceListVersionIds(rowsData.getPriceListVersionIds())
-				// TODO .productIdsToExclude(rowsData.getPr)
-				// TODO .bpartnerProductStatsService(bpartnerProductStatsService)
-				.bpartnerId(rowsData.getBpartnerId())
-				.soTrx(rowsData.getSoTrx())
-				.orderId(rowsData.getOrderId());
-	}
-
 	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -122,10 +111,22 @@ final class ProductsProposalRowsLoader
 		List<ProductsProposalRow> rows = loadRows();
 		rows = updateLastShipmentDays(rows);
 
+		final PriceListVersionId singlePriceListVersionId = priceListVersionIds.size() == 1 ? priceListVersionIds.iterator().next() : null;
+		final PriceListVersionId basePriceListVersionId;
+		if (singlePriceListVersionId != null)
+		{
+			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId);
+		}
+		else
+		{
+			basePriceListVersionId = null;
+		}
+
 		return ProductsProposalRowsData.builder()
 				.nextRowIdSequence(nextRowIdSequence)
 				.rows(rows)
-				.priceListVersionIds(priceListVersionIds)
+				.singlePriceListVersionId(singlePriceListVersionId)
+				.basePriceListVersionId(basePriceListVersionId)
 				.orderId(orderId)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)

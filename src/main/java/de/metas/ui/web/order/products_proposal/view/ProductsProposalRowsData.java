@@ -64,7 +64,11 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final ArrayList<DocumentId> rowIdsOrdered; // used to preserve the order
 	private final HashMap<DocumentId, ProductsProposalRow> rowsById;
 
-	private final ImmutableSet<PriceListVersionId> priceListVersionIds;
+	@Getter
+	private final PriceListVersionId singlePriceListVersionId;
+	@Getter
+	private final PriceListVersionId basePriceListVersionId;
+
 	@Getter
 	private final OrderId orderId;
 	@Getter
@@ -78,7 +82,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private ProductsProposalRowsData(
 			@NonNull final DocumentIdIntSequence nextRowIdSequence,
 			@NonNull final List<ProductsProposalRow> rows,
-			@NonNull final ImmutableSet<PriceListVersionId> priceListVersionIds,
+			@Nullable final PriceListVersionId singlePriceListVersionId,
+			@Nullable final PriceListVersionId basePriceListVersionId,
 			@Nullable final OrderId orderId,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx)
@@ -93,7 +98,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowsById = rows.stream()
 				.collect(GuavaCollectors.toMapByKey(HashMap::new, ProductsProposalRow::getId));
 
-		this.priceListVersionIds = priceListVersionIds;
+		this.singlePriceListVersionId = singlePriceListVersionId;
+		this.basePriceListVersionId = basePriceListVersionId;
 		this.orderId = orderId;
 		this.bpartnerId = bpartnerId;
 		this.soTrx = soTrx;
@@ -171,18 +177,6 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 			return mapper.apply(oldRow);
 		});
-	}
-
-	public ImmutableSet<PriceListVersionId> getPriceListVersionIds()
-	{
-		return priceListVersionIds;
-	}
-
-	public PriceListVersionId getSinglePriceListVersionIdOrNull()
-	{
-		return priceListVersionIds.size() == 1
-				? priceListVersionIds.iterator().next()
-				: null;
 	}
 
 	public synchronized Set<ProductId> getProductIds()
