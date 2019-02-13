@@ -264,7 +264,7 @@ class SubHeader extends Component {
             );
           }
         },
-        icon: 'meta-icon-delete',
+        icon: 'meta-icon-more',
         // caption: counterpart.translate('window.About.caption'),
         caption: 'About',
         hotkey: keymap.ABOUT_DOCUMENT,
