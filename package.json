@@ -160,6 +160,7 @@
     "redux-promise": "0.6.0",
     "redux-test-utils": "0.3.0",
     "redux-thunk": "2.2.0",
+    "reselect": "4.0.0",
     "simple-promise-queue": "0.1.7",
     "sockjs-client": "1.0.0",
     "stompjs": "2.3.3",

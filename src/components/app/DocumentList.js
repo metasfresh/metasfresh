@@ -81,6 +81,7 @@ export class DocumentList extends Component {
       isShowIncluded: false,
       hasShowIncluded: false,
       triggerSpinner: true,
+      rowDataMap: Map({ 1: List() }),
 
       // in some scenarios we don't want to reload table data
       // after edit, as it triggers request, collapses rows and looses selection
@@ -155,6 +156,7 @@ export class DocumentList extends Component {
       this.setState(
         {
           data: null,
+          rowDataMap: Map({ 1: List() }),
           layout: null,
           filtersActive: Map(),
           initialValuesNulled: Map(),
@@ -245,8 +247,8 @@ export class DocumentList extends Component {
               data: {
                 ...this.state.data,
                 result: rowsList,
-                rowIds: rowsList.map(row => row.id),
               },
+              rowDataMap: Map({ 1: rowsList }),
             });
           }
         );
@@ -510,6 +512,7 @@ export class DocumentList extends Component {
               ...response.data,
               result,
             },
+            rowDataMap: Map({ 1: result }),
             selected: selection,
           }));
 
@@ -528,8 +531,8 @@ export class DocumentList extends Component {
           data: {
             ...response.data,
             result,
-            rowIds: List(result.map(row => row.id)),
           },
+          rowDataMap: Map({ 1: result }),
           pageColumnInfosByFieldName: pageColumnInfosByFieldName,
           triggerSpinner: false,
         };
@@ -765,6 +768,7 @@ export class DocumentList extends Component {
       toggleWidth,
       rowEdited,
       initialValuesNulled,
+      rowDataMap,
     } = this.state;
     let { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -872,7 +876,6 @@ export class DocumentList extends Component {
                   this.quickActionsComponent = c && c.getWrappedInstance();
                 }}
                 selected={selected}
-                rows={data && data.rowIds ? data.rowIds : undefined}
                 viewId={viewId}
                 windowType={windowType}
                 fetchOnInit={fetchQuickActionsOnInit}
@@ -920,7 +923,7 @@ export class DocumentList extends Component {
                   c.getWrappedInstance() &&
                   c.getWrappedInstance().instanceRef)
               }
-              rowData={Map({ 1: data.result })}
+              rowData={rowDataMap}
               cols={layout.elements}
               collapsible={layout.collapsible}
               expandedDepth={layout.expandedDepth}
@@ -933,7 +936,7 @@ export class DocumentList extends Component {
               rowEdited={rowEdited}
               onRowEdited={this.setTableRowEdited}
               keyProperty="id"
-              onDoubleClick={id => !isIncluded && this.redirectToDocument(id)}
+              onDoubleClick={this.redirectToDocument}
               size={data.size}
               pageLength={this.pageLength}
               handleChangePage={this.handleChangePage}

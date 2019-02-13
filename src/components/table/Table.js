@@ -1,7 +1,6 @@
 import update from 'immutability-helper';
 import { is } from 'immutable';
 import * as _ from 'lodash';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -28,6 +27,8 @@ import {
   getSizeClass,
   handleCopy,
   handleOpenNewTab,
+  propTypes,
+  constructorFn,
 } from '../../utils/tableHelpers';
 import {
   getRowsData,
@@ -36,59 +37,22 @@ import {
 } from '../../utils/documentListHelper';
 
 class Table extends Component {
-  static propTypes = {
-    // from @connect
-    dispatch: PropTypes.func.isRequired,
-
-    // from <DocumentList>
-    autofocus: PropTypes.bool,
-    rowEdited: PropTypes.bool,
-    onSelectionChanged: PropTypes.func,
-    onRowEdited: PropTypes.func,
-    defaultSelected: PropTypes.array,
-    disableOnClickOutside: PropTypes.func,
-    limitOnClickOutside: PropTypes.bool,
-    supportOpenRecord: PropTypes.bool,
-  };
-
   _isMounted = false;
 
   constructor(props) {
     super(props);
 
-    const { defaultSelected, rowEdited } = props;
-
-    this.state = {
-      selected:
-        defaultSelected && defaultSelected !== null
-          ? defaultSelected
-          : [undefined],
-      listenOnKeys: true,
-      contextMenu: {
-        open: false,
-        x: 0,
-        y: 0,
-        fieldName: null,
-        supportZoomInto: false,
-        supportFieldEdit: false,
-      },
-      promptOpen: false,
-      isBatchEntry: false,
-      rows: [],
-      collapsedRows: [],
-      collapsedParentsRows: [],
-      pendingInit: true,
-      collapsedArrayMap: [],
-      rowEdited: rowEdited,
-      tableRefreshToggle: false,
-    };
+    const constr = constructorFn.bind(this);
+    constr(props);
   }
 
   componentDidMount() {
+    const { rowData, tabid } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
-    this.getIndentData(true);
-
+    if (rowData.get(`${tabid}`)) {
+      this.getIndentData(true);
+    }
     if (this.props.autofocus) {
       this.table.focus();
     }
@@ -106,10 +70,9 @@ class Table extends Component {
       refreshSelection,
       openIncludedViewOnSelect,
       viewId,
+      tabid,
       isModal,
       hasIncluded,
-      rowEdited,
-      onRowEdited,
     } = this.props;
     const { selected, rows } = this.state;
     const selectedEqual = _.isEqual(prevState.selected, selected);
@@ -122,19 +85,17 @@ class Table extends Component {
       return;
     }
 
-    if (!_.isEqual(prevState.rows, rows)) {
+    if (rows && !_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
-        if (rows) {
-          let firstRow = rows[0];
+        let firstRow = rows[0];
 
-          if (firstRow) {
-            if (openIncludedViewOnSelect) {
-              this.showSelectedIncludedView([firstRow.id]);
-            }
+        if (firstRow) {
+          if (openIncludedViewOnSelect) {
+            this.showSelectedIncludedView([firstRow.id]);
+          }
 
-            if (firstRow.id && !selectedEqual) {
-              this.selectOneProduct(firstRow.id);
-            }
+          if (firstRow.id && !selectedEqual) {
+            this.selectOneProduct(firstRow.id);
           }
         }
       }
@@ -164,32 +125,29 @@ class Table extends Component {
       );
     }
 
-    if (!is(prevProps.rowData, rowData)) {
-      // special case for the picking terminal
-      const firstLoad = prevProps.rowData.get(1) ? false : true;
-
-      // this prevents collapsing rows when table cell was edited, for instance
-      // in purchase orders
-      if (!rowEdited) {
-        this.getIndentData(firstLoad);
-      } else {
-        onRowEdited && onRowEdited(false);
+    if (prevProps.viewId !== viewId && rowData.get(`${tabid}`)) {
+      if (defaultSelected && defaultSelected.length === 0) {
+        this.setState({ selected: defaultSelected });
       }
-    }
 
-    if (
-      prevProps.viewId !== viewId &&
-      defaultSelected &&
-      defaultSelected.length === 0
-    ) {
-      this.setState(
-        {
-          selected: defaultSelected,
-        },
-        () => {
-          this.getIndentData(true);
-        }
-      );
+      const firstLoad =
+        prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size
+          ? false
+          : true;
+
+      this.getIndentData(firstLoad);
+    } else if (rowData.get(`${tabid}`) && !is(prevProps.rowData, rowData)) {
+      let firstLoad = rowData.get(`${tabid}`).size ? false : true;
+
+      if (
+        prevProps.rowData.get(`${tabid}`) &&
+        !prevProps.rowData.get(`${tabid}`).size &&
+        rowData.get(`${tabid}`).size
+      ) {
+        firstLoad = true;
+      }
+
+      this.getIndentData(firstLoad);
     }
   }
 
@@ -244,7 +202,7 @@ class Table extends Component {
     const { selected } = this.state;
     let rowsData = [];
 
-    if (indentSupported && rowData.get(`${tabid}`)) {
+    if (indentSupported && rowData.get(`${tabid}`).size) {
       rowsData = getRowsData(rowData.get(`${tabid}`));
       let stateChange = {
         rows: rowsData,
@@ -296,17 +254,29 @@ class Table extends Component {
             }
           });
 
-          this.setState({
-            collapsedArrayMap: mapCollapsed,
-            collapsedRows: updatedRows,
-            collapsedParentsRows: updatedParentsRows,
-          });
+          const updatedState = {};
+
+          if (mapCollapsed.length) {
+            updatedState.collapsedArrayMap = mapCollapsed;
+          }
+          if (updatedRows.length) {
+            updatedState.collapsedRows = updatedRows;
+          }
+          if (updatedParentsRows.length) {
+            updatedState.collapsedParentsRows = updatedParentsRows;
+          }
+
+          if (Object.keys(updatedState).length) {
+            this.setState({ ...updatedState });
+          }
         }
       });
     } else {
-      rowsData = rowData.get(`${tabid}`)
-        ? rowData.get(`${tabid}`).toArray()
-        : [];
+      rowsData =
+        rowData.get(`${tabid}`) && rowData.get(`${tabid}`).size
+          ? rowData.get(`${tabid}`).toArray()
+          : [];
+
       this.setState({
         rows: rowsData,
         pendingInit: !rowData.get(`${tabid}`),
@@ -315,9 +285,11 @@ class Table extends Component {
 
     if (rowsData.length) {
       setTimeout(() => {
-        this.setState({
-          tableRefreshToggle: !this.state.mounted,
-        });
+        if (this._isMounted) {
+          this.setState({
+            tableRefreshToggle: !this.state.mounted,
+          });
+        }
       }, 1);
     }
   };
@@ -539,13 +511,7 @@ class Table extends Component {
   };
 
   handleKeyDown = e => {
-    const {
-      keyProperty,
-      mainTable,
-      readonly,
-      onDoubleClick,
-      closeOverlays,
-    } = this.props;
+    const { keyProperty, mainTable, readonly, closeOverlays } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
 
     if (!listenOnKeys) {
@@ -651,9 +617,10 @@ class Table extends Component {
         }
         break;
       case 'Enter':
-        if (selected.length <= 1 && onDoubleClick && readonly) {
+        if (selected.length <= 1 && readonly) {
           e.preventDefault();
-          onDoubleClick(selected[selected.length - 1]);
+
+          this.handleDoubleClick(selected[selected.length - 1]);
         }
         break;
       case 'Escape':
@@ -668,6 +635,14 @@ class Table extends Component {
         open: false,
       }),
     });
+  };
+
+  handleDoubleClick = id => {
+    const { isIncluded, onDoubleClick } = this.props;
+
+    if (!isIncluded) {
+      onDoubleClick && onDoubleClick(id);
+    }
   };
 
   handleClick = (e, keyProperty, item) => {
@@ -761,19 +736,19 @@ class Table extends Component {
 
   getProductRange = id => {
     const { keyProperty } = this.props;
-    const { rows } = this.state;
+    const { rows, selected } = this.state;
     let arrayIndex;
     let selectIdA;
     let selectIdB;
 
     arrayIndex = rows.map(item => item[keyProperty]);
     selectIdA = arrayIndex.findIndex(x => x === id);
-    selectIdB = arrayIndex.findIndex(x => x === this.state.selected[0]);
+    selectIdB = arrayIndex.findIndex(x => x === selected[0]);
 
-    let selected = [selectIdA, selectIdB];
+    const selectedArr = [selectIdA, selectIdB];
 
-    selected.sort((a, b) => a - b);
-    return arrayIndex.slice(selected[0], selected[1] + 1);
+    selectedArr.sort((a, b) => a - b);
+    return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
   };
 
   handleBatchEntryToggle = () => {
@@ -969,7 +944,6 @@ class Table extends Component {
       docId,
       readonly,
       keyProperty,
-      onDoubleClick,
       mainTable,
       newRow,
       tabIndex,
@@ -1010,6 +984,7 @@ class Table extends Component {
             readonly,
             collapsible,
             viewId,
+            supportOpenRecord,
           }}
           key={`${i}-${docId}`}
           collapsed={
@@ -1025,11 +1000,7 @@ class Table extends Component {
           }}
           rowId={item[keyProperty]}
           tabId={tabid}
-          onDoubleClick={() => {
-            if (supportOpenRecord) {
-              onDoubleClick && onDoubleClick(item[keyProperty]);
-            }
-          }}
+          onDoubleClick={this.handleDoubleClick}
           onClick={e => {
             const selected = this.handleClick(e, keyProperty, item);
 
@@ -1166,9 +1137,9 @@ class Table extends Component {
                 updateDocList,
               }}
               selected={selected || [undefined]}
-              blur={() => this.closeContextMenu()}
+              blur={this.closeContextMenu}
               tabId={tabid}
-              deselect={() => this.deselectAllProducts()}
+              deselect={this.deselectAllProducts}
               handleFieldEdit={() => {
                 if (contextMenu.supportFieldEdit && selected.length === 1) {
                   this.handleFieldEdit(selected, contextMenu.fieldName);
@@ -1180,7 +1151,7 @@ class Table extends Component {
               handleOpenNewTab={() => handleOpenNewTab(selected, type)}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
-                  ? () => this.handleDelete()
+                  ? this.handleDelete
                   : null
               }
               handleZoomInto={this.handleZoomInto}
@@ -1198,6 +1169,7 @@ class Table extends Component {
                     tabIndex,
                     isBatchEntry,
                     supportQuickInput,
+                    selected,
                   }}
                   docType={type}
                   tabId={tabid}
@@ -1301,17 +1273,17 @@ class Table extends Component {
             handleAdvancedEdit={
               selected && selected.length > 0 && selected[0]
                 ? () => this.handleAdvancedEdit(type, tabid, selected)
-                : ''
+                : undefined
             }
             handleOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
                 ? () => handleOpenNewTab(selected, type)
-                : ''
+                : undefined
             }
             handleDelete={
               selected && selected.length > 0 && selected[0]
-                ? () => this.handleDelete()
-                : ''
+                ? this.handleDelete
+                : undefined
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
@@ -1321,13 +1293,15 @@ class Table extends Component {
         {allowShortcut && !readonly && (
           <TableContextShortcuts
             handleToggleQuickInput={this.handleBatchEntryToggle}
-            handleToggleExpand={() => toggleFullScreen(!fullScreen)}
+            handleToggleExpand={toggleFullScreen}
           />
         )}
       </div>
     );
   }
 }
+
+Table.propTypes = propTypes;
 
 const mapStateToProps = state => ({
   allowShortcut: state.windowHandler.allowShortcut,

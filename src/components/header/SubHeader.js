@@ -8,20 +8,14 @@ import {
   elementPathRequest,
   updateBreadcrumb,
 } from '../../actions/MenuActions';
-import { getSelection } from '../../reducers/windowHandler';
+import { getSelectionInstant } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
 const simplifyName = name => name.toLowerCase().replace(/\s/g, '');
 
-class Subheader extends Component {
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    activeTab: PropTypes.string,
-    windowId: PropTypes.string.isRequired,
-  };
-
+class SubHeader extends Component {
   state = {
     pdfSrc: null,
     elementPath: '',
@@ -449,13 +443,19 @@ class Subheader extends Component {
   }
 }
 
+SubHeader.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  activeTab: PropTypes.string,
+  windowId: PropTypes.string.isRequired,
+};
+
 const mapStateToProps = (state, props) => ({
   standardActions: state.windowHandler.master.standardActions,
-  selected: getSelection({
+  selected: getSelectionInstant(
     state,
-    windowType: props.windowId,
-    viewId: props.viewId,
-  }),
+    props,
+    state.windowHandler.selectionsHash
+  ),
 });
 
-export default connect(mapStateToProps)(onClickOutside(Subheader));
+export default connect(mapStateToProps)(onClickOutside(SubHeader));
