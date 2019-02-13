@@ -36,7 +36,7 @@ export const RawWidgetPropTypes = {
   subentityId: PropTypes.string,
   tabIndex: PropTypes.number,
   dropdownOpenCallback: PropTypes.func,
-  fullScreen: PropTypes.string,
+  fullScreen: PropTypes.bool,
   widgetType: PropTypes.string,
   fields: PropTypes.array,
   icon: PropTypes.string,

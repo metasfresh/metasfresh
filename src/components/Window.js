@@ -29,11 +29,13 @@ class Window extends PureComponent {
         tabs: 3,
       };
     }
+
+    this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
   }
 
-  toggleTableFullScreen = tabId => {
+  toggleTableFullScreen = () => {
     this.setState({
-      fullScreen: tabId,
+      fullScreen: !this.state.fullScreen,
     });
   };
 
@@ -97,8 +99,10 @@ class Window extends PureComponent {
   };
 
   renderTabs = tabs => {
-    const { type } = this.props.layout;
-    const { data } = this.props;
+    const {
+      layout: { type },
+      data,
+    } = this.props;
     const { fullScreen } = this.state;
     const tabsArray = [];
     const tabsByIds = {};

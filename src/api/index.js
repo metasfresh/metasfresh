@@ -1,4 +1,4 @@
-import { initLayout, getAttributesInstance } from './window';
+import { initLayout, getAttributesInstance, topActionsRequest } from './window';
 import {
   getViewLayout,
   getViewRowsByIds,
@@ -28,6 +28,7 @@ import {
 export {
   initLayout,
   getAttributesInstance,
+  topActionsRequest,
   getViewLayout,
   getViewRowsByIds,
   browseViewRequest,
