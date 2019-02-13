@@ -43,6 +43,7 @@ import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -334,4 +335,6 @@ public interface IBPartnerDAO extends ISingletonService
 
 		boolean alsoTryRelation;
 	}
+
+	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
 }

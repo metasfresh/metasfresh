@@ -39,6 +39,7 @@ import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -120,7 +121,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 				final Properties ctx = Env.getCtx();
 
-				final int taxCategoryId = -1;
+				final TaxCategoryId taxCategoryId = null;
 
 				taxBL.getTax(
 						ctx

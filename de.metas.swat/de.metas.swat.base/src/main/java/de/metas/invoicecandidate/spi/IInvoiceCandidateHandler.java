@@ -40,6 +40,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -291,7 +292,7 @@ public interface IInvoiceCandidateHandler
 
 		Percent discount;
 
-		int taxCategoryId;
+		TaxCategoryId taxCategoryId;
 		Boolean taxIncluded;
 
 		BigDecimal compensationGroupBaseAmt;

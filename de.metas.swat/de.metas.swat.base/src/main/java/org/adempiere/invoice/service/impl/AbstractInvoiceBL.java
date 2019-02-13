@@ -97,6 +97,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -1367,21 +1368,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final int getTaxCategory(final I_C_InvoiceLine invoiceLine)
+	public final TaxCategoryId getTaxCategoryId(final I_C_InvoiceLine invoiceLine)
 	{
 		// In case we have a charge, use the tax category from charge
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return invoiceLine.getC_Charge().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
 		}
 
 		final IPricingContext pricingCtx = Services.get(IInvoiceLineBL.class).createPricingContext(invoiceLine);
 		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
-			return -1;
+			return null;
 		}
-		return pricingResult.getC_TaxCategory_ID();
+		
+		return pricingResult.getTaxCategoryId();
 	}
 
 	@Override

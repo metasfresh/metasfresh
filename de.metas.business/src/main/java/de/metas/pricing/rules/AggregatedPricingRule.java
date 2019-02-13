@@ -3,36 +3,16 @@
  */
 package de.metas.pricing.rules;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import lombok.ToString;
 
 /**
  * Helper class which aggregates multiple {@link IPricingRule}s.
@@ -40,50 +20,21 @@ import de.metas.pricing.IPricingResult;
  * @author tsa
  *
  */
+@ToString
 public final class AggregatedPricingRule implements IPricingRule
 {
+	public static AggregatedPricingRule of(final List<IPricingRule> rules)
+	{
+		return new AggregatedPricingRule(rules);
+	}
+
 	private static final transient Logger logger = LogManager.getLogger(AggregatedPricingRule.class);
 
-	private final List<IPricingRule> rules = new ArrayList<>();
+	private final ImmutableList<IPricingRule> rules;
 
-	/**
-	 * Add a {@link IPricingRule} child.
-	 *
-	 * Please note that the <code>rule</code> won't be added if
-	 * <ul>
-	 * <li>rule was already added
-	 * <li>an instance of the same class as given rule was already added
-	 * </ul>
-	 *
-	 * @param rule
-	 */
-	public void addPricingRule(final IPricingRule rule)
+	private AggregatedPricingRule(final List<IPricingRule> rules)
 	{
-		if (rule == null)
-		{
-			return;
-		}
-		if (rules.contains(rule))
-		{
-			return;
-		}
-
-		for (final IPricingRule r : rules)
-		{
-			if (rule.equals(r))
-			{
-				logger.debug("PricingRule already registered: " + rule + " [SKIP]");
-				return;
-			}
-			if (rule.getClass().equals(r.getClass()))
-			{
-				logger.debug("PricingRule with same class already registered: " + rule + " (class=" + rule.getClass() + ") [SKIP]");
-				return;
-			}
-		}
-
-		logger.trace("PricingRule registered: {}", rule);
-		rules.add(rule);
+		this.rules = ImmutableList.copyOf(rules);
 	}
 
 	/**
@@ -139,11 +90,5 @@ public final class AggregatedPricingRule implements IPricingRule
 			result.addPricingRuleApplied(rule);
 			logger.debug("Applied rule {}, result: {}", rule, result);
 		}
-	}
-
-	@Override
-	public String toString()
-	{
-		return "AggregatedPricingRule[" + rules + "]";
 	}
 }

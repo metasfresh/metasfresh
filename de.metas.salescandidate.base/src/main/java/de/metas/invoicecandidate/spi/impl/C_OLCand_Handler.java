@@ -62,6 +62,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -220,7 +221,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final int taxId = taxBL.getTax(
 				ctx,
 				ic, // model
-				olc.getC_TaxCategory_ID(),
+				TaxCategoryId.ofRepoIdOrNull(olc.getC_TaxCategory_ID()),
 				productId,
 				Util.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
 				orgId,

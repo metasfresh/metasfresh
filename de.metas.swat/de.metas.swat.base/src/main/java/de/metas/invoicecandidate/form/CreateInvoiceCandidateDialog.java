@@ -92,6 +92,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -445,7 +446,7 @@ public class CreateInvoiceCandidateDialog
 		{
 			final Properties ctx = contextProvider.getCtx();
 
-			final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
+			final TaxCategoryId taxCategoryId = null; // FIXME for accuracy, we will need the tax category
 
 			priceTaxId = Services.get(ITaxBL.class).getTax(
 					ctx,

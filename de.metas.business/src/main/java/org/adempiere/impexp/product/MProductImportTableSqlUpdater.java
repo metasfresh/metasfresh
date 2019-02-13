@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -373,11 +374,11 @@ public class MProductImportTableSqlUpdater
 
 		// Set default C_TaxCategory_ID where it was not set
 		{
-			final int taxCategoryId = Services.get(ITaxBL.class).retrieveRegularTaxCategoryId();
+			final TaxCategoryId taxCategoryId = Services.get(ITaxBL.class).retrieveRegularTaxCategoryId();
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i ")
 					.append(" set C_TaxCategory_ID = ")
-					.append(taxCategoryId)
+					.append(taxCategoryId.getRepoId())
 					.append(" where true")
 					.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 					.append(" and i.C_TaxCategory_ID is null")

@@ -56,6 +56,7 @@ import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.api.impl.FreightCostBL;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.logging.LogManager;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 
 /**
@@ -286,8 +287,8 @@ public class FreightCostValidator implements ModelValidator
 		freightCostLine.setQtyInvoiced(BigDecimal.ONE);
 		
 		
-		final int taxCategoryId = Services.get(IInvoiceLineBL.class).getC_TaxCategory_ID(freightCostLine);
-		freightCostLine.setC_TaxCategory_ID(taxCategoryId);
+		final TaxCategoryId taxCategoryId = Services.get(IInvoiceLineBL.class).getTaxCategoryId(freightCostLine);
+		freightCostLine.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
 
 		InterfaceWrapperHelper.save(freightCostLine);
 
