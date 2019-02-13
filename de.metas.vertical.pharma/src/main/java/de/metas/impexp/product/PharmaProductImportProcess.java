@@ -7,9 +7,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -28,6 +31,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -36,6 +42,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery.VATType;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
@@ -156,7 +163,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 					productPriceCloning.cloneProductPrice();
 				});
 
-		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' " + getWhereClause();
+		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' AND " + getWhereClause();
 		MProductImportTableSqlUpdater.dbUpdateIsPriceCreated(whereClause, I_I_Pharma_Product.COLUMNNAME_IsPriceCreated);
 	}
 
@@ -164,9 +171,9 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		final List<I_M_PriceList_Version> priceListVersions = new ArrayList<>();
 
-		final List<I_M_PriceList> matchedPriceList = retrievePriceLists();
-		matchedPriceList.forEach(priceList -> {
-			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		final Set<PriceListId> priceListIds = retrievePriceLists();
+		priceListIds.forEach(priceListId -> {
+			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
 			if (plv != null)
 			{
 				priceListVersions.add(plv);
@@ -176,45 +183,43 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		return priceListVersions;
 	}
 
-	private List<I_M_PriceList> retrievePriceLists()
+	private Set<PriceListId> retrievePriceLists()
 	{
-		final String whereClause = "1=1 AND " + I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' " + getWhereClause();
-		final List<I_I_Pharma_Product> importRecords = retrieveImportRecords(I_I_Pharma_Product.class, whereClause);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final String trxName = ITrx.TRXNAME_None;
 
-		final List<I_M_PriceList> matchedPriceList = new ArrayList<>();
-		importRecords.forEach(record -> {
+		final IQuery<I_I_Pharma_Product> pharmaPriceListQuery = queryBL.createQueryBuilder(I_I_Pharma_Product.class, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_I_Pharma_Product.COLUMNNAME_IsPriceCreated, false)
+					.create();
 
-			if (record.getAEP_Price_List() != null)
-			{
-				matchedPriceList.add(record.getAEP_Price_List());
-			}
+		return queryBL.createQueryBuilder(I_M_PriceList.class, trxName)
+				.setJoinOr()
+				.addInSubQueryFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, I_I_Pharma_Product.COLUMNNAME_AEP_Price_List_ID, pharmaPriceListQuery)
+				.addInSubQueryFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, I_I_Pharma_Product.COLUMNNAME_APU_Price_List_ID, pharmaPriceListQuery)
+				.addInSubQueryFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, I_I_Pharma_Product.COLUMNNAME_AVP_Price_List_ID, pharmaPriceListQuery)
+				.addInSubQueryFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, I_I_Pharma_Product.COLUMNNAME_KAEP_Price_List_ID, pharmaPriceListQuery)
+				.addInSubQueryFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, I_I_Pharma_Product.COLUMNNAME_UVP_Price_List_ID, pharmaPriceListQuery)
+				.addInSubQueryFilter(I_M_PriceList.COLUMNNAME_M_PriceList_ID, I_I_Pharma_Product.COLUMNNAME_ZBV_Price_List_ID, pharmaPriceListQuery)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+				.create()
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
+				.listDistinct(I_M_PriceList.COLUMNNAME_M_PriceList_ID)
+				.stream()
+				.map(map -> extractPriceListIdorNull(map))
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
-			if (record.getAPU_Price_List() != null)
-			{
-				matchedPriceList.add(record.getAPU_Price_List());
-			}
-
-			if (record.getAVP_Price_List() != null)
-			{
-				matchedPriceList.add(record.getAVP_Price_List());
-			}
-
-			if (record.getKAEP_Price_List() != null)
-			{
-				matchedPriceList.add(record.getKAEP_Price_List());
-			}
-
-			if (record.getUVP_Price_List() != null)
-			{
-				matchedPriceList.add(record.getUVP_Price_List());
-			}
-
-			if (record.getZBV_Price_List() != null)
-			{
-				matchedPriceList.add(record.getZBV_Price_List());
-			}
-		});
-		return matchedPriceList;
+	private static final PriceListId extractPriceListIdorNull(final Map<String, Object> map)
+	{
+		final int priceListId = NumberUtils.asInt(map.get(I_M_PriceList.COLUMNNAME_M_PriceList_ID), -1);
+		if (priceListId <= 0)
+		{
+			// shall not happen
+			return null;
+		}
+		return PriceListId.ofRepoId(priceListId);
 	}
 
 	private <T> List<T> retrieveImportRecords(final Class<T> clazz, final String whereClause)
