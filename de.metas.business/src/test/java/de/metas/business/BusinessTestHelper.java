@@ -20,6 +20,7 @@ import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
 
 /*
  * #%L
@@ -239,7 +240,7 @@ public final class BusinessTestHelper
 	public static void createDefaultBusinessRecords()
 	{
 		final I_C_TaxCategory noTaxCategoryFound = newInstanceOutOfTrx(I_C_TaxCategory.class);
-		noTaxCategoryFound.setC_TaxCategory_ID(ITaxDAO.C_TAX_CATEGORY_ID_NO_CATEGORY_FOUND);
+		noTaxCategoryFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		save(noTaxCategoryFound);
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);

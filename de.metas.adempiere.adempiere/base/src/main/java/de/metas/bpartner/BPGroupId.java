@@ -1,5 +1,7 @@
 package de.metas.bpartner;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -58,5 +60,10 @@ public class BPGroupId implements RepoIdAware
 	public int toJson()
 	{
 		return getRepoId();
+	}
+
+	public static boolean equals(final BPGroupId o1, final BPGroupId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

@@ -43,6 +43,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -291,7 +292,7 @@ public class MOrderLine extends X_C_OrderLine
 	 */
 	public void setTax()
 	{
-		final int taxCategoryId = Services.get(IOrderLineBL.class).getC_TaxCategory_ID(this);
+		final TaxCategoryId taxCategoryId = Services.get(IOrderLineBL.class).getTaxCategoryId(this);
 
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);

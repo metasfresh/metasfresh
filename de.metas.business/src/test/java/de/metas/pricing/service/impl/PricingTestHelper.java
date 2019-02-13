@@ -33,6 +33,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -81,6 +82,7 @@ public class PricingTestHelper
 	public I_M_AttributeValue attr_Label_Bio;
 	public final I_M_AttributeValue attr_Label_NULL = null;
 
+	private final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(1);
 
 	public PricingTestHelper()
 	{
@@ -91,7 +93,8 @@ public class PricingTestHelper
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
 		//
-		defaultUOM = newInstance(I_C_UOM.class); saveRecord(defaultUOM);
+		defaultUOM = newInstance(I_C_UOM.class);
+		saveRecord(defaultUOM);
 		defaultProduct = createProduct("Product1", defaultUOM);
 		//
 		attr_Country = createM_Attribute("Country", X_M_Attribute.ATTRIBUTEVALUETYPE_List);
@@ -106,20 +109,11 @@ public class PricingTestHelper
 
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		return ImmutableList.copyOf(new String[] {
-				// "de.metas.handlingunits.pricing.spi.impl.HUPricing" //
-				"de.metas.pricing.attributebased.impl.AttributePricing" //
-				, "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB" //
-				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceList" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceList" //
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
-				// , "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule" //
-				// , "de.metas.flatrate.pricing.spi.impl.ContractDiscount" //
-		});
+		return ImmutableList.of(
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
+				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				de.metas.pricing.rules.Discount.class.getName());
 	}
 
 	private final void createPricingRules()
@@ -130,6 +124,7 @@ public class PricingTestHelper
 		for (final String classname : classnames)
 		{
 			final I_C_PricingRule pricingRule = InterfaceWrapperHelper.create(Env.getCtx(), I_C_PricingRule.class, ITrx.TRXNAME_None);
+			pricingRule.setName(classname);
 			pricingRule.setClassname(classname);
 			pricingRule.setIsActive(true);
 			pricingRule.setSeqNo(nextSeqNo);
@@ -239,7 +234,8 @@ public class PricingTestHelper
 
 	public ProductPriceBuilder newProductPriceBuilder()
 	{
-		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct);
+		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct)
+				.setTaxCategoryId(getTaxCategoryId());
 	}
 
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
@@ -265,5 +261,10 @@ public class PricingTestHelper
 	public I_M_Product getDefaultProduct()
 	{
 		return defaultProduct;
+	}
+
+	public TaxCategoryId getTaxCategoryId()
+	{
+		return taxCategoryId;
 	}
 }

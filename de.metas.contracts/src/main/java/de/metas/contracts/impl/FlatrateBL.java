@@ -104,6 +104,7 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -430,7 +431,7 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
-		final int taxCategoryId = term.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
@@ -561,7 +562,7 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
-		final int taxCategoryId = term.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
