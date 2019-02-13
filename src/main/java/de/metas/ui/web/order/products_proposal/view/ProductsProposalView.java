@@ -5,6 +5,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -137,7 +139,22 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 
 	public PriceListVersionId getSinglePriceListVersionIdOrNull()
 	{
-		return rowsData.getSinglePriceListVersionIdOrNull();
+		return rowsData.getSinglePriceListVersionId();
+	}
+
+	public PriceListVersionId getBasePriceListVersionId()
+	{
+		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdOrNull();
+		if (basePriceListVersionId == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@");
+		}
+		return basePriceListVersionId;
+	}
+
+	public PriceListVersionId getBasePriceListVersionIdOrNull()
+	{
+		return rowsData.getBasePriceListVersionId();
 	}
 
 	public List<ProductsProposalRow> getRowsWithQtySet()

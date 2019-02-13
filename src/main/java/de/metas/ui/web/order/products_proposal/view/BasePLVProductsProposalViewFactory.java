@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
@@ -21,7 +20,6 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -85,10 +83,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 
 	public final ProductsProposalView createView(@NonNull final ProductsProposalView parentView)
 	{
-		final PriceListVersionId priceListVersionId = parentView.getSinglePriceListVersionIdOrNull();
-
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final PriceListVersionId basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersionId);
+		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionId();
 
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
 				.priceListVersionId(basePriceListVersionId)

@@ -48,6 +48,12 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to save");
 		}
 
+		final ProductsProposalView view = getView();
+		if (view.getSinglePriceListVersionIdOrNull() == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no base price list version");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
