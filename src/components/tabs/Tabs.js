@@ -144,7 +144,7 @@ class Tabs extends Component {
   };
 
   renderTabs = tabs => {
-    const { toggleTableFullScreen, fullScreen, windowId } = this.props;
+    const { toggleTableFullScreen, windowId } = this.props;
     const { selected } = this.state;
 
     return tabs.map(item => {

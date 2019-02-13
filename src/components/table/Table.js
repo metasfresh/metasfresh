@@ -87,19 +87,19 @@ class Table extends Component {
 
     if (rows && !_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
-          let firstRow = rows[0];
+        let firstRow = rows[0];
 
-          if (firstRow) {
-            if (openIncludedViewOnSelect) {
-              this.showSelectedIncludedView([firstRow.id]);
-            }
+        if (firstRow) {
+          if (openIncludedViewOnSelect) {
+            this.showSelectedIncludedView([firstRow.id]);
+          }
 
-            if (firstRow.id && !selectedEqual) {
-              this.selectOneProduct(firstRow.id);
-            }
+          if (firstRow.id && !selectedEqual) {
+            this.selectOneProduct(firstRow.id);
           }
         }
       }
+    }
 
     if (mainTable && open) {
       this.table.focus();
@@ -135,17 +135,17 @@ class Table extends Component {
           ? false
           : true;
 
-        this.getIndentData(firstLoad);
+      this.getIndentData(firstLoad);
     } else if (rowData.get(`${tabid}`) && !is(prevProps.rowData, rowData)) {
       let firstLoad = rowData.get(`${tabid}`).size ? false : true;
 
-    if (
+      if (
         prevProps.rowData.get(`${tabid}`) &&
         !prevProps.rowData.get(`${tabid}`).size &&
         rowData.get(`${tabid}`).size
-    ) {
+      ) {
         firstLoad = true;
-        }
+      }
 
       this.getIndentData(firstLoad);
     }
@@ -258,7 +258,7 @@ class Table extends Component {
 
           if (mapCollapsed.length) {
             updatedState.collapsedArrayMap = mapCollapsed;
-        }
+          }
           if (updatedRows.length) {
             updatedState.collapsedRows = updatedRows;
           }
@@ -275,7 +275,7 @@ class Table extends Component {
       rowsData =
         rowData.get(`${tabId}`) && rowData.get(`${tabId}`).size
           ? rowData.get(`${tabId}`).toArray()
-        : [];
+          : [];
 
       this.setState({
         rows: rowsData,
@@ -286,9 +286,9 @@ class Table extends Component {
     if (rowsData.length) {
       setTimeout(() => {
         if (this._isMounted) {
-        this.setState({
-          tableRefreshToggle: !this.state.mounted,
-        });
+          this.setState({
+            tableRefreshToggle: !this.state.mounted,
+          });
         }
       }, 1);
     }
