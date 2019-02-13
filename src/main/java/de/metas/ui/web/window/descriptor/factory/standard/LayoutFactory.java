@@ -640,7 +640,7 @@ public class LayoutFactory
 
 		final Builder layoutSingleRow = layoutSingleRow();
 
-		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor
+		return DocumentLayoutDetailDescriptor
 				.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
 				.caption(entityDescriptor.getCaption())
 				.description(entityDescriptor.getDescription())
