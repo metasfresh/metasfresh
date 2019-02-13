@@ -85,6 +85,7 @@ import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -353,7 +354,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Set C_Tax from Product (07442)
 		final Properties ctx = getCtx(inOutLine);
-		final int taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : -1;
+		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 
@@ -784,7 +785,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
 				.priceListVersionId(pricingResult.getPriceListVersionId())
 				.currencyId(pricingResult.getCurrencyId())
-				.taxCategoryId(pricingResult.getC_TaxCategory_ID())
+				.taxCategoryId(pricingResult.getTaxCategoryId())
 				//
 				.priceEntered(pricingResult.getPriceStd())
 				.priceActual(pricingResult.getPriceStd())

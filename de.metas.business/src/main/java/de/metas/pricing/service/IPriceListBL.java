@@ -6,6 +6,7 @@ import org.adempiere.location.CountryId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -17,9 +18,9 @@ import de.metas.util.ISingletonService;
  */
 public interface IPriceListBL extends ISingletonService
 {
-	int getPricePrecision(PriceListId priceListId);
+	CurrencyPrecision getPricePrecision(PriceListId priceListId);
 
-	default int getPricePrecision(final int priceListId)
+	default CurrencyPrecision getPricePrecision(final int priceListId)
 	{
 		return getPricePrecision(PriceListId.ofRepoIdOrNull(priceListId));
 	}
