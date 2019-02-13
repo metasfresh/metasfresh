@@ -11,7 +11,7 @@ class Tab extends Component {
     const {
       dispatch,
       tabId,
-      windowType,
+      windowId,
       queryOnActivate,
       docId,
       orderBy,
@@ -22,7 +22,7 @@ class Tab extends Component {
         ? (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
         : '';
 
-      getTab(tabId, windowType, docId, query).then(res => {
+      getTab(tabId, windowId, docId, query).then(res => {
         dispatch(addRowData({ [tabId]: res }, 'master'));
       });
     }

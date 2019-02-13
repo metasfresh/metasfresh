@@ -51,7 +51,7 @@ class Table extends Component {
     //selecting first table elem while getting indent data
     this._isMounted = true;
     if (rowData.get(`${tabid}`)) {
-      this.getIndentData(true);
+    this.getIndentData(true);
     }
     if (this.props.autofocus) {
       this.table.focus();
@@ -66,7 +66,7 @@ class Table extends Component {
       rowData,
       defaultSelected,
       disconnectFromState,
-      type,
+      windowId,
       refreshSelection,
       openIncludedViewOnSelect,
       viewId,
@@ -87,19 +87,19 @@ class Table extends Component {
 
     if (rows && !_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
-        let firstRow = rows[0];
+          let firstRow = rows[0];
 
-        if (firstRow) {
-          if (openIncludedViewOnSelect) {
-            this.showSelectedIncludedView([firstRow.id]);
-          }
+          if (firstRow) {
+            if (openIncludedViewOnSelect) {
+              this.showSelectedIncludedView([firstRow.id]);
+            }
 
-          if (firstRow.id && !selectedEqual) {
-            this.selectOneProduct(firstRow.id);
+            if (firstRow.id && !selectedEqual) {
+              this.selectOneProduct(firstRow.id);
+            }
           }
         }
       }
-    }
 
     if (mainTable && open) {
       this.table.focus();
@@ -118,7 +118,7 @@ class Table extends Component {
     } else if (!disconnectFromState && !selectedEqual && selected.length) {
       dispatch(
         selectTableItems({
-          windowType: type,
+          windowType: windowId,
           viewId,
           ids: selected,
         })
@@ -135,17 +135,17 @@ class Table extends Component {
           ? false
           : true;
 
-      this.getIndentData(firstLoad);
+        this.getIndentData(firstLoad);
     } else if (rowData.get(`${tabid}`) && !is(prevProps.rowData, rowData)) {
       let firstLoad = rowData.get(`${tabid}`).size ? false : true;
 
-      if (
+    if (
         prevProps.rowData.get(`${tabid}`) &&
         !prevProps.rowData.get(`${tabid}`).size &&
         rowData.get(`${tabid}`).size
-      ) {
+    ) {
         firstLoad = true;
-      }
+        }
 
       this.getIndentData(firstLoad);
     }
@@ -193,7 +193,7 @@ class Table extends Component {
   getIndentData = selectFirst => {
     const {
       rowData,
-      tabid,
+      tabId,
       indentSupported,
       collapsible,
       expandedDepth,
@@ -202,8 +202,8 @@ class Table extends Component {
     const { selected } = this.state;
     let rowsData = [];
 
-    if (indentSupported && rowData.get(`${tabid}`).size) {
-      rowsData = getRowsData(rowData.get(`${tabid}`));
+    if (indentSupported && rowData.get(`${tabId}`).size) {
+      rowsData = getRowsData(rowData.get(`${tabId}`));
       let stateChange = {
         rows: rowsData,
         pendingInit: !rowsData,
@@ -258,7 +258,7 @@ class Table extends Component {
 
           if (mapCollapsed.length) {
             updatedState.collapsedArrayMap = mapCollapsed;
-          }
+        }
           if (updatedRows.length) {
             updatedState.collapsedRows = updatedRows;
           }
@@ -273,22 +273,22 @@ class Table extends Component {
       });
     } else {
       rowsData =
-        rowData.get(`${tabid}`) && rowData.get(`${tabid}`).size
-          ? rowData.get(`${tabid}`).toArray()
-          : [];
+        rowData.get(`${tabId}`) && rowData.get(`${tabId}`).size
+          ? rowData.get(`${tabId}`).toArray()
+        : [];
 
       this.setState({
         rows: rowsData,
-        pendingInit: !rowData.get(`${tabid}`),
+        pendingInit: !rowData.get(`${tabId}`),
       });
     }
 
     if (rowsData.length) {
       setTimeout(() => {
         if (this._isMounted) {
-          this.setState({
-            tableRefreshToggle: !this.state.mounted,
-          });
+        this.setState({
+          tableRefreshToggle: !this.state.mounted,
+        });
         }
       }, 1);
     }
@@ -317,7 +317,13 @@ class Table extends Component {
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
-    const { dispatch, type, disconnectFromState, tabInfo, viewId } = this.props;
+    const {
+      dispatch,
+      windowId,
+      disconnectFromState,
+      tabInfo,
+      viewId,
+    } = this.props;
     const { selected } = this.state;
     let newSelected = [];
     if (!selected[0]) {
@@ -332,7 +338,7 @@ class Table extends Component {
       if (tabInfo) {
         dispatch(
           selectTableItems({
-            windowType: type,
+            windowType: windowId,
             viewId,
             ids: selected,
           })
@@ -342,7 +348,7 @@ class Table extends Component {
       if (!disconnectFromState) {
         dispatch(
           selectTableItems({
-            windowType: type,
+            windowType: windowId,
             viewId,
             ids: selected,
           })
@@ -356,14 +362,14 @@ class Table extends Component {
   };
 
   selectRangeProduct = ids => {
-    const { dispatch, tabInfo, type, viewId } = this.props;
+    const { dispatch, tabInfo, windowId, viewId } = this.props;
 
     this.setState({ selected: [...ids] });
 
     if (tabInfo) {
       dispatch(
         selectTableItems({
-          windowType: type,
+          windowType: windowId,
           viewId,
           ids,
         })
@@ -381,7 +387,7 @@ class Table extends Component {
   };
 
   selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
-    const { dispatch, tabInfo, type, viewId } = this.props;
+    const { dispatch, tabInfo, windowId, viewId } = this.props;
 
     if (id === null) {
       id = undefined;
@@ -395,7 +401,7 @@ class Table extends Component {
         if (tabInfo) {
           dispatch(
             selectTableItems({
-              windowType: type,
+              windowType: windowId,
               viewId,
               ids: [id],
             })
@@ -409,14 +415,14 @@ class Table extends Component {
   };
 
   deselectProduct = id => {
-    const { dispatch, tabInfo, type, viewId } = this.props;
+    const { dispatch, tabInfo, windowId, viewId } = this.props;
     const { selected } = this.state;
     const index = selected.indexOf(id);
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     this.setState({ selected: newSelected }, () => {
       if (tabInfo || !newSelected.length) {
-        dispatch(deselectTableItems([id], type, viewId));
+        dispatch(deselectTableItems([id], windowId, viewId));
       }
     });
 
@@ -424,7 +430,7 @@ class Table extends Component {
   };
 
   deselectAllProducts = cb => {
-    const { dispatch, tabInfo, type, viewId } = this.props;
+    const { dispatch, tabInfo, windowId, viewId } = this.props;
 
     this.setState(
       {
@@ -436,7 +442,7 @@ class Table extends Component {
     if (tabInfo) {
       dispatch(
         selectTableItems({
-          windowType: type,
+          windowType: windowId,
           viewId,
           ids: [],
         })
@@ -764,11 +770,11 @@ class Table extends Component {
     dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
   };
 
-  handleAdvancedEdit = (type, tabId, selected) => {
+  handleAdvancedEdit = (windowId, tabId, selected) => {
     const { dispatch } = this.props;
 
     dispatch(
-      openModal('Advanced edit', type, 'window', tabId, selected[0], true)
+      openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
     );
   };
 
@@ -785,7 +791,7 @@ class Table extends Component {
   };
 
   handlePromptSubmitClick = selected => {
-    const { dispatch, type, docId, updateDocList, tabid } = this.props;
+    const { dispatch, windowId, docId, updateDocList, tabId } = this.props;
 
     this.setState(
       {
@@ -795,13 +801,13 @@ class Table extends Component {
       () => {
         deleteRequest(
           'window',
-          type,
+          windowId,
           docId ? docId : null,
-          docId ? tabid : null,
+          docId ? tabId : null,
           selected
         ).then(response => {
           if (docId) {
-            dispatch(deleteLocal(tabid, selected, 'master', response));
+            dispatch(deleteLocal(tabId, selected, 'master', response));
           } else {
             updateDocList();
           }
@@ -811,14 +817,14 @@ class Table extends Component {
   };
 
   handleZoomInto = fieldName => {
-    const { entity, type, docId, tabid, viewId } = this.props;
+    const { entity, windowId, docId, tabId, viewId } = this.props;
     const { selected } = this.state;
 
     getZoomIntoWindow(
       entity,
-      type,
+      windowId,
       docId,
-      entity === 'window' ? tabid : viewId,
+      entity === 'window' ? tabId : viewId,
       selected[0],
       fieldName
     ).then(res => {
@@ -938,9 +944,9 @@ class Table extends Component {
 
   renderTableBody = () => {
     const {
-      tabid,
+      tabId,
       cols,
-      type,
+      windowId,
       docId,
       readonly,
       keyProperty,
@@ -975,7 +981,7 @@ class Table extends Component {
           {...{
             entity,
             cols,
-            type,
+            windowId,
             mainTable,
             indentSupported,
             selected,
@@ -999,7 +1005,7 @@ class Table extends Component {
             }
           }}
           rowId={item[keyProperty]}
-          tabId={tabid}
+          tabId={tabId}
           onDoubleClick={this.handleDoubleClick}
           onClick={e => {
             const selected = this.handleClick(e, keyProperty, item);
@@ -1079,10 +1085,10 @@ class Table extends Component {
   render() {
     const {
       cols,
-      type,
+      windowId,
       docId,
       rowData,
-      tabid,
+      tabId,
       readonly,
       size,
       handleChangePage,
@@ -1132,13 +1138,13 @@ class Table extends Component {
               {...contextMenu}
               {...{
                 docId,
-                type,
+                windowId,
                 mainTable,
                 updateDocList,
               }}
               selected={selected || [undefined]}
               blur={() => this.closeContextMenu()}
-              tabId={tabid}
+              tabId={tabId}
               deselect={() => this.deselectAllProducts()}
               handleFieldEdit={() => {
                 if (contextMenu.supportFieldEdit && selected.length === 1) {
@@ -1146,9 +1152,9 @@ class Table extends Component {
                 }
               }}
               handleAdvancedEdit={() =>
-                this.handleAdvancedEdit(type, tabid, selected)
+                this.handleAdvancedEdit(windowId, tabId, selected)
               }
-              handleOpenNewTab={() => handleOpenNewTab(selected, type)}
+              onOpenNewTab={handleOpenNewTab}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
                   ? () => this.handleDelete()
@@ -1161,7 +1167,7 @@ class Table extends Component {
             <div className="row">
               <div className="col-12">
                 <TableFilter
-                  openModal={() => this.openModal(type, tabid, 'NEW')}
+                  openModal={() => this.openModal(windowId, tabId, 'NEW')}
                   {...{
                     toggleFullScreen,
                     fullScreen,
@@ -1170,8 +1176,8 @@ class Table extends Component {
                     isBatchEntry,
                     supportQuickInput,
                   }}
-                  docType={type}
-                  tabId={tabid}
+                  docType={windowId}
+                  tabId={tabId}
                   handleBatchEntryToggle={this.handleBatchEntryToggle}
                   allowCreateNew={tabInfo && tabInfo.allowCreateNew}
                   wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
@@ -1188,9 +1194,9 @@ class Table extends Component {
               {
                 'table-content-empty':
                   (rowData &&
-                    rowData.get(`${tabid}`) &&
-                    rowData.get(`${tabid}`).size === 0) ||
-                  !rowData.get(`${tabid}`),
+                    rowData.get(`${tabId}`) &&
+                    rowData.get(`${tabId}`).size === 0) ||
+                  !rowData.get(`${tabId}`),
               }
             )}
           >
@@ -1216,7 +1222,7 @@ class Table extends Component {
                     orderBy,
                     page,
                     indentSupported,
-                    tabid,
+                    tabId,
                   }}
                   getSizeClass={getSizeClass}
                   deselect={this.deselectAllProducts}
@@ -1228,7 +1234,7 @@ class Table extends Component {
               <tfoot ref={c => (this.tfoot = c)} />
             </table>
 
-            {this.renderEmptyInfo(rowData, tabid)}
+            {this.renderEmptyInfo(rowData, tabId)}
           </div>
 
           {
@@ -1271,12 +1277,12 @@ class Table extends Component {
           <DocumentListContextShortcuts
             handleAdvancedEdit={
               selected && selected.length > 0 && selected[0]
-                ? () => this.handleAdvancedEdit(type, tabid, selected)
+                ? () => this.handleAdvancedEdit(windowId, tabId, selected)
                 : ''
             }
             handleOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
-                ? () => handleOpenNewTab(selected, type)
+                ? () => handleOpenNewTab(selected, windowId)
                 : ''
             }
             handleDelete={

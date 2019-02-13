@@ -156,7 +156,7 @@ class TableCell extends PureComponent {
       extendLongText,
       widgetData,
       item,
-      type,
+      windowId,
       rowId,
       tabId,
       handleDoubleClick,
@@ -249,7 +249,7 @@ class TableCell extends PureComponent {
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
             widgetData={widgetData}
-            windowType={type}
+            windowType={windowId}
             isMainTable={mainTable}
             rowId={rowId}
             viewId={viewId}
