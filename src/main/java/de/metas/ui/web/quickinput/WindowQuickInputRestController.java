@@ -144,7 +144,7 @@ public class WindowQuickInputRestController
 	}
 
 	@PostMapping
-	public JSONDocument create(
+	public JSONDocument createQuickInput(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
@@ -157,35 +157,42 @@ public class WindowQuickInputRestController
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
 
 		return Execution.callInNewExecution("quickInput.create", () -> {
-			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
-				// Make sure we can edit our root document. Fail fast.
-				DocumentPermissionsHelper.assertCanEdit(rootDocument, userSession.getUserRolePermissions());
-
-				final DocumentEntityDescriptor includedDocumentDescriptor = rootDocument.getEntityDescriptor().getIncludedEntityByDetailId(detailId);
-
-				final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
-
-				try
-				{
-					return QuickInput.builder()
-							.setQuickInputDescriptor(quickInputDescriptor)
-							.setRootDocumentPath(rootDocument.getDocumentPath())
-							.build()
-							.bindRootDocument(rootDocument)
-							.assertTargetWritable();
-				}
-				catch (Exception ex)
-				{
-					// Avoid showing "weird" exception to use, so we return HTTP 404 which is interpreted by frontend
-					// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/487
-					throw EntityNotFoundException.wrapIfNeeded(ex);
-				}
-			});
-
+			final QuickInput quickInput = createQuickInput(rootDocumentPath, detailId);
 			commit(quickInput);
 
 			return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
 		});
+	}
+
+	private QuickInput createQuickInput(final DocumentPath rootDocumentPath, final DetailId detailId)
+	{
+		return documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> createQuickInput(rootDocument, detailId));
+	}
+
+	private QuickInput createQuickInput(final Document rootDocument, final DetailId detailId)
+	{
+		// Make sure we can edit our root document. Fail fast.
+		DocumentPermissionsHelper.assertCanEdit(rootDocument, userSession.getUserRolePermissions());
+
+		final DocumentEntityDescriptor includedDocumentDescriptor = rootDocument.getEntityDescriptor().getIncludedEntityByDetailId(detailId);
+
+		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);
+
+		try
+		{
+			return QuickInput.builder()
+					.setQuickInputDescriptor(quickInputDescriptor)
+					.setRootDocumentPath(rootDocument.getDocumentPath())
+					.build()
+					.bindRootDocument(rootDocument)
+					.assertTargetWritable();
+		}
+		catch (Exception ex)
+		{
+			// Avoid showing "weird" exception to use, so we return HTTP 404 which is interpreted by frontend
+			// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/487
+			throw EntityNotFoundException.wrapIfNeeded(ex);
+		}
 	}
 
 	private final <R> R forQuickInputReadonly(

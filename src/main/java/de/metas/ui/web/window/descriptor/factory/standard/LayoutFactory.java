@@ -647,22 +647,24 @@ public class LayoutFactory
 				.internalName(entityDescriptor.getInternalName())
 				.gridLayout(layoutGridView())
 				.singleRowLayout(layoutSingleRow)
-				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
+				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate())
+				.supportQuickInput(isSupportQuickInput(entityDescriptor));
+	}
 
-		//
-		// Quick input
+	private boolean isSupportQuickInput(final DocumentEntityDescriptor.Builder entityDescriptor)
 		{
-			final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor(
-					entityDescriptor.getDocumentType(),
-					entityDescriptor.getDocumentTypeId(),
-					entityDescriptor.getTableNameOrNull(),
-					entityDescriptor.getDetailId(),
-					entityDescriptor.getSOTrx());
-			layoutDetail.supportQuickInput(supportQuickInput);
+		if (!entityDescriptor.isAllowQuickInput())
+		{
+			return false;
 		}
 
-		return layoutDetail;
-	}
+		return quickInputDescriptors.hasQuickInputEntityDescriptor(
+					entityDescriptor.getDocumentType(),
+					entityDescriptor.getDocumentTypeId(),
+				entityDescriptor.getTableName(),
+					entityDescriptor.getDetailId(),
+					entityDescriptor.getSOTrx());
+		}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final DocumentFieldDescriptor.Builder field)
 	{
