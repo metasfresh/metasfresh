@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -16,6 +17,7 @@ import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.TimeUtil;
@@ -412,5 +414,11 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 		{
 			return VATType.RegularVAT;
 		}
+	}
+	
+	protected void afterImport()
+	{
+		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' ";
+		MProductImportTableSqlUpdater.dbUpdateIsPriceCreated(whereClause, I_I_Pharma_Product.COLUMNNAME_IsPriceCreated);
 	}
 }
