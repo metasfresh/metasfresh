@@ -117,7 +117,7 @@ public class FreightCostValidator implements ModelValidator
 
 				final Set<Integer> inOutIds = invoiceId2inOutIds.remove(inv.getC_Invoice_ID());
 
-				logger.info("Flushed " + (inOutIds == null ? 0 : inOutIds.size()) + " inOutIds for invoice " + inv);
+				logger.debug("Flushed {} inOutIds for invoice {}", (inOutIds == null ? 0 : inOutIds.size()), inv);
 			}
 		}
 		else if (po instanceof MOrder)
@@ -219,14 +219,14 @@ public class FreightCostValidator implements ModelValidator
 		final int iolId = line.getM_InOutLine_ID();
 		if (iolId == 0)
 		{
-			logger.debug(line + " has M_InOutLine_ID=0. Returning.");
+			logger.debug("{} has M_InOutLine_ID=0. Returning.", line);
 			return;
 		}
 
 		final MInvoice invoice = (MInvoice)line.getC_Invoice();
 		if (!invoice.isSOTrx())
 		{
-			logger.debug(line + " belongs to a purchase invoice. Returning.");
+			logger.debug("{} belongs to a purchase invoice. Returning.", line);
 			return;
 		}
 
@@ -235,7 +235,7 @@ public class FreightCostValidator implements ModelValidator
 			final MOrder order = (MOrder)line.getC_OrderLine().getC_Order();
 			if (hasFreightCostLine(order))
 			{
-				logger.debug(order + ", which we are invoicing here, has an explicit freight cost line. Returning.");
+				logger.debug("{}, which we are invoicing here, has an explicit freight cost line. Returning.", order);
 				return;
 			}
 		}
@@ -253,14 +253,14 @@ public class FreightCostValidator implements ModelValidator
 		final int inOutId = iol.getM_InOut_ID();
 		if (!inOutIds.add(inOutId))
 		{
-			logger.debug("There is already a freight cost invoice line for M_InOut_ID=" + inOutId + " and M_Invoice_ID=" + invoiceId + ". Returning.");
+			logger.debug("There is already a freight cost invoice line for M_InOut_ID={} and M_Invoice_ID={}. Returning.", inOutId, invoiceId);
 			return;
 		}
 
 		final MInOut inOut = new MInOut(ctx, inOutId, trxName);
 		if (hasFreightCostLine(inOut))
 		{
-			logger.debug(inOut + ", which we are invoicing here has an explicit freight cost line. Returning.");
+			logger.debug("{}, which we are invoicing here has an explicit freight cost line. Returning.", inOut);
 			return;
 		}
 
@@ -268,7 +268,7 @@ public class FreightCostValidator implements ModelValidator
 		final BigDecimal freightCostAmt = freightCostBL.computeFreightCostForInOut(inOutId, trxName);
 		if (freightCostAmt.signum() <= 0)
 		{
-			logger.debug("Freight cost for M_InOut_ID=" + inOutId + " is " + freightCostAmt + ". Returning");
+			logger.debug("Freight cost for M_InOut_ID={} is {}. Returning", inOutId, freightCostAmt);
 			return;
 		}
 
@@ -292,6 +292,6 @@ public class FreightCostValidator implements ModelValidator
 
 		InterfaceWrapperHelper.save(freightCostLine);
 
-		logger.info("Created new freight cost invoice line with price " + freightCostAmt + " for M_InOut_ID " + inOutId + " and invoice " + invoice);
+		logger.debug("Created new freight cost invoice line with price {} for M_InOut_ID {} and invoice {}", freightCostAmt, inOutId, invoice);
 	}
 }
