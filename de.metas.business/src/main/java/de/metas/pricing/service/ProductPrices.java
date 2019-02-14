@@ -248,6 +248,11 @@ public class ProductPrices
 		{
 			pp = newInstance(I_M_ProductPrice.class, plv);
 		}
+		// do not update the price with value 0; 0 means that no price was changed
+		else if (pp != null && price.signum()== 0)
+		{
+			return pp;
+		}
 
 		pp.setM_PriceList_Version(plv);
 		pp.setM_Product_ID(ppRequest.getProductId());
