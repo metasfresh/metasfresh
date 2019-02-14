@@ -63,7 +63,7 @@ class Window extends PureComponent {
       }
 
       const renderSingle =
-        rowData.size && rowData.get(`${tabId}`).size === 1 ? true : false;
+        rowData && rowData.size && rowData.get(`${tabId}`).size === 1 ? true : false;
 
       tabsByIds[elem.tabId] = elem;
 
