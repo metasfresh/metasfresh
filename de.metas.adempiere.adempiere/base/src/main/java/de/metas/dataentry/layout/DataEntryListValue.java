@@ -1,10 +1,13 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryListValueId;
+import de.metas.i18n.ITranslatableString;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -15,19 +18,22 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-public class DataEntryRecordField
+public class DataEntryListValue
 {
-	DataEntryField dataEntryFieldId;
+	DataEntryListValueId id;
 
-	Object value;
+	DataEntryFieldId dataEntryFieldId;
+
+	ITranslatableString name;
+	ITranslatableString description;
 }

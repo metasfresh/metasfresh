@@ -1,7 +1,8 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
 import java.util.List;
 
+import de.metas.dataentry.DataEntryFieldId;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;

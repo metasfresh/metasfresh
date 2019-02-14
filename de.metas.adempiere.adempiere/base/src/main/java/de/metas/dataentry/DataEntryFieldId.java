@@ -2,6 +2,9 @@ package de.metas.dataentry;
 
 import static de.metas.util.Check.assumeGreaterThanZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
@@ -37,7 +40,8 @@ public class DataEntryFieldId implements RepoIdAware
 
 	int repoId;
 
-	public DataEntryFieldId(final int repoId)
+	@JsonCreator
+	private DataEntryFieldId(@JsonProperty("repoId") final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
 	}

@@ -1,7 +1,11 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
@@ -9,14 +13,24 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryGroupId;
+import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.layout.DataEntryField.Type;
+import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
+import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.model.X_DataEntry_Field;
+import de.metas.i18n.ImmutableTranslatableString;
 
 /*
  * #%L
@@ -42,17 +56,61 @@ import de.metas.dataentry.model.X_DataEntry_Field;
 
 public class DataEntryRepositoryTest
 {
-	private DataEntryRepository dataEntryRepository;
+	private static final String STRING_FIELD1_DESCRIPTION = "stringField1_description";
+	private static final String STRING_FIELD1_CAPTION = "stringField1_caption";
+	private DataEntryGroupRepository dataEntryRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		dataEntryRepository = new DataEntryRepository();
+		dataEntryRepository = new DataEntryGroupRepository();
+	}
+
+	@BeforeClass
+	public static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterClass
+	public static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
-	public void getByWindowId()
+	public void getByWindowId_no_record()
+	{
+		final I_DataEntry_Group groupRecord1 = createLayoutOnlyRecords();
+		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
+
+		// invoke the method under test
+		final List<DataEntryGroup> result = dataEntryRepository.getByWindowId(windowId_1);
+
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	public void getByWindowId_incl_record()
+	{
+		final I_DataEntry_Group groupRecord1 = createLayoutOnlyRecords();
+		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
+
+		final I_DataEntry_Record dataRecord = newInstance(I_DataEntry_Record.class);
+		dataRecord.setAD_Table_ID(11);
+		dataRecord.setRecord_ID(21);
+		dataRecord.setDataEntry_RecordData("DataEntry_RecordData");
+		saveRecord(dataRecord);
+
+		// invoke the method under test
+		final List<DataEntryGroup> result = dataEntryRepository.getByWindowId(windowId_1);
+		assertThat(result).hasSize(1);
+
+		expect(result).toMatchSnapshot();
+	}
+
+	private I_DataEntry_Group createLayoutOnlyRecords()
 	{
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(10);
 
@@ -150,11 +208,80 @@ public class DataEntryRepositoryTest
 		fieldRecord1_2_3.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
 		saveRecord(fieldRecord1_2_3);
 
-		// invoke the method under test
-		final List<DataEntryGroup> result = dataEntryRepository.getByWindowId(windowId_1);
+		return groupRecord1;
+	}
 
-		// TODO: see if we can use snapshot testing here
+	private DataEntryGroup createSimpleDataEntryGroup()
+	{
+		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
 
+		final DataEntryField dataEntryStringField = DataEntryField.builder()
+				.id(DataEntryFieldId.ofRepoId(31))
+				.caption(ImmutableTranslatableString.constant(STRING_FIELD1_CAPTION))
+				.description(ImmutableTranslatableString.constant(STRING_FIELD1_DESCRIPTION))
+				.type(Type.STRING)
+				.build();
+
+		final DataEntryField dataEntryNumberField = DataEntryField.builder()
+				.id(DataEntryFieldId.ofRepoId(32))
+				.caption(ImmutableTranslatableString.constant("numberField1_caption"))
+				.description(ImmutableTranslatableString.constant("numberField1_description"))
+				.type(Type.NUMBER)
+				.build();
+
+		final DataEntryField dataEntryDateField = DataEntryField.builder()
+				.id(DataEntryFieldId.ofRepoId(33))
+				.caption(ImmutableTranslatableString.constant("dateField1_caption"))
+				.description(ImmutableTranslatableString.constant("dateField1_description"))
+				.type(Type.DATE)
+				.build();
+
+		final DataEntryField dataEntryYesNoField = DataEntryField.builder()
+				.id(DataEntryFieldId.ofRepoId(34))
+				.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
+				.description(ImmutableTranslatableString.constant("yesNoField1_description"))
+				.type(Type.YESNO)
+				.build();
+
+		final DataEntryField dataEntryListField = DataEntryField.builder()
+				.id(dataEntryListFieldId)
+				.caption(ImmutableTranslatableString.constant("listField1_caption"))
+				.description(ImmutableTranslatableString.constant("listField1_description"))
+				.type(Type.LIST)
+				.listValue(new DataEntryListValue(
+						DataEntryListValueId.ofRepoId(41),
+						dataEntryListFieldId,
+						ImmutableTranslatableString.constant("listValue1_name"),
+						ImmutableTranslatableString.constant("listValue1_description")))
+				.listValue(new DataEntryListValue(
+						DataEntryListValueId.ofRepoId(42),
+						dataEntryListFieldId,
+						ImmutableTranslatableString.constant("listValue2_name"),
+						ImmutableTranslatableString.constant("listValue2_description")))
+				.build();
+
+
+		final DataEntryGroup dataEntryGroup = DataEntryGroup
+				.builder()
+				.id(DataEntryGroupId.ofRepoId(10))
+				.documentLinkColumnName(DocumentLinkColumnName.of("documentLinkColumnName"))
+				.internalName("dataEntryGroup_internalName")
+				.caption(ImmutableTranslatableString.constant("dataEntryGroup_caption"))
+				.description(ImmutableTranslatableString.constant("dataEntryGroup_description"))
+				.dataEntrySubGroup(DataEntrySubGroup.builder()
+						.id(DataEntrySubGroupId.ofRepoId(20))
+						.internalName("dataEntrySubGroup_internalName")
+						.caption(ImmutableTranslatableString.constant("dataEntrySubGroup_caption"))
+						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
+						.dataEntryField(dataEntryStringField)
+						.dataEntryField(dataEntryNumberField)
+						.dataEntryField(dataEntryDateField)
+						.dataEntryField(dataEntryYesNoField)
+						.dataEntryField(dataEntryListField)
+						.build())
+				.build();
+
+		return dataEntryGroup;
 	}
 
 }

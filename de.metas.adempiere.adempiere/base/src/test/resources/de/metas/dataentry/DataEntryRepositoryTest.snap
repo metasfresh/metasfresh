@@ -1,0 +1,345 @@
+de.metas.dataentry.DataEntryRepositoryTest.getByWindowId_incl_record=[
+  [
+    {
+      "anonymous": false,
+      "caption": {
+        "anyLanguage": true,
+        "value": "groupRecord1_tabName"
+      },
+      "dataEntrySubGroups": [
+        {
+          "caption": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_1_tabName"
+          },
+          "dataEntryFields": [
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_description"
+              },
+              "id": {
+                "repoId": 100005
+              },
+              "listValues": [ ],
+              "mandatory": true,
+              "type": "STRING"
+            },
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_description"
+              },
+              "id": {
+                "repoId": 100006
+              },
+              "listValues": [ ],
+              "mandatory": false,
+              "type": "NUMBER"
+            }
+          ],
+          "description": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_1_description"
+          },
+          "id": {
+            "repoId": 100004
+          },
+          "internalName": "subgroupRecord1_1_tabName"
+        },
+        {
+          "caption": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_2_tabName"
+          },
+          "dataEntryFields": [
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_description"
+              },
+              "id": {
+                "repoId": 100008
+              },
+              "listValues": [ ],
+              "mandatory": false,
+              "type": "DATE"
+            },
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_description"
+              },
+              "id": {
+                "repoId": 100009
+              },
+              "listValues": [
+                {
+                  "dataEntryFieldId": {
+                    "repoId": 100009
+                  },
+                  "description": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_1_description"
+                  },
+                  "id": {
+                    "repoId": 100010
+                  },
+                  "name": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_1_name"
+                  }
+                },
+                {
+                  "dataEntryFieldId": {
+                    "repoId": 100009
+                  },
+                  "description": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_2_description"
+                  },
+                  "id": {
+                    "repoId": 100011
+                  },
+                  "name": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_2_name"
+                  }
+                }
+              ],
+              "mandatory": false,
+              "type": "LIST"
+            },
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_3_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_3_description"
+              },
+              "id": {
+                "repoId": 100012
+              },
+              "listValues": [ ],
+              "mandatory": false,
+              "type": "YESNO"
+            }
+          ],
+          "description": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_2_description"
+          },
+          "id": {
+            "repoId": 100007
+          },
+          "internalName": "subgroupRecord1_2_tabName"
+        }
+      ],
+      "description": {
+        "anyLanguage": true,
+        "value": "groupRecord1_description"
+      },
+      "documentLinkColumnName": {
+        "asString": "tableRecord_1_tableName_ID"
+      },
+      "id": {
+        "repoId": 100003
+      },
+      "internalName": "groupRecord1_name"
+    }
+  ]
+]
+
+
+de.metas.dataentry.DataEntryRepositoryTest.getByWindowId_no_record=[
+  [
+    {
+      "anonymous": false,
+      "caption": {
+        "anyLanguage": true,
+        "value": "groupRecord1_tabName"
+      },
+      "dataEntrySubGroups": [
+        {
+          "caption": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_1_tabName"
+          },
+          "dataEntryFields": [
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_description"
+              },
+              "id": {
+                "repoId": 100005
+              },
+              "listValues": [ ],
+              "mandatory": true,
+              "type": "STRING"
+            },
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_description"
+              },
+              "id": {
+                "repoId": 100006
+              },
+              "listValues": [ ],
+              "mandatory": false,
+              "type": "NUMBER"
+            }
+          ],
+          "description": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_1_description"
+          },
+          "id": {
+            "repoId": 100004
+          },
+          "internalName": "subgroupRecord1_1_tabName"
+        },
+        {
+          "caption": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_2_tabName"
+          },
+          "dataEntryFields": [
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_1_description"
+              },
+              "id": {
+                "repoId": 100008
+              },
+              "listValues": [ ],
+              "mandatory": false,
+              "type": "DATE"
+            },
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_2_description"
+              },
+              "id": {
+                "repoId": 100009
+              },
+              "listValues": [
+                {
+                  "dataEntryFieldId": {
+                    "repoId": 100009
+                  },
+                  "description": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_1_description"
+                  },
+                  "id": {
+                    "repoId": 100010
+                  },
+                  "name": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_1_name"
+                  }
+                },
+                {
+                  "dataEntryFieldId": {
+                    "repoId": 100009
+                  },
+                  "description": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_2_description"
+                  },
+                  "id": {
+                    "repoId": 100011
+                  },
+                  "name": {
+                    "anyLanguage": true,
+                    "value": "listValueRecord_1_2_2_2_name"
+                  }
+                }
+              ],
+              "mandatory": false,
+              "type": "LIST"
+            },
+            {
+              "caption": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_3_name"
+              },
+              "description": {
+                "anyLanguage": true,
+                "value": "fieldRecord1_1_3_description"
+              },
+              "id": {
+                "repoId": 100012
+              },
+              "listValues": [ ],
+              "mandatory": false,
+              "type": "YESNO"
+            }
+          ],
+          "description": {
+            "anyLanguage": true,
+            "value": "subgroupRecord1_2_description"
+          },
+          "id": {
+            "repoId": 100007
+          },
+          "internalName": "subgroupRecord1_2_tabName"
+        }
+      ],
+      "description": {
+        "anyLanguage": true,
+        "value": "groupRecord1_description"
+      },
+      "documentLinkColumnName": {
+        "asString": "tableRecord_1_tableName_ID"
+      },
+      "id": {
+        "repoId": 100003
+      },
+      "internalName": "groupRecord1_name"
+    }
+  ]
+]
+
+
+de.metas.dataentry.DataEntryRepositoryTest.saveData_nonEmpty=[
+  "{\r\n  \"fields\" : [ {\r\n    \"dataEntryField\" : {\r\n      \"id\" : {\r\n        \"repoId\" : 35\r\n      },\r\n      \"caption\" : {\r\n        \"defaultValue\" : \"listField1_caption\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"description\" : {\r\n        \"defaultValue\" : \"listField1_description\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"type\" : \"LIST\",\r\n      \"mandatory\" : false,\r\n      \"listValues\" : [ {\r\n        \"id\" : {\r\n          \"repoId\" : 41\r\n        },\r\n        \"dataEntryFieldId\" : {\r\n          \"repoId\" : 35\r\n        },\r\n        \"name\" : {\r\n          \"defaultValue\" : \"listValue1_name\",\r\n          \"ad_Languages\" : [ ]\r\n        },\r\n        \"description\" : {\r\n          \"defaultValue\" : \"listValue1_description\",\r\n          \"ad_Languages\" : [ ]\r\n        }\r\n      }, {\r\n        \"id\" : {\r\n          \"repoId\" : 42\r\n        },\r\n        \"dataEntryFieldId\" : {\r\n          \"repoId\" : 35\r\n        },\r\n        \"name\" : {\r\n          \"defaultValue\" : \"listValue2_name\",\r\n          \"ad_Languages\" : [ ]\r\n        },\r\n        \"description\" : {\r\n          \"defaultValue\" : \"listValue2_description\",\r\n          \"ad_Languages\" : [ ]\r\n        }\r\n      } ]\r\n    },\r\n    \"value\" : {\r\n      \"repoId\" : 41\r\n    }\r\n  }, {\r\n    \"dataEntryField\" : {\r\n      \"id\" : {\r\n        \"repoId\" : 33\r\n      },\r\n      \"caption\" : {\r\n        \"defaultValue\" : \"dateField1_caption\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"description\" : {\r\n        \"defaultValue\" : \"dateField1_description\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"type\" : \"DATE\",\r\n      \"mandatory\" : false,\r\n      \"listValues\" : [ ]\r\n    },\r\n    \"value\" : 1550075417.222000000\r\n  }, {\r\n    \"dataEntryField\" : {\r\n      \"id\" : {\r\n        \"repoId\" : 32\r\n      },\r\n      \"caption\" : {\r\n        \"defaultValue\" : \"numberField1_caption\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"description\" : {\r\n        \"defaultValue\" : \"numberField1_description\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"type\" : \"NUMBER\",\r\n      \"mandatory\" : false,\r\n      \"listValues\" : [ ]\r\n    },\r\n    \"value\" : 0.23\r\n  }, {\r\n    \"dataEntryField\" : {\r\n      \"id\" : {\r\n        \"repoId\" : 31\r\n      },\r\n      \"caption\" : {\r\n        \"defaultValue\" : \"stringField1_caption\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"description\" : {\r\n        \"defaultValue\" : \"stringField1_description\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"type\" : \"STRING\",\r\n      \"mandatory\" : false,\r\n      \"listValues\" : [ ]\r\n    },\r\n    \"value\" : \"stringFieldValue\"\r\n  }, {\r\n    \"dataEntryField\" : {\r\n      \"id\" : {\r\n        \"repoId\" : 34\r\n      },\r\n      \"caption\" : {\r\n        \"defaultValue\" : \"yesNoField1_caption\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"description\" : {\r\n        \"defaultValue\" : \"yesNoField1_description\",\r\n        \"ad_Languages\" : [ ]\r\n      },\r\n      \"type\" : \"YESNO\",\r\n      \"mandatory\" : false,\r\n      \"listValues\" : [ ]\r\n    },\r\n    \"value\" : true\r\n  } ]\r\n}"
+]

@@ -1,7 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.dataentry.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -15,7 +14,7 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1393467211L;
+	private static final long serialVersionUID = 954551224L;
 
     /** Standard Constructor */
     public X_DataEntry_Record (Properties ctx, int DataEntry_Record_ID, String trxName)
@@ -23,8 +22,10 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
       super (ctx, DataEntry_Record_ID, trxName);
       /** if (DataEntry_Record_ID == 0)
         {
-			setDataEntry_Field_ID (0);
+			setAD_Table_ID (0);
+			setDataEntry_Group_ID (0);
 			setDataEntry_Record_ID (0);
+			setRecord_ID (0);
         } */
     }
 
@@ -44,37 +45,93 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
     }
 
 	@Override
-	public de.metas.dataentry.model.I_DataEntry_Field getDataEntry_Field() throws RuntimeException
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_Field_ID, de.metas.dataentry.model.I_DataEntry_Field.class);
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
 	}
 
 	@Override
-	public void setDataEntry_Field(de.metas.dataentry.model.I_DataEntry_Field DataEntry_Field)
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
 	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_Field_ID, de.metas.dataentry.model.I_DataEntry_Field.class, DataEntry_Field);
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
 	}
 
-	/** Set Dateneingabefeld.
-		@param DataEntry_Field_ID Dateneingabefeld	  */
+	/** Set DB-Tabelle.
+		@param AD_Table_ID 
+		Database Table information
+	  */
 	@Override
-	public void setDataEntry_Field_ID (int DataEntry_Field_ID)
+	public void setAD_Table_ID (int AD_Table_ID)
 	{
-		if (DataEntry_Field_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Field_ID, null);
+		if (AD_Table_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Field_ID, Integer.valueOf(DataEntry_Field_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Dateneingabefeld.
-		@return Dateneingabefeld	  */
+	/** Get DB-Tabelle.
+		@return Database Table information
+	  */
 	@Override
-	public int getDataEntry_Field_ID () 
+	public int getAD_Table_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Field_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_Group getDataEntry_Group() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Group_ID, de.metas.dataentry.model.I_DataEntry_Group.class);
+	}
+
+	@Override
+	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_Group_ID, de.metas.dataentry.model.I_DataEntry_Group.class, DataEntry_Group);
+	}
+
+	/** Set Eingabegruppe.
+		@param DataEntry_Group_ID Eingabegruppe	  */
+	@Override
+	public void setDataEntry_Group_ID (int DataEntry_Group_ID)
+	{
+		if (DataEntry_Group_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, Integer.valueOf(DataEntry_Group_ID));
+	}
+
+	/** Get Eingabegruppe.
+		@return Eingabegruppe	  */
+	@Override
+	public int getDataEntry_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DataEntry_RecordData.
+		@param DataEntry_RecordData 
+		Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
+	  */
+	@Override
+	public void setDataEntry_RecordData (java.lang.String DataEntry_RecordData)
+	{
+		set_Value (COLUMNNAME_DataEntry_RecordData, DataEntry_RecordData);
+	}
+
+	/** Get DataEntry_RecordData.
+		@return Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
+	  */
+	@Override
+	public java.lang.String getDataEntry_RecordData () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_RecordData);
 	}
 
 	/** Set DataEntry_Record.
@@ -99,83 +156,28 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 		return ii.intValue();
 	}
 
-	/** Set Datum.
-		@param ValueDate Datum	  */
-	@Override
-	public void setValueDate (java.sql.Timestamp ValueDate)
-	{
-		set_Value (COLUMNNAME_ValueDate, ValueDate);
-	}
-
-	/** Get Datum.
-		@return Datum	  */
-	@Override
-	public java.sql.Timestamp getValueDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValueDate);
-	}
-
-	/** Set Zahlwert.
-		@param ValueNumber 
-		Numeric Value
+	/** Set Datensatz-ID.
+		@param Record_ID 
+		Direct internal record ID
 	  */
 	@Override
-	public void setValueNumber (java.math.BigDecimal ValueNumber)
+	public void setRecord_ID (int Record_ID)
 	{
-		set_Value (COLUMNNAME_ValueNumber, ValueNumber);
+		if (Record_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
-	/** Get Zahlwert.
-		@return Numeric Value
+	/** Get Datensatz-ID.
+		@return Direct internal record ID
 	  */
 	@Override
-	public java.math.BigDecimal getValueNumber () 
+	public int getRecord_ID () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Stringwert.
-		@param ValueStr Stringwert	  */
-	@Override
-	public void setValueStr (java.lang.String ValueStr)
-	{
-		set_Value (COLUMNNAME_ValueStr, ValueStr);
-	}
-
-	/** Get Stringwert.
-		@return Stringwert	  */
-	@Override
-	public java.lang.String getValueStr () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueStr);
-	}
-
-	/** 
-	 * ValueYesNo AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int VALUEYESNO_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String VALUEYESNO_Yes = "Y";
-	/** No = N */
-	public static final String VALUEYESNO_No = "N";
-	/** Set Ja/Nein-Wert.
-		@param ValueYesNo Ja/Nein-Wert	  */
-	@Override
-	public void setValueYesNo (java.lang.String ValueYesNo)
-	{
-
-		set_Value (COLUMNNAME_ValueYesNo, ValueYesNo);
-	}
-
-	/** Get Ja/Nein-Wert.
-		@return Ja/Nein-Wert	  */
-	@Override
-	public java.lang.String getValueYesNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueYesNo);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

@@ -380,6 +380,11 @@ public class InterfaceWrapperHelper
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass)
+	{
+		return id == null ? newInstance(modelClass) : load(id.getRepoId(), modelClass);
+	}
+
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);

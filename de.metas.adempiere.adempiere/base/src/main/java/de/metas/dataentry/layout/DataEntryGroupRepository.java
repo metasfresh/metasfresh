@@ -1,4 +1,4 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
 import static de.metas.util.Check.fail;
 
@@ -8,14 +8,20 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dataentry.DataEntryField.Type;
-import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryGroupId;
+import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.layout.DataEntryField.Type;
+import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
@@ -49,7 +55,7 @@ import lombok.NonNull;
  */
 
 @Repository
-public class DataEntryRepository
+public class DataEntryGroupRepository
 {
 	public List<DataEntryGroup> getByWindowId(final AdWindowId adWindowId)
 	{
@@ -68,7 +74,8 @@ public class DataEntryRepository
 
 		for (final I_DataEntry_Group groupRecord : groupRecords)
 		{
-			result.add(ofRecord(groupRecord));
+			final DataEntryGroup group = ofRecord(groupRecord);
+			result.add(group);
 		}
 		return result.build();
 	}
@@ -95,12 +102,18 @@ public class DataEntryRepository
 				.list();
 
 		final ImmutableList.Builder<DataEntrySubGroup> subGroups = ImmutableList.builder();
+		final ImmutableList.Builder<DataEntryField> fields = ImmutableList.builder();
 		for (final I_DataEntry_SubGroup subGroupRecord : subGroupRecords)
 		{
-			subGroups.add(ofRecord(subGroupRecord));
+			final IPair<DataEntrySubGroup, List<DataEntryField>> subGroupAndFields = ofRecord(subGroupRecord);
+
+			subGroups.add(subGroupAndFields.getLeft());
+			fields.addAll(subGroupAndFields.getRight());
 		}
 
-		return DataEntryGroup
+
+
+		final DataEntryGroup group = DataEntryGroup
 				.builder()
 				.id(DataEntryGroupId.ofRepoId(groupRecord.getDataEntry_Group_ID()))
 				.documentLinkColumnName(DocumentLinkColumnName.of(parentLinkColumnName))
@@ -109,9 +122,10 @@ public class DataEntryRepository
 				.internalName(groupRecord.getName())
 				.dataEntrySubGroups(subGroups.build())
 				.build();
+		return group;
 	}
 
-	private DataEntrySubGroup ofRecord(final I_DataEntry_SubGroup subGroupRecord)
+	private IPair<DataEntrySubGroup, List<DataEntryField>> ofRecord(final I_DataEntry_SubGroup subGroupRecord)
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(subGroupRecord);
 
@@ -132,16 +146,18 @@ public class DataEntryRepository
 		final ImmutableList.Builder<DataEntryField> fields = ImmutableList.builder();
 		for (final I_DataEntry_Field fieldRecord : fieldRecords)
 		{
-			fields.add(ofRecord(fieldRecord));
+			final DataEntryField field = ofRecord(fieldRecord);
+			fields.add(field);
 		}
 
-		return DataEntrySubGroup.builder()
+		final DataEntrySubGroup subgroup = DataEntrySubGroup.builder()
 				.id(DataEntrySubGroupId.ofRepoId(subGroupRecord.getDataEntry_SubGroup_ID()))
 				.caption(captionTrl)
 				.description(descriptionTrl)
 				.internalName(subGroupRecord.getTabName())
 				.dataEntryFields(fields.build())
 				.build();
+		return ImmutablePair.of(subgroup, subgroup.getDataEntryFields());
 	}
 
 	private DataEntryField ofRecord(final I_DataEntry_Field fieldRecord)
@@ -218,7 +234,6 @@ public class DataEntryRepository
 
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Description, listValueRecord.getDescription());
-
 
 		return new DataEntryListValue(id, dataEntryFieldId, nameTrl, descriptionTrl);
 	}

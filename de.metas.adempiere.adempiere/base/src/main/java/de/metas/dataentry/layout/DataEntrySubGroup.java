@@ -1,6 +1,12 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
+import java.util.List;
+
+import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -26,12 +32,30 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntryListValue
+public class DataEntrySubGroup
 {
-	DataEntryListValueId id;
+	DataEntrySubGroupId id;
 
-	DataEntryFieldId dataEntryFieldId;
-
-	ITranslatableString name;
+	ITranslatableString caption;
 	ITranslatableString description;
+
+	String internalName;
+
+	List<DataEntryField> dataEntryFields;
+
+	@Builder
+	private DataEntrySubGroup(
+			@NonNull final DataEntrySubGroupId id,
+			@NonNull final ITranslatableString caption,
+			@NonNull final ITranslatableString description,
+			@NonNull final String internalName,
+			@Singular List<DataEntryField> dataEntryFields)
+	{
+		this.id = id;
+		this.caption = caption;
+		this.description = description;
+		this.internalName = internalName;
+		this.dataEntryFields = dataEntryFields;
+	}
+
 }

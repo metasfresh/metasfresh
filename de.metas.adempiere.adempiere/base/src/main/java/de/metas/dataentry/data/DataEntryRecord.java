@@ -1,16 +1,17 @@
-package de.metas.dataentry;
+package de.metas.dataentry.data;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-import de.metas.i18n.ITranslatableString;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import de.metas.dataentry.DataEntryGroupId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -31,30 +32,27 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntrySubGroup
+public class DataEntryRecord
 {
-	DataEntrySubGroupId id;
+	/** May be null if not yet persisted */
+	DataEntryRecordId id;
 
-	ITranslatableString caption;
-	ITranslatableString description;
+	DataEntryGroupId dataEntryGroupId;
 
-	String internalName;
+	ITableRecordReference mainRecord;
 
-	List<DataEntryField> dataEntryFields;
+	DataEntryFieldData dataEntryFieldData;
 
 	@Builder
-	private DataEntrySubGroup(
-			@NonNull final DataEntrySubGroupId id,
-			@NonNull final ITranslatableString caption,
-			@NonNull final ITranslatableString description,
-			@NonNull final String internalName,
-			@Singular List<DataEntryField> dataEntryFields)
+	private DataEntryRecord(
+			@Nullable final DataEntryRecordId id,
+			@NonNull final DataEntryGroupId dataEntryGroupId,
+			@NonNull final DataEntryFieldData dataEntryFieldData,
+			@NonNull final ITableRecordReference mainRecord)
 	{
 		this.id = id;
-		this.caption = caption;
-		this.description = description;
-		this.internalName = internalName;
-		this.dataEntryFields = dataEntryFields;
+		this.dataEntryFieldData = dataEntryFieldData;
+		this.mainRecord = mainRecord;
+		this.dataEntryGroupId = dataEntryGroupId;
 	}
-
 }

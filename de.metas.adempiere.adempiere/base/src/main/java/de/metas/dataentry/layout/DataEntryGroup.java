@@ -1,9 +1,10 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
 import java.util.List;
 
+import de.metas.dataentry.DataEntryGroupId;
 import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;

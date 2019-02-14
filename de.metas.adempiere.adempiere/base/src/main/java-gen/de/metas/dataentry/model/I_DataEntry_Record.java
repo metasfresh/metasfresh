@@ -69,6 +69,35 @@ public interface I_DataEntry_Record
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_ID();
+
+	public org.compiere.model.I_AD_Table getAD_Table();
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+
+    /** Column definition for AD_Table_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, org.compiere.model.I_AD_Table>(I_DataEntry_Record.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -99,31 +128,56 @@ public interface I_DataEntry_Record
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Dateneingabefeld.
+	 * Set Eingabegruppe.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_Field_ID (int DataEntry_Field_ID);
+	public void setDataEntry_Group_ID (int DataEntry_Group_ID);
 
 	/**
-	 * Get Dateneingabefeld.
+	 * Get Eingabegruppe.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_Field_ID();
+	public int getDataEntry_Group_ID();
 
-	public de.metas.dataentry.model.I_DataEntry_Field getDataEntry_Field();
+	public de.metas.dataentry.model.I_DataEntry_Group getDataEntry_Group();
 
-	public void setDataEntry_Field(de.metas.dataentry.model.I_DataEntry_Field DataEntry_Field);
+	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group);
 
-    /** Column definition for DataEntry_Field_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Field> COLUMN_DataEntry_Field_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Field>(I_DataEntry_Record.class, "DataEntry_Field_ID", de.metas.dataentry.model.I_DataEntry_Field.class);
-    /** Column name DataEntry_Field_ID */
-    public static final String COLUMNNAME_DataEntry_Field_ID = "DataEntry_Field_ID";
+    /** Column definition for DataEntry_Group_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Group> COLUMN_DataEntry_Group_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Group>(I_DataEntry_Record.class, "DataEntry_Group_ID", de.metas.dataentry.model.I_DataEntry_Group.class);
+    /** Column name DataEntry_Group_ID */
+    public static final String COLUMNNAME_DataEntry_Group_ID = "DataEntry_Group_ID";
+
+	/**
+	 * Set DataEntry_RecordData.
+	 * Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_RecordData (java.lang.String DataEntry_RecordData);
+
+	/**
+	 * Get DataEntry_RecordData.
+	 * Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataEntry_RecordData();
+
+    /** Column definition for DataEntry_RecordData */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_DataEntry_RecordData = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "DataEntry_RecordData", null);
+    /** Column name DataEntry_RecordData */
+    public static final String COLUMNNAME_DataEntry_RecordData = "DataEntry_RecordData";
 
 	/**
 	 * Set DataEntry_Record.
@@ -174,6 +228,31 @@ public interface I_DataEntry_Record
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getRecord_ID();
+
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "Record_ID", null);
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
@@ -202,98 +281,4 @@ public interface I_DataEntry_Record
     public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Record, org.compiere.model.I_AD_User>(I_DataEntry_Record.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Datum.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueDate (java.sql.Timestamp ValueDate);
-
-	/**
-	 * Get Datum.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getValueDate();
-
-    /** Column definition for ValueDate */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_ValueDate = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "ValueDate", null);
-    /** Column name ValueDate */
-    public static final String COLUMNNAME_ValueDate = "ValueDate";
-
-	/**
-	 * Set Zahlwert.
-	 * Numeric Value
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueNumber (java.math.BigDecimal ValueNumber);
-
-	/**
-	 * Get Zahlwert.
-	 * Numeric Value
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getValueNumber();
-
-    /** Column definition for ValueNumber */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_ValueNumber = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "ValueNumber", null);
-    /** Column name ValueNumber */
-    public static final String COLUMNNAME_ValueNumber = "ValueNumber";
-
-	/**
-	 * Set Stringwert.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueStr (java.lang.String ValueStr);
-
-	/**
-	 * Get Stringwert.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValueStr();
-
-    /** Column definition for ValueStr */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_ValueStr = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "ValueStr", null);
-    /** Column name ValueStr */
-    public static final String COLUMNNAME_ValueStr = "ValueStr";
-
-	/**
-	 * Set Ja/Nein-Wert.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueYesNo (java.lang.String ValueYesNo);
-
-	/**
-	 * Get Ja/Nein-Wert.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValueYesNo();
-
-    /** Column definition for ValueYesNo */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_ValueYesNo = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "ValueYesNo", null);
-    /** Column name ValueYesNo */
-    public static final String COLUMNNAME_ValueYesNo = "ValueYesNo";
 }
