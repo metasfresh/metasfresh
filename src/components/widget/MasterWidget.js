@@ -162,6 +162,8 @@ class MasterWidget extends Component {
     const dateParse = ['Date', 'DateTime', 'Time'];
     let currRowId = rowId;
 
+    console.log('MasterWidget handleChange: ', property)
+
     this.setState(
       {
         edited: true,

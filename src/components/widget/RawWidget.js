@@ -116,11 +116,21 @@ export class RawWidget extends Component {
   };
 
   handleKeyDown = (e, property, value, widgetType) => {
-    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      if (e.key === 'Enter' && widgetType.search(/text/i) > -1) {
+    const textField = widgetType.search(/text/i) > -1;
+    const key = e.key;
+
+    console.log('KEY: ', property, textField, key)
+
+    if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
+      if (key === 'Enter' && textField) {
         e.preventDefault();
       }
       return this.handlePatch(property, value);
+    }
+
+    if (!textField && (key === 'ArrowUp' || key === 'ArrowDown')) {
+      console.log('PREVENT !')
+      e.preventDefault();
     }
   };
 
@@ -614,7 +624,7 @@ export class RawWidget extends Component {
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '') + 'number-field'
+              this.getClassNames() + (isEdited ? 'input-focused ' : '') + ' number-field'
             }
           >
             {subentity === 'quickInput' ? (
@@ -634,7 +644,7 @@ export class RawWidget extends Component {
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '') + 'number-field'
+              this.getClassNames() + (isEdited ? 'input-focused ' : '') + ' number-field'
             }
           >
             <input {...widgetProperties} type="number" />

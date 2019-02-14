@@ -64,14 +64,16 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleKeyDown = (e, property, widgetData) => {
-    const { changeListenOnTrue } = this.props;
+  handleKeyDown = e => {
+    const { changeListenOnTrue, widgetData, property } = this.props;
     const { listenOnKeys, edited } = this.state;
+
+    console.log('TableItem handleKeyDown');
 
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
-          this.handleEditProperty(e, property, true, widgetData);
+          this.handleEditProperty(e, property, true, widgetData[0]);
         }
         break;
       case 'Tab':
@@ -107,7 +109,7 @@ class TableItem extends PureComponent {
 
   editProperty = (e, property, callback, item) => {
     if (item ? !item.readonly : true) {
-      if (this.state.edited === property) e.stopPropagation();
+      if (this.state.edited === property) e && e.stopPropagation();
 
       this.setState(
         {
@@ -263,7 +265,7 @@ class TableItem extends PureComponent {
                 cells[property].viewEditorRenderMode ===
                   VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-            const isEditable =
+            let isEditable =
               (cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode ===
@@ -271,8 +273,6 @@ class TableItem extends PureComponent {
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
-
-            console.log('isEditable: ', isEditable, cells[property], item.viewEditorRenderMode)
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -294,7 +294,12 @@ class TableItem extends PureComponent {
               return -1;
             });
             // HACK: Color fields should always be readonly
-            showWidget = item.widgetType === 'Color' ? false : isEditable;
+            if (item.widgetType === 'Color') {
+              showWidget = false;
+              isEditable = false;
+            }
+
+            // console.log('isEditable: ', isEditable, cells[property], item.viewEditorRenderMode, showWidget)
 
             return (
               <TableCell
@@ -317,6 +322,7 @@ class TableItem extends PureComponent {
                   showWidget,
                   cellsExtended,
                   isEdited,
+                  property,
                 }}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
@@ -330,9 +336,7 @@ class TableItem extends PureComponent {
                 onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
-                handleKeyDown={e =>
-                  this.handleKeyDown(e, property, widgetData[0])
-                }
+                handleKeyDown={this.handleKeyDown}
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={e => this.closeTableField(e)}
