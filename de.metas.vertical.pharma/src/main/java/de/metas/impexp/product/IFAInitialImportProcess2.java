@@ -60,7 +60,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Pharma_Product.COLUMNNAME_A01GDAT + " DESC ";
+		return I_I_Pharma_Product.COLUMNNAME_A01GDAT;
 	}
 
 	@Override
