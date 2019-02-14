@@ -13,8 +13,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
@@ -220,19 +218,6 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 			return null;
 		}
 		return PriceListId.ofRepoId(priceListId);
-	}
-
-	private <T> List<T> retrieveImportRecords(final Class<T> clazz, final String whereClause)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final String trxName = ITrx.TRXNAME_None;
-		final IQueryFilter<T> sqlFilter = TypedSqlQueryFilter.of(whereClause);
-		return queryBL.createQueryBuilder(clazz, trxName)
-				.addOnlyActiveRecordsFilter()
-				.filter(sqlFilter)
-				.create()
-				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
-				.list(clazz);
 	}
 
 	private I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
