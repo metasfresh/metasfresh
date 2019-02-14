@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -65,14 +66,14 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final HashMap<DocumentId, ProductsProposalRow> rowsById;
 
 	@Getter
-	private final PriceListVersionId singlePriceListVersionId;
+	private final Optional<PriceListVersionId> singlePriceListVersionId;
 	@Getter
-	private final PriceListVersionId basePriceListVersionId;
+	private final Optional<PriceListVersionId> basePriceListVersionId;
 
 	@Getter
-	private final OrderId orderId;
+	private final Optional<OrderId> orderId;
 	@Getter
-	private final BPartnerId bpartnerId;
+	private final Optional<BPartnerId> bpartnerId;
 	@Getter
 	private final SOTrx soTrx;
 
@@ -85,7 +86,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
 			@Nullable final OrderId orderId,
-			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx)
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
@@ -98,10 +99,10 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowsById = rows.stream()
 				.collect(GuavaCollectors.toMapByKey(HashMap::new, ProductsProposalRow::getId));
 
-		this.singlePriceListVersionId = singlePriceListVersionId;
-		this.basePriceListVersionId = basePriceListVersionId;
-		this.orderId = orderId;
-		this.bpartnerId = bpartnerId;
+		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
+		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
+		this.orderId = Optional.ofNullable(orderId);
+		this.bpartnerId = Optional.ofNullable(bpartnerId);
 		this.soTrx = soTrx;
 	}
 

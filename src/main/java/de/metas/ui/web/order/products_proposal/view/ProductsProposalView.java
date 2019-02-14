@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -117,12 +118,12 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		return parentViewId;
 	}
 
-	public OrderId getOrderId()
+	public Optional<OrderId> getOrderId()
 	{
 		return rowsData.getOrderId();
 	}
 
-	public BPartnerId getBpartnerId()
+	public Optional<BPartnerId> getBpartnerId()
 	{
 		return rowsData.getBpartnerId();
 	}
@@ -137,24 +138,20 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		return rowsData.getProductIds();
 	}
 
-	public PriceListVersionId getSinglePriceListVersionIdOrNull()
+	public Optional<PriceListVersionId> getSinglePriceListVersionId()
 	{
 		return rowsData.getSinglePriceListVersionId();
 	}
 
-	public PriceListVersionId getBasePriceListVersionId()
-	{
-		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdOrNull();
-		if (basePriceListVersionId == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@");
-		}
-		return basePriceListVersionId;
-	}
-
-	public PriceListVersionId getBasePriceListVersionIdOrNull()
+	public Optional<PriceListVersionId> getBasePriceListVersionId()
 	{
 		return rowsData.getBasePriceListVersionId();
+	}
+
+	public PriceListVersionId getBasePriceListVersionIdOrFail()
+	{
+		return rowsData.getBasePriceListVersionId()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@"));
 	}
 
 	public List<ProductsProposalRow> getRowsWithQtySet()

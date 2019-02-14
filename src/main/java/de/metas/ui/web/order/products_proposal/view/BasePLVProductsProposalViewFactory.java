@@ -83,15 +83,15 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 
 	public final ProductsProposalView createView(@NonNull final ProductsProposalView parentView)
 	{
-		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionId();
+		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionIdOrFail();
 
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())
 				.bpartnerProductStatsService(bpartnerProductStatsService)
-				.bpartnerId(parentView.getBpartnerId())
+				.bpartnerId(parentView.getBpartnerId().orElse(null))
 				.soTrx(parentView.getSoTrx())
-				.orderId(parentView.getOrderId())
+				.orderId(parentView.getOrderId().orElse(null))
 				.build()
 				.load();
 

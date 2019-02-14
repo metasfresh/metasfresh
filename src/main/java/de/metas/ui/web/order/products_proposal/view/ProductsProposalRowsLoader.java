@@ -1,7 +1,5 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +37,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -81,7 +78,6 @@ final class ProductsProposalRowsLoader
 	private final SOTrx soTrx;
 	private final ImmutableSet<ProductId> productIdsToExclude;
 
-	private final ZonedDateTime now = SystemTime.asZonedDateTime();
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
 	@Builder
@@ -201,31 +197,19 @@ final class ProductsProposalRowsLoader
 		return row.withLastShipmentDays(lastShipmentOrReceiptInDays);
 	}
 
-	private Integer calculateLastShipmentOrReceiptInDays(final BPartnerProductStats stats)
+	private Integer calculateLastShipmentOrReceiptInDays(@Nullable final BPartnerProductStats stats)
 	{
 		if (stats == null)
 		{
 			return null;
 		}
-
-		final ZonedDateTime lastShipmentOrReceiptDate = extractLastShipmentOrReceiptDate(stats);
-		if (lastShipmentOrReceiptDate == null)
+		else if (soTrx.isSales())
 		{
-			return null;
-		}
-
-		return (int)Duration.between(lastShipmentOrReceiptDate, now).toDays();
-	}
-
-	private ZonedDateTime extractLastShipmentOrReceiptDate(final BPartnerProductStats stats)
-	{
-		if (soTrx.isSales())
-		{
-			return stats.getLastShipmentDate();
+			return stats.getLastShipmentInDays();
 		}
 		else
 		{
-			return stats.getLastReceiptDate();
+			return stats.getLastReceiptInDays();
 		}
 	}
 }

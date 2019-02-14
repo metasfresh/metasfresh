@@ -21,6 +21,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
@@ -112,8 +113,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	protected List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
+				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class));
 	}
 
 	@Override
@@ -132,7 +134,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private void createOrderLines(final ProductsProposalView view)
 	{
 		OrderLinesFromProductProposalsProducer.builder()
-				.orderId(view.getOrderId())
+				.orderId(view.getOrderId().get())
 				.rows(view.getRowsWithQtySet())
 				.build()
 				.produce();

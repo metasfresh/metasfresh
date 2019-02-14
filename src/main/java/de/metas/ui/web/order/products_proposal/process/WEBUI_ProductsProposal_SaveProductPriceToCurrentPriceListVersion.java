@@ -3,6 +3,8 @@ package de.metas.ui.web.order.products_proposal.process;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.CopyProductPriceRequest;
@@ -49,7 +51,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 		}
 
 		final ProductsProposalView view = getView();
-		if (view.getSinglePriceListVersionIdOrNull() == null)
+		if (!view.getSinglePriceListVersionId().isPresent())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no base price list version");
 		}
@@ -91,7 +93,8 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 		Check.assume(row.isCopiedFromButNotSaved(), "row shall be copied but not saved: {}", row);
 
 		final ProductsProposalView view = getView();
-		final PriceListVersionId priceListVersionId = view.getSinglePriceListVersionIdOrNull();
+		final PriceListVersionId priceListVersionId = view.getSinglePriceListVersionId()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_PriceList_Version_Base_ID@"));
 
 		final ProductPriceId productPriceId = pricesListsRepo.copyProductPrice(CopyProductPriceRequest.builder()
 				.copyFromProductPriceId(row.getCopiedFromProductPriceId())
