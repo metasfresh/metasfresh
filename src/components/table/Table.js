@@ -51,7 +51,7 @@ class Table extends Component {
     //selecting first table elem while getting indent data
     this._isMounted = true;
     if (rowData.get(`${tabid}`)) {
-    this.getIndentData(true);
+      this.getIndentData(true);
     }
     if (this.props.autofocus) {
       this.table.focus();
