@@ -1,6 +1,7 @@
 package de.metas.bpartner.product.stats;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 import org.compiere.util.TimeUtil;
@@ -51,6 +52,11 @@ public class BPartnerProductStatsService
 			@NonNull final Set<ProductId> productIds)
 	{
 		return statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
+	}
+
+	public List<BPartnerProductStats> getByProductId(@NonNull final ProductId productId)
+	{
+		return statsRepo.getByProductId(productId);
 	}
 
 	public void handleInOutChangedEvent(@NonNull final InOutChangedEvent event)
