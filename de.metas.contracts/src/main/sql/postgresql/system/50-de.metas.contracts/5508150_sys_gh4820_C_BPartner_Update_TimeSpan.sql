@@ -2,7 +2,7 @@
 
 -- 2018-12-12T17:46:32.767
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,541036,'Y','N',TO_TIMESTAMP('2018-12-12 17:46:32','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts','Y','N','N','N','N','N','N','Y',0,'C_BPartner_Update_TimeSpan','N','Y','Java',TO_TIMESTAMP('2018-12-12 17:46:32','YYYY-MM-DD HH24:MI:SS'),100,'10000000')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,541036,'Y','N',TO_TIMESTAMP('2018-12-12 17:46:32','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts','Y','N','N','N','N','N','N','Y',0,'C_BPartner_Update_TimeSpan','N','Y','Java',TO_TIMESTAMP('2018-12-12 17:46:32','YYYY-MM-DD HH24:MI:SS'),100,'C_BPartner_TimeSpan_PLACEHOLDER')
 ;
 
 -- 2018-12-12T17:46:32.777
