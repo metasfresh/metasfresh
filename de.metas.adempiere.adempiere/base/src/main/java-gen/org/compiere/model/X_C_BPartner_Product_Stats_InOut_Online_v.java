@@ -4,29 +4,29 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for C_BPartner_Product_Stats_Online_V
+/** Generated Model for C_BPartner_Product_Stats_InOut_Online_v
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_C_BPartner_Product_Stats_Online_V extends org.compiere.model.PO implements I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_Persistent 
+public class X_C_BPartner_Product_Stats_InOut_Online_v extends org.compiere.model.PO implements I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -631812720L;
+	private static final long serialVersionUID = 1334011364L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Product_Stats_Online_V (Properties ctx, int C_BPartner_Product_Stats_Online_V_ID, String trxName)
+    public X_C_BPartner_Product_Stats_InOut_Online_v (Properties ctx, int C_BPartner_Product_Stats_InOut_Online_v_ID, String trxName)
     {
-      super (ctx, C_BPartner_Product_Stats_Online_V_ID, trxName);
-      /** if (C_BPartner_Product_Stats_Online_V_ID == 0)
+      super (ctx, C_BPartner_Product_Stats_InOut_Online_v_ID, trxName);
+      /** if (C_BPartner_Product_Stats_InOut_Online_v_ID == 0)
         {
         } */
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Product_Stats_Online_V (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BPartner_Product_Stats_InOut_Online_v (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
