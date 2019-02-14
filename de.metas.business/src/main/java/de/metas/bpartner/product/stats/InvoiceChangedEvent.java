@@ -1,7 +1,7 @@
 package de.metas.bpartner.product.stats;
 
 import java.time.LocalDate;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -9,8 +9,11 @@ import org.adempiere.exceptions.AdempiereException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
@@ -22,6 +25,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -66,8 +70,11 @@ public class InvoiceChangedEvent
 	boolean reversal;
 
 	@JsonProperty("productPrices")
-	@Getter(AccessLevel.PRIVATE)
-	Map<ProductId, Money> productPrices;
+	@Getter(AccessLevel.NONE)
+	List<ProductPrice> productPrices;
+
+	@JsonIgnore
+	ImmutableMap<ProductId, ProductPrice> productPricesByProductId;
 
 	@Builder
 	@JsonCreator
@@ -77,7 +84,7 @@ public class InvoiceChangedEvent
 			@JsonProperty("bpartnerId") @NonNull final BPartnerId bpartnerId,
 			@JsonProperty("soTrx") @NonNull final SOTrx soTrx,
 			@JsonProperty("reversal") final boolean reversal,
-			@JsonProperty("productPrices") @NonNull final Map<ProductId, Money> productPrices)
+			@JsonProperty("productPrices") @NonNull @Singular final List<ProductPrice> productPrices)
 	{
 		Check.assumeNotEmpty(productPrices, "productPrices is not empty");
 
@@ -86,22 +93,46 @@ public class InvoiceChangedEvent
 		this.bpartnerId = bpartnerId;
 		this.soTrx = soTrx;
 		this.reversal = reversal;
-		this.productPrices = ImmutableMap.copyOf(productPrices);
+
+		this.productPrices = ImmutableList.copyOf(productPrices);
+		this.productPricesByProductId = Maps.uniqueIndex(this.productPrices, ProductPrice::getProductId);
 	}
 
 	public Set<ProductId> getProductIds()
 	{
-		return getProductPrices().keySet();
+		return productPricesByProductId.keySet();
 	}
 
 	public Money getProductPrice(@NonNull final ProductId productId)
 	{
-		final Money price = getProductPrices().get(productId);
-		if (price == null)
+		final ProductPrice productPrice = productPricesByProductId.get(productId);
+		if (productPrice == null)
 		{
 			throw new AdempiereException("No product price found for " + productId + " in " + this);
 		}
-		return price;
+		return productPrice.getPrice();
+	}
+
+	@Value
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class ProductPrice
+	{
+		@JsonProperty("productId")
+		ProductId productId;
+
+		@JsonProperty("price")
+		Money price;
+
+		@Builder
+		@JsonCreator
+		private ProductPrice(
+				@JsonProperty("productId") @NonNull final ProductId productId,
+				@JsonProperty("price") @NonNull final Money price)
+		{
+			this.productId = productId;
+			this.price = price;
+		}
+
 	}
 
 }

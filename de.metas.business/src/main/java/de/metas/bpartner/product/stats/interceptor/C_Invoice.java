@@ -9,11 +9,13 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsEventSender;
 import de.metas.bpartner.product.stats.InvoiceChangedEvent;
+import de.metas.bpartner.product.stats.InvoiceChangedEvent.ProductPrice;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -62,8 +64,19 @@ public class C_Invoice
 			return;
 		}
 
+		if (isReversal(invoice))
+		{
+			// this is the reversal completion. no need to fire event because a reversal event will be fired
+			return;
+		}
+
 		final boolean reversal = false;
 		eventSender.send(createInvoiceChangedEvent(invoice, reversal));
+	}
+
+	private boolean isReversal(final I_C_Invoice invoice)
+	{
+		return invoice.getReversal_ID() > 0;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE })
@@ -90,18 +103,27 @@ public class C_Invoice
 				.build();
 	}
 
-	private ImmutableMap<ProductId, Money> extractProductPrices(final I_C_Invoice invoice)
+	private ImmutableList<ProductPrice> extractProductPrices(final I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
-		return invoicesRepo.retrieveLines(invoice)
+		final ImmutableMap<ProductId, Money> pricesByProductId = invoicesRepo.retrieveLines(invoice)
 				.stream()
 				.filter(invoiceLine -> invoiceLine.getM_Product_ID() > 0)
 				.collect(ImmutableMap.toImmutableMap(
-						invoiceLine -> ProductId.ofRepoId(invoiceLine.getM_Product_ID()),
-						invoiceLine -> Money.of(invoiceLine.getPriceActual(), currencyId)));
+						invoiceLine -> ProductId.ofRepoId(invoiceLine.getM_Product_ID()), // keyMapper
+						invoiceLine -> Money.of(invoiceLine.getPriceActual(), currencyId), // valueMapper
+						Money::max)); // mergeFunction
+
+		return pricesByProductId.keySet()
+				.stream()
+				.map(productId -> ProductPrice.builder()
+						.productId(productId)
+						.price(pricesByProductId.get(productId))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private boolean isCreditMemo(final I_C_Invoice invoice)
