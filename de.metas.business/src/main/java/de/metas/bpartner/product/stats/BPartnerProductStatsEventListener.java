@@ -2,6 +2,7 @@ package de.metas.bpartner.product.stats;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -36,12 +38,14 @@ import lombok.NonNull;
 
 @Component
 @Profile(Profiles.PROFILE_App)
-public class ReceiptEventListener implements IEventListener
+public class BPartnerProductStatsEventListener implements IEventListener
 {
+	private static final Logger logger = LogManager.getLogger(BPartnerProductStatsEventListener.class);
+
 	private final IEventBusFactory eventBusRegistry;
 	private final BPartnerProductStatsService statsService;
 
-	public ReceiptEventListener(
+	public BPartnerProductStatsEventListener(
 			@NonNull final IEventBusFactory eventBusRegistry,
 			@NonNull final BPartnerProductStatsService statsService)
 	{
@@ -52,12 +56,25 @@ public class ReceiptEventListener implements IEventListener
 	@PostConstruct
 	public void registerListener()
 	{
-		eventBusRegistry.registerGlobalEventListener(BPartnerProductStatsEventSender.TOPIC, this);
+		eventBusRegistry.registerGlobalEventListener(BPartnerProductStatsEventSender.TOPIC_InOut, this);
+		eventBusRegistry.registerGlobalEventListener(BPartnerProductStatsEventSender.TOPIC_Invoice, this);
 	}
 
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		statsService.handleEvent(BPartnerProductStatsEventSender.fromEvent(event));
+		final String topicName = eventBus.getTopicName();
+		if (BPartnerProductStatsEventSender.TOPIC_InOut.getName().equals(topicName))
+		{
+			statsService.handleInOutChangedEvent(BPartnerProductStatsEventSender.extractInOutChangedEvent(event));
+		}
+		else if (BPartnerProductStatsEventSender.TOPIC_Invoice.getName().equals(topicName))
+		{
+			statsService.handleInvoiceChangedEvent(BPartnerProductStatsEventSender.extractInvoiceChangedEvent(event));
+		}
+		else
+		{
+			logger.warn("Ignore unknow event {} got on topic={}", event, topicName);
+		}
 	}
 }
