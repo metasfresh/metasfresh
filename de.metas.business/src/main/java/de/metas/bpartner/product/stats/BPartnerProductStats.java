@@ -1,5 +1,6 @@
 package de.metas.bpartner.product.stats;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
@@ -9,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.util.time.SystemTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -69,6 +71,21 @@ public class BPartnerProductStats
 
 	@Setter(AccessLevel.PACKAGE)
 	private LastInvoiceInfo lastSalesInvoice;
+
+	public int getLastReceiptInDays()
+	{
+		return calculateDaysFrom(getLastReceiptDate());
+	}
+
+	public int getLastShipmentInDays()
+	{
+		return calculateDaysFrom(getLastShipmentDate());
+	}
+
+	private static int calculateDaysFrom(final ZonedDateTime date)
+	{
+		return (int)Duration.between(date, SystemTime.asZonedDateTime()).toDays();
+	}
 
 	public void updateLastReceiptDate(@NonNull final ZonedDateTime receiptDate)
 	{
