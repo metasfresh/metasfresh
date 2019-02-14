@@ -1,5 +1,8 @@
 package de.metas.bpartner.product.stats;
 
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -47,10 +50,21 @@ public class BPartnerProductStatsEventSender
 		sendEventObj(TOPIC_Invoice, event);
 	}
 
-	private void sendEventObj(final Topic topic, final Object event)
+	private void sendEventObj(final Topic topic, final Object eventObj)
+	{
+		final Event event = toEvent(eventObj);
+
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(trx -> sendEventNow(topic, event));
+	}
+
+	private void sendEventNow(final Topic topic, final Event event)
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
-		eventBus.postEvent(toEvent(event));
+		eventBus.postEvent(event);
 	}
 
 	private static Event toEvent(final Object event)
