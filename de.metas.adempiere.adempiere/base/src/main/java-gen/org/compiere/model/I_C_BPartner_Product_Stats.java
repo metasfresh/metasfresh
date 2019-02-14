@@ -26,7 +26,7 @@ public interface I_C_BPartner_Product_Stats
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -43,7 +43,7 @@ public interface I_C_BPartner_Product_Stats
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,7 +53,7 @@ public interface I_C_BPartner_Product_Stats
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -98,7 +98,7 @@ public interface I_C_BPartner_Product_Stats
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set BPartner Product statistics.
+	 * Set Geschäftspartner Produkt Statistik.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -107,7 +107,7 @@ public interface I_C_BPartner_Product_Stats
 	public void setC_BPartner_Product_Stats_ID (int C_BPartner_Product_Stats_ID);
 
 	/**
-	 * Get BPartner Product statistics.
+	 * Get Geschäftspartner Produkt Statistik.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

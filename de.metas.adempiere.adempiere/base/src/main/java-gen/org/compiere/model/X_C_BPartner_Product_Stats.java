@@ -15,7 +15,7 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 642553180L;
+	private static final long serialVersionUID = 1330595114L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product_Stats (Properties ctx, int C_BPartner_Product_Stats_ID, String trxName)
@@ -81,8 +81,8 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
-	/** Set BPartner Product statistics.
-		@param C_BPartner_Product_Stats_ID BPartner Product statistics	  */
+	/** Set Geschäftspartner Produkt Statistik.
+		@param C_BPartner_Product_Stats_ID Geschäftspartner Produkt Statistik	  */
 	@Override
 	public void setC_BPartner_Product_Stats_ID (int C_BPartner_Product_Stats_ID)
 	{
@@ -92,8 +92,8 @@ public class X_C_BPartner_Product_Stats extends org.compiere.model.PO implements
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Product_Stats_ID, Integer.valueOf(C_BPartner_Product_Stats_ID));
 	}
 
-	/** Get BPartner Product statistics.
-		@return BPartner Product statistics	  */
+	/** Get Geschäftspartner Produkt Statistik.
+		@return Geschäftspartner Produkt Statistik	  */
 	@Override
 	public int getC_BPartner_Product_Stats_ID () 
 	{
