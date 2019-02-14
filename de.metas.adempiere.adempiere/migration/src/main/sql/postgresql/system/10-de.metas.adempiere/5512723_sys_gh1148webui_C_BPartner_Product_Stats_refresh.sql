@@ -6,7 +6,7 @@ as
 $BODY$
 begin
     drop table if exists TMP_BPartnerProductStats_InOut;
-    create temporary table TMP_BPartnerProductStats_InOut as select * from C_BPartner_Product_Stats_Online_V;
+    create temporary table TMP_BPartnerProductStats_InOut as select * from C_BPartner_Product_Stats_InOut_Online_V;
     create index on TMP_BPartnerProductStats_InOut(AD_Client_ID, C_BPartner_ID, M_Product_ID);
 
     drop table if exists TMP_BPartnerProductStats_Invoice;
