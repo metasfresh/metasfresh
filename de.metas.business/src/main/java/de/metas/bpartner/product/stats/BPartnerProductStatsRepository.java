@@ -24,6 +24,7 @@ import org.compiere.model.I_C_BPartner_Product_Stats_Invoice_Online_V;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -80,6 +81,17 @@ class BPartnerProductStatsRepository
 				.collect(ImmutableMap.toImmutableMap(BPartnerProductStats::getProductId, Function.identity()));
 	}
 
+	public List<BPartnerProductStats> getByProductId(@NonNull final ProductId productId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
+				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productId)
+				.create()
+				.stream(I_C_BPartner_Product_Stats.class)
+				.map(record -> toBPartnerProductStats(record))
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private static BPartnerProductStats toBPartnerProductStats(final I_C_BPartner_Product_Stats record)
 	{
 		return BPartnerProductStats.builder()
@@ -96,7 +108,7 @@ class BPartnerProductStatsRepository
 
 	private static LastInvoiceInfo extractLastSalesInvoiceInfo(final I_C_BPartner_Product_Stats record)
 	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(record.getLastSales_Invoice_ID());
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(record.getLastSales_Invoice_ID());
 		if (invoiceId == null)
 		{
 			return null;
@@ -150,7 +162,7 @@ class BPartnerProductStatsRepository
 
 		for (final ProductId productId : productIds)
 		{
-			BPartnerProductStats stats = existingStatsByProductId.remove(productId);
+			BPartnerProductStats stats = existingStatsByProductId.get(productId);
 			if (stats == null)
 			{
 				stats = BPartnerProductStats.newInstance(bpartnerId, productId);
@@ -170,7 +182,6 @@ class BPartnerProductStatsRepository
 		}
 
 		saveAll(statsToSave);
-		deleteAll(existingStatsByProductId.values());
 	}
 
 	private void updateStatsFromInOutOnlineRecord(
