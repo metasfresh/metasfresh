@@ -54,7 +54,7 @@ public class ProductPriceImporter
 			throw new AdempiereException("ProductPriceImporter.InvalidProductPriceList");
 		}
 
-		if (request.getPrice().signum() >= 0)
+		if (request.getPrice().signum() >= 0 && request.isUseNewestPriceListversion())
 		{
 			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).getCreatePriceListVersion(request);
 			ProductPrices.createProductPriceOrUpdateExistentOne(request, plv);
