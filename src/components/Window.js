@@ -62,12 +62,12 @@ class Window extends PureComponent {
         elem.parentTab = parentTab;
       }
 
-      const renderSingle =
-        rowData.size &&
-        rowData.get(`${tabId}`) &&
-        rowData.get(`${tabId}`).size === 1
-          ? true
-          : false;
+      const renderSingle = false;
+      // rowData.size &&
+      // rowData.get(`${tabId}`) &&
+      // rowData.get(`${tabId}`).size === 1
+      //   ? true
+      //   : false;
 
       tabsByIds[elem.tabId] = elem;
 
