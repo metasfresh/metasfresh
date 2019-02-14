@@ -1,7 +1,5 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
@@ -49,7 +47,8 @@ public class DataEntryGroupBindingDescriptorBuilder implements DocumentEntityDat
 				public OrderedDocumentsList retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector)
 				{
 					// actually this repo should not be invoked to start with, because it's for DateEntryGroup which does not have any fields/records of its own
-					return OrderedDocumentsList.of(ImmutableList.of(), ImmutableList.of());
+					//return OrderedDocumentsList.of(ImmutableList.of(), ImmutableList.of());
+					throw new UnsupportedOperationException();
 				}
 
 				@Override

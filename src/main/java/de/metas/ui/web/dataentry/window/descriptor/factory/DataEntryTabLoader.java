@@ -11,12 +11,12 @@ import org.compiere.Adempiere;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dataentry.DataEntryField;
-import de.metas.dataentry.DataEntryField.Type;
-import de.metas.dataentry.DataEntryGroup;
-import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
-import de.metas.dataentry.DataEntryRepository;
-import de.metas.dataentry.DataEntrySubGroup;
+import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryGroup;
+import de.metas.dataentry.layout.DataEntryGroupRepository;
+import de.metas.dataentry.layout.DataEntrySubGroup;
+import de.metas.dataentry.layout.DataEntryField.Type;
+import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -81,7 +81,7 @@ public class DataEntryTabLoader
 
 	public List<DocumentLayoutDetailDescriptor> loadDocumentLayout()
 	{
-		final DataEntryRepository dataEntryRepository = Adempiere.getBean(DataEntryRepository.class);
+		final DataEntryGroupRepository dataEntryRepository = Adempiere.getBean(DataEntryGroupRepository.class);
 
 		final List<DataEntryGroup> dataEntryGroups = dataEntryRepository.getByWindowId(adWindowId);
 
@@ -212,7 +212,7 @@ public class DataEntryTabLoader
 
 	public List<DocumentEntityDescriptor> loadDocumentEntity()
 	{
-		final DataEntryRepository dataEntryRepository = Adempiere.getBean(DataEntryRepository.class);
+		final DataEntryGroupRepository dataEntryRepository = Adempiere.getBean(DataEntryGroupRepository.class);
 
 		final List<DataEntryGroup> dataEntryGroups = dataEntryRepository.getByWindowId(adWindowId);
 

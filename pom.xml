@@ -259,6 +259,7 @@
 		<dependency>
 			<groupId>io.github.json-snapshot</groupId>
 			<artifactId>json-snapshot-PR</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

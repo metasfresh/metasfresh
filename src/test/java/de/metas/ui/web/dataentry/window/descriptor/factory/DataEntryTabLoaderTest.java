@@ -7,6 +7,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -15,23 +16,22 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dataentry.DataEntryField;
-import de.metas.dataentry.DataEntryField.Type;
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntryGroup;
-import de.metas.dataentry.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.DataEntryGroupId;
-import de.metas.dataentry.DataEntryListValue;
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.DataEntrySubGroup;
 import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryGroup;
+import de.metas.dataentry.layout.DataEntryListValue;
+import de.metas.dataentry.layout.DataEntrySubGroup;
+import de.metas.dataentry.layout.DataEntryField.Type;
+import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import io.github.jsonSnapshot.SnapshotConfig;
 
 /*
  * #%L
@@ -77,14 +77,7 @@ public class DataEntryTabLoaderTest
 	@BeforeClass
 	public static void beforeAll()
 	{
-		start(new SnapshotConfig()
-		{
-			@Override
-			public String getFilePath()
-			{
-				return "src/test/resource/";
-			}
-		});
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
 	@AfterClass

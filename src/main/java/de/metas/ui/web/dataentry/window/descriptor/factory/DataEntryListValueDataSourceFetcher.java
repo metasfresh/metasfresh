@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntryListValue;
 import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
