@@ -47,10 +47,10 @@ class Table extends Component {
   }
 
   componentDidMount() {
-    const { rowData, tabid } = this.props;
+    const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
-    if (rowData.get(`${tabid}`)) {
+    if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
     }
     if (this.props.autofocus) {
@@ -70,7 +70,7 @@ class Table extends Component {
       refreshSelection,
       openIncludedViewOnSelect,
       viewId,
-      tabid,
+      tabId,
       isModal,
       hasIncluded,
     } = this.props;
@@ -125,18 +125,18 @@ class Table extends Component {
       );
     }
 
-    if (prevProps.viewId !== viewId && rowData.get(`${tabid}`)) {
+    if (prevProps.viewId !== viewId && rowData.get(`${tabId}`)) {
       if (defaultSelected && defaultSelected.length === 0) {
         this.setState({ selected: defaultSelected });
       }
 
       const firstLoad =
-        prevProps.rowData.get(`${tabid}`).size && rowData.get(`${tabid}`).size
+        prevProps.rowData.get(`${tabId}`).size && rowData.get(`${tabId}`).size
           ? false
           : true;
 
       this.getIndentData(firstLoad);
-    } else if (rowData.get(`${tabid}`) && !is(prevProps.rowData, rowData)) {
+    } else if (rowData.get(`${tabId}`) && !is(prevProps.rowData, rowData)) {
       let firstLoad = rowData.get(`${tabid}`).size ? false : true;
 
       if (
