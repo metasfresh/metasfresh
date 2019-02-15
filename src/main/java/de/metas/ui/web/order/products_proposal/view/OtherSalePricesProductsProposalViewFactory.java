@@ -28,6 +28,7 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
@@ -87,6 +88,7 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 		return ViewLayout.builder()
 				.setWindowId(key.getWindowId())
 				.setCaption(getProcessCaption(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class).orElse(null))
+				.allowViewCloseAction(ViewCloseAction.BACK)
 				.addElementsFromViewRowClassAndFieldNames(
 						ProductsProposalRow.class,
 						key.getViewDataType(),
@@ -95,7 +97,6 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastSalesInvoiceDate))
-				.clearViewCloseActions()
 				.build();
 	}
 

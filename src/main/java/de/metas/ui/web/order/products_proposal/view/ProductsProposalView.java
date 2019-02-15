@@ -66,15 +66,13 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	private final ProductsProposalRowsData rowsData;
 	private final ImmutableList<RelatedProcessDescriptor> processes;
 	private final ViewId initialViewId;
-	private final ViewId parentViewId;
 
 	@Builder
 	private ProductsProposalView(
 			@NonNull final WindowId windowId,
 			@NonNull final ProductsProposalRowsData rowsData,
 			@Nullable final List<RelatedProcessDescriptor> processes,
-			@Nullable final ViewId initialViewId,
-			@Nullable final ViewId parentViewId)
+			@Nullable final ViewId initialViewId)
 	{
 		super(
 				ViewId.random(windowId),
@@ -86,7 +84,6 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
 
 		this.initialViewId = initialViewId;
-		this.parentViewId = parentViewId;
 	}
 
 	@Override
@@ -121,7 +118,7 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	@Override
 	public ViewId getParentViewId()
 	{
-		return parentViewId;
+		return initialViewId;
 	}
 
 	public Optional<OrderId> getOrderId()

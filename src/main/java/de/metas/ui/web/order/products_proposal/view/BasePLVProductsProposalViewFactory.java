@@ -21,6 +21,7 @@ import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_Ca
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -73,10 +74,12 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 		return ViewLayout.builder()
 				.setWindowId(key.getWindowId())
 				.setCaption(caption)
+				.allowViewCloseAction(ViewCloseAction.BACK)
+				.setFilters(ProductsProposalViewFilters.getDescriptors().getAll())
+				//
 				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
 				.removeElementByFieldName(ProductsProposalRow.FIELD_Qty)
-				.clearViewCloseActions()
-				.setFilters(ProductsProposalViewFilters.getDescriptors().getAll())
+				//
 				.build();
 	}
 

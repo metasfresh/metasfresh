@@ -24,6 +24,7 @@ package de.metas.ui.web.view;
 
 public enum ViewCloseAction
 {
+	BACK, //
 	CANCEL, //
 	DONE, //
 	;
