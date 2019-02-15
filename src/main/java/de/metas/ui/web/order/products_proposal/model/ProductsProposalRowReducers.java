@@ -1,12 +1,12 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow.ProductsProposalRowBuilder;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.RowSaved;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.UserChange;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.ProductsProposalRowBuilder;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowSaved;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

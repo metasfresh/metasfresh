@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.view.OtherSalePricesProductsProposalViewFactory;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
 
 /*

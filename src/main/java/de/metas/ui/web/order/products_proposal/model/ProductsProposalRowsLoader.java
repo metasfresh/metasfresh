@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.util.Comparator;
 import java.util.List;
@@ -63,7 +63,7 @@ import lombok.Singular;
  * #L%
  */
 
-final class ProductsProposalRowsLoader
+public final class ProductsProposalRowsLoader
 {
 	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);

@@ -21,6 +21,8 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_BPartner_ProductsProposal_Launcher;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;

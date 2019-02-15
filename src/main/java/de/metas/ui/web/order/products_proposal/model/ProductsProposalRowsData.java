@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +24,8 @@ import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.UserChange;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;

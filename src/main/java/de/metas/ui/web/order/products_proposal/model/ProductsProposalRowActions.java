@@ -1,11 +1,11 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.UserChange;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.UserChange.UserChangeBuilder;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange.UserChangeBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.experimental.UtilityClass;
 

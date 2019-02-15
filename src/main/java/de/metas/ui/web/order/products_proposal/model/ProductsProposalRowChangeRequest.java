@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
 import java.util.Optional;

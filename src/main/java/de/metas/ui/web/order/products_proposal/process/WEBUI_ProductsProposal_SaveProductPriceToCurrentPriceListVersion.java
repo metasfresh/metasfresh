@@ -10,8 +10,8 @@ import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.RowSaved;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowSaved;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
 import de.metas.util.Services;
 

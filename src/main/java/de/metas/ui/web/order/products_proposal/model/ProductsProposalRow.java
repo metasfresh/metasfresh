@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.currency.Amount;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
