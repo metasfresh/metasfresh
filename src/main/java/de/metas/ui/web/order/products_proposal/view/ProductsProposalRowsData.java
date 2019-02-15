@@ -210,14 +210,6 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowsById.put(row.getId(), row);
 	}
 
-	public synchronized ImmutableList<ProductsProposalRow> getRowsToBeCopiedIntoCurrentPriceListVersion()
-	{
-		return rowsById.values()
-				.stream()
-				.filter(ProductsProposalRow::isCopiedFromButNotSaved)
-				.collect(ImmutableList.toImmutableList());
-	}
-
 	public synchronized ProductsProposalViewFilter getFilter()
 	{
 		return filter;
