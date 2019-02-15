@@ -1,10 +1,11 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -23,6 +24,9 @@ import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -65,14 +69,14 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final HashMap<DocumentId, ProductsProposalRow> rowsById;
 
 	@Getter
-	private final PriceListVersionId singlePriceListVersionId;
+	private final Optional<PriceListVersionId> singlePriceListVersionId;
 	@Getter
-	private final PriceListVersionId basePriceListVersionId;
+	private final Optional<PriceListVersionId> basePriceListVersionId;
 
 	@Getter
-	private final OrderId orderId;
+	private final Optional<OrderId> orderId;
 	@Getter
-	private final BPartnerId bpartnerId;
+	private final Optional<BPartnerId> bpartnerId;
 	@Getter
 	private final SOTrx soTrx;
 
@@ -85,7 +89,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
 			@Nullable final OrderId orderId,
-			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx)
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
@@ -98,10 +102,10 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowsById = rows.stream()
 				.collect(GuavaCollectors.toMapByKey(HashMap::new, ProductsProposalRow::getId));
 
-		this.singlePriceListVersionId = singlePriceListVersionId;
-		this.basePriceListVersionId = basePriceListVersionId;
-		this.orderId = orderId;
-		this.bpartnerId = bpartnerId;
+		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
+		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
+		this.orderId = Optional.ofNullable(orderId);
+		this.bpartnerId = Optional.ofNullable(bpartnerId);
 		this.soTrx = soTrx;
 	}
 
@@ -153,13 +157,13 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Override
 	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final ProductsProposalRowChangeRequest request = ProductsProposalRowActions.toChangeRequest(fieldChangeRequests);
-		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.copyAndChange(request, row));
+		final UserChange request = ProductsProposalRowActions.toUserChangeRequest(fieldChangeRequests);
+		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.reduce(row, request));
 	}
 
 	public void patchRow(@NonNull final DocumentId rowId, @NonNull ProductsProposalRowChangeRequest request)
 	{
-		changeRow(rowId, row -> ProductsProposalRowReducers.copyAndChange(request, row));
+		changeRow(rowId, row -> ProductsProposalRowReducers.reduce(row, request));
 	}
 
 	private synchronized void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsProposalRow> mapper)
@@ -187,18 +191,48 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void copyAndAddRows(@NonNull final List<ProductsProposalRow> rows)
+	private synchronized Optional<ProductsProposalRow> getRowByProductAndASI(@NonNull final ProductId productId, @NonNull final ProductASIDescription asiDescription)
 	{
-		rows.forEach(this::copyAndAddRow);
+		return rowsById.values()
+				.stream()
+				.filter(row -> productId.equals(row.getProductId())
+						&& asiDescription.equals(row.getAsiDescription()))
+				.findFirst();
 	}
 
-	public void copyAndAddRow(@NonNull final ProductsProposalRow row)
+	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
-		addRow(row.toBuilder()
+		requests.forEach(this::addOrUpdateRow);
+	}
+
+	private synchronized void addOrUpdateRow(@NonNull final ProductsProposalRowAddRequest request)
+	{
+		final ProductsProposalRow existingRow = getRowByProductAndASI(request.getProductId(), request.getAsiDescription())
+				.orElse(null);
+		if (existingRow != null)
+		{
+			patchRow(existingRow.getId(), RowUpdate.builder()
+					.price(request.getPrice())
+					.lastShipmentDays(request.getLastShipmentDays())
+					.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
+					.build());
+		}
+		else
+		{
+			addRow(createRow(request));
+		}
+	}
+
+	private ProductsProposalRow createRow(ProductsProposalRowAddRequest request)
+	{
+		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
-				.productPriceId(null)
-				.copiedFromProductPriceId(row.getProductPriceId())
-				.build());
+				.product(request.getProduct())
+				.asiDescription(request.getAsiDescription())
+				.standardPrice(request.getPrice())
+				.lastShipmentDays(request.getLastShipmentDays())
+				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
+				.build();
 	}
 
 	private synchronized void addRow(final ProductsProposalRow row)
@@ -207,14 +241,6 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowIdsOrdered.add(0, row.getId()); // add first
 
 		rowsById.put(row.getId(), row);
-	}
-
-	public synchronized ImmutableList<ProductsProposalRow> getRowsToBeCopiedIntoCurrentPriceListVersion()
-	{
-		return rowsById.values()
-				.stream()
-				.filter(ProductsProposalRow::isCopiedFromButNotSaved)
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	public synchronized ProductsProposalViewFilter getFilter()

@@ -11,6 +11,11 @@ import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilters;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
@@ -83,15 +88,15 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 
 	public final ProductsProposalView createView(@NonNull final ProductsProposalView parentView)
 	{
-		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionId();
+		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionIdOrFail();
 
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())
 				.bpartnerProductStatsService(bpartnerProductStatsService)
-				.bpartnerId(parentView.getBpartnerId())
+				.bpartnerId(parentView.getBpartnerId().orElse(null))
 				.soTrx(parentView.getSoTrx())
-				.orderId(parentView.getOrderId())
+				.orderId(parentView.getOrderId().orElse(null))
 				.build()
 				.load();
 

@@ -19,6 +19,8 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;

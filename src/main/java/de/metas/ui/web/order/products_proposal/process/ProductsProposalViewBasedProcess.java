@@ -11,7 +11,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IView;

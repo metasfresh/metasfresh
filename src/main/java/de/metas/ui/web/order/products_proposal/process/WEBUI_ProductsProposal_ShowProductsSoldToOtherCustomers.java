@@ -2,11 +2,11 @@ package de.metas.ui.web.order.products_proposal.process;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
-import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
+import de.metas.ui.web.order.products_proposal.view.OtherSalePricesProductsProposalViewFactory;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
 
 /*
@@ -31,14 +31,17 @@ import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
  * #L%
  */
 
-public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends ProductsProposalViewBasedProcess
+public class WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers extends ProductsProposalViewBasedProcess
 {
+	@Autowired
+	private OtherSalePricesProductsProposalViewFactory otherSalePricesProductsProposalViewFactory;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (getSelectedRowIds().isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing selected");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -47,31 +50,12 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 	@Override
 	protected String doIt()
 	{
-		addSelectedRowsToInitialView();
-		closeAllViewsAndShowInitialView();
+		final ProductsProposalView view = getView();
+		final List<ProductsProposalRow> selectedRows = getSelectedRows();
+
+		final ProductsProposalView otherSalesPricesView = otherSalePricesProductsProposalViewFactory.createView(view, selectedRows);
+		afterCloseOpenView(otherSalesPricesView.getViewId());
+
 		return MSG_OK;
-	}
-
-	private void addSelectedRowsToInitialView()
-	{
-		final ProductsProposalView initialView = getInitialView();
-
-		final List<ProductsProposalRowAddRequest> addRequests = getSelectedRows()
-				.stream()
-				.map(this::toProductsProposalRowAddRequest)
-				.collect(ImmutableList.toImmutableList());
-
-		initialView.addOrUpdateRows(addRequests);
-	}
-
-	private ProductsProposalRowAddRequest toProductsProposalRowAddRequest(final ProductsProposalRow row)
-	{
-		return ProductsProposalRowAddRequest.builder()
-				.product(row.getProduct())
-				.asiDescription(row.getAsiDescription())
-				.price(row.getPrice())
-				.lastShipmentDays(row.getLastShipmentDays())
-				.copiedFromProductPriceId(row.getProductPriceId())
-				.build();
 	}
 }

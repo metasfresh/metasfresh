@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.service;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,6 +24,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -50,7 +51,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class OrderLinesFromProductProposalsProducer
+public final class OrderLinesFromProductProposalsProducer
 {
 	private static final Logger logger = LogManager.getLogger(OrderLinesFromProductProposalsProducer.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);

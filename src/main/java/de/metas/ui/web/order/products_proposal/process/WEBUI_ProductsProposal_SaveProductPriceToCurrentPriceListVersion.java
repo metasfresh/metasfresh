@@ -1,17 +1,18 @@
 package de.metas.ui.web.order.products_proposal.process;
 
-import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow;
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowSaved;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -43,13 +44,13 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!hasRowsCopiedFromButNotSaved())
+		if (!hasChangedRows())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to save");
 		}
 
 		final ProductsProposalView view = getView();
-		if (view.getSinglePriceListVersionIdOrNull() == null)
+		if (!view.getSinglePriceListVersionId().isPresent())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no base price list version");
 		}
@@ -60,7 +61,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 	@Override
 	protected String doIt()
 	{
-		streamRowsCopiedFromButNotSaved()
+		streamChangedRows()
 				.forEach(this::save);
 
 		return MSG_OK;
@@ -72,36 +73,67 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 		invalidateView();
 	}
 
-	private boolean hasRowsCopiedFromButNotSaved()
+	private boolean hasChangedRows()
 	{
-		return streamRowsCopiedFromButNotSaved()
+		return streamChangedRows()
 				.findAny()
 				.isPresent();
 	}
 
-	private Stream<ProductsProposalRow> streamRowsCopiedFromButNotSaved()
+	private Stream<ProductsProposalRow> streamChangedRows()
 	{
 		return getSelectedRows()
 				.stream()
-				.filter(ProductsProposalRow::isCopiedFromButNotSaved);
+				.filter(ProductsProposalRow::isChanged);
 	}
 
-	public void save(final ProductsProposalRow row)
+	private void save(final ProductsProposalRow row)
 	{
-		Check.assume(row.isCopiedFromButNotSaved(), "row shall be copied but not saved: {}", row);
+		if (!row.isChanged())
+		{
+			return;
+		}
 
-		final ProductsProposalView view = getView();
-		final PriceListVersionId priceListVersionId = view.getSinglePriceListVersionIdOrNull();
+		final ProductPriceId productPriceId;
 
-		final ProductPriceId productPriceId = pricesListsRepo.copyProductPrice(CopyProductPriceRequest.builder()
-				.copyFromProductPriceId(row.getCopiedFromProductPriceId())
-				.copyToPriceListVersionId(priceListVersionId)
-				.priceStd(row.getPrice().getValue())
+		//
+		// Update existing product price
+		if (row.getProductPriceId() != null)
+		{
+			productPriceId = row.getProductPriceId();
+			pricesListsRepo.updateProductPrice(UpdateProductPriceRequest.builder()
+					.productPriceId(productPriceId)
+					.priceStd(row.getPrice().getValue())
+					.build());
+		}
+		//
+		// Save a new product price which was copied from some other price list version
+		else if (row.getCopiedFromProductPriceId() != null)
+		{
+			productPriceId = pricesListsRepo.copyProductPrice(CopyProductPriceRequest.builder()
+					.copyFromProductPriceId(row.getCopiedFromProductPriceId())
+					.copyToPriceListVersionId(getPriceListVersionId())
+					.priceStd(row.getPrice().getValue())
+					.build());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot save row: " + row);
+		}
+
+		//
+		// Refresh row
+		getView().patchViewRow(row.getId(), RowSaved.builder()
+				.productPriceId(productPriceId)
+				.standardPrice(row.getPrice())
 				.build());
+	}
 
-		view.patchViewRow(row.getId(), ProductsProposalRowChangeRequest.builder()
-				.productPriceId(Optional.of(productPriceId))
-				.standardPrice(Optional.of(row.getPrice()))
-				.build());
+	private PriceListVersionId getPriceListVersionId()
+	{
+		return getView()
+				.getSinglePriceListVersionId()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_PriceList_Version_ID@"));
+
 	}
 }
