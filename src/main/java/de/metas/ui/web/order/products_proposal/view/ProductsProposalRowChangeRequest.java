@@ -6,6 +6,7 @@ import java.util.Optional;
 import de.metas.currency.Amount;
 import de.metas.pricing.ProductPriceId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,13 +31,24 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ProductsProposalRowChangeRequest
+public interface ProductsProposalRowChangeRequest
 {
-	boolean userChange;
-	Optional<BigDecimal> qty;
-	Optional<BigDecimal> price;
-	Optional<Amount> standardPrice;
-	Optional<ProductPriceId> productPriceId;
+	@Builder
+	@Value
+	public static class UserChange implements ProductsProposalRowChangeRequest
+	{
+		Optional<BigDecimal> qty;
+		Optional<BigDecimal> price;
+	}
+
+	@Builder
+	@Value
+	public static class RowSaved implements ProductsProposalRowChangeRequest
+	{
+		@NonNull
+		ProductPriceId productPriceId;
+		@NonNull
+		Amount standardPrice;
+	}
+
 }

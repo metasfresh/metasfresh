@@ -24,6 +24,7 @@ import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.products_proposal.view.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -154,13 +155,13 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Override
 	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final ProductsProposalRowChangeRequest request = ProductsProposalRowActions.toChangeRequest(fieldChangeRequests);
-		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.copyAndChange(request, row));
+		final UserChange request = ProductsProposalRowActions.toUserChangeRequest(fieldChangeRequests);
+		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.reduce(row, request));
 	}
 
 	public void patchRow(@NonNull final DocumentId rowId, @NonNull ProductsProposalRowChangeRequest request)
 	{
-		changeRow(rowId, row -> ProductsProposalRowReducers.copyAndChange(request, row));
+		changeRow(rowId, row -> ProductsProposalRowReducers.reduce(row, request));
 	}
 
 	private synchronized void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsProposalRow> mapper)
