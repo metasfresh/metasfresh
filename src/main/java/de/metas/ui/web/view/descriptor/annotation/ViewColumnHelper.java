@@ -282,7 +282,7 @@ public final class ViewColumnHelper
 			return Stream.of(JSONViewDataType.values())
 					.map(viewType -> ClassViewColumnLayoutDescriptor.builder()
 							.viewType(viewType)
-							.displayed(true)
+							.displayed(viewColumnAnn.displayed())
 							.seqNo(defaultSeqNo)
 							.build())
 					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
