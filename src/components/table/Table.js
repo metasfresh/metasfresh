@@ -137,12 +137,12 @@ class Table extends Component {
 
       this.getIndentData(firstLoad);
     } else if (rowData.get(`${tabId}`) && !is(prevProps.rowData, rowData)) {
-      let firstLoad = rowData.get(`${tabid}`).size ? false : true;
+      let firstLoad = rowData.get(`${tabId}`).size ? false : true;
 
       if (
-        prevProps.rowData.get(`${tabid}`) &&
-        !prevProps.rowData.get(`${tabid}`).size &&
-        rowData.get(`${tabid}`).size
+        prevProps.rowData.get(`${tabId}`) &&
+        !prevProps.rowData.get(`${tabId}`).size &&
+        rowData.get(`${tabId}`).size
       ) {
         firstLoad = true;
       }
