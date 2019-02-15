@@ -36,7 +36,7 @@ public class WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList extends P
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getView().getBasePriceListVersionIdOrNull() == null)
+		if (!getView().getBasePriceListVersionId().isPresent())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no base price list set");
 		}

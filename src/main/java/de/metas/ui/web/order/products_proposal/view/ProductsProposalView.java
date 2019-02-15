@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,12 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilters;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
@@ -59,15 +66,13 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	private final ProductsProposalRowsData rowsData;
 	private final ImmutableList<RelatedProcessDescriptor> processes;
 	private final ViewId initialViewId;
-	private final ViewId parentViewId;
 
 	@Builder
 	private ProductsProposalView(
 			@NonNull final WindowId windowId,
 			@NonNull final ProductsProposalRowsData rowsData,
 			@Nullable final List<RelatedProcessDescriptor> processes,
-			@Nullable final ViewId initialViewId,
-			@Nullable final ViewId parentViewId)
+			@Nullable final ViewId initialViewId)
 	{
 		super(
 				ViewId.random(windowId),
@@ -79,7 +84,6 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
 
 		this.initialViewId = initialViewId;
-		this.parentViewId = parentViewId;
 	}
 
 	@Override
@@ -114,15 +118,15 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	@Override
 	public ViewId getParentViewId()
 	{
-		return parentViewId;
+		return initialViewId;
 	}
 
-	public OrderId getOrderId()
+	public Optional<OrderId> getOrderId()
 	{
 		return rowsData.getOrderId();
 	}
 
-	public BPartnerId getBpartnerId()
+	public Optional<BPartnerId> getBpartnerId()
 	{
 		return rowsData.getBpartnerId();
 	}
@@ -137,24 +141,20 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		return rowsData.getProductIds();
 	}
 
-	public PriceListVersionId getSinglePriceListVersionIdOrNull()
+	public Optional<PriceListVersionId> getSinglePriceListVersionId()
 	{
 		return rowsData.getSinglePriceListVersionId();
 	}
 
-	public PriceListVersionId getBasePriceListVersionId()
-	{
-		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdOrNull();
-		if (basePriceListVersionId == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@");
-		}
-		return basePriceListVersionId;
-	}
-
-	public PriceListVersionId getBasePriceListVersionIdOrNull()
+	public Optional<PriceListVersionId> getBasePriceListVersionId()
 	{
 		return rowsData.getBasePriceListVersionId();
+	}
+
+	public PriceListVersionId getBasePriceListVersionIdOrFail()
+	{
+		return rowsData.getBasePriceListVersionId()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@"));
 	}
 
 	public List<ProductsProposalRow> getRowsWithQtySet()
@@ -165,9 +165,9 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void addRows(@NonNull final List<ProductsProposalRow> rows)
+	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
-		rowsData.copyAndAddRows(rows);
+		rowsData.addOrUpdateRows(requests);
 		invalidateAll();
 	}
 

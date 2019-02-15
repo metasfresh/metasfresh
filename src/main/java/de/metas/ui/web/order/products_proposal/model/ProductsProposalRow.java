@@ -1,6 +1,7 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.currency.Amount;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -55,17 +57,22 @@ public class ProductsProposalRow implements IViewRow
 		return (ProductsProposalRow)row;
 	}
 
-	@ViewColumn(seqNo = 10, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
+	public static final String FIELD_Product = "product";
+	@ViewColumn(seqNo = 10, fieldName = FIELD_Product, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
+	@Getter
 	private final LookupValue product;
 
-	@ViewColumn(seqNo = 20, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
-	private final String asiDescription;
+	public static final String FIELD_ASI = "asi";
+	@ViewColumn(seqNo = 20, fieldName = FIELD_ASI, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
+	@Getter
+	private final ProductASIDescription asiDescription;
 
 	public static final String FIELD_Price = "price";
 	@ViewColumn(seqNo = 30, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
 	private final BigDecimal price;
 
-	@ViewColumn(seqNo = 40, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
+	public static final String FIELD_Currency = "currency";
+	@ViewColumn(seqNo = 40, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
 	private final String currencyCode;
 
 	public static final String FIELD_Qty = "qty";
@@ -73,8 +80,19 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final BigDecimal qty;
 
-	@ViewColumn(seqNo = 60, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	public static final String FIELD_LastShipmentDays = "lastShipmentDays";
+	@ViewColumn(seqNo = 60, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	@Getter
 	private final Integer lastShipmentDays;
+
+	public static final String FIELD_BPartner = "bpartner";
+	@ViewColumn(displayed = false, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
+	private final LookupValue bpartner;
+
+	public static final String FIELD_LastSalesInvoiceDate = "lastSalesInvoiceDate";
+	@ViewColumn(displayed = false, fieldName = FIELD_LastSalesInvoiceDate, captionKey = "LastSalesInvoiceDate", widgetType = DocumentFieldWidgetType.Date)
+	@Getter
+	private final LocalDate lastSalesInvoiceDate;
 
 	private final DocumentId id;
 	@Getter
@@ -89,19 +107,23 @@ public class ProductsProposalRow implements IViewRow
 	@Builder(toBuilder = true)
 	private ProductsProposalRow(
 			@NonNull final DocumentId id,
+			@Nullable final LookupValue bpartner,
 			@NonNull final LookupValue product,
-			@Nullable final String asiDescription,
+			@Nullable final ProductASIDescription asiDescription,
 			@NonNull final Amount standardPrice,
 			@Nullable final BigDecimal price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
+			@Nullable final LocalDate lastSalesInvoiceDate,
 			@Nullable final ProductPriceId productPriceId,
 			@Nullable final ProductPriceId copiedFromProductPriceId)
 	{
 		this.id = id;
 
+		this.bpartner = bpartner;
+
 		this.product = product;
-		this.asiDescription = asiDescription;
+		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 
 		this.standardPrice = standardPrice;
 		this.currencyCode = standardPrice.getCurrencyCode();
@@ -110,6 +132,7 @@ public class ProductsProposalRow implements IViewRow
 		this.qty = qty;
 
 		this.lastShipmentDays = lastShipmentDays;
+		this.lastSalesInvoiceDate = lastSalesInvoiceDate;
 
 		this.productPriceId = productPriceId;
 		this.copiedFromProductPriceId = copiedFromProductPriceId;
@@ -142,10 +165,7 @@ public class ProductsProposalRow implements IViewRow
 		final ImmutableMap.Builder<String, ViewEditorRenderMode> builder = ImmutableMap.builder();
 
 		builder.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS);
-		if (isCopiedFromButNotSaved())
-		{
-			builder.put(FIELD_Price, ViewEditorRenderMode.ALWAYS);
-		}
+		builder.put(FIELD_Price, ViewEditorRenderMode.ALWAYS);
 
 		return builder.build();
 	}
@@ -181,12 +201,12 @@ public class ProductsProposalRow implements IViewRow
 
 	public ProductId getProductId()
 	{
-		return product.getIdAs(ProductId::ofRepoId);
+		return getProduct().getIdAs(ProductId::ofRepoId);
 	}
 
 	public String getProductName()
 	{
-		return product.getDisplayName();
+		return getProduct().getDisplayName();
 	}
 
 	public boolean isQtySet()
@@ -207,10 +227,10 @@ public class ProductsProposalRow implements IViewRow
 		}
 	}
 
-	public boolean isCopiedFromButNotSaved()
+	public boolean isChanged()
 	{
-		return getCopiedFromProductPriceId() != null
-				&& getProductPriceId() == null;
+		return getProductPriceId() == null
+				|| isManualPrice();
 	}
 
 	public boolean isManualPrice()

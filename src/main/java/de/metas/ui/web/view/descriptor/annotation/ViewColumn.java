@@ -65,6 +65,8 @@ public @interface ViewColumn
 	/** Display sequence number. Overridden by {@link ViewColumnLayout#seqNo()}. */
 	int seqNo() default Integer.MIN_VALUE;
 
+	boolean displayed() default true;
+
 	/**
 	 * Column layout profiles.
 	 *
