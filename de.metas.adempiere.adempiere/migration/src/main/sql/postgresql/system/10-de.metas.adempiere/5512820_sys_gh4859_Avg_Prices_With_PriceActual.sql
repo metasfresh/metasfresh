@@ -1,13 +1,33 @@
--- Function: de_metas_endcustomer_fresh_reports.average_product_prices(date, date, character)
-
--- DROP FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices(date, date, character);
+DROP FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices(date, date, character);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_prices(
     IN p_datefrom date,
     IN p_dateto date,
     IN p_issotrx character)
-  RETURNS TABLE(produktnr character varying, produktname character varying, merkmal text, menge numeric, menge_lieferung numeric, mengenenheit character varying, preis numeric, betragchf text, wahrung character, preisenheit character varying, produktkategorie character varying, geschaftspartnernr character varying, geschaftspartnername character varying, country character varying, adr character varying, label character varying, belegnr character varying, bewegungsdatum timestamp without time zone) AS
-$BODY$
+ 
+ RETURNS TABLE 
+(
+	ProduktNr character varying(40),
+	ProduktName character varying(225),
+	Merkmal text,
+	Menge numeric,
+	Menge_Lieferung numeric,
+	Mengenenheit character varying,
+	Preis numeric,
+	BetragCHF text,
+	Wahrung character(3),
+	Preisenheit character varying,
+	ProduktKategorie character varying(60),
+	GeschaftspartnerNr character varying(40),
+	GeschaftspartnerName character varying(60),
+	Country character varying,
+	ADR character varying,
+	Label character varying,
+	BelegNr character varying(30), 
+	BewegungsDatum timestamp without time zone
+)
+AS
+ $BODY$
 
 SELECT 
 	p.Value AS ProduktNr
@@ -54,7 +74,6 @@ SELECT
 			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
 			, ic.AD_Client_ID
 			, ic.AD_Org_ID --ad_org_id
-			), 2)::text
 			), 2)::text
 		ELSE ROUND(
 		COALESCE( 
