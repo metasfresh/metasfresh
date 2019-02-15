@@ -1,21 +1,41 @@
 [ {
   "@c" : ".DataEntryRecordFieldDate",
   "dataEntryFieldId" : 30,
-  "date" : "2019-02-12T12:20:42.000000002+01:00"
+  "created" : "2019-02-12T13:20:42.000000002+01:00",
+  "createdBy" : 10,
+  "updated" : "2019-02-12T14:20:42.000000002+01:00",
+  "updatedBy" : 20,
+  "value" : "2019-02-12T12:20:42.000000002+01:00"
 }, {
   "@c" : ".DataEntryRecordFieldListValue",
   "dataEntryFieldId" : 31,
-  "listValueId" : 41
+  "created" : "2019-02-12T13:20:42.000000002+01:00",
+  "createdBy" : 10,
+  "updated" : "2019-02-12T14:20:42.000000002+01:00",
+  "updatedBy" : 20,
+  "value" : 41
 }, {
   "@c" : ".DataEntryRecordFieldNumber",
   "dataEntryFieldId" : 32,
-  "number" : 0.23
+  "created" : "2019-02-12T13:20:42.000000002+01:00",
+  "createdBy" : 10,
+  "updated" : "2019-02-12T14:20:42.000000002+01:00",
+  "updatedBy" : 20,
+  "value" : 0.23
 }, {
   "@c" : ".DataEntryRecordFieldString",
   "dataEntryFieldId" : 33,
-  "string" : "stringFieldValue"
+  "created" : "2019-02-12T13:20:42.000000002+01:00",
+  "createdBy" : 10,
+  "updated" : "2019-02-12T14:20:42.000000002+01:00",
+  "updatedBy" : 20,
+  "value" : "stringFieldValue"
 }, {
   "@c" : ".DataEntryRecordFieldYesNo",
   "dataEntryFieldId" : 34,
+  "created" : "2019-02-12T13:20:42.000000002+01:00",
+  "createdBy" : 10,
+  "updated" : "2019-02-12T14:20:42.000000002+01:00",
+  "updatedBy" : 20,
   "value" : true
 } ]

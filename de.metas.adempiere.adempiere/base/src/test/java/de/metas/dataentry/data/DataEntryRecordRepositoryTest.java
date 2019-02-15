@@ -1,0 +1,142 @@
+package de.metas.dataentry.data;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Product;
+import org.json.JSONException;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.model.I_DataEntry_Record;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public class DataEntryRecordRepositoryTest
+{
+	@Rule
+	public final TestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+
+
+
+	private DataEntryRecordRepository dataEntryRecordRepository;
+
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		dataEntryRecordRepository = new DataEntryRecordRepository();
+	}
+
+	@Test
+	public void saveData_empty()
+	{
+		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		final DataEntryRecord dataEntryRecord = DataEntryRecord
+				.builder()
+				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
+				.fields(ImmutableList.of())
+				.build();
+
+		// invoke the method under test
+		final DataEntryRecordId resultId = dataEntryRecordRepository.save(dataEntryRecord);
+
+		final I_DataEntry_Record resultRecord = load(resultId, I_DataEntry_Record.class);
+		assertThat(resultRecord.getDataEntry_SubGroup_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
+		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
+		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
+		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
+		assertThat(resultRecord.getDataEntry_RecordData()).isEqualTo("[ ]");
+	}
+
+	@Test
+	public void saveData_nonEmpty() throws IOException, JSONException
+	{
+		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+
+		final DataEntryRecord dataEntryRecord = DataEntryRecord
+				.builder()
+				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
+				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
+				.build();
+
+		// invoke the method under test
+		final DataEntryRecordId resultId = dataEntryRecordRepository.save(dataEntryRecord);
+
+		// get the data we just stored and compare it with our snapshot file
+		final I_DataEntry_Record resultRecord = load(resultId, I_DataEntry_Record.class);
+		assertThat(resultRecord.getDataEntry_SubGroup_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
+		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
+		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
+		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
+
+		final String serializedRecordData = resultRecord.getDataEntry_RecordData();
+
+		final String expectedString = DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON;
+
+		JSONAssert.assertEquals(expectedString, serializedRecordData, JSONCompareMode.STRICT);
+	}
+
+
+
+	@Test
+	public void getBy() throws IOException
+	{
+		DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		final TableRecordReference tableRecordReference = TableRecordReference.of(I_M_Product.Table_Name, 41);
+
+		final I_DataEntry_Record record = newInstance(I_DataEntry_Record.class);
+		record.setDataEntry_SubGroup_ID(dataEntrySubGroupId.getRepoId());
+		record.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
+		record.setRecord_ID(tableRecordReference.getRecord_ID());
+		record.setDataEntry_RecordData(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON);
+		saveRecord(record);
+
+		// invoke the method under test
+		final DataEntryRecord result = dataEntryRecordRepository.getBy(dataEntrySubGroupId, tableRecordReference);
+
+		assertThat(result.getId().getRepoId()).isEqualTo(record.getDataEntry_Record_ID());
+		assertThat(result.getMainRecord().getAD_Table_ID()).isEqualTo(record.getAD_Table_ID());
+		assertThat(result.getMainRecord().getRecord_ID()).isEqualTo(record.getRecord_ID());
+
+		assertThat(result.getFields())
+				.containsExactlyElementsOf(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA);
+	}
+
+}
