@@ -274,7 +274,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     ],
                     "id2listValue" : {
-                      "DataEntryListValueId(repoId=41)" : {
+                      "41" : {
                         "id" : 41,
                         "displayName" : {
                           "value" : "listValue1_name",
@@ -286,7 +286,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         },
                         "active" : true
                       },
-                      "DataEntryListValueId(repoId=42)" : {
+                      "42" : {
                         "id" : 42,
                         "displayName" : {
                           "value" : "listValue2_name",
@@ -299,14 +299,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         "active" : true
                       }
                     },
-                    "dataEntryFieldId" : {
-                      "repoId" : 35
-                    },
+                    "dataEntryFieldId" : 35,
                     "numericKey" : false,
                     "cached" : true
                   },
-                  "numericKey" : true,
-                  "highVolume" : false
+                  "highVolume" : false,
+                  "numericKey" : true
                 },
                 "numericKey" : true
               },
