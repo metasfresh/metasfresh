@@ -24,7 +24,7 @@ import de.metas.process.JavaProcess;
  * #L%
  */
 
-public class C_PhoneCall_CreateSalesOrder  extends JavaProcess
+public class GeneratePhonecallData  extends JavaProcess
 {
 
 	@Override
@@ -34,6 +34,4 @@ public class C_PhoneCall_CreateSalesOrder  extends JavaProcess
 		return null;
 	}
 
-	// TODO
-	//getResult().setRecordsToOpen(ImmutableList.of(TableRecordReference.of(orderRecord)));
 }
