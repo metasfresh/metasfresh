@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
@@ -57,6 +56,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -81,6 +81,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -226,12 +227,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public int getC_TaxCategory_ID(final org.compiere.model.I_C_OrderLine orderLine)
+	public TaxCategoryId getTaxCategoryId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		// In case we have a charge, use the tax category from charge
 		if (orderLine.getC_Charge_ID() > 0)
 		{
-			return orderLine.getC_Charge().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoId(orderLine.getC_Charge().getC_TaxCategory_ID());
 		}
 
 		final OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);
@@ -313,13 +314,10 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = ol.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
-		final int precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
 		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
-		if (lineNetAmt.scale() > precision)
-		{
-			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
-		}
+		lineNetAmt = precision.roundIfNeeded(lineNetAmt);
 
 		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);
@@ -412,7 +410,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updatePriceActual(final I_C_OrderLine orderLine, final int precision)
+	public void updatePriceActual(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
 	{
 		final BigDecimal priceActual = PriceAndDiscount.of(orderLine, precision)
 				.updatePriceActual()

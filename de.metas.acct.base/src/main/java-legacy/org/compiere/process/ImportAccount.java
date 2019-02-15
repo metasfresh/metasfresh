@@ -108,7 +108,7 @@ public class ImportAccount extends JavaProcess
 		{
 			sql = new StringBuffer ("DELETE FROM I_ElementValue "
 				+ "WHERE I_IsImported='Y'").append(clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 			log.debug("Deleted Old Imported =" + no);
 		}
 
@@ -126,7 +126,7 @@ public class ImportAccount extends JavaProcess
 			+ " Processing = 'Y', "
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Reset=" + no);
 
 		//	****	Prepare	****
@@ -138,7 +138,7 @@ public class ImportAccount extends JavaProcess
 				+ "SET ElementName=(SELECT Name FROM C_Element WHERE C_Element_ID=").append(m_C_Element_ID).append(") "
 				+ "WHERE ElementName IS NULL AND C_Element_ID IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 			log.debug("Set Element Default=" + no);
 		}
 		//
@@ -147,14 +147,14 @@ public class ImportAccount extends JavaProcess
 			+ " WHERE i.ElementName=e.Name AND i.AD_Client_ID=e.AD_Client_ID)"
 			+ "WHERE C_Element_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Set Element=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Element, ' "
 			+ "WHERE C_Element_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Invalid Element=" + no);
 
 		//	No Name, Value
@@ -162,7 +162,7 @@ public class ImportAccount extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Name, ' "
 			+ "WHERE (Value IS NULL OR Name IS NULL)"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Invalid Name=" + no);
 
 		
@@ -173,7 +173,7 @@ public class ImportAccount extends JavaProcess
 			+ " AND c.AD_Table_ID IN (315,266) AND AD_Reference_ID=25) "
 			+ "WHERE Default_Account IS NOT NULL AND AD_Column_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Set Column=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
@@ -181,7 +181,7 @@ public class ImportAccount extends JavaProcess
 			+ "WHERE AD_Column_ID IS NULL AND Default_Account IS NOT NULL"
 			+ " AND UPPER(Default_Account)<>'DEFAULT_ACCT'"		//	ignore default account
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Invalid Column=" + no);
 
 		//	Set Post* Defaults (ignore errors)
@@ -193,7 +193,7 @@ public class ImportAccount extends JavaProcess
 				.append(yColumns[i]).append(" IS NULL OR ")
 				.append(yColumns[i]).append(" NOT IN ('Y','N')"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 			log.debug("Set " + yColumns[i] + " Default=" + no);
 		}
 		//	Summary
@@ -201,7 +201,7 @@ public class ImportAccount extends JavaProcess
 			+ "SET IsSummary='N' "
 			+ "WHERE IsSummary IS NULL OR IsSummary NOT IN ('Y','N')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Set IsSummary Default=" + no);
 
 		//	Doc Controlled
@@ -209,7 +209,7 @@ public class ImportAccount extends JavaProcess
 			+ "SET IsDocControlled = CASE WHEN AD_Column_ID IS NOT NULL THEN 'Y' ELSE 'N' END "
 			+ "WHERE IsDocControlled IS NULL OR IsDocControlled NOT IN ('Y','N')"
 			+ " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Set IsDocumentControlled Default=" + no);
 
 		//	Check Account Type A (E) L M O R
@@ -217,14 +217,14 @@ public class ImportAccount extends JavaProcess
 			+ "SET AccountType='E' "
 			+ "WHERE AccountType IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Set AccountType Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid AccountType, ' "
 			+ "WHERE AccountType NOT IN ('A','E','L','M','O','R')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Invalid AccountType=" + no);
 
 		//	Check Account Sign (N) C B
@@ -232,14 +232,14 @@ public class ImportAccount extends JavaProcess
 			+ "SET AccountSign='N' "
 			+ "WHERE AccountSign IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Set AccountSign Default=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid AccountSign, ' "
 			+ "WHERE AccountSign NOT IN ('N','C','D')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Invalid AccountSign=" + no);
 
 		//	No Value
@@ -247,7 +247,7 @@ public class ImportAccount extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Key, ' "
 			+ "WHERE (Value IS NULL OR Value='')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Invalid Key=" + no);
 
 		//	****	Update ElementValue from existing
@@ -258,7 +258,7 @@ public class ImportAccount extends JavaProcess
 			+ " AND i.Value=ev.Value) "
 			+ "WHERE C_ElementValue_ID IS NULL"
 			+ " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Found ElementValue=" + no);
 
 		commitEx();
@@ -308,7 +308,7 @@ public class ImportAccount extends JavaProcess
 						sql = new StringBuffer ("UPDATE I_ElementValue i "
 							+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert ElementValue "))
 							.append("WHERE I_ElementValue_ID=").append(I_ElementValue_ID).append("; "+evSaveEx.getMessage());
-						DB.executeUpdate(sql.toString(), get_TrxName());
+						DB.executeUpdateEx(sql.toString(), get_TrxName());
 					}
 				}
 				else							//	Update existing
@@ -330,7 +330,7 @@ public class ImportAccount extends JavaProcess
 						sql = new StringBuffer ("UPDATE I_ElementValue i "
 							+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Update ElementValue"))
 							.append("WHERE I_ElementValue_ID=").append(I_ElementValue_ID);
-						DB.executeUpdate(sql.toString(), get_TrxName());
+						DB.executeUpdateEx(sql.toString(), get_TrxName());
 					}
 				}
 			}	//	for all I_Product
@@ -346,7 +346,7 @@ public class ImportAccount extends JavaProcess
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_IsImported='N', Updated=now() "
 			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		addLog (0, null, new BigDecimal (no), "@Errors@");
 		addLog (0, null, new BigDecimal (noInsert), "@C_ElementValue_ID@: @Inserted@");
 		addLog (0, null, new BigDecimal (noUpdate), "@C_ElementValue_ID@: @Updated@");
@@ -360,14 +360,14 @@ public class ImportAccount extends JavaProcess
 			+ " AND i.ParentValue=ev.Value AND i.AD_Client_ID=ev.AD_Client_ID) "
 			+ "WHERE ParentElementValue_ID IS NULL"
 			+ " AND I_IsImported='Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Found Parent ElementValue=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ElementValue "
 			+ "SET I_ErrorMsg=I_ErrorMsg||'Info=ParentNotFound, ' "
 			+ "WHERE ParentElementValue_ID IS NULL AND ParentValue IS NOT NULL"
 			+ " AND I_IsImported='Y' AND Processed='N'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.info("Not Found Parent ElementValue=" + no);
 		//
 		sql = new StringBuffer ("SELECT i.ParentElementValue_ID, i.I_ElementValue_ID,"
@@ -428,7 +428,7 @@ public class ImportAccount extends JavaProcess
 			.append(clientCheck);
 		if (m_updateDefaultAccounts)
 			sql.append(" AND AD_Column_ID IS NULL");
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Reset Processing Flag=" + no);
 
 		if (m_updateDefaultAccounts)
@@ -444,7 +444,7 @@ public class ImportAccount extends JavaProcess
 			+ "SET Processing='N', Processed='Y'"
 			+ "WHERE I_IsImported='Y'")
 			.append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		log.debug("Processed=" + no);
 
 		return "";
@@ -487,7 +487,7 @@ public class ImportAccount extends JavaProcess
 			+ " AND UPPER(i.Default_Account)='DEFAULT_ACCT' "
 			+ "	AND i.I_IsImported='Y' AND i.Processing='-')")
 			.append(clientCheck);
-		int no = DB.executeUpdate(sql.toString(), get_TrxName());
+		int no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 		addLog (0, null, new BigDecimal (no), "@C_AcctSchema_Element_ID@: @Updated@");
 	}	//	updateDefaults
 
@@ -532,7 +532,7 @@ public class ImportAccount extends JavaProcess
 				{
 					sql = "UPDATE I_ElementValue SET Processing='N' "
 						+ "WHERE I_ElementValue_ID=" + I_ElementValue_ID;
-					int no = DB.executeUpdate(sql.toString(), get_TrxName());
+					int no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 					if (no != 1)
 						log.error("Updated=" + no);
 				}
@@ -604,7 +604,7 @@ public class ImportAccount extends JavaProcess
 								sql = new StringBuffer ("UPDATE ").append(TableName)
 									.append(" SET ").append(ColumnName).append("=").append(newC_ValidCombination_ID)
 									.append(" WHERE C_AcctSchema_ID=").append(acctSchemaId.getRepoId());
-								int no = DB.executeUpdate(sql.toString(), get_TrxName());
+								int no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 								log.debug("New #" + no + " - "
 									+ TableName + "." + ColumnName + " - " + C_ElementValue_ID
 									+ " -- " + C_ValidCombination_ID + " -> " + newC_ValidCombination_ID);
@@ -620,7 +620,7 @@ public class ImportAccount extends JavaProcess
 						//	Only Acct Combination directly
 						sql = new StringBuffer ("UPDATE C_ValidCombination SET Account_ID=")
 							.append(C_ElementValue_ID).append(" WHERE C_ValidCombination_ID=").append(C_ValidCombination_ID);
-						int no = DB.executeUpdate(sql.toString(), get_TrxName());
+						int no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 						log.debug("Replace #" + no + " - "
 								+ "C_ValidCombination_ID=" + C_ValidCombination_ID + ", New Account_ID=" + C_ElementValue_ID);
 						if (no == 1)
@@ -629,12 +629,12 @@ public class ImportAccount extends JavaProcess
 							//	Where Acct was used
 							sql = new StringBuffer ("UPDATE C_ValidCombination SET Account_ID=")
 								.append(C_ElementValue_ID).append(" WHERE Account_ID=").append(Account_ID);
-							no = DB.executeUpdate(sql.toString(), get_TrxName());
+							no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 							log.debug("ImportAccount.updateDefaultAccount - Replace VC #" + no + " - "
 									+ "Account_ID=" + Account_ID + ", New Account_ID=" + C_ElementValue_ID);
 							sql = new StringBuffer ("UPDATE Fact_Acct SET Account_ID=")
 								.append(C_ElementValue_ID).append(" WHERE Account_ID=").append(Account_ID);
-							no = DB.executeUpdate(sql.toString(), get_TrxName());
+							no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 							log.debug("ImportAccount.updateDefaultAccount - Replace Fact #" + no + " - "
 									+ "Account_ID=" + Account_ID + ", New Account_ID=" + C_ElementValue_ID);
 						}

@@ -31,6 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -42,15 +43,15 @@ import lombok.NonNull;
 public class PriceListBL implements IPriceListBL
 {
 	@Override
-	public int getPricePrecision(final PriceListId priceListId)
+	public CurrencyPrecision getPricePrecision(final PriceListId priceListId)
 	{
-		if(priceListId == null)
+		if (priceListId == null)
 		{
-			return 2; // default
+			return CurrencyPrecision.TWO; // default
 		}
-		
+
 		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
-		return priceList.getPricePrecision();
+		return CurrencyPrecision.ofInt(priceList.getPricePrecision());
 	}
 
 	@Override

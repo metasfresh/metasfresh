@@ -43,6 +43,7 @@ public class DocumentProcessingException extends AdempiereException
 	public DocumentProcessingException(final IDocument document, final String docAction, final Throwable cause)
 	{
 		super(buildMsg((String)null, document, docAction, cause), cause);
+		putParametetersFrom(cause);
 	}
 
 	public DocumentProcessingException(final IDocument document, final String docAction)

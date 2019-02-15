@@ -60,6 +60,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -184,7 +185,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				taxBL.getTax(
 						ctx
 						, order1
-						, -1 // taxCategoryId
+						, (TaxCategoryId)null
 						, oL1.getM_Product_ID()
 						, order1.getDatePromised()
 						, OrgId.ofRepoId(order1.getAD_Org_ID())

@@ -28,7 +28,7 @@ class EventBus2RemoteEndpointHandler implements IEventListener
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		final String topicName = eventBus.getName();
+		final String topicName = eventBus.getTopicName();
 		remoteEndpoint.sendEvent(topicName, event);
 	}
 }

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
@@ -61,6 +62,8 @@ public interface IPriceListDAO extends ISingletonService
 	I_M_PriceList getById(int priceListId);
 
 	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
+	
+	I_M_PriceList_Version getPriceListVersionByIdInTrx(PriceListVersionId priceListVersionId);
 
 	PriceListsCollection retrievePriceListsCollectionByPricingSystemId(PricingSystemId pricingSystemId);
 
@@ -135,9 +138,9 @@ public interface IPriceListDAO extends ISingletonService
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 
-	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(int priceListId, Date date);
+	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(PriceListId priceListId, Date date);
 
-	I_M_PriceList_Version retrieveLastCreatedPriceListVersion(int priceListId);
+	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
 	String getPricingSystemName(final PricingSystemId pricingSystemId);
 
@@ -159,6 +162,8 @@ public interface IPriceListDAO extends ISingletonService
 
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
 
+	I_M_PriceList_Version getCreatePriceListVersion(ProductPriceCreateRequest request);
+
 	I_M_PriceList getPriceListByPriceListVersionId(PriceListVersionId priceListVersionId);
 
 	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
@@ -170,4 +175,6 @@ public interface IPriceListDAO extends ISingletonService
 	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
 
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
+
+	void updateProductPrice(UpdateProductPriceRequest request);
 }

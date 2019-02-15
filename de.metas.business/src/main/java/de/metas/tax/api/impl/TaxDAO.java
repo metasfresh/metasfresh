@@ -1,5 +1,7 @@
 package de.metas.tax.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,19 +15,20 @@ package de.metas.tax.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -42,7 +45,10 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,7 +128,7 @@ public class TaxDAO implements ITaxDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, C_TAX_CATEGORY_ID_NO_CATEGORY_FOUND)
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, TaxCategoryId.NOT_FOUND)
 				.create()
 				.firstOnlyNotNull(I_C_TaxCategory.class);
 	}
@@ -146,5 +152,29 @@ public class TaxDAO implements ITaxDAO
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()
 				.firstId();
+	}
+
+	@Override
+	public I_C_TaxCategory getTaxCategoryById(@NonNull final TaxCategoryId id)
+	{
+		return loadOutOfTrx(id, I_C_TaxCategory.class);
+	}
+
+	@Override
+	public ITranslatableString getTaxCategoryNameById(@Nullable final TaxCategoryId id)
+	{
+		if (id == null)
+		{
+			return ImmutableTranslatableString.anyLanguage("?");
+		}
+
+		final I_C_TaxCategory taxCategory = getTaxCategoryById(id);
+		if (taxCategory == null)
+		{
+			return ImmutableTranslatableString.anyLanguage("<" + id.getRepoId() + ">");
+		}
+
+		return InterfaceWrapperHelper.getModelTranslationMap(taxCategory)
+				.getColumnTrl(I_C_TaxCategory.COLUMNNAME_Name, taxCategory.getName());
 	}
 }

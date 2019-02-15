@@ -3,6 +3,8 @@ package de.metas.pricing.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
@@ -25,6 +27,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
@@ -54,6 +57,7 @@ import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
+import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -117,6 +121,11 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public I_M_PriceList_Version getPriceListVersionByIdInTrx(final PriceListVersionId priceListVersionId)
+	{
+		return load(priceListVersionId, I_M_PriceList_Version.class);
+	}
+	
 	public Stream<I_M_ProductPrice> retrieveProductPrices(
 			@NonNull final PriceListVersionId priceListVersionId,
 			final Set<ProductId> productIdsToExclude)
@@ -273,7 +282,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date")
-	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final int priceListId, @NonNull final Date date)
+	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final PriceListId priceListId, @NonNull final Date date)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)
@@ -350,13 +359,13 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version retrieveLastCreatedPriceListVersion(final int priceListId)
+	public I_M_PriceList_Version retrieveNewestPriceListVersion(final PriceListId priceListId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList_Version.class)
 				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_Created)
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 				.create()
 				.first();
 	}
@@ -469,6 +478,43 @@ public class PriceListDAO implements IPriceListDAO
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
+	
+	@Override
+	public I_M_PriceList_Version getCreatePriceListVersion(@NonNull final ProductPriceCreateRequest request)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoId(request.getPriceListId());
+		@NonNull final LocalDate validDate = request.getValidDate();
+		final I_M_PriceList_Version plv;
+		if (request.isUseNewestPriceListversion())
+		{
+			plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
+		}
+		else 
+		{
+			plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
+		}
+		return plv == null ? createPriceListVersion(priceListId, validDate) : plv;
+	}
+
+	private I_M_PriceList_Version createPriceListVersion(final PriceListId priceListId, @NonNull final LocalDate validFrom)
+	{
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
+		plv.setName(validFrom.toString());
+		plv.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		plv.setM_PriceList_ID(priceListId.getRepoId());
+		plv.setProcessed(true);
+		save(plv);
+
+		// now set the previous one as base list
+		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv);
+		if (previousPlv != null)
+		{
+			plv.setM_Pricelist_Version_Base(previousPlv);
+			save(plv);
+		}
+
+		return plv;
+	}
 
 	@Override
 	public I_M_PriceList getPriceListByPriceListVersionId(@NonNull final PriceListVersionId priceListVersionId)
@@ -529,5 +575,18 @@ public class PriceListDAO implements IPriceListDAO
 		saveRecord(recordCopy);
 
 		return ProductPriceId.ofRepoId(recordCopy.getM_ProductPrice_ID());
+	}
+
+	@Override
+	public void updateProductPrice(@NonNull final UpdateProductPriceRequest request)
+	{
+		final I_M_ProductPrice record = load(request.getProductPriceId(), I_M_ProductPrice.class);
+
+		if (request.getPriceStd() != null)
+		{
+			record.setPriceStd(request.getPriceStd());
+		}
+
+		saveRecord(record);
 	}
 }
