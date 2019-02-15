@@ -6,8 +6,11 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_Campaign_Price;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.service.ICountryDAO;
@@ -87,6 +90,15 @@ public class C_Campaign_Price
 		if (currencyId != null)
 		{
 			record.setC_Currency_ID(currencyId.getRepoId());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_C_Campaign_Price record)
+	{
+		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0)
+		{
+			throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID);
 		}
 	}
 }
