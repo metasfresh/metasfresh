@@ -1,5 +1,6 @@
 package de.metas.dataentry.data;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.user.CreatedUpdatedInfo;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -83,17 +86,29 @@ public class DataEntryRecord
 
 	public void setRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
+			@NonNull final UserId updatedBy,
 			@Nullable final Object value)
 	{
-		fields.remove(dataEntryFieldId);
+		final DataEntryRecordField<?> previousFieldVersion = fields.remove(dataEntryFieldId);
 
 		if (value == null)
 		{
 			return;
 		}
 
+		final ZonedDateTime updated = ZonedDateTime.now();
+		CreatedUpdatedInfo createdUpdatedInfo;
+		if (previousFieldVersion == null)
+		{
+			createdUpdatedInfo = CreatedUpdatedInfo.createNew(updatedBy, updated);
+		}
+		else
+		{
+			createdUpdatedInfo = previousFieldVersion.getCreatedUpdatedInfo().updated(updatedBy, updated);
+		}
+
 		final DataEntryRecordField<?> //
-		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, value);
+		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
 
 		fields.put(dataEntryFieldId, dataEntryRecordField);
 	}
