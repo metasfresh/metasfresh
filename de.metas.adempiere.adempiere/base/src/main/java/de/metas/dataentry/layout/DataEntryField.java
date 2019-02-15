@@ -3,6 +3,7 @@ package de.metas.dataentry.layout;
 import java.util.List;
 
 import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.FieldType;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,17 +35,12 @@ import lombok.Value;
 @Value
 public class DataEntryField
 {
-	public enum Type
-	{
-		STRING, NUMBER, DATE, LIST, YESNO
-	}
-
 	DataEntryFieldId id;
 
 	ITranslatableString caption;
 	ITranslatableString description;
 
-	Type type;
+	FieldType type;
 
 	boolean mandatory;
 
@@ -56,7 +52,7 @@ public class DataEntryField
 			@NonNull final DataEntryFieldId id,
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
-			@NonNull final Type type,
+			@NonNull final FieldType type,
 			final boolean mandatory,
 			@Singular final List<DataEntryListValue> listValues)
 	{

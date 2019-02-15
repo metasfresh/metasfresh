@@ -22,7 +22,7 @@ import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryGroupId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroupId;
-import de.metas.dataentry.layout.DataEntryField.Type;
+import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
@@ -219,35 +219,35 @@ public class DataEntryRepositoryTest
 				.id(DataEntryFieldId.ofRepoId(31))
 				.caption(ImmutableTranslatableString.constant(STRING_FIELD1_CAPTION))
 				.description(ImmutableTranslatableString.constant(STRING_FIELD1_DESCRIPTION))
-				.type(Type.STRING)
+				.type(FieldType.STRING)
 				.build();
 
 		final DataEntryField dataEntryNumberField = DataEntryField.builder()
 				.id(DataEntryFieldId.ofRepoId(32))
 				.caption(ImmutableTranslatableString.constant("numberField1_caption"))
 				.description(ImmutableTranslatableString.constant("numberField1_description"))
-				.type(Type.NUMBER)
+				.type(FieldType.NUMBER)
 				.build();
 
 		final DataEntryField dataEntryDateField = DataEntryField.builder()
 				.id(DataEntryFieldId.ofRepoId(33))
 				.caption(ImmutableTranslatableString.constant("dateField1_caption"))
 				.description(ImmutableTranslatableString.constant("dateField1_description"))
-				.type(Type.DATE)
+				.type(FieldType.DATE)
 				.build();
 
 		final DataEntryField dataEntryYesNoField = DataEntryField.builder()
 				.id(DataEntryFieldId.ofRepoId(34))
 				.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
 				.description(ImmutableTranslatableString.constant("yesNoField1_description"))
-				.type(Type.YESNO)
+				.type(FieldType.YESNO)
 				.build();
 
 		final DataEntryField dataEntryListField = DataEntryField.builder()
 				.id(dataEntryListFieldId)
 				.caption(ImmutableTranslatableString.constant("listField1_caption"))
 				.description(ImmutableTranslatableString.constant("listField1_description"))
-				.type(Type.LIST)
+				.type(FieldType.LIST)
 				.listValue(new DataEntryListValue(
 						DataEntryListValueId.ofRepoId(41),
 						dataEntryListFieldId,

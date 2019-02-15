@@ -128,33 +128,6 @@ public interface I_DataEntry_Record
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Eingabegruppe.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDataEntry_Group_ID (int DataEntry_Group_ID);
-
-	/**
-	 * Get Eingabegruppe.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getDataEntry_Group_ID();
-
-	public de.metas.dataentry.model.I_DataEntry_Group getDataEntry_Group();
-
-	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group);
-
-    /** Column definition for DataEntry_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Group> COLUMN_DataEntry_Group_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Group>(I_DataEntry_Record.class, "DataEntry_Group_ID", de.metas.dataentry.model.I_DataEntry_Group.class);
-    /** Column name DataEntry_Group_ID */
-    public static final String COLUMNNAME_DataEntry_Group_ID = "DataEntry_Group_ID";
-
-	/**
 	 * Set DataEntry_RecordData.
 	 * Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
 	 *
@@ -201,6 +174,33 @@ public interface I_DataEntry_Record
     public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_DataEntry_Record_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "DataEntry_Record_ID", null);
     /** Column name DataEntry_Record_ID */
     public static final String COLUMNNAME_DataEntry_Record_ID = "DataEntry_Record_ID";
+
+	/**
+	 * Set Untergruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID);
+
+	/**
+	 * Get Untergruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_SubGroup_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup();
+
+	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup);
+
+    /** Column definition for DataEntry_SubGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_SubGroup> COLUMN_DataEntry_SubGroup_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_SubGroup>(I_DataEntry_Record.class, "DataEntry_SubGroup_ID", de.metas.dataentry.model.I_DataEntry_SubGroup.class);
+    /** Column name DataEntry_SubGroup_ID */
+    public static final String COLUMNNAME_DataEntry_SubGroup_ID = "DataEntry_SubGroup_ID";
 
 	/**
 	 * Set Aktiv.

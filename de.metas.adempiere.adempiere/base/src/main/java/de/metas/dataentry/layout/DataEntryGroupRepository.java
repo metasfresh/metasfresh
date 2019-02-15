@@ -20,7 +20,7 @@ import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryGroupId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroupId;
-import de.metas.dataentry.layout.DataEntryField.Type;
+import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
@@ -171,12 +171,12 @@ public class DataEntryGroupRepository
 				.getColumnTrl(I_DataEntry_Field.COLUMNNAME_Description, fieldRecord.getDescription());
 
 		final ImmutableList.Builder<DataEntryListValue> listValues = ImmutableList.builder();
-		final DataEntryField.Type type;
+		final FieldType type;
 
 		final String recordType = fieldRecord.getDataEntry_RecordType();
 		if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_List.equals(recordType))
 		{
-			type = Type.LIST;
+			type = FieldType.LIST;
 
 			final List<I_DataEntry_ListValue> listValueRecords = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_DataEntry_ListValue.class)
@@ -192,19 +192,19 @@ public class DataEntryGroupRepository
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_Date.equals(recordType))
 		{
-			type = Type.DATE;
+			type = FieldType.DATE;
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_Number.equals(recordType))
 		{
-			type = Type.NUMBER;
+			type = FieldType.NUMBER;
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text.equals(recordType))
 		{
-			type = Type.STRING;
+			type = FieldType.STRING;
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_YesNo.equals(recordType))
 		{
-			type = Type.YESNO;
+			type = FieldType.YESNO;
 		}
 		else
 		{

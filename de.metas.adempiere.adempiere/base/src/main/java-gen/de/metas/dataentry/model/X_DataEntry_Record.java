@@ -14,7 +14,7 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 954551224L;
+	private static final long serialVersionUID = -1121615748L;
 
     /** Standard Constructor */
     public X_DataEntry_Record (Properties ctx, int DataEntry_Record_ID, String trxName)
@@ -23,8 +23,8 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
       /** if (DataEntry_Record_ID == 0)
         {
 			setAD_Table_ID (0);
-			setDataEntry_Group_ID (0);
 			setDataEntry_Record_ID (0);
+			setDataEntry_SubGroup_ID (0);
 			setRecord_ID (0);
         } */
     }
@@ -81,40 +81,6 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.dataentry.model.I_DataEntry_Group getDataEntry_Group() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_Group_ID, de.metas.dataentry.model.I_DataEntry_Group.class);
-	}
-
-	@Override
-	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_Group_ID, de.metas.dataentry.model.I_DataEntry_Group.class, DataEntry_Group);
-	}
-
-	/** Set Eingabegruppe.
-		@param DataEntry_Group_ID Eingabegruppe	  */
-	@Override
-	public void setDataEntry_Group_ID (int DataEntry_Group_ID)
-	{
-		if (DataEntry_Group_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, Integer.valueOf(DataEntry_Group_ID));
-	}
-
-	/** Get Eingabegruppe.
-		@return Eingabegruppe	  */
-	@Override
-	public int getDataEntry_Group_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Group_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set DataEntry_RecordData.
 		@param DataEntry_RecordData 
 		Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
@@ -151,6 +117,40 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 	public int getDataEntry_Record_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class);
+	}
+
+	@Override
+	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class, DataEntry_SubGroup);
+	}
+
+	/** Set Untergruppe.
+		@param DataEntry_SubGroup_ID Untergruppe	  */
+	@Override
+	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID)
+	{
+		if (DataEntry_SubGroup_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, Integer.valueOf(DataEntry_SubGroup_ID));
+	}
+
+	/** Get Untergruppe.
+		@return Untergruppe	  */
+	@Override
+	public int getDataEntry_SubGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

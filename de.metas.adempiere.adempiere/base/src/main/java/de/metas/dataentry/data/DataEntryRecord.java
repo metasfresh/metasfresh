@@ -1,11 +1,22 @@
 package de.metas.dataentry.data;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
-import de.metas.dataentry.DataEntryGroupId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntrySubGroupId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,24 +46,79 @@ import lombok.Value;
 public class DataEntryRecord
 {
 	/** May be null if not yet persisted */
-	DataEntryRecordId id;
+	private final DataEntryRecordId id;
 
-	DataEntryGroupId dataEntryGroupId;
+	private final DataEntrySubGroupId dataEntrySubGroupId;
 
-	ITableRecordReference mainRecord;
+	private final ITableRecordReference mainRecord;
 
-	DataEntryFieldData dataEntryFieldData;
+	// @Getter(AccessLevel.NONE)
+	// private final DataEntryFieldData dataEntryFieldData;
+
+	@Getter(AccessLevel.NONE)
+	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
 
 	@Builder
 	private DataEntryRecord(
 			@Nullable final DataEntryRecordId id,
-			@NonNull final DataEntryGroupId dataEntryGroupId,
-			@NonNull final DataEntryFieldData dataEntryFieldData,
-			@NonNull final ITableRecordReference mainRecord)
+			@NonNull final ITableRecordReference mainRecord,
+			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
+			@NonNull final List<DataEntryRecordField<?>> fields)
 	{
 		this.id = id;
-		this.dataEntryFieldData = dataEntryFieldData;
 		this.mainRecord = mainRecord;
-		this.dataEntryGroupId = dataEntryGroupId;
+		this.dataEntrySubGroupId = dataEntrySubGroupId;
+
+		this.fields = new HashMap<>();
+		for (final DataEntryRecordField<?> i : fields)
+		{
+			this.fields.put(i.getDataEntryFieldId(), i);
+		}
 	}
+
+	public void clearRecordFields()
+	{
+		fields.clear();
+	}
+
+	public void setRecordField(
+			@NonNull final DataEntryFieldId dataEntryFieldId,
+			@Nullable final Object value)
+	{
+		fields.remove(dataEntryFieldId);
+
+		if (value == null)
+		{
+			return;
+		}
+
+		final DataEntryRecordField<?> //
+		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, value);
+
+		fields.put(dataEntryFieldId, dataEntryRecordField);
+	}
+
+	public boolean isEmpty()
+	{
+		return fields.isEmpty();
+	}
+
+	public DataEntryRecordFieldList getFields()
+	{
+		return new DataEntryRecordFieldList(fields.values());
+	}
+
+	/**
+	 * Thx to https://github.com/FasterXML/jackson-databind/issues/336#issuecomment-27228643
+	 */
+	public static class DataEntryRecordFieldList extends ArrayList<DataEntryRecordField<?>>
+	{
+		private static final long serialVersionUID = 6030884469297498240L;
+
+		@JsonCreator
+		private DataEntryRecordFieldList(Collection<DataEntryRecordField<?>> fields)
+		{
+			super(fields);
+		}
+	};
 }
