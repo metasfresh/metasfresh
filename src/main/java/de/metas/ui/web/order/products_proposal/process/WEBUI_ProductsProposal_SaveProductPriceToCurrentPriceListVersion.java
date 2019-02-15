@@ -87,20 +87,17 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 				.filter(ProductsProposalRow::isChanged);
 	}
 
-	public void save(final ProductsProposalRow row)
+	private void save(final ProductsProposalRow row)
 	{
 		if (!row.isChanged())
 		{
 			return;
 		}
 
-		final ProductsProposalView view = getView();
-		final PriceListVersionId priceListVersionId = view.getSinglePriceListVersionId()
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_PriceList_Version_Base_ID@"));
+		final ProductPriceId productPriceId;
 
 		//
-		// Update on database
-		final ProductPriceId productPriceId;
+		// Update existing product price
 		if (row.getProductPriceId() != null)
 		{
 			productPriceId = row.getProductPriceId();
@@ -109,11 +106,13 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 					.priceStd(row.getPrice().getValue())
 					.build());
 		}
+		//
+		// Save a new product price which was copied from some other price list version
 		else if (row.getCopiedFromProductPriceId() != null)
 		{
 			productPriceId = pricesListsRepo.copyProductPrice(CopyProductPriceRequest.builder()
 					.copyFromProductPriceId(row.getCopiedFromProductPriceId())
-					.copyToPriceListVersionId(priceListVersionId)
+					.copyToPriceListVersionId(getPriceListVersionId())
 					.priceStd(row.getPrice().getValue())
 					.build());
 		}
@@ -124,9 +123,17 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 
 		//
 		// Refresh row
-		view.patchViewRow(row.getId(), RowSaved.builder()
+		getView().patchViewRow(row.getId(), RowSaved.builder()
 				.productPriceId(productPriceId)
 				.standardPrice(row.getPrice())
 				.build());
+	}
+
+	private PriceListVersionId getPriceListVersionId()
+	{
+		return getView()
+				.getSinglePriceListVersionId()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_PriceList_Version_ID@"));
+
 	}
 }
