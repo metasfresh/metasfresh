@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_Window;
 import org.springframework.stereotype.Service;
 
 import de.metas.cache.CCache;
+import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubGroupBindingDescriptorBuilder;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -40,14 +41,18 @@ import lombok.NonNull;
 @Service
 public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
+	@NonNull
+	final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder;
+
 	private final CCache<WindowId, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
 
 	private final Set<WindowId> unsupportedWindowIds = new HashSet<>();
 
-	/* package */ DefaultDocumentDescriptorFactory()
+	/* package */ DefaultDocumentDescriptorFactory(
+			@NonNull final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder)
 	{
+		this.dataEntrySubGroupBindingDescriptorBuilder = dataEntrySubGroupBindingDescriptorBuilder;
 	}
-
 
 	@Override
 	public void invalidateForWindow(@NonNull final WindowId windowId)
@@ -60,12 +65,19 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	{
 		try
 		{
-			return documentDescriptorsByWindowId.getOrLoad(windowId, () -> new DefaultDocumentDescriptorLoader(windowId.toInt()).load());
+			return documentDescriptorsByWindowId.getOrLoad(windowId, () -> createDocumentDescriptorLoader(windowId).load());
 		}
 		catch (final Exception e)
 		{
 			throw DocumentLayoutBuildException.wrapIfNeeded(e);
 		}
+	}
+
+	private DefaultDocumentDescriptorLoader createDocumentDescriptorLoader(@NonNull final WindowId windowId)
+	{
+		return new DefaultDocumentDescriptorLoader(
+				windowId.toInt(),
+				dataEntrySubGroupBindingDescriptorBuilder);
 	}
 
 	/**

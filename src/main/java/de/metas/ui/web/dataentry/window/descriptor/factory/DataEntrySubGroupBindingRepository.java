@@ -1,22 +1,35 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+import static de.metas.util.Check.fail;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.FieldType;
+import de.metas.dataentry.data.DataEntryRecord;
+import de.metas.dataentry.data.DataEntryRecordId;
+import de.metas.dataentry.data.DataEntryRecordRepository;
+import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -43,14 +56,13 @@ import lombok.NonNull;
 
 public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 {
+	private DataEntryRecordRepository dataEntryRecordRepository;
 
 	private static final Logger logger = LogManager.getLogger(DataEntrySubGroupBindingRepository.class);
 
-	public static final DataEntrySubGroupBindingRepository INSTANCE = new DataEntrySubGroupBindingRepository();
-
-	private DataEntrySubGroupBindingRepository()
+	public DataEntrySubGroupBindingRepository(@NonNull final DataEntryRecordRepository dataEntryRecordRepository)
 	{
-
+		this.dataEntryRecordRepository = dataEntryRecordRepository;
 	}
 
 	@Override
@@ -85,45 +97,121 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	{
 		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
 
+		// TODO Auto-generated method stub
+
 		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setChangesCollector(changesCollector)
 				.initializeAsNewDocument(documentId, "0");
-
 	}
 
 	private static DocumentId retrieveNextDocumentId(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		final int adClientId = UserSession.getCurrent().getAD_Client_ID();
-		final int nextId = DB.getNextID(adClientId, I_DataEntry_Record_Assignment.Table_Name, ITrx.TRXNAME_ThreadInherited);
+		final int nextId = DB.getNextID(adClientId, I_DataEntry_Record.Table_Name, ITrx.TRXNAME_ThreadInherited);
 		if (nextId <= 0)
 		{
 			throw new DBException("Cannot retrieve next ID from database for " + entityDescriptor);
 		}
 
-		logger.trace("Acquired next ID={} for {}", nextId, entityDescriptor);
+		logger.trace("Acquired next ID={} for entityDescriptor={}", nextId, entityDescriptor);
 		return DocumentId.of(nextId);
 	}
 
 	@Override
-	public void refresh(Document document)
+	public void refresh(@NonNull final Document document)
 	{
+		assertValidState(document);
+		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
+
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public SaveResult save(Document document)
+	public SaveResult save(@NonNull final Document document)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		assertValidState(document);
+		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
+
+		final DataEntryRecord dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordId);
+
+		dataEntryRecord.clearRecordFields();
+
+		for (final IDocumentFieldView fieldView : document.getFieldViews())
+		{
+			final DataEntryFieldBindingDescriptor dataBinding = fieldView.getDescriptor().getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
+
+			final Object dataEntryFieldValue = extractFieldValue(fieldView.getValue(), dataBinding.getFieldType());
+
+			final String fieldName = fieldView.getFieldName();
+			final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName)); // TODO extract this code and the code form DataEntryTabLoader into a common class
+
+			dataEntryRecord.setRecordField(dataEntryFieldId, dataEntryFieldValue);
+		}
+
+		dataEntryRecordRepository.save(dataEntryRecord);
+
+		return SaveResult.SAVED;
+
+	}
+
+	private Object extractFieldValue(
+			@Nullable final Object value,
+			@NonNull final FieldType fieldType)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		final Object result;
+		switch (fieldType)
+		{
+			case DATE:
+				result = fieldType.getClass().cast(value);
+				break;
+			case LIST:
+				result = fieldType.getClass().cast(value);
+				break;
+			case NUMBER:
+				result = fieldType.getClass().cast(value);
+				break;
+			case STRING:
+				result = fieldType.getClass().cast(value);
+				break;
+			case YESNO:
+				result = fieldType.getClass().cast(value);
+				break;
+			default:
+				fail("Unexpected fieldType={}", fieldType);
+				result = null;
+				break;
+		}
+
+		return result;
 	}
 
 	@Override
-	public void delete(Document document)
+	public void delete(@NonNull final Document document)
 	{
-		// TODO Auto-generated method stub
+		assertValidState(document);
+		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 
+		dataEntryRecordRepository.delete(dataEntryRecordId);
+	}
+
+	private DataEntryRecordId extractDataEntryRecordId(@NonNull final Document document)
+	{
+		final DataEntryRecordId dataEntryRecordId = DataEntryRecordId.ofRepoId(document.getDocumentIdAsInt()); // TODO extract this code and the code form DataEntryTabLoader into a common class
+		return dataEntryRecordId;
+	}
+
+	private void assertValidState(@NonNull final Document document)
+	{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		// assertThisRepository(document.getEntityDescriptor()); // TODO, like in de.metas.ui.web.window.model.sql.SqlDocumentsRepository
+		DocumentPermissionsHelper.assertCanEdit(document);
 	}
 
 	@Override

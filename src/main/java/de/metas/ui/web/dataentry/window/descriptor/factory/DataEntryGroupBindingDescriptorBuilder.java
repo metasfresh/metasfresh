@@ -46,7 +46,8 @@ public class DataEntryGroupBindingDescriptorBuilder implements DocumentEntityDat
 				@Override
 				public OrderedDocumentsList retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector)
 				{
-					// actually this repo should not be invoked to start with, because it's for DateEntryGroup which does not have any fields/records of its own
+					// actually this repo should not be invoked to start with, because it's for DateEntryGroup
+					// which does not have any fields/records of its own; just subtabs!
 					//return OrderedDocumentsList.of(ImmutableList.of(), ImmutableList.of());
 					throw new UnsupportedOperationException();
 				}

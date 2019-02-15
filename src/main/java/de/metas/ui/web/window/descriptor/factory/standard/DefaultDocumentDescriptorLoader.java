@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubGroupBindingDescriptorBuilder;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -18,6 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,13 +51,19 @@ import de.metas.util.Check;
 	// Parameters
 	private final int AD_Window_ID;
 
+	private final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder;
+
 	//
 	// Status
 	private boolean _executed = false;
 
-	/* package */ DefaultDocumentDescriptorLoader(final int AD_Window_ID)
+
+	/* package */ DefaultDocumentDescriptorLoader(
+			final int AD_Window_ID,
+			@NonNull final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder)
 	{
 		this.AD_Window_ID = AD_Window_ID;
+		this.dataEntrySubGroupBindingDescriptorBuilder = dataEntrySubGroupBindingDescriptorBuilder;
 	}
 
 	public DocumentDescriptor load()
@@ -114,6 +122,7 @@ import de.metas.util.Check;
 				.builder()
 				.adWindowId(adWindowId)
 				.windowId(rootLayoutFactory.documentEntity().getWindowId())
+				.dataEntrySubGroupBindingDescriptorBuilder(dataEntrySubGroupBindingDescriptorBuilder)
 				.build();
 		final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();
 		for (final DocumentLayoutDetailDescriptor descriptor : layoutDescriptors)

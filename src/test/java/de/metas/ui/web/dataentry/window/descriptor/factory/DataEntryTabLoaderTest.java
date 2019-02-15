@@ -20,12 +20,12 @@ import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryGroupId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
+import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySubGroup;
-import de.metas.dataentry.layout.DataEntryField.Type;
-import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -143,32 +143,32 @@ public class DataEntryTabLoaderTest
 								.id(DataEntryFieldId.ofRepoId(31))
 								.caption(ImmutableTranslatableString.constant("stringField1_caption"))
 								.description(ImmutableTranslatableString.constant("stringField1_description"))
-								.type(Type.STRING)
+								.type(FieldType.STRING)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(32))
 								.caption(ImmutableTranslatableString.constant("numberField1_caption"))
 								.description(ImmutableTranslatableString.constant("numberField1_description"))
-								.type(Type.NUMBER)
+								.type(FieldType.NUMBER)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(33))
 								.caption(ImmutableTranslatableString.constant("dateField1_caption"))
 								.description(ImmutableTranslatableString.constant("dateField1_description"))
-								.type(Type.DATE)
+								.type(FieldType.DATE)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(34))
 								.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
 								.description(ImmutableTranslatableString.constant("yesNoField1_description"))
-								.type(Type.YESNO)
+								.type(FieldType.YESNO)
 								.build())
 
 						.dataEntryField(DataEntryField.builder()
 								.id(dataEntryListFieldId)
 								.caption(ImmutableTranslatableString.constant("listField1_caption"))
 								.description(ImmutableTranslatableString.constant("listField1_description"))
-								.type(Type.LIST)
+								.type(FieldType.LIST)
 								.listValue(new DataEntryListValue(
 										DataEntryListValueId.ofRepoId(41),
 										dataEntryListFieldId,

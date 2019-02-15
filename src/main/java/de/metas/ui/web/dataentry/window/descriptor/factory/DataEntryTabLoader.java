@@ -11,13 +11,13 @@ import org.compiere.Adempiere;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
+import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryGroupRepository;
 import de.metas.dataentry.layout.DataEntrySubGroup;
-import de.metas.dataentry.layout.DataEntryField.Type;
-import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
-import de.metas.dataentry.model.I_DataEntry_Record_Assignment;
+import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -70,13 +70,17 @@ public class DataEntryTabLoader
 
 	WindowId windowId;
 
+	DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder;
+
 	@Builder
 	private DataEntryTabLoader(
 			@NonNull final AdWindowId adWindowId,
-			@NonNull final WindowId windowId)
+			@NonNull final WindowId windowId,
+			@NonNull final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder)
 	{
 		this.adWindowId = adWindowId;
 		this.windowId = windowId;
+		this.dataEntrySubGroupBindingDescriptorBuilder = dataEntrySubGroupBindingDescriptorBuilder;
 	}
 
 	public List<DocumentLayoutDetailDescriptor> loadDocumentLayout()
@@ -190,7 +194,7 @@ public class DataEntryTabLoader
 		return Integer.toString(field.getId().getRepoId());
 	}
 
-	private static DocumentFieldWidgetType ofFieldType(@NonNull final DataEntryField.Type fieldType)
+	private static DocumentFieldWidgetType ofFieldType(@NonNull final FieldType fieldType)
 	{
 		switch (fieldType)
 		{
@@ -273,8 +277,6 @@ public class DataEntryTabLoader
 			@NonNull final DataEntrySubGroup dataEntrySubGroup,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName)
 	{
-		final DataEntrySubGroupBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntrySubGroupBindingDescriptorBuilder();
-
 		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
 				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
@@ -289,7 +291,7 @@ public class DataEntryTabLoader
 				.setAllowDeleteLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 
-				.setDataBinding(dataEntryDocumentBinding);
+				.setDataBinding(dataEntrySubGroupBindingDescriptorBuilder);
 
 		documentEntityDescriptor.addField(createIDField());
 
@@ -306,11 +308,12 @@ public class DataEntryTabLoader
 	private DocumentFieldDescriptor.Builder createIDField()
 	{
 		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
-				I_DataEntry_Record_Assignment.COLUMNNAME_DataEntry_Record_ID,
-				true/* mandatory */);
+				I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID,
+				true/* mandatory */,
+				FieldType.RECORD_ID);
 
-		return DocumentFieldDescriptor.builder(I_DataEntry_Record_Assignment.COLUMNNAME_DataEntry_Record_ID)
-				.setCaption(I_DataEntry_Record_Assignment.COLUMNNAME_DataEntry_Record_ID)
+		return DocumentFieldDescriptor.builder(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
+				.setCaption(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
 				.setWidgetType(DocumentFieldWidgetType.Integer)
 				.setDisplayLogic(ConstantLogicExpression.FALSE)
 				.setKey(true)
@@ -324,7 +327,8 @@ public class DataEntryTabLoader
 
 		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
 				columnNameAsString,
-				true/* mandatory */);
+				true/* mandatory */,
+				FieldType.PARENT_LINK_ID);
 
 		return DocumentFieldDescriptor.builder(columnNameAsString)
 				.setCaption(columnNameAsString)
@@ -339,10 +343,11 @@ public class DataEntryTabLoader
 	{
 		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
 				createFieldNameFor(dataEntryField),
-				dataEntryField.isMandatory());
+				dataEntryField.isMandatory(),
+				dataEntryField.getType());
 
 		final LookupDescriptorProvider fieldLookupDescriptorProvider;
-		if (Type.LIST.equals(dataEntryField.getType()))
+		if (FieldType.LIST.equals(dataEntryField.getType()))
 		{
 			final DataEntryListValueLookupDescriptor lookupDescriptor = DataEntryListValueLookupDescriptor.of(dataEntryField.getListValues());
 			fieldLookupDescriptorProvider = LookupDescriptorProvider.singleton(lookupDescriptor);

@@ -1,7 +1,6 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
+import de.metas.dataentry.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import lombok.Value;
 
@@ -28,10 +27,11 @@ import lombok.Value;
  */
 
 @Value
-@JsonPropertyOrder(value = { "columnName", "defaultOrderBy", "defaultOrderByAscending", "mandatory" }) // needs to be specified for snapshot testing
 public class DataEntryFieldBindingDescriptor implements DocumentFieldDataBindingDescriptor
 {
 	String columnName;
 
 	boolean mandatory;
+
+	FieldType fieldType;
 }
