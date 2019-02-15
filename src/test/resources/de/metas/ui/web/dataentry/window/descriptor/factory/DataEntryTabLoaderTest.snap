@@ -81,9 +81,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dataBinding" : {
                 "value" : {
                   "columnName" : "31",
-                  "defaultOrderBy" : false,
+                  "mandatory" : false,
+                  "fieldType" : "STRING",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : false
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -131,9 +132,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dataBinding" : {
                 "value" : {
                   "columnName" : "32",
-                  "defaultOrderBy" : false,
+                  "mandatory" : false,
+                  "fieldType" : "NUMBER",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : false
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -181,9 +183,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dataBinding" : {
                 "value" : {
                   "columnName" : "33",
-                  "defaultOrderBy" : false,
+                  "mandatory" : false,
+                  "fieldType" : "DATE",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : false
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -231,9 +234,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dataBinding" : {
                 "value" : {
                   "columnName" : "34",
-                  "defaultOrderBy" : false,
+                  "mandatory" : false,
+                  "fieldType" : "YESNO",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : false
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -301,8 +305,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                     "cached" : true,
                     "numericKey" : false
                   },
-                  "numericKey" : true,
-                  "highVolume" : false
+                  "highVolume" : false,
+                  "numericKey" : true
                 },
                 "numericKey" : true
               },
@@ -325,9 +329,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dataBinding" : {
                 "value" : {
                   "columnName" : "35",
-                  "defaultOrderBy" : false,
+                  "mandatory" : false,
+                  "fieldType" : "LIST",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : false
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -336,10 +341,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "DataEntry_Record_ID" : {
-              "fieldName" : "DataEntry_Record_ID",
+            "DataEntry_SubGroup_ID" : {
+              "fieldName" : "DataEntry_SubGroup_ID",
               "caption" : {
-                "value" : "DataEntry_Record_ID",
+                "value" : "DataEntry_SubGroup_ID",
                 "anyLanguage" : false
               },
               "description" : {
@@ -374,10 +379,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "DataEntry_Record_ID",
-                  "defaultOrderBy" : false,
+                  "columnName" : "DataEntry_SubGroup_ID",
+                  "mandatory" : true,
+                  "fieldType" : "RECORD_ID",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : true
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -426,9 +432,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "dataBinding" : {
                 "value" : {
                   "columnName" : "documentLinkColumnName",
-                  "defaultOrderBy" : false,
+                  "mandatory" : true,
+                  "fieldType" : "PARENT_LINK_ID",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : true
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -440,9 +447,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "idFields" : [
             {
-              "fieldName" : "DataEntry_Record_ID",
+              "fieldName" : "DataEntry_SubGroup_ID",
               "caption" : {
-                "value" : "DataEntry_Record_ID",
+                "value" : "DataEntry_SubGroup_ID",
                 "anyLanguage" : false
               },
               "description" : {
@@ -477,10 +484,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "DataEntry_Record_ID",
-                  "defaultOrderBy" : false,
+                  "columnName" : "DataEntry_SubGroup_ID",
+                  "mandatory" : true,
+                  "fieldType" : "RECORD_ID",
                   "defaultOrderByAscending" : true,
-                  "mandatory" : true
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -530,9 +538,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "dataBinding" : {
               "value" : {
                 "columnName" : "documentLinkColumnName",
-                "defaultOrderBy" : false,
+                "mandatory" : true,
+                "fieldType" : "PARENT_LINK_ID",
                 "defaultOrderByAscending" : true,
-                "mandatory" : true
+                "defaultOrderBy" : false
               },
               "present" : true
             },

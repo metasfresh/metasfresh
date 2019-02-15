@@ -21,6 +21,7 @@ import de.metas.dataentry.DataEntryGroupId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
+import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
@@ -67,10 +68,13 @@ public class DataEntryTabLoaderTest
 		jsonOptions = JSONOptions.builder(null).setAD_LanguageIfNotEmpty("en_US").build();
 
 		final int windowIdInt = 5;
+		final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder = new DataEntrySubGroupBindingDescriptorBuilder(new DataEntryRecordRepository());
+
 		dataEntryTabLoader = DataEntryTabLoader
 				.builder()
 				.adWindowId(AdWindowId.ofRepoId(windowIdInt))
 				.windowId(WindowId.of(windowIdInt))
+				.dataEntrySubGroupBindingDescriptorBuilder(dataEntrySubGroupBindingDescriptorBuilder)
 				.build();
 	}
 

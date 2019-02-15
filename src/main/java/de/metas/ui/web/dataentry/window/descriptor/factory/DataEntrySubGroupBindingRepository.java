@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.user.UserId;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -138,6 +140,8 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 		dataEntryRecord.clearRecordFields();
 
+		final UserId userId = UserId.ofRepoId(Env.getAD_User_ID(document.getCtx()));
+
 		for (final IDocumentFieldView fieldView : document.getFieldViews())
 		{
 			final DataEntryFieldBindingDescriptor dataBinding = fieldView.getDescriptor().getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
@@ -147,7 +151,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			final String fieldName = fieldView.getFieldName();
 			final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName)); // TODO extract this code and the code form DataEntryTabLoader into a common class
 
-			dataEntryRecord.setRecordField(dataEntryFieldId, dataEntryFieldValue);
+			dataEntryRecord.setRecordField(dataEntryFieldId, userId, dataEntryFieldValue);
 		}
 
 		dataEntryRecordRepository.save(dataEntryRecord);
