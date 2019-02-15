@@ -22,6 +22,7 @@ import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecordRepository;
+import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
@@ -65,10 +66,16 @@ public class DataEntryTabLoaderTest
 	@Before
 	public void init()
 	{
-		jsonOptions = JSONOptions.builder(null).setAD_LanguageIfNotEmpty("en_US").build();
+		AdempiereTestHelper.get().init(); // ..because at one point in the code under test, we use IMsgBL
+
+		jsonOptions = JSONOptions.builder(null/*userSession*/).setAD_LanguageIfNotEmpty("en_US").build();
 
 		final int windowIdInt = 5;
-		final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder = new DataEntrySubGroupBindingDescriptorBuilder(new DataEntryRecordRepository());
+
+		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
+		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
+		final DataEntrySubGroupBindingDescriptorBuilder //
+		dataEntrySubGroupBindingDescriptorBuilder = new DataEntrySubGroupBindingDescriptorBuilder(dataEntryRecordRepository);
 
 		dataEntryTabLoader = DataEntryTabLoader
 				.builder()

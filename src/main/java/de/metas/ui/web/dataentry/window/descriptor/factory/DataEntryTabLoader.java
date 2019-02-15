@@ -1,12 +1,18 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Created;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_CreatedBy;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Updated;
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_UpdatedBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -18,6 +24,7 @@ import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryGroupRepository;
 import de.metas.dataentry.layout.DataEntrySubGroup;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -37,6 +44,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -98,7 +107,10 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> result = ImmutableList.builder();
 		for (final DataEntryGroup dataEntryGroup : dataEntryGroups)
 		{
-			result.addAll(createGroupLayoutDescriptors(windowId, dataEntryGroup));
+			final ImmutableList<DocumentLayoutDetailDescriptor> //
+			groupLayoutDescriptors = createGroupLayoutDescriptors(windowId, dataEntryGroup);
+
+			result.addAll(groupLayoutDescriptors);
 		}
 		return result.build();
 	}
@@ -110,7 +122,10 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> subGroupLayoutDescriptors = ImmutableList.builder();
 		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
 		{
-			subGroupLayoutDescriptors.add(createSubGroupLayoutDescriptor(windowId, dataEntrySubGroup));
+			final DocumentLayoutDetailDescriptor //
+			subGroupLayoutDescriptor = createSubGroupLayoutDescriptor(windowId, dataEntrySubGroup);
+
+			subGroupLayoutDescriptors.add(subGroupLayoutDescriptor);
 		}
 
 		if (dataEntryGroup.isAnonymous())
@@ -158,10 +173,21 @@ public class DataEntryTabLoader
 		for (final DataEntryField field : fields)
 		{
 			// note that each element builder can be used/"consumed" only ones
-			final DocumentLayoutElementDescriptor.Builder elementForSingleRowLayout = createFieldElementDescriptor(field);
+			final DocumentLayoutElementDescriptor.Builder dataElement = createFieldElementDescriptor(field);
+
+			final DocumentLayoutElementDescriptor.Builder createdElement = createFieldElementDescriptor(COLUMNNAME_Created, DocumentFieldWidgetType.DateTime);
+			final DocumentLayoutElementDescriptor.Builder createdByElement = createFieldElementDescriptor(COLUMNNAME_CreatedBy, DocumentFieldWidgetType.Lookup);
+			final DocumentLayoutElementDescriptor.Builder updatedElement = createFieldElementDescriptor(COLUMNNAME_Updated, DocumentFieldWidgetType.DateTime);
+			final DocumentLayoutElementDescriptor.Builder updatedByElement = createFieldElementDescriptor(COLUMNNAME_UpdatedBy, DocumentFieldWidgetType.Lookup);
+
 			final DocumentLayoutElementLineDescriptor.Builder elementLine = DocumentLayoutElementLineDescriptor
 					.builder()
-					.addElement(elementForSingleRowLayout);
+					.addElement(dataElement)
+					.addElement(createdElement)
+					.addElement(createdByElement)
+					.addElement(updatedElement)
+					.addElement(updatedByElement);
+
 			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
 					.builder()
 					.addElementLine(elementLine);
@@ -175,7 +201,7 @@ public class DataEntryTabLoader
 
 	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(final DataEntryField field)
 	{
-		DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
+		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
 				.builder(createFieldNameFor(field))
 				.setEmptyText(ITranslatableString.empty());
 
@@ -189,29 +215,27 @@ public class DataEntryTabLoader
 		return element;
 	}
 
+	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(String columnName, DocumentFieldWidgetType type)
+	{
+		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
+				.builder(columnName)
+				.setEmptyText(ITranslatableString.empty());
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
+				.builder()
+				.setCaption(msgBL.translatable(columnName))
+				.setDescription(ITranslatableString.empty())
+				.setViewEditorRenderMode(ViewEditorRenderMode.NEVER)
+				.setWidgetType(type)
+				.addField(fieldBuilder);
+		return element;
+	}
+
 	private static String createFieldNameFor(@NonNull final DataEntryField field)
 	{
 		return Integer.toString(field.getId().getRepoId());
-	}
-
-	private static DocumentFieldWidgetType ofFieldType(@NonNull final FieldType fieldType)
-	{
-		switch (fieldType)
-		{
-			case DATE:
-				return DocumentFieldWidgetType.Date;
-			case LIST:
-				return DocumentFieldWidgetType.List;
-			case NUMBER:
-				return DocumentFieldWidgetType.Number;
-			case STRING:
-				return DocumentFieldWidgetType.Text;
-			case YESNO:
-				return DocumentFieldWidgetType.YesNo;
-			default:
-				fail("Unexpected DataEntryField.Type={}", fieldType);
-				return null;
-		}
 	}
 
 	public List<DocumentEntityDescriptor> loadDocumentEntity()
@@ -229,7 +253,8 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentEntityDescriptor> result = ImmutableList.builder();
 		for (final DataEntryGroup dataEntryGroup : dataEntryGroups)
 		{
-			result.addAll(createGroupEntityDescriptors(dataEntryGroup));
+			final ImmutableList<DocumentEntityDescriptor> groupEntityDescriptors = createGroupEntityDescriptors(dataEntryGroup);
+			result.addAll(groupEntityDescriptors);
 		}
 		return result.build();
 	}
@@ -239,7 +264,8 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentEntityDescriptor> subGroupEntityDescriptors = ImmutableList.builder();
 		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
 		{
-			subGroupEntityDescriptors.add(createSubGroupEntityDescriptor(dataEntrySubGroup, dataEntryGroup.getDocumentLinkColumnName()));
+			final DocumentEntityDescriptor subGroupEntityDescriptor = createSubGroupEntityDescriptor(dataEntrySubGroup, dataEntryGroup.getDocumentLinkColumnName());
+			subGroupEntityDescriptors.add(subGroupEntityDescriptor);
 		}
 
 		if (dataEntryGroup.isAnonymous())
@@ -299,7 +325,18 @@ public class DataEntryTabLoader
 
 		for (final DataEntryField dataEntryField : dataEntrySubGroup.getDataEntryFields())
 		{
-			documentEntityDescriptor.addField(createFieldDescriptor(dataEntryField));
+			final DocumentFieldDescriptor.Builder dataField = createFieldDescriptor(dataEntryField);
+
+			final DocumentFieldDescriptor.Builder createdField = createFieldDescriptor(dataEntryField);
+			final DocumentFieldDescriptor.Builder createdByField = createFieldDescriptor(dataEntryField);
+			final DocumentFieldDescriptor.Builder updatedField = createFieldDescriptor(dataEntryField);
+			final DocumentFieldDescriptor.Builder updatedByField = createFieldDescriptor(dataEntryField);
+
+			documentEntityDescriptor.addField(dataField);
+			documentEntityDescriptor.addField(createdField);
+			documentEntityDescriptor.addField(createdByField);
+			documentEntityDescriptor.addField(updatedField);
+			documentEntityDescriptor.addField(updatedByField);
 		}
 
 		return documentEntityDescriptor.build();
@@ -366,6 +403,46 @@ public class DataEntryTabLoader
 				.setDataBinding(dataBinding);
 	}
 
+	private DocumentFieldDescriptor.Builder createFieldDescriptor(
+			@NonNull final String columnName,
+			@NonNull final FieldType fieldType)
+	{
+		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
+				columnName,
+				false/* mandatory */,
+				fieldType);
+
+		final LookupDescriptorProvider fieldLookupDescriptorProvider;
+		switch (fieldType)
+		{
+			case CREATED:
+				fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
+				break;
+			case CREATED_BY:
+				fieldLookupDescriptorProvider = SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
+				break;
+			case UPDATED:
+				fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
+				break;
+			case UPDATED_BY:
+				fieldLookupDescriptorProvider = SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
+				break;
+			default:
+				throw new AdempiereException("Unexpected fieldType=" + fieldType + "; columnName=" + columnName + "");
+		}
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final ITranslatableString caption = msgBL.translatable(columnName);
+
+		return DocumentFieldDescriptor.builder(columnName)
+				.setCaption(caption)
+				.setDescription(ITranslatableString.empty())
+				.setWidgetType(ofFieldType(fieldType))
+				.setLookupDescriptorProvider(fieldLookupDescriptorProvider)
+				.addCharacteristic(Characteristic.PublicField)
+				.setDataBinding(dataBinding);
+	}
+
 	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)
 	{
 		return DetailId.fromAD_Tab_ID(dataEntryGroup.getId().getRepoId());
@@ -374,5 +451,37 @@ public class DataEntryTabLoader
 	private static DetailId createDetailIdFor(@NonNull final DataEntrySubGroup dataEntrySubGroup)
 	{
 		return DetailId.fromAD_Tab_ID(dataEntrySubGroup.getId().getRepoId() * 2); // TODO allow detail-ID with letter-prefix?
+	}
+
+	private static DocumentFieldWidgetType ofFieldType(@NonNull final FieldType fieldType)
+	{
+		switch (fieldType)
+		{
+			case DATE:
+				return DocumentFieldWidgetType.Date;
+			case LIST:
+				return DocumentFieldWidgetType.List;
+			case NUMBER:
+				return DocumentFieldWidgetType.Number;
+			case STRING:
+				return DocumentFieldWidgetType.Text;
+			case YESNO:
+				return DocumentFieldWidgetType.YesNo;
+			case CREATED:
+				return DocumentFieldWidgetType.DateTime;
+			case CREATED_BY:
+				return DocumentFieldWidgetType.Lookup;
+			case UPDATED:
+				return DocumentFieldWidgetType.DateTime;
+			case UPDATED_BY:
+				return DocumentFieldWidgetType.Lookup;
+			case RECORD_ID:
+				return DocumentFieldWidgetType.Integer;
+			case PARENT_LINK_ID:
+				return DocumentFieldWidgetType.Integer;
+			default:
+				fail("Unexpected DataEntryField.Type={}", fieldType);
+				return null;
+		}
 	}
 }
