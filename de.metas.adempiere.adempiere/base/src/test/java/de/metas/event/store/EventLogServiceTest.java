@@ -64,7 +64,7 @@ public class EventLogServiceTest
 		// @formatter:off
 		new Expectations()
 		{{
-			eventBus.getName(); result = MOCKED_EVENT_BUS_NAME;
+			eventBus.getTopicName(); result = MOCKED_EVENT_BUS_NAME;
 			eventBus.getType(); result = MOCKED_EVENT_BUS_TYPE;
 		}};	// @formatter:on
 	}

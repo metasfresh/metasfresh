@@ -2319,57 +2319,17 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		return true;
 	}	// reverseCorrectIt
 
-	/**
-	 * Reverse Accrual - none
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.debug("{}", toString());
-		// Before reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		throw new UnsupportedOperationException();
+	}
 
-		// After reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		return false;
-	}	// reverseAccrualIt
-
-	/**
-	 * Re-activate
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reActivateIt()
 	{
-		log.debug("{}", toString());
-		// Before reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		// After reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		return false;
-	}	// reActivateIt
+		throw new UnsupportedOperationException();
+	}
 
 	/*************************************************************************
 	 * Get Summary
