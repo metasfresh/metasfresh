@@ -34,12 +34,12 @@ import lombok.NonNull;
  * #L%
  */
 
-public class JsonSerializer<T>
+public class JSONObjectMapper<T>
 {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static <T> JsonSerializer<T> forClass(@NonNull final Class<T> clazz)
+	public static <T> JSONObjectMapper<T> forClass(@NonNull final Class<T> clazz)
 	{
-		return new JsonSerializer(clazz);
+		return new JSONObjectMapper(clazz);
 	}
 
 	private final static ObjectMapper jsonObjectMapper;
@@ -58,7 +58,7 @@ public class JsonSerializer<T>
 
 	private final Class<T> clazz;
 
-	private JsonSerializer(@NonNull final Class<T> clazz)
+	private JSONObjectMapper(@NonNull final Class<T> clazz)
 	{
 		this.clazz = clazz;
 	}

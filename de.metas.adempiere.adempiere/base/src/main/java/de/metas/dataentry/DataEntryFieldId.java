@@ -3,7 +3,6 @@ package de.metas.dataentry;
 import static de.metas.util.Check.assumeGreaterThanZero;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.lang.RepoIdAware;
@@ -42,7 +41,7 @@ public class DataEntryFieldId implements RepoIdAware
 	int repoId;
 
 	@JsonCreator
-	private DataEntryFieldId(@JsonProperty("repoId") final int repoId)
+	private DataEntryFieldId(final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
 	}

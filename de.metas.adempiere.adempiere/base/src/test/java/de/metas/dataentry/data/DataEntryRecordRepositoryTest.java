@@ -52,8 +52,6 @@ public class DataEntryRecordRepositoryTest
 	@Rule
 	public final TestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
-
-
 	private DataEntryRecordRepository dataEntryRecordRepository;
 
 	@Before
@@ -64,8 +62,18 @@ public class DataEntryRecordRepositoryTest
 	}
 
 	@Test
-	public void saveData_empty()
+	public void saveData_empty() throws JSONException
 	{
+		final String expectedEmptyJSON = "{\r\n" +
+				"  \"createdUpdatedInfos\" : { },\r\n" +
+				"  \"dates\" : { },\r\n" +
+				"  \"listValues\" : { },\r\n" +
+				"  \"numbers\" : { },\r\n" +
+				"  \"strings\" : { },\r\n" +
+				"  \"yesNos\" : { }\r\n" +
+				"}\r\n" +
+				"";
+
 		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
@@ -82,7 +90,9 @@ public class DataEntryRecordRepositoryTest
 		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
 		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
 		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
-		assertThat(resultRecord.getDataEntry_RecordData()).isEqualTo("[ ]");
+
+		JSONAssert.assertEquals(expectedEmptyJSON, resultRecord.getDataEntry_RecordData(), JSONCompareMode.STRICT);
+
 	}
 
 	@Test
@@ -113,8 +123,6 @@ public class DataEntryRecordRepositoryTest
 
 		JSONAssert.assertEquals(expectedString, serializedRecordData, JSONCompareMode.STRICT);
 	}
-
-
 
 	@Test
 	public void getBy() throws IOException

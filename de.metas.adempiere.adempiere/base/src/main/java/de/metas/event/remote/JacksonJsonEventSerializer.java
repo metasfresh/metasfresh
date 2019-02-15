@@ -1,7 +1,7 @@
 package de.metas.event.remote;
 
 import de.metas.event.Event;
-import de.metas.util.JsonSerializer;
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
@@ -29,11 +29,11 @@ public class JacksonJsonEventSerializer implements IEventSerializer
 {
 	public static final transient JacksonJsonEventSerializer instance = new JacksonJsonEventSerializer();
 
-	private final JsonSerializer<Event> delegate;
+	private final JSONObjectMapper<Event> delegate;
 
 	private JacksonJsonEventSerializer()
 	{
-		delegate = JsonSerializer.forClass(Event.class);
+		delegate = JSONObjectMapper.forClass(Event.class);
 	}
 
 	@Override

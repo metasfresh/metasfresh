@@ -1,11 +1,26 @@
 package de.metas.dataentry.data.json;
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.adempiere.user.CreatedUpdatedInfo;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.data.DataEntryRecordField;
-import de.metas.util.JsonSerializer;
+import de.metas.dataentry.data.DataEntryRecordFieldDate;
+import de.metas.dataentry.data.DataEntryRecordFieldListValue;
+import de.metas.dataentry.data.DataEntryRecordFieldNumber;
+import de.metas.dataentry.data.DataEntryRecordFieldString;
+import de.metas.dataentry.data.DataEntryRecordFieldYesNo;
+import de.metas.dataentry.data.json.JSONDataEntryRecord.JSONDataEntryRecordBuilder;
+import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
 /*
@@ -33,15 +48,107 @@ import lombok.NonNull;
 @Service
 public class JSONDataEntryRecordMapper
 {
-	private final JsonSerializer<JSONDataEntryRecord> delegate = JsonSerializer.forClass(JSONDataEntryRecord.class);
+	private final JSONObjectMapper<JSONDataEntryRecord> delegate = JSONObjectMapper.forClass(JSONDataEntryRecord.class);
 
 	public String serialize(@NonNull final List<DataEntryRecordField<?>> fields)
 	{
-		return delegate.toString(record);
+		final JSONDataEntryRecordBuilder record = JSONDataEntryRecord.builder();
+		for (final DataEntryRecordField<?> field : fields)
+		{
+			record.createdUpdatedInfo(field.getDataEntryFieldId().getRepoId(), field.getCreatedUpdatedInfo());
+
+			if (field instanceof DataEntryRecordFieldYesNo)
+			{
+				record.yesNo(
+						field.getDataEntryFieldId().getRepoId(),
+						((DataEntryRecordFieldYesNo)field).getValue());
+			}
+			else if (field instanceof DataEntryRecordFieldDate)
+			{
+				record.date(
+						field.getDataEntryFieldId().getRepoId(),
+						((DataEntryRecordFieldDate)field).getValue());
+			}
+			else if (field instanceof DataEntryRecordFieldListValue)
+			{
+				record.listValue(
+						field.getDataEntryFieldId().getRepoId(),
+						((DataEntryRecordFieldListValue)field).getValue());
+			}
+			else if (field instanceof DataEntryRecordFieldString)
+			{
+				record.string(
+						field.getDataEntryFieldId().getRepoId(),
+						((DataEntryRecordFieldString)field).getValue());
+			}
+			else if (field instanceof DataEntryRecordFieldNumber)
+			{
+				record.number(
+						field.getDataEntryFieldId().getRepoId(),
+						((DataEntryRecordFieldNumber)field).getValue());
+			}
+		}
+
+		return delegate.toString(record.build());
 	}
 
 	public List<DataEntryRecordField<?>> deserialize(@NonNull final String recordString)
 	{
-		return delegate.fromString(recordString);
+		final ImmutableList.Builder<DataEntryRecordField<?>> result = ImmutableList.builder();
+
+		final JSONDataEntryRecord record = delegate.fromString(recordString);
+		final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
+
+		for (final Entry<Integer, ZonedDateTime> data : record.getDates().entrySet())
+		{
+			final DataEntryRecordFieldDate dataEntryRecordField = DataEntryRecordFieldDate
+					.of(
+							DataEntryFieldId.ofRepoId(data.getKey()),
+							createdUpdatedInfos.get(data.getKey()), data.getValue());
+
+			result.add(dataEntryRecordField);
+		}
+		for (final Entry<Integer, ZonedDateTime> data : record.getDates().entrySet())
+		{
+			final DataEntryRecordFieldDate dataEntryRecordField = DataEntryRecordFieldDate
+					.of(
+							DataEntryFieldId.ofRepoId(data.getKey()),
+							createdUpdatedInfos.get(data.getKey()), data.getValue());
+			result.add(dataEntryRecordField);
+		}
+		for (final Entry<Integer, DataEntryListValueId> data : record.getListValues().entrySet())
+		{
+			final DataEntryRecordFieldListValue dataEntryRecordField = DataEntryRecordFieldListValue
+					.of(
+							DataEntryFieldId.ofRepoId(data.getKey()),
+							createdUpdatedInfos.get(data.getKey()), data.getValue());
+			result.add(dataEntryRecordField);
+		}
+		for (final Entry<Integer, BigDecimal> data : record.getNumbers().entrySet())
+		{
+			final DataEntryRecordFieldNumber dataEntryRecordField = DataEntryRecordFieldNumber
+					.of(
+							DataEntryFieldId.ofRepoId(data.getKey()),
+							createdUpdatedInfos.get(data.getKey()), data.getValue());
+			result.add(dataEntryRecordField);
+		}
+		for (final Entry<Integer, String> data : record.getStrings().entrySet())
+		{
+			final DataEntryRecordFieldString dataEntryRecordField = DataEntryRecordFieldString
+					.of(
+							DataEntryFieldId.ofRepoId(data.getKey()),
+							createdUpdatedInfos.get(data.getKey()), data.getValue());
+			result.add(dataEntryRecordField);
+		}
+		for (final Entry<Integer, Boolean> data : record.getYesNos().entrySet())
+		{
+			final DataEntryRecordFieldYesNo dataEntryRecordField = DataEntryRecordFieldYesNo
+					.of(
+							DataEntryFieldId.ofRepoId(data.getKey()),
+							createdUpdatedInfos.get(data.getKey()), data.getValue());
+			result.add(dataEntryRecordField);
+		}
+
+		return result.build();
 	}
 }

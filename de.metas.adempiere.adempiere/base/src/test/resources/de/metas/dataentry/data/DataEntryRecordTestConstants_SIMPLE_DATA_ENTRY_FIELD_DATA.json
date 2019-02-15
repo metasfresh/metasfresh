@@ -1,44 +1,50 @@
 {
-"fields" :
-[ {
-  "@c" : ".DataEntryRecordFieldDate",
-  "dataEntryFieldId" : 30,
-  "created" : "2019-02-12T13:20:42.000000002+01:00",
-  "createdBy" : 10,
-  "updated" : "2019-02-12T14:20:42.000000002+01:00",
-  "updatedBy" : 20,
-  "value" : "2019-02-12T12:20:42.000000002+01:00"
-}, {
-  "@c" : ".DataEntryRecordFieldListValue",
-  "dataEntryFieldId" : 31,
-  "created" : "2019-02-12T13:20:42.000000002+01:00",
-  "createdBy" : 10,
-  "updated" : "2019-02-12T14:20:42.000000002+01:00",
-  "updatedBy" : 20,
-  "value" : 41
-}, {
-  "@c" : ".DataEntryRecordFieldNumber",
-  "dataEntryFieldId" : 32,
-  "created" : "2019-02-12T13:20:42.000000002+01:00",
-  "createdBy" : 10,
-  "updated" : "2019-02-12T14:20:42.000000002+01:00",
-  "updatedBy" : 20,
-  "value" : 0.23
-}, {
-  "@c" : ".DataEntryRecordFieldString",
-  "dataEntryFieldId" : 33,
-  "created" : "2019-02-12T13:20:42.000000002+01:00",
-  "createdBy" : 10,
-  "updated" : "2019-02-12T14:20:42.000000002+01:00",
-  "updatedBy" : 20,
-  "value" : "stringFieldValue"
-}, {
-  "@c" : ".DataEntryRecordFieldYesNo",
-  "dataEntryFieldId" : 34,
-  "created" : "2019-02-12T13:20:42.000000002+01:00",
-  "createdBy" : 10,
-  "updated" : "2019-02-12T14:20:42.000000002+01:00",
-  "updatedBy" : 20,
-  "value" : true
-} ]
+
+  "dates" : {
+    "30" : "2019-02-12T12:20:42.000000002+01:00"
+  },
+  "listValues" : {
+    "31" : 41
+  },
+  "numbers" : {
+    "32" : 0.23
+  },
+  "strings" : {
+    "33" : "stringFieldValue"
+  },
+  "yesNos" : {
+    "34" : true
+  },
+  "createdUpdatedInfos" : {
+    "30" : {
+      "createdBy" : 10,
+      "created" : "2019-02-12T13:20:42.000000002+01:00",
+      "updatedBy" : 20,
+      "updated" : "2019-02-12T14:20:42.000000002+01:00"
+    },
+    "31" : {
+      "createdBy" : 10,
+      "created" : "2019-02-12T13:20:42.000000002+01:00",
+      "updatedBy" : 20,
+      "updated" : "2019-02-12T14:20:42.000000002+01:00"
+    },
+    "32" : {
+      "createdBy" : 10,
+      "created" : "2019-02-12T13:20:42.000000002+01:00",
+      "updatedBy" : 20,
+      "updated" : "2019-02-12T14:20:42.000000002+01:00"
+    },
+    "33" : {
+      "createdBy" : 10,
+      "created" : "2019-02-12T13:20:42.000000002+01:00",
+      "updatedBy" : 20,
+      "updated" : "2019-02-12T14:20:42.000000002+01:00"
+    },
+    "34" : {
+      "createdBy" : 10,
+      "created" : "2019-02-12T13:20:42.000000002+01:00",
+      "updatedBy" : 20,
+      "updated" : "2019-02-12T14:20:42.000000002+01:00"
+    }
+  }
 }

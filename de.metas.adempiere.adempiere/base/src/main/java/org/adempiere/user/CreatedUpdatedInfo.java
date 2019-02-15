@@ -2,6 +2,9 @@ package org.adempiere.user;
 
 import java.time.ZonedDateTime;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -54,11 +57,12 @@ public class CreatedUpdatedInfo
 
 	ZonedDateTime updated;
 
+	@JsonCreator
 	private CreatedUpdatedInfo(
-			@NonNull final UserId createdBy,
-			@NonNull final ZonedDateTime created,
-			@NonNull final UserId updatedBy,
-			@NonNull final ZonedDateTime updated)
+			@NonNull @JsonProperty("createdBy") final UserId createdBy,
+			@NonNull @JsonProperty("created") final ZonedDateTime created,
+			@NonNull @JsonProperty("updatedBy") final UserId updatedBy,
+			@NonNull @JsonProperty("updated") final ZonedDateTime updated)
 	{
 		this.createdBy = createdBy;
 		this.created = created;

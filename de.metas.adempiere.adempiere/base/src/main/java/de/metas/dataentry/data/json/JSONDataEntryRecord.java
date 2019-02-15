@@ -6,8 +6,12 @@ import java.util.Map;
 
 import org.adempiere.user.CreatedUpdatedInfo;
 
-import de.metas.dataentry.DataEntryFieldId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.dataentry.DataEntryListValueId;
+import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,15 +39,34 @@ import lombok.Value;
 @Value
 public class JSONDataEntryRecord
 {
-	Map<DataEntryFieldId, CreatedUpdatedInfo> createdUpdated;
+	Map<Integer, ZonedDateTime> dates;
 
-	Map<DataEntryFieldId, ZonedDateTime> dates;
+	Map<Integer, DataEntryListValueId> listValues;
 
-	Map<DataEntryFieldId, DataEntryListValueId> listValues;
+	Map<Integer, BigDecimal> numbers;
 
-	Map<DataEntryFieldId, BigDecimal> numbers;
+	Map<Integer, String> strings;
 
-	Map<DataEntryFieldId, String> strings;
+	Map<Integer, Boolean> yesNos;
 
-	Map<DataEntryFieldId, Boolean> booleans;
+	Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos;
+
+	@Builder
+	@JsonCreator
+	private JSONDataEntryRecord(
+			@Singular @JsonProperty("dates") final Map<Integer, ZonedDateTime> dates,
+			@Singular @JsonProperty("listValues") final Map<Integer, DataEntryListValueId> listValues,
+			@Singular @JsonProperty("numbers") final Map<Integer, BigDecimal> numbers,
+			@Singular @JsonProperty("strings") final Map<Integer, String> strings,
+			@Singular @JsonProperty("yesNos") final Map<Integer, Boolean> yesNos,
+			@Singular @JsonProperty("createdUpdatedInfos") final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos)
+	{
+		this.dates = dates;
+		this.listValues = listValues;
+		this.numbers = numbers;
+		this.strings = strings;
+		this.yesNos = yesNos;
+		this.createdUpdatedInfos = createdUpdatedInfos;
+	}
+
 }
