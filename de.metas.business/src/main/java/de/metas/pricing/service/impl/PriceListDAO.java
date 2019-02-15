@@ -54,6 +54,7 @@ import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
+import de.metas.pricing.service.UpdateProductPriceRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -529,5 +530,18 @@ public class PriceListDAO implements IPriceListDAO
 		saveRecord(recordCopy);
 
 		return ProductPriceId.ofRepoId(recordCopy.getM_ProductPrice_ID());
+	}
+
+	@Override
+	public void updateProductPrice(@NonNull final UpdateProductPriceRequest request)
+	{
+		final I_M_ProductPrice record = load(request.getProductPriceId(), I_M_ProductPrice.class);
+
+		if (request.getPriceStd() != null)
+		{
+			record.setPriceStd(request.getPriceStd());
+		}
+
+		saveRecord(record);
 	}
 }

@@ -170,4 +170,6 @@ public interface IPriceListDAO extends ISingletonService
 	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
 
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
+
+	void updateProductPrice(UpdateProductPriceRequest request);
 }
