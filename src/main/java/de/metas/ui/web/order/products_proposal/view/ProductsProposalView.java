@@ -22,6 +22,7 @@ import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilters;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.view.AbstractCustomView;
@@ -167,9 +168,9 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void addRows(@NonNull final List<ProductsProposalRow> rows)
+	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
-		rowsData.copyAndAddRows(rows);
+		rowsData.addOrUpdateRows(requests);
 		invalidateAll();
 	}
 

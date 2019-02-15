@@ -1,11 +1,13 @@
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.math.BigDecimal;
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 import de.metas.currency.Amount;
 import de.metas.pricing.ProductPriceId;
+import de.metas.product.ProductId;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,32 +33,28 @@ import lombok.Value;
  * #L%
  */
 
-public interface ProductsProposalRowChangeRequest
+@Value
+@Builder
+public class ProductsProposalRowAddRequest
 {
-	@Builder
-	@Value
-	public static class UserChange implements ProductsProposalRowChangeRequest
-	{
-		Optional<BigDecimal> qty;
-		Optional<BigDecimal> price;
-	}
+	@NonNull
+	LookupValue product;
 
-	@Value
-	@Builder
-	public static class RowUpdate implements ProductsProposalRowChangeRequest
-	{
-		Amount price;
-		Integer lastShipmentDays;
-		ProductPriceId copiedFromProductPriceId;
-	}
+	@NonNull
+	@Default
+	ProductASIDescription asiDescription = ProductASIDescription.NONE;
 
-	@Builder
-	@Value
-	public static class RowSaved implements ProductsProposalRowChangeRequest
+	@NonNull
+	Amount price;
+
+	@Nullable
+	Integer lastShipmentDays;
+
+	@Nullable
+	ProductPriceId copiedFromProductPriceId;
+
+	public ProductId getProductId()
 	{
-		@NonNull
-		ProductPriceId productPriceId;
-		@NonNull
-		Amount standardPrice;
+		return getProduct().getIdAs(ProductId::ofRepoId);
 	}
 }

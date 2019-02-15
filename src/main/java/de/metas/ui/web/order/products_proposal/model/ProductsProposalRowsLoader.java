@@ -160,7 +160,7 @@ public final class ProductsProposalRowsLoader
 		return ProductsProposalRow.builder()
 				.id(id)
 				.product(product)
-				.asiDescription(attributeSetInstanceBL.getASIDescriptionById(asiId))
+				.asiDescription(ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(asiId)))
 				.standardPrice(Amount.of(record.getPriceStd(), currencyCode))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later

@@ -25,6 +25,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
@@ -190,18 +191,48 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void copyAndAddRows(@NonNull final List<ProductsProposalRow> rows)
+	private synchronized Optional<ProductsProposalRow> getRowByProductAndASI(@NonNull final ProductId productId, @NonNull final ProductASIDescription asiDescription)
 	{
-		rows.forEach(this::copyAndAddRow);
+		return rowsById.values()
+				.stream()
+				.filter(row -> productId.equals(row.getProductId())
+						&& asiDescription.equals(row.getAsiDescription()))
+				.findFirst();
 	}
 
-	public void copyAndAddRow(@NonNull final ProductsProposalRow row)
+	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
-		addRow(row.toBuilder()
+		requests.forEach(this::addOrUpdateRow);
+	}
+
+	private synchronized void addOrUpdateRow(@NonNull final ProductsProposalRowAddRequest request)
+	{
+		final ProductsProposalRow existingRow = getRowByProductAndASI(request.getProductId(), request.getAsiDescription())
+				.orElse(null);
+		if (existingRow != null)
+		{
+			patchRow(existingRow.getId(), RowUpdate.builder()
+					.price(request.getPrice())
+					.lastShipmentDays(request.getLastShipmentDays())
+					.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
+					.build());
+		}
+		else
+		{
+			addRow(createRow(request));
+		}
+	}
+
+	private ProductsProposalRow createRow(ProductsProposalRowAddRequest request)
+	{
+		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
-				.productPriceId(null)
-				.copiedFromProductPriceId(row.getProductPriceId())
-				.build());
+				.product(request.getProduct())
+				.asiDescription(request.getAsiDescription())
+				.standardPrice(request.getPrice())
+				.lastShipmentDays(request.getLastShipmentDays())
+				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
+				.build();
 	}
 
 	private synchronized void addRow(final ProductsProposalRow row)

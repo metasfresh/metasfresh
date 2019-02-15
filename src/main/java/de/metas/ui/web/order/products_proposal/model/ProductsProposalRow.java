@@ -59,11 +59,13 @@ public class ProductsProposalRow implements IViewRow
 
 	public static final String FIELD_Product = "product";
 	@ViewColumn(seqNo = 10, fieldName = FIELD_Product, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
+	@Getter
 	private final LookupValue product;
 
 	public static final String FIELD_ASI = "asi";
 	@ViewColumn(seqNo = 20, fieldName = FIELD_ASI, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
-	private final String asiDescription;
+	@Getter
+	private final ProductASIDescription asiDescription;
 
 	public static final String FIELD_Price = "price";
 	@ViewColumn(seqNo = 30, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
@@ -80,6 +82,7 @@ public class ProductsProposalRow implements IViewRow
 
 	public static final String FIELD_LastShipmentDays = "lastShipmentDays";
 	@ViewColumn(seqNo = 60, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	@Getter
 	private final Integer lastShipmentDays;
 
 	public static final String FIELD_BPartner = "bpartner";
@@ -106,7 +109,7 @@ public class ProductsProposalRow implements IViewRow
 			@NonNull final DocumentId id,
 			@Nullable final LookupValue bpartner,
 			@NonNull final LookupValue product,
-			@Nullable final String asiDescription,
+			@Nullable final ProductASIDescription asiDescription,
 			@NonNull final Amount standardPrice,
 			@Nullable final BigDecimal price,
 			@Nullable final BigDecimal qty,
@@ -120,7 +123,7 @@ public class ProductsProposalRow implements IViewRow
 		this.bpartner = bpartner;
 
 		this.product = product;
-		this.asiDescription = asiDescription;
+		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 
 		this.standardPrice = standardPrice;
 		this.currencyCode = standardPrice.getCurrencyCode();
@@ -198,12 +201,12 @@ public class ProductsProposalRow implements IViewRow
 
 	public ProductId getProductId()
 	{
-		return product.getIdAs(ProductId::ofRepoId);
+		return getProduct().getIdAs(ProductId::ofRepoId);
 	}
 
 	public String getProductName()
 	{
-		return product.getDisplayName();
+		return getProduct().getDisplayName();
 	}
 
 	public boolean isQtySet()

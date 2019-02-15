@@ -1,13 +1,10 @@
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.math.BigDecimal;
-import java.util.Optional;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.currency.Amount;
-import de.metas.pricing.ProductPriceId;
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -31,32 +28,39 @@ import lombok.Value;
  * #L%
  */
 
-public interface ProductsProposalRowChangeRequest
+@EqualsAndHashCode
+public final class ProductASIDescription
 {
-	@Builder
-	@Value
-	public static class UserChange implements ProductsProposalRowChangeRequest
+	@JsonCreator
+	public static ProductASIDescription ofString(final String value)
 	{
-		Optional<BigDecimal> qty;
-		Optional<BigDecimal> price;
+		if (value == null)
+		{
+			return NONE;
+		}
+
+		final String valueNorm = value.trim();
+		if (valueNorm.isEmpty())
+		{
+			return NONE;
+		}
+
+		return new ProductASIDescription(valueNorm);
 	}
 
-	@Value
-	@Builder
-	public static class RowUpdate implements ProductsProposalRowChangeRequest
+	public static final ProductASIDescription NONE = new ProductASIDescription("");
+
+	private final String value;
+
+	private ProductASIDescription(@NonNull final String value)
 	{
-		Amount price;
-		Integer lastShipmentDays;
-		ProductPriceId copiedFromProductPriceId;
+		this.value = value;
 	}
 
-	@Builder
-	@Value
-	public static class RowSaved implements ProductsProposalRowChangeRequest
+	@Override
+	@JsonValue
+	public String toString()
 	{
-		@NonNull
-		ProductPriceId productPriceId;
-		@NonNull
-		Amount standardPrice;
+		return value;
 	}
 }

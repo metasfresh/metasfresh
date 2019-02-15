@@ -2,8 +2,11 @@ package de.metas.ui.web.order.products_proposal.process;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
 
 /*
@@ -51,9 +54,24 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 
 	private void addSelectedRowsToInitialView()
 	{
-		final List<ProductsProposalRow> selectedRows = getSelectedRows();
 		final ProductsProposalView initialView = getInitialView();
 
-		initialView.addRows(selectedRows);
+		final List<ProductsProposalRowAddRequest> addRequests = getSelectedRows()
+				.stream()
+				.map(this::toProductsProposalRowAddRequest)
+				.collect(ImmutableList.toImmutableList());
+
+		initialView.addOrUpdateRows(addRequests);
+	}
+
+	private ProductsProposalRowAddRequest toProductsProposalRowAddRequest(final ProductsProposalRow row)
+	{
+		return ProductsProposalRowAddRequest.builder()
+				.product(row.getProduct())
+				.asiDescription(row.getAsiDescription())
+				.price(row.getPrice())
+				.lastShipmentDays(row.getLastShipmentDays())
+				.copiedFromProductPriceId(row.getProductPriceId())
+				.build();
 	}
 }

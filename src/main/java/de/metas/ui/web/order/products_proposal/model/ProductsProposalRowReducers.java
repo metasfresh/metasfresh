@@ -6,6 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.ProductsProposalRowBuilder;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowSaved;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -43,6 +44,10 @@ public class ProductsProposalRowReducers
 		{
 			return reduceUserRequest(row, (UserChange)request);
 		}
+		else if (request instanceof RowUpdate)
+		{
+			return reduceRowUpdate(row, (RowUpdate)request);
+		}
 		if (request instanceof RowSaved)
 		{
 			return reduceRowSaved(row, (RowSaved)request);
@@ -74,6 +79,15 @@ public class ProductsProposalRowReducers
 		}
 
 		return newRowBuilder.build();
+	}
+
+	private static ProductsProposalRow reduceRowUpdate(final ProductsProposalRow row, final RowUpdate request)
+	{
+		return row.toBuilder()
+				.price(request.getPrice().getValue())
+				.lastShipmentDays(request.getLastShipmentDays())
+				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
+				.build();
 	}
 
 	private static ProductsProposalRow reduceRowSaved(final ProductsProposalRow row, final RowSaved request)
