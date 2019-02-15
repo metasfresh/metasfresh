@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.NonNull;
 
 /*
@@ -92,5 +94,21 @@ public class MoneyTest
 
 		assertThatThrownBy(() -> money_1EUR.min(money_2CHF)).isNotNull();
 		assertThatThrownBy(() -> money_1EUR.max(money_2CHF)).isNotNull();
+	}
+
+	@Test
+	public void testJsonSerialization() throws Exception
+	{
+		testJsonSerialization(Money.of(new BigDecimal("13.14"), CurrencyId.ofRepoId(55)));
+	}
+
+	private void testJsonSerialization(final Money money) throws Exception
+	{
+		final ObjectMapper objectMapper = new ObjectMapper();
+		final String json = objectMapper.writeValueAsString(money);
+		System.out.println("Serialized " + money + " to " + json);
+
+		final Money moneyDeserialized = objectMapper.readValue(json, money.getClass());
+		assertThat(moneyDeserialized).isEqualTo(money);
 	}
 }

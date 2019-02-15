@@ -2471,36 +2471,12 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 	}
 
-	/**
-	 * Reverse Accrual - none
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		// Before reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		throw new UnsupportedOperationException();
+	}
 
-		// After reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		return false;
-	} // reverseAccrualIt
-
-	/**
-	 * Re-activate
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reActivateIt()
 	{
