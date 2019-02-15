@@ -72,19 +72,26 @@ public class BPartnerProductStats
 	@Setter(AccessLevel.PACKAGE)
 	private LastInvoiceInfo lastSalesInvoice;
 
-	public int getLastReceiptInDays()
+	public Integer getLastReceiptInDays()
 	{
 		return calculateDaysFrom(getLastReceiptDate());
 	}
 
-	public int getLastShipmentInDays()
+	public Integer getLastShipmentInDays()
 	{
 		return calculateDaysFrom(getLastShipmentDate());
 	}
 
-	private static int calculateDaysFrom(final ZonedDateTime date)
+	private static Integer calculateDaysFrom(final ZonedDateTime date)
 	{
-		return (int)Duration.between(date, SystemTime.asZonedDateTime()).toDays();
+		if (date != null)
+		{
+			return (int)Duration.between(date, SystemTime.asZonedDateTime()).toDays();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public void updateLastReceiptDate(@NonNull final ZonedDateTime receiptDate)
