@@ -4,6 +4,9 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
@@ -57,8 +60,16 @@ public class DataEntryListValueId implements RepoIdAware
 
 	int repoId;
 
+	@JsonCreator
 	public DataEntryListValueId(final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

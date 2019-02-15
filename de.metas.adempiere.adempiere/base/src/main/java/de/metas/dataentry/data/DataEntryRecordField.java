@@ -8,8 +8,6 @@ import java.time.ZonedDateTime;
 import org.adempiere.user.CreatedUpdatedInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
@@ -40,7 +38,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 @EqualsAndHashCode
 public abstract class DataEntryRecordField<T>
 {
@@ -52,7 +49,6 @@ public abstract class DataEntryRecordField<T>
 	@JsonIgnore
 	private CreatedUpdatedInfo createdUpdatedInfo;
 
-	@JsonIgnore
 	public abstract FieldType getFieldType();
 
 	protected DataEntryRecordField(
@@ -63,38 +59,7 @@ public abstract class DataEntryRecordField<T>
 		this.createdUpdatedInfo = createdUpdatedInfo;
 	}
 
-	@JsonIgnore
 	public abstract T getValue();
-
-	@JsonProperty("dataEntryFieldId")
-	private int getDataEntryFieldRepoIdId()
-	{
-		return dataEntryFieldId.getRepoId();
-	}
-
-	@JsonProperty("createdBy")
-	private int getCreatedByRepoId()
-	{
-		return createdUpdatedInfo.getCreatedBy().getRepoId();
-	}
-
-	@JsonProperty("created")
-	private ZonedDateTime getCreated()
-	{
-		return createdUpdatedInfo.getCreated();
-	}
-
-	@JsonProperty("updatedBy")
-	private int getUpdatedByRepoId()
-	{
-		return createdUpdatedInfo.getUpdatedBy().getRepoId();
-	}
-
-	@JsonProperty("updated")
-	private ZonedDateTime getUpdated()
-	{
-		return createdUpdatedInfo.getUpdated();
-	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> DataEntryRecordField<T> createDataEntryRecordField(

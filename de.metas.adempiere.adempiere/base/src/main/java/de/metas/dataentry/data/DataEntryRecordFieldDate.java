@@ -6,9 +6,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.user.CreatedUpdatedInfo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.FieldType;
 import lombok.EqualsAndHashCode;
@@ -43,7 +40,6 @@ import lombok.ToString;
 public class DataEntryRecordFieldDate extends DataEntryRecordField<ZonedDateTime>
 {
 	@Getter
-	@JsonProperty("value")
 	private ZonedDateTime value;
 
 	public static DataEntryRecordFieldDate of(
@@ -57,27 +53,6 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<ZonedDateTime
 				value);
 	}
 
-	@JsonCreator
-	private DataEntryRecordFieldDate(
-			@JsonProperty("dataEntryFieldId") final int dataEntryFieldRepoId,
-
-			@JsonProperty("created") @NonNull final ZonedDateTime created,
-			@JsonProperty("createdBy") final int createdBy,
-			@JsonProperty("updated") @NonNull final ZonedDateTime updated,
-			@JsonProperty("updatedBy") final int updatedBy,
-
-			@JsonProperty("value") @Nullable final ZonedDateTime value)
-	{
-		this(
-				DataEntryFieldId.ofRepoId(dataEntryFieldRepoId),
-				CreatedUpdatedInfo.of(
-						created,
-						createdBy,
-						updated,
-						updatedBy),
-				value);
-	}
-
 	private DataEntryRecordFieldDate(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
@@ -86,7 +61,6 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<ZonedDateTime
 		super(dataEntryFieldId, createdUpdatedInfo);
 		this.value = value;
 	}
-
 
 	@Override
 	public FieldType getFieldType()

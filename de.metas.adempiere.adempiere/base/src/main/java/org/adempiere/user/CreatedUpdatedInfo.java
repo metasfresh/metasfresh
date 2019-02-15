@@ -39,11 +39,11 @@ public class CreatedUpdatedInfo
 
 	public static CreatedUpdatedInfo of(
 			@NonNull final ZonedDateTime created,
-			final int createdBy,
+			@NonNull final UserId createdBy,
 			@NonNull final ZonedDateTime updated,
-			final int updatedBy)
+			@NonNull final UserId updatedBy)
 	{
-		return new CreatedUpdatedInfo(UserId.ofRepoId(createdBy), created, UserId.ofRepoId(updatedBy), updated);
+		return new CreatedUpdatedInfo(createdBy, created, updatedBy, updated);
 	}
 
 	UserId createdBy;

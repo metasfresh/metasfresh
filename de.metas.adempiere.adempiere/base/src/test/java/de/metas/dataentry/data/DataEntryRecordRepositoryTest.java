@@ -22,6 +22,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
 
 /*
@@ -59,7 +60,7 @@ public class DataEntryRecordRepositoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		dataEntryRecordRepository = new DataEntryRecordRepository();
+		dataEntryRecordRepository = new DataEntryRecordRepository(new JSONDataEntryRecordMapper());
 	}
 
 	@Test

@@ -1,14 +1,8 @@
 package de.metas.dataentry.data;
 
-import java.time.ZonedDateTime;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.user.CreatedUpdatedInfo;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
@@ -44,8 +38,6 @@ import lombok.ToString;
 @ToString
 public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntryListValueId>
 {
-
-	@JsonIgnore
 	@Getter
 	DataEntryListValueId value;
 
@@ -57,27 +49,6 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 		return new DataEntryRecordFieldListValue(dataEntryFieldId, createdUpdatedInfo, value);
 	}
 
-	@JsonCreator
-	private DataEntryRecordFieldListValue(
-			@JsonProperty("dataEntryFieldId") final int dataEntryFieldRepoId,
-
-			@JsonProperty("created") @NonNull final ZonedDateTime created,
-			@JsonProperty("createdBy") final int createdBy,
-			@JsonProperty("updated") @NonNull final ZonedDateTime updated,
-			@JsonProperty("updatedBy") final int updatedBy,
-
-			@JsonProperty("value") final int listValueId)
-	{
-		this(
-				DataEntryFieldId.ofRepoId(dataEntryFieldRepoId),
-				CreatedUpdatedInfo.of(
-						created,
-						createdBy,
-						updated,
-						updatedBy),
-				DataEntryListValueId.ofRepoId(listValueId));
-	}
-
 	private DataEntryRecordFieldListValue(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
 			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
@@ -85,12 +56,6 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);
 		this.value = listValueId;
-	}
-
-	@JsonProperty("value")
-	private int getListValueId()
-	{
-		return value.getRepoId();
 	}
 
 	@Override

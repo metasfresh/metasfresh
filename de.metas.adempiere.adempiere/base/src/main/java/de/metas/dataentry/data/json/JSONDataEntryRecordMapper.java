@@ -1,9 +1,12 @@
-package de.metas.dataentry;
+package de.metas.dataentry.data.json;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.util.List;
 
-import lombok.Getter;
+import org.springframework.stereotype.Service;
+
+import de.metas.dataentry.data.DataEntryRecordField;
+import de.metas.util.JsonSerializer;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,31 +30,18 @@ import lombok.Getter;
  * #L%
  */
 
-public enum FieldType
+@Service
+public class JSONDataEntryRecordMapper
 {
-	RECORD_ID(Integer.class),
-	PARENT_LINK_ID(Integer.class),
+	private final JsonSerializer<JSONDataEntryRecord> delegate = JsonSerializer.forClass(JSONDataEntryRecord.class);
 
-	CREATED(ZonedDateTime.class),
-	CREATED_BY(Integer.class),
-	UPDATED(ZonedDateTime.class),
-	UPDATED_BY(Integer.class),
-
-	STRING(String.class),
-
-	NUMBER(BigDecimal.class),
-
-	DATE(ZonedDateTime.class),
-
-	LIST(DataEntryListValueId.class),
-
-	YESNO(Boolean.class);
-
-	@Getter
-	private final Class<?> clazz;
-
-	private FieldType(Class<?> clazz)
+	public String serialize(@NonNull final List<DataEntryRecordField<?>> fields)
 	{
-		this.clazz = clazz;
+		return delegate.toString(record);
+	}
+
+	public List<DataEntryRecordField<?>> deserialize(@NonNull final String recordString)
+	{
+		return delegate.fromString(recordString);
 	}
 }

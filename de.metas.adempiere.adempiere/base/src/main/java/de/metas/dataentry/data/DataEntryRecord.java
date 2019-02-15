@@ -1,8 +1,6 @@
 package de.metas.dataentry.data;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +11,7 @@ import org.adempiere.user.CreatedUpdatedInfo;
 import org.adempiere.user.UserId;
 import org.adempiere.util.lang.ITableRecordReference;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubGroupId;
@@ -54,9 +52,6 @@ public class DataEntryRecord
 	private final DataEntrySubGroupId dataEntrySubGroupId;
 
 	private final ITableRecordReference mainRecord;
-
-	// @Getter(AccessLevel.NONE)
-	// private final DataEntryFieldData dataEntryFieldData;
 
 	@Getter(AccessLevel.NONE)
 	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
@@ -118,22 +113,8 @@ public class DataEntryRecord
 		return fields.isEmpty();
 	}
 
-	public DataEntryRecordFieldList getFields()
+	public ImmutableList<DataEntryRecordField<?>> getFields()
 	{
-		return new DataEntryRecordFieldList(fields.values());
+		return ImmutableList.copyOf(fields.values());
 	}
-
-	/**
-	 * Thx to https://github.com/FasterXML/jackson-databind/issues/336#issuecomment-27228643
-	 */
-	public static class DataEntryRecordFieldList extends ArrayList<DataEntryRecordField<?>>
-	{
-		private static final long serialVersionUID = 6030884469297498240L;
-
-		@JsonCreator
-		private DataEntryRecordFieldList(Collection<DataEntryRecordField<?>> fields)
-		{
-			super(fields);
-		}
-	};
 }

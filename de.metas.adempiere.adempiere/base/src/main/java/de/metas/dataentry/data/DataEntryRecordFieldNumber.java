@@ -1,14 +1,10 @@
 package de.metas.dataentry.data;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.user.CreatedUpdatedInfo;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.FieldType;
@@ -44,7 +40,6 @@ import lombok.ToString;
 public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 {
 	@Getter
-	@JsonProperty("value")
 	private BigDecimal value;
 
 	public static DataEntryRecordFieldNumber of(
@@ -53,27 +48,6 @@ public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 			@Nullable final BigDecimal value)
 	{
 		return new DataEntryRecordFieldNumber(dataEntryFieldId, createdUpdatedInfo, value);
-	}
-
-	@JsonCreator
-	private DataEntryRecordFieldNumber(
-			@JsonProperty("dataEntryFieldId") final int dataEntryFieldRepoId,
-
-			@JsonProperty("created") @NonNull final ZonedDateTime created,
-			@JsonProperty("createdBy") final int createdBy,
-			@JsonProperty("updated") @NonNull final ZonedDateTime updated,
-			@JsonProperty("updatedBy") final int updatedBy,
-
-			@JsonProperty("value") @Nullable final BigDecimal value)
-	{
-		this(
-				DataEntryFieldId.ofRepoId(dataEntryFieldRepoId),
-				CreatedUpdatedInfo.of(
-						created,
-						createdBy,
-						updated,
-						updatedBy),
-				value);
 	}
 
 	private DataEntryRecordFieldNumber(

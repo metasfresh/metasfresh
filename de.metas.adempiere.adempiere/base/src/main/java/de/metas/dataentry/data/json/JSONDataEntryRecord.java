@@ -1,9 +1,14 @@
-package de.metas.dataentry;
+package de.metas.dataentry.data.json;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Map;
 
-import lombok.Getter;
+import org.adempiere.user.CreatedUpdatedInfo;
+
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryListValueId;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,31 +32,18 @@ import lombok.Getter;
  * #L%
  */
 
-public enum FieldType
+@Value
+public class JSONDataEntryRecord
 {
-	RECORD_ID(Integer.class),
-	PARENT_LINK_ID(Integer.class),
+	Map<DataEntryFieldId, CreatedUpdatedInfo> createdUpdated;
 
-	CREATED(ZonedDateTime.class),
-	CREATED_BY(Integer.class),
-	UPDATED(ZonedDateTime.class),
-	UPDATED_BY(Integer.class),
+	Map<DataEntryFieldId, ZonedDateTime> dates;
 
-	STRING(String.class),
+	Map<DataEntryFieldId, DataEntryListValueId> listValues;
 
-	NUMBER(BigDecimal.class),
+	Map<DataEntryFieldId, BigDecimal> numbers;
 
-	DATE(ZonedDateTime.class),
+	Map<DataEntryFieldId, String> strings;
 
-	LIST(DataEntryListValueId.class),
-
-	YESNO(Boolean.class);
-
-	@Getter
-	private final Class<?> clazz;
-
-	private FieldType(Class<?> clazz)
-	{
-		this.clazz = clazz;
-	}
+	Map<DataEntryFieldId, Boolean> booleans;
 }

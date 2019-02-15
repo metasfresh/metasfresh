@@ -105,6 +105,11 @@ public class InterfaceWrapperHelper
 	public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 	public static final String COLUMNNAME_Description = "Description";
 
+	public static final String COLUMNNAME_Created = "Created";
+	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	public static final String COLUMNNAME_Updated = "Updated";
+	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
 	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
 		return POJOLookupMap.getInMemoryDatabaseForModel(modelClass);

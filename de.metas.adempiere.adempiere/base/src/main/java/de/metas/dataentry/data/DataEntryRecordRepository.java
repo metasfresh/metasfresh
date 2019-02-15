@@ -6,15 +6,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import de.metas.dataentry.DataEntrySubGroupId;
-import de.metas.dataentry.data.DataEntryRecord.DataEntryRecordFieldList;
+import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
-import de.metas.util.JsonSerializer;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -43,7 +44,13 @@ import lombok.NonNull;
 @Repository
 public class DataEntryRecordRepository
 {
-	private final JsonSerializer<DataEntryRecordFieldList> jsonSerializer = JsonSerializer.forClass(DataEntryRecordFieldList.class);
+	private final JSONDataEntryRecordMapper jsonDataEntryRecordMapper;
+
+	public DataEntryRecordRepository(@NonNull final JSONDataEntryRecordMapper jsonDataEntryRecordMapper)
+	{
+		this.jsonDataEntryRecordMapper = jsonDataEntryRecordMapper;
+
+	}
 
 	public DataEntryRecord getBy(
 			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
@@ -78,11 +85,11 @@ public class DataEntryRecordRepository
 	{
 		final String jsonString = record.getDataEntry_RecordData();
 
-		 final DataEntryRecordFieldList fromString = jsonSerializer.fromString(jsonString);
+		final List<DataEntryRecordField<?>> fields = jsonDataEntryRecordMapper.deserialize(jsonString);
 
 		return DataEntryRecord
 				.builder()
-				.fields(fromString)
+				.fields(fields)
 				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubGroup_ID()))
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
@@ -98,7 +105,7 @@ public class DataEntryRecordRepository
 		dataRecord.setDataEntry_SubGroup_ID(dataEntryRecord.getDataEntrySubGroupId().getRepoId());
 		dataRecord.setIsActive(true);
 
-		final String jsonString = jsonSerializer.toString(dataEntryRecord.getFields());
+		final String jsonString = jsonDataEntryRecordMapper.serialize(dataEntryRecord.getFields());
 		dataRecord.setDataEntry_RecordData(jsonString);
 
 		saveRecord(dataRecord);

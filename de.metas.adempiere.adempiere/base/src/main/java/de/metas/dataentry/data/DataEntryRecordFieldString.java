@@ -1,13 +1,8 @@
 package de.metas.dataentry.data;
 
-import java.time.ZonedDateTime;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.user.CreatedUpdatedInfo;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.FieldType;
@@ -43,7 +38,6 @@ import lombok.ToString;
 public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 {
 	@Getter
-	@JsonProperty("value")
 	private String value;
 
 	public static DataEntryRecordFieldString of(
@@ -52,27 +46,6 @@ public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 			@Nullable final String value)
 	{
 		return new DataEntryRecordFieldString(dataEntryFieldId, createdUpdatedInfo, value);
-	}
-
-	@JsonCreator
-	private DataEntryRecordFieldString(
-			@JsonProperty("dataEntryFieldId") final int dataEntryFieldRepoId,
-
-			@JsonProperty("created") @NonNull final ZonedDateTime created,
-			@JsonProperty("createdBy") final int createdBy,
-			@JsonProperty("updated") @NonNull final ZonedDateTime updated,
-			@JsonProperty("updatedBy") final int updatedBy,
-
-			@JsonProperty("value") @Nullable final String value)
-	{
-		this(
-				DataEntryFieldId.ofRepoId(dataEntryFieldRepoId),
-				CreatedUpdatedInfo.of(
-						created,
-						createdBy,
-						updated,
-						updatedBy),
-				value);
 	}
 
 	private DataEntryRecordFieldString(
