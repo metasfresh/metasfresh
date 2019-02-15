@@ -54,9 +54,9 @@ public class BPartnerProductStatsService
 		return statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
 	}
 
-	public List<BPartnerProductStats> getByProductId(@NonNull final ProductId productId)
+	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds)
 	{
-		return statsRepo.getByProductId(productId);
+		return statsRepo.getByProductIds(productIds);
 	}
 
 	public void handleInOutChangedEvent(@NonNull final InOutChangedEvent event)

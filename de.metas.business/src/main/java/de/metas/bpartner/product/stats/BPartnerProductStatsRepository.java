@@ -26,7 +26,6 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
@@ -81,11 +80,13 @@ class BPartnerProductStatsRepository
 				.collect(ImmutableMap.toImmutableMap(BPartnerProductStats::getProductId, Function.identity()));
 	}
 
-	public List<BPartnerProductStats> getByProductId(@NonNull final ProductId productId)
+	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds)
 	{
+		Check.assumeNotEmpty(productIds, "productIds is not empty");
+
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
-				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productId)
+				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds)
 				.create()
 				.stream(I_C_BPartner_Product_Stats.class)
 				.map(record -> toBPartnerProductStats(record))
@@ -311,28 +312,5 @@ class BPartnerProductStatsRepository
 		final Money price = lastSalesInvoiceInfo != null ? lastSalesInvoiceInfo.getPrice() : null;
 		record.setLastSalesPrice(price != null ? price.getValue() : null);
 		record.setLastSalesPrice_Currency_ID(price != null ? price.getCurrencyId().getRepoId() : -1);
-	}
-
-	private void deleteAll(@NonNull final Collection<BPartnerProductStats> stats)
-	{
-		if (stats.isEmpty())
-		{
-			return;
-		}
-
-		final ImmutableSet<Integer> repoIds = stats.stream()
-				.map(BPartnerProductStats::getRepoId)
-				.filter(repoId -> repoId > 0)
-				.collect(ImmutableSet.toImmutableSet());
-		if (repoIds.isEmpty())
-		{
-			return;
-		}
-
-		Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
-				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_C_BPartner_Product_Stats_ID, repoIds)
-				.create()
-				.deleteDirectly();
 	}
 }
