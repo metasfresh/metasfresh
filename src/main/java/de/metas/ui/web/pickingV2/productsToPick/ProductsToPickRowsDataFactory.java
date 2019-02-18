@@ -143,7 +143,7 @@ class ProductsToPickRowsDataFactory
 		final AllocablePackageable allocablePackageable = AllocablePackageable.of(packageable);
 
 		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
-		rows.addAll(createRowsFromPickingCandidates(allocablePackageable));
+		rows.addAll(createRowsFromExistingPickingCandidates(allocablePackageable));
 		rows.addAll(createRowsFromHUs(allocablePackageable));
 
 		Collections.sort(rows, Comparator.comparing(ProductsToPickRow::getLocatorName));
@@ -156,25 +156,34 @@ class ProductsToPickRowsDataFactory
 		return rows.stream();
 	}
 
-	private List<ProductsToPickRow> createRowsFromPickingCandidates(final AllocablePackageable packageable)
+	private List<ProductsToPickRow> createRowsFromExistingPickingCandidates(final AllocablePackageable packageable)
 	{
 		final List<PickingCandidate> pickingCandidates = pickingCandidateRepo.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.Draft);
 
 		return pickingCandidates
 				.stream()
-				.map(pickingCandidate -> createRowFromPickingCandidate(packageable, pickingCandidate))
+				.map(pickingCandidate -> createRowFromExistingPickingCandidate(packageable, pickingCandidate))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ProductsToPickRow createRowFromPickingCandidate(final AllocablePackageable packageable, final PickingCandidate pickingCandidate)
+	private ProductsToPickRow createRowFromExistingPickingCandidate(final AllocablePackageable packageable, final PickingCandidate existingPickingCandidate)
 	{
-		final HuId pickFromHUId = pickingCandidate.getPickFromHuId();
-		final ProductId productId = packageable.getProductId();
-		final ReservableStorage storage = getStorage(pickFromHUId, productId);
-		final Quantity qty = storage.reserve(packageable, pickingCandidate.getQtyPicked());
+		final Quantity qty;
+		
+		final HuId pickFromHUId = existingPickingCandidate.getPickFromHuId();
+		if(pickFromHUId != null)
+		{
+			final ProductId productId = packageable.getProductId();
+			final ReservableStorage storage = getStorage(pickFromHUId, productId);
+			qty = storage.reserve(packageable, existingPickingCandidate.getQtyPicked());
+		}
+		else
+		{
+			qty = existingPickingCandidate.getQtyPicked();
+		}
 
-		return createRow(packageable, qty, pickFromHUId, pickingCandidate);
+		return createRow(packageable, qty, pickFromHUId, existingPickingCandidate);
 	}
 
 	private List<ProductsToPickRow> createRowsFromHUs(final AllocablePackageable packageable)
@@ -264,15 +273,15 @@ class ProductsToPickRowsDataFactory
 	private ProductsToPickRow createRow(
 			@NonNull final AllocablePackageable packageable,
 			@NonNull final Quantity qty,
-			@NonNull final HuId pickFromHUId,
+			@Nullable final HuId pickFromHUId,
 			@Nullable final PickingCandidate existingPickingCandidate)
 	{
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
 		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
-		final LookupValue locator = getLocatorLookupValueByHuId(pickFromHUId);
-		final ImmutableAttributeSet attributes = getHUAttributes(pickFromHUId);
+		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
+		final ImmutableAttributeSet attributes = pickFromHUId != null ? getHUAttributes(pickFromHUId) : ImmutableAttributeSet.EMPTY;
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.huId(pickFromHUId)
