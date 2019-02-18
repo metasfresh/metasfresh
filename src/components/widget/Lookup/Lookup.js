@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -295,7 +296,7 @@ class Lookup extends Component {
             className="btn btn-sm btn-meta-success btn-scanner"
             onClick={() => onScanBarcode(true)}
           >
-            Scan using camera
+            {counterpart.translate('widget.scanFromCamera.caption')}
           </button>
         ) : null}
         <i
