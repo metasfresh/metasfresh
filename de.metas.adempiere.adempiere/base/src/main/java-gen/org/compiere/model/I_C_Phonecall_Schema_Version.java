@@ -72,7 +72,11 @@ public interface I_C_Phonecall_Schema_Version
 	 * Set Anrufliste.
 	 *
 	 * <br>Type: TableDir
+<<<<<<< HEAD
 	 * <br>Mandatory: true
+=======
+	 * <br>Mandatory: false
+>>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID);
@@ -81,7 +85,11 @@ public interface I_C_Phonecall_Schema_Version
 	 * Get Anrufliste.
 	 *
 	 * <br>Type: TableDir
+<<<<<<< HEAD
 	 * <br>Mandatory: true
+=======
+	 * <br>Mandatory: false
+>>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Phonecall_Schema_ID();
@@ -227,7 +235,11 @@ public interface I_C_Phonecall_Schema_Version
 	 * Set Monthly.
 	 *
 	 * <br>Type: YesNo
+<<<<<<< HEAD
 	 * <br>Mandatory: true
+=======
+	 * <br>Mandatory: false
+>>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setIsMonthly (boolean IsMonthly);
@@ -236,7 +248,11 @@ public interface I_C_Phonecall_Schema_Version
 	 * Get Monthly.
 	 *
 	 * <br>Type: YesNo
+<<<<<<< HEAD
 	 * <br>Mandatory: true
+=======
+	 * <br>Mandatory: false
+>>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public boolean isMonthly();
@@ -250,7 +266,11 @@ public interface I_C_Phonecall_Schema_Version
 	 * Set Weekly.
 	 *
 	 * <br>Type: YesNo
+<<<<<<< HEAD
 	 * <br>Mandatory: true
+=======
+	 * <br>Mandatory: false
+>>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setIsWeekly (boolean IsWeekly);
@@ -259,7 +279,11 @@ public interface I_C_Phonecall_Schema_Version
 	 * Get Weekly.
 	 *
 	 * <br>Type: YesNo
+<<<<<<< HEAD
 	 * <br>Mandatory: true
+=======
+	 * <br>Mandatory: false
+>>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public boolean isWeekly();
