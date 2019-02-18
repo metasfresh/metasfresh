@@ -151,11 +151,7 @@ public interface I_C_Phonecall_Schema
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setName (java.lang.String Name);
@@ -165,11 +161,7 @@ public interface I_C_Phonecall_Schema
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getName();

@@ -5,18 +5,16 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Phonecall_Schema_Version
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implements I_C_Phonecall_Schema_Version, org.compiere.model.I_Persistent
+public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implements I_C_Phonecall_Schema_Version, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-
 	private static final long serialVersionUID = 1231626038L;
-
 
     /** Standard Constructor */
     public X_C_Phonecall_Schema_Version (Properties ctx, int C_Phonecall_Schema_Version_ID, String trxName)
@@ -24,13 +22,10 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
       super (ctx, C_Phonecall_Schema_Version_ID, trxName);
       /** if (C_Phonecall_Schema_Version_ID == 0)
         {
-
 			setC_Phonecall_Schema_ID (0);
 			setC_Phonecall_Schema_Version_ID (0);
 			setIsMonthly (false); // N
-
-			setC_Phonecall_Schema_Version_ID (0);
-
+			setIsWeekly (false); // N
 			setName (null);
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
         } */
@@ -68,16 +63,16 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	@Override
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID)
 	{
-		if (C_Phonecall_Schema_ID < 1)
+		if (C_Phonecall_Schema_ID < 1) 
 			set_Value (COLUMNNAME_C_Phonecall_Schema_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Phonecall_Schema_ID, Integer.valueOf(C_Phonecall_Schema_ID));
 	}
 
 	/** Get Anrufliste.
 		@return Anrufliste	  */
 	@Override
-	public int getC_Phonecall_Schema_ID ()
+	public int getC_Phonecall_Schema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Schema_ID);
 		if (ii == null)
@@ -90,16 +85,16 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	@Override
 	public void setC_Phonecall_Schema_Version_ID (int C_Phonecall_Schema_Version_ID)
 	{
-		if (C_Phonecall_Schema_Version_ID < 1)
+		if (C_Phonecall_Schema_Version_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schema_Version_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schema_Version_ID, Integer.valueOf(C_Phonecall_Schema_Version_ID));
 	}
 
 	/** Get Anruflistenversion.
 		@return Anruflistenversion	  */
 	@Override
-	public int getC_Phonecall_Schema_Version_ID ()
+	public int getC_Phonecall_Schema_Version_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Schema_Version_ID);
 		if (ii == null)
@@ -108,7 +103,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	}
 
 	/** Set Every Month.
-		@param EveryMonth
+		@param EveryMonth 
 		Every x Months
 	  */
 	@Override
@@ -121,7 +116,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Every x Months
 	  */
 	@Override
-	public int getEveryMonth ()
+	public int getEveryMonth () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_EveryMonth);
 		if (ii == null)
@@ -130,7 +125,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	}
 
 	/** Set Every Week.
-		@param EveryWeek
+		@param EveryWeek 
 		Every x weeks
 	  */
 	@Override
@@ -143,7 +138,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Every x weeks
 	  */
 	@Override
-	public int getEveryWeek ()
+	public int getEveryWeek () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_EveryWeek);
 		if (ii == null)
@@ -162,13 +157,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	/** Get Monthly.
 		@return Monthly	  */
 	@Override
-	public boolean isMonthly ()
+	public boolean isMonthly () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsMonthly);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -185,20 +180,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	/** Get Weekly.
 		@return Weekly	  */
 	@Override
-	public boolean isWeekly ()
+	public boolean isWeekly () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsWeekly);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Day of the Month.
-		@param MonthDay
+		@param MonthDay 
 		Day of the month 1 to 28/29/30/31
 	  */
 	@Override
@@ -211,7 +206,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Day of the month 1 to 28/29/30/31
 	  */
 	@Override
-	public int getMonthDay ()
+	public int getMonthDay () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MonthDay);
 		if (ii == null)
@@ -220,7 +215,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	}
 
 	/** Set Name.
-		@param Name
+		@param Name 
 		Alphanumeric identifier of the entity
 	  */
 	@Override
@@ -233,13 +228,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Alphanumeric identifier of the entity
 	  */
 	@Override
-	public java.lang.String getName ()
+	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** Set Freitag.
-		@param OnFriday
+		@param OnFriday 
 		Freitags verfügbar
 	  */
 	@Override
@@ -252,20 +247,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Freitags verfügbar
 	  */
 	@Override
-	public boolean isOnFriday ()
+	public boolean isOnFriday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnFriday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Montag.
-		@param OnMonday
+		@param OnMonday 
 		Montags verfügbar
 	  */
 	@Override
@@ -278,20 +273,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Montags verfügbar
 	  */
 	@Override
-	public boolean isOnMonday ()
+	public boolean isOnMonday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnMonday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Samstag.
-		@param OnSaturday
+		@param OnSaturday 
 		Samstags verfügbar
 	  */
 	@Override
@@ -304,20 +299,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Samstags verfügbar
 	  */
 	@Override
-	public boolean isOnSaturday ()
+	public boolean isOnSaturday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnSaturday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Sonntag.
-		@param OnSunday
+		@param OnSunday 
 		Sonntags verfügbar
 	  */
 	@Override
@@ -330,20 +325,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Sonntags verfügbar
 	  */
 	@Override
-	public boolean isOnSunday ()
+	public boolean isOnSunday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnSunday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Donnerstag.
-		@param OnThursday
+		@param OnThursday 
 		Donnerstags verfügbar
 	  */
 	@Override
@@ -356,20 +351,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Donnerstags verfügbar
 	  */
 	@Override
-	public boolean isOnThursday ()
+	public boolean isOnThursday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnThursday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Dienstag.
-		@param OnTuesday
+		@param OnTuesday 
 		Dienstags verfügbar
 	  */
 	@Override
@@ -382,20 +377,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Dienstags verfügbar
 	  */
 	@Override
-	public boolean isOnTuesday ()
+	public boolean isOnTuesday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnTuesday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Mittwoch.
-		@param OnWednesday
+		@param OnWednesday 
 		Mittwochs verfügbar
 	  */
 	@Override
@@ -408,20 +403,20 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Mittwochs verfügbar
 	  */
 	@Override
-	public boolean isOnWednesday ()
+	public boolean isOnWednesday () 
 	{
 		Object oo = get_Value(COLUMNNAME_OnWednesday);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Bereitstellungszeit Mo.
-		@param PreparationTime_1
+		@param PreparationTime_1 
 		Preparation time for monday
 	  */
 	@Override
@@ -434,13 +429,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for monday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_1 ()
+	public java.sql.Timestamp getPreparationTime_1 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_1);
 	}
 
 	/** Set Bereitstellungszeit Di.
-		@param PreparationTime_2
+		@param PreparationTime_2 
 		Preparation time for tuesday
 	  */
 	@Override
@@ -453,13 +448,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for tuesday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_2 ()
+	public java.sql.Timestamp getPreparationTime_2 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_2);
 	}
 
 	/** Set Bereitstellungszeit Mi.
-		@param PreparationTime_3
+		@param PreparationTime_3 
 		Preparation time for wednesday
 	  */
 	@Override
@@ -472,13 +467,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for wednesday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_3 ()
+	public java.sql.Timestamp getPreparationTime_3 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_3);
 	}
 
 	/** Set Bereitstellungszeit Do.
-		@param PreparationTime_4
+		@param PreparationTime_4 
 		Preparation time for thursday
 	  */
 	@Override
@@ -491,13 +486,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for thursday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_4 ()
+	public java.sql.Timestamp getPreparationTime_4 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_4);
 	}
 
 	/** Set Bereitstellungszeit Fr.
-		@param PreparationTime_5
+		@param PreparationTime_5 
 		Preparation time for Friday
 	  */
 	@Override
@@ -510,13 +505,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for Friday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_5 ()
+	public java.sql.Timestamp getPreparationTime_5 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_5);
 	}
 
 	/** Set Bereitstellungszeit Sa.
-		@param PreparationTime_6
+		@param PreparationTime_6 
 		Preparation time for Saturday
 	  */
 	@Override
@@ -529,13 +524,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for Saturday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_6 ()
+	public java.sql.Timestamp getPreparationTime_6 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_6);
 	}
 
 	/** Set Bereitstellungszeit So.
-		@param PreparationTime_7
+		@param PreparationTime_7 
 		Preparation time for Sunday
 	  */
 	@Override
@@ -548,13 +543,13 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Preparation time for Sunday
 	  */
 	@Override
-	public java.sql.Timestamp getPreparationTime_7 ()
+	public java.sql.Timestamp getPreparationTime_7 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_7);
 	}
 
 	/** Set Gültig ab.
-		@param ValidFrom
+		@param ValidFrom 
 		Gültig ab inklusiv (erster Tag)
 	  */
 	@Override
@@ -567,7 +562,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		@return Gültig ab inklusiv (erster Tag)
 	  */
 	@Override
-	public java.sql.Timestamp getValidFrom ()
+	public java.sql.Timestamp getValidFrom () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}

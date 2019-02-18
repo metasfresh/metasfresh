@@ -5,18 +5,16 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Phonecall_Schema
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_C_Phonecall_Schema extends org.compiere.model.PO implements I_C_Phonecall_Schema, org.compiere.model.I_Persistent
+public class X_C_Phonecall_Schema extends org.compiere.model.PO implements I_C_Phonecall_Schema, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-
-	private static final long serialVersionUID = 1717641416L;
-
+	private static final long serialVersionUID = -168721881L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schema (Properties ctx, int C_Phonecall_Schema_ID, String trxName)
@@ -25,9 +23,7 @@ public class X_C_Phonecall_Schema extends org.compiere.model.PO implements I_C_P
       /** if (C_Phonecall_Schema_ID == 0)
         {
 			setC_Phonecall_Schema_ID (0);
-
 			setName (null);
-
         } */
     }
 
@@ -51,16 +47,16 @@ public class X_C_Phonecall_Schema extends org.compiere.model.PO implements I_C_P
 	@Override
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID)
 	{
-		if (C_Phonecall_Schema_ID < 1)
+		if (C_Phonecall_Schema_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schema_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schema_ID, Integer.valueOf(C_Phonecall_Schema_ID));
 	}
 
 	/** Get Anrufliste.
 		@return Anrufliste	  */
 	@Override
-	public int getC_Phonecall_Schema_ID ()
+	public int getC_Phonecall_Schema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Schema_ID);
 		if (ii == null)
@@ -69,7 +65,7 @@ public class X_C_Phonecall_Schema extends org.compiere.model.PO implements I_C_P
 	}
 
 	/** Set Name.
-		@param Name
+		@param Name 
 		Alphanumeric identifier of the entity
 	  */
 	@Override
@@ -82,7 +78,7 @@ public class X_C_Phonecall_Schema extends org.compiere.model.PO implements I_C_P
 		@return Alphanumeric identifier of the entity
 	  */
 	@Override
-	public java.lang.String getName ()
+	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
