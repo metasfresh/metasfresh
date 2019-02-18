@@ -3,7 +3,7 @@ package de.metas.dataentry.data;
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -89,16 +90,27 @@ public class DataEntryRecordRepository
 
 		return DataEntryRecord
 				.builder()
-				.fields(fields)
-				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubGroup_ID()))
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
+				.isNew(false)
+				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubGroup_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
+				.fields(fields)
 				.build();
 	}
 
 	public DataEntryRecordId save(@NonNull final DataEntryRecord dataEntryRecord)
 	{
-		final I_DataEntry_Record dataRecord = loadOrNew(dataEntryRecord.getId(), I_DataEntry_Record.class);
+		final I_DataEntry_Record dataRecord;
+		if (dataEntryRecord.isNew())
+		{
+			dataRecord = newInstance(I_DataEntry_Record.class);
+			dataEntryRecord.getId().ifPresent(id -> dataRecord.setDataEntry_SubGroup_ID(id.getRepoId()));
+		}
+		else
+		{
+			Check.assume(dataEntryRecord.getId().isPresent(), "If isNew=false, then the given dataEntryRecord needs to have an Id dataEntryRecord= {}", dataEntryRecord);
+			dataRecord = load(dataEntryRecord.getId().get(), I_DataEntry_Record.class);
+		}
 
 		dataRecord.setAD_Table_ID(dataEntryRecord.getMainRecord().getAD_Table_ID());
 		dataRecord.setRecord_ID(dataEntryRecord.getMainRecord().getRecord_ID());

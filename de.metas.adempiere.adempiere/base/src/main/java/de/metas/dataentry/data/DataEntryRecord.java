@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -46,12 +47,15 @@ import lombok.Value;
 @Value
 public class DataEntryRecord
 {
-	/** May be null if not yet persisted */
-	private final DataEntryRecordId id;
+	/** May be empty if not yet persisted */
+	Optional<DataEntryRecordId> id;
 
-	private final DataEntrySubGroupId dataEntrySubGroupId;
+	/** If {@code true}, then the repository shall create a new DB record. */
+	boolean isNew;
 
-	private final ITableRecordReference mainRecord;
+	DataEntrySubGroupId dataEntrySubGroupId;
+
+	ITableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
 	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
@@ -59,11 +63,13 @@ public class DataEntryRecord
 	@Builder
 	private DataEntryRecord(
 			@Nullable final DataEntryRecordId id,
+			final boolean isNew,
 			@NonNull final ITableRecordReference mainRecord,
 			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
 			@NonNull final List<DataEntryRecordField<?>> fields)
 	{
-		this.id = id;
+		this.id = Optional.ofNullable(id);
+		this.isNew = isNew;
 		this.mainRecord = mainRecord;
 		this.dataEntrySubGroupId = dataEntrySubGroupId;
 

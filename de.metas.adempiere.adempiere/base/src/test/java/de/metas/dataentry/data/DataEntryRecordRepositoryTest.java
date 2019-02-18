@@ -77,6 +77,7 @@ public class DataEntryRecordRepositoryTest
 		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
+				.isNew(true)
 				.dataEntrySubGroupId(dataEntrySubGroupId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(ImmutableList.of())
@@ -102,6 +103,7 @@ public class DataEntryRecordRepositoryTest
 
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
+				.isNew(true)
 				.dataEntrySubGroupId(dataEntrySubGroupId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
@@ -140,7 +142,7 @@ public class DataEntryRecordRepositoryTest
 		// invoke the method under test
 		final DataEntryRecord result = dataEntryRecordRepository.getBy(dataEntrySubGroupId, tableRecordReference);
 
-		assertThat(result.getId().getRepoId()).isEqualTo(record.getDataEntry_Record_ID());
+		assertThat(result.getId().get().getRepoId()).isEqualTo(record.getDataEntry_Record_ID());
 		assertThat(result.getMainRecord().getAD_Table_ID()).isEqualTo(record.getAD_Table_ID());
 		assertThat(result.getMainRecord().getRecord_ID()).isEqualTo(record.getRecord_ID());
 

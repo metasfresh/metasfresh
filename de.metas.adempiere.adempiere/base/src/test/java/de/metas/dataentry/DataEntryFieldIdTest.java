@@ -1,9 +1,10 @@
 package de.metas.dataentry;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.Getter;
+import org.junit.Test;
+
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
@@ -27,31 +28,26 @@ import lombok.Getter;
  * #L%
  */
 
-public enum FieldType
+public class DataEntryFieldIdTest
 {
-	SUB_GROUP_ID(Integer.class),
-	PARENT_LINK_ID(Integer.class),
 
-	CREATED(ZonedDateTime.class),
-	CREATED_BY(Integer.class),
-	UPDATED(ZonedDateTime.class),
-	UPDATED_BY(Integer.class),
-
-	STRING(String.class),
-
-	NUMBER(BigDecimal.class),
-
-	DATE(ZonedDateTime.class),
-
-	LIST(DataEntryListValueId.class),
-
-	YESNO(Boolean.class);
-
-	@Getter
-	private final Class<?> clazz;
-
-	private FieldType(Class<?> clazz)
+	@Test
+	public void serializeToJSON()
 	{
-		this.clazz = clazz;
+		final JSONObjectMapper<DataEntryFieldId> objectMapper = JSONObjectMapper.forClass(DataEntryFieldId.class);
+		final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(30);
+
+		final String result = objectMapper.toString(dataEntryFieldId);
+		assertThat(result).isEqualTo("30");
 	}
+
+	@Test
+	public void deserializeFromJSON()
+	{
+		final JSONObjectMapper<DataEntryFieldId> objectMapper = JSONObjectMapper.forClass(DataEntryFieldId.class);
+
+		final DataEntryFieldId result = objectMapper.fromString("30");
+		assertThat(result).isEqualTo(DataEntryFieldId.ofRepoId(30));
+	}
+
 }
