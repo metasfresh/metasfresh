@@ -1,5 +1,10 @@
 package de.metas.phonecall.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import org.compiere.model.I_C_Phonecall_Schedule;
 import org.springframework.stereotype.Repository;
 
 import de.metas.phonecall.PhonecallSchedule;
@@ -32,6 +37,26 @@ public class PhonecallScheduleRepository
 {
 	public void save(@NonNull final PhonecallSchedule schedule)
 	{
+		final I_C_Phonecall_Schedule phonecallScheduleRecord;
+
+		if (schedule.getId() == null)
+		{
+			phonecallScheduleRecord = newInstance(I_C_Phonecall_Schedule.class);
+		}
+		else
+		{
+			phonecallScheduleRecord = load(schedule.getId().getRepoId(), I_C_Phonecall_Schedule.class);
+		}
+
+		phonecallScheduleRecord.setC_BPartner_ID(schedule.getBpartnerAndLocationId().getBpartnerId().getRepoId());
+		phonecallScheduleRecord.setC_BPartner_Location_ID(schedule.getBpartnerAndLocationId().getRepoId());
+		phonecallScheduleRecord.setAD_User_ID(schedule.getContactId().getRepoId());
+
+		phonecallScheduleRecord.setC_Phonecall_Schema_ID(schedule.getSchemaVersionLineId().getPhonecallSchemaId().getRepoId());
+		phonecallScheduleRecord.setC_Phonecall_Schema_Version_ID(schedule.getSchemaVersionLineId().getPhonecallSchemaVersionId().getRepoId());
+		phonecallScheduleRecord.setC_Phonecall_Schema_Version_Line_ID(schedule.getSchemaVersionLineId().getRepoId());
+
+		saveRecord(phonecallScheduleRecord);
 
 	}
 }

@@ -3,10 +3,13 @@ package de.metas.phonecall;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.user.UserId;
 
 import de.metas.bpartner.BPartnerLocationId;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,8 +33,12 @@ import lombok.NonNull;
  * #L%
  */
 
+@Value
 public class PhonecallSchedule
 {
+	@Nullable
+	PhonecallScheduleId id;
+
 	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;
 
@@ -47,4 +54,5 @@ public class PhonecallSchedule
 
 	@NonNull
 	PhonecallSchemaVersionLineId schemaVersionLineId;
+
 }
