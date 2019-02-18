@@ -4,35 +4,41 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for C_Phonecall_Data
+/** Generated Model for C_Phonecall_Schedule
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_C_Phonecall_Data extends org.compiere.model.PO implements I_C_Phonecall_Data, org.compiere.model.I_Persistent 
+public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C_Phonecall_Schedule, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 385651007L;
+	private static final long serialVersionUID = -402851475L;
 
     /** Standard Constructor */
-    public X_C_Phonecall_Data (Properties ctx, int C_Phonecall_Data_ID, String trxName)
+    public X_C_Phonecall_Schedule (Properties ctx, int C_Phonecall_Schedule_ID, String trxName)
     {
-      super (ctx, C_Phonecall_Data_ID, trxName);
-      /** if (C_Phonecall_Data_ID == 0)
+      super (ctx, C_Phonecall_Schedule_ID, trxName);
+      /** if (C_Phonecall_Schedule_ID == 0)
         {
 			setAD_User_ID (0);
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
-			setC_Phonecall_Data_ID (0);
+			setC_Phonecall_Schedule_ID (0);
+			setC_Phonecall_Schema_ID (0);
+			setC_Phonecall_Schema_Version_ID (0);
+			setC_Phonecall_Schema_Version_Line_ID (0);
 			setIsManualPhonecall (false); // N
+			setPhonecallDate (new Timestamp( System.currentTimeMillis() ));
+			setPhonecallTimeMax (new Timestamp( System.currentTimeMillis() ));
+			setPhonecallTimeMin (new Timestamp( System.currentTimeMillis() ));
 			setProcessed (false); // N
         } */
     }
 
     /** Load Constructor */
-    public X_C_Phonecall_Data (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Phonecall_Schedule (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -158,22 +164,56 @@ public class X_C_Phonecall_Data extends org.compiere.model.PO implements I_C_Pho
 	}
 
 	/** Set Anruf.
-		@param C_Phonecall_Data_ID Anruf	  */
+		@param C_Phonecall_Schedule_ID Anruf	  */
 	@Override
-	public void setC_Phonecall_Data_ID (int C_Phonecall_Data_ID)
+	public void setC_Phonecall_Schedule_ID (int C_Phonecall_Schedule_ID)
 	{
-		if (C_Phonecall_Data_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Data_ID, null);
+		if (C_Phonecall_Schedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schedule_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Data_ID, Integer.valueOf(C_Phonecall_Data_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schedule_ID, Integer.valueOf(C_Phonecall_Schedule_ID));
 	}
 
 	/** Get Anruf.
 		@return Anruf	  */
 	@Override
-	public int getC_Phonecall_Data_ID () 
+	public int getC_Phonecall_Schedule_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Data_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Schedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Phonecall_Schema getC_Phonecall_Schema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Phonecall_Schema_ID, org.compiere.model.I_C_Phonecall_Schema.class);
+	}
+
+	@Override
+	public void setC_Phonecall_Schema(org.compiere.model.I_C_Phonecall_Schema C_Phonecall_Schema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_ID, org.compiere.model.I_C_Phonecall_Schema.class, C_Phonecall_Schema);
+	}
+
+	/** Set Anrufliste.
+		@param C_Phonecall_Schema_ID Anrufliste	  */
+	@Override
+	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID)
+	{
+		if (C_Phonecall_Schema_ID < 1) 
+			set_Value (COLUMNNAME_C_Phonecall_Schema_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Phonecall_Schema_ID, Integer.valueOf(C_Phonecall_Schema_ID));
+	}
+
+	/** Get Anrufliste.
+		@return Anrufliste	  */
+	@Override
+	public int getC_Phonecall_Schema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Schema_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -213,6 +253,40 @@ public class X_C_Phonecall_Data extends org.compiere.model.PO implements I_C_Pho
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_Phonecall_Schema_Version_Line getC_Phonecall_Schema_Version_Line() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, org.compiere.model.I_C_Phonecall_Schema_Version_Line.class);
+	}
+
+	@Override
+	public void setC_Phonecall_Schema_Version_Line(org.compiere.model.I_C_Phonecall_Schema_Version_Line C_Phonecall_Schema_Version_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, org.compiere.model.I_C_Phonecall_Schema_Version_Line.class, C_Phonecall_Schema_Version_Line);
+	}
+
+	/** Set Anrufliste Position.
+		@param C_Phonecall_Schema_Version_Line_ID Anrufliste Position	  */
+	@Override
+	public void setC_Phonecall_Schema_Version_Line_ID (int C_Phonecall_Schema_Version_Line_ID)
+	{
+		if (C_Phonecall_Schema_Version_Line_ID < 1) 
+			set_Value (COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, Integer.valueOf(C_Phonecall_Schema_Version_Line_ID));
+	}
+
+	/** Get Anrufliste Position.
+		@return Anrufliste Position	  */
+	@Override
+	public int getC_Phonecall_Schema_Version_Line_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phonecall_Schema_Version_Line_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Manuell.
 		@param IsManualPhonecall Manuell	  */
 	@Override
@@ -237,35 +311,51 @@ public class X_C_Phonecall_Data extends org.compiere.model.PO implements I_C_Pho
 	}
 
 	/** Set Anrufdatum.
-		@param PhonecallDateTime Anrufdatum	  */
+		@param PhonecallDate Anrufdatum	  */
 	@Override
-	public void setPhonecallDateTime (java.sql.Timestamp PhonecallDateTime)
+	public void setPhonecallDate (java.sql.Timestamp PhonecallDate)
 	{
-		set_Value (COLUMNNAME_PhonecallDateTime, PhonecallDateTime);
+		set_Value (COLUMNNAME_PhonecallDate, PhonecallDate);
 	}
 
 	/** Get Anrufdatum.
 		@return Anrufdatum	  */
 	@Override
-	public java.sql.Timestamp getPhonecallDateTime () 
+	public java.sql.Timestamp getPhonecallDate () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallDateTime);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallDate);
 	}
 
-	/** Set Anrufzeit (inkl. Puffer).
-		@param PhonecallDateTimeMax Anrufzeit (inkl. Puffer)	  */
+	/** Set PhonecallTimeMax.
+		@param PhonecallTimeMax PhonecallTimeMax	  */
 	@Override
-	public void setPhonecallDateTimeMax (java.sql.Timestamp PhonecallDateTimeMax)
+	public void setPhonecallTimeMax (java.sql.Timestamp PhonecallTimeMax)
 	{
-		set_Value (COLUMNNAME_PhonecallDateTimeMax, PhonecallDateTimeMax);
+		set_Value (COLUMNNAME_PhonecallTimeMax, PhonecallTimeMax);
 	}
 
-	/** Get Anrufzeit (inkl. Puffer).
-		@return Anrufzeit (inkl. Puffer)	  */
+	/** Get PhonecallTimeMax.
+		@return PhonecallTimeMax	  */
 	@Override
-	public java.sql.Timestamp getPhonecallDateTimeMax () 
+	public java.sql.Timestamp getPhonecallTimeMax () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallDateTimeMax);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallTimeMax);
+	}
+
+	/** Set PhonecallTimeMin.
+		@param PhonecallTimeMin PhonecallTimeMin	  */
+	@Override
+	public void setPhonecallTimeMin (java.sql.Timestamp PhonecallTimeMin)
+	{
+		set_Value (COLUMNNAME_PhonecallTimeMin, PhonecallTimeMin);
+	}
+
+	/** Get PhonecallTimeMin.
+		@return PhonecallTimeMin	  */
+	@Override
+	public java.sql.Timestamp getPhonecallTimeMin () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallTimeMin);
 	}
 
 	/** Set Verarbeitet.
