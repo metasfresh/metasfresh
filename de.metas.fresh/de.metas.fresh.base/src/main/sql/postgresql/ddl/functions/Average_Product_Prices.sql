@@ -39,7 +39,7 @@ SELECT
 	, ic.qtyOrdered AS Menge
 	, iol.MovementQty AS Menge_Lieferung
 	, uom.uomsymbol AS Mengenenheit
-	, 
+	, round(
 		COALESCE( 
 			(SELECT avg(il.PriceActual) 
 					FROM C_Invoice_Line_Alloc ila 
@@ -52,9 +52,11 @@ SELECT
 						AND il.IsActive = 'Y'
 			),  
 			ic.PriceActual_Net_Effective)
+		,
+		4) 
 		AS Preis
 	,COALESCE((CASE WHEN c.iso_code != 'CHF'
-		THEN currencyConvert(COALESCE( 
+		THEN ROUND(currencyConvert(COALESCE( 
 			(SELECT avg(il.PriceActual) 
 					FROM C_Invoice_Line_Alloc ila 
 					JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
@@ -72,9 +74,9 @@ SELECT
 			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
 			, ic.AD_Client_ID
 			, ic.AD_Org_ID --ad_org_id
-			)::text
-		ELSE (
-		COALESCE (
+			), 4)::text
+		ELSE ROUND(
+		COALESCE( 
 			(SELECT avg(il.PriceActual) 
 					FROM C_Invoice_Line_Alloc ila 
 					JOIN C_InvoiceLine il ON ila.C_InvoiceLine_ID = il.C_InvoiceLine_ID
@@ -85,7 +87,7 @@ SELECT
 						AND i.IsActive = 'Y'
 						AND il.IsActive = 'Y'
 			),  
-			ic.PriceActual_Net_Effective) :: numeric * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty))::text
+			ic.PriceActual_Net_Effective) * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty), 4)::text
 	END ), 'Missing Conversion'::text ) AS BetragCHF
 	
 	
