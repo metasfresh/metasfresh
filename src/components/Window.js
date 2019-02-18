@@ -49,30 +49,30 @@ class Window extends PureComponent {
         caption,
         description,
         elements,
+        sections,
         internalName,
         emptyResultText,
         emptyResultHint,
         queryOnActivate,
         supportQuickInput,
         defaultOrderBys,
+        singleRowDetailView,
       } = elem;
       elem.tabIndex = this.tabIndex.tabs;
-
       if (parentTab) {
         elem.parentTab = parentTab;
       }
 
-      const renderSingle = false;
-      // rowData.size &&
-      // rowData.get(`${tabId}`) &&
-      // rowData.get(`${tabId}`).size === 1
-      //   ? true
-      //   : false;
-
       tabsByIds[elem.tabId] = elem;
 
+      const renderSingle = singleRowDetailView || false;
+
       if (renderSingle) {
-        tabsArray.push(<div key={tabId}>Single entry ! </div>);
+        tabsArray.push(
+          <div key={tabId} className="tab-sections">
+            {sections && this.renderSections(sections, true)}
+          </div>
+        );
       } else {
         tabsArray.push(
           <Table
