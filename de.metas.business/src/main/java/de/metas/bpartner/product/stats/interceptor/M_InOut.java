@@ -63,8 +63,19 @@ public class M_InOut
 			return;
 		}
 
+		if (isReversal(inout))
+		{
+			// this is the reversal completion. no need to fire event because a reversal event will be fired
+			return;
+		}
+
 		final boolean reversal = false;
 		eventSender.send(createInOutChangedEvent(inout, reversal));
+	}
+
+	private boolean isReversal(final I_M_InOut inout)
+	{
+		return inout.getM_InOut_ID() > 0;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE })
