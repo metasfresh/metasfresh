@@ -554,6 +554,16 @@ export class DocumentList extends Component {
             );
           }
         });
+
+        // process modal specific
+        const { parentViewId, parentWindowId } = response.data;
+
+        dispatch(
+          updateRawModal(windowType, {
+            parentViewId,
+            parentWindowId,
+          })
+        );
       }
 
       dispatch(indicatorState('saved'));
