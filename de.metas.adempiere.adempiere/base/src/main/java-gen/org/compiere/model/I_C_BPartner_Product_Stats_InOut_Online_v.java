@@ -1,24 +1,24 @@
 package org.compiere.model;
 
 
-/** Generated Interface for C_BPartner_Product_Stats_Online_V
+/** Generated Interface for C_BPartner_Product_Stats_InOut_Online_v
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_BPartner_Product_Stats_Online_V 
+public interface I_C_BPartner_Product_Stats_InOut_Online_v 
 {
 
-    /** TableName=C_BPartner_Product_Stats_Online_V */
-    public static final String Table_Name = "C_BPartner_Product_Stats_Online_V";
+    /** TableName=C_BPartner_Product_Stats_InOut_Online_v */
+    public static final String Table_Name = "C_BPartner_Product_Stats_InOut_Online_v";
 
     /** AD_Table_ID=541172 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System
+    /** AccessLevel = 2 - Client
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
 
     /** Load Meta Data */
 
@@ -35,7 +35,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_Client>(I_C_BPartner_Product_Stats_Online_V.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_Client>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_Org>(I_C_BPartner_Product_Stats_Online_V.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_Org>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -93,7 +93,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_C_BPartner>(I_C_BPartner_Product_Stats_Online_V.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_C_BPartner>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -108,7 +108,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object>(I_C_BPartner_Product_Stats_Online_V.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -123,7 +123,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_User>(I_C_BPartner_Product_Stats_Online_V.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_User>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -148,7 +148,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object>(I_C_BPartner_Product_Stats_Online_V.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -171,7 +171,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public java.sql.Timestamp getLastReceiptDate();
 
     /** Column definition for LastReceiptDate */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object> COLUMN_LastReceiptDate = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object>(I_C_BPartner_Product_Stats_Online_V.class, "LastReceiptDate", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object> COLUMN_LastReceiptDate = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "LastReceiptDate", null);
     /** Column name LastReceiptDate */
     public static final String COLUMNNAME_LastReceiptDate = "LastReceiptDate";
 
@@ -194,7 +194,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public java.sql.Timestamp getLastShipDate();
 
     /** Column definition for LastShipDate */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object> COLUMN_LastShipDate = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object>(I_C_BPartner_Product_Stats_Online_V.class, "LastShipDate", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object> COLUMN_LastShipDate = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "LastShipDate", null);
     /** Column name LastShipDate */
     public static final String COLUMNNAME_LastShipDate = "LastShipDate";
 
@@ -223,7 +223,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_M_Product>(I_C_BPartner_Product_Stats_Online_V.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_M_Product>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -238,7 +238,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, Object>(I_C_BPartner_Product_Stats_Online_V.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, Object>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -253,7 +253,7 @@ public interface I_C_BPartner_Product_Stats_Online_V
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_Online_V, org.compiere.model.I_AD_User>(I_C_BPartner_Product_Stats_Online_V.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Product_Stats_InOut_Online_v, org.compiere.model.I_AD_User>(I_C_BPartner_Product_Stats_InOut_Online_v.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
