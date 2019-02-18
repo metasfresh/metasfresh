@@ -21,8 +21,6 @@ Here come the actual release notes:
   * [#2169](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2169) Host google fonts locally
   * [#2158](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2158) Modal view: Cancel button support
 
-# Fixes
-
 # metasfresh 5.90
 # Features
 * metasfresh
