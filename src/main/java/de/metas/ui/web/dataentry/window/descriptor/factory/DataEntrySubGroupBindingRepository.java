@@ -1,13 +1,15 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static de.metas.util.Check.fail;
+import static de.metas.util.Check.assumeNotNull;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.user.UserId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -15,15 +17,18 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordId;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.model.I_DataEntry_Record;
+import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
@@ -31,6 +36,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -134,19 +140,32 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	public SaveResult save(@NonNull final Document document)
 	{
 		assertValidState(document);
-		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 
-		final DataEntryRecord dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordId);
-
-		dataEntryRecord.clearRecordFields();
+		final DataEntryRecord dataEntryRecord;
+		if (document.isNew())
+		{
+			dataEntryRecord = createDataEntryRecordId(document);
+		}
+		else
+		{
+			final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
+			dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordId);
+			dataEntryRecord.clearRecordFields();
+		}
 
 		final UserId userId = UserId.ofRepoId(Env.getAD_User_ID(document.getCtx()));
 
 		for (final IDocumentFieldView fieldView : document.getFieldViews())
 		{
 			final DataEntryFieldBindingDescriptor dataBinding = fieldView.getDescriptor().getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
+			final FieldType fieldType = dataBinding.getFieldType();
+			if (fieldType.equals(FieldType.SUB_GROUP_ID)
+					|| fieldType.equals(FieldType.PARENT_LINK_ID))
+			{
+				continue;
+			}
 
-			final Object dataEntryFieldValue = extractFieldValue(fieldView.getValue(), dataBinding.getFieldType());
+			final Object dataEntryFieldValue = extractFieldValue(fieldView.getValue(), fieldType);
 
 			final String fieldName = fieldView.getFieldName();
 			final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName)); // TODO extract this code and the code form DataEntryTabLoader into a common class
@@ -158,6 +177,32 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 		return SaveResult.SAVED;
 
+	}
+
+	private DataEntryRecord createDataEntryRecordId(@NonNull final Document document)
+	{
+		final DataEntryRecord dataEntryRecord;
+		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
+
+		final Document parentDocument = assumeNotNull(
+				document.getParentDocument(),
+				"DataEntry document needs to have a parent document; document={}", document);
+		final String tableName = assumeNotNull(
+				parentDocument.getEntityDescriptor().getTableNameOrNull(),
+				"The parent of dataEntry a document needs to have a table name; document={}, parentDocument={}", document, parentDocument);
+
+		final DetailId detailId = document.getEntityDescriptor().getDetailId();
+		final int subGroupId = detailId.getIdInt();
+		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubGroup.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubGroup.Table_Name);
+
+		dataEntryRecord = DataEntryRecord.builder()
+				.id(dataEntryRecordId)
+				.isNew(true)
+				.mainRecord(TableRecordReference.of(tableName, parentDocument.getDocumentIdAsInt()))
+				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(subGroupId))
+				.fields(ImmutableList.of())
+				.build();
+		return dataEntryRecord;
 	}
 
 	private Object extractFieldValue(
@@ -173,24 +218,40 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		switch (fieldType)
 		{
 			case DATE:
-				result = fieldType.getClass().cast(value);
+				result = fieldType.getClazz().cast(value);
 				break;
 			case LIST:
-				result = fieldType.getClass().cast(value);
+				result = fieldType.getClazz().cast(value);
 				break;
 			case NUMBER:
-				result = fieldType.getClass().cast(value);
+				result = fieldType.getClazz().cast(value);
 				break;
 			case STRING:
-				result = fieldType.getClass().cast(value);
+				result = fieldType.getClazz().cast(value);
 				break;
 			case YESNO:
-				result = fieldType.getClass().cast(value);
+				result = fieldType.getClazz().cast(value);
+				break;
+			case CREATED:
+				result = fieldType.getClazz().cast(value);
+				break;
+			case CREATED_BY:
+				result = fieldType.getClazz().cast(value);
+				break;
+			case UPDATED:
+				result = fieldType.getClazz().cast(value);
+				break;
+			case UPDATED_BY:
+				result = fieldType.getClazz().cast(value);
+				break;
+			case PARENT_LINK_ID:
+				result = fieldType.getClazz().cast(value);
+				break;
+			case SUB_GROUP_ID:
+				result = fieldType.getClazz().cast(value);
 				break;
 			default:
-				fail("Unexpected fieldType={}", fieldType);
-				result = null;
-				break;
+				throw new AdempiereException("Unexpected fieldType=" + fieldType);
 		}
 
 		return result;

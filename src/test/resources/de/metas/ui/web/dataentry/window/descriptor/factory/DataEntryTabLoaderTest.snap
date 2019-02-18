@@ -3,7 +3,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
     {
       "documentType" : "Window",
       "documentTypeId" : "5",
-      "id" : "Window-5-10",
+      "id" : "Window-5-DataEntry_Group-10",
       "internalName" : "dataEntryGroup_internalName",
       "caption" : {
         "value" : "dataEntryGroup_caption",
@@ -13,7 +13,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "value" : "dataEntryGroup_description",
         "anyLanguage" : false
       },
-      "detailId" : "10",
+      "detailId" : "DataEntry_Group-10",
       "allowCreateNewLogic" : "1=0",
       "allowDeleteLogic" : "1=0",
       "readonlyLogic" : "1=0",
@@ -22,10 +22,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "fields" : { },
       "idFields" : [ ],
       "includedEntitiesByDetailId" : {
-        "40" : {
+        "DataEntry_SubGroup-20" : {
           "documentType" : "Window",
           "documentTypeId" : "5",
-          "id" : "Window-5-40",
+          "id" : "Window-5-DataEntry_SubGroup-20",
           "internalName" : "dataEntrySubGroup_internalName",
           "caption" : {
             "value" : "dataEntrySubGroup_caption",
@@ -35,7 +35,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "value" : "dataEntrySubGroup_description",
             "anyLanguage" : false
           },
-          "detailId" : "40",
+          "detailId" : "DataEntry_SubGroup-20",
           "allowCreateNewLogic" : "1=1",
           "allowDeleteLogic" : "1=1",
           "readonlyLogic" : "1=0",
@@ -52,7 +52,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "stringField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -103,7 +103,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "numberField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -154,7 +154,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "dateField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -205,7 +205,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "yesNoField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -256,7 +256,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "listField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -300,8 +300,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     },
                     "dataEntryFieldId" : 35,
-                    "numericKey" : false,
-                    "cached" : true
+                    "cached" : true,
+                    "numericKey" : false
                   },
                   "highVolume" : false,
                   "numericKey" : true
@@ -349,7 +349,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -379,7 +379,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
-                  "fieldType" : "RECORD_ID",
+                  "fieldType" : "SUB_GROUP_ID",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -400,7 +400,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : true,
@@ -454,7 +454,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "40",
+              "detailId" : "DataEntry_SubGroup-20",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -484,7 +484,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
-                  "fieldType" : "RECORD_ID",
+                  "fieldType" : "SUB_GROUP_ID",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -506,7 +506,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "value" : "",
               "anyLanguage" : true
             },
-            "detailId" : "40",
+            "detailId" : "DataEntry_SubGroup-20",
             "key" : false,
             "calculated" : false,
             "parentLink" : true,
@@ -610,7 +610,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   [
     {
       "windowId" : "5",
-      "detailId" : "10",
+      "detailId" : "DataEntry_Group-10",
       "internalName" : "dataEntryGroup_internalName",
       "caption" : {
         "value" : "dataEntryGroup_caption",
@@ -626,7 +626,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "subTabLayouts" : [
         {
           "windowId" : "5",
-          "detailId" : "40",
+          "detailId" : "DataEntry_SubGroup-20",
           "internalName" : "dataEntrySubGroup_internalName",
           "caption" : {
             "value" : "dataEntrySubGroup_caption",
@@ -1573,14 +1573,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   [
     {
       "windowId" : "5",
-      "tabId" : "10",
+      "tabId" : "DataEntry_Group-10",
       "internalName" : "dataEntryGroup_internalName",
       "caption" : "dataEntryGroup_caption",
       "description" : "dataEntryGroup_description",
       "tabs" : [
         {
           "windowId" : "5",
-          "tabId" : "40",
+          "tabId" : "DataEntry_SubGroup-20",
           "internalName" : "dataEntrySubGroup_internalName",
           "caption" : "dataEntrySubGroup_caption",
           "description" : "dataEntrySubGroup_description",

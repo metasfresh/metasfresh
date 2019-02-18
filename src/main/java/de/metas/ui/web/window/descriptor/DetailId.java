@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
+import static de.metas.util.Check.assumeNotEmpty;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
@@ -16,8 +18,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -47,35 +51,49 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class DetailId implements Comparable<DetailId>
 {
+	private static final String PARTS_SEPARATOR = "-";
+
+	private static final String PREFIX_AD_TAB_ID = "AD_Tab";
+
 	public static DetailId fromAD_Tab_ID(final int adTabId)
 	{
-		return new DetailId(AdTabId.ofRepoId(adTabId));
+		return new DetailId(PREFIX_AD_TAB_ID, adTabId);
+	}
+
+	public static DetailId fromPrefixAndId(final String prefix, final int id)
+	{
+		return new DetailId(prefix, id);
 	}
 
 	@JsonCreator
-	public static final DetailId fromJson(String json)
+	public static final DetailId fromJson(@Nullable final String json)
 	{
 		if (json == null)
 		{
 			return null;
 		}
 
-		json = json.trim();
-		if (json.isEmpty())
+		final String jsonToUse = json.trim();
+		if (jsonToUse.isEmpty())
 		{
 			return null;
 		}
 
-		final int adTabId = Integer.parseInt(json);
-		return fromAD_Tab_ID(adTabId);
+		final String[] prefixAndId = jsonToUse.split(PARTS_SEPARATOR);
+		Check.assume(prefixAndId.length == 2, "The given json need to consist for a prefix and the actual ID, separated by {}; json={}", PARTS_SEPARATOR, json);
+
+		final String prefix = prefixAndId[0];
+		final int idInt = Integer.parseInt(prefixAndId[1]);
+
+		return DetailId.fromPrefixAndId(prefix, idInt);
 	}
 
-	public static final String toJson(final DetailId detailId)
+	public static final String toJson(@Nullable final DetailId detailId)
 	{
-		return detailId == null ? null : String.valueOf(detailId.adTabId.getRepoId());
+		return detailId == null ? null : (detailId.idPrefix + PARTS_SEPARATOR + detailId.idInt);
 	}
 
-	public static final Set<String> toJson(final Collection<DetailId> detailIds)
+	public static final Set<String> toJson(@Nullable final Collection<DetailId> detailIds)
 	{
 		if (detailIds == null || detailIds.isEmpty())
 		{
@@ -85,13 +103,21 @@ public final class DetailId implements Comparable<DetailId>
 		return detailIds.stream().map(detailId -> detailId.toJson()).collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private final AdTabId adTabId;
+	@Getter
+	private final String idPrefix;
+
+	@Getter
+	private final int idInt;
 
 	private transient String _tableAlias = null; // lazy
 
-	private DetailId(@NonNull final AdTabId adTabId)
+	private DetailId(@NonNull final String idPrefix, final int idInt)
 	{
-		this.adTabId = adTabId;
+		assumeNotEmpty(idPrefix, "idPrefix");
+		Check.assume(!idPrefix.contains(PARTS_SEPARATOR), "The given prefix may not contain the the parts-separator={}; prefix={}", PARTS_SEPARATOR, idPrefix);
+
+		this.idPrefix = idPrefix;
+		this.idInt = idInt;
 	}
 
 	@Override
@@ -110,14 +136,18 @@ public final class DetailId implements Comparable<DetailId>
 	{
 		if (_tableAlias == null)
 		{
-			_tableAlias = "d" + adTabId.getRepoId();
+			_tableAlias = "d" + idInt;
 		}
 		return _tableAlias;
 	}
 
 	public AdTabId toAdTabId()
 	{
-		return adTabId;
+		if (PREFIX_AD_TAB_ID.equals(idPrefix))
+		{
+			return AdTabId.ofRepoId(idInt);
+		}
+		return null;
 	}
 
 	@Override

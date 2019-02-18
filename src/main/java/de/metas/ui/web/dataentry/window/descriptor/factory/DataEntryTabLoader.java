@@ -23,6 +23,7 @@ import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryGroupRepository;
 import de.metas.dataentry.layout.DataEntrySubGroup;
+import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -347,7 +348,7 @@ public class DataEntryTabLoader
 		final DocumentFieldDataBindingDescriptor dataBinding = new DataEntryFieldBindingDescriptor(
 				I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID,
 				true/* mandatory */,
-				FieldType.RECORD_ID);
+				FieldType.SUB_GROUP_ID);
 
 		return DocumentFieldDescriptor.builder(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
 				.setCaption(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
@@ -445,12 +446,12 @@ public class DataEntryTabLoader
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)
 	{
-		return DetailId.fromAD_Tab_ID(dataEntryGroup.getId().getRepoId());
+		return DetailId.fromPrefixAndId(I_DataEntry_Group.Table_Name, dataEntryGroup.getId().getRepoId());
 	}
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntrySubGroup dataEntrySubGroup)
 	{
-		return DetailId.fromAD_Tab_ID(dataEntrySubGroup.getId().getRepoId() * 2); // TODO allow detail-ID with letter-prefix?
+		return DetailId.fromPrefixAndId(I_DataEntry_SubGroup.Table_Name, dataEntrySubGroup.getId().getRepoId());
 	}
 
 	private static DocumentFieldWidgetType ofFieldType(@NonNull final FieldType fieldType)
@@ -475,7 +476,7 @@ public class DataEntryTabLoader
 				return DocumentFieldWidgetType.DateTime;
 			case UPDATED_BY:
 				return DocumentFieldWidgetType.Lookup;
-			case RECORD_ID:
+			case SUB_GROUP_ID:
 				return DocumentFieldWidgetType.Integer;
 			case PARENT_LINK_ID:
 				return DocumentFieldWidgetType.Integer;
