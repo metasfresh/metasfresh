@@ -8,7 +8,11 @@ import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
 import { deleteView } from '../../api';
 import { addNotification } from '../../actions/AppActions';
-import { closeModal, closeRawModal } from '../../actions/WindowActions';
+import {
+  closeModal,
+  closeRawModal,
+  openRawModal,
+} from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
@@ -49,9 +53,15 @@ class RawModal extends Component {
     }
   }
 
-  toggleTooltip = visible => {
+  showTooltip = () => {
     this.setState({
-      isTooltipShow: visible,
+      isTooltipShow: true,
+    });
+  };
+
+  hideTooltip = () => {
+    this.setState({
+      isTooltipShow: false,
     });
   };
 
@@ -86,6 +96,7 @@ class RawModal extends Component {
       viewId,
       windowType,
       requests,
+      rawModal,
     } = this.props;
 
     const { isNew } = this.state;
@@ -111,13 +122,19 @@ class RawModal extends Component {
       }
     }
 
-    if (closeCallback) {
-      await closeCallback(isNew);
+    if (type === 'BACK') {
+      await dispatch(
+        openRawModal(rawModal.parentWindowId, rawModal.parentViewId)
+      );
+    } else {
+      if (closeCallback) {
+        await closeCallback(isNew);
+      }
+
+      await this.removeModal();
+
+      await deleteView(windowType, viewId, type);
     }
-
-    await this.removeModal();
-
-    await deleteView(windowType, viewId, type);
   };
 
   removeModal = async () => {
@@ -141,8 +158,9 @@ class RawModal extends Component {
   };
 
   renderButtons = () => {
-    const { modalVisible, rawModalVisible } = this.props;
+    const { modalVisible, rawModal } = this.props;
     let { allowedCloseActions } = this.props;
+    const rawModalVisible = rawModal.visible || false;
     const { isTooltipShow } = this.state;
     const buttonsArray = [];
 
@@ -160,8 +178,8 @@ class RawModal extends Component {
           className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
           onClick={() => this.handleClose(name)}
           tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
-          onMouseEnter={() => this.toggleTooltip(true)}
-          onMouseLeave={() => this.toggleTooltip(false)}
+          onMouseEnter={this.showTooltip}
+          onMouseLeave={this.hideTooltip}
         >
           {counterpart.translate(selector)}
           {isTooltipShow && (
@@ -224,7 +242,7 @@ class RawModal extends Component {
 
 const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible || false,
-  rawModalVisible: windowHandler.rawModal.visible || false,
+  rawModal: windowHandler.rawModal,
   requests: windowHandler.patches.requests,
   success: windowHandler.patches.success,
 });
@@ -239,7 +257,7 @@ RawModal.propTypes = {
   modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
-  rawModalVisible: PropTypes.bool,
+  rawModal: PropTypes.object.isRequired,
   requests: PropTypes.object.isRequired,
   success: PropTypes.bool.isRequired,
 };
