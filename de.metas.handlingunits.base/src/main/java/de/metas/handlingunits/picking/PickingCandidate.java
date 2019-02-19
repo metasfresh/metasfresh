@@ -154,14 +154,6 @@ public class PickingCandidate
 		}
 	}
 
-	private void assertApprovable()
-	{
-		if (!pickStatus.isPickedOrPacked())
-		{
-			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
-		}
-	}
-
 	public void changeStatusToDraft()
 	{
 		setStatus(PickingCandidateStatus.Draft);
@@ -217,7 +209,11 @@ public class PickingCandidate
 	public void reviewPicking(final BigDecimal qtyReview)
 	{
 		assertDraft();
-		assertApprovable();
+
+		if (!pickStatus.isPickedOrPacked() && !pickStatus.isPickRejected())
+		{
+			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
+		}
 
 		this.qtyReview = qtyReview;
 		approvalStatus = computeApprovalStatus(qtyPicked, this.qtyReview, pickStatus);
