@@ -261,7 +261,7 @@ public class ProductsToPickRow implements IViewRow
 
 	public boolean isEligibleForPacking()
 	{
-		return !isProcessed() && isApproved();
+		return !isProcessed() && isApproved() && !pickStatus.isPickRejected();
 	}
 
 	public boolean isEligibleForReview()
