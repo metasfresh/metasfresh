@@ -1,12 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-search-demouser-demo"
+  name: "metasfresh-search-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-search
-    de.metas.deployment.user: "demouser"
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.name: "metasfresh-search-demouser-demo"
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-search-mf15-dev"
   namespace: "default"
 # can be created with kubectl create namespace demo"
 #  namespace: "demo"
@@ -18,8 +18,8 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-search
-        de.metas.deployment.user: "demouser"
-        de.metas.deployment.stage: "demo"
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
     spec:
       containers:
 #
@@ -40,16 +40,16 @@ spec:
             add:
             - IPC_LOCK
         volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
       volumes:
-      - name: host-localtime
-        hostPath:
-          path: /etc/localtime
-      - name: host-timezone
-        hostPath:
-          path: /etc/timezone
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

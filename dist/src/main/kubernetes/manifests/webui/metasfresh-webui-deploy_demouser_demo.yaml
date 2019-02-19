@@ -1,12 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-webui-demouser-demo"
+  name: "metasfresh-webui-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-webui
-    de.metas.deployment.user: "demouser"
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.name: "metasfresh-webui-demouser-demo"
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-webui-mf15-dev"
   namespace: "default"
 # can be created with kubectl create namespace demo"
 #  namespace: "demo"
@@ -18,8 +18,8 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-webui
-        de.metas.deployment.user: "demouser"
-        de.metas.deployment.stage: "demo"
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
     spec:
       containers:
 # webui
@@ -50,7 +50,7 @@ spec:
       initContainers:
         - name: init-wait-for-api
           image: busybox
-          command: ['sh', '-c', 'until nslookup metasfresh-core-stack-demouser-demo; do echo waiting for metasfresh-core-stack-demouser-demo; sleep 2; done;']
+          command: ['sh', '-c', 'until nslookup metasfresh-core-stack-mf15-dev; do echo waiting for metasfresh-core-stack-mf15-dev; sleep 2; done;']
       volumes:
       - name: host-localtime
         hostPath:

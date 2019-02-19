@@ -1,11 +1,11 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-print-demouser-demo"
+  name: "metasfresh-print-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-print
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.user: "mf15"
 spec:
   replicas: 1
   strategy:
@@ -14,13 +14,13 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-print
-        de.metas.deployment.user: "demouser"
-        de.metas.deployment.stage: "demo"
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
     spec:
       containers:
       - env:
         - name: DB_HOST
-          value: "metasfresh-postgresql-demouser-demo"
+          value: "metasfresh-postgresql-mf15-dev"
         - name: DB_PORT
           value: '5432'
         - name: DEBUG_PRINT_BASH_CMDS
@@ -46,17 +46,17 @@ spec:
             memory: 128M
 #            cpu: 500m
         volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
       restartPolicy: Always
       volumes:
-      - name: host-localtime
-        hostPath:
-          path: /etc/localtime
-      - name: host-timezone
-        hostPath:
-          path: /etc/timezone
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone
