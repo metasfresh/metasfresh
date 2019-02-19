@@ -70,6 +70,8 @@ public class ProductsToPickViewFactory implements IViewFactory
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+		//
+		// Reviewer layout profile
 		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(profileId))
 		{
 			return ViewLayout.builder()
@@ -81,6 +83,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
@@ -89,6 +92,8 @@ public class ProductsToPickViewFactory implements IViewFactory
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus))
 					.build();
 		}
+		//
+		// Picker layout profile
 		else
 		{
 			return ViewLayout.builder()
@@ -101,6 +106,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
 							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),

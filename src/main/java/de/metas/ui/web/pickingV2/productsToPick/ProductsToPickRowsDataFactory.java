@@ -18,6 +18,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -170,9 +171,9 @@ class ProductsToPickRowsDataFactory
 	private ProductsToPickRow createRowFromExistingPickingCandidate(final AllocablePackageable packageable, final PickingCandidate existingPickingCandidate)
 	{
 		final Quantity qty;
-		
+
 		final HuId pickFromHUId = existingPickingCandidate.getPickFromHuId();
-		if(pickFromHUId != null)
+		if (pickFromHUId != null)
 		{
 			final ProductId productId = packageable.getProductId();
 			final ReservableStorage storage = getStorage(pickFromHUId, productId);
@@ -257,15 +258,9 @@ class ProductsToPickRowsDataFactory
 
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
-				//
-				.productValue(productInfo.getCode())
-				.productName(productInfo.getName())
-				.productPackageSize(productInfo.getPackageSize())
-				//
+				.productInfo(productInfo)
 				.locator(null) // will be updated from picking candidate
-				//
 				.qty(packageable.getQtyToAllocate())
-				//
 				.shipmentScheduleId(shipmentScheduleId)
 				.build();
 	}
@@ -291,9 +286,7 @@ class ProductsToPickRowsDataFactory
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
 				//
-				.productValue(productInfo.getCode())
-				.productName(productInfo.getName())
-				.productPackageSize(productInfo.getPackageSize())
+				.productInfo(productInfo)
 				//
 				.locator(locator)
 				//
@@ -311,7 +304,22 @@ class ProductsToPickRowsDataFactory
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)
 	{
-		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
+		final I_M_Product productRecord = productsRepo.getById(productId);
+
+		final int packageUOMId = productRecord.getPackage_UOM_ID();
+		final String packageSizeUOM;
+		if (packageUOMId > 0)
+		{
+			final I_C_UOM packageUOM = uomsRepo.getById(packageUOMId);
+			packageSizeUOM = packageUOM.getUOMSymbol();
+		}
+		else
+		{
+			packageSizeUOM = null;
+		}
 
 		final ITranslatableString productName = InterfaceWrapperHelper.getModelTranslationMap(productRecord)
 				.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName());
@@ -321,6 +329,7 @@ class ProductsToPickRowsDataFactory
 				.code(productRecord.getValue())
 				.name(productName)
 				.packageSize(productRecord.getPackageSize())
+				.packageSizeUOM(packageSizeUOM)
 				.build();
 	}
 
@@ -443,19 +452,6 @@ class ProductsToPickRowsDataFactory
 		{
 			return packageable.getSalesOrderLineIdOrNull();
 		}
-	}
-
-	@Value
-	@Builder
-	private static class ProductInfo
-	{
-		@NonNull
-		ProductId productId;
-		@NonNull
-		String code;
-		@NonNull
-		ITranslatableString name;
-		String packageSize;
 	}
 
 	@Value(staticConstructor = "of")
