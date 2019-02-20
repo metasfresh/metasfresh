@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 
 import Table from '../components/table/Table';
-import Tabs from '../components/tabs/Tabs';
+import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
 import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
@@ -69,9 +69,24 @@ class Window extends PureComponent {
 
       if (renderSingle) {
         tabsArray.push(
-          <div key={tabId} className="tab-sections">
+          <TabSingleEntry
+            docId={dataId}
+            key={tabId}
+            queryOnActivate={queryOnActivate}
+            tabIndex={this.tabIndex.tabs}
+            {...{
+              caption,
+              description,
+              rowData,
+              tabId,
+              windowId,
+              sort,
+              newRow,
+              internalName,
+            }}
+          >
             {sections && this.renderSections(sections, true)}
-          </div>
+          </TabSingleEntry>
         );
       } else {
         tabsArray.push(
@@ -259,6 +274,7 @@ class Window extends PureComponent {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
       const fieldName = elem.fields ? elem.fields[0].field : '';
       const relativeDocId = data.ID && data.ID.value;
+
       return (
         <MasterWidget
           ref={c => {

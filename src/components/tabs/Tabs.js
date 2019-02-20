@@ -7,6 +7,10 @@ import { Set } from 'immutable';
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
 
+const TabSingleEntry = props => (
+  <div className="tab-sections">{props.children}</div>
+);
+
 class Tabs extends Component {
   constructor(props) {
     super(props);
@@ -209,3 +213,5 @@ Tabs.propTypes = {
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
 }))(Tabs);
+
+export { TabSingleEntry };
