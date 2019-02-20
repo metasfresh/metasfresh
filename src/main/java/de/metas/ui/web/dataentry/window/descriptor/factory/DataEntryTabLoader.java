@@ -426,7 +426,7 @@ public class DataEntryTabLoader
 				break;
 			case CREATED_BY:
 				columnName = COLUMNNAME_CreatedBy;
-				fieldLookupDescriptorProvider = SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
+				fieldLookupDescriptorProvider = createAdUserLookupDescriptor();
 				break;
 			case UPDATED:
 				columnName = COLUMNNAME_Updated;
@@ -434,7 +434,7 @@ public class DataEntryTabLoader
 				break;
 			case UPDATED_BY:
 				columnName = COLUMNNAME_UpdatedBy;
-				fieldLookupDescriptorProvider = SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
+				fieldLookupDescriptorProvider = createAdUserLookupDescriptor();
 				break;
 			default:
 				throw new AdempiereException("Unexpected fieldType=" + fieldType);
@@ -458,6 +458,17 @@ public class DataEntryTabLoader
 				.setLookupDescriptorProvider(fieldLookupDescriptorProvider)
 				.addCharacteristic(Characteristic.PublicField)
 				.setDataBinding(dataBinding);
+	}
+
+	private LookupDescriptorProvider createAdUserLookupDescriptor()
+	{
+		if(Adempiere.isUnitTestMode())
+		{
+			return LookupDescriptorProvider.NULL;
+		}
+
+		// SqlLookupDescriptor uses MLookupFactory somewhere under the hood, which needs a DB connection
+		return SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
 	}
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)

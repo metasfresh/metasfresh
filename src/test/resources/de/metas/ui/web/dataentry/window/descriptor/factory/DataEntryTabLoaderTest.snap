@@ -45,18 +45,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "31" : {
               "fieldName" : "31",
               "caption" : {
-                "value" : "stringField1_caption",
+                "value" : "longTextField1_caption",
                 "anyLanguage" : false
               },
               "description" : {
-                "value" : "stringField1_description",
+                "value" : "longTextField1_description",
                 "anyLanguage" : false
               },
               "detailId" : "DataEntry_SubGroup-20",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Text",
+              "widgetType" : "LongText",
               "allowShowPassword" : false,
               "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
@@ -82,7 +82,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "31",
                   "mandatory" : false,
-                  "fieldType" : "STRING",
+                  "dataEntryFieldId" : 31,
+                  "fieldType" : "LONG_TEXT",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -133,6 +134,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "32",
                   "mandatory" : false,
+                  "dataEntryFieldId" : 32,
                   "fieldType" : "NUMBER",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
@@ -184,6 +186,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "33",
                   "mandatory" : false,
+                  "dataEntryFieldId" : 33,
                   "fieldType" : "DATE",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
@@ -235,6 +238,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "34",
                   "mandatory" : false,
+                  "dataEntryFieldId" : 34,
                   "fieldType" : "YESNO",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
@@ -303,8 +307,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                     "cached" : true,
                     "numericKey" : false
                   },
-                  "highVolume" : false,
-                  "numericKey" : true
+                  "numericKey" : true,
+                  "highVolume" : false
                 },
                 "numericKey" : true
               },
@@ -328,7 +332,112 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : {
                   "columnName" : "35",
                   "mandatory" : false,
+                  "dataEntryFieldId" : 35,
                   "fieldType" : "LIST",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "Created" : {
+              "fieldName" : "Created",
+              "caption" : {
+                "value" : "Created",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-20",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "ZonedDateTime",
+              "allowShowPassword" : false,
+              "valueClass" : "java.time.ZonedDateTime",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "Created",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 35,
+                  "fieldType" : "CREATED",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "CreatedBy" : {
+              "fieldName" : "CreatedBy",
+              "caption" : {
+                "value" : "CreatedBy",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-20",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "Lookup",
+              "allowShowPassword" : false,
+              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$StringLookupValue",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "CreatedBy",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 35,
+                  "fieldType" : "CREATED_BY",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -380,6 +489,110 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "Updated" : {
+              "fieldName" : "Updated",
+              "caption" : {
+                "value" : "Updated",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-20",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "ZonedDateTime",
+              "allowShowPassword" : false,
+              "valueClass" : "java.time.ZonedDateTime",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "Updated",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 35,
+                  "fieldType" : "UPDATED",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "UpdatedBy" : {
+              "fieldName" : "UpdatedBy",
+              "caption" : {
+                "value" : "UpdatedBy",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-20",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "Lookup",
+              "allowShowPassword" : false,
+              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$StringLookupValue",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "UpdatedBy",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 35,
+                  "fieldType" : "UPDATED_BY",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -666,14 +879,192 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               {
                                 "gridElement" : false,
                                 "caption" : {
-                                  "value" : "stringField1_caption",
+                                  "value" : "textField1_caption",
                                   "anyLanguage" : false
                                 },
                                 "description" : {
-                                  "value" : "stringField1_description",
+                                  "value" : "textField1_description",
                                   "anyLanguage" : false
                                 },
                                 "widgetType" : "Text",
+                                "allowShowPassword" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "advancedField" : false,
+                                "restrictToMediaTypes" : [ ],
+                                "viewEditorRenderMode" : "ALWAYS",
+                                "viewAllowSorting" : true,
+                                "fields" : [
+                                  {
+                                    "field" : "31",
+                                    "publicField" : true,
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "emptyText" : {
+                                      "value" : "",
+                                      "anyLanguage" : true
+                                    },
+                                    "devices" : [ ],
+                                    "supportZoomInto" : false
+                                  }
+                                ]
+                              },
+                              {
+                                "gridElement" : false,
+                                "caption" : {
+                                  "value" : "Created",
+                                  "anyLanguage" : false
+                                },
+                                "description" : {
+                                  "value" : "",
+                                  "anyLanguage" : true
+                                },
+                                "widgetType" : "DateTime",
+                                "allowShowPassword" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "advancedField" : false,
+                                "restrictToMediaTypes" : [ ],
+                                "viewEditorRenderMode" : "NEVER",
+                                "viewAllowSorting" : true,
+                                "fields" : [
+                                  {
+                                    "field" : "Created",
+                                    "publicField" : true,
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "emptyText" : {
+                                      "value" : "",
+                                      "anyLanguage" : true
+                                    },
+                                    "devices" : [ ],
+                                    "supportZoomInto" : false
+                                  }
+                                ]
+                              },
+                              {
+                                "gridElement" : false,
+                                "caption" : {
+                                  "value" : "CreatedBy",
+                                  "anyLanguage" : false
+                                },
+                                "description" : {
+                                  "value" : "",
+                                  "anyLanguage" : true
+                                },
+                                "widgetType" : "Lookup",
+                                "allowShowPassword" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "advancedField" : false,
+                                "restrictToMediaTypes" : [ ],
+                                "viewEditorRenderMode" : "NEVER",
+                                "viewAllowSorting" : true,
+                                "fields" : [
+                                  {
+                                    "field" : "CreatedBy",
+                                    "publicField" : true,
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "emptyText" : {
+                                      "value" : "",
+                                      "anyLanguage" : true
+                                    },
+                                    "devices" : [ ],
+                                    "supportZoomInto" : false
+                                  }
+                                ]
+                              },
+                              {
+                                "gridElement" : false,
+                                "caption" : {
+                                  "value" : "Updated",
+                                  "anyLanguage" : false
+                                },
+                                "description" : {
+                                  "value" : "",
+                                  "anyLanguage" : true
+                                },
+                                "widgetType" : "DateTime",
+                                "allowShowPassword" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "advancedField" : false,
+                                "restrictToMediaTypes" : [ ],
+                                "viewEditorRenderMode" : "NEVER",
+                                "viewAllowSorting" : true,
+                                "fields" : [
+                                  {
+                                    "field" : "Updated",
+                                    "publicField" : true,
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "emptyText" : {
+                                      "value" : "",
+                                      "anyLanguage" : true
+                                    },
+                                    "devices" : [ ],
+                                    "supportZoomInto" : false
+                                  }
+                                ]
+                              },
+                              {
+                                "gridElement" : false,
+                                "caption" : {
+                                  "value" : "UpdatedBy",
+                                  "anyLanguage" : false
+                                },
+                                "description" : {
+                                  "value" : "",
+                                  "anyLanguage" : true
+                                },
+                                "widgetType" : "Lookup",
+                                "allowShowPassword" : false,
+                                "multilineText" : false,
+                                "multilineTextLines" : 0,
+                                "advancedField" : false,
+                                "restrictToMediaTypes" : [ ],
+                                "viewEditorRenderMode" : "NEVER",
+                                "viewAllowSorting" : true,
+                                "fields" : [
+                                  {
+                                    "field" : "UpdatedBy",
+                                    "publicField" : true,
+                                    "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "emptyText" : {
+                                      "value" : "",
+                                      "anyLanguage" : true
+                                    },
+                                    "devices" : [ ],
+                                    "supportZoomInto" : false
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "elementLines" : [
+                          {
+                            "elements" : [
+                              {
+                                "gridElement" : false,
+                                "caption" : {
+                                  "value" : "longTextField1_caption",
+                                  "anyLanguage" : false
+                                },
+                                "description" : {
+                                  "value" : "longTextField1_description",
+                                  "anyLanguage" : false
+                                },
+                                "widgetType" : "LongText",
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
@@ -1594,9 +1985,72 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         {
                           "elements" : [
                             {
-                              "caption" : "stringField1_caption",
-                              "description" : "stringField1_description",
+                              "caption" : "textField1_caption",
+                              "description" : "textField1_description",
                               "widgetType" : "Text",
+                              "viewEditorRenderMode" : "always",
+                              "fields" : [
+                                {
+                                  "field" : "31"
+                                }
+                              ]
+                            },
+                            {
+                              "caption" : "Created",
+                              "description" : "",
+                              "widgetType" : "DateTime",
+                              "viewEditorRenderMode" : "never",
+                              "fields" : [
+                                {
+                                  "field" : "Created"
+                                }
+                              ]
+                            },
+                            {
+                              "caption" : "CreatedBy",
+                              "description" : "",
+                              "widgetType" : "Lookup",
+                              "viewEditorRenderMode" : "never",
+                              "fields" : [
+                                {
+                                  "field" : "CreatedBy"
+                                }
+                              ]
+                            },
+                            {
+                              "caption" : "Updated",
+                              "description" : "",
+                              "widgetType" : "DateTime",
+                              "viewEditorRenderMode" : "never",
+                              "fields" : [
+                                {
+                                  "field" : "Updated"
+                                }
+                              ]
+                            },
+                            {
+                              "caption" : "UpdatedBy",
+                              "description" : "",
+                              "widgetType" : "Lookup",
+                              "viewEditorRenderMode" : "never",
+                              "fields" : [
+                                {
+                                  "field" : "UpdatedBy"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "elementsLine" : [
+                        {
+                          "elements" : [
+                            {
+                              "caption" : "longTextField1_caption",
+                              "description" : "longTextField1_description",
+                              "widgetType" : "LongText",
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
