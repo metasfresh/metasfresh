@@ -29,7 +29,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_AD_Tree;
 import org.compiere.model.X_C_Element;
 import org.compiere.model.X_I_ElementValue;
-import org.reflections.util.Utils;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
@@ -215,6 +214,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 
 	private ImportRecordResult doNothingAndUsePreviousElement(@NonNull final I_I_ElementValue importRecord, @NonNull final I_I_ElementValue previousImportRecord)
 	{
+		InterfaceWrapperHelper.refresh(previousImportRecord);
 		importRecord.setC_Element_ID(previousImportRecord.getC_Element_ID());
 		InterfaceWrapperHelper.save(importRecord);
 		return ImportRecordResult.Nothing;
@@ -261,7 +261,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 			return;
 		}
 		final AccountDimension acctDim = newAccountDimension(elementvalue);
-		MAccount.get(getCtx(), acctDim);
+		MAccount.getCreate(acctDim);
 	}
 
 	private AccountDimension newAccountDimension(final I_C_ElementValue ev)
