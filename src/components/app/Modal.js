@@ -356,13 +356,7 @@ class Modal extends Component {
   };
 
   renderPanel = () => {
-    const {
-      data,
-      modalTitle,
-      modalType,
-      isDocumentNotSaved,
-      layout,
-    } = this.props;
+    const { modalTitle, modalType, isDocumentNotSaved, layout } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
     const applyHandler =
@@ -375,44 +369,19 @@ class Modal extends Component {
         : undefined;
 
     return (
-      Object.keys(data).length > 0 && (
-        <div className="modal-content-wrapper">
-          <div className="panel panel-modal panel-modal-primary">
-            <div
-              className={classnames('panel-modal-header', {
-                'header-shadow': scrolled,
-              })}
-            >
-              <span className="panel-modal-header-title">
-                {modalTitle ? modalTitle : layout.caption}
-              </span>
+      <div className="modal-content-wrapper">
+        <div className="panel panel-modal panel-modal-primary">
+          <div
+            className={classnames('panel-modal-header', {
+              'header-shadow': scrolled,
+            })}
+          >
+            <span className="panel-modal-header-title">
+              {modalTitle ? modalTitle : layout.caption}
+            </span>
 
-              <div className="items-row-2">
-                {isNewDoc && (
-                  <button
-                    className={classnames(
-                      'btn btn-meta-outline-secondary btn-distance-3 btn-md',
-                      {
-                        'tag-disabled disabled ': pending,
-                      }
-                    )}
-                    onClick={this.removeModal}
-                    tabIndex={0}
-                    onMouseEnter={() => this.toggleTooltip(keymap.CANCEL)}
-                    onMouseLeave={this.toggleTooltip}
-                  >
-                    {counterpart.translate('modal.actions.cancel')}
-
-                    {isTooltipShow === keymap.CANCEL && (
-                      <Tooltips
-                        name={keymap.CANCEL}
-                        action={counterpart.translate('modal.actions.cancel')}
-                        type=""
-                      />
-                    )}
-                  </button>
-                )}
-
+            <div className="items-row-2">
+              {isNewDoc && (
                 <button
                   className={classnames(
                     'btn btn-meta-outline-secondary btn-distance-3 btn-md',
@@ -420,89 +389,108 @@ class Modal extends Component {
                       'tag-disabled disabled ': pending,
                     }
                   )}
-                  onClick={this.handleClose}
+                  onClick={this.removeModal}
                   tabIndex={0}
-                  onMouseEnter={() =>
-                    this.toggleTooltip(
-                      modalType === 'process' ? keymap.CANCEL : keymap.DONE
-                    )
-                  }
+                  onMouseEnter={() => this.toggleTooltip(keymap.CANCEL)}
                   onMouseLeave={this.toggleTooltip}
                 >
-                  {modalType === 'process'
-                    ? counterpart.translate('modal.actions.cancel')
-                    : counterpart.translate('modal.actions.done')}
+                  {counterpart.translate('modal.actions.cancel')}
 
-                  {isTooltipShow ===
-                    (modalType === 'process' ? keymap.CANCEL : keymap.DONE) && (
+                  {isTooltipShow === keymap.CANCEL && (
                     <Tooltips
-                      name={
-                        modalType === 'process' ? keymap.CANCEL : keymap.DONE
-                      }
-                      action={
-                        modalType === 'process'
-                          ? counterpart.translate('modal.actions.cancel')
-                          : counterpart.translate('modal.actions.done')
-                      }
+                      name={keymap.CANCEL}
+                      action={counterpart.translate('modal.actions.cancel')}
                       type=""
                     />
                   )}
                 </button>
-
-                {modalType === 'process' && (
-                  <button
-                    className={classnames(
-                      'btn btn-meta-outline-secondary btn-distance-3 btn-md',
-                      {
-                        'tag-disabled disabled ': pending,
-                      }
-                    )}
-                    onClick={this.handleStart}
-                    tabIndex={0}
-                    onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
-                    onMouseLeave={this.toggleTooltip}
-                  >
-                    {counterpart.translate('modal.actions.start')}
-
-                    {isTooltipShow === keymap.DONE && (
-                      <Tooltips
-                        name={keymap.DONE}
-                        action={counterpart.translate('modal.actions.start')}
-                        type=""
-                      />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <Indicator isDocumentNotSaved={isDocumentNotSaved} />
-
-            <div
-              className="panel-modal-content js-panel-modal-content
-                            container-fluid"
-              ref={c => {
-                if (c) {
-                  c.focus();
-                }
-              }}
-            >
-              {layout.description && (
-                <div className="modal-top-description">
-                  {layout.description}
-                </div>
               )}
-              {this.renderModalBody()}
+
+              <button
+                className={classnames(
+                  'btn btn-meta-outline-secondary btn-distance-3 btn-md',
+                  {
+                    'tag-disabled disabled ': pending,
+                  }
+                )}
+                onClick={this.handleClose}
+                tabIndex={0}
+                onMouseEnter={() =>
+                  this.toggleTooltip(
+                    modalType === 'process' ? keymap.CANCEL : keymap.DONE
+                  )
+                }
+                onMouseLeave={this.toggleTooltip}
+              >
+                {modalType === 'process'
+                  ? counterpart.translate('modal.actions.cancel')
+                  : counterpart.translate('modal.actions.done')}
+
+                {isTooltipShow ===
+                  (modalType === 'process' ? keymap.CANCEL : keymap.DONE) && (
+                  <Tooltips
+                    name={modalType === 'process' ? keymap.CANCEL : keymap.DONE}
+                    action={
+                      modalType === 'process'
+                        ? counterpart.translate('modal.actions.cancel')
+                        : counterpart.translate('modal.actions.done')
+                    }
+                    type=""
+                  />
+                )}
+              </button>
+
+              {modalType === 'process' && (
+                <button
+                  className={classnames(
+                    'btn btn-meta-outline-secondary btn-distance-3 btn-md',
+                    {
+                      'tag-disabled disabled ': pending,
+                    }
+                  )}
+                  onClick={this.handleStart}
+                  tabIndex={0}
+                  onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
+                  onMouseLeave={this.toggleTooltip}
+                >
+                  {counterpart.translate('modal.actions.start')}
+
+                  {isTooltipShow === keymap.DONE && (
+                    <Tooltips
+                      name={keymap.DONE}
+                      action={counterpart.translate('modal.actions.start')}
+                      type=""
+                    />
+                  )}
+                </button>
+              )}
             </div>
-            {layout.layoutType !== 'singleOverlayField' && (
-              <ModalContextShortcuts
-                apply={applyHandler}
-                cancel={cancelHandler}
-              />
-            )}
           </div>
+
+          <Indicator isDocumentNotSaved={isDocumentNotSaved} />
+
+          <div
+            className="panel-modal-content js-panel-modal-content
+                          container-fluid"
+            ref={c => {
+              if (c) {
+                c.focus();
+              }
+            }}
+          >
+            {layout.description && (
+              <div className="modal-top-description">{layout.description}</div>
+            )}
+            {this.renderModalBody()}
+          </div>
+          {layout.layoutType !== 'singleOverlayField' && (
+            <ModalContextShortcuts
+              apply={applyHandler}
+              cancel={cancelHandler}
+            />
+          )}
         </div>
-      )
+      </div>
     );
   };
 
