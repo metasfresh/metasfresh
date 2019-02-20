@@ -461,17 +461,28 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
 });
 
 Cypress.Commands.add('executeHeaderAction', (actionName) => {
-   describe('Fire header action with a certain name', function() {
-    cy.get('.header-container .btn-square .meta-icon-more').click();
-    cy.get('.subheader-container').should('exist');
+  describe('Fire header action with a certain name', function() {
 
-    return cy
-      .get(`#headerAction_${actionName}`)
-      .click()
-      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-      .should('exist')
+   executeHeaderAction(actionName);
   });
 });
+
+Cypress.Commands.add('executeHeaderActionWithDialog', (actionName) => {
+  describe('Fire header action with a certain name', function() {
+
+   executeHeaderAction(actionName);
+
+   return cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+     .should('exist')
+ });
+});
+
+function executeHeaderAction(actionName) {
+
+  cy.get('.header-container .btn-square .meta-icon-more').click();
+  cy.get('.subheader-container').should('exist');
+  cy.get(`#headerAction_${actionName}`).click();
+}
 
 Cypress.Commands.add('clickHeaderNav', (navName) => {
   const name = navName.toLowerCase().replace(/\s/g, '');
@@ -483,3 +494,4 @@ Cypress.Commands.add('clickHeaderNav', (navName) => {
     return cy.get(`#subheaderNav_${name}`).click();
   });
 });
+
