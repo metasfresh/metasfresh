@@ -49,9 +49,9 @@ public final class AccountImportContext
 		this.previousImportRecord = previousImportRecord;
 	}
 
-	public int getPreviousC_Element_ID()
+	public String getPreviousElementName()
 	{
-		return previousImportRecord == null ? -1 : previousImportRecord.getC_Element_ID();
+		return previousImportRecord == null ? null : previousImportRecord.getElementName();
 	}
 
 	public List<I_I_ElementValue> getPreviousImportRecordsForSameDiscountSchema()

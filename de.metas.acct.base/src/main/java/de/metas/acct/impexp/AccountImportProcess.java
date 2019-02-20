@@ -29,6 +29,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_AD_Tree;
 import org.compiere.model.X_C_Element;
 import org.compiere.model.X_I_ElementValue;
+import org.reflections.util.Utils;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
@@ -36,6 +37,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -118,13 +120,13 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 			state.setValue(context);
 		}
 		final I_I_ElementValue previousImportRecord = context.getPreviousImportRecord();
-		final int previousElementId = context.getPreviousC_Element_ID();
+		final String previousElementName = context.getPreviousElementName();
 		context.setPreviousImportRecord(importRecord);
 
 		final ImportRecordResult accountImportResult;
 
 		final boolean firstImportRecordOrNewAccount = previousImportRecord == null
-				|| !Objects.equals(importRecord.getC_Element_ID(), previousElementId);
+				|| !Objects.equals(importRecord.getElementName(), previousElementName);
 
 		if (firstImportRecordOrNewAccount)
 		{
@@ -134,17 +136,18 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 		}
 		else
 		{
-			if (previousElementId <= 0)
+			if (Check.isEmpty(previousElementName, true))
 			{
 				accountImportResult = importElement(importRecord);
 			}
-			else if (importRecord.getC_Element_ID() <= 0 || importRecord.getC_Element_ID() == previousElementId)
+			else if ((importRecord.getC_Element_ID() <= 0 && importRecord.getElementName().equals(previousElementName))
+					|| importRecord.getC_Element_ID() > 0)
 			{
 				accountImportResult = doNothingAndUsePreviousElement(importRecord, previousImportRecord);
 			}
 			else
 			{
-				throw new AdempiereException("Same value or movement date as previous line but not same Inventory linked");
+				throw new AdempiereException("Same value or movement date as previous line but not same Element linked");
 			}
 		}
 
@@ -220,7 +223,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 	private I_C_ElementValue importElementValue(@NonNull final I_I_ElementValue importRecord)
 	{
 		final I_C_ElementValue elementvalue;
-		if (importRecord.getC_ElementValue_ID() > 0)
+		if (importRecord.getC_ElementValue_ID() <= 0)
 		{
 			elementvalue = InterfaceWrapperHelper.newInstance(I_C_ElementValue.class, importRecord);
 		}
@@ -251,11 +254,14 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 		elementvalue.setPostStatistical(importRecord.isPostStatistical());
 	}
 
-	private MAccount createOrGetValidCombination(@NonNull final I_C_ElementValue elementvalue)
+	private void createOrGetValidCombination(@NonNull final I_C_ElementValue elementvalue)
 	{
-
+		if (elementvalue.isSummary())
+		{
+			return;
+		}
 		final AccountDimension acctDim = newAccountDimension(elementvalue);
-		return MAccount.get(getCtx(), acctDim);
+		MAccount.get(getCtx(), acctDim);
 	}
 
 	private AccountDimension newAccountDimension(final I_C_ElementValue ev)
