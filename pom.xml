@@ -333,13 +333,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M1</version>
+					<version>3.0.0-M2</version>
 					<dependencies>
 						<!-- needed for banDuplicateClasses -->
 						<dependency>
 							<groupId>org.codehaus.mojo</groupId>
 							<artifactId>extra-enforcer-rules</artifactId>
-							<version>1.0-beta-4</version>
+							<version>1.0-beta-9</version>
 						</dependency>
 					</dependencies>
 				</plugin>
