@@ -176,10 +176,10 @@ public class DataEntryTabLoader
 			// note that each element builder can be used/"consumed" only ones
 			final DocumentLayoutElementDescriptor.Builder dataElement = createFieldElementDescriptor(field);
 
-			final DocumentLayoutElementDescriptor.Builder createdElement = createFieldElementDescriptor(COLUMNNAME_Created, DocumentFieldWidgetType.DateTime);
-			final DocumentLayoutElementDescriptor.Builder createdByElement = createFieldElementDescriptor(COLUMNNAME_CreatedBy, DocumentFieldWidgetType.Lookup);
-			final DocumentLayoutElementDescriptor.Builder updatedElement = createFieldElementDescriptor(COLUMNNAME_Updated, DocumentFieldWidgetType.DateTime);
-			final DocumentLayoutElementDescriptor.Builder updatedByElement = createFieldElementDescriptor(COLUMNNAME_UpdatedBy, DocumentFieldWidgetType.Lookup);
+			final DocumentLayoutElementDescriptor.Builder createdElement = createFieldElementDescriptor(COLUMNNAME_Created, field.getId(), DocumentFieldWidgetType.DateTime);
+			final DocumentLayoutElementDescriptor.Builder createdByElement = createFieldElementDescriptor(COLUMNNAME_CreatedBy, field.getId(), DocumentFieldWidgetType.Lookup);
+			final DocumentLayoutElementDescriptor.Builder updatedElement = createFieldElementDescriptor(COLUMNNAME_Updated, field.getId(), DocumentFieldWidgetType.DateTime);
+			final DocumentLayoutElementDescriptor.Builder updatedByElement = createFieldElementDescriptor(COLUMNNAME_UpdatedBy, field.getId(), DocumentFieldWidgetType.Lookup);
 
 			final DocumentLayoutElementLineDescriptor.Builder elementLine = DocumentLayoutElementLineDescriptor
 					.builder()
@@ -216,10 +216,15 @@ public class DataEntryTabLoader
 		return element;
 	}
 
-	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(String columnName, DocumentFieldWidgetType type)
+	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(
+			@NonNull final String columnName,
+			@NonNull final DataEntryFieldId dataEntryFieldId,
+			@NonNull final DocumentFieldWidgetType type)
 	{
+		final String columnNametoUse = constructCreatedUpdatedFieldColumnName(columnName, dataEntryFieldId);
+
 		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
-				.builder(columnName)
+				.builder(columnNametoUse)
 				.setEmptyText(ITranslatableString.empty());
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -440,9 +445,11 @@ public class DataEntryTabLoader
 				throw new AdempiereException("Unexpected fieldType=" + fieldType);
 		}
 
+		final String columnNameToUse = constructCreatedUpdatedFieldColumnName(columnName, dataEntryFieldId);
+
 		final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
 				.builder()
-				.columnName(columnName)
+				.columnName(columnNameToUse)
 				.mandatory(false)
 				.dataEntryFieldId(dataEntryFieldId)
 				.fieldType(fieldType)
@@ -451,7 +458,7 @@ public class DataEntryTabLoader
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final ITranslatableString caption = msgBL.translatable(columnName);
 
-		return DocumentFieldDescriptor.builder(columnName)
+		return DocumentFieldDescriptor.builder(columnNameToUse)
 				.setCaption(caption)
 				.setDescription(ITranslatableString.empty())
 				.setWidgetType(ofFieldType(fieldType))
@@ -460,9 +467,16 @@ public class DataEntryTabLoader
 				.setDataBinding(dataBinding);
 	}
 
+	private static String constructCreatedUpdatedFieldColumnName(
+			@NonNull final String columnName,
+			@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return columnName + "_" + dataEntryFieldId.getRepoId();
+	}
+
 	private LookupDescriptorProvider createAdUserLookupDescriptor()
 	{
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			return LookupDescriptorProvider.NULL;
 		}

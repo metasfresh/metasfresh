@@ -85,8 +85,10 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	{
 		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
 
-		final Optional<Document> document = retrieveDocumentOrNull(query, changesCollector);
-		document.ifPresent(documentsCollector::addDocument);
+		final Document document = retrieveDocumentIfExists(query, changesCollector)
+				.orElseGet(() -> createNewDocument(query.getEntityDescriptor(), query.getParentDocument(), changesCollector));
+
+		documentsCollector.addDocument(document);
 
 		return documentsCollector;
 	}
@@ -96,14 +98,14 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			@NonNull final DocumentQuery query,
 			@NonNull final IDocumentChangesCollector changesCollector)
 	{
-		return retrieveDocumentOrNull(query, changesCollector)
+		return retrieveDocumentIfExists(query, changesCollector)
 				.orElseThrow(() -> new AdempiereException("If retrieveDocument is invoked, then there needs to be a retrievable document")
 						.appendParametersToMessage()
 						.setParameter("query", query)
 						.setParameter("changesCollector", changesCollector));
 	}
 
-	private Optional<Document> retrieveDocumentOrNull(
+	private Optional<Document> retrieveDocumentIfExists(
 			@NonNull final DocumentQuery query,
 			@NonNull final IDocumentChangesCollector changesCollector)
 	{
@@ -151,14 +153,34 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	@Override
 	public Document createNewDocument(
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
-			Document parentDocument, IDocumentChangesCollector changesCollector)
+			@NonNull final Document parentDocument,
+			@NonNull final IDocumentChangesCollector changesCollector)
 	{
 		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
+//		final DataEntryRecordId dataEntryRecordId = DataEntryRecordId.ofRepoId(documentId.toInt()); // TODO extract this code and the code form DataEntryTabLoader into a common class
+//
+//		final TableRecordReference parentReference = extractParentRecordReference(parentDocument);
+//
+//		final DetailId detailId = entityDescriptor.getDetailId();
+//		final DataEntrySubGroupId dataEntrySubGroupId = extractDataEntrySubGroupId(detailId);
+//
+//		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
+//				.id(dataEntryRecordId)
+//				.isNew(true)
+//				.mainRecord(parentReference)
+//				.dataEntrySubGroupId(dataEntrySubGroupId)
+//				.fields(ImmutableList.of())
+//				.build();
+//
+//		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(dataEntryRecord);
 
-		return Document.builder(entityDescriptor)
+		return Document
+				.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setChangesCollector(changesCollector)
-				.initializeAsNewDocument(documentId, "0");
+				.initializeAsNewDocument(documentId, "0")
+				//.initializeAsExistingRecord(documentValuesSupplier)
+				;
 	}
 
 	private static DocumentId retrieveNextDocumentId(@NonNull final DocumentEntityDescriptor entityDescriptor)
@@ -235,7 +257,6 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 	private DataEntryRecord createDataEntryRecord(@NonNull final Document document)
 	{
-		final DataEntryRecord dataEntryRecord;
 		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 
 		final TableRecordReference parentReference = extractParentRecordReference(document.getParentDocument());
@@ -243,7 +264,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
 		final DataEntrySubGroupId dataEntrySubGroupId = extractDataEntrySubGroupId(detailId);
 
-		dataEntryRecord = DataEntryRecord.builder()
+		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
 				.id(dataEntryRecordId)
 				.isNew(true)
 				.mainRecord(parentReference)
