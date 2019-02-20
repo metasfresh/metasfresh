@@ -375,7 +375,6 @@ class Modal extends Component {
         : undefined;
 
     return (
-      Object.keys(data).length > 0 && (
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
@@ -502,7 +501,6 @@ class Modal extends Component {
             )}
           </div>
         </div>
-      )
     );
   };
 
