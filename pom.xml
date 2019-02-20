@@ -333,7 +333,14 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M2</version>
+					<!-- 3.0.0-M2 gives me "Some plugins are missing valid versions" 
+						 when building downstream projects (i.e. metasfresh),
+						 although I set the version here in build/pluginManagenemt management.
+						Example:
+						org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
+				
+						Note that "3.0.0" is the version that I specified in pluginManagenemt -->
+					<version>3.0.0-M1</version>
 					<dependencies>
 						<!-- needed for banDuplicateClasses -->
 						<dependency>
@@ -467,6 +474,9 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
 								<banDuplicateClasses>
 									<ignoreClasses>
+
+										<!-- https://github.com/mojohaus/extra-enforcer-rules/issues/42 -->
+										<ignoreClass>*.module-info</ignoreClass>
 
 										<!-- itext-2.1.7 has two different versions as dependences -->
 										<ignoreClass>org.bouncycastle.*</ignoreClass>
