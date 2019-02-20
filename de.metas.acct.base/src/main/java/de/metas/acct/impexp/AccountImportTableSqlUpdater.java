@@ -73,15 +73,33 @@ public class AccountImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE I_ElementValue i ")
 				.append("SET ParentElementValue_ID=(SELECT C_ElementValue_ID ")
 				.append("FROM C_ElementValue ev WHERE i.C_Element_ID=ev.C_Element_ID ")
-				.append("AND i.ParentValue=ev.Value AND i.AD_Client_ID=ev.AD_Client_ID ")
-				.append("AND e.AD_Org_ID IN (0, i.AD_Org_ID) ) ")
+				.append("AND i.ParentValue=ev.Value AND i.AD_Client_ID=ev.AD_Client_ID ) ")
+				// .append("AND ev.AD_Org_ID IN (0, i.AD_Org_ID) ) ")
 				.append("WHERE ParentElementValue_ID IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Found Parent ElementValue=" + no);
 	}
-	
+
+	public void dbUpdateParentElementValueId(final int treeId)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE AD_TreeNode set Parent_ID = parentelementvalue_id, seqno = c_elementvalue_id ")
+				.append(" from i_elementvalue ev where ev.C_ElementValue_ID = node_ID and ad_tree_ID = ? " )
+				.append(" and parentelementvalue_id is not null " );
+		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated Parent ElementValue=" + no);
+		
+		sql = new StringBuilder("update AD_TreeNode set  seqno = c_elementvalue_id ")
+				.append(" from i_elementvalue ev where ev.C_ElementValue_ID = node_ID and ad_tree_ID = ? " )
+				.append(" and ev.IsSummary='Y' " );
+		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated Parent Seqno=" + no);
+			
+	}
+
 	public void dbUpdateTreeElementValue(final String whereClause)
 	{
 		StringBuilder sql;
@@ -103,15 +121,6 @@ public class AccountImportTableSqlUpdater
 
 		StringBuilder sql;
 		int no;
-
-		sql = new StringBuilder("UPDATE I_ElementValue i ")
-				.append("SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ElementName, ' ")
-				.append("WHERE C_Element_ID IS NULL AND ElementName IS NOT NULL ")
-				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
-				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Element ={}", no);
-
 		sql = new StringBuilder("UPDATE I_ElementValue ")
 				.append("SET I_ErrorMsg=I_ErrorMsg||'Info=ParentNotFound, ' ")
 				.append("WHERE ParentElementValue_ID IS NULL AND ParentValue IS NOT NULL ")
