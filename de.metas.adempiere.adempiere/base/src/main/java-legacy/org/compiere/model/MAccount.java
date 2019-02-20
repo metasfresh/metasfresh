@@ -124,7 +124,7 @@ public class MAccount extends X_C_ValidCombination
 		}
 
 		// New
-		final MAccount newAccount = new MAccount(ctx, 0, ITrx.TRXNAME_None);
+		final MAccount newAccount = new MAccount(ctx, 0, ITrx.TRXNAME_ThreadInherited);
 		newAccount.setClientOrg(dimension.getAD_Client_ID(), dimension.getAD_Org_ID());
 		newAccount.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
 		newAccount.setAccount_ID(dimension.getC_ElementValue_ID());
