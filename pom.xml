@@ -129,12 +129,14 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			<version>5.3.2</version>
 			<scope>test</scope>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>2.23.4</version>
 			<scope>test</scope>
 		</dependency>
+		-->
 	</dependencies>
 
 	<dependencyManagement>
@@ -447,7 +449,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									That version didn't support the way, we configured it and failed with an
 									error message. This shall not happen again. -->
 								<requirePluginVersions>
-									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin versionm !!</message>
+									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
 									<banLatest>true</banLatest>
 									<banRelease>true</banRelease>
 									<banSnapshots>true</banSnapshots>
@@ -468,7 +470,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								-->
 								<bannedDependencies>
 									<excludes>
-										<exclude>de.metas*:*:[10,)</exclude>
+										<exclude>de.metas*:*:[11,)</exclude>
 									</excludes>
 								</bannedDependencies>
 
