@@ -150,8 +150,8 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 			}
 		}
 
-		final I_C_ElementValue ev = importElementValue(importRecord);
-		createOrGetValidCombination(ev);
+		importElementValue(importRecord);
+		createOrGetValidCombination(importRecord);
 
 		context.collectImportRecordForSameElement(importRecord);
 
@@ -254,25 +254,25 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 		elementvalue.setPostStatistical(importRecord.isPostStatistical());
 	}
 
-	private void createOrGetValidCombination(@NonNull final I_C_ElementValue elementvalue)
+	private void createOrGetValidCombination(@NonNull final I_I_ElementValue importRecord)
 	{
-		if (elementvalue.isSummary())
+		if (importRecord.isSummary())
 		{
 			return;
 		}
-		final AccountDimension acctDim = newAccountDimension(elementvalue);
+		final AccountDimension acctDim = newAccountDimension(importRecord);
 		MAccount.getCreate(acctDim);
 	}
 
-	private AccountDimension newAccountDimension(final I_C_ElementValue ev)
+	private AccountDimension newAccountDimension(@NonNull final I_I_ElementValue importRecord)
 	{
-		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ev.getAD_Org_ID()));
+		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(importRecord.getAD_Org_ID()));
 
 		return AccountDimension.builder()
 				.setAcctSchemaId(acctSchemaId)
-				.setAD_Client_ID(ev.getAD_Client_ID())
-				.setAD_Org_ID(ev.getAD_Org_ID())
-				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
+				.setAD_Client_ID(importRecord.getAD_Client_ID())
+				.setAD_Org_ID(importRecord.getAD_Org_ID())
+				.setC_ElementValue_ID(importRecord.getC_ElementValue_ID())
 				.build();
 	}
 

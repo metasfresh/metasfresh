@@ -161,6 +161,7 @@ public class MAccount extends X_C_ValidCombination
 		}
 
 		final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class);
+		vc.setAD_Org_ID(dimension.getAD_Org_ID());
 		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
 		vc.setAccount_ID(dimension.getC_ElementValue_ID());
 		vc.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
