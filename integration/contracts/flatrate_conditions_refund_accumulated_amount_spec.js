@@ -46,7 +46,7 @@ describe('Create accumulated amount-based (AA) refund conditions', function() {
             .build()
             .apply()
 
-        cy.executeHeaderAction('C_Flatrate_Term_Create_For_BPartners')
+        cy.executeHeaderActionWithDialog('C_Flatrate_Term_Create_For_BPartners')
             .selectInListField('C_Flatrate_Conditions_ID', conditionsName, conditionsName)
             .writeIntoStringField('StartDate', '01/01/2019{enter}')
             .pressStartButton();
