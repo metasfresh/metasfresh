@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import org.adempiere.user.CreatedUpdatedInfo;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.FieldType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -60,11 +59,5 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<ZonedDateTime
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);
 		this.value = value;
-	}
-
-	@Override
-	public FieldType getFieldType()
-	{
-		return FieldType.DATE;
 	}
 }

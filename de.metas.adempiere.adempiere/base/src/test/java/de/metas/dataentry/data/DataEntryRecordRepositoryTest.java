@@ -94,7 +94,6 @@ public class DataEntryRecordRepositoryTest
 		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
 
 		JSONAssert.assertEquals(expectedEmptyJSON, resultRecord.getDataEntry_RecordData(), JSONCompareMode.STRICT);
-
 	}
 
 	@Test

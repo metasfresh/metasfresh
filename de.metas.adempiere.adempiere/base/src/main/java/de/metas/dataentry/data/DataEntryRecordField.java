@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.FieldType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -48,8 +47,6 @@ public abstract class DataEntryRecordField<T>
 	@Getter
 	@JsonIgnore
 	private CreatedUpdatedInfo createdUpdatedInfo;
-
-	public abstract FieldType getFieldType();
 
 	protected DataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

@@ -5,7 +5,6 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
@@ -18,19 +17,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntryGroupId;
-import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.DataEntrySubGroupId;
-import de.metas.dataentry.FieldType;
-import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
-import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.model.X_DataEntry_Field;
-import de.metas.i18n.ImmutableTranslatableString;
 
 /*
  * #%L
@@ -54,21 +45,21 @@ import de.metas.i18n.ImmutableTranslatableString;
  * #L%
  */
 
-public class DataEntryRepositoryTest
+public class DataEntryLayoutRepositoryTest
 {
-	private static final String TEXT_FIELD1_DESCRIPTION = "textField1_description";
-	private static final String TEXT_FIELD1_CAPTION = "textField1_caption";
+//	private static final String TEXT_FIELD1_DESCRIPTION = "textField1_description";
+//	private static final String TEXT_FIELD1_CAPTION = "textField1_caption";
+//
+//	private static final String LONG_TEXT_FIELD1_DESCRIPTION = "longTextField1_description";
+//	private static final String LONG_TEXT_FIELD1_CAPTION = "longTextField1_caption";
 
-	private static final String LONG_TEXT_FIELD1_DESCRIPTION = "longTextField1_description";
-	private static final String LONG_TEXT_FIELD1_CAPTION = "longTextField1_caption";
-
-	private DataEntryGroupRepository dataEntryRepository;
+	private DataEntryLayoutRepository dataEntryLayoutRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		dataEntryRepository = new DataEntryGroupRepository();
+		dataEntryLayoutRepository = new DataEntryLayoutRepository();
 	}
 
 	@BeforeClass
@@ -84,37 +75,18 @@ public class DataEntryRepositoryTest
 	}
 
 	@Test
-	public void getByWindowId_no_record()
+	public void getByWindowId()
 	{
-		final I_DataEntry_Group groupRecord1 = createLayoutOnlyRecords();
+		final I_DataEntry_Group groupRecord1 = createRecords();
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
 
 		// invoke the method under test
-		final List<DataEntryGroup> result = dataEntryRepository.getByWindowId(windowId_1);
+		final List<DataEntryGroup> result = dataEntryLayoutRepository.getByWindowId(windowId_1);
 
 		expect(result).toMatchSnapshot();
 	}
 
-	@Test
-	public void getByWindowId_incl_record()
-	{
-		final I_DataEntry_Group groupRecord1 = createLayoutOnlyRecords();
-		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
-
-		final I_DataEntry_Record dataRecord = newInstance(I_DataEntry_Record.class);
-		dataRecord.setAD_Table_ID(11);
-		dataRecord.setRecord_ID(21);
-		dataRecord.setDataEntry_RecordData("DataEntry_RecordData");
-		saveRecord(dataRecord);
-
-		// invoke the method under test
-		final List<DataEntryGroup> result = dataEntryRepository.getByWindowId(windowId_1);
-		assertThat(result).hasSize(1);
-
-		expect(result).toMatchSnapshot();
-	}
-
-	private I_DataEntry_Group createLayoutOnlyRecords()
+	private I_DataEntry_Group createRecords()
 	{
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(10);
 
@@ -151,6 +123,7 @@ public class DataEntryRepositoryTest
 		fieldRecord1_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
 		saveRecord(fieldRecord1_1_1);
 
+		// number
 		final I_DataEntry_Field fieldRecord1_1_2 = newInstance(I_DataEntry_Field.class);
 		fieldRecord1_1_2.setDataEntry_SubGroup(subgroupRecord1_1);
 		fieldRecord1_1_2.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Number);
@@ -212,88 +185,107 @@ public class DataEntryRepositoryTest
 		fieldRecord1_2_3.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
 		saveRecord(fieldRecord1_2_3);
 
+		final I_DataEntry_Field fieldRecord1_2_4 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_4.setDataEntry_SubGroup(subgroupRecord1_1);
+		fieldRecord1_2_4.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
+		fieldRecord1_2_4.setName("fieldRecord1_2_4_name");
+		fieldRecord1_2_4.setDescription("fieldRecord1_2_4_description");
+		fieldRecord1_2_4.setIsMandatory(true);
+		fieldRecord1_2_4.setSeqNo(40);
+		fieldRecord1_2_4.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		saveRecord(fieldRecord1_2_4);
+
+		final I_DataEntry_Field fieldRecord1_2_5 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_5.setDataEntry_SubGroup(subgroupRecord1_1);
+		fieldRecord1_2_5.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_LongText);
+		fieldRecord1_2_5.setName("fieldRecord1_2_5_name");
+		fieldRecord1_2_5.setDescription("fieldRecord1_2_5_description");
+		fieldRecord1_2_5.setIsMandatory(true);
+		fieldRecord1_2_5.setSeqNo(50);
+		fieldRecord1_2_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
+		saveRecord(fieldRecord1_2_5);
+
 		return groupRecord1;
 	}
 
-	private DataEntryGroup createSimpleDataEntryGroup()
-	{
-		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
-
-		final DataEntryField dataEntryTextField = DataEntryField.builder()
-				.id(DataEntryFieldId.ofRepoId(31))
-				.caption(ImmutableTranslatableString.constant(TEXT_FIELD1_CAPTION))
-				.description(ImmutableTranslatableString.constant(TEXT_FIELD1_DESCRIPTION))
-				.type(FieldType.TEXT)
-				.build();
-
-		final DataEntryField dataEntryLongTextField = DataEntryField.builder()
-				.id(DataEntryFieldId.ofRepoId(31))
-				.caption(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_CAPTION))
-				.description(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_DESCRIPTION))
-				.type(FieldType.LONG_TEXT)
-				.build();
-
-		final DataEntryField dataEntryNumberField = DataEntryField.builder()
-				.id(DataEntryFieldId.ofRepoId(32))
-				.caption(ImmutableTranslatableString.constant("numberField1_caption"))
-				.description(ImmutableTranslatableString.constant("numberField1_description"))
-				.type(FieldType.NUMBER)
-				.build();
-
-		final DataEntryField dataEntryDateField = DataEntryField.builder()
-				.id(DataEntryFieldId.ofRepoId(33))
-				.caption(ImmutableTranslatableString.constant("dateField1_caption"))
-				.description(ImmutableTranslatableString.constant("dateField1_description"))
-				.type(FieldType.DATE)
-				.build();
-
-		final DataEntryField dataEntryYesNoField = DataEntryField.builder()
-				.id(DataEntryFieldId.ofRepoId(34))
-				.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
-				.description(ImmutableTranslatableString.constant("yesNoField1_description"))
-				.type(FieldType.YESNO)
-				.build();
-
-		final DataEntryField dataEntryListField = DataEntryField.builder()
-				.id(dataEntryListFieldId)
-				.caption(ImmutableTranslatableString.constant("listField1_caption"))
-				.description(ImmutableTranslatableString.constant("listField1_description"))
-				.type(FieldType.LIST)
-				.listValue(new DataEntryListValue(
-						DataEntryListValueId.ofRepoId(41),
-						dataEntryListFieldId,
-						ImmutableTranslatableString.constant("listValue1_name"),
-						ImmutableTranslatableString.constant("listValue1_description")))
-				.listValue(new DataEntryListValue(
-						DataEntryListValueId.ofRepoId(42),
-						dataEntryListFieldId,
-						ImmutableTranslatableString.constant("listValue2_name"),
-						ImmutableTranslatableString.constant("listValue2_description")))
-				.build();
-
-
-		final DataEntryGroup dataEntryGroup = DataEntryGroup
-				.builder()
-				.id(DataEntryGroupId.ofRepoId(10))
-				.documentLinkColumnName(DocumentLinkColumnName.of("documentLinkColumnName"))
-				.internalName("dataEntryGroup_internalName")
-				.caption(ImmutableTranslatableString.constant("dataEntryGroup_caption"))
-				.description(ImmutableTranslatableString.constant("dataEntryGroup_description"))
-				.dataEntrySubGroup(DataEntrySubGroup.builder()
-						.id(DataEntrySubGroupId.ofRepoId(20))
-						.internalName("dataEntrySubGroup_internalName")
-						.caption(ImmutableTranslatableString.constant("dataEntrySubGroup_caption"))
-						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
-						.dataEntryField(dataEntryTextField)
-						.dataEntryField(dataEntryLongTextField)
-						.dataEntryField(dataEntryNumberField)
-						.dataEntryField(dataEntryDateField)
-						.dataEntryField(dataEntryYesNoField)
-						.dataEntryField(dataEntryListField)
-						.build())
-				.build();
-
-		return dataEntryGroup;
-	}
-
+//	private DataEntryGroup createSimpleDataEntryGroup()
+//	{
+//		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
+//
+//		final DataEntryField dataEntryTextField = DataEntryField.builder()
+//				.id(DataEntryFieldId.ofRepoId(31))
+//				.caption(ImmutableTranslatableString.constant(TEXT_FIELD1_CAPTION))
+//				.description(ImmutableTranslatableString.constant(TEXT_FIELD1_DESCRIPTION))
+//				.type(FieldType.TEXT)
+//				.build();
+//
+//		final DataEntryField dataEntryLongTextField = DataEntryField.builder()
+//				.id(DataEntryFieldId.ofRepoId(31))
+//				.caption(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_CAPTION))
+//				.description(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_DESCRIPTION))
+//				.type(FieldType.LONG_TEXT)
+//				.build();
+//
+//		final DataEntryField dataEntryNumberField = DataEntryField.builder()
+//				.id(DataEntryFieldId.ofRepoId(32))
+//				.caption(ImmutableTranslatableString.constant("numberField1_caption"))
+//				.description(ImmutableTranslatableString.constant("numberField1_description"))
+//				.type(FieldType.NUMBER)
+//				.build();
+//
+//		final DataEntryField dataEntryDateField = DataEntryField.builder()
+//				.id(DataEntryFieldId.ofRepoId(33))
+//				.caption(ImmutableTranslatableString.constant("dateField1_caption"))
+//				.description(ImmutableTranslatableString.constant("dateField1_description"))
+//				.type(FieldType.DATE)
+//				.build();
+//
+//		final DataEntryField dataEntryYesNoField = DataEntryField.builder()
+//				.id(DataEntryFieldId.ofRepoId(34))
+//				.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
+//				.description(ImmutableTranslatableString.constant("yesNoField1_description"))
+//				.type(FieldType.YESNO)
+//				.build();
+//
+//		final DataEntryField dataEntryListField = DataEntryField.builder()
+//				.id(dataEntryListFieldId)
+//				.caption(ImmutableTranslatableString.constant("listField1_caption"))
+//				.description(ImmutableTranslatableString.constant("listField1_description"))
+//				.type(FieldType.LIST)
+//				.listValue(new DataEntryListValue(
+//						DataEntryListValueId.ofRepoId(41),
+//						dataEntryListFieldId,
+//						ImmutableTranslatableString.constant("listValue1_name"),
+//						ImmutableTranslatableString.constant("listValue1_description")))
+//				.listValue(new DataEntryListValue(
+//						DataEntryListValueId.ofRepoId(42),
+//						dataEntryListFieldId,
+//						ImmutableTranslatableString.constant("listValue2_name"),
+//						ImmutableTranslatableString.constant("listValue2_description")))
+//				.build();
+//
+//
+//		final DataEntryGroup dataEntryGroup = DataEntryGroup
+//				.builder()
+//				.id(DataEntryGroupId.ofRepoId(10))
+//				.documentLinkColumnName(DocumentLinkColumnName.of("documentLinkColumnName"))
+//				.internalName("dataEntryGroup_internalName")
+//				.caption(ImmutableTranslatableString.constant("dataEntryGroup_caption"))
+//				.description(ImmutableTranslatableString.constant("dataEntryGroup_description"))
+//				.dataEntrySubGroup(DataEntrySubGroup.builder()
+//						.id(DataEntrySubGroupId.ofRepoId(20))
+//						.internalName("dataEntrySubGroup_internalName")
+//						.caption(ImmutableTranslatableString.constant("dataEntrySubGroup_caption"))
+//						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
+//						.dataEntryField(dataEntryTextField)
+//						.dataEntryField(dataEntryLongTextField)
+//						.dataEntryField(dataEntryNumberField)
+//						.dataEntryField(dataEntryDateField)
+//						.dataEntryField(dataEntryYesNoField)
+//						.dataEntryField(dataEntryListField)
+//						.build())
+//				.build();
+//
+//		return dataEntryGroup;
+//	}
 }

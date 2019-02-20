@@ -6,7 +6,6 @@ import org.adempiere.user.CreatedUpdatedInfo;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.FieldType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -56,11 +55,5 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);
 		this.value = listValueId;
-	}
-
-	@Override
-	public FieldType getFieldType()
-	{
-		return FieldType.LIST;
 	}
 }

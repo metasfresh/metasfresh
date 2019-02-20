@@ -54,8 +54,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/** Note: has no save method because the records are created directly by the user, via UI. */
 @Repository
-public class DataEntryGroupRepository
+public class DataEntryLayoutRepository
 {
 	public List<DataEntryGroup> getByWindowId(final AdWindowId adWindowId)
 	{

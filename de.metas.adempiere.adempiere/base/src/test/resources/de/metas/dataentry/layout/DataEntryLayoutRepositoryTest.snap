@@ -1,4 +1,4 @@
-de.metas.dataentry.layout.DataEntryRepositoryTest.getByWindowId_incl_record=[
+de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
   [
     {
       "id": {
@@ -38,7 +38,7 @@ de.metas.dataentry.layout.DataEntryRepositoryTest.getByWindowId_incl_record=[
                 "value": "fieldRecord1_1_1_description",
                 "anyLanguage": true
               },
-              "type": "STRING",
+              "type": "TEXT",
               "mandatory": true,
               "listValues": [ ]
             },
@@ -55,158 +55,33 @@ de.metas.dataentry.layout.DataEntryRepositoryTest.getByWindowId_incl_record=[
               "type": "NUMBER",
               "mandatory": false,
               "listValues": [ ]
-            }
-          ]
-        },
-        {
-          "id": {
-            "repoId": 100007
-          },
-          "caption": {
-            "value": "subgroupRecord1_2_tabName",
-            "anyLanguage": true
-          },
-          "description": {
-            "value": "subgroupRecord1_2_description",
-            "anyLanguage": true
-          },
-          "internalName": "subgroupRecord1_2_tabName",
-          "dataEntryFields": [
-            {
-              "id": 100008,
-              "caption": {
-                "value": "fieldRecord1_1_1_name",
-                "anyLanguage": true
-              },
-              "description": {
-                "value": "fieldRecord1_1_1_description",
-                "anyLanguage": true
-              },
-              "type": "DATE",
-              "mandatory": false,
-              "listValues": [ ]
             },
             {
-              "id": 100009,
+              "id": 100013,
               "caption": {
-                "value": "fieldRecord1_1_2_name",
+                "value": "fieldRecord1_2_4_name",
                 "anyLanguage": true
               },
               "description": {
-                "value": "fieldRecord1_1_2_description",
+                "value": "fieldRecord1_2_4_description",
                 "anyLanguage": true
               },
-              "type": "LIST",
-              "mandatory": false,
-              "listValues": [
-                {
-                  "id": 100010,
-                  "dataEntryFieldId": 100009,
-                  "name": {
-                    "value": "listValueRecord_1_2_2_1_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "listValueRecord_1_2_2_1_description",
-                    "anyLanguage": true
-                  }
-                },
-                {
-                  "id": 100011,
-                  "dataEntryFieldId": 100009,
-                  "name": {
-                    "value": "listValueRecord_1_2_2_2_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "listValueRecord_1_2_2_2_description",
-                    "anyLanguage": true
-                  }
-                }
-              ]
-            },
-            {
-              "id": 100012,
-              "caption": {
-                "value": "fieldRecord1_1_3_name",
-                "anyLanguage": true
-              },
-              "description": {
-                "value": "fieldRecord1_1_3_description",
-                "anyLanguage": true
-              },
-              "type": "YESNO",
-              "mandatory": false,
-              "listValues": [ ]
-            }
-          ]
-        }
-      ],
-      "anonymous": false,
-      "documentLinkColumnName": {
-        "asString": "tableRecord_1_tableName_ID"
-      }
-    }
-  ]
-]
-
-
-de.metas.dataentry.layout.DataEntryRepositoryTest.getByWindowId_no_record=[
-  [
-    {
-      "id": {
-        "repoId": 100003
-      },
-      "caption": {
-        "value": "groupRecord1_tabName",
-        "anyLanguage": true
-      },
-      "description": {
-        "value": "groupRecord1_description",
-        "anyLanguage": true
-      },
-      "internalName": "groupRecord1_name",
-      "dataEntrySubGroups": [
-        {
-          "id": {
-            "repoId": 100004
-          },
-          "caption": {
-            "value": "subgroupRecord1_1_tabName",
-            "anyLanguage": true
-          },
-          "description": {
-            "value": "subgroupRecord1_1_description",
-            "anyLanguage": true
-          },
-          "internalName": "subgroupRecord1_1_tabName",
-          "dataEntryFields": [
-            {
-              "id": 100005,
-              "caption": {
-                "value": "fieldRecord1_1_1_name",
-                "anyLanguage": true
-              },
-              "description": {
-                "value": "fieldRecord1_1_1_description",
-                "anyLanguage": true
-              },
-              "type": "STRING",
+              "type": "TEXT",
               "mandatory": true,
               "listValues": [ ]
             },
             {
-              "id": 100006,
+              "id": 100014,
               "caption": {
-                "value": "fieldRecord1_1_2_name",
+                "value": "fieldRecord1_2_5_name",
                 "anyLanguage": true
               },
               "description": {
-                "value": "fieldRecord1_1_2_description",
+                "value": "fieldRecord1_2_5_description",
                 "anyLanguage": true
               },
-              "type": "NUMBER",
-              "mandatory": false,
+              "type": "LONG_TEXT",
+              "mandatory": true,
               "listValues": [ ]
             }
           ]
