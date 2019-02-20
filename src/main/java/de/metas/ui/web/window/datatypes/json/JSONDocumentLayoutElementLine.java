@@ -46,7 +46,7 @@ public class JSONDocumentLayoutElementLine implements Serializable
 				.filter(jsonElementsLine -> jsonElementsLine.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
-	
+
 	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementLine(elementLine, jsonOpts);
@@ -58,8 +58,6 @@ public class JSONDocumentLayoutElementLine implements Serializable
 
 	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
 	{
-		super();
-
 		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonOpts);
 		this.elements = ImmutableList.copyOf(elements);
 	}

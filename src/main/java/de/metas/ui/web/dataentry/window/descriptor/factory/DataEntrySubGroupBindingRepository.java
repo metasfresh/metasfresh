@@ -2,6 +2,9 @@ package de.metas.ui.web.dataentry.window.descriptor.factory;
 
 import static de.metas.util.Check.assumeNotNull;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -30,7 +33,9 @@ import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
@@ -78,8 +83,12 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			@NonNull final DocumentQuery query,
 			@NonNull final IDocumentChangesCollector changesCollector)
 	{
-		// TODO
-		return OrderedDocumentsList.of(ImmutableList.of(), ImmutableList.of());
+		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
+
+		final Optional<Document> document = retrieveDocumentOrNull(query, changesCollector);
+		document.ifPresent(documentsCollector::addDocument);
+
+		return documentsCollector;
 	}
 
 	@Override
@@ -87,15 +96,56 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			@NonNull final DocumentQuery query,
 			@NonNull final IDocumentChangesCollector changesCollector)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return retrieveDocumentOrNull(query, changesCollector)
+				.orElseThrow(() -> new AdempiereException("If retrieveDocument is invoked, then there needs to be a retrievable document")
+						.appendParametersToMessage()
+						.setParameter("query", query)
+						.setParameter("changesCollector", changesCollector));
+	}
+
+	private Optional<Document> retrieveDocumentOrNull(
+			@NonNull final DocumentQuery query,
+			@NonNull final IDocumentChangesCollector changesCollector)
+	{
+		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+
+		final Document parentDocument = query.getParentDocument();
+		final Function<DocumentId, Document> existingDocumentsSupplier = query.getExistingDocumentsSupplier();
+
+		final DetailId detailId = query.getEntityDescriptor().getDetailId();
+		final DataEntrySubGroupId dataEntrySubGroupId = extractDataEntrySubGroupId(detailId);
+		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
+
+		final Optional<DataEntryRecord> dataEntryRecord = dataEntryRecordRepository.getBy(dataEntrySubGroupId, parentRecordReference);
+		if (!dataEntryRecord.isPresent())
+		{
+			return Optional.empty();
+		}
+
+		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(dataEntryRecord.get());
+
+		Document document = null;
+		if (existingDocumentsSupplier != null)
+		{
+			final DocumentId documentId = documentValuesSupplier.getDocumentId();
+			document = existingDocumentsSupplier.apply(documentId);
+		}
+		if (document == null)
+		{
+			document = Document.builder(entityDescriptor)
+					.setParentDocument(parentDocument)
+					.setChangesCollector(changesCollector)
+					.initializeAsExistingRecord(documentValuesSupplier);
+		}
+		return Optional.ofNullable(document);
 	}
 
 	@Override
-	public DocumentId retrieveParentDocumentId(DocumentEntityDescriptor parentEntityDescriptor, DocumentQuery childDocumentQuery)
+	public DocumentId retrieveParentDocumentId(
+			@NonNull final DocumentEntityDescriptor parentEntityDescriptor,
+			@NonNull final DocumentQuery childDocumentQuery)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return DocumentId.of(childDocumentQuery.getParentLinkIdAsInt());
 	}
 
 	@Override
@@ -104,8 +154,6 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			Document parentDocument, IDocumentChangesCollector changesCollector)
 	{
 		final DocumentId documentId = retrieveNextDocumentId(entityDescriptor);
-
-		// TODO Auto-generated method stub
 
 		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
@@ -132,8 +180,10 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		assertValidState(document);
 		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 
-		// TODO Auto-generated method stub
+		final DataEntryRecord dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordId);
+		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(dataEntryRecord);
 
+		document.refreshFromSupplier(documentValuesSupplier);
 	}
 
 	@Override
@@ -144,7 +194,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final DataEntryRecord dataEntryRecord;
 		if (document.isNew())
 		{
-			dataEntryRecord = createDataEntryRecordId(document);
+			dataEntryRecord = createDataEntryRecord(document);
 		}
 		else
 		{
@@ -160,7 +210,11 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			final DataEntryFieldBindingDescriptor dataBinding = fieldView.getDescriptor().getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
 			final FieldType fieldType = dataBinding.getFieldType();
 			if (fieldType.equals(FieldType.SUB_GROUP_ID)
-					|| fieldType.equals(FieldType.PARENT_LINK_ID))
+					|| fieldType.equals(FieldType.PARENT_LINK_ID)
+					|| fieldType.equals(FieldType.CREATED)
+					|| fieldType.equals(FieldType.CREATED_BY)
+					|| fieldType.equals(FieldType.UPDATED)
+					|| fieldType.equals(FieldType.UPDATED_BY))
 			{
 				continue;
 			}
@@ -179,36 +233,50 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 	}
 
-	private DataEntryRecord createDataEntryRecordId(@NonNull final Document document)
+	private DataEntryRecord createDataEntryRecord(@NonNull final Document document)
 	{
 		final DataEntryRecord dataEntryRecord;
 		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 
-		final Document parentDocument = assumeNotNull(
-				document.getParentDocument(),
-				"DataEntry document needs to have a parent document; document={}", document);
-		final String tableName = assumeNotNull(
-				parentDocument.getEntityDescriptor().getTableNameOrNull(),
-				"The parent of dataEntry a document needs to have a table name; document={}, parentDocument={}", document, parentDocument);
+		final TableRecordReference parentReference = extractParentRecordReference(document.getParentDocument());
 
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
-		final int subGroupId = detailId.getIdInt();
-		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubGroup.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubGroup.Table_Name);
+		final DataEntrySubGroupId dataEntrySubGroupId = extractDataEntrySubGroupId(detailId);
 
 		dataEntryRecord = DataEntryRecord.builder()
 				.id(dataEntryRecordId)
 				.isNew(true)
-				.mainRecord(TableRecordReference.of(tableName, parentDocument.getDocumentIdAsInt()))
-				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(subGroupId))
+				.mainRecord(parentReference)
+				.dataEntrySubGroupId(dataEntrySubGroupId)
 				.fields(ImmutableList.of())
 				.build();
 		return dataEntryRecord;
+	}
+
+	private TableRecordReference extractParentRecordReference(@NonNull final Document parentDocument)
+	{
+		final String tableName = assumeNotNull(
+				parentDocument.getEntityDescriptor().getTableNameOrNull(),
+				"The parent of dataEntry a document needs to have a table name; parentDocument={}", parentDocument);
+
+		final TableRecordReference parentReference = TableRecordReference.of(tableName, parentDocument.getDocumentIdAsInt());
+		return parentReference;
+	}
+
+	private DataEntrySubGroupId extractDataEntrySubGroupId(@NonNull final DetailId detailId)
+	{
+		final int subGroupId = detailId.getIdInt();
+		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubGroup.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubGroup.Table_Name);
+
+		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(subGroupId);
+		return dataEntrySubGroupId;
 	}
 
 	private Object extractFieldValue(
 			@Nullable final Object value,
 			@NonNull final FieldType fieldType)
 	{
+		// TODO: try all cases; see if we can *always* just cast
 		if (value == null)
 		{
 			return null;
@@ -226,7 +294,10 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			case NUMBER:
 				result = fieldType.getClazz().cast(value);
 				break;
-			case STRING:
+			case TEXT:
+				result = fieldType.getClazz().cast(value);
+				break;
+			case LONG_TEXT:
 				result = fieldType.getClazz().cast(value);
 				break;
 			case YESNO:
@@ -293,4 +364,53 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		return 0;
 	}
 
+	private static final class DataEntryDocumentValuesSupplier implements DocumentValuesSupplier
+	{
+		private static final String VERSION_DEFAULT = "0";
+
+		private final DataEntryRecord dataEntryRecord;
+
+		private DataEntryDocumentValuesSupplier(@NonNull final DataEntryRecord dataEntryRecord)
+		{
+			this.dataEntryRecord = dataEntryRecord;
+		}
+
+		@Override
+		public DocumentId getDocumentId()
+		{
+			return DocumentId.of(dataEntryRecord.getId().get());
+		}
+
+		@Override
+		public String getVersion()
+		{
+			return VERSION_DEFAULT;
+		}
+
+		@Override
+		public Object getValue(@NonNull final DocumentFieldDescriptor fieldDescriptor)
+		{
+			final DataEntryFieldBindingDescriptor dataBinding = fieldDescriptor.getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
+
+			final DataEntryFieldId dataEntryFieldId = dataBinding.getDataEntryFieldId();
+			switch (dataBinding.getFieldType())
+			{
+				case CREATED:
+					return dataEntryRecord.getCreatedValue(dataEntryFieldId).orElse(null);
+				case CREATED_BY:
+					return dataEntryRecord.getCreatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
+				case UPDATED:
+					return dataEntryRecord.getUpdatedValue(dataEntryFieldId).orElse(null);
+				case UPDATED_BY:
+					return dataEntryRecord.getUpdatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
+				case PARENT_LINK_ID:
+					return dataEntryRecord.getMainRecord().getRecord_ID();
+				case SUB_GROUP_ID:
+					return dataEntryRecord.getDataEntrySubGroupId().getRepoId();
+				default:
+					return dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
+			}
+		}
+
+	}
 }

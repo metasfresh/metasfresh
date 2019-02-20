@@ -68,7 +68,7 @@ public class DataEntryTabLoaderTest
 	{
 		AdempiereTestHelper.get().init(); // ..because at one point in the code under test, we use IMsgBL
 
-		jsonOptions = JSONOptions.builder(null/*userSession*/).setAD_LanguageIfNotEmpty("en_US").build();
+		jsonOptions = JSONOptions.builder(null/* userSession */).setAD_LanguageIfNotEmpty("en_US").build();
 
 		final int windowIdInt = 5;
 
@@ -152,9 +152,15 @@ public class DataEntryTabLoaderTest
 						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(31))
-								.caption(ImmutableTranslatableString.constant("stringField1_caption"))
-								.description(ImmutableTranslatableString.constant("stringField1_description"))
-								.type(FieldType.STRING)
+								.caption(ImmutableTranslatableString.constant("textField1_caption"))
+								.description(ImmutableTranslatableString.constant("textField1_description"))
+								.type(FieldType.TEXT)
+								.build())
+						.dataEntryField(DataEntryField.builder()
+								.id(DataEntryFieldId.ofRepoId(31))
+								.caption(ImmutableTranslatableString.constant("longTextField1_caption"))
+								.description(ImmutableTranslatableString.constant("longTextField1_description"))
+								.type(FieldType.LONG_TEXT)
 								.build())
 						.dataEntryField(DataEntryField.builder()
 								.id(DataEntryFieldId.ofRepoId(32))
