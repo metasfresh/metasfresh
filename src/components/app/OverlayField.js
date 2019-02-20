@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 
@@ -37,7 +38,7 @@ class OverlayField extends Component {
         className="btn btn-sm btn-meta-success"
         onClick={() => onScanBarcode(true)}
       >
-        Scan using camera
+        {counterpart.translate('widget.scanFromCamera.caption')}
       </button>
     );
   };
