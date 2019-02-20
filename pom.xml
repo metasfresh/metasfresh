@@ -87,7 +87,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		    * two different versions (5.1.1 and 5.3.2) of junit-jupiter-api
 		    * two different versions (2.23.0 and 2.23.4) of mockito-core
 			in its dependency tree. That's why we exclude them and then explicitly add them. 
-			Also: mockito-core, jackson-databind and slf4j-api are used throughout the system, some we try our luck with the respective existing versions
+			Also: mockito-core, jackson-databind, jackson-core, commons-lang3 and slf4j-api are used throughout the system, some we try our luck with the respective existing versions
 			-->
 		<dependency>
 			<groupId>io.github.json-snapshot</groupId>
@@ -122,6 +122,10 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-lang3</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
