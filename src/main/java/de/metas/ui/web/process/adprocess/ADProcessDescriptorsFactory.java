@@ -24,6 +24,7 @@ import org.compiere.util.Env;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -172,7 +173,7 @@ import lombok.NonNull;
 
 		//
 		// Parameters document descriptor
-		final DocumentEntityDescriptor processDescriptor;
+		final DocumentEntityDescriptor parametersDescriptor;
 		{
 			final DocumentEntityDescriptor.Builder parametersDescriptorBuilder = DocumentEntityDescriptor.builder()
 					.setDocumentType(DocumentType.Process, processId.toDocumentId())
@@ -187,7 +188,7 @@ import lombok.NonNull;
 					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
 					.forEach(processParaDescriptor -> parametersDescriptorBuilder.addField(processParaDescriptor));
 
-			processDescriptor = parametersDescriptorBuilder.build();
+			parametersDescriptor = parametersDescriptorBuilder.build();
 		}
 
 		//
@@ -195,10 +196,13 @@ import lombok.NonNull;
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setProcessId(processId)
 				.setLayoutType(webuiProcesClassInfo.getLayoutType())
-				.setCaption(processDescriptor.getCaption())
-				.setDescription(processDescriptor.getDescription())
-				.addElements(processDescriptor);
+				.setCaption(parametersDescriptor.getCaption())
+				.setDescription(parametersDescriptor.getDescription())
+				.addElements(parametersDescriptor);
 
+		final boolean startProcessDirectly = (parametersDescriptor == null || parametersDescriptor.getFields().isEmpty())
+				|| (ImmutableTranslatableString.isEmpty(layout.getDescription()));
+		
 		//
 		// Process descriptor
 		return ProcessDescriptor.builder()
@@ -206,7 +210,8 @@ import lombok.NonNull;
 				.setInternalName(adProcess.getValue())
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
-				.setParametersDescriptor(processDescriptor)
+				.setParametersDescriptor(parametersDescriptor)
+				.setStartProcessDirectly(startProcessDirectly)
 				.setLayout(layout.build())
 				.build();
 	}

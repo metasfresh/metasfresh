@@ -33,6 +33,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -73,6 +74,9 @@ import lombok.ToString;
 
 	@Nullable
 	private final Document parametersDocument;
+	
+	@Getter
+	private final boolean startProcessDirectly;
 
 	@Builder
 	private ViewActionInstance(
@@ -94,10 +98,12 @@ import lombok.ToString;
 		{
 			parametersDocument = Document.builder(parametersDescriptor)
 					.initializeAsNewDocument(pinstanceId, VERSION_DEFAULT);
+			startProcessDirectly = parametersDocument.getFieldNames().isEmpty();
 		}
 		else
 		{
 			parametersDocument = null;
+			startProcessDirectly = true;
 		}
 	}
 

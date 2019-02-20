@@ -41,6 +41,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -73,6 +74,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	private final ViewRowIdsSelection viewRowIdsSelection;
 	private final int reportADProcessId;
 	private final Document parameters;
+	@Getter
+	private final boolean startProcessDirectly;
 
 	private ProcessInstanceResult lastExecutionResult;
 
@@ -91,6 +94,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		this.viewRowIdsSelection = viewRowIdsSelection;
 		this.reportADProcessId = reportADProcessId;
 		this.parameters = parameters;
+		this.startProcessDirectly = parameters.getFieldNames().isEmpty();
 
 		lastExecutionResult = null;
 
@@ -103,6 +107,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		viewRowIdsSelection = from.viewRowIdsSelection;
 		reportADProcessId = from.reportADProcessId;
 		parameters = from.parameters.copy(copyMode, changesCollector);
+		startProcessDirectly = from.startProcessDirectly;
 
 		lastExecutionResult = from.lastExecutionResult;
 

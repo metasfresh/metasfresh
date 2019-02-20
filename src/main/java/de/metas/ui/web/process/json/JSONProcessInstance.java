@@ -43,18 +43,21 @@ public class JSONProcessInstance implements Serializable
 	@JsonProperty("pinstanceId")
 	private final String pinstanceId;
 
-	/** Parameters */
 	@JsonProperty("fieldsByName")
 	private final Map<String, JSONDocumentField> parametersByName;
 
+	@JsonProperty("startProcessDirectly")
+	private final boolean startProcessDirectly;
+
 	private JSONProcessInstance(final IProcessInstanceController pinstance, final JSONOptions jsonOpts)
 	{
-		super();
 		pinstanceId = pinstance.getInstanceId().toJson();
 
 		parametersByName = pinstance.getParameters()
 				.stream()
 				.map(param -> JSONDocumentField.ofProcessParameter(param, jsonOpts.getAD_Language()))
 				.collect(GuavaCollectors.toImmutableMapByKey(JSONDocumentField::getField));
+
+		startProcessDirectly = pinstance.isStartProcessDirectly();
 	}
 }

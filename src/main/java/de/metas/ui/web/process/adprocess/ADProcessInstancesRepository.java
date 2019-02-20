@@ -186,6 +186,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.instanceId(adPInstanceId)
 					.parameters(parametersDoc)
 					.processClassInstance(processClassInstance)
+					.startProcessDirectly(processDescriptor.isStartProcessDirectly())
 					.contextSingleDocumentPath(request.getSingleDocumentPath())
 					.viewId(request.getViewRowIdsSelection() != null ? request.getViewRowIdsSelection().getViewId() : null)
 					.build();
@@ -368,6 +369,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.instanceId(adPInstanceDocumentId)
 					.parameters(parametersDoc)
 					.processClassInstance(processClassInstance)
+					.startProcessDirectly(processDescriptor.isStartProcessDirectly())
 					.viewId(viewId)
 					.build();
 		}

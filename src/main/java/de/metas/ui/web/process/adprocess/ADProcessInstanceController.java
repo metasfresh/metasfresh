@@ -42,6 +42,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -76,12 +77,17 @@ import lombok.NonNull;
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
+	@Getter
 	private final DocumentId instanceId;
 
 	private final ITranslatableString caption;
 	private final Document parameters;
 	private final Object processClassInstance;
 
+	@Getter
+	private final boolean startProcessDirectly;
+
+	@Getter
 	private final ViewId viewId;
 
 	private final DocumentPath contextSingleDocumentPath;
@@ -98,6 +104,7 @@ import lombok.NonNull;
 			@NonNull final DocumentId instanceId,
 			@Nullable final Document parameters,
 			@Nullable final Object processClassInstance,
+			@NonNull final Boolean startProcessDirectly,
 			@Nullable final DocumentPath contextSingleDocumentPath,
 			//
 			@Nullable final ViewId viewId)
@@ -106,6 +113,7 @@ import lombok.NonNull;
 		this.instanceId = instanceId;
 		this.parameters = parameters;
 		this.processClassInstance = processClassInstance;
+		this.startProcessDirectly = startProcessDirectly;
 
 		this.viewId = viewId;
 
@@ -125,6 +133,7 @@ import lombok.NonNull;
 		caption = from.caption;
 		parameters = from.parameters.copy(copyMode, changesCollector);
 		processClassInstance = from.processClassInstance;
+		startProcessDirectly = from.startProcessDirectly;
 
 		viewId = from.viewId;
 
@@ -146,17 +155,6 @@ import lombok.NonNull;
 				.add("executionResult", executionResult)
 				.add("caption", caption)
 				.toString();
-	}
-
-	@Override
-	public DocumentId getInstanceId()
-	{
-		return instanceId;
-	}
-
-	public ViewId getViewId()
-	{
-		return viewId;
 	}
 
 	private Document getParametersDocument()
