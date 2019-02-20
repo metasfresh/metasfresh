@@ -74,7 +74,6 @@ public class AccountImportTableSqlUpdater
 				.append("SET ParentElementValue_ID=(SELECT C_ElementValue_ID ")
 				.append("FROM C_ElementValue ev WHERE i.C_Element_ID=ev.C_Element_ID ")
 				.append("AND i.ParentValue=ev.Value AND i.AD_Client_ID=ev.AD_Client_ID ) ")
-				// .append("AND ev.AD_Org_ID IN (0, i.AD_Org_ID) ) ")
 				.append("WHERE ParentElementValue_ID IS NULL ")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
