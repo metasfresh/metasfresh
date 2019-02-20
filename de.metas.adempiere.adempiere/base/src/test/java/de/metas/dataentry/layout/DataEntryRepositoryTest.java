@@ -56,8 +56,12 @@ import de.metas.i18n.ImmutableTranslatableString;
 
 public class DataEntryRepositoryTest
 {
-	private static final String STRING_FIELD1_DESCRIPTION = "stringField1_description";
-	private static final String STRING_FIELD1_CAPTION = "stringField1_caption";
+	private static final String TEXT_FIELD1_DESCRIPTION = "textField1_description";
+	private static final String TEXT_FIELD1_CAPTION = "textField1_caption";
+
+	private static final String LONG_TEXT_FIELD1_DESCRIPTION = "longTextField1_description";
+	private static final String LONG_TEXT_FIELD1_CAPTION = "longTextField1_caption";
+
 	private DataEntryGroupRepository dataEntryRepository;
 
 	@Before
@@ -215,11 +219,18 @@ public class DataEntryRepositoryTest
 	{
 		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
 
-		final DataEntryField dataEntryStringField = DataEntryField.builder()
+		final DataEntryField dataEntryTextField = DataEntryField.builder()
 				.id(DataEntryFieldId.ofRepoId(31))
-				.caption(ImmutableTranslatableString.constant(STRING_FIELD1_CAPTION))
-				.description(ImmutableTranslatableString.constant(STRING_FIELD1_DESCRIPTION))
-				.type(FieldType.STRING)
+				.caption(ImmutableTranslatableString.constant(TEXT_FIELD1_CAPTION))
+				.description(ImmutableTranslatableString.constant(TEXT_FIELD1_DESCRIPTION))
+				.type(FieldType.TEXT)
+				.build();
+
+		final DataEntryField dataEntryLongTextField = DataEntryField.builder()
+				.id(DataEntryFieldId.ofRepoId(31))
+				.caption(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_CAPTION))
+				.description(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_DESCRIPTION))
+				.type(FieldType.LONG_TEXT)
 				.build();
 
 		final DataEntryField dataEntryNumberField = DataEntryField.builder()
@@ -273,7 +284,8 @@ public class DataEntryRepositoryTest
 						.internalName("dataEntrySubGroup_internalName")
 						.caption(ImmutableTranslatableString.constant("dataEntrySubGroup_caption"))
 						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
-						.dataEntryField(dataEntryStringField)
+						.dataEntryField(dataEntryTextField)
+						.dataEntryField(dataEntryLongTextField)
 						.dataEntryField(dataEntryNumberField)
 						.dataEntryField(dataEntryDateField)
 						.dataEntryField(dataEntryYesNoField)

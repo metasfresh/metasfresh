@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -140,13 +141,14 @@ public class DataEntryRecordRepositoryTest
 		saveRecord(record);
 
 		// invoke the method under test
-		final DataEntryRecord result = dataEntryRecordRepository.getBy(dataEntrySubGroupId, tableRecordReference);
+		final Optional<DataEntryRecord> result = dataEntryRecordRepository.getBy(dataEntrySubGroupId, tableRecordReference);
 
-		assertThat(result.getId().get().getRepoId()).isEqualTo(record.getDataEntry_Record_ID());
-		assertThat(result.getMainRecord().getAD_Table_ID()).isEqualTo(record.getAD_Table_ID());
-		assertThat(result.getMainRecord().getRecord_ID()).isEqualTo(record.getRecord_ID());
+		assertThat(result).isPresent();
+		assertThat(result.get().getId().get().getRepoId()).isEqualTo(record.getDataEntry_Record_ID());
+		assertThat(result.get().getMainRecord().getAD_Table_ID()).isEqualTo(record.getAD_Table_ID());
+		assertThat(result.get().getMainRecord().getRecord_ID()).isEqualTo(record.getRecord_ID());
 
-		assertThat(result.getFields())
+		assertThat(result.get().getFields())
 				.containsExactlyElementsOf(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA);
 	}
 

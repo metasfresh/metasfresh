@@ -60,6 +60,6 @@ public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 	@Override
 	public FieldType getFieldType()
 	{
-		return FieldType.STRING;
+		return FieldType.TEXT;
 	}
 }

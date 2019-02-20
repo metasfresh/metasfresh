@@ -85,12 +85,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>io.github.json-snapshot</groupId>
-			<artifactId>json-snapshot-PR</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>

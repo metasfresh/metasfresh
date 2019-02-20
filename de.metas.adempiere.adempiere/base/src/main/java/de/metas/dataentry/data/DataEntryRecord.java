@@ -123,4 +123,44 @@ public class DataEntryRecord
 	{
 		return ImmutableList.copyOf(fields.values());
 	}
+
+	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return getOptional(dataEntryFieldId)
+				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+				.map(CreatedUpdatedInfo::getCreated);
+	}
+
+	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return getOptional(dataEntryFieldId)
+				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+				.map(CreatedUpdatedInfo::getCreatedBy);
+	}
+
+	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return getOptional(dataEntryFieldId)
+				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+				.map(CreatedUpdatedInfo::getUpdated);
+	}
+
+	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return getOptional(dataEntryFieldId)
+				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+				.map(CreatedUpdatedInfo::getUpdatedBy);
+	}
+
+	public Optional<Object> getFieldValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return getOptional(dataEntryFieldId)
+				.map(DataEntryRecordField::getValue);
+	}
+
+	private Optional<DataEntryRecordField<?>> getOptional(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return Optional.ofNullable(fields.get(dataEntryFieldId));
+	}
+
 }

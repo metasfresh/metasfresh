@@ -1,12 +1,12 @@
 package de.metas.dataentry.data;
 
-import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -53,7 +53,7 @@ public class DataEntryRecordRepository
 
 	}
 
-	public DataEntryRecord getBy(
+	public Optional<DataEntryRecord> getBy(
 			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
 			@NonNull final ITableRecordReference tableRecordReference)
 	{
@@ -69,11 +69,12 @@ public class DataEntryRecordRepository
 				.create()
 				.firstOnly(I_DataEntry_Record.class);
 
-		assumeNotNull(record,
-				"There needs to be a DataEntry_Record record for DataEntry_SubGroup_ID={}, AD_Table_ID={} and Record_ID={}",
-				dataEntrySubGroupId.getRepoId(), adTableId, recordId);
+		if (record == null)
+		{
+			return Optional.empty();
+		}
 
-		return ofRecord(record);
+		return Optional.of(ofRecord(record));
 	}
 
 	public DataEntryRecord getBy(@NonNull final DataEntryRecordId dataEntryRecordId)

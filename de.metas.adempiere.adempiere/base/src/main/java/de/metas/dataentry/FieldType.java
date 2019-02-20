@@ -37,7 +37,9 @@ public enum FieldType
 	UPDATED(ZonedDateTime.class),
 	UPDATED_BY(Integer.class),
 
-	STRING(String.class),
+	TEXT(String.class),
+
+	LONG_TEXT(String.class),
 
 	NUMBER(BigDecimal.class),
 

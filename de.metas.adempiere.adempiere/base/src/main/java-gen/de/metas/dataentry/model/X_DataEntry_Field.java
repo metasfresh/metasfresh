@@ -14,7 +14,7 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1791517916L;
+	private static final long serialVersionUID = -2121135502L;
 
     /** Standard Constructor */
     public X_DataEntry_Field (Properties ctx, int DataEntry_Field_ID, String trxName)
@@ -84,6 +84,8 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	public static final String DATAENTRY_RECORDTYPE_Text = "T";
 	/** YesNo = B */
 	public static final String DATAENTRY_RECORDTYPE_YesNo = "B";
+	/** LongText = LT */
+	public static final String DATAENTRY_RECORDTYPE_LongText = "LT";
 	/** Set Datentyp.
 		@param DataEntry_RecordType Datentyp	  */
 	@Override

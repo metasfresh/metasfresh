@@ -200,7 +200,11 @@ public class DataEntryGroupRepository
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text.equals(recordType))
 		{
-			type = FieldType.STRING;
+			type = FieldType.TEXT;
+		}
+		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_LongText.equals(recordType))
+		{
+			type = FieldType.LONG_TEXT;
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_YesNo.equals(recordType))
 		{
