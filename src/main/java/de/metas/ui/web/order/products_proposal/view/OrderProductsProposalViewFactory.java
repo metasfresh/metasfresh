@@ -22,6 +22,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_Delete;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
@@ -118,7 +119,8 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		return ImmutableList.of(
 				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class),
+				createProcessDescriptor(WEBUI_ProductsProposal_Delete.class));
 	}
 
 	@Override

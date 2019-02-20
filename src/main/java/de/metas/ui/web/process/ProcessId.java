@@ -1,5 +1,7 @@
 package de.metas.ui.web.process;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
@@ -141,6 +143,15 @@ public final class ProcessId
 			this.processIdAsInt = processIdAsInt;
 		}
 		return processIdAsInt;
+	}
+
+	public AdProcessId toAdProcessId()
+	{
+		if (!PROCESSHANDLERTYPE_AD_Process.contentEquals(getProcessHandlerType()))
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + AdProcessId.class.getSimpleName() + " because the processHanderType is not " + PROCESSHANDLERTYPE_AD_Process);
+		}
+		return AdProcessId.ofRepoId(getProcessIdAsInt());
 	}
 
 	public DocumentId toDocumentId()

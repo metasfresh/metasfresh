@@ -46,6 +46,8 @@ public interface IProcessInstanceController
 {
 	DocumentId getInstanceId();
 
+	boolean isStartProcessDirectly();
+
 	ProcessInstanceResult startProcess(ProcessExecutionContext context);
 
 	/**

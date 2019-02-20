@@ -176,6 +176,12 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		rowsData.patchRow(rowId, request);
 	}
 
+	public void removeRowsByIds(final Set<DocumentId> rowIds)
+	{
+		rowsData.removeRowsByIds(rowIds);
+		invalidateAll();
+	}
+
 	public ProductsProposalView filter(final ProductsProposalViewFilter filter)
 	{
 		rowsData.filter(filter);
