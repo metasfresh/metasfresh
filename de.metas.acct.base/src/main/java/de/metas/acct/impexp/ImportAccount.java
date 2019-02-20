@@ -3,7 +3,6 @@
  */
 package de.metas.acct.impexp;
 
-import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_I_ElementValue;
 import org.compiere.process.AbstractImportJavaProcess;
 
@@ -33,11 +32,11 @@ import org.compiere.process.AbstractImportJavaProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ImportAccount extends AbstractImportJavaProcess<ImportAccount>
+public class ImportAccount extends AbstractImportJavaProcess<I_I_ElementValue>
 {
 
 	public ImportAccount()
 	{
-		super(ImportAccount.class);
+		super(I_I_ElementValue.class);
 	}
 }
