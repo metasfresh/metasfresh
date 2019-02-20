@@ -5,20 +5,40 @@ package de.metas.acct.impexp;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_AD_Tree;
 import org.compiere.model.I_C_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_I_ElementValue;
+import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_AD_Tree;
+import org.compiere.model.X_C_Element;
 import org.compiere.model.X_I_ElementValue;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -87,7 +107,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(IMutable<Object> state, I_I_ElementValue importRecord) throws Exception
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_ElementValue importRecord) throws Exception
 	{
 		//
 		// Get previous values
@@ -128,13 +148,15 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 			}
 		}
 
-		importElementValue(importRecord);
+		final I_C_ElementValue ev = importElementValue(importRecord);
+		createOrGetValidCombination(ev);
+
 		context.collectImportRecordForSameElement(importRecord);
 
 		return accountImportResult;
 	}
 
-	private ImportRecordResult importElement(I_I_ElementValue importRecord)
+	private ImportRecordResult importElement(@NonNull final I_I_ElementValue importRecord)
 	{
 		final ImportRecordResult schemaImportResult;
 
@@ -160,43 +182,64 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 
 	}
 
-	private I_C_Element createNewElement(I_I_ElementValue importRecord)
+	private I_C_Element createNewElement(@NonNull final I_I_ElementValue importRecord)
 	{
-		final I_C_Element element;
-		element = InterfaceWrapperHelper.create(getCtx(), I_C_Element.class, ITrx.TRXNAME_ThreadInherited);
+		final I_AD_Tree tree = createADTree(importRecord);
+		return createElement(importRecord, tree);
+	}
+
+	private I_AD_Tree createADTree(final I_I_ElementValue importRecord)
+	{
+		final I_AD_Tree tree = InterfaceWrapperHelper.newInstance(I_AD_Tree.class, importRecord);
+		tree.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_ElementValue.Table_Name));
+		tree.setName(importRecord.getElementName());
+		tree.setTreeType(X_AD_Tree.TREETYPE_ElementValue);
+		tree.setIsAllNodes(true);
+		InterfaceWrapperHelper.save(tree);
+		return tree;
+	}
+
+	private I_C_Element createElement(final I_I_ElementValue importRecord, final I_AD_Tree tree)
+	{
+		final I_C_Element element = InterfaceWrapperHelper.newInstance(I_C_Element.class, importRecord);
 		element.setAD_Org_ID(importRecord.getAD_Org_ID());
 		element.setName(importRecord.getElementName());
+		element.setAD_Tree_ID(tree.getAD_Tree_ID());
+		element.setElementType(X_C_Element.ELEMENTTYPE_Account);
 		InterfaceWrapperHelper.save(element);
 		return element;
 	}
 
-	private ImportRecordResult doNothingAndUsePreviousElement(I_I_ElementValue importRecord, I_I_ElementValue previousImportRecord)
+	private ImportRecordResult doNothingAndUsePreviousElement(@NonNull final I_I_ElementValue importRecord, @NonNull final I_I_ElementValue previousImportRecord)
 	{
 		importRecord.setC_Element_ID(previousImportRecord.getC_Element_ID());
 		InterfaceWrapperHelper.save(importRecord);
 		return ImportRecordResult.Nothing;
 	}
 
-	private I_C_ElementValue importElementValue(I_I_ElementValue importRecord)
+	private I_C_ElementValue importElementValue(@NonNull final I_I_ElementValue importRecord)
 	{
-		I_C_ElementValue elementvalue = importRecord.getC_ElementValue();
-		if (elementvalue == null)
+		final I_C_ElementValue elementvalue;
+		if (importRecord.getC_ElementValue_ID() > 0)
 		{
-			elementvalue = InterfaceWrapperHelper.create(getCtx(), I_C_ElementValue.class, ITrx.TRXNAME_ThreadInherited);
-			elementvalue.setC_Element_ID(importRecord.getC_Element_ID());
+			elementvalue = InterfaceWrapperHelper.newInstance(I_C_ElementValue.class, importRecord);
+		}
+		else
+		{
+			elementvalue = importRecord.getC_ElementValue();
 		}
 
 		setElementValueFields(importRecord, elementvalue);
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, elementvalue, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(elementvalue);
-
 		importRecord.setC_ElementValue_ID(elementvalue.getC_ElementValue_ID());
+
 		return elementvalue;
 	}
 
-	private void setElementValueFields(I_I_ElementValue importRecord, I_C_ElementValue elementvalue)
+	private void setElementValueFields(@NonNull final I_I_ElementValue importRecord, @NonNull final I_C_ElementValue elementvalue)
 	{
+		elementvalue.setC_Element_ID(importRecord.getC_Element_ID());
 		elementvalue.setValue(importRecord.getValue());
 		elementvalue.setName(importRecord.getName());
 		elementvalue.setAccountSign(importRecord.getAccountSign());
@@ -208,9 +251,57 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 		elementvalue.setPostStatistical(importRecord.isPostStatistical());
 	}
 
+	private MAccount createOrGetValidCombination(@NonNull final I_C_ElementValue elementvalue)
+	{
+
+		final AccountDimension acctDim = newAccountDimension(elementvalue);
+		return MAccount.get(getCtx(), acctDim);
+	}
+
+	private AccountDimension newAccountDimension(final I_C_ElementValue ev)
+	{
+		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ev.getAD_Org_ID()));
+
+		return AccountDimension.builder()
+				.setAcctSchemaId(acctSchemaId)
+				.setAD_Client_ID(ev.getAD_Client_ID())
+				.setAD_Org_ID(ev.getAD_Org_ID())
+				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
+				.build();
+	}
+
 	@Override
 	protected void afterImport()
 	{
 		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getWhereClause());
+		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);
+	}
+
+	private Set<Integer> retrieveImportedAdTrees()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_I_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_I_ElementValue.COLUMNNAME_Processed, true)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_I_ElementValue.COLUMN_C_Element_ID)
+				.andCollect(I_C_Element.COLUMN_AD_Tree_ID)
+				.create()
+				.listDistinct(I_AD_Tree.COLUMNNAME_AD_Tree_ID)
+				.stream()
+				.map(map -> extractTreeIdOrNull(map))
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static final Integer extractTreeIdOrNull(final Map<String, Object> map)
+	{
+		final int treeId = NumberUtils.asInt(map.get(I_AD_Tree.COLUMNNAME_AD_Tree_ID), -1);
+		if (treeId <= 0)
+		{
+			return null;
+		}
+
+		return treeId;
 	}
 }
