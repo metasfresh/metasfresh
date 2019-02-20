@@ -415,7 +415,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<profile>
 			<!-- 
 				The enforcer plugin can be a tremendous nuisance.
-				It fails because we use version ranges in our parent pom declarations with this outout:
+				It fails because we use version ranges in our parent pom declarations with this output:
 
 [WARNING] Could not find org.jmockit:jmockit:jar:1.30:test at null
 [WARNING] Rule 0: org.apache.maven.plugins.enforcer.RequirePluginVersions failed with message:
