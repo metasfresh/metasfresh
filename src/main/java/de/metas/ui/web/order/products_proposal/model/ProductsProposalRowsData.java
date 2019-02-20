@@ -243,6 +243,13 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowsById.put(row.getId(), row);
 	}
 
+	public synchronized void removeRowsByIds(@NonNull final Set<DocumentId> rowIds)
+	{
+		rowIdsOrderedAndFiltered.removeAll(rowIds);
+		rowIdsOrdered.removeAll(rowIds);
+		rowIds.forEach(rowsById::remove);
+	}
+
 	public synchronized ProductsProposalViewFilter getFilter()
 	{
 		return filter;
