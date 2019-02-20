@@ -13,18 +13,17 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.Env;
+import org.compiere.model.X_AD_Process;
+import org.compiere.util.Util;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -161,7 +160,8 @@ import lombok.NonNull;
 
 	private ProcessDescriptor retrieveProcessDescriptor(final ProcessId processId)
 	{
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), processId.getProcessIdAsInt(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
+		final I_AD_Process adProcess = adProcessesRepo.getById(processId.toAdProcessId());
 		if (adProcess == null)
 		{
 			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
@@ -200,9 +200,11 @@ import lombok.NonNull;
 				.setDescription(parametersDescriptor.getDescription())
 				.addElements(parametersDescriptor);
 
-		final boolean startProcessDirectly = (parametersDescriptor == null || parametersDescriptor.getFields().isEmpty())
-				|| (ImmutableTranslatableString.isEmpty(layout.getDescription()));
-		
+		final boolean startProcessDirectly = computeIsStartProcessDirectly(
+				adProcess.getShowHelp(),
+				!parametersDescriptor.getFields().isEmpty() // hasProcessParameters
+		);
+
 		//
 		// Process descriptor
 		return ProcessDescriptor.builder()
@@ -214,6 +216,30 @@ import lombok.NonNull;
 				.setStartProcessDirectly(startProcessDirectly)
 				.setLayout(layout.build())
 				.build();
+	}
+
+	private static boolean computeIsStartProcessDirectly(
+			final String showHelpParam,
+			final boolean hasProcessParameters)
+	{
+		final String showHelp = Util.coalesce(showHelpParam, X_AD_Process.SHOWHELP_DonTShowHelp);
+
+		if (X_AD_Process.SHOWHELP_ShowHelp.equals(showHelp))
+		{
+			return false;
+		}
+		else if (X_AD_Process.SHOWHELP_DonTShowHelp.equals(showHelp))
+		{
+			return !hasProcessParameters;
+		}
+		else if (X_AD_Process.SHOWHELP_RunSilently_TakeDefaults.equals(showHelp))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(
