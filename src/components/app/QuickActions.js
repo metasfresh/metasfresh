@@ -132,7 +132,14 @@ export class QuickActions extends Component {
   };
 
   updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
-    const { windowType, viewId, viewProfileId, selected, childView, parentView } = this.props;
+    const {
+      windowType,
+      viewId,
+      viewProfileId,
+      selected,
+      childView,
+      parentView,
+    } = this.props;
 
     this.queue.pushTask((res, rej) => {
       this.fetchActions(
