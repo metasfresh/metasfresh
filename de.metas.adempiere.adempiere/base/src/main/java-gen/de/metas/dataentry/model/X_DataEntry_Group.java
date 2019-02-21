@@ -14,7 +14,7 @@ public class X_DataEntry_Group extends org.compiere.model.PO implements I_DataEn
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1202103903L;
+	private static final long serialVersionUID = 323981254L;
 
     /** Standard Constructor */
     public X_DataEntry_Group (Properties ctx, int DataEntry_Group_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_DataEntry_Group extends org.compiere.model.PO implements I_DataEn
 			setDataEntry_Group_ID (0);
 			setDataEntry_TargetWindow_ID (0);
 			setName (null);
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Group WHERE DataEntry_TargetWindow_ID=@DataEntry_TargetWindow_ID/0@
 			setTabName (null);
         } */
     }
@@ -133,6 +134,28 @@ public class X_DataEntry_Group extends org.compiere.model.PO implements I_DataEn
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Registername.

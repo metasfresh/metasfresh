@@ -58,6 +58,7 @@ public class DataEntryListValueId implements RepoIdAware
 		return dataEntryListValueId.getRepoId();
 	}
 
+	@JsonValue
 	int repoId;
 
 	@JsonCreator
@@ -66,10 +67,10 @@ public class DataEntryListValueId implements RepoIdAware
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
 	}
 
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
-	}
+//	@Override
+//	@JsonValue
+//	public int getRepoId()
+//	{
+//		return repoId;
+//	}
 }

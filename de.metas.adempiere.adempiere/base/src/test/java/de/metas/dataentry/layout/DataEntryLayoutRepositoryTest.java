@@ -20,6 +20,7 @@ import org.junit.Test;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
+import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.model.X_DataEntry_Field;
 
@@ -47,12 +48,6 @@ import de.metas.dataentry.model.X_DataEntry_Field;
 
 public class DataEntryLayoutRepositoryTest
 {
-//	private static final String TEXT_FIELD1_DESCRIPTION = "textField1_description";
-//	private static final String TEXT_FIELD1_CAPTION = "textField1_caption";
-//
-//	private static final String LONG_TEXT_FIELD1_DESCRIPTION = "longTextField1_description";
-//	private static final String LONG_TEXT_FIELD1_CAPTION = "longTextField1_caption";
-
 	private DataEntryLayoutRepository dataEntryLayoutRepository;
 
 	@Before
@@ -99,6 +94,7 @@ public class DataEntryLayoutRepositoryTest
 		tabRecord_1.setAD_Table(tableRecord_1);
 		saveRecord(tabRecord_1);
 
+		// group
 		final I_DataEntry_Group groupRecord1 = newInstance(I_DataEntry_Group.class);
 		groupRecord1.setDataEntry_TargetWindow_ID(windowId_1.getRepoId());
 		groupRecord1.setName("groupRecord1_name");
@@ -106,6 +102,26 @@ public class DataEntryLayoutRepositoryTest
 		groupRecord1.setTabName("groupRecord1_tabName");
 		saveRecord(groupRecord1);
 
+		// note: the section records are created in reverse order (SeqNo)
+		final I_DataEntry_Section sectionRecord1_1 = newInstance(I_DataEntry_Section.class);
+		sectionRecord1_1.setDataEntry_Group(groupRecord1);
+		sectionRecord1_1.setSeqNo(20);
+		sectionRecord1_1.setIsInitiallyClosed(true);
+		sectionRecord1_1.setName("sectionRecord1_1_name");
+		sectionRecord1_1.setSectionName("sectionRecord1_1_sectionName");
+		sectionRecord1_1.setDescription("sectionRecord1_1_description");
+		saveRecord(sectionRecord1_1);
+
+		final I_DataEntry_Section sectionRecord1_2 = newInstance(I_DataEntry_Section.class);
+		sectionRecord1_2.setDataEntry_Group(groupRecord1);
+		sectionRecord1_2.setSeqNo(10);
+		sectionRecord1_2.setIsInitiallyClosed(false);
+		sectionRecord1_2.setName("sectionRecord1_2_name");
+		sectionRecord1_2.setSectionName("sectionRecord1_2_sectionName");
+		sectionRecord1_2.setDescription("sectionRecord1_2_description");
+		saveRecord(sectionRecord1_2);
+
+		// subgroup 1
 		final I_DataEntry_SubGroup subgroupRecord1_1 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_1.setDataEntry_Group(groupRecord1);
 		subgroupRecord1_1.setName("subgroupRecord1_1_name");
@@ -113,27 +129,30 @@ public class DataEntryLayoutRepositoryTest
 		subgroupRecord1_1.setTabName("subgroupRecord1_1_tabName");
 		saveRecord(subgroupRecord1_1);
 
+		// note: the fields of group 1 are created in reverse order (SeqNo)
 		final I_DataEntry_Field fieldRecord1_1_1 = newInstance(I_DataEntry_Field.class);
 		fieldRecord1_1_1.setDataEntry_SubGroup(subgroupRecord1_1);
 		fieldRecord1_1_1.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
 		fieldRecord1_1_1.setName("fieldRecord1_1_1_name");
 		fieldRecord1_1_1.setDescription("fieldRecord1_1_1_description");
 		fieldRecord1_1_1.setIsMandatory(true);
-		fieldRecord1_1_1.setSeqNo(10);
+		fieldRecord1_1_1.setSeqNo(20);
 		fieldRecord1_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		fieldRecord1_1_1.setDataEntry_Section(sectionRecord1_1);
 		saveRecord(fieldRecord1_1_1);
 
-		// number
 		final I_DataEntry_Field fieldRecord1_1_2 = newInstance(I_DataEntry_Field.class);
 		fieldRecord1_1_2.setDataEntry_SubGroup(subgroupRecord1_1);
 		fieldRecord1_1_2.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Number);
 		fieldRecord1_1_2.setName("fieldRecord1_1_2_name");
 		fieldRecord1_1_2.setDescription("fieldRecord1_1_2_description");
 		fieldRecord1_1_2.setIsMandatory(false);
-		fieldRecord1_1_2.setSeqNo(20);
+		fieldRecord1_1_2.setSeqNo(10);
 		fieldRecord1_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
+		fieldRecord1_1_2.setDataEntry_Section(sectionRecord1_1);
 		saveRecord(fieldRecord1_1_2);
 
+		// subgroup 2
 		final I_DataEntry_SubGroup subgroupRecord1_2 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_2.setDataEntry_Group(groupRecord1);
 		subgroupRecord1_2.setName("subgroupRecord1_2_name");
@@ -149,6 +168,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_1.setIsMandatory(false);
 		fieldRecord1_2_1.setSeqNo(10);
 		fieldRecord1_2_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		fieldRecord1_2_1.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_1);
 
 		final I_DataEntry_Field fieldRecord1_2_2 = newInstance(I_DataEntry_Field.class);
@@ -159,6 +179,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_2.setIsMandatory(false);
 		fieldRecord1_2_2.setSeqNo(20);
 		fieldRecord1_2_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
+		fieldRecord1_2_2.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_2);
 
 		final I_DataEntry_ListValue listValueRecord_1_2_2_1 = newInstance(I_DataEntry_ListValue.class);
@@ -183,6 +204,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_3.setIsMandatory(false);
 		fieldRecord1_2_3.setSeqNo(30);
 		fieldRecord1_2_3.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
+		fieldRecord1_2_3.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_3);
 
 		final I_DataEntry_Field fieldRecord1_2_4 = newInstance(I_DataEntry_Field.class);
@@ -193,6 +215,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_4.setIsMandatory(true);
 		fieldRecord1_2_4.setSeqNo(40);
 		fieldRecord1_2_4.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		fieldRecord1_2_4.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_4);
 
 		final I_DataEntry_Field fieldRecord1_2_5 = newInstance(I_DataEntry_Field.class);
@@ -203,89 +226,9 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_5.setIsMandatory(true);
 		fieldRecord1_2_5.setSeqNo(50);
 		fieldRecord1_2_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
+		fieldRecord1_2_5.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_5);
 
 		return groupRecord1;
 	}
-
-//	private DataEntryGroup createSimpleDataEntryGroup()
-//	{
-//		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
-//
-//		final DataEntryField dataEntryTextField = DataEntryField.builder()
-//				.id(DataEntryFieldId.ofRepoId(31))
-//				.caption(ImmutableTranslatableString.constant(TEXT_FIELD1_CAPTION))
-//				.description(ImmutableTranslatableString.constant(TEXT_FIELD1_DESCRIPTION))
-//				.type(FieldType.TEXT)
-//				.build();
-//
-//		final DataEntryField dataEntryLongTextField = DataEntryField.builder()
-//				.id(DataEntryFieldId.ofRepoId(31))
-//				.caption(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_CAPTION))
-//				.description(ImmutableTranslatableString.constant(LONG_TEXT_FIELD1_DESCRIPTION))
-//				.type(FieldType.LONG_TEXT)
-//				.build();
-//
-//		final DataEntryField dataEntryNumberField = DataEntryField.builder()
-//				.id(DataEntryFieldId.ofRepoId(32))
-//				.caption(ImmutableTranslatableString.constant("numberField1_caption"))
-//				.description(ImmutableTranslatableString.constant("numberField1_description"))
-//				.type(FieldType.NUMBER)
-//				.build();
-//
-//		final DataEntryField dataEntryDateField = DataEntryField.builder()
-//				.id(DataEntryFieldId.ofRepoId(33))
-//				.caption(ImmutableTranslatableString.constant("dateField1_caption"))
-//				.description(ImmutableTranslatableString.constant("dateField1_description"))
-//				.type(FieldType.DATE)
-//				.build();
-//
-//		final DataEntryField dataEntryYesNoField = DataEntryField.builder()
-//				.id(DataEntryFieldId.ofRepoId(34))
-//				.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
-//				.description(ImmutableTranslatableString.constant("yesNoField1_description"))
-//				.type(FieldType.YESNO)
-//				.build();
-//
-//		final DataEntryField dataEntryListField = DataEntryField.builder()
-//				.id(dataEntryListFieldId)
-//				.caption(ImmutableTranslatableString.constant("listField1_caption"))
-//				.description(ImmutableTranslatableString.constant("listField1_description"))
-//				.type(FieldType.LIST)
-//				.listValue(new DataEntryListValue(
-//						DataEntryListValueId.ofRepoId(41),
-//						dataEntryListFieldId,
-//						ImmutableTranslatableString.constant("listValue1_name"),
-//						ImmutableTranslatableString.constant("listValue1_description")))
-//				.listValue(new DataEntryListValue(
-//						DataEntryListValueId.ofRepoId(42),
-//						dataEntryListFieldId,
-//						ImmutableTranslatableString.constant("listValue2_name"),
-//						ImmutableTranslatableString.constant("listValue2_description")))
-//				.build();
-//
-//
-//		final DataEntryGroup dataEntryGroup = DataEntryGroup
-//				.builder()
-//				.id(DataEntryGroupId.ofRepoId(10))
-//				.documentLinkColumnName(DocumentLinkColumnName.of("documentLinkColumnName"))
-//				.internalName("dataEntryGroup_internalName")
-//				.caption(ImmutableTranslatableString.constant("dataEntryGroup_caption"))
-//				.description(ImmutableTranslatableString.constant("dataEntryGroup_description"))
-//				.dataEntrySubGroup(DataEntrySubGroup.builder()
-//						.id(DataEntrySubGroupId.ofRepoId(20))
-//						.internalName("dataEntrySubGroup_internalName")
-//						.caption(ImmutableTranslatableString.constant("dataEntrySubGroup_caption"))
-//						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
-//						.dataEntryField(dataEntryTextField)
-//						.dataEntryField(dataEntryLongTextField)
-//						.dataEntryField(dataEntryNumberField)
-//						.dataEntryField(dataEntryDateField)
-//						.dataEntryField(dataEntryYesNoField)
-//						.dataEntryField(dataEntryListField)
-//						.build())
-//				.build();
-//
-//		return dataEntryGroup;
-//	}
 }

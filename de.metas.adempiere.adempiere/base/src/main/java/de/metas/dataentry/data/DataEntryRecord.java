@@ -12,6 +12,7 @@ import org.adempiere.user.CreatedUpdatedInfo;
 import org.adempiere.user.UserId;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
@@ -85,16 +86,20 @@ public class DataEntryRecord
 		fields.clear();
 	}
 
-	public void setRecordField(
+	/** @return {@code true} if the given value is different from the previous one. */
+	public boolean setRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final UserId updatedBy,
 			@Nullable final Object value)
 	{
 		final DataEntryRecordField<?> previousFieldVersion = fields.remove(dataEntryFieldId);
 
+		final Object previousValue = previousFieldVersion == null ? null : previousFieldVersion.getValue();
+		final boolean valueChanged = !Objects.equal(previousValue, value);
+
 		if (value == null)
 		{
-			return;
+			return valueChanged;
 		}
 
 		final ZonedDateTime updated = ZonedDateTime.now();
@@ -112,6 +117,7 @@ public class DataEntryRecord
 		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
 
 		fields.put(dataEntryFieldId, dataEntryRecordField);
+		return valueChanged;
 	}
 
 	public boolean isEmpty()

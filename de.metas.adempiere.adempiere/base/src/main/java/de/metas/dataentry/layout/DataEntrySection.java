@@ -2,7 +2,7 @@ package de.metas.dataentry.layout;
 
 import java.util.List;
 
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySectionId;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
@@ -11,7 +11,7 @@ import lombok.Value;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -32,30 +32,39 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntrySubGroup
+public class DataEntrySection
 {
-	DataEntrySubGroupId id;
+	public static final DataEntrySectionBuilder DEFAULT = DataEntrySection.builder()
+			.id(DataEntrySectionId.DEFAULT)
+			.description(ITranslatableString.empty())
+			.caption(ITranslatableString.empty())
+			.internalName("DEFAULT")			;
+
+	DataEntrySectionId id;
 
 	ITranslatableString caption;
 	ITranslatableString description;
 
 	String internalName;
 
-	List<DataEntrySection> dataEntrySections;
+	boolean initallyClosed;
+
+	List<DataEntryField> dataEntryFields;
 
 	@Builder
-	private DataEntrySubGroup(
-			@NonNull final DataEntrySubGroupId id,
+	private DataEntrySection(
+			@NonNull final DataEntrySectionId id,
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
-			@Singular List<DataEntrySection> dataEntrySections)
+			final boolean initallyClosed,
+			@Singular List<DataEntryField> dataEntryFields)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
-		this.dataEntrySections = dataEntrySections;
+		this.initallyClosed = initallyClosed;
+		this.dataEntryFields = dataEntryFields;
 	}
-
 }

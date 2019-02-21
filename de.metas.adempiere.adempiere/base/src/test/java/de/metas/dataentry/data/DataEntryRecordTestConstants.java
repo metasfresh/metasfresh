@@ -15,6 +15,7 @@ import com.google.common.io.Resources;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,7 +53,7 @@ public class DataEntryRecordTestConstants
 
 	public static final ImmutableList<DataEntryRecordField<?>> SIMPLE_DATA_ENTRY_FIELD_DATA = createDataEntryFieldData(DATE_TIME);
 
-	private static ImmutableList<DataEntryRecordField<?>> createDataEntryFieldData(ZonedDateTime dateTime)
+	private static ImmutableList<DataEntryRecordField<?>> createDataEntryFieldData(@NonNull final ZonedDateTime dateTime)
 	{
 		return ImmutableList
 				.<DataEntryRecordField<?>> builder()

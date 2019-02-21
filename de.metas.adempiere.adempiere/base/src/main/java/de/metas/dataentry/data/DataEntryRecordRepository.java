@@ -50,7 +50,6 @@ public class DataEntryRecordRepository
 	public DataEntryRecordRepository(@NonNull final JSONDataEntryRecordMapper jsonDataEntryRecordMapper)
 	{
 		this.jsonDataEntryRecordMapper = jsonDataEntryRecordMapper;
-
 	}
 
 	public Optional<DataEntryRecord> getBy(

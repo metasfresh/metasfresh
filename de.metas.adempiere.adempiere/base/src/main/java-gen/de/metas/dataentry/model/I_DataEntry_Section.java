@@ -1,17 +1,17 @@
 package de.metas.dataentry.model;
 
 
-/** Generated Interface for DataEntry_SubGroup
+/** Generated Interface for DataEntry_Section
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_DataEntry_SubGroup 
+public interface I_DataEntry_Section 
 {
 
-    /** TableName=DataEntry_SubGroup */
-    public static final String Table_Name = "DataEntry_SubGroup";
+    /** TableName=DataEntry_Section */
+    public static final String Table_Name = "DataEntry_Section";
 
-    /** AD_Table_ID=541166 */
+    /** AD_Table_ID=541179 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
@@ -35,7 +35,7 @@ public interface I_DataEntry_SubGroup
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_Client>(I_DataEntry_SubGroup.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Client>(I_DataEntry_Section.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_DataEntry_SubGroup
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_Org>(I_DataEntry_SubGroup.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_Org>(I_DataEntry_Section.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -79,7 +79,7 @@ public interface I_DataEntry_SubGroup
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -94,7 +94,7 @@ public interface I_DataEntry_SubGroup
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_User>(I_DataEntry_SubGroup.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User>(I_DataEntry_Section.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -121,32 +121,32 @@ public interface I_DataEntry_SubGroup
 	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group);
 
     /** Column definition for DataEntry_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, de.metas.dataentry.model.I_DataEntry_Group> COLUMN_DataEntry_Group_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, de.metas.dataentry.model.I_DataEntry_Group>(I_DataEntry_SubGroup.class, "DataEntry_Group_ID", de.metas.dataentry.model.I_DataEntry_Group.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_Group> COLUMN_DataEntry_Group_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_Group>(I_DataEntry_Section.class, "DataEntry_Group_ID", de.metas.dataentry.model.I_DataEntry_Group.class);
     /** Column name DataEntry_Group_ID */
     public static final String COLUMNNAME_DataEntry_Group_ID = "DataEntry_Group_ID";
 
 	/**
-	 * Set Untergruppe.
+	 * Set DataEntry_Section.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID);
+	public void setDataEntry_Section_ID (int DataEntry_Section_ID);
 
 	/**
-	 * Get Untergruppe.
+	 * Get DataEntry_Section.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_SubGroup_ID();
+	public int getDataEntry_Section_ID();
 
-    /** Column definition for DataEntry_SubGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_DataEntry_SubGroup_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "DataEntry_SubGroup_ID", null);
-    /** Column name DataEntry_SubGroup_ID */
-    public static final String COLUMNNAME_DataEntry_SubGroup_ID = "DataEntry_SubGroup_ID";
+    /** Column definition for DataEntry_Section_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_DataEntry_Section_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "DataEntry_Section_ID", null);
+    /** Column name DataEntry_Section_ID */
+    public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -167,7 +167,7 @@ public interface I_DataEntry_SubGroup
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "Description", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -192,15 +192,40 @@ public interface I_DataEntry_SubGroup
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Initial geschlossen.
+	 * Legt fest, ob die Feldgruppe initial offen (sichtbar) oder geschlossen ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsInitiallyClosed (boolean IsInitiallyClosed);
+
+	/**
+	 * Get Initial geschlossen.
+	 * Legt fest, ob die Feldgruppe initial offen (sichtbar) oder geschlossen ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isInitiallyClosed();
+
+    /** Column definition for IsInitiallyClosed */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_IsInitiallyClosed = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "IsInitiallyClosed", null);
+    /** Column name IsInitiallyClosed */
+    public static final String COLUMNNAME_IsInitiallyClosed = "IsInitiallyClosed";
 
 	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setName (java.lang.String Name);
@@ -209,15 +234,38 @@ public interface I_DataEntry_SubGroup
 	 * Get Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getName();
 
     /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "Name", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Sektionsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSectionName (java.lang.String SectionName);
+
+	/**
+	 * Get Sektionsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSectionName();
+
+    /** Column definition for SectionName */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_SectionName = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "SectionName", null);
+    /** Column name SectionName */
+    public static final String COLUMNNAME_SectionName = "SectionName";
 
 	/**
 	 * Set Reihenfolge.
@@ -242,32 +290,9 @@ public interface I_DataEntry_SubGroup
 	public int getSeqNo();
 
     /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "SeqNo", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
-	 * Set Registername.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setTabName (java.lang.String TabName);
-
-	/**
-	 * Get Registername.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getTabName();
-
-    /** Column definition for TabName */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_TabName = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "TabName", null);
-    /** Column name TabName */
-    public static final String COLUMNNAME_TabName = "TabName";
 
 	/**
 	 * Get Aktualisiert.
@@ -280,7 +305,7 @@ public interface I_DataEntry_SubGroup
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, Object>(I_DataEntry_SubGroup.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -295,7 +320,7 @@ public interface I_DataEntry_SubGroup
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_SubGroup, org.compiere.model.I_AD_User>(I_DataEntry_SubGroup.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Section, org.compiere.model.I_AD_User>(I_DataEntry_Section.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

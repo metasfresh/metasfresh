@@ -4,34 +4,33 @@ package de.metas.dataentry.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for DataEntry_SubGroup
+/** Generated Model for DataEntry_Section
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_DataEntry_SubGroup extends org.compiere.model.PO implements I_DataEntry_SubGroup, org.compiere.model.I_Persistent 
+public class X_DataEntry_Section extends org.compiere.model.PO implements I_DataEntry_Section, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -936501130L;
+	private static final long serialVersionUID = 309134467L;
 
     /** Standard Constructor */
-    public X_DataEntry_SubGroup (Properties ctx, int DataEntry_SubGroup_ID, String trxName)
+    public X_DataEntry_Section (Properties ctx, int DataEntry_Section_ID, String trxName)
     {
-      super (ctx, DataEntry_SubGroup_ID, trxName);
-      /** if (DataEntry_SubGroup_ID == 0)
+      super (ctx, DataEntry_Section_ID, trxName);
+      /** if (DataEntry_Section_ID == 0)
         {
 			setDataEntry_Group_ID (0);
-			setDataEntry_SubGroup_ID (0);
-			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_SubGroup WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
-			setTabName (null);
+			setDataEntry_Section_ID (0);
+			setIsInitiallyClosed (false); // N
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Section WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
         } */
     }
 
     /** Load Constructor */
-    public X_DataEntry_SubGroup (Properties ctx, ResultSet rs, String trxName)
+    public X_DataEntry_Section (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -79,23 +78,23 @@ public class X_DataEntry_SubGroup extends org.compiere.model.PO implements I_Dat
 		return ii.intValue();
 	}
 
-	/** Set Untergruppe.
-		@param DataEntry_SubGroup_ID Untergruppe	  */
+	/** Set DataEntry_Section.
+		@param DataEntry_Section_ID DataEntry_Section	  */
 	@Override
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID)
+	public void setDataEntry_Section_ID (int DataEntry_Section_ID)
 	{
-		if (DataEntry_SubGroup_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, null);
+		if (DataEntry_Section_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_Section_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, Integer.valueOf(DataEntry_SubGroup_ID));
+			set_ValueNoCheck (COLUMNNAME_DataEntry_Section_ID, Integer.valueOf(DataEntry_Section_ID));
 	}
 
-	/** Get Untergruppe.
-		@return Untergruppe	  */
+	/** Get DataEntry_Section.
+		@return DataEntry_Section	  */
 	@Override
-	public int getDataEntry_SubGroup_ID () 
+	public int getDataEntry_Section_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubGroup_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Section_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -117,6 +116,32 @@ public class X_DataEntry_SubGroup extends org.compiere.model.PO implements I_Dat
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Initial geschlossen.
+		@param IsInitiallyClosed 
+		Legt fest, ob die Feldgruppe initial offen (sichtbar) oder geschlossen ist
+	  */
+	@Override
+	public void setIsInitiallyClosed (boolean IsInitiallyClosed)
+	{
+		set_Value (COLUMNNAME_IsInitiallyClosed, Boolean.valueOf(IsInitiallyClosed));
+	}
+
+	/** Get Initial geschlossen.
+		@return Legt fest, ob die Feldgruppe initial offen (sichtbar) oder geschlossen ist
+	  */
+	@Override
+	public boolean isInitiallyClosed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsInitiallyClosed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Name.
 		@param Name Name	  */
 	@Override
@@ -131,6 +156,22 @@ public class X_DataEntry_SubGroup extends org.compiere.model.PO implements I_Dat
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Sektionsname.
+		@param SectionName Sektionsname	  */
+	@Override
+	public void setSectionName (java.lang.String SectionName)
+	{
+		set_Value (COLUMNNAME_SectionName, SectionName);
+	}
+
+	/** Get Sektionsname.
+		@return Sektionsname	  */
+	@Override
+	public java.lang.String getSectionName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SectionName);
 	}
 
 	/** Set Reihenfolge.
@@ -153,21 +194,5 @@ public class X_DataEntry_SubGroup extends org.compiere.model.PO implements I_Dat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Registername.
-		@param TabName Registername	  */
-	@Override
-	public void setTabName (java.lang.String TabName)
-	{
-		set_Value (COLUMNNAME_TabName, TabName);
-	}
-
-	/** Get Registername.
-		@return Registername	  */
-	@Override
-	public java.lang.String getTabName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_TabName);
 	}
 }

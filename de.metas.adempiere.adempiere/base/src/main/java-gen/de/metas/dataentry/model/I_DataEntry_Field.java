@@ -145,6 +145,33 @@ public interface I_DataEntry_Field
     public static final String COLUMNNAME_DataEntry_RecordType = "DataEntry_RecordType";
 
 	/**
+	 * Set DataEntry_Section.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Section_ID (int DataEntry_Section_ID);
+
+	/**
+	 * Get DataEntry_Section.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_Section_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_Section getDataEntry_Section();
+
+	public void setDataEntry_Section(de.metas.dataentry.model.I_DataEntry_Section DataEntry_Section);
+
+    /** Column definition for DataEntry_Section_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_Section> COLUMN_DataEntry_Section_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_Section>(I_DataEntry_Field.class, "DataEntry_Section_ID", de.metas.dataentry.model.I_DataEntry_Section.class);
+    /** Column name DataEntry_Section_ID */
+    public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
+
+	/**
 	 * Set Untergruppe.
 	 *
 	 * <br>Type: Search

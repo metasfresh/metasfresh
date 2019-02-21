@@ -1,10 +1,5 @@
 package org.compiere.model;
 
-import lombok.Getter;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -39,6 +34,8 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -57,6 +54,8 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
+import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -114,14 +113,11 @@ public interface IQuery<T>
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Same as {@link #list(Class)} but returns an {@link ImmutableList}.
-	 *
-	 * @param clazz
-	 * @return {@link ImmutableList}
-	 * @throws DBException
+	 * Same as {@link #list(Class)} but sets {@value #OPTION_ReturnReadOnlyRecords} and returns an {@link ImmutableList}.
 	 */
 	default <ET extends T> ImmutableList<ET> listImmutable(Class<ET> clazz) throws DBException
 	{
+		setOption(OPTION_ReturnReadOnlyRecords, true);
 		return ImmutableList.copyOf(list(clazz));
 	}
 

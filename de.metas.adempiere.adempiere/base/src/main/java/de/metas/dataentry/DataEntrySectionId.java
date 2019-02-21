@@ -1,6 +1,6 @@
 package de.metas.dataentry;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -30,18 +30,20 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntrySubGroupId implements RepoIdAware
+public class DataEntrySectionId implements RepoIdAware
 {
-	public static DataEntrySubGroupId ofRepoId(final int repoId)
+	public static final DataEntrySectionId DEFAULT = DataEntrySectionId.ofRepoId(0);
+
+	public static DataEntrySectionId ofRepoId(final int repoId)
 	{
-		return new DataEntrySubGroupId(repoId);
+		return new DataEntrySectionId(repoId);
 	}
 
 	@JsonValue
 	int repoId;
 
-	public DataEntrySubGroupId(final int repoId)
+	public DataEntrySectionId(final int repoId)
 	{
-		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = assumeGreaterOrEqualToZero(repoId, "repoId");
 	}
 }

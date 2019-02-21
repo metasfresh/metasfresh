@@ -14,7 +14,7 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2121135502L;
+	private static final long serialVersionUID = -492349012L;
 
     /** Standard Constructor */
     public X_DataEntry_Field (Properties ctx, int DataEntry_Field_ID, String trxName)
@@ -101,6 +101,40 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	public java.lang.String getDataEntry_RecordType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_RecordType);
+	}
+
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_Section getDataEntry_Section() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Section_ID, de.metas.dataentry.model.I_DataEntry_Section.class);
+	}
+
+	@Override
+	public void setDataEntry_Section(de.metas.dataentry.model.I_DataEntry_Section DataEntry_Section)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_Section_ID, de.metas.dataentry.model.I_DataEntry_Section.class, DataEntry_Section);
+	}
+
+	/** Set DataEntry_Section.
+		@param DataEntry_Section_ID DataEntry_Section	  */
+	@Override
+	public void setDataEntry_Section_ID (int DataEntry_Section_ID)
+	{
+		if (DataEntry_Section_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_Section_ID, null);
+		else 
+			set_Value (COLUMNNAME_DataEntry_Section_ID, Integer.valueOf(DataEntry_Section_ID));
+	}
+
+	/** Get DataEntry_Section.
+		@return DataEntry_Section	  */
+	@Override
+	public int getDataEntry_Section_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Section_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
