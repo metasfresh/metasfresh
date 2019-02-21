@@ -130,6 +130,7 @@ class ProductsToPickRowsDataFactory
 	{
 		final ImmutableList<ProductsToPickRow> rows = packageableRow.getPackageables()
 				.stream()
+				.sorted(Comparator.comparing(Packageable::getShipmentScheduleId))
 				.flatMap(this::createRowsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
