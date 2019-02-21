@@ -1,9 +1,12 @@
 package de.metas.currency;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Test;
 
 /*
@@ -37,8 +40,55 @@ public class AmountTest
 				.isEqualTo(euro("11"));
 	}
 
-	private Amount euro(final String amt)
+	@Test
+	public void test_assertSameCurrency_Yes()
 	{
-		return Amount.of(new BigDecimal(amt), "EUR");
+		Amount.assertSameCurrency();
+		Amount.assertSameCurrency(euro(1));
+		Amount.assertSameCurrency(euro(1), euro(2));
+		Amount.assertSameCurrency(euro(1), euro(2), euro(3));
 	}
+
+	@Test
+	public void test_assertSameCurrency_No()
+	{
+		assertThrowsAmountShallHaveSameCurrencyException(() -> Amount.assertSameCurrency(euro(1), usd(2)));
+		assertThrowsAmountShallHaveSameCurrencyException(() -> Amount.assertSameCurrency(euro(1), euro(2), euro(3), usd(4)));
+	}
+
+	@Test
+	public void test_compareTo()
+	{
+		assertThat(euro(5)).isLessThan(euro(6));
+		assertThat(euro(5)).isGreaterThan(euro(4));
+		assertThrowsAmountShallHaveSameCurrencyException(() -> euro(5).compareTo(usd(5)));
+	}
+
+	private static Amount euro(final int amt)
+	{
+		return euro(String.valueOf(amt));
+	}
+
+	private static Amount euro(final String amt)
+	{
+		return amt(amt, "EUR");
+	}
+
+	private static Amount usd(final int amt)
+	{
+		return amt(String.valueOf(amt), "USD");
+	}
+
+	private static Amount amt(final String amt, final String currencyCode)
+	{
+		return Amount.of(new BigDecimal(amt), currencyCode);
+	}
+
+	private static void assertThrowsAmountShallHaveSameCurrencyException(ThrowingCallable callable)
+	{
+		assertThatThrownBy(callable)
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageStartingWith("Amounts shall have the same currency");
+	}
+
 }
