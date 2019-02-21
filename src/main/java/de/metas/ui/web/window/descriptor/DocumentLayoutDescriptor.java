@@ -84,13 +84,14 @@ public final class DocumentLayoutDescriptor
 	private DocumentLayoutDescriptor(@NonNull final Builder builder)
 	{
 		windowId = builder.windowId;
-		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+		Check.assumeNotNull(windowId, "builder.windowId may not be null; builder={}", builder);
 
 		caption = builder.caption;
 
 		documentSummaryElement = builder.documentSummaryElement;
 		docActionElement = builder.docActionElement;
 
+		Check.assumeNotNull(builder.getSingleRowLayout(), "builder.singleRowLayout may not be null; builder={}", builder);
 		singleRowLayout = builder.getSingleRowLayout()
 				.setWindowId(windowId)
 				.build();
@@ -294,7 +295,7 @@ public final class DocumentLayoutDescriptor
 			return this;
 		}
 
-		public Builder setSingleRowLayout(DocumentLayoutSingleRow.Builder singleRowLayout)
+		public Builder setSingleRowLayout(@NonNull final DocumentLayoutSingleRow.Builder singleRowLayout)
 		{
 			this.singleRowLayout = singleRowLayout;
 			return this;
