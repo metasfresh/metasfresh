@@ -79,6 +79,17 @@
 }
 
 .overlay {
+    z-index: 10000;
+    position: fixed;
+    top: 0;
+    display: flex;
+    left: 0;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(18, 18, 18, .5);
+    justify-content: center;
+
     .qr-bg {
         background: white;
         display: flex;

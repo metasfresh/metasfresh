@@ -989,7 +989,7 @@ export function createProcess({
 
       pid = response.data.pinstanceId;
 
-      if (Object.keys(preparedData).length === 0) {
+      if (response.data.startProcessDirectly) {
         let response;
 
         try {
