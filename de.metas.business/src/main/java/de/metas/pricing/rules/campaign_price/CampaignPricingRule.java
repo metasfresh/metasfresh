@@ -12,6 +12,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,17 +40,18 @@ public class CampaignPricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CampaignPricingRule.class);
 
-	private final CampaignPriceRepository campaignPriceRepo = Adempiere.getBean(CampaignPriceRepository.class);
+	private final CampaignPriceService campaignPriceService = Adempiere.getBean(CampaignPriceService.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 	@Override
-	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
+	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
 		if (result.isCalculated())
 		{
 			logger.debug("Not applying because already calculated");
 			return false;
 		}
+
 		if (pricingCtx.getBPartnerId() == null)
 		{
 			logger.debug("Not applying because there is no BPartner specified in context");
@@ -75,7 +77,7 @@ public class CampaignPricingRule implements IPricingRule
 	}
 
 	@Override
-	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	public void calculate(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
 		if (!applies(pricingCtx, result))
 		{
@@ -83,7 +85,7 @@ public class CampaignPricingRule implements IPricingRule
 		}
 
 		final CampaignPriceQuery campaignPriceQuery = createCampaignPriceQuery(pricingCtx);
-		final CampaignPrice campaignPrice = campaignPriceRepo.getCampaignPrice(campaignPriceQuery).orElse(null);
+		final CampaignPrice campaignPrice = campaignPriceService.getCampaignPrice(campaignPriceQuery).orElse(null);
 		if (campaignPrice == null)
 		{
 			return;
