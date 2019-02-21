@@ -468,7 +468,7 @@ Cypress.Commands.add('executeHeaderAction', (actionName) => {
 });
 
 Cypress.Commands.add('executeHeaderActionWithDialog', (actionName) => {
-  describe('Fire header action with a certain name', function() {
+  describe('Fire header action with a certain name and expect a modal dialog to pop up within 10 secs', function() {
 
    executeHeaderAction(actionName);
 
