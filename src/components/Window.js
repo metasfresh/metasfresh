@@ -129,6 +129,7 @@ class Window extends PureComponent {
     const {
       layout: { windowId },
       data,
+      dataId,
     } = this.props;
     const { fullScreen } = this.state;
     const tabsArray = [];
@@ -138,7 +139,6 @@ class Window extends PureComponent {
       return;
     }
 
-    const dataId = data.ID && data.ID.value;
     this.getTabs(tabs, dataId, tabsArray, tabsByIds, null);
 
     return (
@@ -176,7 +176,8 @@ class Window extends PureComponent {
       const elementGroups = elem.elementGroups;
       return (
         <div className={'col-sm-' + colWidth} key={'col' + id}>
-          {elementGroups && this.renderElementGroups(elementGroups, isFirst, extendedData)}
+          {elementGroups &&
+            this.renderElementGroups(elementGroups, isFirst, extendedData)}
         </div>
       );
     });
@@ -268,7 +269,7 @@ class Window extends PureComponent {
           widgetData={widgetData}
           isModal={!!modal}
           tabId={tabId || extendedData.tabId}
-          rowId={rowId}
+          rowId={extendedData.tabId ? dataId : rowId}
           relativeDocId={relativeDocId}
           isAdvanced={isAdvanced}
           tabIndex={tabIndex}
