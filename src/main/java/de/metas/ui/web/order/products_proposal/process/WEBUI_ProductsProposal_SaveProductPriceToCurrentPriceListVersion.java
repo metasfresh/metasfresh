@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.process;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -94,6 +95,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 			return;
 		}
 
+		final BigDecimal userEnteredPriceValue = row.getPrice().getUserEnteredPriceValue();
 		final ProductPriceId productPriceId;
 
 		//
@@ -103,7 +105,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 			productPriceId = row.getProductPriceId();
 			pricesListsRepo.updateProductPrice(UpdateProductPriceRequest.builder()
 					.productPriceId(productPriceId)
-					.priceStd(row.getPrice().getValue())
+					.priceStd(userEnteredPriceValue)
 					.build());
 		}
 		//
@@ -113,7 +115,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 			productPriceId = pricesListsRepo.copyProductPrice(CopyProductPriceRequest.builder()
 					.copyFromProductPriceId(row.getCopiedFromProductPriceId())
 					.copyToPriceListVersionId(getPriceListVersionId())
-					.priceStd(row.getPrice().getValue())
+					.priceStd(userEnteredPriceValue)
 					.build());
 		}
 		else
@@ -125,7 +127,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 		// Refresh row
 		getView().patchViewRow(row.getId(), RowSaved.builder()
 				.productPriceId(productPriceId)
-				.standardPrice(row.getPrice())
+				.price(row.getPrice().withPriceListPriceValue(userEnteredPriceValue))
 				.build());
 	}
 

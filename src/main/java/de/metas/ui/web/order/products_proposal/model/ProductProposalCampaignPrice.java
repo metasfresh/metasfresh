@@ -1,12 +1,12 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
-import de.metas.pricing.ProductPriceId;
+import de.metas.currency.Amount;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
@@ -30,32 +30,29 @@ import lombok.Value;
  * #L%
  */
 
-public interface ProductsProposalRowChangeRequest
+@Builder
+@EqualsAndHashCode
+@ToString
+public final class ProductProposalCampaignPrice
 {
-	@Builder
-	@Value
-	public static class UserChange implements ProductsProposalRowChangeRequest
+	@NonNull
+	private final Amount amount;
+	private final boolean applyOnlyIfLessThanStandardPrice;
+
+	public Amount applyOn(@NonNull final Amount standardPrice)
 	{
-		Optional<BigDecimal> qty;
-		Optional<BigDecimal> price;
+		if (applyOnlyIfLessThanStandardPrice)
+		{
+			return this.amount.min(standardPrice);
+		}
+		else
+		{
+			return amount;
+		}
 	}
 
-	@Value
-	@Builder
-	public static class RowUpdate implements ProductsProposalRowChangeRequest
+	public boolean amountValueComparingEqualsTo(@NonNull final BigDecimal other)
 	{
-		ProductProposalPrice price;
-		Integer lastShipmentDays;
-		ProductPriceId copiedFromProductPriceId;
-	}
-
-	@Builder
-	@Value
-	public static class RowSaved implements ProductsProposalRowChangeRequest
-	{
-		@NonNull
-		ProductPriceId productPriceId;
-		@NonNull
-		ProductProposalPrice price;
+		return amount.valueComparingEqualsTo(other);
 	}
 }

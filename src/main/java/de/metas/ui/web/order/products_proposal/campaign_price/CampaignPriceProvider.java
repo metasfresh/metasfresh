@@ -1,12 +1,9 @@
-package de.metas.ui.web.order.products_proposal.model;
+package de.metas.ui.web.order.products_proposal.campaign_price;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
-import de.metas.pricing.ProductPriceId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.product.ProductId;
+import de.metas.ui.web.order.products_proposal.model.ProductProposalCampaignPrice;
 
 /*
  * #%L
@@ -30,32 +27,7 @@ import lombok.Value;
  * #L%
  */
 
-public interface ProductsProposalRowChangeRequest
+public interface CampaignPriceProvider
 {
-	@Builder
-	@Value
-	public static class UserChange implements ProductsProposalRowChangeRequest
-	{
-		Optional<BigDecimal> qty;
-		Optional<BigDecimal> price;
-	}
-
-	@Value
-	@Builder
-	public static class RowUpdate implements ProductsProposalRowChangeRequest
-	{
-		ProductProposalPrice price;
-		Integer lastShipmentDays;
-		ProductPriceId copiedFromProductPriceId;
-	}
-
-	@Builder
-	@Value
-	public static class RowSaved implements ProductsProposalRowChangeRequest
-	{
-		@NonNull
-		ProductPriceId productPriceId;
-		@NonNull
-		ProductProposalPrice price;
-	}
+	Optional<ProductProposalCampaignPrice> getCampaignPrice(ProductId productId);
 }

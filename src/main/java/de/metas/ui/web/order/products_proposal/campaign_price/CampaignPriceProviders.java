@@ -1,15 +1,7 @@
-package de.metas.ui.web.order.products_proposal.model;
+package de.metas.ui.web.order.products_proposal.campaign_price;
 
-import javax.annotation.Nullable;
-
-import de.metas.currency.Amount;
-import de.metas.pricing.ProductPriceId;
-import de.metas.product.ProductId;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.ui.web.order.products_proposal.campaign_price.StandardCampaignPriceProvider.StandardCampaignPriceProviderBuilder;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -33,28 +25,16 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class ProductsProposalRowAddRequest
+@UtilityClass
+public class CampaignPriceProviders
 {
-	@NonNull
-	LookupValue product;
-
-	@NonNull
-	@Default
-	ProductASIDescription asiDescription = ProductASIDescription.NONE;
-
-	@NonNull
-	Amount priceListPrice;
-
-	@Nullable
-	Integer lastShipmentDays;
-
-	@Nullable
-	ProductPriceId copiedFromProductPriceId;
-
-	public ProductId getProductId()
+	public static CampaignPriceProvider none()
 	{
-		return getProduct().getIdAs(ProductId::ofRepoId);
+		return NullCampaignPriceProvider.instance;
+	}
+
+	public static StandardCampaignPriceProviderBuilder standard()
+	{
+		return StandardCampaignPriceProvider.builder();
 	}
 }
