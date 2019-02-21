@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.currency.Amount;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
@@ -67,21 +66,25 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final ProductASIDescription asiDescription;
 
+	public static final String FIELD_IsCampaignPrice = "isCampaignPrice";
+	@ViewColumn(displayed = false, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
+	private final boolean isCampaignPrice;
+
 	public static final String FIELD_Price = "price";
-	@ViewColumn(seqNo = 30, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
-	private final BigDecimal price;
+	@ViewColumn(seqNo = 40, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
+	private final BigDecimal userEnteredPrice;
 
 	public static final String FIELD_Currency = "currency";
-	@ViewColumn(seqNo = 40, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
+	@ViewColumn(seqNo = 50, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
 	private final String currencyCode;
 
 	public static final String FIELD_Qty = "qty";
-	@ViewColumn(seqNo = 50, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 60, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final BigDecimal qty;
 
 	public static final String FIELD_LastShipmentDays = "lastShipmentDays";
-	@ViewColumn(seqNo = 60, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	@ViewColumn(seqNo = 70, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
 	@Getter
 	private final Integer lastShipmentDays;
 
@@ -99,7 +102,8 @@ public class ProductsProposalRow implements IViewRow
 	private final ProductPriceId productPriceId;
 	@Getter
 	private final ProductPriceId copiedFromProductPriceId;
-	private final Amount standardPrice;
+	@Getter
+	private final ProductProposalPrice price;
 
 	private ImmutableMap<String, Object> _jsonValuesByFieldName; // lazy
 	private ImmutableMap<String, ViewEditorRenderMode> _renderModeByFieldName; // lazy
@@ -110,8 +114,7 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final LookupValue bpartner,
 			@NonNull final LookupValue product,
 			@Nullable final ProductASIDescription asiDescription,
-			@NonNull final Amount standardPrice,
-			@Nullable final BigDecimal price,
+			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final LocalDate lastSalesInvoiceDate,
@@ -125,9 +128,10 @@ public class ProductsProposalRow implements IViewRow
 		this.product = product;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 
-		this.standardPrice = standardPrice;
-		this.currencyCode = standardPrice.getCurrencyCode();
-		this.price = price != null ? price : standardPrice.getValue();
+		this.price = price;
+		this.isCampaignPrice = price.isCampaignPriceUsed();
+		this.userEnteredPrice = price.getUserEnteredPrice().getValue();
+		this.currencyCode = price.getCurrencyCode();
 
 		this.qty = qty;
 
@@ -230,17 +234,7 @@ public class ProductsProposalRow implements IViewRow
 	public boolean isChanged()
 	{
 		return getProductPriceId() == null
-				|| isManualPrice();
-	}
-
-	public boolean isManualPrice()
-	{
-		return price.compareTo(standardPrice.getValue()) != 0;
-	}
-
-	public Amount getPrice()
-	{
-		return Amount.of(price, currencyCode);
+				|| !getPrice().isPriceListPriceUsed();
 	}
 
 	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
