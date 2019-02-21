@@ -6,6 +6,7 @@ import java.util.List;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -29,19 +30,20 @@ import lombok.NonNull;
  * #L%
  */
 
+@UtilityClass
 public class DocumentQueryOrderBys
 {
-	public static Comparator<IViewRow> asComparator(@NonNull final List<DocumentQueryOrderBy> orderBys)
+	public static <T extends IViewRow> Comparator<T> asComparator(@NonNull final List<DocumentQueryOrderBy> orderBys)
 	{
-		final FieldValueExtractor<IViewRow> fieldValueExtractor = (row, fieldName) -> row
+		final FieldValueExtractor<T> fieldValueExtractor = (row, fieldName) -> row
 				.getFieldNameAndJsonValues()
 				.get(fieldName);
 
 		// used in case orderBys is empty or whatever else goes wrong
-		final Comparator<IViewRow> noopComparator = (o1, o2) -> 0;
+		final Comparator<T> noopComparator = (o1, o2) -> 0;
 
 		return orderBys.stream()
-				.map(orderBy -> orderBy.asComparator(fieldValueExtractor))
+				.map(orderBy -> orderBy.<T> asComparator(fieldValueExtractor))
 				.reduce(Comparator::thenComparing)
 				.orElse(noopComparator);
 	}
