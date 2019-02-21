@@ -26,7 +26,6 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
-import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
@@ -141,8 +140,7 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 	protected List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(WEBUI_ProductsProposal_AddProductFromBasePriceList.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_AddProductFromBasePriceList.class));
 	}
 
 	private static class RowsLoader

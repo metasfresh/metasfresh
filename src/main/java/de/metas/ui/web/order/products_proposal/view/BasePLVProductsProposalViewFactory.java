@@ -17,7 +17,6 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
-import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -119,8 +118,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 	protected List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(WEBUI_ProductsProposal_AddProductFromBasePriceList.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_AddProductFromBasePriceList.class));
 	}
 
 	@Override
