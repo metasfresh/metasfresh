@@ -252,8 +252,9 @@ class ProductsToPickRowsDataFactory
 		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
-				.huId(null)
 				.productId(productInfo.getProductId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.huId(null)
 				.build();
 
 		return ProductsToPickRow.builder()
@@ -279,8 +280,9 @@ class ProductsToPickRowsDataFactory
 		final ImmutableAttributeSet attributes = pickFromHUId != null ? getHUAttributes(pickFromHUId) : ImmutableAttributeSet.EMPTY;
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
-				.huId(pickFromHUId)
 				.productId(productInfo.getProductId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.huId(pickFromHUId)
 				.build();
 
 		return ProductsToPickRow.builder()
