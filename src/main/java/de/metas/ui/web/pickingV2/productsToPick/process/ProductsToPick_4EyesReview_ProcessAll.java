@@ -15,7 +15,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.process.Param;
@@ -87,14 +86,16 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 
 	private ImmutableList<PickingCandidate> processAllPickingCandidates()
 	{
-		ProcessPickingCandidatesResult result = pickingCandidatesService.process(getPickingCandidateIds());
-		return result.getPickingCandidates();
+		return pickingCandidatesService
+				.process(getPickingCandidateIds())
+				.getPickingCandidates();
 	}
 
 	private void deliverAndInvoice(final List<PickingCandidate> pickingCandidates)
 	{
 		final Set<HuId> huIdsToDeliver = pickingCandidates
 				.stream()
+				.filter(PickingCandidate::isPacked)
 				.map(PickingCandidate::getPackedToHuId)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -113,10 +114,17 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 
 	private ImmutableSet<PickingCandidateId> getPickingCandidateIds()
 	{
-		return getAllRows()
-				.stream()
-				.filter(ProductsToPickRow::isEligibleForProcessing)
+		return streamAllRows()
+				.filter(this::isEligibleForProcessing)
 				.map(ProductsToPickRow::getPickingCandidateId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	private boolean isEligibleForProcessing(final ProductsToPickRow row)
+	{
+		return !row.isProcessed()
+				&& row.isApproved()
+				&& (row.getPickStatus().isPacked() || row.getPickStatus().isPickRejected());
+	}
+
 }
