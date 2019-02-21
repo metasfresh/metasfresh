@@ -38,6 +38,7 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
@@ -203,6 +204,13 @@ export function initDataSuccess({
     type: INIT_DATA_SUCCESS,
     validStatus,
     websocket,
+  };
+}
+
+export function updateMasterData(data) {
+  return {
+    type: UPDATE_MASTER_DATA,
+    payload: data.fieldsByName,
   };
 }
 
