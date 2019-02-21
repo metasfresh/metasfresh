@@ -15,6 +15,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -62,6 +63,12 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 
 		this.rowsData = rowsData;
 		this.relatedProcessDescriptors = relatedProcessDescriptors;
+	}
+
+	@Override
+	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	{
+		return rowsData.getOrderBys();
 	}
 
 	@Override

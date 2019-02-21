@@ -3,7 +3,6 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +51,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
@@ -130,13 +130,13 @@ class ProductsToPickRowsDataFactory
 	{
 		final ImmutableList<ProductsToPickRow> rows = packageableRow.getPackageables()
 				.stream()
-				.sorted(Comparator.comparing(Packageable::getShipmentScheduleId))
 				.flatMap(this::createRowsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
 		return ProductsToPickRowsData.builder()
 				.pickingCandidateService(pickingCandidateService)
 				.rows(rows)
+				.orderBy(DocumentQueryOrderBy.byFieldName(ProductsToPickRow.FIELD_Locator))
 				.build();
 	}
 
@@ -147,8 +147,6 @@ class ProductsToPickRowsDataFactory
 		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
 		rows.addAll(createRowsFromExistingPickingCandidates(allocablePackageable));
 		rows.addAll(createRowsFromHUs(allocablePackageable));
-
-		Collections.sort(rows, Comparator.comparing(ProductsToPickRow::getLocatorName));
 
 		if (!allocablePackageable.isAllocated())
 		{

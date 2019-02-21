@@ -2,6 +2,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,10 +25,14 @@ import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -55,6 +60,8 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 {
 	private final PickingCandidateService pickingCandidateService;
 
+	@Getter
+	private final ImmutableList<DocumentQueryOrderBy> orderBys;
 	private final ImmutableList<DocumentId> rowIdsOrdered;
 	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> _rowsById;
 	private volatile boolean rowIdsInvalid;
@@ -62,11 +69,14 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 	@Builder
 	private ProductsToPickRowsData(
 			@NonNull final PickingCandidateService pickingCandidateService,
-			@NonNull final List<ProductsToPickRow> rows)
+			@NonNull final List<ProductsToPickRow> rows,
+			@NonNull @Singular final ImmutableList<DocumentQueryOrderBy> orderBys)
 	{
 		this.pickingCandidateService = pickingCandidateService;
 
+		this.orderBys = orderBys;
 		rowIdsOrdered = rows.stream()
+				.sorted(createComparator(orderBys))
 				.map(ProductsToPickRow::getId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
@@ -75,6 +85,12 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 				.map(row -> GuavaCollectors.entry(row.getId(), row))
 				.collect(GuavaCollectors.toMap(ConcurrentHashMap::new));
 		rowIdsInvalid = false;
+	}
+
+	private static Comparator<ProductsToPickRow> createComparator(final List<DocumentQueryOrderBy> orderBys)
+	{
+		return DocumentQueryOrderBys.<ProductsToPickRow> asComparator(orderBys)
+				.thenComparing(ProductsToPickRow::getShipmentScheduleId);
 	}
 
 	private synchronized Map<DocumentId, ProductsToPickRow> getRowsById()
