@@ -175,6 +175,7 @@ public class ContractsDAO implements IContractsDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, I_C_Flatrate_Term.class)
+				.orderByDescending(I_C_Flatrate_Term.COLUMN_EndDate)
 				.create()
 				.list();
 	}
