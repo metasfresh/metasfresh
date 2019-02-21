@@ -73,6 +73,7 @@ class Window extends PureComponent {
             docId={dataId}
             key={tabId}
             queryOnActivate={queryOnActivate}
+            singleRowView={true}
             tabIndex={this.tabIndex.tabs}
             {...{
               caption,
