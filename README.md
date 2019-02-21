@@ -3,7 +3,7 @@
 
 # metasfresh-dist
 
-This repository contains what is needed to generate a districubtable `tar.gz` file whicxh cotanins
+This repository contains what is needed to generate a districubtable `tar.gz` file which contains
 * the backend service
 * the swing client
 * the webui API service
@@ -11,10 +11,10 @@ This repository contains what is needed to generate a districubtable `tar.gz` fi
 * a number of smaller artifacts
 
 ## Installing metasfresh ##
-We create weekly Releases of metasfresh ERP whch can be downloaded from our official Website at [metasfresh.com/en/download/](http://metasfresh.com/en/download/).
+We create weekly releases of metasfresh ERP whch can be downloaded from our official Website at [metasfresh.com/en/download/](http://metasfresh.com/en/download/).
 
 ## Do you want to help? ##
-Do you want to help improving documentation, contribute some code or participate in functional requirements. That's great, you're welcome! Please read our contibutor guidelines first. You can find them here: [CONTRIBUTING.md](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md)
+Do you want to help improving documentation, contribute some code or participate in functional requirements? That's great, you're welcome! Please read our contibutor guidelines first. You can find them here: [CONTRIBUTING.md](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md)
 If you would like to get in touch with other contributors then just join our chat on Gitter: [metasfresh Gitter](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## What's new in metasfresh ERP? ##
