@@ -49,17 +49,16 @@ public class ProductsToPickRowsRepository
 
 	public ProductsToPickRowsData createProductsToPickRowsData(final PackageableRow packageableRow)
 	{
-		final ProductsToPickRowsDataFactory factory = newProductsToPickRowsFactory();
-		return factory.create(packageableRow);
+		return newProductsToPickRowsFactory()
+				.create(packageableRow);
 	}
 
 	private ProductsToPickRowsDataFactory newProductsToPickRowsFactory()
 	{
-		final ProductsToPickRowsDataFactory factory = ProductsToPickRowsDataFactory.builder()
+		return ProductsToPickRowsDataFactory.builder()
 				.huReservationService(huReservationService)
 				.pickingCandidateRepo(pickingCandidateRepo)
 				.pickingCandidateService(pickingCandidateService)
 				.build();
-		return factory;
 	}
 }
