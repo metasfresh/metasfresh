@@ -86,7 +86,7 @@ class Window extends PureComponent {
               internalName,
             }}
           >
-            {sections && this.renderSections(sections, true)}
+            {sections && this.renderSections(sections, { tabId })}
           </TabSingleEntry>
         );
       } else {
@@ -154,20 +154,20 @@ class Window extends PureComponent {
     );
   };
 
-  renderSections = sections => {
+  renderSections = (sections, extendedData = {}) => {
     return sections.map((elem, id) => {
       const { title, columns } = elem;
       const isFirst = id === 0;
       return (
         <div className="row" key={'section' + id}>
           {title && <Separator {...{ title }} />}
-          {columns && this.renderColumns(columns, isFirst)}
+          {columns && this.renderColumns(columns, isFirst, extendedData)}
         </div>
       );
     });
   };
 
-  renderColumns = (columns, isSectionFirst) => {
+  renderColumns = (columns, isSectionFirst, extendedData) => {
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
 
@@ -176,13 +176,13 @@ class Window extends PureComponent {
       const elementGroups = elem.elementGroups;
       return (
         <div className={'col-sm-' + colWidth} key={'col' + id}>
-          {elementGroups && this.renderElementGroups(elementGroups, isFirst)}
+          {elementGroups && this.renderElementGroups(elementGroups, isFirst, extendedData)}
         </div>
       );
     });
   };
 
-  renderElementGroups = (group, isFirst) => {
+  renderElementGroups = (group, isFirst, extendedData) => {
     const { isModal } = this.props;
 
     return group.map((elem, id) => {
@@ -211,14 +211,24 @@ class Window extends PureComponent {
                 : 'panel-secondary')
             }
           >
-            {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
+            {this.renderElementsLine(
+              elementsLine,
+              tabIndex,
+              shouldBeFocused,
+              extendedData
+            )}
           </div>
         )
       );
     });
   };
 
-  renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
+  renderElementsLine = (
+    elementsLine,
+    tabIndex,
+    shouldBeFocused,
+    extendedData
+  ) => {
     return elementsLine.map((elem, id) => {
       const { elements } = elem;
       const isFocused = shouldBeFocused && id === 0;
@@ -226,9 +236,47 @@ class Window extends PureComponent {
         elements &&
         elements.length > 0 && (
           <div className="elements-line" key={'line' + id}>
-            {this.renderElements(elements, tabIndex, isFocused)}
+            {this.renderElements(elements, tabIndex, isFocused, extendedData)}
           </div>
         )
+      );
+    });
+  };
+
+  renderElements = (elements, tabIndex, isFocused, extendedData) => {
+    const { windowId } = this.props.layout;
+    const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
+    const { fullScreen } = this.state;
+
+    return elements.map((elem, id) => {
+      const autoFocus = isFocused && id === 0;
+      const widgetData = elem.fields.map(item => data[item.field] || -1);
+      const fieldName = elem.fields ? elem.fields[0].field : '';
+      const relativeDocId = data.ID && data.ID.value;
+
+      return (
+        <MasterWidget
+          ref={c => {
+            if (c) {
+              this.widgets.push(c);
+            }
+          }}
+          entity="window"
+          key={'element' + id}
+          windowType={windowId}
+          dataId={dataId}
+          widgetData={widgetData}
+          isModal={!!modal}
+          tabId={tabId || extendedData.tabId}
+          rowId={rowId}
+          relativeDocId={relativeDocId}
+          isAdvanced={isAdvanced}
+          tabIndex={tabIndex}
+          autoFocus={!modal && autoFocus}
+          fullScreen={fullScreen}
+          onBlurWidget={this.handleBlurWidget.bind(this, fieldName)}
+          {...elem}
+        />
       );
     });
   };
@@ -264,44 +312,6 @@ class Window extends PureComponent {
       }
     }
   }
-
-  renderElements = (elements, tabIndex, isFocused) => {
-    const { windowId } = this.props.layout;
-    const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
-    const { fullScreen } = this.state;
-
-    return elements.map((elem, id) => {
-      const autoFocus = isFocused && id === 0;
-      const widgetData = elem.fields.map(item => data[item.field] || -1);
-      const fieldName = elem.fields ? elem.fields[0].field : '';
-      const relativeDocId = data.ID && data.ID.value;
-
-      return (
-        <MasterWidget
-          ref={c => {
-            if (c) {
-              this.widgets.push(c);
-            }
-          }}
-          entity="window"
-          key={'element' + id}
-          windowType={windowId}
-          dataId={dataId}
-          widgetData={widgetData}
-          isModal={!!modal}
-          tabId={tabId}
-          rowId={rowId}
-          relativeDocId={relativeDocId}
-          isAdvanced={isAdvanced}
-          tabIndex={tabIndex}
-          autoFocus={!modal && autoFocus}
-          fullScreen={fullScreen}
-          onBlurWidget={this.handleBlurWidget.bind(this, fieldName)}
-          {...elem}
-        />
-      );
-    });
-  };
 
   render() {
     const { sections, tabs } = this.props.layout;
