@@ -1,4 +1,12 @@
-package de.metas.ui.web.order.products_proposal.process;
+package de.metas.ui.web.order.products_proposal.model;
+
+import java.math.BigDecimal;
+
+import de.metas.currency.Amount;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -22,13 +30,29 @@ package de.metas.ui.web.order.products_proposal.process;
  * #L%
  */
 
-public class WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList extends ProductsProposalViewBasedProcess
+@Builder
+@EqualsAndHashCode
+@ToString
+public final class ProductProposalCampaignPrice
 {
-	@Override
-	protected String doIt()
-	{
-		closeAllViewsAndShowInitialView();
+	@NonNull
+	private final Amount amount;
+	private final boolean applyOnlyIfLessThanStandardPrice;
 
-		return MSG_OK;
+	public Amount applyOn(@NonNull final Amount standardPrice)
+	{
+		if (applyOnlyIfLessThanStandardPrice)
+		{
+			return this.amount.min(standardPrice);
+		}
+		else
+		{
+			return amount;
+		}
+	}
+
+	public boolean amountValueComparingEqualsTo(@NonNull final BigDecimal other)
+	{
+		return amount.valueComparingEqualsTo(other);
 	}
 }

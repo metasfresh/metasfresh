@@ -3,6 +3,8 @@ package de.metas.ui.web.process;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,6 +20,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -73,6 +76,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	private static final Logger logger = LogManager.getLogger(ViewAsPreconditionsContext.class);
 
 	private final IView view;
+	private final ViewProfileId viewProfileId;
 	private final String tableName;
 	@Getter
 	private final AdWindowId adWindowId;
@@ -89,12 +93,14 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	@Builder
 	private ViewAsPreconditionsContext(
 			@NonNull final IView view,
+			@Nullable final ViewProfileId viewProfileId,
 			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
 			final ViewRowIdsSelection parentViewRowIdsSelection,
 			final ViewRowIdsSelection childViewRowIdsSelection,
 			final DisplayPlace displayPlace)
 	{
 		this.view = view;
+		this.viewProfileId = viewProfileId;
 		this.adWindowId = view.getViewId().getWindowId().toAdWindowIdOrNull();
 
 		this.viewRowIdsSelection = viewRowIdsSelection;

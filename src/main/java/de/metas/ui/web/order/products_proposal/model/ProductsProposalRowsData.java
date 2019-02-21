@@ -19,11 +19,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
+import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
@@ -63,6 +66,7 @@ import lombok.NonNull;
 public class ProductsProposalRowsData implements IEditableRowsData<ProductsProposalRow>
 {
 	private final DocumentIdIntSequence nextRowIdSequence;
+	private final CampaignPriceProvider campaignPriceProvider;
 
 	private ArrayList<DocumentId> rowIdsOrderedAndFiltered;
 	private final ArrayList<DocumentId> rowIdsOrdered; // used to preserve the order
@@ -85,14 +89,24 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	@Builder
 	private ProductsProposalRowsData(
 			@NonNull final DocumentIdIntSequence nextRowIdSequence,
-			@NonNull final List<ProductsProposalRow> rows,
+			@Nullable final CampaignPriceProvider campaignPriceProvider,
+			//
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
 			@Nullable final OrderId orderId,
 			@Nullable final BPartnerId bpartnerId,
-			@NonNull final SOTrx soTrx)
+			@NonNull final SOTrx soTrx,
+			//
+			@NonNull final List<ProductsProposalRow> rows)
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
+		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
+
+		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
+		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
+		this.orderId = Optional.ofNullable(orderId);
+		this.bpartnerId = Optional.ofNullable(bpartnerId);
+		this.soTrx = soTrx;
 
 		rowIdsOrdered = rows.stream()
 				.map(ProductsProposalRow::getId)
@@ -102,11 +116,6 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowsById = rows.stream()
 				.collect(GuavaCollectors.toMapByKey(HashMap::new, ProductsProposalRow::getId));
 
-		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
-		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
-		this.orderId = Optional.ofNullable(orderId);
-		this.bpartnerId = Optional.ofNullable(bpartnerId);
-		this.soTrx = soTrx;
 	}
 
 	@Override
@@ -212,7 +221,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		if (existingRow != null)
 		{
 			patchRow(existingRow.getId(), RowUpdate.builder()
-					.price(request.getPrice())
+					.price(createPrice(request.getProductId(), request.getPriceListPrice()))
 					.lastShipmentDays(request.getLastShipmentDays())
 					.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 					.build());
@@ -223,13 +232,23 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		}
 	}
 
+	private ProductProposalPrice createPrice(@NonNull final ProductId productId, @NonNull final Amount priceListPrice)
+	{
+		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
+
+		return ProductProposalPrice.builder()
+				.priceListPrice(priceListPrice)
+				.campaignPrice(campaignPrice)
+				.build();
+	}
+
 	private ProductsProposalRow createRow(ProductsProposalRowAddRequest request)
 	{
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
-				.standardPrice(request.getPrice())
+				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 				.build();
@@ -241,6 +260,13 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		rowIdsOrdered.add(0, row.getId()); // add first
 
 		rowsById.put(row.getId(), row);
+	}
+
+	public synchronized void removeRowsByIds(@NonNull final Set<DocumentId> rowIds)
+	{
+		rowIdsOrderedAndFiltered.removeAll(rowIds);
+		rowIdsOrdered.removeAll(rowIds);
+		rowIds.forEach(rowsById::remove);
 	}
 
 	public synchronized ProductsProposalViewFilter getFilter()

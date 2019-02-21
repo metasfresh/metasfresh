@@ -321,6 +321,7 @@ public class ViewRestController
 	private ViewAsPreconditionsContext createPreconditionsContext(
 			@NonNull final String windowId,
 			@NonNull final String viewIdString,
+			final String viewProfileIdStr,
 			final String selectedIdsList,
 			final String parentViewId,
 			final String parentViewSelectedIdsList,
@@ -337,6 +338,7 @@ public class ViewRestController
 
 		return ViewAsPreconditionsContext.builder()
 				.view(view)
+				.viewProfileId(ViewProfileId.fromJson(viewProfileIdStr))
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -383,6 +385,7 @@ public class ViewRestController
 			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
 			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
 			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr,
+			@RequestParam(name = "viewProfileId", required = false) final String viewProfileIdStr,
 			@RequestParam(name = "all", required = false) final boolean all)
 	{
 		userSession.assertLoggedIn();
@@ -390,6 +393,7 @@ public class ViewRestController
 		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
+				.viewProfileIdStr(viewProfileIdStr)
 				.selectedIdsList(selectedIdsListStr)
 				.parentViewId(parentViewIdStr)
 				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)

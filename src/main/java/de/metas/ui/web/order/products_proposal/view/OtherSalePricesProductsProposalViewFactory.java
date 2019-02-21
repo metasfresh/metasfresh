@@ -22,11 +22,11 @@ import de.metas.lang.SOTrx;
 import de.metas.money.MoneyService;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
+import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
-import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
@@ -141,8 +141,7 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 	protected List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(WEBUI_ProductsProposal_AddProductFromBasePriceList.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_CancelAddingProductFromBasePriceList.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_AddProductFromBasePriceList.class));
 	}
 
 	private static class RowsLoader
@@ -205,7 +204,9 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 					.id(nextRowIdSequence.nextDocumentId())
 					.bpartner(bpartnerLookup.findById(stats.getBpartnerId()))
 					.product(productLookup.findById(stats.getProductId()))
-					.standardPrice(moneyService.toAmount(lastSalesInvoice.getPrice()))
+					.price(ProductProposalPrice.builder()
+							.priceListPrice(moneyService.toAmount(lastSalesInvoice.getPrice()))
+							.build())
 					.lastShipmentDays(stats.getLastShipmentInDays())
 					.lastSalesInvoiceDate(lastSalesInvoice.getInvoiceDate())
 					.build();

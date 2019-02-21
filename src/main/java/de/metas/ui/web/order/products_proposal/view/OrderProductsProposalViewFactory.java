@@ -3,25 +3,34 @@ package de.metas.ui.web.order.products_proposal.view;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.rules.campaign_price.CampaignPriceService;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
+import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_Delete;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
@@ -30,6 +39,7 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -63,13 +73,16 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final CampaignPriceService campaignPriceService;
 
 	public OrderProductsProposalViewFactory(
-			@NonNull final BPartnerProductStatsService bpartnerProductStatsService)
+			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@NonNull final CampaignPriceService campaignPriceService)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.campaignPriceService = campaignPriceService;
 	}
 
 	@Override
@@ -81,9 +94,20 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		return ViewLayout.builder()
 				.setWindowId(key.getWindowId())
 				.setCaption(caption)
-				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
+				//
+				.addElementsFromViewRowClassAndFieldNames(
+						ProductsProposalRow.class,
+						key.getViewDataType(),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Product),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_ASI),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays))
+				//
 				.build();
 	}
 
@@ -91,6 +115,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(@NonNull final TableRecordReference recordRef)
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
 		recordRef.assertTableName(I_C_Order.Table_Name);
 		final OrderId orderId = OrderId.ofRepoId(recordRef.getRecord_ID());
@@ -101,14 +126,50 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 
 		final PriceListId priceListId = PriceListId.ofRepoId(orderRecord.getM_PriceList_ID());
 		final LocalDate date = TimeUtil.asLocalDate(orderRecord.getDatePromised());
-		final PriceListVersionId priceListVersionId = Services.get(IPriceListDAO.class).retrievePriceListVersionId(priceListId, date);
+		final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(priceListId, date);
+
+		final CampaignPriceProvider campaignPriceProvider = createCampaignPriceProvider(priceListId, bpartnerId, date, soTrx);
 
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
+				.campaignPriceProvider(campaignPriceProvider)
 				.priceListVersionId(priceListVersionId)
 				.orderId(orderId)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
+				.build();
+	}
+
+	private CampaignPriceProvider createCampaignPriceProvider(
+			@NonNull final PriceListId priceListId,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final LocalDate date,
+			@NonNull final SOTrx soTrx)
+	{
+		if (!soTrx.isSales())
+		{
+			return CampaignPriceProviders.none();
+		}
+
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
+		final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
+		if (countryId == null)
+		{
+			return CampaignPriceProviders.none();
+		}
+		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
+
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(bpartnerId);
+
+		return CampaignPriceProviders.standard()
+				.campaignPriceService(campaignPriceService)
+				.bpartnerId(bpartnerId)
+				.bpGroupId(bpGroupId)
+				.countryId(countryId)
+				.currencyId(currencyId)
+				.date(date)
 				.build();
 	}
 
@@ -118,7 +179,8 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		return ImmutableList.of(
 				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class),
+				createProcessDescriptor(WEBUI_ProductsProposal_Delete.class));
 	}
 
 	@Override

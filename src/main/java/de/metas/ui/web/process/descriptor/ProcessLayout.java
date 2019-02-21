@@ -166,6 +166,11 @@ public class ProcessLayout
 			return this;
 		}
 
+		public ITranslatableString getDescription()
+		{
+			return description;
+		}
+
 		public Builder addElement(final DocumentLayoutElementDescriptor element)
 		{
 			Check.assumeNotNull(element, "Parameter element is not null");

@@ -75,7 +75,9 @@ public class ProductsProposalRowReducers
 						.setParameter("row", row);
 			}
 
-			newRowBuilder.price(request.getPrice().orElse(BigDecimal.ZERO));
+			final BigDecimal newUserEnteredPriceValue = request.getPrice().orElse(BigDecimal.ZERO);
+			final ProductProposalPrice newPrice = row.getPrice().withUserEnteredPriceValue(newUserEnteredPriceValue);
+			newRowBuilder.price(newPrice);
 		}
 
 		return newRowBuilder.build();
@@ -84,7 +86,7 @@ public class ProductsProposalRowReducers
 	private static ProductsProposalRow reduceRowUpdate(final ProductsProposalRow row, final RowUpdate request)
 	{
 		return row.toBuilder()
-				.price(request.getPrice().getValue())
+				.price(request.getPrice())
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
 				.build();
@@ -94,8 +96,7 @@ public class ProductsProposalRowReducers
 	{
 		return row.toBuilder()
 				.productPriceId(request.getProductPriceId())
-				.standardPrice(request.getStandardPrice())
-				.price(request.getStandardPrice().getValue())
+				.price(request.getPrice())
 				.copiedFromProductPriceId(null)
 				.build();
 	}

@@ -110,6 +110,7 @@ public class ProductsToPickRow implements IViewRow
 
 	static final String FIELD_PickStatus = "pickStatus";
 	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
+	@Getter
 	private final PickingCandidatePickStatus pickStatus;
 
 	static final String FIELD_ApprovalStatus = "approvalStatus";
@@ -268,11 +269,6 @@ public class ProductsToPickRow implements IViewRow
 	{
 		return !isProcessed()
 				&& (pickStatus.isPicked() || pickStatus.isPickRejected());
-	}
-
-	public boolean isEligibleForProcessing()
-	{
-		return !isProcessed() && isApproved() && pickStatus.isPacked();
 	}
 
 	public String getLocatorName()

@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +31,8 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
+import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -70,7 +72,9 @@ public final class ProductsProposalRowsLoader
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final CampaignPriceProvider campaignPriceProvider;
 	private final LookupDataSource productLookup;
+	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
 	private final ImmutableSet<PriceListVersionId> priceListVersionIds;
 	private final OrderId orderId;
@@ -78,11 +82,13 @@ public final class ProductsProposalRowsLoader
 	private final SOTrx soTrx;
 	private final ImmutableSet<ProductId> productIdsToExclude;
 
-	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
+	private final Map<PriceListVersionId, String> currencyCodesByPriceListVersionId = new HashMap<>();
 
 	@Builder
 	private ProductsProposalRowsLoader(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@Nullable final CampaignPriceProvider campaignPriceProvider,
+			//
 			@NonNull @Singular final ImmutableSet<PriceListVersionId> priceListVersionIds,
 			@Nullable final OrderId orderId,
 			@NonNull final BPartnerId bpartnerId,
@@ -92,6 +98,7 @@ public final class ProductsProposalRowsLoader
 		Check.assumeNotEmpty(priceListVersionIds, "priceListVersionIds is not empty");
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
 		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 
 		this.priceListVersionIds = priceListVersionIds;
@@ -120,12 +127,16 @@ public final class ProductsProposalRowsLoader
 
 		return ProductsProposalRowsData.builder()
 				.nextRowIdSequence(nextRowIdSequence)
-				.rows(rows)
+				.campaignPriceProvider(campaignPriceProvider)
+				//
 				.singlePriceListVersionId(singlePriceListVersionId)
 				.basePriceListVersionId(basePriceListVersionId)
 				.orderId(orderId)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
+				//
+				.rows(rows)
+				//
 				.build();
 	}
 
@@ -139,39 +150,62 @@ public final class ProductsProposalRowsLoader
 
 	private Stream<ProductsProposalRow> loadAndStreamRowsForPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
-		final String currencyCode = getCurrencyCodeByPriceListVersionId(priceListVersionId);
-
 		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
-				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord, currencyCode))
+				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
 				.filter(Predicates.notNull());
 	}
 
-	private ProductsProposalRow toProductsProposalRowOrNull(final I_M_ProductPrice record, final String currencyCode)
+	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)
 	{
-		final LookupValue product = productLookup.findById(record.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final LookupValue product = productLookup.findById(productId);
 		if (!product.isActive())
 		{
 			return null;
 		}
 
-		final DocumentId id = nextRowIdSequence.nextDocumentId();
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
-
 		return ProductsProposalRow.builder()
-				.id(id)
+				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
-				.asiDescription(ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(asiId)))
-				.standardPrice(Amount.of(record.getPriceStd(), currencyCode))
+				.asiDescription(extractProductASIDescription(record))
+				.price(extractProductProposalPrice(record))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
 				.build();
 	}
 
-	private String getCurrencyCodeByPriceListVersionId(final PriceListVersionId priceListVersionId)
+	private ProductASIDescription extractProductASIDescription(final I_M_ProductPrice record)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+		return ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(asiId));
+	}
+
+	private ProductProposalPrice extractProductProposalPrice(final I_M_ProductPrice record)
+	{
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());
+		final Amount priceListPrice = Amount.of(record.getPriceStd(), getCurrencyCode(priceListVersionId));
+
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
+
+		return ProductProposalPrice.builder()
+				.priceListPrice(priceListPrice)
+				.campaignPrice(campaignPrice)
+				.build();
+	}
+
+	private String getCurrencyCode(final PriceListVersionId priceListVersionId)
+	{
+		return currencyCodesByPriceListVersionId.computeIfAbsent(priceListVersionId, this::retrieveCurrencyCode);
+	}
+
+	private String retrieveCurrencyCode(final PriceListVersionId priceListVersionId)
 	{
 		final I_M_PriceList priceList = priceListsRepo.getPriceListByPriceListVersionId(priceListVersionId);
-		return currenciesRepo.getISOCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
+		final String currencyCode = currenciesRepo.getISOCodeById(currencyId);
+		return currencyCode;
 	}
 
 	private List<ProductsProposalRow> updateLastShipmentDays(final List<ProductsProposalRow> rows)
