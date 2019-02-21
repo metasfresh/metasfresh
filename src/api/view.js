@@ -101,11 +101,13 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
 export function quickActionsRequest(
   windowId,
   viewId,
+  viewProfileId,
   selectedIds,
   childView,
   parentView
 ) {
   const query = getQueryString({
+    viewProfileId,
     selectedIds,
     childViewId: childView.viewId,
     childViewSelectedIds: childView.viewSelectedIds,
