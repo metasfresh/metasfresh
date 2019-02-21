@@ -66,7 +66,7 @@ final class ProductsToPickRowId
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append("P").append(productId.getRepoId());
-		sb.append("_").append("SS").append(shipmentScheduleId.getRepoId());
+		sb.append("_").append("S").append(shipmentScheduleId.getRepoId());
 
 		if (huId != null)
 		{
