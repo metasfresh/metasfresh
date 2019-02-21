@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
+import classnames from 'classnames';
 
 import Table from '../components/table/Table';
 import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
@@ -205,12 +206,10 @@ class Window extends PureComponent {
               if (isModal && shouldBeFocused && c) c.focus();
               this.focused = true;
             }}
-            className={
-              'panel panel-spaced panel-distance ' +
-              (type === 'primary'
-                ? 'panel-bordered panel-primary'
-                : 'panel-secondary')
-            }
+            className={classnames('panel panel-spaced panel-distance', {
+              'panel-bordered panel-primary': type === 'primary',
+              'panel-necondary': type !== 'primary',
+            })}
           >
             {this.renderElementsLine(
               elementsLine,
@@ -236,7 +235,10 @@ class Window extends PureComponent {
       return (
         elements &&
         elements.length > 0 && (
-          <div className="elements-line" key={'line' + id}>
+          <div
+            className={classnames('elements-line', { row: extendedData.tabId })}
+            key={'line' + id}
+          >
             {this.renderElements(elements, tabIndex, isFocused, extendedData)}
           </div>
         )

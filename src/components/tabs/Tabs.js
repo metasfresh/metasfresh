@@ -8,7 +8,7 @@ import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
 
 const TabSingleEntry = props => (
-  <div className="sections-wrapper tab-sections">{props.children}</div>
+  <div className="tab-sections">{props.children}</div>
 );
 
 class Tabs extends Component {
