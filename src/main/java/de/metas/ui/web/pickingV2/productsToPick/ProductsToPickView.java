@@ -92,6 +92,12 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 			return false;
 		}
 
+		final boolean allApproved = streamByIds(DocumentIdsSelection.ALL).allMatch(ProductsToPickRow::isApproved);
+		if (allApproved)
+		{
+			return false;
+		}
+
 		return streamByIds(DocumentIdsSelection.ALL)
 				.allMatch(ProductsToPickRow::isEligibleForReview);
 	}
@@ -116,7 +122,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	public LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
 	{
 		throw new UnsupportedOperationException();
-}
+	}
 
 	@Override
 	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName)
