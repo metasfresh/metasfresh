@@ -177,4 +177,6 @@ public interface IPriceListDAO extends ISingletonService
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
 
 	void updateProductPrice(UpdateProductPriceRequest request);
+
+	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
 }

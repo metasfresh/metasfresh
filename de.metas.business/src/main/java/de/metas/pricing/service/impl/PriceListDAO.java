@@ -125,7 +125,8 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		return load(priceListVersionId, I_M_PriceList_Version.class);
 	}
-	
+
+	@Override
 	public Stream<I_M_ProductPrice> retrieveProductPrices(
 			@NonNull final PriceListVersionId priceListVersionId,
 			final Set<ProductId> productIdsToExclude)
@@ -478,18 +479,19 @@ public class PriceListDAO implements IPriceListDAO
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	@Override
 	public I_M_PriceList_Version getCreatePriceListVersion(@NonNull final ProductPriceCreateRequest request)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoId(request.getPriceListId());
-		@NonNull final LocalDate validDate = request.getValidDate();
+		@NonNull
+		final LocalDate validDate = request.getValidDate();
 		final I_M_PriceList_Version plv;
 		if (request.isUseNewestPriceListversion())
 		{
 			plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
 		}
-		else 
+		else
 		{
 			plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
 		}
@@ -588,5 +590,20 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		saveRecord(record);
+	}
+
+	@Override
+	public void deleteProductPricesByIds(@NonNull final Set<ProductPriceId> productPriceIds)
+	{
+		if (productPriceIds.isEmpty())
+		{
+			return;
+		}
+
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class)
+				.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
+				.create()
+				.delete();
 	}
 }

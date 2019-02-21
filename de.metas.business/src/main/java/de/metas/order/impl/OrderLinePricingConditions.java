@@ -120,7 +120,7 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		{
 			final ITranslatableString translatableMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoPricingConditionsError);
 			throw new AdempiereException(translatableMsg)
-					.setParameter("HowToDisablePricingConditionsCheck", "To disable it, please set " + SYSCONFIG_NoPriceConditionsColorName + " to -1");
+					.setParameter("HowToDisablePricingConditionsCheck", "To disable it, please set " + SYSCONFIG_NoPriceConditionsColorName + " to `-`");
 		}
 	}
 

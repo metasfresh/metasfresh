@@ -711,8 +711,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	 * Reference name: ShowHelp List
 	 */
 	public static final int SHOWHELP_AD_Reference_ID=50007;
-	/** Ask user (for future use) = A */
-	public static final String SHOWHELP_AskUserForFutureUse = "A";
 	/** Don't show help = N */
 	public static final String SHOWHELP_DonTShowHelp = "N";
 	/** Show Help = Y */
