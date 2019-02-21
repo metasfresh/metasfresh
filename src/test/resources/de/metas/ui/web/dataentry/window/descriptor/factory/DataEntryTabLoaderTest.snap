@@ -3,7 +3,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
     {
       "documentType" : "Window",
       "documentTypeId" : "5",
-      "id" : "Window-5-DataEntry_Group-10",
+      "id" : "Window-5-DataEntry_Group-1",
       "internalName" : "dataEntryGroup_internalName",
       "caption" : {
         "value" : "dataEntryGroup_caption",
@@ -13,7 +13,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "value" : "dataEntryGroup_description",
         "anyLanguage" : false
       },
-      "detailId" : "DataEntry_Group-10",
+      "detailId" : "DataEntry_Group-1",
       "allowCreateNewLogic" : "1=0",
       "allowDeleteLogic" : "1=0",
       "readonlyLogic" : "1=0",
@@ -22,10 +22,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "fields" : { },
       "idFields" : [ ],
       "includedEntitiesByDetailId" : {
-        "DataEntry_SubGroup-20" : {
+        "DataEntry_SubGroup-11" : {
           "documentType" : "Window",
           "documentTypeId" : "5",
-          "id" : "Window-5-DataEntry_SubGroup-20",
+          "id" : "Window-5-DataEntry_SubGroup-11",
           "internalName" : "dataEntrySubGroup_internalName",
           "caption" : {
             "value" : "dataEntrySubGroup_caption",
@@ -35,15 +35,67 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "value" : "dataEntrySubGroup_description",
             "anyLanguage" : false
           },
-          "detailId" : "DataEntry_SubGroup-20",
+          "detailId" : "DataEntry_SubGroup-11",
           "allowCreateNewLogic" : "1=1",
           "allowDeleteLogic" : "1=1",
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
           "fields" : {
-            "31" : {
-              "fieldName" : "31",
+            "1111" : {
+              "fieldName" : "1111",
+              "caption" : {
+                "value" : "textField1_caption",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "textField1_description",
+                "anyLanguage" : false
+              },
+              "detailId" : "DataEntry_SubGroup-11",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "Text",
+              "allowShowPassword" : false,
+              "valueClass" : "java.lang.String",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=0",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "1111",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 1111,
+                  "fieldType" : "TEXT",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "1112" : {
+              "fieldName" : "1112",
               "caption" : {
                 "value" : "longTextField1_caption",
                 "anyLanguage" : false
@@ -52,7 +104,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "longTextField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -80,12 +132,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "31",
+                  "columnName" : "1112",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 31,
+                  "dataEntryFieldId" : 1112,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -94,8 +146,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "32" : {
-              "fieldName" : "32",
+            "1113" : {
+              "fieldName" : "1113",
               "caption" : {
                 "value" : "numberField1_caption",
                 "anyLanguage" : false
@@ -104,7 +156,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "numberField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -132,12 +184,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "32",
+                  "columnName" : "1113",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 32,
+                  "dataEntryFieldId" : 1113,
                   "fieldType" : "NUMBER",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -146,8 +198,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "33" : {
-              "fieldName" : "33",
+            "1121" : {
+              "fieldName" : "1121",
               "caption" : {
                 "value" : "dateField1_caption",
                 "anyLanguage" : false
@@ -156,7 +208,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "dateField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -184,12 +236,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "33",
+                  "columnName" : "1121",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 33,
+                  "dataEntryFieldId" : 1121,
                   "fieldType" : "DATE",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -198,8 +250,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "34" : {
-              "fieldName" : "34",
+            "1122" : {
+              "fieldName" : "1122",
               "caption" : {
                 "value" : "yesNoField1_caption",
                 "anyLanguage" : false
@@ -208,7 +260,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "yesNoField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -236,12 +288,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "34",
+                  "columnName" : "1122",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 34,
+                  "dataEntryFieldId" : 1122,
                   "fieldType" : "YESNO",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -250,8 +302,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "35" : {
-              "fieldName" : "35",
+            "1123" : {
+              "fieldName" : "1123",
               "caption" : {
                 "value" : "listField1_caption",
                 "anyLanguage" : false
@@ -260,7 +312,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "listField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -278,8 +330,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     ],
                     "id2listValue" : {
-                      "41" : {
-                        "id" : 41,
+                      "11231" : {
+                        "id" : 11231,
                         "displayName" : {
                           "value" : "listValue1_name",
                           "anyLanguage" : false
@@ -290,8 +342,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         },
                         "active" : true
                       },
-                      "42" : {
-                        "id" : 42,
+                      "11232" : {
+                        "id" : 11232,
                         "displayName" : {
                           "value" : "listValue2_name",
                           "anyLanguage" : false
@@ -303,12 +355,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         "active" : true
                       }
                     },
-                    "dataEntryFieldId" : 35,
-                    "cached" : true,
-                    "numericKey" : false
+                    "dataEntryFieldId" : 1123,
+                    "numericKey" : false,
+                    "cached" : true
                   },
-                  "highVolume" : false,
-                  "numericKey" : true
+                  "numericKey" : true,
+                  "highVolume" : false
                 },
                 "numericKey" : true
               },
@@ -330,12 +382,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "35",
+                  "columnName" : "1123",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 35,
+                  "dataEntryFieldId" : 1123,
                   "fieldType" : "LIST",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -344,8 +396,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "CreatedBy_31" : {
-              "fieldName" : "CreatedBy_31",
+            "CreatedBy_1111" : {
+              "fieldName" : "CreatedBy_1111",
               "caption" : {
                 "value" : "CreatedBy",
                 "anyLanguage" : false
@@ -354,7 +406,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -376,18 +428,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "CreatedBy_31",
+                  "columnName" : "CreatedBy_1111",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 31,
+                  "dataEntryFieldId" : 1111,
                   "fieldType" : "CREATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -396,8 +448,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "CreatedBy_32" : {
-              "fieldName" : "CreatedBy_32",
+            "CreatedBy_1112" : {
+              "fieldName" : "CreatedBy_1112",
               "caption" : {
                 "value" : "CreatedBy",
                 "anyLanguage" : false
@@ -406,7 +458,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -428,18 +480,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "CreatedBy_32",
+                  "columnName" : "CreatedBy_1112",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 32,
+                  "dataEntryFieldId" : 1112,
                   "fieldType" : "CREATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -448,8 +500,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "CreatedBy_33" : {
-              "fieldName" : "CreatedBy_33",
+            "CreatedBy_1113" : {
+              "fieldName" : "CreatedBy_1113",
               "caption" : {
                 "value" : "CreatedBy",
                 "anyLanguage" : false
@@ -458,7 +510,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -480,18 +532,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "CreatedBy_33",
+                  "columnName" : "CreatedBy_1113",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 33,
+                  "dataEntryFieldId" : 1113,
                   "fieldType" : "CREATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -500,8 +552,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "CreatedBy_34" : {
-              "fieldName" : "CreatedBy_34",
+            "CreatedBy_1121" : {
+              "fieldName" : "CreatedBy_1121",
               "caption" : {
                 "value" : "CreatedBy",
                 "anyLanguage" : false
@@ -510,7 +562,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -532,18 +584,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "CreatedBy_34",
+                  "columnName" : "CreatedBy_1121",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 34,
+                  "dataEntryFieldId" : 1121,
                   "fieldType" : "CREATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -552,8 +604,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "CreatedBy_35" : {
-              "fieldName" : "CreatedBy_35",
+            "CreatedBy_1122" : {
+              "fieldName" : "CreatedBy_1122",
               "caption" : {
                 "value" : "CreatedBy",
                 "anyLanguage" : false
@@ -562,7 +614,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -584,18 +636,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "CreatedBy_35",
+                  "columnName" : "CreatedBy_1122",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 35,
+                  "dataEntryFieldId" : 1122,
                   "fieldType" : "CREATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -604,8 +656,60 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Created_31" : {
-              "fieldName" : "Created_31",
+            "CreatedBy_1123" : {
+              "fieldName" : "CreatedBy_1123",
+              "caption" : {
+                "value" : "CreatedBy",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-11",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "Lookup",
+              "allowShowPassword" : false,
+              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$StringLookupValue",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "CreatedBy_1123",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 1123,
+                  "fieldType" : "CREATED_BY",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "Created_1111" : {
+              "fieldName" : "Created_1111",
               "caption" : {
                 "value" : "Created",
                 "anyLanguage" : false
@@ -614,7 +718,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -636,18 +740,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Created_31",
+                  "columnName" : "Created_1111",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 31,
+                  "dataEntryFieldId" : 1111,
                   "fieldType" : "CREATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -656,8 +760,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Created_32" : {
-              "fieldName" : "Created_32",
+            "Created_1112" : {
+              "fieldName" : "Created_1112",
               "caption" : {
                 "value" : "Created",
                 "anyLanguage" : false
@@ -666,7 +770,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -688,18 +792,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Created_32",
+                  "columnName" : "Created_1112",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 32,
+                  "dataEntryFieldId" : 1112,
                   "fieldType" : "CREATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -708,8 +812,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Created_33" : {
-              "fieldName" : "Created_33",
+            "Created_1113" : {
+              "fieldName" : "Created_1113",
               "caption" : {
                 "value" : "Created",
                 "anyLanguage" : false
@@ -718,7 +822,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -740,18 +844,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Created_33",
+                  "columnName" : "Created_1113",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 33,
+                  "dataEntryFieldId" : 1113,
                   "fieldType" : "CREATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -760,8 +864,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Created_34" : {
-              "fieldName" : "Created_34",
+            "Created_1121" : {
+              "fieldName" : "Created_1121",
               "caption" : {
                 "value" : "Created",
                 "anyLanguage" : false
@@ -770,7 +874,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -792,18 +896,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Created_34",
+                  "columnName" : "Created_1121",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 34,
+                  "dataEntryFieldId" : 1121,
                   "fieldType" : "CREATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -812,8 +916,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Created_35" : {
-              "fieldName" : "Created_35",
+            "Created_1122" : {
+              "fieldName" : "Created_1122",
               "caption" : {
                 "value" : "Created",
                 "anyLanguage" : false
@@ -822,7 +926,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -844,18 +948,70 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Created_35",
+                  "columnName" : "Created_1122",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 35,
+                  "dataEntryFieldId" : 1122,
                   "fieldType" : "CREATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "Created_1123" : {
+              "fieldName" : "Created_1123",
+              "caption" : {
+                "value" : "Created",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-11",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "ZonedDateTime",
+              "allowShowPassword" : false,
+              "valueClass" : "java.time.ZonedDateTime",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "Created_1123",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 1123,
+                  "fieldType" : "CREATED",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -874,7 +1030,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -905,8 +1061,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -915,8 +1071,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "UpdatedBy_31" : {
-              "fieldName" : "UpdatedBy_31",
+            "UpdatedBy_1111" : {
+              "fieldName" : "UpdatedBy_1111",
               "caption" : {
                 "value" : "UpdatedBy",
                 "anyLanguage" : false
@@ -925,7 +1081,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -947,18 +1103,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "UpdatedBy_31",
+                  "columnName" : "UpdatedBy_1111",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 31,
+                  "dataEntryFieldId" : 1111,
                   "fieldType" : "UPDATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -967,8 +1123,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "UpdatedBy_32" : {
-              "fieldName" : "UpdatedBy_32",
+            "UpdatedBy_1112" : {
+              "fieldName" : "UpdatedBy_1112",
               "caption" : {
                 "value" : "UpdatedBy",
                 "anyLanguage" : false
@@ -977,7 +1133,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -999,18 +1155,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "UpdatedBy_32",
+                  "columnName" : "UpdatedBy_1112",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 32,
+                  "dataEntryFieldId" : 1112,
                   "fieldType" : "UPDATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1019,8 +1175,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "UpdatedBy_33" : {
-              "fieldName" : "UpdatedBy_33",
+            "UpdatedBy_1113" : {
+              "fieldName" : "UpdatedBy_1113",
               "caption" : {
                 "value" : "UpdatedBy",
                 "anyLanguage" : false
@@ -1029,7 +1185,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1051,18 +1207,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "UpdatedBy_33",
+                  "columnName" : "UpdatedBy_1113",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 33,
+                  "dataEntryFieldId" : 1113,
                   "fieldType" : "UPDATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1071,8 +1227,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "UpdatedBy_34" : {
-              "fieldName" : "UpdatedBy_34",
+            "UpdatedBy_1121" : {
+              "fieldName" : "UpdatedBy_1121",
               "caption" : {
                 "value" : "UpdatedBy",
                 "anyLanguage" : false
@@ -1081,7 +1237,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1103,18 +1259,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "UpdatedBy_34",
+                  "columnName" : "UpdatedBy_1121",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 34,
+                  "dataEntryFieldId" : 1121,
                   "fieldType" : "UPDATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1123,8 +1279,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "UpdatedBy_35" : {
-              "fieldName" : "UpdatedBy_35",
+            "UpdatedBy_1122" : {
+              "fieldName" : "UpdatedBy_1122",
               "caption" : {
                 "value" : "UpdatedBy",
                 "anyLanguage" : false
@@ -1133,7 +1289,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1155,18 +1311,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "UpdatedBy_35",
+                  "columnName" : "UpdatedBy_1122",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 35,
+                  "dataEntryFieldId" : 1122,
                   "fieldType" : "UPDATED_BY",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1175,8 +1331,60 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Updated_31" : {
-              "fieldName" : "Updated_31",
+            "UpdatedBy_1123" : {
+              "fieldName" : "UpdatedBy_1123",
+              "caption" : {
+                "value" : "UpdatedBy",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-11",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "Lookup",
+              "allowShowPassword" : false,
+              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$StringLookupValue",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "UpdatedBy_1123",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 1123,
+                  "fieldType" : "UPDATED_BY",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "Updated_1111" : {
+              "fieldName" : "Updated_1111",
               "caption" : {
                 "value" : "Updated",
                 "anyLanguage" : false
@@ -1185,7 +1393,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1207,18 +1415,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Updated_31",
+                  "columnName" : "Updated_1111",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 31,
+                  "dataEntryFieldId" : 1111,
                   "fieldType" : "UPDATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1227,8 +1435,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Updated_32" : {
-              "fieldName" : "Updated_32",
+            "Updated_1112" : {
+              "fieldName" : "Updated_1112",
               "caption" : {
                 "value" : "Updated",
                 "anyLanguage" : false
@@ -1237,7 +1445,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1259,18 +1467,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Updated_32",
+                  "columnName" : "Updated_1112",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 32,
+                  "dataEntryFieldId" : 1112,
                   "fieldType" : "UPDATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1279,8 +1487,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Updated_33" : {
-              "fieldName" : "Updated_33",
+            "Updated_1113" : {
+              "fieldName" : "Updated_1113",
               "caption" : {
                 "value" : "Updated",
                 "anyLanguage" : false
@@ -1289,7 +1497,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1311,18 +1519,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Updated_33",
+                  "columnName" : "Updated_1113",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 33,
+                  "dataEntryFieldId" : 1113,
                   "fieldType" : "UPDATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1331,8 +1539,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Updated_34" : {
-              "fieldName" : "Updated_34",
+            "Updated_1121" : {
+              "fieldName" : "Updated_1121",
               "caption" : {
                 "value" : "Updated",
                 "anyLanguage" : false
@@ -1341,7 +1549,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1363,18 +1571,18 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Updated_34",
+                  "columnName" : "Updated_1121",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 34,
+                  "dataEntryFieldId" : 1121,
                   "fieldType" : "UPDATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1383,8 +1591,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "Updated_35" : {
-              "fieldName" : "Updated_35",
+            "Updated_1122" : {
+              "fieldName" : "Updated_1122",
               "caption" : {
                 "value" : "Updated",
                 "anyLanguage" : false
@@ -1393,7 +1601,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1415,18 +1623,70 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "characteristics" : [
                 "PublicField"
               ],
-              "readonlyLogic" : "1=0",
+              "readonlyLogic" : "1=1",
               "alwaysUpdateable" : false,
               "displayLogic" : "1=1",
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "Updated_35",
+                  "columnName" : "Updated_1122",
                   "mandatory" : false,
-                  "dataEntryFieldId" : 35,
+                  "dataEntryFieldId" : 1122,
                   "fieldType" : "UPDATED",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
+                },
+                "present" : true
+              },
+              "dependencies" : {
+                "type2name2dependencies" : { }
+              },
+              "defaultFilterField" : false
+            },
+            "Updated_1123" : {
+              "fieldName" : "Updated_1123",
+              "caption" : {
+                "value" : "Updated",
+                "anyLanguage" : false
+              },
+              "description" : {
+                "value" : "",
+                "anyLanguage" : true
+              },
+              "detailId" : "DataEntry_SubGroup-11",
+              "key" : false,
+              "calculated" : false,
+              "parentLink" : false,
+              "widgetType" : "ZonedDateTime",
+              "allowShowPassword" : false,
+              "valueClass" : "java.time.ZonedDateTime",
+              "lookupDescriptorProvider" : {
+                "numericKey" : false
+              },
+              "supportZoomInto" : false,
+              "virtualField" : false,
+              "virtualFieldValueProvider" : {
+                "present" : false
+              },
+              "defaultValueExpression" : {
+                "present" : false
+              },
+              "callouts" : [ ],
+              "characteristics" : [
+                "PublicField"
+              ],
+              "readonlyLogic" : "1=1",
+              "alwaysUpdateable" : false,
+              "displayLogic" : "1=1",
+              "mandatoryLogic" : "1=0",
+              "dataBinding" : {
+                "value" : {
+                  "columnName" : "Updated_1123",
+                  "mandatory" : false,
+                  "dataEntryFieldId" : 1123,
+                  "fieldType" : "UPDATED",
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1445,7 +1705,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : true,
@@ -1477,8 +1737,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1499,7 +1759,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-20",
+              "detailId" : "DataEntry_SubGroup-11",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -1530,8 +1790,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
-                  "defaultOrderByAscending" : true,
-                  "defaultOrderBy" : false
+                  "defaultOrderBy" : false,
+                  "defaultOrderByAscending" : true
                 },
                 "present" : true
               },
@@ -1551,7 +1811,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "value" : "",
               "anyLanguage" : true
             },
-            "detailId" : "DataEntry_SubGroup-20",
+            "detailId" : "DataEntry_SubGroup-11",
             "key" : false,
             "calculated" : false,
             "parentLink" : true,
@@ -1583,8 +1843,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderByAscending" : true,
-                "defaultOrderBy" : false
+                "defaultOrderBy" : false,
+                "defaultOrderByAscending" : true
               },
               "present" : true
             },
@@ -1655,7 +1915,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   [
     {
       "windowId" : "5",
-      "detailId" : "DataEntry_Group-10",
+      "detailId" : "DataEntry_Group-1",
       "internalName" : "dataEntryGroup_internalName",
       "caption" : {
         "value" : "dataEntryGroup_caption",
@@ -1671,7 +1931,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "subTabLayouts" : [
         {
           "windowId" : "5",
-          "detailId" : "DataEntry_SubGroup-20",
+          "detailId" : "DataEntry_SubGroup-11",
           "internalName" : "dataEntrySubGroup_internalName",
           "caption" : {
             "value" : "dataEntrySubGroup_caption",
@@ -1694,13 +1954,16 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "sections" : [
               {
                 "caption" : {
-                  "value" : "",
-                  "anyLanguage" : true
+                  "value" : "dataEntrySection1_caption",
+                  "anyLanguage" : false
                 },
                 "description" : {
-                  "value" : "",
-                  "anyLanguage" : true
+                  "value" : "dataEntrySection1_description",
+                  "anyLanguage" : false
                 },
+                "internalName" : "dataEntrySection1_internalName",
+                "closableMode" : "INITIALLY_OPEN",
+                "captionMode" : "DISPLAY",
                 "columns" : [
                   {
                     "elementGroups" : [
@@ -1728,7 +1991,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "31",
+                                    "field" : "1111",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1756,13 +2019,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Created_31",
+                                    "field" : "Created_1111",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1790,13 +2054,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "CreatedBy_31",
+                                    "field" : "CreatedBy_1111",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1824,13 +2089,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Updated_31",
+                                    "field" : "Updated_1111",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1858,13 +2124,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "UpdatedBy_31",
+                                    "field" : "UpdatedBy_1111",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1906,7 +2173,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "31",
+                                    "field" : "1112",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1934,13 +2201,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Created_31",
+                                    "field" : "Created_1112",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -1968,13 +2236,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "CreatedBy_31",
+                                    "field" : "CreatedBy_1112",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2002,13 +2271,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Updated_31",
+                                    "field" : "Updated_1112",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2036,13 +2306,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "UpdatedBy_31",
+                                    "field" : "UpdatedBy_1112",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2084,7 +2355,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "32",
+                                    "field" : "1113",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2112,13 +2383,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Created_32",
+                                    "field" : "Created_1113",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2146,13 +2418,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "CreatedBy_32",
+                                    "field" : "CreatedBy_1113",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2180,13 +2453,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Updated_32",
+                                    "field" : "Updated_1113",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2214,13 +2488,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "UpdatedBy_32",
+                                    "field" : "UpdatedBy_1113",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2237,7 +2512,26 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             ]
                           }
                         ]
-                      },
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "caption" : {
+                  "value" : "dataEntrySection2_caption",
+                  "anyLanguage" : false
+                },
+                "description" : {
+                  "value" : "dataEntrySection2_description",
+                  "anyLanguage" : false
+                },
+                "internalName" : "dataEntrySection2_internalName",
+                "closableMode" : "INITIALLY_CLOSED",
+                "captionMode" : "DISPLAY",
+                "columns" : [
+                  {
+                    "elementGroups" : [
                       {
                         "elementLines" : [
                           {
@@ -2262,7 +2556,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "33",
+                                    "field" : "1121",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2290,13 +2584,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Created_33",
+                                    "field" : "Created_1121",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2324,13 +2619,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "CreatedBy_33",
+                                    "field" : "CreatedBy_1121",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2358,13 +2654,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Updated_33",
+                                    "field" : "Updated_1121",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2392,13 +2689,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "UpdatedBy_33",
+                                    "field" : "UpdatedBy_1121",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2440,7 +2738,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "34",
+                                    "field" : "1122",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2468,13 +2766,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Created_34",
+                                    "field" : "Created_1122",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2502,13 +2801,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "CreatedBy_34",
+                                    "field" : "CreatedBy_1122",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2536,13 +2836,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Updated_34",
+                                    "field" : "Updated_1122",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2570,13 +2871,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "UpdatedBy_34",
+                                    "field" : "UpdatedBy_1122",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2618,7 +2920,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "35",
+                                    "field" : "1123",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2646,13 +2948,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Created_35",
+                                    "field" : "Created_1123",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2680,13 +2983,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "CreatedBy_35",
+                                    "field" : "CreatedBy_1123",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2714,13 +3018,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "Updated_35",
+                                    "field" : "Updated_1123",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2748,13 +3053,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
+                                "widgetSize" : "S",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
                                 "viewEditorRenderMode" : "NEVER",
                                 "viewAllowSorting" : true,
                                 "fields" : [
                                   {
-                                    "field" : "UpdatedBy_35",
+                                    "field" : "UpdatedBy_1123",
                                     "publicField" : true,
                                     "lookupTableName" : {
                                       "present" : false
@@ -2796,19 +3102,21 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   [
     {
       "windowId" : "5",
-      "tabId" : "DataEntry_Group-10",
+      "tabId" : "DataEntry_Group-1",
       "internalName" : "dataEntryGroup_internalName",
       "caption" : "dataEntryGroup_caption",
       "description" : "dataEntryGroup_description",
       "tabs" : [
         {
           "windowId" : "5",
-          "tabId" : "DataEntry_SubGroup-20",
+          "tabId" : "DataEntry_SubGroup-11",
           "internalName" : "dataEntrySubGroup_internalName",
           "caption" : "dataEntrySubGroup_caption",
           "description" : "dataEntrySubGroup_description",
           "sections" : [
             {
+              "title" : "dataEntrySection1_caption",
+              "description" : "dataEntrySection1_description",
               "columns" : [
                 {
                   "elementGroups" : [
@@ -2823,7 +3131,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
-                                  "field" : "31"
+                                  "field" : "1111"
                                 }
                               ]
                             },
@@ -2831,10 +3139,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Created",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Created_31"
+                                  "field" : "Created_1111"
                                 }
                               ]
                             },
@@ -2842,10 +3151,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "CreatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "CreatedBy_31"
+                                  "field" : "CreatedBy_1111"
                                 }
                               ]
                             },
@@ -2853,10 +3163,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Updated",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Updated_31"
+                                  "field" : "Updated_1111"
                                 }
                               ]
                             },
@@ -2864,10 +3175,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "UpdatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "UpdatedBy_31"
+                                  "field" : "UpdatedBy_1111"
                                 }
                               ]
                             }
@@ -2886,7 +3198,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
-                                  "field" : "31"
+                                  "field" : "1112"
                                 }
                               ]
                             },
@@ -2894,10 +3206,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Created",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Created_31"
+                                  "field" : "Created_1112"
                                 }
                               ]
                             },
@@ -2905,10 +3218,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "CreatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "CreatedBy_31"
+                                  "field" : "CreatedBy_1112"
                                 }
                               ]
                             },
@@ -2916,10 +3230,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Updated",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Updated_31"
+                                  "field" : "Updated_1112"
                                 }
                               ]
                             },
@@ -2927,10 +3242,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "UpdatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "UpdatedBy_31"
+                                  "field" : "UpdatedBy_1112"
                                 }
                               ]
                             }
@@ -2949,7 +3265,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
-                                  "field" : "32"
+                                  "field" : "1113"
                                 }
                               ]
                             },
@@ -2957,10 +3273,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Created",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Created_32"
+                                  "field" : "Created_1113"
                                 }
                               ]
                             },
@@ -2968,10 +3285,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "CreatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "CreatedBy_32"
+                                  "field" : "CreatedBy_1113"
                                 }
                               ]
                             },
@@ -2979,10 +3297,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Updated",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Updated_32"
+                                  "field" : "Updated_1113"
                                 }
                               ]
                             },
@@ -2990,17 +3309,29 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "UpdatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "UpdatedBy_32"
+                                  "field" : "UpdatedBy_1113"
                                 }
                               ]
                             }
                           ]
                         }
                       ]
-                    },
+                    }
+                  ]
+                }
+              ],
+              "closableMode" : "INITIALLY_OPEN"
+            },
+            {
+              "title" : "dataEntrySection2_caption",
+              "description" : "dataEntrySection2_description",
+              "columns" : [
+                {
+                  "elementGroups" : [
                     {
                       "elementsLine" : [
                         {
@@ -3012,7 +3343,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
-                                  "field" : "33"
+                                  "field" : "1121"
                                 }
                               ]
                             },
@@ -3020,10 +3351,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Created",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Created_33"
+                                  "field" : "Created_1121"
                                 }
                               ]
                             },
@@ -3031,10 +3363,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "CreatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "CreatedBy_33"
+                                  "field" : "CreatedBy_1121"
                                 }
                               ]
                             },
@@ -3042,10 +3375,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Updated",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Updated_33"
+                                  "field" : "Updated_1121"
                                 }
                               ]
                             },
@@ -3053,10 +3387,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "UpdatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "UpdatedBy_33"
+                                  "field" : "UpdatedBy_1121"
                                 }
                               ]
                             }
@@ -3075,7 +3410,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
-                                  "field" : "34"
+                                  "field" : "1122"
                                 }
                               ]
                             },
@@ -3083,10 +3418,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Created",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Created_34"
+                                  "field" : "Created_1122"
                                 }
                               ]
                             },
@@ -3094,10 +3430,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "CreatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "CreatedBy_34"
+                                  "field" : "CreatedBy_1122"
                                 }
                               ]
                             },
@@ -3105,10 +3442,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Updated",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Updated_34"
+                                  "field" : "Updated_1122"
                                 }
                               ]
                             },
@@ -3116,10 +3454,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "UpdatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "UpdatedBy_34"
+                                  "field" : "UpdatedBy_1122"
                                 }
                               ]
                             }
@@ -3138,7 +3477,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "viewEditorRenderMode" : "always",
                               "fields" : [
                                 {
-                                  "field" : "35"
+                                  "field" : "1123"
                                 }
                               ]
                             },
@@ -3146,10 +3485,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Created",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Created_35"
+                                  "field" : "Created_1123"
                                 }
                               ]
                             },
@@ -3157,10 +3497,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "CreatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "CreatedBy_35"
+                                  "field" : "CreatedBy_1123"
                                 }
                               ]
                             },
@@ -3168,10 +3509,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "Updated",
                               "description" : "",
                               "widgetType" : "DateTime",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "Updated_35"
+                                  "field" : "Updated_1123"
                                 }
                               ]
                             },
@@ -3179,10 +3521,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "UpdatedBy",
                               "description" : "",
                               "widgetType" : "Lookup",
+                              "size" : "S",
                               "viewEditorRenderMode" : "never",
                               "fields" : [
                                 {
-                                  "field" : "UpdatedBy_35"
+                                  "field" : "UpdatedBy_1123"
                                 }
                               ]
                             }
@@ -3192,7 +3535,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                     }
                   ]
                 }
-              ]
+              ],
+              "closableMode" : "INITIALLY_CLOSED"
             }
           ],
           "supportQuickInput" : false,

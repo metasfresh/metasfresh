@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -181,9 +182,17 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	public void refresh(@NonNull final Document document)
 	{
 		assertValidState(document);
-		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 
+		final DataEntryRecordId dataEntryRecordId = extractDataEntryRecordId(document);
 		final DataEntryRecord dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordId);
+
+		refreshFromDataEntryRecord(document, dataEntryRecord);
+	}
+
+	private void refreshFromDataEntryRecord(
+			@NonNull final Document document,
+			@NonNull final DataEntryRecord dataEntryRecord)
+	{
 		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(dataEntryRecord);
 
 		document.refreshFromSupplier(documentValuesSupplier);
@@ -206,6 +215,8 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			dataEntryRecord.clearRecordFields();
 		}
 
+		boolean refreshNeeded = false;
+
 		final UserId userId = UserId.ofRepoId(Env.getAD_User_ID(document.getCtx()));
 
 		for (final IDocumentFieldView fieldView : document.getFieldViews())
@@ -227,10 +238,18 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			final String fieldName = fieldView.getFieldName();
 			final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName)); // TODO extract this code and the code form DataEntryTabLoader into a common class
 
-			dataEntryRecord.setRecordField(dataEntryFieldId, userId, dataEntryFieldValue);
+			final boolean valueChanged = dataEntryRecord.setRecordField(dataEntryFieldId, userId, dataEntryFieldValue);
+			refreshNeeded = refreshNeeded || valueChanged;
+		}
+		dataEntryRecordRepository.save(dataEntryRecord);
+
+		if (refreshNeeded) // at least one updated value was changed
+		{
+			refreshFromDataEntryRecord(document, dataEntryRecord);
 		}
 
-		dataEntryRecordRepository.save(dataEntryRecord);
+		// Notify the parent document that one of it's children were saved (copied from SqlDocumentsRepository)
+		document.getParentDocument().onChildSaved(document);
 
 		return SaveResult.SAVED;
 
@@ -347,9 +366,13 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 	private void assertValidState(@NonNull final Document document)
 	{
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		// assertThisRepository(document.getEntityDescriptor()); // TODO, like in de.metas.ui.web.window.model.sql.SqlDocumentsRepository
+		assertThisRepository(document.getEntityDescriptor());
+		if(Adempiere.isUnitTestMode())
+		{
+			return;
+		}
 		DocumentPermissionsHelper.assertCanEdit(document);
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 	}
 
 	@Override

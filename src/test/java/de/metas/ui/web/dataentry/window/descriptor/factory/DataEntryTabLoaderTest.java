@@ -6,7 +6,6 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
 import java.util.List;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -19,17 +18,16 @@ import com.google.common.collect.ImmutableList;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryGroupId;
 import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.DataEntrySectionId;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
-import de.metas.dataentry.data.DataEntryRecordRepository;
-import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryListValue;
+import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -70,19 +68,7 @@ public class DataEntryTabLoaderTest
 
 		jsonOptions = JSONOptions.builder(null/* userSession */).setAD_LanguageIfNotEmpty("en_US").build();
 
-		final int windowIdInt = 5;
-
-		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
-		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
-		final DataEntrySubGroupBindingDescriptorBuilder //
-		dataEntrySubGroupBindingDescriptorBuilder = new DataEntrySubGroupBindingDescriptorBuilder(dataEntryRecordRepository);
-
-		dataEntryTabLoader = DataEntryTabLoader
-				.builder()
-				.adWindowId(AdWindowId.ofRepoId(windowIdInt))
-				.windowId(WindowId.of(windowIdInt))
-				.dataEntrySubGroupBindingDescriptorBuilder(dataEntrySubGroupBindingDescriptorBuilder)
-				.build();
+		dataEntryTabLoader = DataEntryTabLoader.createInstanceForUnitTesting();
 	}
 
 	@BeforeClass
@@ -134,68 +120,86 @@ public class DataEntryTabLoaderTest
 		expect(descriptors).toMatchSnapshot();
 	}
 
-	private DataEntryGroup createSimpleDataEntryGroup()
+	public static DataEntryGroup createSimpleDataEntryGroup()
 	{
-		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(35);
+		final DataEntryFieldId dataEntryListFieldId = DataEntryFieldId.ofRepoId(1123);
 
 		final DataEntryGroup dataEntryGroup = DataEntryGroup
 				.builder()
-				.id(DataEntryGroupId.ofRepoId(10))
+				.id(DataEntryGroupId.ofRepoId(1))
 				.documentLinkColumnName(DocumentLinkColumnName.of("documentLinkColumnName"))
 				.internalName("dataEntryGroup_internalName")
 				.caption(ImmutableTranslatableString.constant("dataEntryGroup_caption"))
 				.description(ImmutableTranslatableString.constant("dataEntryGroup_description"))
 				.dataEntrySubGroup(DataEntrySubGroup.builder()
-						.id(DataEntrySubGroupId.ofRepoId(20))
+						.id(DataEntrySubGroupId.ofRepoId(11))
 						.internalName("dataEntrySubGroup_internalName")
 						.caption(ImmutableTranslatableString.constant("dataEntrySubGroup_caption"))
 						.description(ImmutableTranslatableString.constant("dataEntrySubGroup_description"))
-						.dataEntryField(DataEntryField.builder()
-								.id(DataEntryFieldId.ofRepoId(31))
-								.caption(ImmutableTranslatableString.constant("textField1_caption"))
-								.description(ImmutableTranslatableString.constant("textField1_description"))
-								.type(FieldType.TEXT)
-								.build())
-						.dataEntryField(DataEntryField.builder()
-								.id(DataEntryFieldId.ofRepoId(31))
-								.caption(ImmutableTranslatableString.constant("longTextField1_caption"))
-								.description(ImmutableTranslatableString.constant("longTextField1_description"))
-								.type(FieldType.LONG_TEXT)
-								.build())
-						.dataEntryField(DataEntryField.builder()
-								.id(DataEntryFieldId.ofRepoId(32))
-								.caption(ImmutableTranslatableString.constant("numberField1_caption"))
-								.description(ImmutableTranslatableString.constant("numberField1_description"))
-								.type(FieldType.NUMBER)
-								.build())
-						.dataEntryField(DataEntryField.builder()
-								.id(DataEntryFieldId.ofRepoId(33))
-								.caption(ImmutableTranslatableString.constant("dateField1_caption"))
-								.description(ImmutableTranslatableString.constant("dateField1_description"))
-								.type(FieldType.DATE)
-								.build())
-						.dataEntryField(DataEntryField.builder()
-								.id(DataEntryFieldId.ofRepoId(34))
-								.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
-								.description(ImmutableTranslatableString.constant("yesNoField1_description"))
-								.type(FieldType.YESNO)
+
+						.dataEntrySection(DataEntrySection.builder()
+								.id(DataEntrySectionId.ofRepoId(111))
+								.caption(ImmutableTranslatableString.constant("dataEntrySection1_caption"))
+								.description(ImmutableTranslatableString.constant("dataEntrySection1_description"))
+								.internalName("dataEntrySection1_internalName")
+								.initallyClosed(false)
+
+								.dataEntryField(DataEntryField.builder()
+										.id(DataEntryFieldId.ofRepoId(1111))
+										.caption(ImmutableTranslatableString.constant("textField1_caption"))
+										.description(ImmutableTranslatableString.constant("textField1_description"))
+										.type(FieldType.TEXT)
+										.build())
+								.dataEntryField(DataEntryField.builder()
+										.id(DataEntryFieldId.ofRepoId(1112))
+										.caption(ImmutableTranslatableString.constant("longTextField1_caption"))
+										.description(ImmutableTranslatableString.constant("longTextField1_description"))
+										.type(FieldType.LONG_TEXT)
+										.build())
+								.dataEntryField(DataEntryField.builder()
+										.id(DataEntryFieldId.ofRepoId(1113))
+										.caption(ImmutableTranslatableString.constant("numberField1_caption"))
+										.description(ImmutableTranslatableString.constant("numberField1_description"))
+										.type(FieldType.NUMBER)
+										.build())
 								.build())
 
-						.dataEntryField(DataEntryField.builder()
-								.id(dataEntryListFieldId)
-								.caption(ImmutableTranslatableString.constant("listField1_caption"))
-								.description(ImmutableTranslatableString.constant("listField1_description"))
-								.type(FieldType.LIST)
-								.listValue(new DataEntryListValue(
-										DataEntryListValueId.ofRepoId(41),
-										dataEntryListFieldId,
-										ImmutableTranslatableString.constant("listValue1_name"),
-										ImmutableTranslatableString.constant("listValue1_description")))
-								.listValue(new DataEntryListValue(
-										DataEntryListValueId.ofRepoId(42),
-										dataEntryListFieldId,
-										ImmutableTranslatableString.constant("listValue2_name"),
-										ImmutableTranslatableString.constant("listValue2_description")))
+						.dataEntrySection(DataEntrySection.builder()
+								.id(DataEntrySectionId.ofRepoId(112))
+								.caption(ImmutableTranslatableString.constant("dataEntrySection2_caption"))
+								.description(ImmutableTranslatableString.constant("dataEntrySection2_description"))
+								.internalName("dataEntrySection2_internalName")
+								.initallyClosed(true)
+
+								.dataEntryField(DataEntryField.builder()
+										.id(DataEntryFieldId.ofRepoId(1121))
+										.caption(ImmutableTranslatableString.constant("dateField1_caption"))
+										.description(ImmutableTranslatableString.constant("dateField1_description"))
+										.type(FieldType.DATE)
+										.build())
+								.dataEntryField(DataEntryField.builder()
+										.id(DataEntryFieldId.ofRepoId(1122))
+										.caption(ImmutableTranslatableString.constant("yesNoField1_caption"))
+										.description(ImmutableTranslatableString.constant("yesNoField1_description"))
+										.type(FieldType.YESNO)
+										.build())
+
+								.dataEntryField(DataEntryField.builder()
+										.id(dataEntryListFieldId)
+										.caption(ImmutableTranslatableString.constant("listField1_caption"))
+										.description(ImmutableTranslatableString.constant("listField1_description"))
+										.type(FieldType.LIST)
+										.listValue(new DataEntryListValue(
+												DataEntryListValueId.ofRepoId(11231),
+												dataEntryListFieldId,
+												ImmutableTranslatableString.constant("listValue1_name"),
+												ImmutableTranslatableString.constant("listValue1_description")))
+										.listValue(new DataEntryListValue(
+												DataEntryListValueId.ofRepoId(11232),
+												dataEntryListFieldId,
+												ImmutableTranslatableString.constant("listValue2_name"),
+												ImmutableTranslatableString.constant("listValue2_description")))
+										.build())
 								.build())
 						.build())
 				.build();

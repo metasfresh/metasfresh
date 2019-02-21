@@ -121,18 +121,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_LoadLimitMax, DEFAULT_LoadLimitMax);
 	}
 
-	private final void assertThisRepository(final DocumentEntityDescriptor entityDescriptor)
-	{
-		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		if (documentsRepository != this)
-		{
-			// shall not happen
-			throw new IllegalArgumentException("Entity descriptor's repository is invalid: " + entityDescriptor
-					+ "\n Expected: " + this
-					+ "\n But it was: " + documentsRepository);
-		}
-	}
-
 	private static DocumentId retrieveNextDocumentId(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());

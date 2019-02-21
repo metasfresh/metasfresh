@@ -1,14 +1,8 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import de.metas.ui.web.window.model.OrderedDocumentsList;
 
 /*
  * #%L
@@ -41,67 +35,8 @@ public class DataEntryGroupBindingDescriptorBuilder implements DocumentEntityDat
 		@Override
 		public DocumentsRepository getDocumentsRepository()
 		{
-			return new DocumentsRepository()
-			{
-				@Override
-				public OrderedDocumentsList retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector)
-				{
-					// actually this repo should not be invoked to start with, because it's for DateEntryGroup
-					// which does not have any fields/records of its own; just subtabs!
-					//return OrderedDocumentsList.of(ImmutableList.of(), ImmutableList.of());
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public Document retrieveDocument(DocumentQuery query, IDocumentChangesCollector changesCollector)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public DocumentId retrieveParentDocumentId(DocumentEntityDescriptor parentEntityDescriptor, DocumentQuery childDocumentQuery)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public Document createNewDocument(DocumentEntityDescriptor entityDescriptor, Document parentDocument, IDocumentChangesCollector changesCollector)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public void refresh(Document document)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public SaveResult save(Document document)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public void delete(Document document)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public String retrieveVersion(DocumentEntityDescriptor entityDescriptor, int documentIdAsInt)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public int retrieveLastLineNo(DocumentQuery query)
-				{
-					throw new UnsupportedOperationException();
-				}
-			};
+			throw new UnsupportedOperationException("DocumentEntityDataBindingDescriptor " + this + " has no DocumentsRepository");
 		}
-
 	};
 
 	@Override
