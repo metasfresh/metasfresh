@@ -29,6 +29,7 @@ export class QuickActions extends Component {
     parentView: PropTypes.object.isRequired,
     windowType: PropTypes.string.isRequired,
     viewId: PropTypes.string,
+    viewProfileId: PropTypes.string,
     fetchOnInit: PropTypes.bool,
     inBackground: PropTypes.bool,
     inModal: PropTypes.bool,
