@@ -38,7 +38,8 @@ COPY cypress-git-repo /e2e
 RUN npm install
 
 # thx to https://docs.cypress.io/guides/tooling/reporters.html#Multiple-Reporters
-RUN npm install --save-dev mocha@6.0.1 mocha-multi-reporters@1.1.7 mocha-junit-reporter@1.18.0
+# mocha 6.0.0 and 6.0.1 don't work, thx to https://github.com/cypress-io/cypress/issues/3537
+RUN npm install --save-dev mocha@5.2.0 mocha-multi-reporters@1.1.7 mocha-junit-reporter@1.18.0
 
 RUN $(npm bin)/cypress verify
 

@@ -63,6 +63,7 @@ fi
 
 export CYPRESS_baseUrl=$frontend_url  
 
+# Thx to https://docs.cypress.io/guides/tooling/reporters.html#Spec-to-STDOUT-save-JUnit-XML-files
 reporter_param="--reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json"
 
 # note: run with chrome after running with electron hung on jenkins; Probably related to https://github.com/cypress-io/cypress/issues/1912
