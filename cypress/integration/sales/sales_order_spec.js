@@ -1,4 +1,4 @@
-import config from '../config';
+import config from '../../config';
 
 describe('New sales order test', function() {
   const windowId = 143;
