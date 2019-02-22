@@ -179,7 +179,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		save(newTerm);
 
 		linkContractsIfNeeded(newTerm);
-		
+
 		if (completeIt)
 		{
 			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
@@ -256,14 +256,13 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			correspondingTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
 			save(correspondingTerm);
-			
-			// set correct the dates by the previous flatrate term
-			newTerm.setStartDate(TimeUtil.addDays(correspondingTerm.getEndDate(), 1));
+
+			// set correct the master date by the previous flatrate term
 			newTerm.setMasterStartDate(correspondingTerm.getMasterStartDate());
 			save(newTerm);
 		}
 	}
-	
+
 	@Override
 	public int createMissingTermsForOLCands(
 			final Properties ctx,
@@ -961,7 +960,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderId(orderId);
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
@@ -980,6 +979,15 @@ public class SubscriptionBL implements ISubscriptionBL
 		return topTerm == null ? suitableTerm : topTerm;
 	}
 
+	@Override
+	public I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(@NonNull final de.metas.contracts.order.model.I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
+		return orderTerms.isEmpty() ? null : orderTerms.get(0);
+	}
 
 	@Override
 	public boolean isActiveTerm(@NonNull final I_C_Flatrate_Term term)
