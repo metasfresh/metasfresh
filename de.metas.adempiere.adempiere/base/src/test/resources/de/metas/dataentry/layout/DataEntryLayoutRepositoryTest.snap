@@ -50,20 +50,6 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                   "type": "TEXT",
                   "mandatory": true,
                   "listValues": [ ]
-                },
-                {
-                  "id": 100016,
-                  "caption": {
-                    "value": "fieldRecord1_2_5_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_2_5_description",
-                    "anyLanguage": true
-                  },
-                  "type": "LONG_TEXT",
-                  "mandatory": true,
-                  "listValues": [ ]
                 }
               ]
             },
@@ -105,6 +91,35 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                     "anyLanguage": true
                   },
                   "type": "TEXT",
+                  "mandatory": true,
+                  "listValues": [ ]
+                }
+              ]
+            },
+            {
+              "id": 0,
+              "caption": {
+                "value": "",
+                "anyLanguage": true
+              },
+              "description": {
+                "value": "",
+                "anyLanguage": true
+              },
+              "internalName": "DEFAULT",
+              "initallyClosed": false,
+              "dataEntryFields": [
+                {
+                  "id": 100016,
+                  "caption": {
+                    "value": "fieldRecord1_2_5_name",
+                    "anyLanguage": true
+                  },
+                  "description": {
+                    "value": "fieldRecord1_2_5_description",
+                    "anyLanguage": true
+                  },
+                  "type": "LONG_TEXT",
                   "mandatory": true,
                   "listValues": [ ]
                 }

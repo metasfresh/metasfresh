@@ -121,6 +121,7 @@ public class DataEntryLayoutRepositoryTest
 		sectionRecord1_2.setDescription("sectionRecord1_2_description");
 		saveRecord(sectionRecord1_2);
 
+		//
 		// subgroup 1
 		final I_DataEntry_SubGroup subgroupRecord1_1 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_1.setDataEntry_Group(groupRecord1);
@@ -152,6 +153,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_1_2.setDataEntry_Section(sectionRecord1_1);
 		saveRecord(fieldRecord1_1_2);
 
+		//
 		// subgroup 2
 		final I_DataEntry_SubGroup subgroupRecord1_2 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_2.setDataEntry_Group(groupRecord1);
@@ -218,6 +220,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_4.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_4);
 
+		// the last field has no section so it shall be added to the "default" section
 		final I_DataEntry_Field fieldRecord1_2_5 = newInstance(I_DataEntry_Field.class);
 		fieldRecord1_2_5.setDataEntry_SubGroup(subgroupRecord1_1);
 		fieldRecord1_2_5.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_LongText);
@@ -226,7 +229,7 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_5.setIsMandatory(true);
 		fieldRecord1_2_5.setSeqNo(50);
 		fieldRecord1_2_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
-		fieldRecord1_2_5.setDataEntry_Section(sectionRecord1_2);
+		// fieldRecord1_2_5.setDataEntry_Section(sectionRecord1_2);
 		saveRecord(fieldRecord1_2_5);
 
 		return groupRecord1;

@@ -4,8 +4,6 @@ import static de.metas.util.Check.fail;
 
 import java.util.LinkedHashMap;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -169,7 +167,8 @@ public class DataEntryLayoutRepository
 
 		final LinkedHashMap<DataEntrySectionId, DataEntrySectionBuilder> id2SectionBuilder = new LinkedHashMap<>();
 
-		id2SectionBuilder.put(DataEntrySectionId.DEFAULT, DataEntrySection.DEFAULT);
+		final DataEntrySectionBuilder defaultSectionBuilder = DataEntrySection.newDefaultSectionBuilder();
+
 		for (final I_DataEntry_Section sectionRecord : sectionRecords)
 		{
 			id2SectionBuilder.put(
@@ -181,7 +180,8 @@ public class DataEntryLayoutRepository
 		{
 			final DataEntrySectionId dataEntrySectionId = DataEntrySectionId.ofRepoId(fieldRecord.getDataEntry_Section_ID()); // zero-ID is allowed
 
-			final DataEntrySectionBuilder sectionBuilder = id2SectionBuilder.getOrDefault(dataEntrySectionId, DataEntrySection.DEFAULT);
+			// use default for dataEntrySectionId=0, but also if the section record somehow got lost
+			final DataEntrySectionBuilder sectionBuilder = id2SectionBuilder.computeIfAbsent(dataEntrySectionId, id -> defaultSectionBuilder);
 
 			final DataEntryField field = ofRecord(fieldRecord);
 			sectionBuilder.dataEntryField(field);
@@ -215,13 +215,8 @@ public class DataEntryLayoutRepository
 		return fieldRecords;
 	}
 
-	private static DataEntrySectionBuilder ofRecord(@Nullable final I_DataEntry_Section sectionRecord)
+	private static DataEntrySectionBuilder ofRecord(@NonNull final I_DataEntry_Section sectionRecord)
 	{
-		if (sectionRecord == null)
-		{
-			return DataEntrySection.DEFAULT;
-		}
-
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(sectionRecord);
 
 		final ITranslatableString captionTrl = modelTranslationMap
