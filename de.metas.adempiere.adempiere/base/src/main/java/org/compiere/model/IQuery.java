@@ -113,11 +113,11 @@ public interface IQuery<T>
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Same as {@link #list(Class)} but sets {@value #OPTION_ReturnReadOnlyRecords} and returns an {@link ImmutableList}.
+	 * Same as {@link #list(Class)} returns an {@link ImmutableList}. Note: you can update or delete the included records.
+	 * If you want read-only records, see {@link #OPTION_ReturnReadOnlyRecords}.
 	 */
 	default <ET extends T> ImmutableList<ET> listImmutable(Class<ET> clazz) throws DBException
 	{
-		setOption(OPTION_ReturnReadOnlyRecords, true);
 		return ImmutableList.copyOf(list(clazz));
 	}
 
