@@ -15,7 +15,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
 WORKDIR /e2e
 
-RUN npm install --save-dev cypress@3.1.4
+RUN npm install --save-dev cypress@3.1.5
 RUN npm install --save-dev @cypress/snapshot@2.0.1
 RUN npm install --save-dev @cypress/webpack-preprocessor@4.0.2
 
