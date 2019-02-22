@@ -69,6 +69,9 @@ public final class WebuiRelatedProcessDescriptor
 	@Getter
 	private final boolean defaultQuickAction;
 
+	@Getter
+	private final String shortcut;
+
 	@NonNull
 	private final Supplier<ValueAndDuration<ProcessPreconditionsResolution>> preconditionsResolutionSupplier;
 
@@ -82,6 +85,7 @@ public final class WebuiRelatedProcessDescriptor
 			final ITranslatableString processDescription,
 			@NonNull @Singular final ImmutableSet<DisplayPlace> displayPlaces,
 			final boolean defaultQuickAction,
+			final String shortcut,
 			@NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier,
 			final String debugProcessClassname)
 	{
@@ -91,6 +95,8 @@ public final class WebuiRelatedProcessDescriptor
 		this.processDescription = processDescription;
 		this.displayPlaces = displayPlaces;
 		this.defaultQuickAction = defaultQuickAction && displayPlaces.contains(DisplayPlace.ViewQuickActions);
+
+		this.shortcut = shortcut;
 
 		// Memorize the resolution supplier to make sure it's not invoked more than once because it might be an expensive operation.
 		// Also we assume this is a short living instance which was created right before checking
