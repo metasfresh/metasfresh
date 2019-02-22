@@ -960,7 +960,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderId(orderId);
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
@@ -984,11 +984,9 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderId(orderId);
-		return orderTerms
-				.stream()
-				.findFirst()
-				.orElse(null);
+
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
+		return orderTerms.isEmpty() ? null : orderTerms.get(0);
 	}
 
 	@Override

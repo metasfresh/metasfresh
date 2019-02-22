@@ -64,7 +64,7 @@ public interface IContractsDAO extends ISingletonService
 
 	List<I_C_SubscriptionProgress> getSubscriptionProgress(I_C_Flatrate_Term currentTerm);
 
-	List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderId(@NonNull final OrderId orderId);
+	List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderIdLatestFirst(@NonNull final OrderId orderId);
 
 	IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(String typeConditions, boolean ignoreDateFilters);
 

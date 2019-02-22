@@ -168,7 +168,7 @@ public class ContractsDAO implements IContractsDAO
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	@Override
-	public List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderId(@NonNull final OrderId orderId)
+	public List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderIdLatestFirst(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
