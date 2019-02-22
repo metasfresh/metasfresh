@@ -14,7 +14,7 @@ public class X_AD_Table_Process extends org.compiere.model.PO implements I_AD_Ta
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -56258645L;
+	private static final long serialVersionUID = -456624343L;
 
     /** Standard Constructor */
     public X_AD_Table_Process (Properties ctx, int AD_Table_Process_ID, String trxName)
@@ -288,6 +288,22 @@ public class X_AD_Table_Process extends org.compiere.model.PO implements I_AD_Ta
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Shortcut.
+		@param WEBUI_Shortcut Shortcut	  */
+	@Override
+	public void setWEBUI_Shortcut (java.lang.String WEBUI_Shortcut)
+	{
+		set_Value (COLUMNNAME_WEBUI_Shortcut, WEBUI_Shortcut);
+	}
+
+	/** Get Shortcut.
+		@return Shortcut	  */
+	@Override
+	public java.lang.String getWEBUI_Shortcut () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_Shortcut);
 	}
 
 	/** Set Is View Action.
