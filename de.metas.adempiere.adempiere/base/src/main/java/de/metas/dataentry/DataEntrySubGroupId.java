@@ -2,6 +2,7 @@ package de.metas.dataentry;
 
 import static de.metas.util.Check.assumeGreaterThanZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.lang.RepoIdAware;
@@ -37,11 +38,18 @@ public class DataEntrySubGroupId implements RepoIdAware
 		return new DataEntrySubGroupId(repoId);
 	}
 
-	@JsonValue
 	int repoId;
 
+	@JsonCreator
 	public DataEntrySubGroupId(final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue // note: annotating just the repoId member worked "often" which was very annoying
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

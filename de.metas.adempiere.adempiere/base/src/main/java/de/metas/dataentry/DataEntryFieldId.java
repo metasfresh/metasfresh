@@ -38,12 +38,18 @@ public class DataEntryFieldId implements RepoIdAware
 		return new DataEntryFieldId(repoId);
 	}
 
-	@JsonValue
 	int repoId;
 
 	@JsonCreator
 	private DataEntryFieldId(final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue // note: annotating just the repoId member worked "often" which was very annoying
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

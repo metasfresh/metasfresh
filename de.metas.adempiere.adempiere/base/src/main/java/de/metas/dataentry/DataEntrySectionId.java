@@ -2,6 +2,7 @@ package de.metas.dataentry;
 
 import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.lang.RepoIdAware;
@@ -39,11 +40,18 @@ public class DataEntrySectionId implements RepoIdAware
 		return new DataEntrySectionId(repoId);
 	}
 
-	@JsonValue
 	int repoId;
 
+	@JsonCreator
 	public DataEntrySectionId(final int repoId)
 	{
 		this.repoId = assumeGreaterOrEqualToZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue // note: annotating just the repoId member worked "often" which was very annoying
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
