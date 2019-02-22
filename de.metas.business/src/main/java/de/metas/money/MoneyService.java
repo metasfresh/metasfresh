@@ -132,10 +132,6 @@ public class MoneyService
 
 	public Amount toAmount(@NonNull final Money money)
 	{
-		final String currencyCode = currencyRepository
-				.getById(money.getCurrencyId())
-				.getThreeLetterCode();
-
-		return Amount.of(money.getValue(), currencyCode);
+		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getThreeLetterCode());
 	}
 }

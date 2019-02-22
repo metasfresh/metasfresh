@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -279,5 +280,10 @@ public class Money
 			return ZERO;
 		}
 		return money.getValue();
+	}
+
+	public Amount toAmount(@NonNull final Function<CurrencyId, String> currencyCodeMapper)
+	{
+		return Amount.of(getValue(), currencyCodeMapper.apply(getCurrencyId()));
 	}
 }

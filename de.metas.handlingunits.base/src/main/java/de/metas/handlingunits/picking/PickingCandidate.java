@@ -142,7 +142,13 @@ public class PickingCandidate
 
 	public boolean isRejectedToPick()
 	{
-		return PickingCandidatePickStatus.WILL_NOT_BE_PICKED.equals(pickStatus);
+		return PickingCandidatePickStatus.WILL_NOT_BE_PICKED.equals(getPickStatus());
+	}
+
+	public boolean isPacked()
+	{
+		return PickingCandidatePickStatus.PACKED.equals(getPickStatus())
+				&& getPackedToHuId() != null;
 	}
 
 	private void assertNotApproved()
@@ -164,7 +170,7 @@ public class PickingCandidate
 		changeStatusToProcessed(getPickFromHuId());
 	}
 
-	public void changeStatusToProcessed(@NonNull final HuId packedToHuId)
+	public void changeStatusToProcessed(@Nullable final HuId packedToHuId)
 	{
 		setPackedToHuId(packedToHuId);
 		setStatus(PickingCandidateStatus.Processed);
