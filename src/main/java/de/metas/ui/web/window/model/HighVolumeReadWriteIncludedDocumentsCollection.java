@@ -91,7 +91,10 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	}
 
 	/** copy constructor */
-	private HighVolumeReadWriteIncludedDocumentsCollection(@NonNull final HighVolumeReadWriteIncludedDocumentsCollection from, @NonNull final Document parentDocumentCopy, @NonNull final CopyMode copyMode)
+	private HighVolumeReadWriteIncludedDocumentsCollection(
+			@NonNull final HighVolumeReadWriteIncludedDocumentsCollection from,
+			@NonNull final Document parentDocumentCopy,
+			@NonNull final CopyMode copyMode)
 	{
 		parentDocument = parentDocumentCopy;
 		parentDocumentPath = from.parentDocumentPath;

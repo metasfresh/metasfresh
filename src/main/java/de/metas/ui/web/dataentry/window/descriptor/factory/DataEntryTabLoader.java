@@ -266,6 +266,7 @@ public class DataEntryTabLoader
 				.setDescription(field.getDescription())
 				.setViewEditorRenderMode(ViewEditorRenderMode.ALWAYS)
 				.setWidgetType(ofFieldType(field.getType()))
+				.setWidgetSize(WidgetSize.Large)
 				.addField(fieldBuilder);
 		return element;
 	}
@@ -366,6 +367,7 @@ public class DataEntryTabLoader
 	{
 		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
+				.setSingleRowDetail(true)
 				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
 				.setDetailId(createDetailIdFor(dataEntrySubGroup))
 				.setInternalName(dataEntrySubGroup.getInternalName())

@@ -79,6 +79,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		this.dataEntryRecordRepository = dataEntryRecordRepository;
 	}
 
+	/** Retrieves *or* creates the single child document for the given query's parent document and entity descriptor */	
 	@Override
 	public OrderedDocumentsList retrieveDocuments(
 			@NonNull final DocumentQuery query,
@@ -94,16 +95,14 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		return documentsCollector;
 	}
 
+	/** Retrieves *or* creates the single child document for the given query's parent document and entity descriptor */
 	@Override
 	public Document retrieveDocument(
 			@NonNull final DocumentQuery query,
 			@NonNull final IDocumentChangesCollector changesCollector)
 	{
 		return retrieveDocumentIfExists(query, changesCollector)
-				.orElseThrow(() -> new AdempiereException("If retrieveDocument is invoked, then there needs to be a retrievable document")
-						.appendParametersToMessage()
-						.setParameter("query", query)
-						.setParameter("changesCollector", changesCollector));
+				.orElseGet(() -> createNewDocument(query.getEntityDescriptor(), query.getParentDocument(), changesCollector));
 	}
 
 	private Optional<Document> retrieveDocumentIfExists(
@@ -367,7 +366,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	private void assertValidState(@NonNull final Document document)
 	{
 		assertThisRepository(document.getEntityDescriptor());
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			return;
 		}

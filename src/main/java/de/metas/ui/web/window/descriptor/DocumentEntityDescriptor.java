@@ -57,6 +57,7 @@ import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollecti
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import de.metas.ui.web.window.model.SingleRowDetailIncludedDocumentsCollection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -514,6 +515,9 @@ public class DocumentEntityDescriptor
 
 		private Boolean _cloneEnabled = null;
 
+		@Getter
+		private boolean singleRowDetail = false;
+
 		// Legacy
 		private OptionalInt _AD_Tab_ID = OptionalInt.empty();
 		private Optional<String> _tableName = Optional.empty();
@@ -764,6 +768,11 @@ public class DocumentEntityDescriptor
 
 		public IIncludedDocumentsCollectionFactory getIncludedDocumentsCollectionFactory()
 		{
+			if (isSingleRowDetail())
+			{
+				return SingleRowDetailIncludedDocumentsCollection::new;
+			}
+
 			if (isHighVolume())
 			{
 				if (getReadonlyLogic().isConstantTrue())
@@ -776,12 +785,8 @@ public class DocumentEntityDescriptor
 				}
 			}
 
-			//
 			// Fallback
-			// NOTE: it turned out that HighVolumeReadWriteIncludedDocumentsCollection is behaving nice on document lines too (e.g. C_Order->C_OrderLine)
-			// so we are considering not using IncludedDocumentsCollection.
 			return HighVolumeReadWriteIncludedDocumentsCollection::newInstance;
-			// return IncludedDocumentsCollection::newInstance;
 		}
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)
@@ -812,6 +817,12 @@ public class DocumentEntityDescriptor
 		public boolean isHighVolume()
 		{
 			return _highVolume;
+		}
+
+		public Builder setSingleRowDetail(final boolean singleRowDetail)
+		{
+			this.singleRowDetail = singleRowDetail;
+			return this;
 		}
 
 		public boolean isQueryIncludedTabOnActivate()
