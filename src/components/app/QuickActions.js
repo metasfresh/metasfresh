@@ -29,6 +29,7 @@ export class QuickActions extends Component {
     parentView: PropTypes.object.isRequired,
     windowType: PropTypes.string.isRequired,
     viewId: PropTypes.string,
+    viewProfileId: PropTypes.string,
     fetchOnInit: PropTypes.bool,
     inBackground: PropTypes.bool,
     inModal: PropTypes.bool,
@@ -60,6 +61,7 @@ export class QuickActions extends Component {
       selected,
       windowType,
       viewId,
+      viewProfileId,
       childView,
       parentView,
     } = this.props;
@@ -69,6 +71,7 @@ export class QuickActions extends Component {
         this.fetchActions(
           windowType,
           viewId,
+          viewProfileId,
           selected,
           childView,
           parentView,
@@ -96,6 +99,7 @@ export class QuickActions extends Component {
         this.fetchActions(
           nextProps.windowType,
           nextProps.viewId,
+          nextProps.viewProfileId,
           nextProps.selected,
           nextProps.childView,
           nextProps.parentView,
@@ -129,12 +133,20 @@ export class QuickActions extends Component {
   };
 
   updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
-    const { windowType, viewId, selected, childView, parentView } = this.props;
+    const {
+      windowType,
+      viewId,
+      viewProfileId,
+      selected,
+      childView,
+      parentView,
+    } = this.props;
 
     this.queue.pushTask((res, rej) => {
       this.fetchActions(
         windowType,
         viewId,
+        viewProfileId,
         selected,
         { ...childView, viewSelectedIds: childSelection },
         parentView,
@@ -182,8 +194,9 @@ export class QuickActions extends Component {
   };
 
   async fetchActions(
-    windowType,
+    windowId,
     viewId,
+    viewProfileId,
     selected,
     childView,
     parentView,
@@ -194,10 +207,11 @@ export class QuickActions extends Component {
       resolve();
     }
 
-    if (windowType && viewId && childView && parentView) {
+    if (windowId && viewId && childView && parentView) {
       await quickActionsRequest(
-        windowType,
+        windowId,
         viewId,
+        viewProfileId,
         selected,
         childView,
         parentView

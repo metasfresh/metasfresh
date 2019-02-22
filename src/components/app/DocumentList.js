@@ -744,6 +744,7 @@ export class DocumentList extends Component {
   render() {
     const {
       windowType,
+      viewProfileId,
       open,
       closeOverlays,
       parentDefaultViewId,
@@ -888,6 +889,7 @@ export class DocumentList extends Component {
                 selected={selected}
                 viewId={viewId}
                 windowType={windowType}
+                viewProfileId={viewProfileId}
                 fetchOnInit={fetchQuickActionsOnInit}
                 disabled={hasIncluded && blurWhenOpen}
                 shouldNotUpdate={inBackground && !hasIncluded}
