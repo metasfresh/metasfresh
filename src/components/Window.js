@@ -208,7 +208,7 @@ class Window extends PureComponent {
             }}
             className={classnames('panel panel-spaced panel-distance', {
               'panel-bordered panel-primary': type === 'primary',
-              'panel-necondary': type !== 'primary',
+              'panel-secondary': type !== 'primary',
             })}
           >
             {this.renderElementsLine(
