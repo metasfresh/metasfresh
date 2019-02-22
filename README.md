@@ -12,7 +12,7 @@ docker build --tag metasfresh-e2e --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
 run the docker container, e.g. like this
 
 ```
-hostname=dev199.metasfresh.com
+hostname=dev289.metasfresh.com
 docker run --rm\
  -e "FRONTEND_URL=https://${hostname}:443"\
  -e "API_URL=https://${hostname}:443/rest/api"\
@@ -23,7 +23,6 @@ docker run --rm\
  -e "BROWSER=chrome"\
  -e "DEBUG_CYPRESS_OUTPUT=n"\
  -e "DEBUG_PRINT_BASH_CMDS=n"\
- -e "DEBUG_PRINT_BASH_CMDS=n"\
- e- "DEBUG_SLEEP_AFTER_FAIL=n"\
+ -e "DEBUG_SLEEP_AFTER_FAIL=y"\
  metasfresh-e2e
 ```
