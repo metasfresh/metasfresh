@@ -982,9 +982,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	@Override
 	public I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(@NonNull final de.metas.contracts.order.model.I_C_Order order)
 	{
-		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderId(orderId);
 		return orderTerms

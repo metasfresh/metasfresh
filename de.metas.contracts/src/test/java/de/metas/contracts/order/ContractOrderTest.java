@@ -86,7 +86,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		assertThat(initialOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
+		assertThat(order.getDatePromised()).isEqualTo(startDate);
 	}
 
 	
@@ -242,7 +242,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	
 	private I_C_Flatrate_Term simulateExtendingContractOrder(final I_C_Flatrate_Term contract)
 	{
-		final I_C_Flatrate_Term newContract = createFlatrateTerm(contract.getC_Flatrate_Conditions(), contract.getM_Product(), contract.getEndDate());
+		final I_C_Flatrate_Term newContract = createFlatrateTerm(contract.getC_Flatrate_Conditions(), contract.getM_Product(), TimeUtil.addDays(contract.getEndDate(),1));
 		contract.setC_FlatrateTerm_Next(newContract);
 		InterfaceWrapperHelper.save(contract);
 		
