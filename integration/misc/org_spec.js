@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-import { BPartner, BPartnerLocation } from '../support/utils/bpartner';
+import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 
 describe('New org test', function() {
     before(function() {
