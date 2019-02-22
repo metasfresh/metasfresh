@@ -19,6 +19,11 @@ RUN npm install --save-dev cypress@3.1.5
 RUN npm install --save-dev @cypress/snapshot@2.0.1
 RUN npm install --save-dev @cypress/webpack-preprocessor@4.0.2
 
+# thx to https://docs.cypress.io/guides/tooling/reporters.html#Multiple-Reporters
+RUN npm install --save-dev mocha mocha-multi-reporters mocha-junit-reporter
+
+COPY reporter-config.json /e2e
+
 # note: if we had a recent git version in here, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
 COPY cypress-git-repo /e2e
 

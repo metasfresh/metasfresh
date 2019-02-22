@@ -63,10 +63,12 @@ fi
 
 export CYPRESS_baseUrl=$frontend_url  
 
+reporter_param="--reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json"
+
 # note: run with chrome after running with electron hung on jenkins; Probably related to https://github.com/cypress-io/cypress/issues/1912
 # ofc this assumes that the docker image contains chrome..
 # also note, that unless running with electron, we can't record videos
-node_modules/.bin/cypress run $record_param $noexit_param --browser $cypress_browser
+node_modules/.bin/cypress run $reporter_param $record_param $noexit_param --browser $cypress_browser
 
 cypress_exit_status=$?
 echo "cypress_exit_status=$cypress_exit_status"
