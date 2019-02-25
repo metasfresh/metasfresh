@@ -1,6 +1,5 @@
 package de.metas.dataentry.data;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -11,6 +10,7 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import de.metas.dataentry.DataEntrySubGroupId;
@@ -19,6 +19,7 @@ import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -52,21 +53,21 @@ public class DataEntryRecordRepository
 		this.jsonDataEntryRecordMapper = jsonDataEntryRecordMapper;
 	}
 
-	public Optional<DataEntryRecord> getBy(
-			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
-			@NonNull final ITableRecordReference tableRecordReference)
+	@Value
+	public static final class DataEntryRecordQuery
 	{
-		final int adTableId = tableRecordReference.getAD_Table_ID();
-		final int recordId = tableRecordReference.getRecord_ID();
+		@NonNull
+		final DataEntrySubGroupId dataEntrySubGroupId;
 
-		final I_DataEntry_Record record = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DataEntry_Record.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupId)
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
-				.create()
-				.firstOnly(I_DataEntry_Record.class);
+		@NonNull
+		final ITableRecordReference tableRecordReference;
+	}
+
+	public Optional<DataEntryRecord> getBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	{
+		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
+
+		final I_DataEntry_Record record = query.firstOnly(I_DataEntry_Record.class);
 
 		if (record == null)
 		{
@@ -74,6 +75,24 @@ public class DataEntryRecordRepository
 		}
 
 		return Optional.of(ofRecord(record));
+	}
+
+	private IQuery<I_DataEntry_Record> createQuery(final DataEntryRecordQuery dataEntryRecordQuery)
+	{
+		final DataEntrySubGroupId dataEntrySubGroupId = dataEntryRecordQuery.getDataEntrySubGroupId();
+		final ITableRecordReference tableRecordReference = dataEntryRecordQuery.getTableRecordReference();
+
+		final int adTableId = tableRecordReference.getAD_Table_ID();
+		final int recordId = tableRecordReference.getRecord_ID();
+
+		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DataEntry_Record.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupId)
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
+				.create();
+		return query;
 	}
 
 	public DataEntryRecord getBy(@NonNull final DataEntryRecordId dataEntryRecordId)
@@ -125,12 +144,10 @@ public class DataEntryRecordRepository
 		return DataEntryRecordId.ofRepoId(dataRecord.getDataEntry_Record_ID());
 	}
 
-	public void delete(@NonNull final DataEntryRecordId dataEntryRecordId)
+	public void deleteBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
 	{
-		final I_DataEntry_Record dataRecord = load(dataEntryRecordId, I_DataEntry_Record.class);
-		if (dataRecord != null)
-		{
-			deleteRecord(dataRecord);
-		}
+		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
+
+		query.delete();
 	}
 }

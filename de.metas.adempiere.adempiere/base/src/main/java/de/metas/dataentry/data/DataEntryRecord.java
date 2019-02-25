@@ -92,14 +92,14 @@ public class DataEntryRecord
 			@NonNull final UserId updatedBy,
 			@Nullable final Object value)
 	{
-		final DataEntryRecordField<?> previousFieldVersion = fields.remove(dataEntryFieldId);
+		final DataEntryRecordField<?> previousFieldVersion = fields.get(dataEntryFieldId);
 
 		final Object previousValue = previousFieldVersion == null ? null : previousFieldVersion.getValue();
 		final boolean valueChanged = !Objects.equal(previousValue, value);
 
-		if (value == null)
+		if (!valueChanged)
 		{
-			return valueChanged;
+			return false;
 		}
 
 		final ZonedDateTime updated = ZonedDateTime.now();
@@ -117,7 +117,7 @@ public class DataEntryRecord
 		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
 
 		fields.put(dataEntryFieldId, dataEntryRecordField);
-		return valueChanged;
+		return true;
 	}
 
 	public boolean isEmpty()

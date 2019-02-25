@@ -23,6 +23,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
 
@@ -139,8 +140,10 @@ public class DataEntryRecordRepositoryTest
 		record.setDataEntry_RecordData(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON);
 		saveRecord(record);
 
+		final DataEntryRecordQuery query = new DataEntryRecordQuery(dataEntrySubGroupId, tableRecordReference);
+
 		// invoke the method under test
-		final Optional<DataEntryRecord> result = dataEntryRecordRepository.getBy(dataEntrySubGroupId, tableRecordReference);
+		final Optional<DataEntryRecord> result = dataEntryRecordRepository.getBy(query);
 
 		assertThat(result).isPresent();
 		assertThat(result.get().getId().get().getRepoId()).isEqualTo(record.getDataEntry_Record_ID());

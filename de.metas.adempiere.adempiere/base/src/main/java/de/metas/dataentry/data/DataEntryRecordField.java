@@ -5,6 +5,8 @@ import static de.metas.util.Check.fail;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.user.CreatedUpdatedInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -62,7 +64,7 @@ public abstract class DataEntryRecordField<T>
 	public static <T> DataEntryRecordField<T> createDataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
-			@NonNull final T value)
+			@Nullable final T value)
 	{
 		final DataEntryRecordField<T> result;
 
