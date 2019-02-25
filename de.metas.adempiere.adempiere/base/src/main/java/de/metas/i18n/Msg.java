@@ -577,7 +577,7 @@ public final class Msg
 				+ ", t.PO_Description as TRL_PO_Description"
 				//
 				+ " FROM AD_Element e"
-				+ " LEFT OUTER JOIN AD_Element_Trl t ON (t.AD_Element_ID=e.AD_Element_ID)"
+				+ " LEFT OUTER JOIN AD_Element_Trl_Effective_v t ON (t.AD_Element_ID=e.AD_Element_ID)"
 				+ " WHERE UPPER(e.ColumnName)=UPPER(?)";
 		final Object[] sqlParams = new Object[] { elementName };
 

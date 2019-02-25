@@ -1,40 +1,53 @@
--- Function: public.update_window_translation_from_ad_element(numeric)
+DROP FUNCTION IF EXISTS update_Window_Translation_From_AD_Element(numeric, character varying);
 
--- DROP FUNCTION IF EXISTS public.update_window_translation_from_ad_element(numeric);
-
-CREATE OR REPLACE FUNCTION public.update_window_translation_from_ad_element(ad_element_id numeric)
-  RETURNS void AS
+CREATE OR REPLACE FUNCTION update_Window_Translation_From_AD_Element
+(
+	p_AD_Element_ID numeric,
+	p_AD_Language character varying = null
+)
+RETURNS void
+AS
 $BODY$
-
+DECLARE
+	update_count integer;
 BEGIN
-
-
--- AD_Window_TRL via AD_Element
-
- UPDATE  AD_Window_TRL wtrl
-	SET name = x.name, isTranslated = x.isTranslated, description = x.description, help = x.help
+	
+	UPDATE AD_Window_TRL t
+	SET
+		IsTranslated = x.IsTranslated,
+		Name = x.Name,
+		Description = x.Description,
+		Help = x.Help
 	FROM
 	(
-		select w.AD_Element_ID, w.AD_Window_ID,   wt.ad_language, etrl.Name, etrl.IsTranslated, etrl.description, etrl.help
-	
-		from AD_Element_Trl etrl 
-		join AD_Window w on etrl.AD_Element_ID = w.AD_Element_ID
-		join AD_Window_Trl wt on w.AD_Window_ID = wt.AD_Window_ID
+		select
+			w.AD_Window_ID,
+			etrl.AD_Element_ID,
+			etrl.ad_language,
+			etrl.IsTranslated,
+			etrl.Name,
+			etrl.description,
+			etrl.help
+		from AD_Element_Trl_Effective_v etrl
+			join AD_Window w on w.AD_Element_ID = etrl.AD_Element_ID
 		where 
-			w.AD_Element_ID = update_window_translation_From_AD_Element.AD_Element_ID  
-			and wt.ad_language = etrl.ad_language 
-			
+			etrl.AD_Element_ID = p_AD_Element_ID  
+			and (p_AD_Language is null OR etrl.AD_Language = p_AD_Language)
 	) x
-WHERE wtrl.AD_Window_ID = x.AD_Window_ID and wtrl.ad_language = x.ad_language;
-
-
-
-
+	WHERE
+		t.AD_Window_ID = x.AD_Window_ID
+		and t.AD_Language = x.AD_Language
+	;
+	
+	GET DIAGNOSTICS update_count = ROW_COUNT;
+	raise notice 'Update % AD_Window_Trl rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
 
 END;
 $BODY$
-  LANGUAGE plpgsql VOLATILE SECURITY DEFINER
-  COST 100;
-ALTER FUNCTION public.update_window_translation_from_ad_element(numeric)
-  OWNER TO metasfresh;
-COMMENT ON FUNCTION public.update_window_translation_from_ad_element(numeric) IS 'When the AD_Window.AD_Element_ID is changed, update all the AD_Window_Trl entries of the AD_Window, based on the AD_Element.';
+LANGUAGE plpgsql
+VOLATILE
+SECURITY DEFINER
+COST 100;
+
+COMMENT ON FUNCTION update_Window_Translation_From_AD_Element(numeric, character varying) IS 
+'When the AD_Window.AD_Element_ID is changed, update all the AD_Window_Trl entries of the AD_Window, based on the AD_Element.';

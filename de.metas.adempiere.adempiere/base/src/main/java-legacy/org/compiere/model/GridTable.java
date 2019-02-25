@@ -16,14 +16,14 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.compiere.model.GridTableUtils.isValueChanged;
+import static org.compiere.model.GridTableUtils.readData;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,16 +33,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
-import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,23 +50,15 @@ import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.MSort;
-import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.service.IColumnBL;
 import de.metas.cache.CacheMgt;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 /**
  * Grid Table Model for JDBC access including buffering.
@@ -169,8 +157,6 @@ public class GridTable extends AbstractTableModel
 
 	/** Is the Resultset open? */
 	private boolean m_open = false;
-	/** Compare to DB before save */
-	private boolean m_compareDB = true;		// set to true after every save
 
 	// The buffer for all data
 	private volatile ArrayList<Object[]> m_buffer = new ArrayList<>(100);
@@ -184,8 +170,6 @@ public class GridTable extends AbstractTableModel
 
 	/** Columns */
 	private ArrayList<GridField> m_fields = new ArrayList<>(30);
-	// private ArrayList<Object> m_parameterSELECT = new ArrayList<Object>(5);
-	// private ArrayList<Object> m_parameterWHERE = new ArrayList<Object>(5);
 
 	/** Complete SQL statement */
 	private String m_SQL;
@@ -461,7 +445,7 @@ public class GridTable extends AbstractTableModel
 				}
 				else
 				{
-					log.warn("Failed to parse where clause. whereClause=" + m_whereClause);
+					log.warn("Failed to parse where clause. whereClause={}", m_whereClause);
 					where.append(" 1 = 2 ");
 				}
 			}
@@ -517,17 +501,16 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void addField(GridField field)
 	{
-		log.debug("(" + m_tableName + ") - " + field.getColumnName());
 		if (m_open)
 		{
-			log.error("Table already open - ignored: " + field.getColumnName());
+			log.error("Table already open - ignored: {}", field.getColumnName());
 			return;
 		}
 
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
 		if (!role.isColumnAccess(m_AD_Table_ID, field.getAD_Column_ID(), true))
 		{
-			log.debug("No Column Access " + field.getColumnName());
+			log.debug("No Column Access {}", field.getColumnName());
 			return;
 		}
 		// Set Index for Key column
@@ -567,7 +550,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (index < 0 || index > m_fields.size())
 		{
-			log.error("Invalid index=" + index);
+			log.error("Invalid index={}", index);
 			return "";
 		}
 		//
@@ -582,7 +565,7 @@ public class GridTable extends AbstractTableModel
 	 * @return the column index with <code>columnName</code>, or -1 if not found
 	 */
 	@Override
-	public int findColumn(String columnName)
+	public int findColumn(final String columnName)
 	{
 		for (int i = 0; i < m_fields.size(); i++)
 		{
@@ -606,7 +589,7 @@ public class GridTable extends AbstractTableModel
 	{
 		if (index < 0 || index >= m_fields.size())
 		{
-			log.error("Invalid index=" + index);
+			log.error("Invalid index={}", index);
 			return null;
 		}
 		final GridField field = m_fields.get(index);
@@ -812,7 +795,7 @@ public class GridTable extends AbstractTableModel
 		{
 			return;
 		}
-		log.debug("final=" + finalCall);
+		log.debug("final={}", finalCall);
 
 		// remove listeners
 		if (finalCall)
@@ -1054,7 +1037,6 @@ public class GridTable extends AbstractTableModel
 	{
 		if (!m_open || row < 0 || col < 0 || row >= m_rowCount)
 		{
-			// log.debug( "Out of bounds - Open=" + m_open + ", RowCount=" + m_rowCount);
 			return null;
 		}
 
@@ -1062,7 +1044,7 @@ public class GridTable extends AbstractTableModel
 		int loops = 0;
 		while (row >= m_sort.size() && m_loader.isAlive() && loops < 15)
 		{
-			log.debug("Waiting for loader row=" + row + ", size=" + m_sort.size());
+			log.debug("Waiting for loader row={}, size={}", row, m_sort.size());
 			try
 			{
 				Thread.sleep(500);		// 1/2 second
@@ -1177,8 +1159,8 @@ public class GridTable extends AbstractTableModel
 			rs = stmt.executeQuery();
 			while (rs.next())
 			{
-				Object[] data = readData(rs);
-				int row = rowmap.remove(data[m_indexKeyColumn]);
+				final Object[] data = readData(rs, m_fields);
+				final int row = rowmap.remove(data[m_indexKeyColumn]);
 				m_buffer.set(row - m_cacheStart, data);
 				m_cacheEnd++;
 			}
@@ -1267,7 +1249,6 @@ public class GridTable extends AbstractTableModel
 				|| m_rowCount == 0	// no rows
 				|| row >= m_rowCount)     // invalid row
 		{
-			log.trace("r=" + row + " c=" + col + " - R/O=" + m_readOnly + ", Rows=" + m_rowCount + " - Ignored");
 			return false; // metas
 		}
 
@@ -1278,11 +1259,8 @@ public class GridTable extends AbstractTableModel
 		value = convertValue(value, col); // metas: tsa: convert the value to it's main type
 		if (!force && !isValueChanged(oldValue, value))
 		{
-			log.trace("r=" + row + " c=" + col + " - New=" + value + "==Old=" + oldValue + " - Ignored");
 			return false; // false
 		}
-
-		log.debug("r=" + row + " c=" + col + " = " + value + " (" + oldValue + ")");
 
 		// Save old value
 		m_oldValue = new Object[3];
@@ -1400,8 +1378,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean needSave(int newRow, boolean onlyRealChange)
 	{
-		log.debug("Row=" + newRow +
-				", Changed=" + m_rowChanged + "/" + m_changed);  // m_rowChanged set in setValueAt
 		// nothing done
 		if (!m_changed && m_rowChanged == -1)
 		{
@@ -1443,8 +1419,6 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean dataSave(int newRow, boolean manualCmd)
 	{
-		log.debug("Row=" + newRow +
-				", Changed=" + m_rowChanged + "/" + m_changed);  // m_rowChanged set in setValueAt
 		// nothing done
 		if (!m_changed && m_rowChanged == -1)
 		{
@@ -1472,7 +1446,7 @@ public class GridTable extends AbstractTableModel
 		// cannot save
 		if (!m_open)
 		{
-			log.warn("Error - Open=" + m_open);
+			log.warn("Cannot save because grid table is not open");
 			return SAVE_ERROR;
 		}
 		// no need - not changed - row not positioned - no Value changed
@@ -1516,9 +1490,9 @@ public class GridTable extends AbstractTableModel
 		}
 
 		// Can we change?
-		int[] co = getClientOrg(m_rowChanged);
-		int AD_Client_ID = co[0];
-		int AD_Org_ID = co[1];
+		final int[] adClientAndOrgId = getClientOrg(m_rowChanged);
+		final int AD_Client_ID = adClientAndOrgId[0];
+		final int AD_Org_ID = adClientAndOrgId[1];
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
 		if (!role.canUpdate(AD_Client_ID, AD_Org_ID, m_AD_Table_ID, 0, true))
 		{
@@ -1545,10 +1519,10 @@ public class GridTable extends AbstractTableModel
 		}
 
 		// get updated row data
-		Object[] rowData = getDataAtRow(m_rowChanged);
+		final Object[] rowData = getDataAtRow(m_rowChanged);
 
 		// Check Mandatory
-		String missingColumns = getMandatory(rowData);
+		final String missingColumns = getMandatory(rowData);
 		if (missingColumns.length() != 0)
 		{
 			// Trace.printStack(false, false);
@@ -1556,773 +1530,29 @@ public class GridTable extends AbstractTableModel
 			return SAVE_MANDATORY;
 		}
 
-		/**
-		 * Update row *****
-		 */
-		int Record_ID = 0;
-		if (!m_inserting)
-		{
-			Record_ID = getKeyID(m_rowChanged);
-		}
+		//
+		// Update
 		try
 		{
-			if (!m_tableName.endsWith("_Trl")) // translation tables have no model
+			int recordId = 0;
+			if (!m_inserting)
 			{
-				return dataSavePO(Record_ID);
+				recordId = getKeyID(m_rowChanged);
 			}
+			return dataSavePO(recordId);
 		}
-		catch (Throwable e)
+		catch (final Throwable ex)
 		{
-			if (e instanceof ClassNotFoundException)
+			if (ex instanceof ClassNotFoundException)
 			{
-				log.warn(m_tableName + " - " + e.getLocalizedMessage());
+				log.warn(m_tableName + " - " + ex.getLocalizedMessage());
 			}
 			else
 			{
-				log.error("Persistency Issue - "
-						+ m_tableName + ": " + e.getLocalizedMessage(), e);
-				return SAVE_ERROR;
+				log.error("Persistency Issue - " + m_tableName + ": " + ex.getLocalizedMessage(), ex);
 			}
-		}
-
-		//
-		// Manual Update of Row (i.e. not via PO class)
-		//
-
-		boolean error = false;
-		lobReset();
-		//
-		String is = null;
-		final String ERROR = "ERROR: ";
-		final String INFO = "Info: ";
-
-		// Update SQL with specific where clause
-		StringBuilder select = new StringBuilder("SELECT ");
-		for (int i = 0, addedColumns = 0; i < m_fields.size(); i++)
-		{
-			GridField field = m_fields.get(i);
-			if (m_inserting && field.isVirtualColumn())
-			{
-				continue;
-			}
-			// Add "," if it is not the first added column - teo_sarca [ 1735618 ]
-			if (addedColumns++ > 0)
-			{
-				select.append(",");
-			}
-			select.append(field.getColumnSQL(true));	// ColumnName or Virtual Column
-		}
-		//
-		select.append(" FROM ").append(m_tableName);
-		StringBuilder singleRowWHERE = new StringBuilder();
-		StringBuilder multiRowWHERE = new StringBuilder();
-		// Create SQL & RowID
-		if (m_inserting)
-		{
-			select.append(" WHERE 1=2");
-		}
-		else 	// FOR UPDATE causes - ORA-01002 fetch out of sequence
-		{
-			select.append(" WHERE ").append(getWhereClause(rowData));
-		}
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(select.toString(),
-					ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE, null);
-			rs = pstmt.executeQuery();
-			// only one row
-			if (!(m_inserting || rs.next()))
-			{
-				fireDataStatusEEvent("SaveErrorRowNotFound", "", true);
-				dataRefresh(m_rowChanged);
-				return SAVE_ERROR;
-			}
-
-			Object[] rowDataDB = null;
-			// Prepare
-			boolean manualUpdate = ResultSet.CONCUR_READ_ONLY == rs.getConcurrency();
-			// Manual update if log migration scripts is enabled - teo_sarca BF [ 1901192 ]
-			if (!manualUpdate && Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
-			{
-				manualUpdate = true;
-			}
-			if (manualUpdate)
-			{
-				createUpdateSqlReset();
-			}
-			if (m_inserting)
-			{
-				if (manualUpdate)
-				{
-					log.debug("Prepare inserting ... manual");
-				}
-				else
-				{
-					log.debug("Prepare inserting ... RowSet");
-					rs.moveToInsertRow();
-				}
-			}
-			else
-			{
-				log.debug("Prepare updating ... manual=" + manualUpdate);
-				// get current Data in DB
-				rowDataDB = readData(rs);
-			}
-
-			/**
-			 * Data:
-			 * m_rowData = original Data
-			 * rowData = updated Data
-			 * rowDataDB = current Data in DB
-			 * 1) Difference between original & updated Data? N:next
-			 * 2) Difference between original & current Data? Y:don't update
-			 * 3) Update current Data
-			 * 4) Refresh to get last Data (changed by trigger, ...)
-			 */
-
-			// Constants for Created/Updated(By)
-			final Timestamp now = new Timestamp(System.currentTimeMillis());
-			int user = Env.getContextAsInt(m_ctx, "#AD_User_ID");
-
-			/**
-			 * for every column
-			 */
-			int size = m_fields.size();
-			int colRs = 1;
-			for (int col = 0; col < size; col++)
-			{
-				GridField field = m_fields.get(col);
-				if (field.isVirtualColumn())
-				{
-					if (!m_inserting)
-					{
-						colRs++;
-					}
-					continue;
-				}
-				final String columnName = field.getColumnName();
-				// log.debug(columnName + "= " + m_rowData[col] + " <> DB: " + rowDataDB[col] + " -> " + rowData[col]);
-
-				// RowID, Virtual Column
-				if (field.getDisplayType() == DisplayType.RowID
-						|| field.isVirtualColumn())
-				{
-					// ignore
-				}
-
-				// New Key
-				else if (field.isKey() && m_inserting)
-				{
-					if (columnName.endsWith("_ID") || columnName.toUpperCase().endsWith("_ID"))
-					{
-						int insertID = DB.getNextID(m_ctx, m_tableName, null);	// no trx
-						if (manualUpdate)
-						{
-							createUpdateSql(columnName, String.valueOf(insertID));
-						}
-						else
-						{
-							rs.updateInt(colRs, insertID);
-						}
-						singleRowWHERE.append(columnName).append("=").append(insertID);
-						//
-						is = INFO + columnName + " -> " + insertID + " (Key)";
-					}
-					else // Key with String value
-					{
-						String str = rowData[col].toString();
-						if (manualUpdate)
-						{
-							createUpdateSql(columnName, DB.TO_STRING(str));
-						}
-						else
-						{
-							rs.updateString(colRs, str);
-						}
-						singleRowWHERE = new StringBuilder();	// overwrite
-						singleRowWHERE.append(columnName).append("=").append(DB.TO_STRING(str));
-						//
-						is = INFO + columnName + " -> " + str + " (StringKey)";
-					}
-					log.debug(is);
-				} // New Key
-
-				// New DocumentNo
-				else if (columnName.equals("DocumentNo"))
-				{
-					boolean newDocNo = false;
-					String docNo = (String)rowData[col];
-					// we need to have a doc number
-					if (docNo == null || docNo.length() == 0)
-					{
-						newDocNo = true;
-					}
-					// Preliminary ID from CalloutSystem
-					else if (docNo.startsWith("<") && docNo.endsWith(">"))
-					{
-						newDocNo = true;
-					}
-
-					if (newDocNo || m_inserting)
-					{
-						String insertDoc = null;
-						// always overwrite if insering with mandatory DocType DocNo
-						if (m_inserting)
-						{
-							insertDoc = buildDocumentNo(m_ctx, m_WindowNo, m_tableName, true);	// only doc type
-						}
-						log.debug("DocumentNo entered=" + docNo + ", DocTypeInsert=" + insertDoc + ", newDocNo=" + newDocNo);
-						// can we use entered DocNo?
-						if (insertDoc == null || insertDoc.length() == 0)
-						{
-							if (!newDocNo && docNo != null && docNo.length() > 0)
-							{
-								insertDoc = docNo;
-							}
-							else // get a number from DocType or Table
-							{
-								insertDoc = buildDocumentNo(m_ctx, m_WindowNo, m_tableName, false);
-							}
-						}
-						// There might not be an automatic document no for this document
-						if (insertDoc == null || insertDoc.length() == 0)
-						{
-							// in case DB function did not return a value
-							if (docNo != null && docNo.length() != 0)
-							{
-								insertDoc = (String)rowData[col];
-							}
-							else
-							{
-								error = true;
-								is = ERROR + field.getColumnName() + "= " + rowData[col] + " NO DocumentNo";
-								log.debug(is);
-								break;
-							}
-						}
-						//
-						if (manualUpdate)
-						{
-							createUpdateSql(columnName, DB.TO_STRING(insertDoc));
-						}
-						else
-						{
-							rs.updateString(colRs, insertDoc);					// ***
-						}
-						//
-						is = INFO + columnName + " -> " + insertDoc + " (DocNo)";
-						log.debug(is);
-					}
-				}	// New DocumentNo
-
-				// New Value(key)
-				else if (columnName.equals("Value") && m_inserting)
-				{
-					String value = (String)rowData[col];
-					// Get from Sequence, if not entered
-					if (value == null || value.length() == 0)
-					{
-						value = buildDocumentNo(m_ctx, m_WindowNo, m_tableName, false);
-						// No Value
-						if (value == null || value.length() == 0)
-						{
-							error = true;
-							is = ERROR + field.getColumnName() + "= " + rowData[col]
-									+ " No Value";
-							log.debug(is);
-							break;
-						}
-					}
-					if (manualUpdate)
-					{
-						createUpdateSql(columnName, DB.TO_STRING(value));
-					}
-					else
-					{
-						rs.updateString(colRs, value);
-					}
-					//
-					is = INFO + columnName + " -> " + value + " (Value)";
-					log.debug(is);
-				}	// New Value(key)
-
-				// Updated - check database
-				else if (columnName.equals("Updated"))
-				{
-					if (m_compareDB && !m_inserting && !m_rowData[col].equals(rowDataDB[col]))	// changed
-					{
-						error = true;
-						is = ERROR + field.getColumnName() + "= " + m_rowData[col]
-								+ " != DB: " + rowDataDB[col];
-						log.debug(is);
-						break;
-					}
-					if (manualUpdate)
-					{
-						createUpdateSql(columnName, DB.TO_DATE(now, false));
-					}
-					else
-					{
-						rs.updateTimestamp(colRs, now);
-					}
-					//
-					is = INFO + "Updated/By -> " + now + " - " + user;
-					log.debug(is);
-				} // Updated
-
-				// UpdatedBy - update
-				else if (columnName.equals("UpdatedBy"))
-				{
-					if (manualUpdate)
-					{
-						createUpdateSql(columnName, String.valueOf(user));
-					}
-					else
-					{
-						rs.updateInt(colRs, user);
-					}
-				} // UpdatedBy
-
-				// Created
-				else if (m_inserting && columnName.equals("Created"))
-				{
-					if (manualUpdate)
-					{
-						createUpdateSql(columnName, DB.TO_DATE(now, false));
-					}
-					else
-					{
-						rs.updateTimestamp(colRs, now);
-					}
-				} // Created
-
-				// CreatedBy
-				else if (m_inserting && columnName.equals("CreatedBy"))
-				{
-					if (manualUpdate)
-					{
-						createUpdateSql(columnName, String.valueOf(user));
-					}
-					else
-					{
-						rs.updateInt(colRs, user);
-					}
-				} // CreatedBy
-
-				// Nothing changed & null
-				else if (m_rowData[col] == null && rowData[col] == null)
-				{
-					if (m_inserting)
-					{
-						if (manualUpdate)
-						{
-							createUpdateSql(columnName, "NULL");
-						}
-						else
-						{
-							rs.updateNull(colRs);
-						}
-						is = INFO + columnName + "= NULL";
-						log.debug(is);
-					}
-				}
-
-				// *** Data changed ***
-				else if (m_inserting
-						|| (m_rowData[col] == null && rowData[col] != null)
-						|| (m_rowData[col] != null && rowData[col] == null)
-						|| !m_rowData[col].equals(rowData[col])) 			// changed
-				{
-					// Original == DB
-					if (m_inserting || !m_compareDB
-							|| (m_rowData[col] == null && rowDataDB[col] == null)
-							|| (m_rowData[col] != null && m_rowData[col].equals(rowDataDB[col])))
-					{
-						if (LogManager.isLevelFinest())
-						{
-							log.debug(columnName + "=" + rowData[col]
-									+ " " + (rowData[col] == null ? "" : rowData[col].getClass().getName()));
-						}
-						//
-						boolean encrypted = field.isEncryptedColumn();
-						//
-						String type = "String";
-						if (rowData[col] == null)
-						{
-							if (manualUpdate)
-							{
-								createUpdateSql(columnName, "NULL");
-							}
-							else
-							{
-								rs.updateNull(colRs);
-							}
-						}
-
-						// ID - int
-						else if (DisplayType.isID(field.getDisplayType())
-								|| field.getDisplayType() == DisplayType.Integer)
-						{
-							try
-							{
-								Object dd = rowData[col];
-								Integer iii = null;
-								if (dd instanceof Integer)
-								{
-									iii = (Integer)dd;
-								}
-								else
-								{
-									iii = new Integer(dd.toString());
-								}
-								if (encrypted)
-								{
-									iii = (Integer)encrypt(iii);
-								}
-								if (manualUpdate)
-								{
-									createUpdateSql(columnName, String.valueOf(iii));
-								}
-								else
-								{
-									rs.updateInt(colRs, iii.intValue());
-								}
-							}
-							catch (Exception e) // could also be a String (AD_Language, AD_Message)
-							{
-								if (manualUpdate)
-								{
-									createUpdateSql(columnName, DB.TO_STRING(rowData[col].toString()));
-								}
-								else
-								{
-									rs.updateString(colRs, rowData[col].toString());
-								}
-							}
-							type = "Int";
-						}
-						// Numeric - BigDecimal
-						else if (DisplayType.isNumeric(field.getDisplayType()))
-						{
-							BigDecimal bd = (BigDecimal)rowData[col];
-							if (encrypted)
-							{
-								bd = (BigDecimal)encrypt(bd);
-							}
-							if (manualUpdate)
-							{
-								createUpdateSql(columnName, bd.toString());
-							}
-							else
-							{
-								rs.updateBigDecimal(colRs, bd);
-							}
-							type = "Number";
-						}
-						// Date - Timestamp
-						else if (DisplayType.isDate(field.getDisplayType()))
-						{
-							Timestamp ts = (Timestamp)rowData[col];
-							if (encrypted)
-							{
-								ts = (Timestamp)encrypt(ts);
-							}
-							if (manualUpdate)
-							{
-								createUpdateSql(columnName, DB.TO_DATE(ts, false));
-							}
-							else
-							{
-								rs.updateTimestamp(colRs, ts);
-							}
-							type = "Date";
-						}
-						// LOB
-						else if (field.getDisplayType() == DisplayType.TextLong)
-						{
-							PO_LOB lob = new PO_LOB(getTableName(), columnName,
-									null, field.getDisplayType(), rowData[col]);
-							lobAdd(lob);
-							type = "CLOB";
-						}
-						// Boolean
-						else if (field.getDisplayType() == DisplayType.YesNo)
-						{
-							String yn = null;
-							if (rowData[col] instanceof Boolean)
-							{
-								Boolean bb = (Boolean)rowData[col];
-								yn = bb.booleanValue() ? "Y" : "N";
-							}
-							else
-							{
-								yn = "Y".equals(rowData[col]) ? "Y" : "N";
-							}
-							if (encrypted)
-							{
-								// do nothing
-							}
-							if (manualUpdate)
-							{
-								createUpdateSql(columnName, DB.TO_STRING(yn));
-							}
-							else
-							{
-								rs.updateString(colRs, yn);
-							}
-						}
-						// String and others
-						else
-						{
-							String str = rowData[col].toString();
-							if (encrypted)
-							{
-								str = (String)encrypt(str);
-							}
-							if (manualUpdate)
-							{
-								createUpdateSql(columnName, DB.TO_STRING(str));
-							}
-							else
-							{
-								rs.updateString(colRs, str);
-							}
-						}
-						//
-						is = INFO + columnName + "= " + m_rowData[col]
-								+ " -> " + rowData[col] + " (" + type + ")";
-						if (encrypted)
-						{
-							is += " encrypted";
-						}
-						log.debug(is);
-					}
-					// Original != DB
-					else
-					{
-						error = true;
-						is = ERROR + field.getColumnName() + "= " + m_rowData[col]
-								+ " != DB: " + rowDataDB[col] + " -> " + rowData[col];
-						log.debug(is);
-					}
-				}	// Data changed
-
-				// Single Key - retrieval sql
-				if (field.isKey() && !m_inserting)
-				{
-					if (rowData[col] == null)
-					{
-						throw new RuntimeException("Key is NULL - " + columnName);
-					}
-					if (columnName.endsWith("_ID"))
-					{
-						singleRowWHERE.append(columnName).append("=").append(rowData[col]);
-					}
-					else
-					{
-						singleRowWHERE = new StringBuilder();	// overwrite
-						singleRowWHERE.append(columnName).append("=").append(DB.TO_STRING(rowData[col].toString()));
-					}
-				}
-				// MultiKey Inserting - retrieval sql
-				if (field.isParentColumn())
-				{
-					if (rowData[col] == null)
-					{
-						throw new RuntimeException("MultiKey Parent is NULL - " + columnName);
-					}
-					if (multiRowWHERE.length() != 0)
-					{
-						multiRowWHERE.append(" AND ");
-					}
-					if (columnName.endsWith("_ID"))
-					{
-						multiRowWHERE.append(columnName).append("=").append(rowData[col]);
-					}
-					else
-					{
-						multiRowWHERE.append(columnName).append("=").append(DB.TO_STRING(rowData[col].toString()));
-					}
-				}
-				//
-				colRs++;
-			}	// for every column
-
-			if (error)
-			{
-				if (manualUpdate)
-				{
-					createUpdateSqlReset();
-				}
-				else
-				{
-					rs.cancelRowUpdates();
-				}
-				fireDataStatusEEvent("SaveErrorDataChanged", "", true);
-				dataRefresh(m_rowChanged);
-				return SAVE_ERROR;
-			}
-
-			/**
-			 * Save to Database
-			 */
-			//
-			String whereClause = singleRowWHERE.toString();
-			if (whereClause.length() == 0)
-			{
-				whereClause = multiRowWHERE.toString();
-			}
-			if (m_inserting)
-			{
-				log.debug("Inserting ...");
-				if (manualUpdate)
-				{
-					String sql = createUpdateSql(true, null);
-					int no = DB.executeUpdateEx(sql, null);	// no Trx
-					if (no != 1)
-					{
-						log.error("Insert #=" + no + " - " + sql);
-					}
-				}
-				else
-					rs.insertRow();
-			}
-			else
-			{
-				log.debug("Updating ... {}", whereClause);
-				if (manualUpdate)
-				{
-					String sql = createUpdateSql(false, whereClause);
-					int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_None);	// no Trx
-					if (no != 1)
-					{
-						log.error("Update #=" + no + " - " + sql);
-					}
-
-					// #1044
-					// Check if the table is AD_Element_Trl and if yes, update the other related _TRL tables with the new values
-					if ("AD_Element_Trl".equals(getTableName()))
-					{
-						final int elementIndex = findColumn(I_AD_Element.COLUMNNAME_AD_Element_ID);
-
-						final AdElementId adElementId = AdElementId.ofRepoId((Integer)rowData[elementIndex]);
-						final String adLanguage = extractStringValueFromColumn(rowData, I_C_BPartner.COLUMNNAME_AD_Language);
-
-						final Set<String> updatedColumns = ElementChangedEvent.ALL_COLUMN_NAMES.stream()
-								.filter(columnName -> isColumnUpdated(rowData, columnName))
-								.collect(ImmutableSet.toImmutableSet());
-
-						final String name = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_Name);
-						final String columnName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_ColumnName);
-						final String printName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PrintName);
-						final String description = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_Description);
-						final String help = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_Help);
-						final String commitWarning = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_CommitWarning);
-						final String poName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_Name);
-						final String poPrintName = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_PrintName);
-						final String poDescription = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_Description);
-						final String poHelp = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_PO_Help);
-						final String webuiNameBrowse = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_WEBUI_NameBrowse);
-						final String webuiNameNew = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_WEBUI_NameNew);
-						final String webuiNameNewBreadcrumb = extractStringValueFromColumn(rowData, I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb);
-
-						Services.get(IElementTranslationBL.class).updateTranslations(ElementChangedEvent.builder()
-								.adElementId(adElementId)
-								.adLanguage(adLanguage)
-								.updatedColumns(updatedColumns)
-								.name(name)
-								.columnName(columnName)
-								.description(description)
-								.help(help)
-								.printName(printName)
-								.commitWarning(commitWarning)
-								.poName(poName)
-								.poPrintName(poPrintName)
-								.poDescription(poDescription)
-								.poHelp(poHelp)
-								.webuiNameBrowse(webuiNameBrowse)
-								.webuiNameNew(webuiNameNew)
-								.webuiNameNewBreadcrumb(webuiNameNewBreadcrumb)
-								.build());
-					}
-				}
-				else
-				{
-					rs.updateRow();
-				}
-			}
-
-			log.debug("Committing ...");
-			DB.commit(true, null);	// no Trx
-			//
-			lobSave(whereClause);
-
-			// Need to re-read row to get ROWID, Key, DocumentNo, Trigger, virtual columns
-			log.debug("Reading ... " + whereClause);
-			StringBuilder refreshSQL = new StringBuilder(m_SQL_Select)
-					.append(" WHERE ").append(whereClause);
-			pstmt = DB.prepareStatement(refreshSQL.toString(), ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				rowDataDB = readData(rs);
-				// update buffer
-				setDataAtRow(m_rowChanged, rowDataDB);
-				if (m_virtual)
-				{
-					MSort sort = m_sort.get(m_rowChanged);
-					sort.index = getKeyID(m_rowChanged);
-				}
-				fireTableRowsUpdated(m_rowChanged, m_rowChanged);
-			}
-			else
-				log.error("Inserted row not found");
-			//
-		}
-		catch (final Exception saveEx)
-		{
-			fireDataStatusSaveErrorEvent(saveEx);
 			return SAVE_ERROR;
 		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-
-			// Fire cache reset
-			CacheMgt.get().reset(getTableName(), getKeyID(m_rowChanged));
-		}
-		// everything ok
-		m_rowData = null;
-		m_changed = false;
-		m_compareDB = true;
-		m_rowChanged = -1;
-		m_newRow = -1;
-		m_inserting = false;
-		fireDataStatusInfoEvent("Saved", "");
-
-		return SAVE_OK;
-	}	// dataSave
-
-	private String extractStringValueFromColumn(final Object[] rowData, final String columnName)
-	{
-		final int columnIndex = findColumn(columnName);
-		return columnIndex >= 0 ? (String)rowData[columnIndex] : null;
-	}
-
-	private boolean isColumnUpdated(final Object[] rowData, final String columnName)
-	{
-		final int columnIndex = findColumn(columnName);
-
-		if (columnIndex >= 0)
-		{
-			return !Objects.equals(m_rowData[columnIndex], rowData[columnIndex]);
-		}
-
-		return false;
 	}
 
 	/**
@@ -2334,7 +1564,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	private char dataSavePO(final int Record_ID) throws Exception
 	{
-		log.debug("ID=" + Record_ID);
+		log.debug("ID={}", Record_ID);
 		//
 		final Object[] rowData = getDataAtRow(m_rowChanged);
 		//
@@ -2402,7 +1632,6 @@ public class GridTable extends AbstractTableModel
 
 				Object dbValue = po.get_Value(poIndex);
 				if (m_inserting
-						|| !m_compareDB
 						// Original == DB
 						|| (oldValue == null && dbValue == null)
 						|| (oldValue != null && oldValue.equals(dbValue))
@@ -2472,7 +1701,7 @@ public class GridTable extends AbstractTableModel
 		//
 		// Refresh - update buffer
 		String whereClause = po.get_WhereClause(true);
-		log.debug("Reading ... " + whereClause);
+		log.debug("Reading ... {}", whereClause);
 		StringBuilder refreshSQL = new StringBuilder(m_SQL_Select)
 				.append(" WHERE ").append(whereClause);
 		PreparedStatement pstmt = null;
@@ -2483,7 +1712,7 @@ public class GridTable extends AbstractTableModel
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				Object[] rowDataDB = readData(rs);
+				Object[] rowDataDB = readData(rs, m_fields);
 				// update buffer
 				setDataAtRow(m_rowChanged, rowDataDB);
 				if (m_virtual)
@@ -2518,7 +1747,6 @@ public class GridTable extends AbstractTableModel
 		// everything ok
 		m_rowData = null;
 		m_changed = false;
-		m_compareDB = true;
 		m_rowChanged = -1;
 		m_newRow = -1;
 		m_inserting = false;
@@ -2561,8 +1789,7 @@ public class GridTable extends AbstractTableModel
 		}
 
 		// Log it, for audit/support purposes
-		log.error("Error while saving on " + this
-				+ "\n Type: " + errorAD_Message, saveEx);
+		log.error("Error while saving on {}\n Type: {}", this, errorAD_Message, saveEx);
 
 		//
 		// Fire it
@@ -2576,153 +1803,11 @@ public class GridTable extends AbstractTableModel
 	 * @param rowData data
 	 * @return where clause or null
 	 */
-	// metas: changed to public
-	public String getWhereClause(Object[] rowData)
+	String getWhereClause(final Object[] rowData)
 	{
-		int size = m_fields.size();
-		StringBuilder singleRowWHERE = null;
-		StringBuilder multiRowWHERE = null;
-		for (int col = 0; col < size; col++)
-		{
-			GridField field = m_fields.get(col);
-			if (field.isKey())
-			{
-				String columnName = field.getColumnName();
-				Object value = rowData[col];
-				if (value == null)
-				{
-					log.warn("PK data is null - " + columnName);
-					return null;
-				}
-				if (columnName.endsWith("_ID"))
-					singleRowWHERE = new StringBuilder(columnName)
-							.append("=").append(value);
-				else
-					singleRowWHERE = new StringBuilder(columnName)
-							.append("=").append(DB.TO_STRING(value.toString()));
-			}
-			else if (field.isParentColumn())
-			{
-				String columnName = field.getColumnName();
-				Object value = rowData[col];
-				if (value == null)
-				{
-					log.warn("FK data is null - {}", columnName);
-					continue;
-				}
-				//
-				if (multiRowWHERE == null)
-				{
-					multiRowWHERE = new StringBuilder();
-				}
-				else
-				{
-					multiRowWHERE.append(" AND ");
-				}
-				//
-				if (columnName.endsWith("_ID"))
-				{
-					multiRowWHERE.append(columnName)
-							.append("=").append(value);
-				}
-				else
-				{
-					multiRowWHERE.append(columnName)
-							.append("=").append(DB.TO_STRING(value.toString()));
-				}
-			}
-		}	// for all columns
-		if (singleRowWHERE != null)
-		{
-			return singleRowWHERE.toString();
-		}
-		if (multiRowWHERE != null)
-		{
-			return multiRowWHERE.toString();
-		}
+		return GridTableUtils.getWhereClause(rowData, m_fields);
+	}
 
-		log.warn("No key Found on {}. Returning NULL.", this);
-		return null;
-	}	// getWhereClause
-
-	/*************************************************************************/
-
-	private ArrayList<String> m_createSqlColumn = new ArrayList<>();
-	private ArrayList<String> m_createSqlValue = new ArrayList<>();
-
-	/**
-	 * Prepare SQL creation
-	 *
-	 * @param columnName column name
-	 * @param value value
-	 */
-	private void createUpdateSql(String columnName, String value)
-	{
-		m_createSqlColumn.add(columnName);
-		m_createSqlValue.add(value);
-		log.trace("#" + m_createSqlColumn.size()
-				+ " - " + columnName + "=" + value);
-	}	// createUpdateSQL
-
-	/**
-	 * Create update/insert SQL
-	 *
-	 * @param insert true if insert - update otherwise
-	 * @param whereClause where clause for update
-	 * @return sql statement
-	 */
-	private String createUpdateSql(boolean insert, String whereClause)
-	{
-		StringBuilder sb = new StringBuilder();
-		if (insert)
-		{
-			sb.append("INSERT INTO ").append(m_tableName).append(" (");
-			for (int i = 0; i < m_createSqlColumn.size(); i++)
-			{
-				if (i != 0)
-				{
-					sb.append(",");
-				}
-				sb.append(m_createSqlColumn.get(i));
-			}
-			sb.append(") VALUES ( ");
-			for (int i = 0; i < m_createSqlValue.size(); i++)
-			{
-				if (i != 0)
-				{
-					sb.append(",");
-				}
-				sb.append(m_createSqlValue.get(i));
-			}
-			sb.append(")");
-		}
-		else
-		{
-			sb.append("UPDATE ").append(m_tableName).append(" SET ");
-			for (int i = 0; i < m_createSqlColumn.size(); i++)
-			{
-				if (i != 0)
-				{
-					sb.append(",");
-				}
-				sb.append(m_createSqlColumn.get(i)).append("=").append(m_createSqlValue.get(i));
-			}
-			sb.append(" WHERE ").append(whereClause);
-		}
-		log.debug(sb.toString());
-		// reset
-		createUpdateSqlReset();
-		return sb.toString();
-	}	// createUpdateSql
-
-	/**
-	 * Reset Update Data
-	 */
-	private void createUpdateSqlReset()
-	{
-		m_createSqlColumn = new ArrayList<>();
-		m_createSqlValue = new ArrayList<>();
-	}	// createUpdateSqlReset
 
 	/**
 	 * Get Mandatory empty columns
@@ -2768,50 +1853,6 @@ public class GridTable extends AbstractTableModel
 
 	/*************************************************************************/
 
-	/** LOB Info */
-	private ArrayList<PO_LOB> m_lobInfo = null;
-
-	/**
-	 * Reset LOB info
-	 */
-	private void lobReset()
-	{
-		m_lobInfo = null;
-	}	// resetLOB
-
-	/**
-	 * Prepare LOB save
-	 *
-	 * @param lob value
-	 */
-	private void lobAdd(PO_LOB lob)
-	{
-		log.debug("LOB=" + lob);
-		if (m_lobInfo == null)
-		{
-			m_lobInfo = new ArrayList<>();
-		}
-		m_lobInfo.add(lob);
-	}	// lobAdd
-
-	/**
-	 * Save LOB
-	 *
-	 * @param whereClause where clause
-	 */
-	private void lobSave(String whereClause)
-	{
-		if (m_lobInfo == null)
-		{
-			return;
-		}
-		for (int i = 0; i < m_lobInfo.size(); i++)
-		{
-			PO_LOB lob = m_lobInfo.get(i);
-			lob.save(whereClause, null);		// no trx
-		}	// for all LOBs
-		lobReset();
-	}	// lobSave
 
 	/**************************************************************************
 	 * New Record after current Row
@@ -2862,7 +1903,6 @@ public class GridTable extends AbstractTableModel
 		Object[] rowData = new Object[size];
 
 		m_changed = true;
-		m_compareDB = true;
 		m_newRow = currentRow + 1;
 		// if there is no record, the current row could be 0 (and not -1)
 		if (m_sort.size() < m_newRow)
@@ -2993,10 +2033,10 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;  // only changed in setValueAt
 
 		// inform
-		log.debug("Current=" + currentRow + ", New=" + m_newRow);
+		log.debug("Current={}, New={}", currentRow, m_newRow);
 		fireTableRowsInserted(m_newRow, m_newRow);
 		fireDataStatusInfoEvent(isRecordCopyingMode() ? "UpdateCopied" : "Inserted", "");
-		log.debug("Current=" + currentRow + ", New=" + m_newRow + " - complete");
+		log.debug("Current={}, New={} - complete", currentRow, m_newRow);
 		return true;
 	}	// dataNew
 
@@ -3108,7 +2148,7 @@ public class GridTable extends AbstractTableModel
 			// Check Result
 			if (no != 1)
 			{
-				log.error("Number of deleted rows = " + no);
+				log.error("Number of deleted rows = {}", no);
 				return false;
 			}
 		}
@@ -3161,7 +2201,7 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;
 		fireTableRowsDeleted(row, row);
 		fireDataStatusInfoEvent("Deleted", "");
-		log.debug("Row=" + row + " complete");
+		log.debug("Row={} complete", row);
 		return true;
 	}	// dataDelete
 
@@ -3263,7 +2303,7 @@ public class GridTable extends AbstractTableModel
 			// only one row
 			if (rs.next())
 			{
-				rowDataDB = readData(rs);
+				rowDataDB = readData(rs, m_fields);
 			}
 		}
 		catch (SQLException e)
@@ -3352,7 +2392,6 @@ public class GridTable extends AbstractTableModel
 	@Override
 	public boolean isCellEditable(int row, int col)
 	{
-		// log.debug( "MTable.isCellEditable - Row=" + row + ", Col=" + col);
 		// Make Rows selectable
 		// if (col == 0)
 		// return true;
@@ -3407,14 +2446,11 @@ public class GridTable extends AbstractTableModel
 	 */
 	public boolean isRowEditable(int row)
 	{
-		// metas: begin
 		return isRowEditable(row, false);
 	}
 
 	private boolean isRowEditable(int row, boolean isAlwaysUpdateableColumn)
 	{
-		// metas: end
-		// log.debug( "MTable.isRowEditable - Row=" + row);
 		// Entire Table not editable or no row
 		if ((m_readOnly && !isAlwaysUpdateableColumn) || row < 0) // metas: check !isAlwaysUpdateableColumn
 		{
@@ -3498,7 +2534,7 @@ public class GridTable extends AbstractTableModel
 	 */
 	public void setReadOnly(boolean value)
 	{
-		log.debug("ReadOnly=" + value);
+		log.debug("ReadOnly={}", value);
 		m_readOnly = value;
 	}	// setReadOnly
 
@@ -3523,179 +2559,17 @@ public class GridTable extends AbstractTableModel
 	}   // isInserting
 
 	/**
-	 * Set Compare DB.
-	 * If Set to false, save overwrites the record, regardless of DB changes.
-	 * (When a payment is changed in Sales Order, the payment reversal clears the payment id)
-	 *
-	 * @param compareDB compare DB - false forces overwrite
-	 */
-	public void setCompareDB(boolean compareDB)
-	{
-		m_compareDB = compareDB;
-	}  	// setCompareDB
-
-	/**
-	 * Get Compare DB.
-	 *
-	 * @return false if save overwrites the record, regardless of DB changes
-	 *         (false forces overwrite).
-	 */
-	public boolean getCompareDB()
-	{
-		return m_compareDB;
-	}  	// getCompareDB
-
-	/**
 	 * Can Table rows be deleted
 	 *
 	 * @param value new deleteable value
 	 */
 	public void setDeleteable(boolean value)
 	{
-		log.debug("Deleteable=" + value);
+		log.debug("Deleteable={}", value);
 		m_deleteable = value;
 	}	// setDeleteable
 
-	/**************************************************************************
-	 * Read Data from Recordset
-	 *
-	 * @param rs result set
-	 * @return Data Array
-	 */
-	private Object[] readData(ResultSet rs)
-	{
-		int size = m_fields.size();
-		Object[] rowData = new Object[size];
-		String columnName = null;
-		int displayType = 0;
 
-		// Types see also MField.createDefault
-		try
-		{
-			// get row data
-			for (int j = 0; j < size; j++)
-			{
-				// Column Info
-				GridField field = m_fields.get(j);
-				columnName = field.getColumnName();
-				displayType = field.getDisplayType();
-				// Integer, ID, Lookup (UpdatedBy is a numeric column)
-				if (displayType == DisplayType.Integer
-						|| (DisplayType.isID(displayType)
-								&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct")
-										|| columnName.equals("AD_Key") || columnName.equals("AD_Display")))
-						|| columnName.endsWith("atedBy")
-						|| (Services.get(IColumnBL.class).isRecordIdColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
-				)
-				{
-					rowData[j] = new Integer(rs.getInt(j + 1));	// Integer
-					if (rs.wasNull())
-					{
-						rowData[j] = null;
-					}
-				}
-				// Number
-				else if (DisplayType.isNumeric(displayType))
-				{
-					rowData[j] = rs.getBigDecimal(j + 1);			// BigDecimal
-				}
-				// Date
-				else if (DisplayType.isDate(displayType))
-				{
-					rowData[j] = rs.getTimestamp(j + 1);			// Timestamp
-				}
-				// RowID or Key (and Selection)
-				else if (displayType == DisplayType.RowID)
-				{
-					rowData[j] = null;
-				}
-				// YesNo
-				else if (displayType == DisplayType.YesNo)
-				{
-					String str = rs.getString(j + 1);
-					if (field.isEncryptedColumn())
-					{
-						str = (String)decrypt(str);
-					}
-					rowData[j] = Boolean.valueOf("Y".equals(str));	// Boolean
-				}
-				// LOB
-				else if (DisplayType.isLOB(displayType))
-				{
-					Object value = rs.getObject(j + 1);
-					if (rs.wasNull())
-					{
-						rowData[j] = null;
-					}
-					else if (value instanceof Clob)
-					{
-						Clob lob = (Clob)value;
-						long length = lob.length();
-						rowData[j] = lob.getSubString(1, (int)length);
-					}
-					else if (value instanceof Blob)
-					{
-						Blob lob = (Blob)value;
-						long length = lob.length();
-						rowData[j] = lob.getBytes(1, (int)length);
-					}
-					else if (value instanceof String)
-					{
-						rowData[j] = value;
-					}
-					else if (value instanceof byte[])
-					{
-						rowData[j] = value;
-					}
-				}
-				// String
-				else
-				{
-					rowData[j] = rs.getString(j + 1);				// String
-				}
-				// Encrypted
-				if (field.isEncryptedColumn() && displayType != DisplayType.YesNo)
-				{
-					rowData[j] = decrypt(rowData[j]);
-				}
-			}
-		}
-		catch (SQLException e)
-		{
-			log.error(columnName + ", DT=" + displayType, e);
-		}
-		return rowData;
-	}	// readData
-
-	/**
-	 * Encrypt
-	 *
-	 * @param xx clear data
-	 * @return encrypted value
-	 */
-	private Object encrypt(Object xx)
-	{
-		if (xx == null)
-		{
-			return null;
-		}
-		return SecureEngine.encrypt(xx);
-	}	// encrypt
-
-	/**
-	 * Decrypt
-	 *
-	 * @param yy encrypted data
-	 * @return clear data
-	 */
-	private Object decrypt(Object yy)
-	{
-		if (yy == null)
-		{
-			return null;
-		}
-		return SecureEngine.decrypt(yy);
-	}	// decrypt
 
 	/**************************************************************************
 	 * Remove Data Status Listener
@@ -3988,7 +2862,7 @@ public class GridTable extends AbstractTableModel
 					}
 					else
 					{
-						rowData = readData(m_rs);
+						rowData = readData(m_rs, m_fields);
 					}
 					// add Data
 					MSort sort = m_virtual
@@ -4034,8 +2908,7 @@ public class GridTable extends AbstractTableModel
 			// there is no preceding SQL-Column value.
 			if (m_indexKeyColumn > -1)
 			{
-				final ArrayList<Integer> recordIds = new ArrayList<>(
-						m_rowCount);
+				final ArrayList<Integer> recordIds = new ArrayList<>(m_rowCount);
 				for (final Object[] row : m_buffer)
 				{
 
@@ -4277,57 +3150,6 @@ public class GridTable extends AbstractTableModel
 		return tabNo;
 	}
 
-	private boolean isNotNullAndIsEmpty(Object value)
-	{
-		if (value != null
-				&& (value instanceof String)
-				&& value.toString().equals(""))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-
-	}
-
-	private boolean isValueChanged(Object oldValue, Object value)
-	{
-		if (isNotNullAndIsEmpty(oldValue))
-		{
-			oldValue = null;
-		}
-
-		if (isNotNullAndIsEmpty(value))
-		{
-			value = null;
-		}
-
-		boolean bChanged = (oldValue == null && value != null)
-				|| (oldValue != null && value == null);
-
-		if (!bChanged && oldValue != null)
-		{
-			if (oldValue.getClass().equals(value.getClass()))
-			{
-				if (oldValue instanceof Comparable<?>)
-				{
-					bChanged = (((Comparable<Object>)oldValue).compareTo(value) != 0);
-				}
-				else
-				{
-					bChanged = !oldValue.equals(value);
-				}
-			}
-			else if (value != null)
-			{
-				bChanged = !(oldValue.toString().equals(value.toString()));
-			}
-		}
-		return bChanged;
-	}
-
 	// metas: begin -------------------------------------------------------------------
 	/** The static default where clause */
 	private String m_defaultWhereClause = "";
@@ -4423,7 +3245,7 @@ public class GridTable extends AbstractTableModel
 				}
 				else
 				{
-					log.warn("Failed to parse where clause. whereClause=" + m_whereClause);
+					log.warn("Failed to parse where clause. whereClause={}", m_whereClause);
 					where.append(" 1 = 2 ");
 				}
 			}
@@ -4453,7 +3275,7 @@ public class GridTable extends AbstractTableModel
 				}
 				else
 				{
-					log.warn("Failed to parse where clause. defaultwhereClause=" + m_defaultWhereClause);
+					log.warn("Failed to parse where clause. defaultwhereClause={}", m_defaultWhereClause);
 					where.append(" 1 = 2 ");
 				}
 			}
@@ -4615,55 +3437,6 @@ public class GridTable extends AbstractTableModel
 		return m_changed;
 	}
 
-	/**
-	 * Convenient method to builds Document Number for current window context document. <br>
-	 * - first search for DocType based Document No - then Search for DocumentNo based on TableName
-	 *
-	 * @param ctx context
-	 * @param WindowNo window
-	 * @param TableName table
-	 * @param onlyDocType Do not search for document no based on TableName
-	 * @return DocumentNo or null, if no doc number defined
-	 */
-	private static String buildDocumentNo(final Properties ctx, final int WindowNo, final String TableName, final boolean onlyDocType)
-	{
-		if (ctx == null || TableName == null || TableName.length() == 0)
-		{
-			throw new IllegalArgumentException("Required parameter missing");
-		}
-		final int AD_Client_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Client_ID");
-
-		// metas: User AD_Org_ID as additional parameter
-		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
-		// metas end
-		// Get C_DocType_ID from context - NO Defaults -
-		int C_DocType_ID = Env.getContextAsInt(ctx, WindowNo + "|C_DocTypeTarget_ID");
-		if (C_DocType_ID <= 0)
-		{
-			C_DocType_ID = Env.getContextAsInt(ctx, WindowNo + "|C_DocType_ID");
-		}
-
-		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-
-		if (C_DocType_ID <= 0)
-		{
-			log.debug("Window=" + WindowNo
-					+ " - Target=" + Env.getContextAsInt(ctx, WindowNo + "|C_DocTypeTarget_ID") + "/" + Env.getContextAsInt(ctx, WindowNo, "C_DocTypeTarget_ID")
-					+ " - Actual=" + Env.getContextAsInt(ctx, WindowNo + "|C_DocType_ID") + "/" + Env.getContextAsInt(ctx, WindowNo, "C_DocType_ID"));
-			return documentNoFactory.forTableName(TableName, AD_Client_ID, AD_Org_ID)
-					.build();
-		}
-
-		final String retValue = documentNoFactory.forDocType(C_DocType_ID, false) // useDefiniteSequence=false
-				.setFailOnError(false)
-				.build();
-		if (!onlyDocType && retValue == null)
-		{
-			return documentNoFactory.forTableName(TableName, AD_Client_ID, AD_Org_ID)
-					.build();
-		}
-		return retValue;
-	}
 
 	private DataNewCopyMode _dataNewCopyMode = null;
 	/** variable for retaining the old po'ID for copy with details */
