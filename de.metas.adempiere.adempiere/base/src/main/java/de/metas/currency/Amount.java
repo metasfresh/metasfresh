@@ -1,6 +1,9 @@
 package de.metas.currency;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
@@ -35,7 +38,7 @@ import lombok.Value;
  *
  */
 @Value
-public final class Amount
+public final class Amount implements Comparable<Amount>
 {
 	public static Amount of(@NonNull final BigDecimal value, @NonNull String currencyCode)
 	{
@@ -49,5 +52,39 @@ public final class Amount
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyCode = currencyCode;
+	}
+
+	public static void assertSameCurrency(final Amount... amounts)
+	{
+		if (amounts == null || amounts.length == 0)
+		{
+			return;
+		}
+
+		final String expectedCurrencyCode = amounts[0].getCurrencyCode();
+		for (int i = 1; i < amounts.length; i++)
+		{
+			if (!expectedCurrencyCode.equals(amounts[i].getCurrencyCode()))
+			{
+				throw new AdempiereException("Amounts shall have the same currency: " + Arrays.asList(amounts));
+			}
+		}
+	}
+
+	@Override
+	public int compareTo(@NonNull final Amount other)
+	{
+		assertSameCurrency(this, other);
+		return getValue().compareTo(other.getValue());
+	}
+
+	public boolean valueComparingEqualsTo(@NonNull final BigDecimal other)
+	{
+		return getValue().compareTo(other) == 0;
+	}
+
+	public Amount min(@NonNull final Amount other)
+	{
+		return compareTo(other) <= 0 ? this : other;
 	}
 }
