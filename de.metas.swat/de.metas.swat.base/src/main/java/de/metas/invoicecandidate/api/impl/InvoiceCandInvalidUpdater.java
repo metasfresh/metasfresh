@@ -39,7 +39,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
@@ -51,6 +53,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -58,6 +61,9 @@ import lombok.NonNull;
 
 /* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
+
+	private static final Logger logger = LogManager.getLogger(InvoiceCandInvalidUpdater.class);
+
 	// services
 	// private final transient Logger logger = InvoiceCandidate_Constants.getLogger();
 	private final transient InvoiceCandBL invoiceCandBL;
@@ -144,6 +150,7 @@ import lombok.NonNull;
 		if (!candidatesToUpdate.hasNext())
 		{
 			// no candidates found => nothing to do
+			Loggables.get().withLogger(logger, Level.DEBUG).addLog("icTagger has no invoice candidates to update; nothing to do; icTagger={}", icTagger);
 			return;
 		}
 
@@ -182,6 +189,8 @@ import lombok.NonNull;
 							}
 							else
 							{
+								Loggables.get().withLogger(logger, Level.DEBUG)
+										.addLog("Error processing invoice; ic.errorMessage={}; ic={}", ic.getErrorMsg(), ic);
 								result.incrementErrorsCount();
 							}
 						}
