@@ -1,12 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-webui-frontend-demouser-demo"
+  name: "metasfresh-webui-frontend-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-webui-frontend
-    de.metas.deployment.user: "demouser"
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.name: "metasfresh-webui-frontend-demouser-demo"
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-webui-frontend-mf15-dev"
   namespace: "default"
 spec:
   replicas: 1
@@ -16,8 +16,8 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-webui-frontend
-        de.metas.deployment.user: "demouser"
-        de.metas.deployment.stage: "demo"
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
     spec:
       containers:
       - env:
@@ -59,17 +59,17 @@ spec:
         - containerPort: 80
         resources: {}
         volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
       restartPolicy: Always
       volumes:
-      - name: host-localtime
-        hostPath:
-          path: /etc/localtime
-      - name: host-timezone
-        hostPath:
-          path: /etc/timezone
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

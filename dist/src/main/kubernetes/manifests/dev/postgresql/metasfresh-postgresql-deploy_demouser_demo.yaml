@@ -1,12 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-postgresql-demouser-demo"
+  name: "metasfresh-postgresql-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-postgresql
-    de.metas.deployment.user: "demouser"
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.name: "metasfresh-postgresql-demouser-demo"
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-postgresql-mf15-dev"
   namespace: "default"
 spec:
   replicas: 1
@@ -16,9 +16,9 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-postgresql
-        de.metas.deployment.user: "demouser"
-        de.metas.deployment.stage: "demo"
-        de.metas.deployment.name: "metasfresh-postgresql-demouser-demo"
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+        de.metas.deployment.name: "metasfresh-postgresql-mf15-dev"
     spec:
       containers:
 #
@@ -31,12 +31,12 @@ spec:
         args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         resources: {}
         volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
         - mountPath: /var/lib/postgresql/data
           name: postgresql-data
         - mountPath: /etc/postgresql
@@ -55,21 +55,21 @@ spec:
           - name: URL_MIGRATION_SCRIPTS_PACKAGE
             value: "https://repo.metasfresh.com/service/local/artifact/maven/redirect?g=de.metas.dist&a=metasfresh-dist-dist&v=LATEST&r=mvn-master&p=tar.gz&c=sql-only"
           volumeMounts:
-          - name: host-localtime
-            mountPath: /etc/localtime
-            readOnly: true
-          - name: host-timezone
-            mountPath: /etc/timezone
-            readOnly: true
+          # - name: host-localtime
+          #   mountPath: /etc/localtime
+          #   readOnly: true
+          # - name: host-timezone
+          #   mountPath: /etc/timezone
+          #   readOnly: true
           - mountPath: /var/lib/postgresql/data
             name: postgresql-data
       volumes:
-      - name: host-localtime
-        hostPath:
-          path: /etc/localtime
-      - name: host-timezone
-        hostPath:
-          path: /etc/timezone
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone
       - name: postgresql-data
         emptyDir: {}
       - name: postgresql-config

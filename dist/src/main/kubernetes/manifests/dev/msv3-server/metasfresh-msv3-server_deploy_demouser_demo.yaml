@@ -1,11 +1,11 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-msv3-server-demouser-demo"
+  name: "metasfresh-msv3-server-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-msv3-server
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.user: "mf15"
 spec:
   replicas: 1
   strategy:
@@ -14,15 +14,22 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-msv3-server
-        de.metas.deployment.user: "demouser"
-        de.metas.deployment.stage: "demo"
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
     spec:
       containers:
       - env:
+        # let the msv3-server use a DB on the metasfresh-postgres-DBMS; the DB is owned by the user metasfresh
         - name: DB_HOST
-          value: "metasfresh-postgresql-demouser-demo"
+          value: "metasfresh-postgresql-mf15-dev"
         - name: DB_PORT
           value: '5432'
+        - name: DB_NAME
+          value: 'msv3server'
+        - name: DB_USER
+          value: 'metasfresh'  
+        - name: DB_PASSWORD
+          value: 'metasfresh'  
         - name: DEBUG_PRINT_BASH_CMDS
           value: 'y'
         - name: DB_WAIT_FOR_DBMS
@@ -36,7 +43,7 @@ spec:
         - name: DEBUG_PORT
           value: '8791'
         name: msv3-server
-        image: docker.metasfresh.com/metasfresh/metasfresh-msv3-server:master_LATEST
+        image: docker.metasfresh.com/metasfresh/de.metas.vertical.pharma.msv3.server:master_LATEST
         imagePullPolicy: Always
         ports:
           - containerPort: 8080
@@ -45,17 +52,17 @@ spec:
             memory: 128M
 #            cpu: 500m
         volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
       restartPolicy: Always
       volumes:
-      - name: host-localtime
-        hostPath:
-          path: /etc/localtime
-      - name: host-timezone
-        hostPath:
-          path: /etc/timezone
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "metasfresh-print-demouser-demo"
+  name: "metasfresh-print-mf15-dev"
   annotations:
     kubernetes.io/ingress.class: "nginx"
     nginx.org/ssl-services: "hello-world-svc"
@@ -17,5 +17,5 @@ spec:
       paths:
       - path: /api/printing
         backend:
-          serviceName: "metasfresh-print-demouser-demo"
+          serviceName: "metasfresh-print-mf15-dev"
           servicePort: 8080
