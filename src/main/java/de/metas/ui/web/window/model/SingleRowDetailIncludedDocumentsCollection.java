@@ -1,16 +1,11 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -53,7 +48,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	private final Document parentDocument;
 	private final DocumentEntityDescriptor entityDescriptor;
 
-	private final LinkedHashMap<DocumentId, Document> documentsWithChanges;
+	private Document singleDocument;
 
 	private boolean staled;
 
@@ -69,7 +64,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 		this.entityDescriptor = entityDescriptor;
 		this.parentDocumentPath = parentDocument.getDocumentPath();
 		this.staled = false;
-		this.documentsWithChanges = new LinkedHashMap<>();
+		this.singleDocument = null;
 	}
 
 	/** copy constructor */
@@ -82,7 +77,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 		this.parentDocumentPath = from.parentDocumentPath;
 		this.entityDescriptor = from.entityDescriptor;
 
-		this.documentsWithChanges = new LinkedHashMap<>(Maps.transformValues(from.documentsWithChanges, includedDocumentOrig -> includedDocumentOrig.copy(parentDocumentCopy, copyMode)));
+		this.singleDocument = from.singleDocument;
 
 		this.staled = from.staled;
 	}
@@ -110,7 +105,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 
 		if (document.isNew())
 		{
-			addChangedDocument(document);
+			setSingleDocument(document);
 		}
 
 		return OrderedDocumentsList.of(ImmutableList.of(document), orderBys);
@@ -120,33 +115,29 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	public Document getDocumentById(@NonNull final DocumentId documentId)
 	{
 		// Try documents which are new and/or have changes in progress, but are not yet saved
-		final Document documentWithChanges = getChangedDocumentOrNull(documentId);
-		if (documentWithChanges != null)
+		final Document singleDocument = getSingleDocumentOrNull();
+		if (singleDocument != null)
 		{
-			return documentWithChanges;
+			return singleDocument;
 		}
+
 		final Document document = DocumentQuery
 				.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.setRecordId(documentId)
 				.retriveDocumentOrNull();
-		if (document.isNew())
-		{
-			addChangedDocument(document);
-		}
+		setSingleDocument(document);
 
 		return document;
 	}
 
-	private final Document getChangedDocumentOrNull(@NonNull final DocumentId documentId)
+	private final Document getSingleDocumentOrNull()
 	{
-		return documentsWithChanges.get(documentId);
+		return singleDocument;
 	}
 
-	private final void addChangedDocument(@NonNull final Document document)
+	private final void setSingleDocument(@NonNull final Document document)
 	{
-		final DocumentId documentId = document.getDocumentId();
-		documentsWithChanges.put(documentId, document);
+		singleDocument = document;
 	}
 
 	@Override
@@ -189,59 +180,51 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	@Override
 	public DocumentValidStatus checkAndGetValidStatus(OnValidStatusChanged onValidStatusChanged)
 	{
-		for (final Document document : getChangedDocuments())
+		if (singleDocument != null)
 		{
-			final DocumentValidStatus validState = document.checkAndGetValidStatus(onValidStatusChanged);
+			final DocumentValidStatus validState = singleDocument.checkAndGetValidStatus(onValidStatusChanged);
 			if (!validState.isValid())
 			{
-				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid", this, document, validState);
+				logger.trace("Considering included document as invalid for saving because it is not valid; validState={}; document={}",
+						validState, singleDocument);
 				return validState;
 			}
 		}
 		return DocumentValidStatus.documentValid();
 	}
 
-	private final Collection<Document> getChangedDocuments()
-	{
-		return documentsWithChanges.values();
-	}
-
 	@Override
 	public boolean hasChangesRecursivelly()
 	{
-		return getChangedDocuments()
-				.stream()
-				.anyMatch(document -> document.hasChangesRecursivelly());
+		if (singleDocument == null)
+		{
+			return false;
+		}
+		return singleDocument.hasChangesRecursivelly();
 	}
 
 	@Override
 	public void saveIfHasChanges()
 	{
-		final Set<DocumentId> savedOrDeletedDocumentIds = new HashSet<>();
 
-		for (final Document document : getChangedDocuments())
+		if (singleDocument != null)
 		{
-			final DocumentSaveStatus saveStatus = document.saveIfHasChanges();
+			final DocumentSaveStatus saveStatus = singleDocument.saveIfHasChanges();
 			if (saveStatus.isSaved())
 			{
-				savedOrDeletedDocumentIds.add(document.getDocumentId());
+				forgetSingleDocument();
 			}
 			else if (saveStatus.isDeleted())
 			{
-				document.markAsDeleted();
-				savedOrDeletedDocumentIds.add(document.getDocumentId());
+				singleDocument.markAsDeleted();
+				forgetSingleDocument();
 			}
-		}
-
-		if (!savedOrDeletedDocumentIds.isEmpty())
-		{
-			savedOrDeletedDocumentIds.forEach(this::forgetChangedDocument);
 		}
 	}
 
-	private final void forgetChangedDocument(final DocumentId documentId)
+	private final void forgetSingleDocument()
 	{
-		documentsWithChanges.remove(documentId);
+		singleDocument = null;
 	}
 
 	@Override

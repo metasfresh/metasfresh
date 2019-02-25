@@ -1,13 +1,14 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.dataentry.DataEntryFieldId;
@@ -23,6 +24,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -46,16 +48,15 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetcher
 {
-
-	private static final CtxName CTX_NAME_FIELD_ID = CtxNames.ofNameAndDefaultValue(I_DataEntry_ListValue.COLUMNNAME_DataEntry_Field_ID, "-1");
 	private static final CtxName CTX_NAME_LIST_VALUE_ID = CtxNames.ofNameAndDefaultValue(I_DataEntry_ListValue.COLUMNNAME_DataEntry_ListValue_ID, "-1");
 
 	private static final String LOOKUP_TABLE_NAME = I_DataEntry_ListValue.Table_Name;
-	private final ImmutableSet<CtxName> dependsOnContextVariables = ImmutableSet.of(CTX_NAME_FIELD_ID);
+	private final ImmutableSet<CtxName> dependsOnContextVariables = ImmutableSet.of();
 
-	private final ImmutableMap<DataEntryListValueId, IntegerLookupValue> id2listValue;
+	private final ImmutableBiMap<DataEntryListValueId, IntegerLookupValue> id2LookupValue;
 
 	private final DataEntryFieldId dataEntryFieldId;
 
@@ -63,12 +64,15 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 	{
 		this.dataEntryFieldId = CollectionUtils.extractSingleElement(listValues, DataEntryListValue::getDataEntryFieldId);
 
-		final ImmutableMap.Builder<DataEntryListValueId, IntegerLookupValue> map = ImmutableMap.builder();
+		final ImmutableBiMap.Builder<DataEntryListValueId, IntegerLookupValue> id2LookupValue = ImmutableBiMap.builder();
+
 		for (final DataEntryListValue listValue : listValues)
 		{
-			map.put(listValue.getId(), createLookupValue(listValue));
+			final IntegerLookupValue lookupValue = createLookupValue(listValue);
+			id2LookupValue.put(listValue.getId(), lookupValue);
+
 		}
-		this.id2listValue = map.build();
+		this.id2LookupValue = id2LookupValue.build();
 	}
 
 	@Override
@@ -107,24 +111,13 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 
 		final DataEntryListValueId listValueId = DataEntryListValueId.ofRepoId(listValueIdAsInt);
 
-		return id2listValue.get(listValueId);
+		return id2LookupValue.get(listValueId);
 	}
 
 	@Override
 	public LookupValuesList retrieveEntities(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		final Integer fieldIdAsInt = CTX_NAME_FIELD_ID.getValueAsInteger(evalCtx);
-		if (fieldIdAsInt <= 0)
-		{
-			return LookupValuesList.EMPTY;
-		}
-		final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(fieldIdAsInt);
-		if (!Objects.equals(dataEntryFieldId, this.dataEntryFieldId))
-		{
-			return LookupValuesList.EMPTY;
-		}
-
-		return LookupValuesList.fromCollection(id2listValue.values());
+		return LookupValuesList.fromCollection(id2LookupValue.values());
 	}
 
 	private IntegerLookupValue createLookupValue(@NonNull final DataEntryListValue dataEntryListValue)
@@ -163,5 +156,15 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 	@Override
 	public void cacheInvalidate()
 	{
+	}
+
+	public DataEntryListValueId getListValueIdForLookup(@Nullable final IntegerLookupValue value)
+	{
+		return id2LookupValue.inverse().get(value);
+	}
+
+	public Object getLookupForForListValueId(@Nullable final DataEntryListValueId dataEntryListValueId)
+	{
+		return id2LookupValue.get(dataEntryListValueId);
 	}
 }

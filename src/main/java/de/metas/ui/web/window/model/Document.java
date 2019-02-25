@@ -678,7 +678,18 @@ public final class Document
 			if (fieldDescriptor.isKey())
 			{
 				final DocumentId id = parentSupplier.getDocumentId();
-				return id == null ? null : id.toInt();
+				if (id == null)
+				{
+					return null;
+				}
+				else if (id.isInt())
+				{
+					return id.toInt();
+				}
+				else
+				{
+					return id.toJson();
+				}
 			}
 
 			//

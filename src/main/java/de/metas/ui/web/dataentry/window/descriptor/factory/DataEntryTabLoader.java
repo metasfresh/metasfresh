@@ -42,6 +42,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -295,6 +296,36 @@ public class DataEntryTabLoader
 		return element;
 	}
 
+	/** doesn't work*/
+	private static DocumentLayoutElementDescriptor.Builder createCreatedElementDescriptor(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		final String createdByColName = constructCreatedUpdatedFieldColumnName(COLUMNNAME_CreatedBy, dataEntryFieldId);
+		final String createdColName = constructCreatedUpdatedFieldColumnName(COLUMNNAME_Created, dataEntryFieldId);
+
+		final DocumentLayoutElementFieldDescriptor.Builder createdByFieldBuilder = DocumentLayoutElementFieldDescriptor
+				.builder(createdByColName)
+				.setLookupSource(LookupSource.lookup)
+				.setEmptyText(ITranslatableString.empty());
+
+		final DocumentLayoutElementFieldDescriptor.Builder createdFieldBuilder = DocumentLayoutElementFieldDescriptor
+				.builder(createdColName)
+				.setLookupSource(LookupSource.text)
+				.setEmptyText(ITranslatableString.empty());
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
+				.builder()
+				.setCaption(msgBL.translatable(createdByColName))
+				.setDescription(ITranslatableString.empty())
+				.setViewEditorRenderMode(ViewEditorRenderMode.NEVER)
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setWidgetSize(WidgetSize.Small)
+				.addField(createdByFieldBuilder)
+				.addField(createdFieldBuilder);
+		return element;
+	}
+
 	private static String createFieldNameFor(@NonNull final DataEntryField field)
 	{
 		return Integer.toString(field.getId().getRepoId());
@@ -419,7 +450,7 @@ public class DataEntryTabLoader
 
 		return DocumentFieldDescriptor.builder(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
 				.setCaption(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
-				.setWidgetType(DocumentFieldWidgetType.Integer)
+				.setWidgetType(DocumentFieldWidgetType.Text) // not an int; we construct the DocumentId as string
 				.setDisplayLogic(ConstantLogicExpression.FALSE)
 				.setKey(true)
 				.addCharacteristic(Characteristic.PublicField)
@@ -561,7 +592,7 @@ public class DataEntryTabLoader
 		switch (fieldType)
 		{
 			case DATE:
-				return DocumentFieldWidgetType.Date;
+				return DocumentFieldWidgetType.ZonedDateTime;
 			case LIST:
 				return DocumentFieldWidgetType.List;
 			case NUMBER:
