@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.ElementChangedEvent;
+import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
@@ -34,6 +35,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * System Element Model
@@ -251,9 +253,8 @@ public class M_Element extends X_AD_Element
 
 		final String baseLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
 
-		final ImmutableSet<String> columnsChanged = ElementChangedEvent.ALL_COLUMN_NAMES
-				.stream()
-				.filter(columnName -> is_ValueChanged(columnName))
+		final ImmutableSet<ChangedField> columnsChanged = ElementChangedEvent.ChangedField.streamAll()
+				.filter(columnName -> isValueChanged(columnName))
 				.collect(ImmutableSet.toImmutableSet());
 
 		Services.get(IElementTranslationBL.class).updateDependentADEntries(ElementChangedEvent.builder()
@@ -277,12 +278,12 @@ public class M_Element extends X_AD_Element
 
 		return success;
 	}	// afterSave
+	
+	private boolean isValueChanged(@NonNull final ChangedField field)
+	{
+		return is_ValueChanged(field.getColumnName());
+	}
 
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{

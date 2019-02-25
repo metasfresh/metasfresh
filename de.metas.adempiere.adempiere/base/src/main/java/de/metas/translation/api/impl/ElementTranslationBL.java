@@ -11,6 +11,7 @@ import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.element.api.ElementChangedEvent;
+import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
@@ -24,8 +25,6 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
@@ -65,6 +64,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final String FUNCTION_Update_Window_Translation_From_AD_Element = "update_window_translation_from_ad_element";
 	private static final String FUNCTION_Update_Tab_Translation_From_AD_Element = "update_tab_translation_from_ad_element";
 	private static final String FUNCTION_Update_Menu_Translation_From_AD_Element = "update_menu_translation_from_ad_element";
+
 	private static final String FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update = "update_ad_element_on_ad_element_trl_update";
 
 	private static final String FUNCTION_Update_AD_Element_Trl_From_AD_Tab_Trl = "update_ad_element_trl_from_ad_tab_trl";
@@ -127,11 +127,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Tab_Translation_From_AD_Element, adElementId), null);
 	}
 
-	@Override
-	public void updateElementTranslationsFromTab(final AdElementId adElementId, final AdTabId adTabId)
+	private void updateElementTranslationsFromTab(final AdElementId adElementId, final AdTabId adTabId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Tab_Trl, adElementId, adTabId), null);
 	}
 
@@ -139,23 +137,18 @@ public class ElementTranslationBL implements IElementTranslationBL
 	public void updateWindowTranslationsFromElement(final AdElementId adElementId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Window_Translation_From_AD_Element, adElementId), null);
 	}
 
-	@Override
-	public void updateElementTranslationsFromWindow(final AdElementId adElementId, final AdWindowId adWindowId)
+	private void updateElementTranslationsFromWindow(final AdElementId adElementId, final AdWindowId adWindowId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Window_Trl, adElementId, adWindowId), null);
 	}
 
-	@Override
-	public void updateElementTranslationsFromMenu(final AdElementId adElementId, final AdMenuId adMenuId)
+	private void updateElementTranslationsFromMenu(final AdElementId adElementId, final AdMenuId adMenuId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForElementTRL(FUNCTION_Update_AD_Element_Trl_From_AD_Menu_Trl, adElementId, adMenuId), null);
 	}
 
@@ -177,11 +170,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ", " + applicationDictionaryEntryId.getRepoId() + ") ";
 	}
 
-	@Override
-	public void updateElementFromElementTrl(final AdElementId adElementId, final String adLanguage)
+	private void updateElementFromElementTrl(final AdElementId adElementId, final String adLanguage)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
 	}
 
@@ -197,7 +188,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
-		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
 
 		for (final AdTabId tabId : adWindowDAO.retrieveTabIdsWithMissingADElements())
 		{
@@ -211,9 +201,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.tabCommitWarning(tab.getCommitWarning())
 					.build());
 
-			elementTranslationBL.updateElementTranslationsFromTab(elementId, tabId);
+			updateElementTranslationsFromTab(elementId, tabId);
 
-			IElementTranslationBL.DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
+			DYNATTR_AD_Tab_UpdateTranslations.setValue(tab, false);
 
 			tab.setAD_Element_ID(elementId.getRepoId());
 			save(tab);
@@ -224,7 +214,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
-		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
 
 		final Set<AdWindowId> windowIdsWithMissingADElements = adWindowDAO.retrieveWindowIdsWithMissingADElements();
 
@@ -239,9 +228,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.help(window.getHelp())
 					.build());
 
-			elementTranslationBL.updateElementTranslationsFromWindow(elementId, windowId);
+			updateElementTranslationsFromWindow(elementId, windowId);
 
-			IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
+			DYNATTR_AD_Window_UpdateTranslations.setValue(window, false);
 
 			window.setAD_Element_ID(elementId.getRepoId());
 			save(window);
@@ -252,7 +241,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 	{
 		final IADMenuDAO adMenuDAO = Services.get(IADMenuDAO.class);
 		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
-		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
 
 		final List<Integer> menuIdsWithMissingADElements = adMenuDAO.retrieveMenuIdsWithMissingADElements();
 
@@ -268,9 +256,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.webuiNameNew(menu.getWEBUI_NameNew())
 					.webuiNameNewBreadcrumb(menu.getWEBUI_NameNewBreadcrumb()).build());
 
-			elementTranslationBL.updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
+			updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
 
-			IElementTranslationBL.DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
+			DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 
 			menu.setAD_Element_ID(elementId.getRepoId());
 			save(menu);
@@ -287,7 +275,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 		if (availableUpdatesForADProcessParas(event))
 		{
-			updateADProcessParas(event);
+			updateADProcessParams(event);
 		}
 
 		if (availableUpdatesForADField(event))
@@ -319,80 +307,75 @@ public class ElementTranslationBL implements IElementTranslationBL
 
 	private boolean availableUpdatesForADColumn(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_ColumnName);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.Description,
+				ChangedField.Help,
+				ChangedField.ColumnName);
 	}
 
 	private boolean availableUpdatesForADProcessParas(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_ColumnName);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.Description,
+				ChangedField.Help,
+				ChangedField.ColumnName);
 	}
 
 	private boolean availableUpdatesForADField(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.Description,
+				ChangedField.Help);
 	}
 
 	private boolean availableUpdatesForPrintFormatItem(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_PrintName);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.PrintName);
 	}
 
 	private boolean availableUpdatesForADTab(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_CommitWarning);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.Description,
+				ChangedField.Help,
+				ChangedField.CommitWarning);
 	}
 
 	private boolean availableUpdatesForADWindow(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.Description,
+				ChangedField.Help);
 	}
 
 	private boolean availableUpdatesForADMenu(final ElementChangedEvent event)
 	{
-		final ImmutableSet<String> updatedColumns = event.getUpdatedColumns();
-
-		return updatedColumns.contains(I_AD_Element.COLUMNNAME_Name) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Description) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_Help) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_WEBUI_NameNew) ||
-				updatedColumns.contains(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb);
+		return event.isChangedAnyOf(
+				ChangedField.Name,
+				ChangedField.Description,
+				ChangedField.Help,
+				ChangedField.WebuiNameBrowse,
+				ChangedField.WebuiNameNew,
+				ChangedField.WebuiNameNewBreadcrumb);
 	}
 
 	private void updateADMenus(final ElementChangedEvent event)
 	{
-		final StringBuilder sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(event.getName()))
-				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(event.getWebuiNameBrowse()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(event.getWebuiNameNew()))
-				.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(event.getWebuiNameNewBreadcrumb()))
-
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(I_AD_Menu.Table_Name)
+				.append(" SET ")
+				.append("  ").append(I_AD_Menu.COLUMNNAME_Name).append(" = ").append(DB.TO_STRING(event.getName()))
+				.append(", ").append(I_AD_Menu.COLUMNNAME_Description).append(" = ").append(DB.TO_STRING(event.getDescription()))
+				.append(", ").append(I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(event.getWebuiNameBrowse()))
+				.append(", ").append(I_AD_Menu.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(event.getWebuiNameNew()))
+				.append(", ").append(I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(event.getWebuiNameNewBreadcrumb()))
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
 		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -438,7 +421,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(event.getAdElementId().getRepoId()).append(")");
 		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
-		log.debug("PrintFormatItem updated #" + updateResultsCounter);
+		log.debug("PrintFormatItem updated #{}", updateResultsCounter);
 	}
 
 	private void updateADFields(final ElementChangedEvent event)
@@ -459,10 +442,10 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(")");
 		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
-		log.debug("Fields updated #" + updateResultsCounter);
+		log.debug("Fields updated #{}", updateResultsCounter);
 	}
 
-	private void updateADProcessParas(final ElementChangedEvent event)
+	private void updateADProcessParams(final ElementChangedEvent event)
 	{
 		int updateResultsCounter = 0;
 
@@ -490,7 +473,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(" AND IsCentrallyMaintained='Y'");
 		updateResultsCounter += DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
-		log.debug("Parameters updated #" + updateResultsCounter);
+		log.debug("Parameters updated #{}", updateResultsCounter);
 	}
 
 	private void updateADColumns(final ElementChangedEvent event)
@@ -503,7 +486,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId());
 		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
-		log.debug("afterSave - Columns updated #" + updateResultsCounter);
+		log.debug("Columns updated #{}", updateResultsCounter);
 	}
 
 }
