@@ -100,7 +100,7 @@ public class RefundTestTools
 	// because otherwise the refund candidate we create in here is not found to be a match when searched for via ASSIGNABLE_CANDIDATE_INVOICE_DATE
 	// note that we also need to make sure to have 1 as the min number
 	@VisibleForTesting
-	static final int  = computeInvoiceScheduleDayOfMonth();
+	static final int INVOICE_SCHEDULE_DAY_OF_MONTH = computeInvoiceScheduleDayOfMonth();
 
 	private static LocalDate computeAssignableCandidateInvoiceDate()
 	{
