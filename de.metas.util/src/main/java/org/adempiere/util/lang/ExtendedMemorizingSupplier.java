@@ -43,9 +43,12 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 	private final java.util.function.Supplier<T> delegate;
 
 	private transient volatile boolean initialized;
+
 	// "value" does not need to be volatile; visibility piggy-backs
 	// on volatile read of "initialized".
-	private transient T value;
+	// metas-ts: Setting it to be volatile none the less, because we somehow managed to get an NPE with a delegate supplier that could not have returned null.
+	// See https://github.com/metasfresh/metasfresh/issues/4985
+	private transient volatile T value;
 
 	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> delegate)
 	{
