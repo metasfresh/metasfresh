@@ -63,7 +63,7 @@ public class AccountImportTableSqlUpdater
 				.append("WHERE ElementName IS NOT NULL AND C_Element_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
-		logger.debug("Set Element Default={}" + no);
+		logger.debug("Set Element Default={} ",  no);
 	}
 
 	public void dbUpdateParentElementValue(final String whereClause)
@@ -77,7 +77,7 @@ public class AccountImportTableSqlUpdater
 				.append("WHERE ParentElementValue_ID IS NULL ")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
-		logger.debug("Found Parent ElementValue=" + no);
+		logger.debug("Found Parent ElementValue={}",  no);
 	}
 
 	public void dbUpdateParentElementValueId(final int treeId)
@@ -94,7 +94,7 @@ public class AccountImportTableSqlUpdater
 				.append(" from i_elementvalue ev where ev.C_ElementValue_ID = node_ID and ad_tree_ID = ? " )
 				.append(" and ev.IsSummary='Y' " );
 		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
-		logger.debug("Updated Parent Seqno=" + no);
+		logger.debug("Updated Parent Seqno={}",  no);
 			
 	}
 
