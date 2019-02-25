@@ -212,9 +212,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Date",
+              "widgetType" : "ZonedDateTime",
               "allowShowPassword" : false,
-              "valueClass" : "java.time.LocalDate",
+              "valueClass" : "java.time.ZonedDateTime",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -322,14 +322,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "lookupDescriptorProvider" : {
                 "arg$1" : {
                   "dataEntryListValueDataSourceFetcher" : {
-                    "dependsOnContextVariables" : [
-                      {
-                        "name" : "DataEntry_Field_ID",
-                        "defaultValue" : "-1",
-                        "explicitGlobal" : false
-                      }
-                    ],
-                    "id2listValue" : {
+                    "dependsOnContextVariables" : [ ],
+                    "id2LookupValue" : {
                       "11231" : {
                         "id" : 11231,
                         "displayName" : {
@@ -356,8 +350,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     },
                     "dataEntryFieldId" : 1123,
-                    "cached" : true,
-                    "numericKey" : false
+                    "numericKey" : false,
+                    "cached" : true
                   },
                   "highVolume" : false,
                   "numericKey" : true
@@ -1034,9 +1028,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Integer",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.lang.Integer",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1763,9 +1757,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Integer",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.lang.Integer",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -2070,9 +2064,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Date",
+              "widgetType" : "ZonedDateTime",
               "allowShowPassword" : false,
-              "valueClass" : "java.time.LocalDate",
+              "valueClass" : "java.time.ZonedDateTime",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -2180,14 +2174,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "lookupDescriptorProvider" : {
                 "arg$1" : {
                   "dataEntryListValueDataSourceFetcher" : {
-                    "dependsOnContextVariables" : [
-                      {
-                        "name" : "DataEntry_Field_ID",
-                        "defaultValue" : "-1",
-                        "explicitGlobal" : false
-                      }
-                    ],
-                    "id2listValue" : {
+                    "dependsOnContextVariables" : [ ],
+                    "id2LookupValue" : {
                       "12231" : {
                         "id" : 12231,
                         "displayName" : {
@@ -2214,8 +2202,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     },
                     "dataEntryFieldId" : 1223,
-                    "cached" : true,
-                    "numericKey" : false
+                    "numericKey" : false,
+                    "cached" : true
                   },
                   "highVolume" : false,
                   "numericKey" : true
@@ -2892,9 +2880,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Integer",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.lang.Integer",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -3621,9 +3609,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Integer",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.lang.Integer",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -4407,7 +4395,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "value" : "dateField11_description",
                                   "anyLanguage" : false
                                 },
-                                "widgetType" : "Date",
+                                "widgetType" : "ZonedDateTime",
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
@@ -5575,7 +5563,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "value" : "dateField21_description",
                                   "anyLanguage" : false
                                 },
-                                "widgetType" : "Date",
+                                "widgetType" : "ZonedDateTime",
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
@@ -6374,7 +6362,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             {
                               "caption" : "dateField11_caption",
                               "description" : "dateField11_description",
-                              "widgetType" : "Date",
+                              "widgetType" : "DateTime",
                               "size" : "L",
                               "viewEditorRenderMode" : "always",
                               "fields" : [
@@ -6816,7 +6804,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             {
                               "caption" : "dateField21_caption",
                               "description" : "dateField21_description",
-                              "widgetType" : "Date",
+                              "widgetType" : "DateTime",
                               "size" : "L",
                               "viewEditorRenderMode" : "always",
                               "fields" : [
