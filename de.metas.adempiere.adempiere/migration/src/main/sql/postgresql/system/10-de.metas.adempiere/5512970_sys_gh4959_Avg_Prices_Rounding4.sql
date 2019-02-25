@@ -29,7 +29,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_pr
 AS
  $BODY$
 
-
 SELECT 
 	p.Value AS ProduktNr
 	, p.Name AS ProduktName 
@@ -68,21 +67,14 @@ SELECT
 						AND i.IsActive = 'Y'
 						AND il.IsActive = 'Y'
 			),  
-			ic.PriceActual_Net_Effective) 
-			*
-			(CASE WHEN (price_uom.uomsymbol = 'TU') 
-				THEN COALESCE (uconv.multiplyrate, 1) * iol.MovementQty 
-				ELSE uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
-			END )
-			
-			
+			ic.PriceActual_Net_Effective) * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
 			, ic.C_Currency_ID -- p_curfrom_id
 			, (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'CHF') -- p_curto_id
 			, p_dateto -- p_convdate -- date to 
 			, (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P') -- p_conversiontype_id
 			, ic.AD_Client_ID
 			, ic.AD_Org_ID --ad_org_id
-			), 4)
+			), 4)::text
 		ELSE ROUND(
 		COALESCE( 
 			(SELECT avg(il.PriceActual) 
@@ -95,17 +87,8 @@ SELECT
 						AND i.IsActive = 'Y'
 						AND il.IsActive = 'Y'
 			),  
-			
-			ic.PriceActual_Net_Effective) * 
-
-	
-		
-			(CASE WHEN (price_uom.uomsymbol = 'TU') 
-				THEN COALESCE (uconv.multiplyrate, 1) * iol.MovementQty 
-				ELSE uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty)
-			END )
-			,4)
-	END ) :: text, 'Missing Conversion'::text ) AS BetragCHF
+			ic.PriceActual_Net_Effective) * uomconvert(p.M_Product_ID, uom.C_UOM_ID, price_uom.C_UOM_ID, iol.MovementQty), 4)::text
+	END ), 'Missing Conversion'::text ) AS BetragCHF
 	
 	
 	, c.iso_code AS Wahrung 
@@ -148,18 +131,12 @@ LEFT OUTER JOIN PP_Order pp ON ic.Record_ID = pp.PP_Order_ID AND ic.AD_Table_ID 
 LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
 
 
-LEFT OUTER JOIN C_UOM_Conversion uconv ON uconv.C_UOM_ID = iol.C_UOM_ID
-												AND uconv.C_UOM_To_ID = price_uom.C_UOM_ID
-												AND p.M_Product_ID = uconv.M_Product_ID	
-
-
 WHERE 
 	ic.isSOTrx = p_issotrx
 	AND io.MovementDate::date >= p_datefrom -- date from
 	AND io.MovementDate::date <= p_dateto --  date to
 	--
 	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
-	
 	
 
 

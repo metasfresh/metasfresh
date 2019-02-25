@@ -3,7 +3,7 @@
 <!-- comment back in when we had time to figure out why codacy doesn't love us anymore, and fix it
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6fc65ff4b5fb4ef88d7ce1dca1d7eb38)](https://www.codacy.com/app/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
 -->
-[![release](https://img.shields.io/badge/release-5.90-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.90)
+[![release](https://img.shields.io/badge/release-5.91-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.91)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)

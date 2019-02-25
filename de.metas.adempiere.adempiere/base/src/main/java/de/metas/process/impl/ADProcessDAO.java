@@ -268,6 +268,8 @@ public class ADProcessDAO implements IADProcessDAO
 				.displayPlaceIfTrue(tableProcess.isWEBUI_ViewQuickAction(), DisplayPlace.ViewQuickActions)
 				.webuiDefaultQuickAction(tableProcess.isWEBUI_ViewQuickAction_Default())
 				//
+				.webuiShortcut(tableProcess.getWEBUI_Shortcut())
+				//
 				.build();
 	}
 

@@ -366,6 +366,29 @@ public interface I_AD_Table_Process
     public static final String COLUMNNAME_WEBUI_IncludedTabTopAction = "WEBUI_IncludedTabTopAction";
 
 	/**
+	 * Set Shortcut.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_Shortcut (java.lang.String WEBUI_Shortcut);
+
+	/**
+	 * Get Shortcut.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_Shortcut();
+
+    /** Column definition for WEBUI_Shortcut */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_Shortcut = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_Shortcut", null);
+    /** Column name WEBUI_Shortcut */
+    public static final String COLUMNNAME_WEBUI_Shortcut = "WEBUI_Shortcut";
+
+	/**
 	 * Set Is View Action.
 	 *
 	 * <br>Type: YesNo
