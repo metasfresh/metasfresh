@@ -71,6 +71,10 @@ public final class JSONDocumentAction implements Serializable
 	@JsonProperty("defaultQuickAction")
 	private final boolean defaultQuickAction;
 
+	@JsonProperty("shortcut")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String shortcut;
+
 	@JsonProperty("disabled")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean disabled;
@@ -106,6 +110,8 @@ public final class JSONDocumentAction implements Serializable
 		displayPlaces = relatedProcessDescriptor.getDisplayPlaces();
 		quickAction = relatedProcessDescriptor.isDisplayedOn(DisplayPlace.ViewQuickActions);
 		defaultQuickAction = relatedProcessDescriptor.isDefaultQuickAction();
+
+		shortcut = relatedProcessDescriptor.getShortcut();
 
 		disabled = relatedProcessDescriptor.isDisabled() ? Boolean.TRUE : null;
 		disabledReason = relatedProcessDescriptor.getDisabledReason(adLanguage);

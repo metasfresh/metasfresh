@@ -148,6 +148,8 @@ import lombok.NonNull;
 				.displayPlaces(relatedProcessDescriptor.getDisplayPlaces())
 				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
 				//
+				.shortcut(relatedProcessDescriptor.getWebuiShortcut())
+				//
 				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
 				//
 				.build();
