@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "metasfresh-core-stack-demouser-demo"
+  name: "metasfresh-core-stack-mf15-dev"
   labels:
     de.metas.deployment.type: metasfresh-core-stack
-    de.metas.deployment.stage: "demo"
-    de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.user: "mf15"
   namespace: default
 spec:
   ports:
@@ -30,9 +30,9 @@ spec:
     protocol: TCP
     targetPort: 8788
   selector:
-    de.metas.deployment.stage: "demo"
+    de.metas.deployment.stage: "dev"
     de.metas.deployment.type: metasfresh-core-stack
-    de.metas.deployment.user: "demouser"
+    de.metas.deployment.user: "mf15"
   sessionAffinity: None
 # ClusterIP is the default; we use it because we don't want to make the service available to the outside (we have the ingress for that)
 # see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types

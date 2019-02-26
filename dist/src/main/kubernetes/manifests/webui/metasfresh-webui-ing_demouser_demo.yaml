@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "metasfresh-webui-demouser-demo"
+  name: "metasfresh-webui-mf15-dev"
   annotations:
     kubernetes.io/ingress.class: "nginx"
     # not sure if we need this..to dig into it, this issue can be a starting point: 
@@ -19,5 +19,5 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: "metasfresh-webui-demouser-demo"
+          serviceName: "metasfresh-webui-mf15-dev"
           servicePort: 80
