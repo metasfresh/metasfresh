@@ -29,12 +29,14 @@ import java.util.Map;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.Money;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 
@@ -85,7 +87,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @param optional, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
 	 */
-	void updatePriceActual(I_C_OrderLine orderLine, int precision);
+	void updatePriceActual(I_C_OrderLine orderLine, CurrencyPrecision precision);
 
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
@@ -120,7 +122,7 @@ public interface IOrderLineBL extends ISingletonService
 	 *
 	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 */
-	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
+	TaxCategoryId getTaxCategoryId(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 

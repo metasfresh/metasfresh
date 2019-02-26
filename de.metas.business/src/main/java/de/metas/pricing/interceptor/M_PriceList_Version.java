@@ -44,11 +44,11 @@ public class M_PriceList_Version
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void assertBasePricingIsValid(final I_M_PriceList_Version plv)
 	{
-		if (plv.isFallbackToBasePriceListPrices() && plv.getM_Pricelist_Version_Base_ID() > 0)
-		{
-			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
-			final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoId(plv.getM_Pricelist_Version_Base_ID());
+		final PriceListVersionId basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(plv);
+		if (basePriceListVersionId != null)
+		{
 			final I_M_PriceList basePriceList = priceListsRepo.getPriceListByPriceListVersionId(basePriceListVersionId);
 
 			final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());

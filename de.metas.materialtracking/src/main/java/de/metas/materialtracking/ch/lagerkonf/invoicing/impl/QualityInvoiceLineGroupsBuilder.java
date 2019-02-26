@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
@@ -1157,14 +1158,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 
-		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getC_TaxCategory_ID() <= 0,
+		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null,
 				"pricingResult {} which was created from pricingCtx {} has calculated=false and/or least contains no C_TaxCategory_ID; the referenced model is {}",
 				pricingResult, pricingCtx, pricingCtx.getReferencedObject());
 
-		final int pricePrecision = pricingResult.getPrecision();
-		final BigDecimal priceToSet = price.setScale(pricePrecision, RoundingMode.HALF_UP);
+		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
+		final BigDecimal priceToSet = pricePrecision.round(price);
 
-		pricingResult.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		pricingResult.setTaxCategoryId(pricingResult.getTaxCategoryId());
 		pricingResult.setPriceStd(priceToSet);
 		pricingResult.setPriceLimit(priceToSet);
 		pricingResult.setPriceList(priceToSet);
@@ -1197,11 +1198,11 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		Check.assume(pricingResult.isCalculated(), "Price is calculated for {}", line);
 
 		final BigDecimal price = pricingResult.getPriceStd();
-		final int pricePrecision = pricingResult.getPrecision();
+		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
 
 		final BigDecimal qty = line.getQty();
 
-		final BigDecimal netAmt = price.multiply(qty).setScale(pricePrecision, RoundingMode.HALF_UP);
+		final BigDecimal netAmt = pricePrecision.round(price.multiply(qty));
 		return netAmt;
 	}
 

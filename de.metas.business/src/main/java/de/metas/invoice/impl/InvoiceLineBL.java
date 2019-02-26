@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
-import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,6 +51,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
@@ -66,6 +66,8 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -96,12 +98,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public boolean setTax(final Properties ctx, final org.compiere.model.I_C_InvoiceLine il, final String trxName)
 	{
-		int taxCategoryId = il.getC_TaxCategory_ID();
-		if (taxCategoryId <= 0 && il.getM_Product_ID() > 0)
+		TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(il.getC_TaxCategory_ID());
+		if (taxCategoryId == null && il.getM_Product_ID() > 0)
 		{
 			// NOTE: we can retrieve the tax category only if we have a product
-			taxCategoryId = getC_TaxCategory_ID(il);
-			il.setC_TaxCategory_ID(taxCategoryId);
+			taxCategoryId = getTaxCategoryId(il);
+			il.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
 		}
 
 		if (il.getM_InOutLine_ID() <= 0)
@@ -175,13 +177,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public int getC_TaxCategory_ID(final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public TaxCategoryId getTaxCategoryId(final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		// FIXME: we need to retrieve the C_TaxCategory_ID by using Pricing Engine
 
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return invoiceLine.getC_Charge().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -193,7 +195,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// Fallback: try getting from Order Line
 		if (invoiceLine.getC_OrderLine_ID() > 0)
 		{
-			return invoiceLine.getC_OrderLine().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoIdOrNull(invoiceLine.getC_OrderLine().getC_TaxCategory_ID());
 		}
 
 		// Fallback: try getting from Invoice -> Order
@@ -205,7 +207,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		throw new TaxCategoryNotFoundException(invoiceLine);
 	}
 
-	private int getTaxCategoryFromProductPrice(
+	private TaxCategoryId getTaxCategoryFromProductPrice(
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
@@ -227,10 +229,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
-		return productPrice.getC_TaxCategory_ID();
+		return TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 	}
 
-	private int getTaxCategoryFromOrder(
+	private TaxCategoryId getTaxCategoryFromOrder(
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
@@ -256,7 +258,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_M_ProductPrice productPrice = Optional
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
-		return productPrice.getC_TaxCategory_ID();
+		return TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 	}
 
 	@Override
@@ -372,15 +374,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+			final CurrencyPrecision stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
-			BigDecimal lineNetAmt = convertedQty.multiply(line.getPriceActual());
-
-			if (lineNetAmt.scale() > stdPrecision)
-			{
-				lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
-			}
-			logger.info("LineNetAmt=" + lineNetAmt);
+			BigDecimal lineNetAmt = stdPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
+			logger.debug("LineNetAmt={}", lineNetAmt);
 			line.setLineNetAmt(lineNetAmt);
 		}
 	}
@@ -444,7 +441,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	}
 
-	private void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final int precision)
+	private static void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final CurrencyPrecision precision)
 	{
 		final BigDecimal discount = invoiceLine.getDiscount();
 		final BigDecimal priceEntered = invoiceLine.getPriceEntered();
@@ -456,16 +453,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 		else
 		{
-			final int precisionToUse;
-			if (precision >= 0)
+			final CurrencyPrecision precisionToUse;
+			if (precision != null)
 			{
 				precisionToUse = precision;
 			}
 			else
 			{
 				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-
-				precisionToUse = invoice.getM_PriceList().getPricePrecision();
+				precisionToUse = CurrencyPrecision.ofInt(invoice.getM_PriceList().getPricePrecision());
 			}
 
 			priceActual = subtractDiscount(priceEntered, discount, precisionToUse);
@@ -474,12 +470,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setPriceActual(priceActual);
 	}
 
-	private BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
+	private static BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final CurrencyPrecision precision)
 	{
 		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
+		multiplier = multiplier.divide(Env.ONEHUNDRED, precision.toInt() * 3, RoundingMode.HALF_UP);
 
-		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
+		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		return result;
 	}
 }

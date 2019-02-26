@@ -66,6 +66,7 @@ public class OrderLineBLTest
 		final I_C_PricingRule pricingRule = InterfaceWrapperHelper.create(ctx, I_C_PricingRule.class, ITrx.TRXNAME_None);
 		pricingRule.setSeqNo(10);
 		pricingRule.setClassname(MockedPricingRule.class.getName());
+		pricingRule.setName(pricingRule.getClassname());
 		InterfaceWrapperHelper.save(pricingRule);
 	}
 
@@ -91,6 +92,7 @@ public class OrderLineBLTest
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		order.setC_Currency_ID(currency.getC_Currency_ID());
 		InterfaceWrapperHelper.save(order);
 
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, I_M_PriceList_Version.class, ITrx.TRXNAME_None);

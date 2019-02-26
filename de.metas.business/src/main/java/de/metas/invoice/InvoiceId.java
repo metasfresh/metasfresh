@@ -1,8 +1,10 @@
 package de.metas.invoice;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -29,6 +31,7 @@ import lombok.Value;
 @Value
 public class InvoiceId implements RepoIdAware
 {
+	@JsonCreator
 	public static InvoiceId ofRepoId(final int repoId)
 	{
 		return new InvoiceId(repoId);
@@ -39,15 +42,27 @@ public class InvoiceId implements RepoIdAware
 		return repoId > 0 ? new InvoiceId(repoId) : null;
 	}
 
-	public static int getRepoIdOr(final InvoiceId invoiceId, final int defaultValue)
-	{
-		return invoiceId != null ? invoiceId.getRepoId() : defaultValue;
-	}
-
 	int repoId;
 
 	private InvoiceId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Invoice_ID");
+	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(final InvoiceId invoiceId)
+	{
+		return toRepoIdOr(invoiceId, -1);
+	}
+
+	public static int toRepoIdOr(final InvoiceId invoiceId, final int defaultValue)
+	{
+		return invoiceId != null ? invoiceId.getRepoId() : defaultValue;
 	}
 }

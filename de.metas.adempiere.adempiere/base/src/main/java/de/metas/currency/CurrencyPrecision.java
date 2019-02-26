@@ -50,10 +50,12 @@ public final class CurrencyPrecision
 		}
 	}
 
+	public static final CurrencyPrecision TWO = new CurrencyPrecision(2);
+
 	private static final CurrencyPrecision[] cachedValues = new CurrencyPrecision[] {
 			new CurrencyPrecision(0),
 			new CurrencyPrecision(1),
-			new CurrencyPrecision(2),
+			TWO,
 			new CurrencyPrecision(3),
 			new CurrencyPrecision(4),
 			new CurrencyPrecision(5),
@@ -78,7 +80,7 @@ public final class CurrencyPrecision
 	{
 		if (amt.scale() > precision)
 		{
-			return amt.setScale(precision, RoundingMode.HALF_UP);
+			return amt.setScale(precision, getRoundingMode());
 		}
 		else
 		{
@@ -86,9 +88,19 @@ public final class CurrencyPrecision
 		}
 	}
 
+	public BigDecimal round(@NonNull final BigDecimal amt)
+	{
+		return amt.setScale(precision, getRoundingMode());
+	}
+
 	@JsonValue
 	public int toInt()
 	{
 		return precision;
+	}
+
+	public RoundingMode getRoundingMode()
+	{
+		return RoundingMode.HALF_UP;
 	}
 }

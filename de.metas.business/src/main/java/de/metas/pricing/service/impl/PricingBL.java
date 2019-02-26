@@ -26,29 +26,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
@@ -68,6 +64,7 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.IPricingDAO;
+import de.metas.pricing.service.PricingRuleDescriptor;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -138,9 +135,8 @@ public class PricingBL implements IPricingBL
 			// return result;
 		}
 
-		final Properties ctx = Env.getCtx();
-		final AggregatedPricingRule aggregatedPricingRule = getAggregatedPricingRule(ctx);
-		aggregatedPricingRule.calculate(pricingCtxToUse, result);
+		final AggregatedPricingRule rules = createPricingRules();
+		rules.calculate(pricingCtxToUse, result);
 
 		//
 		// After calculation
@@ -300,13 +296,10 @@ public class PricingBL implements IPricingBL
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final PricingResult result)
 	{
-		if (pricingCtx.getPriceListId() != null && result.getPrecision() == IPricingResult.NO_PRECISION)
+		if (pricingCtx.getPriceListId() != null && result.getPrecision() == null)
 		{
-			final int precision = getPricePrecision(pricingCtx.getPriceListId());
-			if (precision >= 0)
-			{
-				result.setPrecision(precision);
-			}
+			final CurrencyPrecision precision = getPricePrecision(pricingCtx.getPriceListId());
+			result.setPrecision(precision);
 		}
 		result.updatePriceScales();
 	}
@@ -377,14 +370,16 @@ public class PricingBL implements IPricingBL
 	@Override
 	public PricingResult createInitialResult(@NonNull final IPricingContext pricingCtx)
 	{
-		final PricingResult result = new PricingResult();
+		final PricingResult result = PricingResult.builder()
+				.priceDate(pricingCtx.getPriceDate())
+				.build();
+
 		result.setPricingSystemId(pricingCtx.getPricingSystemId());
 		result.setPriceListId(pricingCtx.getPriceListId());
 		result.setPriceListVersionId(pricingCtx.getPriceListVersionId());
 		result.setProductId(pricingCtx.getProductId());
 		result.setCurrencyId(pricingCtx.getCurrencyId());
 		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
-		result.setPriceDate(pricingCtx.getPriceDate());
 
 		result.setCalculated(false);
 
@@ -393,64 +388,33 @@ public class PricingBL implements IPricingBL
 		return result;
 	}
 
-	@Cached(cacheName = I_C_PricingRule.Table_Name + "_AggregatedPricingRule")
-	public AggregatedPricingRule getAggregatedPricingRule(@CacheCtx Properties ctx)
+	private AggregatedPricingRule createPricingRules()
 	{
-		final AggregatedPricingRule aggregatedPricingRule = new AggregatedPricingRule();
-		final List<IPricingRule> rules = retrievePricingRules(ctx);
-		for (IPricingRule rule : rules)
-		{
-			aggregatedPricingRule.addPricingRule(rule);
-		}
+		final IPricingDAO pricingRulesRepo = Services.get(IPricingDAO.class);
 
-		logger.debug("aggregatedPricingRule: {}", aggregatedPricingRule);
-		return aggregatedPricingRule;
+		final ImmutableList<IPricingRule> rules = pricingRulesRepo.getPricingRules()
+				.stream()
+				.map(this::createPricingRuleNoFail)
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+
+		return AggregatedPricingRule.of(rules);
 	}
 
-	private List<IPricingRule> retrievePricingRules(Properties ctx)
+	private IPricingRule createPricingRuleNoFail(final PricingRuleDescriptor ruleDef)
 	{
-		final List<I_C_PricingRule> rulesDef = Services.get(IPricingDAO.class).retrievePricingRules(ctx);
-
-		final List<IPricingRule> rules = new ArrayList<>(rulesDef.size());
-		for (final I_C_PricingRule ruleDef : rulesDef)
-		{
-			final IPricingRule rule = createPricingRule(ruleDef);
-			if (rule == null)
-			{
-				continue;
-			}
-			if (rules.contains(rule))
-			{
-				logger.warn("Rule was already loaded: " + rule + " [SKIP]");
-				continue;
-			}
-			rules.add(rule);
-		}
-
-		return rules;
-	}
-
-	/**
-	 *
-	 * @param ruleDef
-	 * @return {@link IPricingRule} or null if an error occurred
-	 */
-	private IPricingRule createPricingRule(I_C_PricingRule ruleDef)
-	{
-		final String classname = ruleDef.getClassname();
 		try
 		{
-			final IPricingRule rule = Util.getInstance(IPricingRule.class, classname);
-			return rule;
+			return ruleDef.getPricingRuleClass().getReferencedClass().newInstance();
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			logger.warn("Cannot load rule for classname " + classname, e);
+			logger.warn("Cannot load rule for {}", ruleDef, ex);
+			return null;
 		}
-		return null;
 	}
 
-	private final int getPricePrecision(@NonNull final PriceListId priceListId)
+	private final CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
 		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}

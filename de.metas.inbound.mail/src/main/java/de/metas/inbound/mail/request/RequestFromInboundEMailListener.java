@@ -80,6 +80,7 @@ public class RequestFromInboundEMailListener implements InboundEMailListener
 		request.setAD_Org_ID(config.getOrgId().getRepoId());
 		request.setR_RequestType_ID(config.getRequestTypeId().getRepoId());
 		request.setStartDate(TimeUtil.asTimestamp(email.getReceivedDate()));
+		request.setDateTrx(TimeUtil.asTimestamp(email.getReceivedDate()));
 
 		final ClientId adClientId = ClientId.ofRepoId(request.getAD_Client_ID());
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);

@@ -4,7 +4,9 @@ import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -15,6 +17,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -26,6 +29,8 @@ import lombok.NonNull;
  */
 public class PriceListVersion extends AbstractPriceListBasedRule
 {
+	private static final Logger logger = LogManager.getLogger(PriceListVersion.class);
+
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -47,7 +52,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(), ctxPriceListVersion);
 		if (productPrice == null)
 		{
-			log.trace("Not found (PLV)");
+			logger.trace("Not found (PLV)");
 			return;
 		}
 
@@ -68,7 +73,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
 		result.setTaxIncluded(priceList.isTaxIncluded());
-		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setPriceListVersionId(resultPriceListVersionId);
 		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
 		result.setCalculated(true);

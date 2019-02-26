@@ -95,7 +95,7 @@ public class EventLogService
 		final I_AD_EventLog eventLogRecord = retrieveOrCreateRecordOutOfTrx(event.getUuid());
 		eventLogRecord.setEventTime(Timestamp.from(event.getWhen()));
 		eventLogRecord.setEventData(eventString);
-		eventLogRecord.setEventTopicName(eventBus.getName());
+		eventLogRecord.setEventTopicName(eventBus.getTopicName());
 		eventLogRecord.setEventTypeName(eventBus.getType().toString());
 
 		save(eventLogRecord);

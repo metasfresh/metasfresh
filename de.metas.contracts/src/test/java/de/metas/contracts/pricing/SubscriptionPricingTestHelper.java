@@ -67,7 +67,8 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 
 	public ProductPriceBuilder newProductPriceBuilder(I_M_PriceList_Version priceListVersion)
 	{
-		return new ProductPriceBuilder(priceListVersion, getDefaultProduct());
+		return new ProductPriceBuilder(priceListVersion, getDefaultProduct())
+				.setTaxCategoryId(getTaxCategoryId());
 	}
 
 	public final I_C_Flatrate_Conditions createFlatrateTermConditions()

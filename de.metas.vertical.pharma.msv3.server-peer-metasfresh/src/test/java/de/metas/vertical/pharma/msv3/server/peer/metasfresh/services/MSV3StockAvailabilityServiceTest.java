@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.product.ProductCategoryId;
@@ -58,7 +59,8 @@ public class MSV3StockAvailabilityServiceTest
 		msv3StockAvailabilityService = new MSV3StockAvailabilityService(
 				new StockRepository(),
 				new MSV3ServerConfigService(),
-				new MSV3ServerPeerService(Optional.empty(), Optional.empty()));
+				new MSV3ServerPeerService(Optional.empty(), Optional.empty()),
+				new DocumentNoBuilderFactory(Optional.empty()));
 	}
 
 	@Test

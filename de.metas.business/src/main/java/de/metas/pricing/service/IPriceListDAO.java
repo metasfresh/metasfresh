@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
@@ -42,6 +43,7 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -60,6 +62,8 @@ public interface IPriceListDAO extends ISingletonService
 	I_M_PriceList getById(int priceListId);
 
 	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
+	
+	I_M_PriceList_Version getPriceListVersionByIdInTrx(PriceListVersionId priceListVersionId);
 
 	PriceListsCollection retrievePriceListsCollectionByPricingSystemId(PricingSystemId pricingSystemId);
 
@@ -134,9 +138,9 @@ public interface IPriceListDAO extends ISingletonService
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 
-	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(int priceListId, Date date);
+	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(PriceListId priceListId, Date date);
 
-	I_M_PriceList_Version retrieveLastCreatedPriceListVersion(int priceListId);
+	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
 	String getPricingSystemName(final PricingSystemId pricingSystemId);
 
@@ -146,7 +150,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 
-	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId);
+	Stream<I_M_ProductPrice> retrieveProductPrices(PriceListVersionId priceListVersionId, Set<ProductId> productIdsToExclude);
 
 	/**
 	 * Retrieves product prices records of the given price list version
@@ -158,5 +162,21 @@ public interface IPriceListDAO extends ISingletonService
 
 	List<PriceListVersionId> getPriceListVersionIdsUpToBase(final PriceListVersionId startPriceListVersionId);
 
+	I_M_PriceList_Version getCreatePriceListVersion(ProductPriceCreateRequest request);
+
 	I_M_PriceList getPriceListByPriceListVersionId(PriceListVersionId priceListVersionId);
+
+	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
+
+	I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion);
+
+	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(I_M_PriceList_Version priceListVersion);
+
+	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
+
+	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
+
+	void updateProductPrice(UpdateProductPriceRequest request);
+
+	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
 }

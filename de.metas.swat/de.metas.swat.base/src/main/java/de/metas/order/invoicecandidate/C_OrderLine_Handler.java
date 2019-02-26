@@ -66,6 +66,7 @@ import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -200,7 +201,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				ic,
-				orderLine.getC_TaxCategory_ID(),
+				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
 				orderLine.getM_Product_ID(),
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),

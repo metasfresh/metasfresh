@@ -1,5 +1,7 @@
 package de.metas.pricing.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -77,6 +79,7 @@ public class PricingTest
 					.build());
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
+			assertThat(result.isCalculated()).isTrue();
 			Assert.assertThat("not-Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(2)));
 		}
 

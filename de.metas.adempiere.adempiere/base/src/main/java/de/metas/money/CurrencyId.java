@@ -3,6 +3,9 @@ package de.metas.money;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -31,6 +34,7 @@ import lombok.Value;
 @Value
 public class CurrencyId implements RepoIdAware
 {
+	@JsonCreator
 	public static CurrencyId ofRepoId(final int repoId)
 	{
 		return new CurrencyId(repoId);
@@ -56,6 +60,13 @@ public class CurrencyId implements RepoIdAware
 	private CurrencyId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Currency_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public static boolean equals(final CurrencyId currencyId1, final CurrencyId currencyId2)

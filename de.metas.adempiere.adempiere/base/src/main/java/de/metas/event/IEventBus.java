@@ -43,7 +43,7 @@ public interface IEventBus
 	 * 
 	 * @return the (topic-) name of this event bus.
 	 */
-	String getName();
+	String getTopicName();
 
 	/**
 	 * 
