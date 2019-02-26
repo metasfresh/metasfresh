@@ -105,7 +105,7 @@ public class MElement extends X_C_Element
 		{
 			throw new FillMandatoryException("AD_Tree_ID");
 		}
-		final I_AD_Tree tree = InterfaceWrapperHelper.loadOutOfTrx(adTreeId, I_AD_Tree.class);
+		final I_AD_Tree tree = InterfaceWrapperHelper.load(adTreeId, I_AD_Tree.class);
 
 		final String treeType = tree.getTreeType();
 
