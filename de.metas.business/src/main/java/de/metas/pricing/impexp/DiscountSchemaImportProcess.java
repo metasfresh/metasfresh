@@ -1,11 +1,7 @@
 package de.metas.pricing.impexp;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -23,7 +19,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
 
-import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -198,34 +193,15 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
 
-		final String paymentDiscontString = importRecord.getPaymentTermValue();
-		if (!Check.isEmpty(paymentDiscontString))
-		{
-			final  BigDecimal paymentDiscount  = parseStringToBigDecimalUsingComma(paymentDiscontString);
-			schemaBreak.setPaymentDiscount(paymentDiscount);	
-		}
-        
 		//
+		if (importRecord.getDiscount() != null && importRecord.getDiscount().signum() > 0)
+		{
+			schemaBreak.setPaymentDiscount(importRecord.getDiscount());
+		}
 		schemaBreak.setM_Product_ID(importRecord.getM_Product_ID());
 		schemaBreak.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		//
 		setPricingFields(importRecord, schemaBreak);
-	}
-
-	private BigDecimal parseStringToBigDecimalUsingComma(final String paymentDiscount) 
-	{
-		final DecimalFormat df = new DecimalFormat();
-        final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setDecimalSeparator(',');
-        df.setDecimalFormatSymbols(symbols);
-        try
-		{
-			return new BigDecimal(df.parse(paymentDiscount).toString());
-		}
-		catch (ParseException e)
-		{
-			throw new AdempiereException("Payment term value has wrong format! ");
-		}
 	}
 
 	private void setPricingFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
