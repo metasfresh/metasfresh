@@ -1,7 +1,7 @@
 /// <reference types="Cypress" />
 
-import { BPartner, BPartnerLocation, BPartnerContact } from '../support/utils/bpartner';
-import { DiscountSchema } from '../support/utils/discountschema';
+import { BPartner, BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner';
+import { DiscountSchema } from '../../support/utils/discountschema';
 
 describe('purchase - vendor spec', function() {
   before(function() {
