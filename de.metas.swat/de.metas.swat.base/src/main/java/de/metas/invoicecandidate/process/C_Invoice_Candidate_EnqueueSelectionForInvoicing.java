@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.compiere.util.DB;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
@@ -155,6 +156,9 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		// Create selection and return how many items were added
 		final PInstanceId adPInstanceId = getPinstanceId();
 		Check.assumeNotNull(adPInstanceId, "adPInstanceId is not null");
+		
+		DB.deleteT_Selection(adPInstanceId, ITrx.TRXNAME_ThreadInherited);
+		
 		final int selectionCount = queryBuilder
 				.create()
 				.setApplyAccessFilterRW(false) // 04471: enqueue only those records on which user has access to

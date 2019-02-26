@@ -264,8 +264,8 @@ public class OrderFastInput extends CalloutEngine
 	}
 
 	public static I_C_OrderLine addOrderLine(
-			final Properties ctx, 
-			final I_C_Order order, 
+			final Properties ctx,
+			final I_C_Order order,
 			final Consumer<I_C_OrderLine> orderLineCustomizer)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -301,10 +301,14 @@ public class OrderFastInput extends CalloutEngine
 		final BPartnerId partnerId = BPartnerId.ofRepoId(ol.getC_BPartner_ID());
 		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
 
+		//
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
 		// should use priceEntered or a computed price.
-		ol.setPriceEntered(BigDecimal.ZERO);
+		if (!ol.isManualPrice())
+		{
+			ol.setPriceEntered(BigDecimal.ZERO);
+		}
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(ol)
 				.resultUOM(ResultUOM.PRICE_UOM)
@@ -312,6 +316,7 @@ public class OrderFastInput extends CalloutEngine
 				.updateLineNetAmt(true)
 				.build());
 
+		//
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order
 		final String dontUpdateOrderLock = OL_DONT_UPDATE_ORDER + order.getC_Order_ID();
 		Env.setContext(ctx, dontUpdateOrderLock, true);

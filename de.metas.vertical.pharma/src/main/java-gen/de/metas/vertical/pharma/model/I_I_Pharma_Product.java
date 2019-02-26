@@ -3341,6 +3341,29 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Price Created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPriceCreated (boolean IsPriceCreated);
+
+	/**
+	 * Get Price Created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPriceCreated();
+
+    /** Column definition for IsPriceCreated */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_IsPriceCreated = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "IsPriceCreated", null);
+    /** Column name IsPriceCreated */
+    public static final String COLUMNNAME_IsPriceCreated = "IsPriceCreated";
+
+	/**
 	 * Set Price List KAEP.
 	 *
 	 * <br>Type: Table

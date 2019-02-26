@@ -41,6 +41,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 
 public interface IInvoiceBL extends ISingletonService
@@ -343,7 +344,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param invoiceLine
 	 * @return
 	 */
-	int getTaxCategory(I_C_InvoiceLine invoiceLine);
+	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, de.metas.document.service.ICopyHandler)}, but makes sure that the correct types are used.

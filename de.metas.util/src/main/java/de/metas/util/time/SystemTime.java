@@ -32,6 +32,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import javax.annotation.Nullable;
+
 /**
  * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
  * unpredictable") by Lasse Koskela.
@@ -137,9 +139,8 @@ public final class SystemTime
 	 * @param newTimeSource
 	 *            the given TimeSource will be used for the time returned by the
 	 *            methods of this class (unless it is null).
-	 *
 	 */
-	public static void setTimeSource(TimeSource newTimeSource)
+	public static void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
 	}

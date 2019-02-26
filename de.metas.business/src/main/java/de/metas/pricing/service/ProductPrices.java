@@ -1,5 +1,9 @@
 package de.metas.pricing.service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -10,7 +14,9 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -94,7 +100,7 @@ public class ProductPrices
 
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
-		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionById(priceListVersionId);
+		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(priceListVersion, productId);
@@ -204,6 +210,13 @@ public class ProductPrices
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper)
 	{
+		if (startPriceListVersion == null)
+		{
+			return null;
+		}
+
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+
 		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
 
 		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
@@ -221,27 +234,37 @@ public class ProductPrices
 				return productPrice;
 			}
 
-			currentPriceListVersion = getBasePriceListVersionOrNull(currentPriceListVersion);
+			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion);
 		}
 
 		return null;
 	}
 
-	private static I_M_PriceList_Version getBasePriceListVersionOrNull(final I_M_PriceList_Version priceListVersion)
+	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
-		if (!priceListVersion.isFallbackToBasePriceListPrices())
+		final BigDecimal price = ppRequest.getPrice().setScale(2);
+		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, ProductId.ofRepoId(ppRequest.getProductId()));
+		if (pp == null)
 		{
-			return null;
+			pp = newInstance(I_M_ProductPrice.class, plv);
+		}
+		// do not update the price with value 0; 0 means that no price was changed
+		else if (pp != null && price.signum()== 0)
+		{
+			return pp;
 		}
 
-		final PriceListVersionId basePriceListVersionId = PriceListVersionId.ofRepoIdOrNull(priceListVersion.getM_Pricelist_Version_Base_ID());
-		if (basePriceListVersionId == null)
-		{
-			return null;
-		}
+		pp.setM_PriceList_Version(plv);
+		pp.setM_Product_ID(ppRequest.getProductId());
+		pp.setSeqNo(10);
+		pp.setPriceLimit(price);
+		pp.setPriceList(price);
+		pp.setPriceStd(price);
+		final I_C_UOM uom = InterfaceWrapperHelper.load(ppRequest.getProductId(), I_M_Product.class).getC_UOM();
+		pp.setC_UOM(uom);
+		pp.setC_TaxCategory_ID(ppRequest.getTaxCategoryId());
+		save(pp);
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		return priceListsRepo.getPriceListVersionById(basePriceListVersionId);
+		return pp;
 	}
-
 }

@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -39,16 +36,16 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(exclude= {"_ctx", "invoiceCandDAO"})
 /*package*/class InvoiceCandRecomputeTagger implements IInvoiceCandRecomputeTagger
 {
 	// services
-	@ToStringBuilder(skip = true)
 	private final transient InvoiceCandDAO invoiceCandDAO;
 
 	//
 	// Parameters
-	@ToStringBuilder(skip = true)
 	private Properties _ctx;
 	private String _trxName;
 	private InvoiceCandRecomputeTag _recomputeTagToUseForTagging;
@@ -66,12 +63,6 @@ import lombok.NonNull;
 		super();
 		Check.assumeNotNull(invoiceCandDAO, "invoiceCandDAO not null");
 		this.invoiceCandDAO = invoiceCandDAO;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	@Override

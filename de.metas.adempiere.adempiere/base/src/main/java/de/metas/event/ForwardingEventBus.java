@@ -33,9 +33,9 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public String getName()
+	public String getTopicName()
 	{
-		return delegate().getName();
+		return delegate().getTopicName();
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3EventVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,14 +41,14 @@ public class MSV3EventVersionGenerator
 
 	private final IDocumentNoBuilder documentNoBuilder;
 
-	public MSV3EventVersionGenerator()
+	public MSV3EventVersionGenerator(@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
 	{
 		final int eventVersionAdSequenceId = Adempiere.isUnitTestMode() ? NO_AD_SEQUENCE_ID_FOR_TESTING : AD_SEQUENCE_ID;
 
 		final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class)
 				.retriveDocumentSequenceInfo(eventVersionAdSequenceId);
 
-		this.documentNoBuilder = Services.get(IDocumentNoBuilderFactory.class)
+		this.documentNoBuilder = documentNoBuilderFactory
 				.createDocumentNoBuilder()
 				.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()))
 				.setDocumentSequenceInfo(documentSeqInfo)

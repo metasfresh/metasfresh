@@ -95,7 +95,7 @@ public final class ProcessInfo implements Serializable
 
 		adClientId = builder.getAdClientId();
 		Check.assumeNotNull(adClientId, "Parameter adClientId is not null");
-		
+
 		adOrgId = builder.getAdOrgId();
 		adUserId = builder.getAdUserId();
 		adRoleId = builder.getAD_Role_ID();
@@ -107,6 +107,7 @@ public final class ProcessInfo implements Serializable
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
+		translateExcelHeaders = builder.isTranslateExcelHeaders();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
 
@@ -174,6 +175,7 @@ public final class ProcessInfo implements Serializable
 
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
+	private final boolean translateExcelHeaders;
 	private final int adWorkflowId;
 	private final boolean serverProcess;
 
@@ -327,6 +329,11 @@ public final class ProcessInfo implements Serializable
 		return sqlStatement;
 	}
 
+	public boolean isTranslateExcelHeaders()
+	{
+		return translateExcelHeaders;
+	}
+
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
@@ -466,7 +473,7 @@ public final class ProcessInfo implements Serializable
 	{
 		return title;
 	}
-	
+
 	public ClientId getClientId()
 	{
 		return adClientId;
@@ -1158,6 +1165,12 @@ public final class ProcessInfo implements Serializable
 			{
 				return Optional.of(sqlStatement.trim());
 			}
+		}
+
+		private boolean isTranslateExcelHeaders()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			return process != null ? process.isTranslateExcelHeaders() : false;
 		}
 
 		private Optional<String> getReportTemplate()

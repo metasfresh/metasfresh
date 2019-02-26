@@ -1,15 +1,23 @@
 package de.metas.bpartner.product.stats;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
+import javax.annotation.Nullable;
+
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.util.time.SystemTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -49,6 +57,7 @@ public class BPartnerProductStats
 
 	@Setter(AccessLevel.PACKAGE)
 	private int repoId;
+
 	@NonNull
 	private final BPartnerId bpartnerId;
 	@NonNull
@@ -56,8 +65,34 @@ public class BPartnerProductStats
 
 	@Setter(AccessLevel.PACKAGE)
 	private ZonedDateTime lastShipmentDate;
+
 	@Setter(AccessLevel.PACKAGE)
 	private ZonedDateTime lastReceiptDate;
+
+	@Setter(AccessLevel.PACKAGE)
+	private LastInvoiceInfo lastSalesInvoice;
+
+	public Integer getLastReceiptInDays()
+	{
+		return calculateDaysFrom(getLastReceiptDate());
+	}
+
+	public Integer getLastShipmentInDays()
+	{
+		return calculateDaysFrom(getLastShipmentDate());
+	}
+
+	private static Integer calculateDaysFrom(final ZonedDateTime date)
+	{
+		if (date != null)
+		{
+			return (int)Duration.between(date, SystemTime.asZonedDateTime()).toDays();
+		}
+		else
+		{
+			return null;
+		}
+	}
 
 	public void updateLastReceiptDate(@NonNull final ZonedDateTime receiptDate)
 	{
@@ -85,4 +120,44 @@ public class BPartnerProductStats
 		}
 	}
 
+	public void updateLastSalesInvoiceInfo(@NonNull final LastInvoiceInfo lastSalesInvoice)
+	{
+		if (lastSalesInvoice.isAfter(this.lastSalesInvoice))
+		{
+			this.lastSalesInvoice = lastSalesInvoice;
+		}
+	}
+
+	@Value
+	@Builder
+	public static class LastInvoiceInfo
+	{
+		@NonNull
+		private InvoiceId invoiceId;
+		@NonNull
+		private LocalDate invoiceDate;
+
+		@NonNull
+		private Money price;
+
+		public boolean isAfter(@Nullable LastInvoiceInfo other)
+		{
+			if (other == null)
+			{
+				return true;
+			}
+			else if (this.invoiceDate.compareTo(other.invoiceDate) > 0)
+			{
+				return true;
+			}
+			else if (this.invoiceDate.compareTo(other.invoiceDate) == 0)
+			{
+				return this.invoiceId.getRepoId() > other.invoiceId.getRepoId();
+			}
+			else // if(this.invoiceDate.compareTo(other.invoiceDate) < 0)
+			{
+				return false;
+			}
+		}
+	}
 }

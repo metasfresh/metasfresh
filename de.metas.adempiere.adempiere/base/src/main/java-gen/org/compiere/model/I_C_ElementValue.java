@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -135,6 +119,35 @@ public interface I_C_ElementValue
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Kostenstelle.
+	 * Kostenstelle
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Kostenstelle.
+	 * Kostenstelle
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Activity_ID();
+
+	public org.compiere.model.I_C_Activity getC_Activity();
+
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
+
+    /** Column definition for C_Activity_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Activity>(I_C_ElementValue.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+    /** Column name C_Activity_ID */
+    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
 	 * Set Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
 	 *
@@ -247,6 +260,35 @@ public interface I_C_ElementValue
     public static final String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
 	/**
+	 * Set Steuer.
+	 * Steuerart
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Steuer.
+	 * Steuerart
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Tax_ID();
+
+	public org.compiere.model.I_C_Tax getC_Tax();
+
+	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
+
+    /** Column definition for C_Tax_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax>(I_C_ElementValue.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_ID */
+    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -275,35 +317,6 @@ public interface I_C_ElementValue
     public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_AD_User>(I_C_ElementValue.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Steuer.
-	 * Steuerart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Steuer.
-	 * Steuerart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Tax_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax();
-
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
-
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_ElementValue, org.compiere.model.I_C_Tax>(I_C_ElementValue.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_ID */
-    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Set Beschreibung.

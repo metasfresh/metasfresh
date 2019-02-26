@@ -1,5 +1,7 @@
 package org.adempiere.ad.column.callout;
 
+import java.util.regex.Pattern;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -189,7 +191,9 @@ public class AD_Column
 			updateQtyColumn(column);
 		}
 
-		else if (columnName.toUpperCase().startsWith("IS"))
+		else if (columnName.toUpperCase().startsWith("IS")
+				|| Pattern.matches("(Allow)[A-Z].*", columnName)
+				|| Pattern.matches("(Has)[A-Z].*", columnName))
 		{
 			column.setAD_Reference_ID(DisplayType.YesNo);
 

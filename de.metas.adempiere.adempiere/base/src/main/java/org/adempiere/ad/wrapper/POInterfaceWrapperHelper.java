@@ -165,7 +165,9 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 				return value;
 			}
 		}
+
 		//
+		final boolean useOldValues = POWrapper.isOldValues(model);
 		final PO po = POWrapper.getStrictPO(model);
 		final int idxColumnName = po.get_ColumnIndex(columnName);
 		if (idxColumnName < 0)
@@ -179,9 +181,19 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 				return null;
 			}
 		}
-		@SuppressWarnings("unchecked")
-		final T value = (T)po.get_Value(idxColumnName);
-		return value;
+		
+		if(useOldValues)
+		{
+			@SuppressWarnings("unchecked")
+			final T value = (T)po.get_ValueOld(idxColumnName);
+			return value;
+		}
+		else
+		{
+			@SuppressWarnings("unchecked")
+			final T value = (T)po.get_Value(idxColumnName);
+			return value;
+		}
 	}
 
 	@Override

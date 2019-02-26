@@ -12,7 +12,8 @@ SELECT * FROM
 			WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '') THEN av.value -- Herkunft
 			WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '') THEN ai.Value -- MHD
 			WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL) THEN 'MHD: '|| to_char(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
-			WHEN a.AttributeValueType = 'S' AND (ai.value IS NOT NULL AND ai.value != '') THEN ai.Value
+			WHEN a.attributevaluetype = 'S' AND COALESCE(TRIM(ai.value),'') != '' THEN ai.value
+			WHEN a.attributevaluetype = 'N' AND ai.valuenumber IS NOT NULL AND ai.valuenumber > 0 THEN ai.valuenumber::bpchar
 			WHEN a.Value = 'M_Material_Tracking_ID' 
 				THEN (SELECT mt.lot FROM m_material_tracking mt 
 					WHERE mt.m_material_tracking_id = ai.value::numeric  )
@@ -37,6 +38,5 @@ SELECT * FROM
 ) att
 WHERE COALESCE( ai_value, '') != ''
 ;
-
 
 COMMENT ON VIEW Report.fresh_Attributes IS 'retrieves Attributes in the way they are needed for the jasper reports';

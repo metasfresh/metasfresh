@@ -287,8 +287,8 @@ public interface I_AD_User
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Anrede.
-	 * Greeting to print on correspondence
+	 * Set Anrede (ID).
+	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -297,8 +297,8 @@ public interface I_AD_User
 	public void setC_Greeting_ID (int C_Greeting_ID);
 
 	/**
-	 * Get Anrede.
-	 * Greeting to print on correspondence
+	 * Get Anrede (ID).
+	 * Anrede zum Druck auf Korrespondenz
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -905,6 +905,29 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsLoginAsHostKey = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsLoginAsHostKey", null);
     /** Column name IsLoginAsHostKey */
     public static final String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
+
+	/**
+	 * Set Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsNewsletter (boolean IsNewsletter);
+
+	/**
+	 * Get Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isNewsletter();
+
+    /** Column definition for IsNewsletter */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsNewsletter = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsNewsletter", null);
+    /** Column name IsNewsletter */
+    public static final String COLUMNNAME_IsNewsletter = "IsNewsletter";
 
 	/**
 	 * Set Einkaufskontakt.

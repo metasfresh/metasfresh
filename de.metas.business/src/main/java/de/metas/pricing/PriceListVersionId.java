@@ -2,7 +2,6 @@ package de.metas.pricing;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -44,11 +43,11 @@ public class PriceListVersionId implements RepoIdAware
 
 	private PriceListVersionId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_PriceList_Version_ID");
 	}
 
-	public static int toRepoId(final PriceListVersionId priceListVersionId)
+	public static int toRepoId(final PriceListVersionId id)
 	{
-		return priceListVersionId != null ? priceListVersionId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 }

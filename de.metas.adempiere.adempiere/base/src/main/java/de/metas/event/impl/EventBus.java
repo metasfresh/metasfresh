@@ -64,7 +64,7 @@ final class EventBus implements IEventBus
 		}
 	};
 
-	private final String name;
+	private final String topicName;
 	private com.google.common.eventbus.EventBus eventBus;
 
 	private boolean destroyed = false;
@@ -84,7 +84,7 @@ final class EventBus implements IEventBus
 			@Nullable final ExecutorService executor)
 	{
 		this.executorOrNull = executor;
-		this.name = Check.assumeNotEmpty(topicName, "name not empty");
+		this.topicName = Check.assumeNotEmpty(topicName, "name not empty");
 
 		if (executor == null)
 		{
@@ -101,16 +101,16 @@ final class EventBus implements IEventBus
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("name", name)
+				.add("topicName", topicName)
 				.add("type", type)
 				.add("destroyed", destroyed ? Boolean.TRUE : null)
 				.toString();
 	}
 
 	@Override
-	public final String getName()
+	public final String getTopicName()
 	{
-		return name;
+		return topicName;
 	}
 
 	/**

@@ -7,6 +7,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
+import de.metas.tax.api.TaxCategoryId;
 
 /*
  * #%L
@@ -43,9 +44,9 @@ public class HUProductPriceBuilder extends ProductPriceBuilder
 	public I_M_ProductPrice build()
 	{
 		final I_M_ProductPrice pp = InterfaceWrapperHelper.create(super.build(), I_M_ProductPrice.class);
-		
+
 		pp.setM_HU_PI_Item_Product(piItemProduct);
-		
+
 		InterfaceWrapperHelper.save(pp);
 		return pp;
 	}
@@ -53,6 +54,13 @@ public class HUProductPriceBuilder extends ProductPriceBuilder
 	public HUProductPriceBuilder setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piItemProduct)
 	{
 		this.piItemProduct = piItemProduct;
+		return this;
+	}
+
+	@Override
+	public HUProductPriceBuilder setTaxCategoryId(final TaxCategoryId taxCategoryId)
+	{
+		super.setTaxCategoryId(taxCategoryId);
 		return this;
 	}
 
