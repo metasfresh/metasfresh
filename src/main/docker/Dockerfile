@@ -30,7 +30,6 @@ RUN cd /opt/metasfresh/metasfresh-webui-api \
  && (unzip -q /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api.jar || echo "Ignore exit code $? because spring boot's uber jar starts with a shell script") \
  && rm /opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api.jar
 
-COPY configs/logback-spring.xml /opt/metasfresh/metasfresh-webui-api/
 COPY configs/metasfresh.properties /opt/metasfresh/metasfresh-webui-api/
 COPY ./start_metasfresh-webui-api_docker.sh /opt/metasfresh/metasfresh-webui-api/
 
