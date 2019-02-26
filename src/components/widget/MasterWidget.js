@@ -224,6 +224,12 @@ class MasterWidget extends Component {
       });
   };
 
+  handleBlurWidget = () => {
+    const { onBlurWidget, fieldName } = this.props;
+
+    onBlurWidget && onBlurWidget(fieldName);
+  };
+
   render() {
     const { handleBackdropLock } = this.props;
     const { updated, data } = this.state;
@@ -242,6 +248,7 @@ class MasterWidget extends Component {
         handleProcess={this.handleProcess}
         setEditedFlag={this.setEditedFlag}
         handleZoomInto={this.handleZoomInto}
+        onBlurWidget={this.handleBlurWidget}
       />
     );
   }
