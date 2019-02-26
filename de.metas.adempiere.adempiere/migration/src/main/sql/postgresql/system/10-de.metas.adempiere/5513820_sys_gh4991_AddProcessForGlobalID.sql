@@ -954,3 +954,14 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541062,541180,540674,TO_TIMESTAMP('2019-02-26 17:30:16','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2019-02-26 17:30:16','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
 ;
 
+
+-- 2019-02-26T18:12:11.513
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=1,Updated=TO_TIMESTAMP('2019-02-26 18:12:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541027
+;
+
+-- 2019-02-26T18:12:15.022
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=2,Updated=TO_TIMESTAMP('2019-02-26 18:12:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541028
+;
+
