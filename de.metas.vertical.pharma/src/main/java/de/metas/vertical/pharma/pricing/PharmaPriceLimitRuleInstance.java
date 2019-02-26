@@ -9,6 +9,7 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -22,7 +23,6 @@ import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.PharmaCustomerPermission;
@@ -213,7 +213,7 @@ class PharmaPriceLimitRuleInstance
 		private BigDecimal priceAddAmt;
 		private BigDecimal discountPercentToSubtract;
 		private BigDecimal paymentTermDiscountPercentToAdd;
-		private int precision;
+		private CurrencyPrecision precision;
 
 		@lombok.Builder
 		private PriceLimit(
@@ -221,10 +221,8 @@ class PharmaPriceLimitRuleInstance
 				@lombok.NonNull final BigDecimal priceAddAmt,
 				@lombok.NonNull final BigDecimal discountPercentToSubtract,
 				@lombok.NonNull final BigDecimal paymentTermDiscountPercentToAdd,
-				@lombok.NonNull final Integer precision)
+				@lombok.NonNull final CurrencyPrecision precision)
 		{
-			Check.assume(precision >= 0, "precision >= 0");
-
 			this.basePrice = NumberUtils.stripTrailingDecimalZeros(basePrice);
 			this.priceAddAmt = NumberUtils.stripTrailingDecimalZeros(priceAddAmt);
 			this.discountPercentToSubtract = NumberUtils.stripTrailingDecimalZeros(discountPercentToSubtract);
@@ -239,7 +237,7 @@ class PharmaPriceLimitRuleInstance
 					.divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 			if (multiplier.compareTo(Env.ONEHUNDRED) != 0)
 			{
-				value = value.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
+				value = precision.round(value.multiply(multiplier));
 			}
 
 			valueAsBigDecimal = value;

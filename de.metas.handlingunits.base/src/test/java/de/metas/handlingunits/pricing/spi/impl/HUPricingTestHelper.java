@@ -8,6 +8,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.pricing.service.impl.PricingTestHelper;
 
@@ -37,7 +38,7 @@ public class HUPricingTestHelper extends PricingTestHelper
 {
 	public final I_M_HU_PI_Item_Product defaultPIItemProduct1;
 	public final I_M_HU_PI_Item_Product defaultPIItemProduct2;
-	
+
 	static
 	{
 		de.metas.handlingunits.model.validator.Main.setupPricing();
@@ -52,26 +53,20 @@ public class HUPricingTestHelper extends PricingTestHelper
 	@Override
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		return ImmutableList.copyOf(new String[] {
-				"de.metas.handlingunits.pricing.spi.impl.HUPricing" //
-				, "de.metas.pricing.attributebased.impl.AttributePricing" //
-				, "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB" //
-				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceList" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceList" //
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
-				// , "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule" //
-				, "de.metas.flatrate.pricing.spi.impl.ContractDiscount" //
-		});
+		return ImmutableList.of(
+				HUPricing.class.getName(),
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
+				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				de.metas.pricing.rules.Discount.class.getName(),
+				ContractDiscount.class.getName());
 	}
-	
+
 	@Override
 	public HUProductPriceBuilder newProductPriceBuilder()
 	{
-		return new HUProductPriceBuilder(getDefaultPriceListVerion(), getDefaultProduct());
+		return new HUProductPriceBuilder(getDefaultPriceListVerion(), getDefaultProduct())
+				.setTaxCategoryId(getTaxCategoryId());
 	}
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final String name)

@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.logging.LogManager;
+import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -146,7 +147,10 @@ public class OrderCreateRequestRabbitMQListener
 						.qty(item.getQty().getValueAsBigDecimal())
 						.uomId(uomId)
 						.huPIItemProductId(huPIItemProductId)
+
 						.dataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
+						.dataDestInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME)
+
 						.build());
 			}
 		}

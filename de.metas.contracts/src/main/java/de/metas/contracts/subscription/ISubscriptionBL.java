@@ -37,6 +37,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.pricing.PricingSystemId;
@@ -134,4 +135,6 @@ public interface ISubscriptionBL extends ISingletonService
 	I_C_Flatrate_Term createTermForOLCand(Properties ctx, I_C_OLCand olCand, PInstanceId AD_PInstance_ID, boolean completeIt, String trxName);
 
 	boolean isActiveTerm(I_C_Flatrate_Term term);
+
+	I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(I_C_Order order);
 }

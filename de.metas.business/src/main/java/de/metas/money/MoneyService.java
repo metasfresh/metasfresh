@@ -7,10 +7,11 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import de.metas.currency.Amount;
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Check;
@@ -127,5 +128,10 @@ public class MoneyService
 				.append(" ")
 				.append(currency.getThreeLetterCode())
 				.build();
+	}
+
+	public Amount toAmount(@NonNull final Money money)
+	{
+		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getThreeLetterCode());
 	}
 }

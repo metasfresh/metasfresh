@@ -45,6 +45,7 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,7 +84,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		// 05265
 		ic.setIsSOTrx(isSOTrx);
 
-		final int taxCategoryId = term.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
 		ic.setQtyOrdered(qty);

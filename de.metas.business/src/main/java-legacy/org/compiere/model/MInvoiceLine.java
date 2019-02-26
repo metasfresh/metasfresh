@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,6 +39,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
 import de.metas.util.Services;
 
 /**
@@ -565,15 +566,15 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// m_C_BPartner_Location_ID, // should be bill to
 		// m_C_BPartner_Location_ID, m_IsSOTrx);
 
-		final int taxCategoryId = getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(getC_TaxCategory_ID());
 
-		if (taxCategoryId <= 0)
+		if (taxCategoryId == null)
 		{
 			log.error("No Tax Category found");
 			return false;
 		}
 
-		setC_TaxCategory_ID(taxCategoryId);
+		setC_TaxCategory_ID(taxCategoryId.getRepoId());
 
 		//
 		// Infos from invoice header
@@ -1038,7 +1039,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class);
 
-				taxCategoryID = Services.get(IInvoiceBL.class).getTaxCategory(invoiceLine);
+				taxCategoryID = TaxCategoryId.toRepoId(Services.get(IInvoiceBL.class).getTaxCategoryId(invoiceLine));
 			}
 
 			setC_TaxCategory_ID(taxCategoryID);

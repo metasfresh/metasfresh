@@ -1,7 +1,5 @@
 package de.metas.ordercandidate.spi.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -44,7 +42,9 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Validates and sets the given OLCand's pricing data.
@@ -95,21 +95,24 @@ public class OLCandPriceValidator implements IOLCandValidator
 			}
 			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 
-			if (pricingResult == null || pricingResult.getC_TaxCategory_ID() <= 0)
+			if (pricingResult == null || pricingResult.getTaxCategoryId() == null)
 			{
 				olCand.setIsError(true);
 				final String msg = "@NotFound@ @C_TaxCategory_ID@";
 				olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg));
 				return false;
 			}
-			olCand.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
-
-			// set the internal pricing info for the user's information, if we have it
-			olCand.setPriceInternal(pricingResult.getPriceStd());
-			olCand.setPrice_UOM_Internal_ID(pricingResult.getPrice_UOM_ID());
-
-			// further validation on manual price is not needed
-			return true;
+			else
+			{
+				olCand.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
+	
+				// set the internal pricing info for the user's information, if we have it
+				olCand.setPriceInternal(pricingResult.getPriceStd());
+				olCand.setPrice_UOM_Internal_ID(pricingResult.getPrice_UOM_ID());
+	
+				// further validation on manual price is not needed
+				return true;
+			}
 		}
 
 		// task 08072
@@ -153,7 +156,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 		olCand.setPriceActual(priceInternal);
 		olCand.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
-		olCand.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		olCand.setC_TaxCategory_ID(TaxCategoryId.toRepoId(pricingResult.getTaxCategoryId()));
 
 		olCand.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
 

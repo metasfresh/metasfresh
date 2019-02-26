@@ -130,7 +130,7 @@ public interface I_AD_Tab
 	 * Set System-Element.
 	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -140,7 +140,7 @@ public interface I_AD_Tab
 	 * Get System-Element.
 	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -353,6 +353,29 @@ public interface I_AD_Tab
     public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window>(I_AD_Tab.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
     /** Column name AD_Window_ID */
     public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+
+	/**
+	 * Set Schnelleingabe abschalten.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAllowQuickInput (boolean AllowQuickInput);
+
+	/**
+	 * Get Schnelleingabe abschalten.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAllowQuickInput();
+
+    /** Column definition for AllowQuickInput */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_AllowQuickInput = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "AllowQuickInput", null);
+    /** Column name AllowQuickInput */
+    public static final String COLUMNNAME_AllowQuickInput = "AllowQuickInput";
 
 	/**
 	 * Set Speicherwarnung.

@@ -111,6 +111,11 @@ public class ProcessPickingCandidatesCommand
 	{
 		pickingCandidate.assertDraft();
 
+		if (pickingCandidate.isRejectedToPick())
+		{
+			return; // OK
+		}
+
 		if (pickingCandidate.getPackedToHuId() != null)
 		{
 			throw new AdempiereException("Picking candidate shall not be already packed: " + pickingCandidate);

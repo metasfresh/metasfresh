@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -39,6 +40,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -278,6 +280,13 @@ public class CountryDAO implements ICountryDAO
 
 		return InterfaceWrapperHelper.getModelTranslationMap(country)
 				.getColumnTrl(I_C_Country.COLUMNNAME_Name, country.getName());
+	}
+
+	@Override
+	public Optional<CurrencyId> getCountryCurrencyId(@NonNull final CountryId countryId)
+	{
+		final I_C_Country country = getById(countryId);
+		return CurrencyId.optionalOfRepoId(country.getC_Currency_ID());
 	}
 
 	private static final class IndexedCountries

@@ -2,8 +2,6 @@ package de.metas.contracts.subscription.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.contracts
@@ -104,10 +102,12 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductPA;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class SubscriptionBL implements ISubscriptionBL
 {
@@ -179,7 +179,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		save(newTerm);
 
 		linkContractsIfNeeded(newTerm);
-		
+
 		if (completeIt)
 		{
 			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
@@ -203,16 +203,16 @@ public class SubscriptionBL implements ISubscriptionBL
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
-		newTerm.setM_PricingSystem_ID(computed.getPricingSystemId());
-		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId());
+		newTerm.setM_PricingSystem_ID(PricingSystemId.getRepoId(computed.getPricingSystemId()));
+		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId().getRepoId());
 		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
 	}
 
 	@lombok.Value
 	private static class PricingSystemTaxCategoryAndIsTaxIncluded
 	{
-		private int pricingSystemId;
-		private int taxCategoryId;
+		private PricingSystemId pricingSystemId;
+		private TaxCategoryId taxCategoryId;
 		private boolean isTaxIncluded;
 	}
 
@@ -222,11 +222,19 @@ public class SubscriptionBL implements ISubscriptionBL
 		if (cond.getM_PricingSystem_ID() > 0)
 		{
 			final IPricingResult pricingInfo = calculateFlatrateTermPrice(ol, newTerm);
-			return new PricingSystemTaxCategoryAndIsTaxIncluded(cond.getM_PricingSystem_ID(), pricingInfo.getC_TaxCategory_ID(), pricingInfo.isTaxIncluded());
+			return new PricingSystemTaxCategoryAndIsTaxIncluded(
+					PricingSystemId.ofRepoId(cond.getM_PricingSystem_ID()),
+					pricingInfo.getTaxCategoryId(),
+					pricingInfo.isTaxIncluded());
 		}
-
-		final org.compiere.model.I_C_Order order = ol.getC_Order();
-		return new PricingSystemTaxCategoryAndIsTaxIncluded(order.getM_PricingSystem_ID(), ol.getC_TaxCategory_ID(), order.isTaxIncluded());
+		else
+		{
+			final org.compiere.model.I_C_Order order = ol.getC_Order();
+			return new PricingSystemTaxCategoryAndIsTaxIncluded(
+					PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()),
+					TaxCategoryId.ofRepoIdOrNull(ol.getC_TaxCategory_ID()),
+					order.isTaxIncluded());
+		}
 	}
 
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -248,14 +256,13 @@ public class SubscriptionBL implements ISubscriptionBL
 		{
 			correspondingTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
 			save(correspondingTerm);
-			
-			// set correct the dates by the previous flatrate term
-			newTerm.setStartDate(TimeUtil.addDays(correspondingTerm.getEndDate(), 1));
+
+			// set correct the master date by the previous flatrate term
 			newTerm.setMasterStartDate(correspondingTerm.getMasterStartDate());
 			save(newTerm);
 		}
 	}
-	
+
 	@Override
 	public int createMissingTermsForOLCands(
 			final Properties ctx,
@@ -953,7 +960,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderId(orderId);
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
@@ -972,6 +979,15 @@ public class SubscriptionBL implements ISubscriptionBL
 		return topTerm == null ? suitableTerm : topTerm;
 	}
 
+	@Override
+	public I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(@NonNull final de.metas.contracts.order.model.I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
+		return orderTerms.isEmpty() ? null : orderTerms.get(0);
+	}
 
 	@Override
 	public boolean isActiveTerm(@NonNull final I_C_Flatrate_Term term)

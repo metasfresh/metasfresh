@@ -10,6 +10,60 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.93
+# Features
+* metasfresh
+  * [#4967](https://github.com/metasfresh/metasfresh/issues/4967) Warehouse Customization: Picking
+
+* metasfresh-webui-api
+  * [#1154](https://github.com/metasfresh/metasfresh-webui-api/issues/1154) Take out "Back" action from quick actions in "More products..." modal
+  * [#1155](https://github.com/metasfresh/metasfresh-webui-api/issues/1155) Support providing shortcuts for processes
+
+* metasfresh-webui-frontend 
+  * [#2182](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2182) Back button for modals
+  * [#2183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2183) frontend: Scan using camera shall be translatable
+  * [#2193](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2193) View quick actions: provide viewProfileId when calling /quickActions endpoint
+
+# Fixes
+* metasfresh
+  * [#4964](https://github.com/metasfresh/metasfresh/issues/4964) Services.get(IDocumentNoBuilderFactory.class) calls the wrong constructor
+  * [#4976](https://github.com/metasfresh/metasfresh/issues/4976) M_DiscountSchemaBreak.PriceBase shall be nullable
+
+* metasfresh-dist
+  * [#57](https://github.com/metasfresh/metasfresh-dist/issues/57) PostgreSQL applying our migration scripts not working anymore
+
+# metasfresh 5.92
+# Features
+* metasfresh
+  * [#4916](https://github.com/metasfresh/metasfresh/issues/4916) Checkbox Newsletter in der Neuaufnahme anzeigen
+  * [#4952](https://github.com/metasfresh/metasfresh/issues/4952) Implement Campain Pricing Rule
+  * [#4953](https://github.com/metasfresh/metasfresh/issues/4953) Add taxId to function docs_generics_org_report
+
+* metasfresh-webui-api
+  * [#1142](https://github.com/metasfresh/metasfresh-webui-api/issues/1142) Make Issue CUs from Source HU work for Multi Select
+  * [#1148](https://github.com/metasfresh/metasfresh-webui-api/issues/1148) Products proposal: display the prices paid by other customers
+
+* metasfresh-webui-frontend
+  * [#2147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2147) Display process descriptions that are provided by the API
+  * [#2157](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2157) frontend: Document included tab: pluggable actions to start a process
+
+# Fix
+* metasfresh-webui-frontend
+  * [#2145](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2145) Model view: row no longer refreshed
+  * [#2160](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2160) Selected row not always correctly recognized
+  * [#2162](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2162) View quick actions shall not display scrollbar
+
+# metasfresh 5.91
+# Features
+* metasfresh
+  * [#4941](https://github.com/metasfresh/metasfresh/issues/4941) Add option to not translate words that exist as elements or messages
+  * [#4935](https://github.com/metasfresh/metasfresh/issues/4935) Create MTransaction when completing cost collector of type issue/receipt
+  * [#4936](https://github.com/metasfresh/metasfresh/issues/4936) Use latest c3p0 and postgres driver
+
+* metasfresh-webui-frontend
+  * [#2158](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2158) Modal view: Cancel button support
+  * [#2169](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2169) Host google fonts locally
+
 # metasfresh 5.90
 # Features
 * metasfresh

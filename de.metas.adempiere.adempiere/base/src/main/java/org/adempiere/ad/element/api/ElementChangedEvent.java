@@ -1,12 +1,17 @@
 package org.adempiere.ad.element.api;
 
+import java.util.stream.Stream;
+
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Element_Trl;
 
 import com.google.common.collect.ImmutableSet;
 
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -43,23 +48,9 @@ public class ElementChangedEvent
 	@Nullable
 	String adLanguage;
 
-	public static final ImmutableSet<String> ALL_COLUMN_NAMES = ImmutableSet.of(
-			I_AD_Element.COLUMNNAME_Name,
-			I_AD_Element.COLUMNNAME_ColumnName,
-			I_AD_Element.COLUMNNAME_PrintName,
-			I_AD_Element.COLUMNNAME_Description,
-			I_AD_Element.COLUMNNAME_Help,
-			I_AD_Element.COLUMNNAME_PO_Description,
-			I_AD_Element.COLUMNNAME_PO_Help,
-			I_AD_Element.COLUMNNAME_PO_Name,
-			I_AD_Element.COLUMNNAME_PO_PrintName,
-			I_AD_Element.COLUMNNAME_CommitWarning,
-			I_AD_Element.COLUMNNAME_WEBUI_NameBrowse,
-			I_AD_Element.COLUMNNAME_WEBUI_NameNew,
-			I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb
-	);
 	@Singular
-	ImmutableSet<String> updatedColumns;
+	@Getter(AccessLevel.PRIVATE)
+	ImmutableSet<ChangedField> updatedColumns;
 
 	String columnName;
 	String name;
@@ -77,4 +68,64 @@ public class ElementChangedEvent
 	String poDescription;
 	String poHelp;
 
+	public boolean isChangedAnyOf(@NonNull final ChangedField... columnNames)
+	{
+		for (final ChangedField columnName : columnNames)
+		{
+			if (updatedColumns.contains(columnName))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static enum ChangedField
+	{
+		ColumnName(I_AD_Element.COLUMNNAME_ColumnName), //
+		//
+		Name(I_AD_Element_Trl.COLUMNNAME_Name, I_AD_Element_Trl.COLUMNNAME_Name_Customized), //
+		Description(I_AD_Element_Trl.COLUMNNAME_Description, I_AD_Element_Trl.COLUMNNAME_Description_Customized), //
+		Help(I_AD_Element_Trl.COLUMNNAME_Help, I_AD_Element_Trl.COLUMNNAME_Help_Customized), //
+		PrintName(I_AD_Element.COLUMNNAME_PrintName), //
+		PO_Description(I_AD_Element.COLUMNNAME_PO_Description), //
+		PO_Help(I_AD_Element.COLUMNNAME_PO_Help), //
+		PO_Name(I_AD_Element.COLUMNNAME_PO_Name), //
+		PO_PrintName(I_AD_Element.COLUMNNAME_PO_PrintName), //
+		CommitWarning(I_AD_Element.COLUMNNAME_CommitWarning), //
+		WebuiNameBrowse(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse), //
+		WebuiNameNew(I_AD_Element.COLUMNNAME_WEBUI_NameNew), //
+		WebuiNameNewBreadcrumb(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb) //
+		;
+
+		@Getter
+		private final String columnName;
+		@Getter
+		private final String customizationColumnName;
+
+		ChangedField(@NonNull final String columnName)
+		{
+			this.columnName = columnName;
+			this.customizationColumnName = null;
+		}
+
+		ChangedField(
+				@NonNull final String columnName,
+				@Nullable final String customizationColumnName)
+		{
+			this.columnName = columnName;
+			this.customizationColumnName = customizationColumnName;
+		}
+
+		public static Stream<ChangedField> streamAll()
+		{
+			return Stream.of(values());
+		}
+
+		public boolean hasCustomizedField()
+		{
+			return getCustomizationColumnName() != null;
+		}
+	}
 }

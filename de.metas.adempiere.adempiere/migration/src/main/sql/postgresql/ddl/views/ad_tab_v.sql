@@ -50,6 +50,7 @@ t.ad_tab_id
 , t.ischeckparentschanged
 , t.maxqueryrecords
 , t.EntityType
+, t.AllowQuickInput
 FROM ad_tab t
 JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 WHERE t.isactive = 'Y'::bpchar AND tbl.isactive = 'Y'::bpchar;

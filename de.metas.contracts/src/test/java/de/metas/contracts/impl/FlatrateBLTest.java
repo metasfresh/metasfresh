@@ -72,6 +72,7 @@ import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -115,6 +116,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_PricingRule pricingRule = newInstance(I_C_PricingRule.class);
 		pricingRule.setSeqNo(10);
 		pricingRule.setClassname(MockedPricingRule.class.getName());
+		pricingRule.setName(pricingRule.getClassname());
 		save(pricingRule);
 
 		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
@@ -229,7 +231,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 				final Properties ctx = Env.getCtx();
 
-				final int taxCategoryId = -1;
+				final TaxCategoryId taxCategoryId = null;
 				final boolean isSOTrx = true;
 
 				taxBL.getTax(

@@ -586,6 +586,29 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsServerProcess = "IsServerProcess";
 
 	/**
+	 * Set Translate Excel Headers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders);
+
+	/**
+	 * Get Translate Excel Headers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isTranslateExcelHeaders();
+
+    /** Column definition for IsTranslateExcelHeaders */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_IsTranslateExcelHeaders = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "IsTranslateExcelHeaders", null);
+    /** Column name IsTranslateExcelHeaders */
+    public static final String COLUMNNAME_IsTranslateExcelHeaders = "IsTranslateExcelHeaders";
+
+	/**
 	 * Set IsUseBPartnerLanguage.
 	 *
 	 * <br>Type: YesNo
@@ -784,7 +807,7 @@ public interface I_AD_Process
 	/**
 	 * Set SQLStatement.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -793,7 +816,7 @@ public interface I_AD_Process
 	/**
 	 * Get SQLStatement.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

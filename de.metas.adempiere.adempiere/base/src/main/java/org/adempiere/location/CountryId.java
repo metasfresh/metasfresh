@@ -1,5 +1,7 @@
 package org.adempiere.location;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -7,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -36,8 +37,6 @@ import lombok.Value;
 @Value
 public class CountryId implements RepoIdAware
 {
-	int repoId;
-
 	@JsonCreator
 	public static CountryId ofRepoId(final int repoId)
 	{
@@ -54,9 +53,11 @@ public class CountryId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
+	int repoId;
+
 	private CountryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "countryRepoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Country_ID");
 	}
 
 	@Override
@@ -64,5 +65,10 @@ public class CountryId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(CountryId countryId1, CountryId countryId2)
+	{
+		return Objects.equals(countryId1, countryId2);
 	}
 }

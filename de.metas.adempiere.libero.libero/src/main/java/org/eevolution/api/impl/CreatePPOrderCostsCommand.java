@@ -208,7 +208,7 @@ final class CreatePPOrderCostsCommand
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomComponentType);
 		final Percent coProductCostDistributionPercent = trxType.isCoProduct()
-				? null // TODO
+				? Percent.of("0.01") //TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
 				: null;
 
 		return PPOrderCostCandidate.builder()
@@ -290,8 +290,10 @@ final class CreatePPOrderCostsCommand
 		final PPOrderCostTrxType trxType = candidate.getTrxType();
 		final CostSegmentAndElement costSegmentAndElement = candidate.getCostSegment().withCostElementId(costElementId);
 		final CostPrice zeroPrice = CostPrice.zero(currencyId);
+		final Percent coProductCostDistributionPercent = candidate.getCoProductCostDistributionPercent();
 		return PPOrderCost.builder()
 				.trxType(trxType)
+				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.costSegmentAndElement(costSegmentAndElement)
 				.price(zeroPrice)
 				.build();

@@ -168,13 +168,14 @@ public class ContractsDAO implements IContractsDAO
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	@Override
-	public List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderId(@NonNull final OrderId orderId)
+	public List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderIdLatestFirst(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, I_C_Flatrate_Term.class)
+				.orderByDescending(I_C_Flatrate_Term.COLUMN_EndDate)
 				.create()
 				.list();
 	}
