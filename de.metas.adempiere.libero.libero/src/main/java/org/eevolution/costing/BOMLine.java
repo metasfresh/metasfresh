@@ -80,7 +80,8 @@ public final class BOMLine
 			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
 			{
-				throw new AdempiereException("coProductCostDistributionPercent shall be positive for " + this);
+				//TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
+//				throw new AdempiereException("coProductCostDistributionPercent shall be positive for " + this);
 			}
 		}
 		else

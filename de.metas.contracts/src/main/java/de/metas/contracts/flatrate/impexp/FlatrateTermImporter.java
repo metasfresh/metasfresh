@@ -3,8 +3,6 @@
  */
 package de.metas.contracts.flatrate.impexp;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 import java.util.Properties;
 
@@ -25,8 +23,10 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -229,7 +229,7 @@ import de.metas.util.time.SystemTime;
 	private void setTaxCategoryAndIsTaxIncluded(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final IPricingResult pricingResult = calculateFlatrateTermPrice(newTerm);
-		newTerm.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		newTerm.setC_TaxCategory_ID(TaxCategoryId.toRepoId(pricingResult.getTaxCategoryId()));
 		newTerm.setIsTaxIncluded(pricingResult.isTaxIncluded());
 	}
 

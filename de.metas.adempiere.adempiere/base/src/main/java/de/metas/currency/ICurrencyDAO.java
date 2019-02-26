@@ -44,7 +44,7 @@ import lombok.NonNull;
  */
 public interface ICurrencyDAO extends ISingletonService
 {
-	int DEFAULT_PRECISION = 2;
+	CurrencyPrecision DEFAULT_PRECISION = CurrencyPrecision.TWO;
 
 	I_C_Currency getById(CurrencyId currencyId);
 

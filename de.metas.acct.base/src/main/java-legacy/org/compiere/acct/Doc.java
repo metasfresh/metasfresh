@@ -1508,7 +1508,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final CurrencyId currencyId = getCurrencyId();
 		if (currencyId == null)
 		{
-			return ICurrencyDAO.DEFAULT_PRECISION;
+			return ICurrencyDAO.DEFAULT_PRECISION.toInt();
 		}
 
 		_currencyPrecision = currencyDAO.getStdPrecision(Env.getCtx(), currencyId.getRepoId());

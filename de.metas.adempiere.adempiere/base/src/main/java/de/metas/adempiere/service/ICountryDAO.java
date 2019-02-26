@@ -26,6 +26,7 @@ package de.metas.adempiere.service;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.location.CountryId;
@@ -35,6 +36,7 @@ import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -102,4 +104,5 @@ public interface ICountryDAO extends ISingletonService
 
 	ITranslatableString getCountryNameById(int countryId);
 
+	Optional<CurrencyId> getCountryCurrencyId(CountryId countryId);
 }

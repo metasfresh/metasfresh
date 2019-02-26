@@ -70,6 +70,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -610,7 +611,7 @@ public class InvoiceCandidateWriter
 		final IContextAware contextProvider = getContext();
 
 		final Properties ctx = contextProvider.getCtx();
-		final int taxCategoryId = pricingResult.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = pricingResult.getTaxCategoryId();
 
 		final int taxID = taxBL.getTax(
 				ctx,

@@ -15,7 +15,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1715646964L;
+	private static final long serialVersionUID = -1799499718L;
 
     /** Standard Constructor */
     public X_M_DiscountSchemaBreak (Properties ctx, int M_DiscountSchemaBreak_ID, String trxName)
@@ -27,9 +27,8 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 			setBreakValue (BigDecimal.ZERO);
 			setIsBPartnerFlatDiscount (false); // N
 			setIsValid (true); // Y
-			setM_DiscountSchemaBreak_ID (0);
 			setM_DiscountSchema_ID (0);
-			setPriceBase (null); // P
+			setM_DiscountSchemaBreak_ID (0);
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=@M_DiscountSchema_ID@
         } */
     }
@@ -61,8 +60,8 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		set_ValueFromPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, Base_PricingSystem);
 	}
 
-	/** Set Base_PricingSystem_ID.
-		@param Base_PricingSystem_ID Base_PricingSystem_ID	  */
+	/** Set Preissystem.
+		@param Base_PricingSystem_ID Preissystem	  */
 	@Override
 	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID)
 	{
@@ -72,8 +71,8 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 			set_Value (COLUMNNAME_Base_PricingSystem_ID, Integer.valueOf(Base_PricingSystem_ID));
 	}
 
-	/** Get Base_PricingSystem_ID.
-		@return Base_PricingSystem_ID	  */
+	/** Get Preissystem.
+		@return Preissystem	  */
 	@Override
 	public int getBase_PricingSystem_ID () 
 	{
@@ -105,9 +104,9 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
-	/** Set Break Value.
+	/** Set Mengenstufe.
 		@param BreakValue 
-		Low Value of trade discount break level
+		Mindestmenge ab der die Kondition gilt
 	  */
 	@Override
 	public void setBreakValue (java.math.BigDecimal BreakValue)
@@ -115,8 +114,8 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		set_Value (COLUMNNAME_BreakValue, BreakValue);
 	}
 
-	/** Get Break Value.
-		@return Low Value of trade discount break level
+	/** Get Mengenstufe.
+		@return Mindestmenge ab der die Kondition gilt
 	  */
 	@Override
 	public java.math.BigDecimal getBreakValue () 
@@ -254,43 +253,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getManufacturer() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer)
-	{
-		set_ValueFromPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class, Manufacturer);
-	}
-
-	/** Set Hersteller.
-		@param Manufacturer_ID 
-		Hersteller des Produktes
-	  */
-	@Override
-	public void setManufacturer_ID (int Manufacturer_ID)
-	{
-		if (Manufacturer_ID < 1) 
-			set_Value (COLUMNNAME_Manufacturer_ID, null);
-		else 
-			set_Value (COLUMNNAME_Manufacturer_ID, Integer.valueOf(Manufacturer_ID));
-	}
-
-	/** Get Hersteller.
-		@return Hersteller des Produktes
-	  */
-	@Override
-	public int getManufacturer_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Manufacturer_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
@@ -364,31 +326,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set Discount Schema Break.
-		@param M_DiscountSchemaBreak_ID 
-		Trade Discount Break
-	  */
-	@Override
-	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID)
-	{
-		if (M_DiscountSchemaBreak_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_DiscountSchemaBreak_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_DiscountSchemaBreak_ID, Integer.valueOf(M_DiscountSchemaBreak_ID));
-	}
-
-	/** Get Discount Schema Break.
-		@return Trade Discount Break
-	  */
-	@Override
-	public int getM_DiscountSchemaBreak_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchemaBreak_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
 	{
@@ -421,6 +358,31 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	public int getM_DiscountSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Discount Schema Break.
+		@param M_DiscountSchemaBreak_ID 
+		Trade Discount Break
+	  */
+	@Override
+	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID)
+	{
+		if (M_DiscountSchemaBreak_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_DiscountSchemaBreak_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_DiscountSchemaBreak_ID, Integer.valueOf(M_DiscountSchemaBreak_ID));
+	}
+
+	/** Get Discount Schema Break.
+		@return Trade Discount Break
+	  */
+	@Override
+	public int getM_DiscountSchemaBreak_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchemaBreak_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -495,6 +457,43 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getManufacturer() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer)
+	{
+		set_ValueFromPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class, Manufacturer);
+	}
+
+	/** Set Hersteller.
+		@param Manufacturer_ID 
+		Hersteller des Produktes
+	  */
+	@Override
+	public void setManufacturer_ID (int Manufacturer_ID)
+	{
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Integer.valueOf(Manufacturer_ID));
+	}
+
+	/** Get Hersteller.
+		@return Hersteller des Produktes
+	  */
+	@Override
+	public int getManufacturer_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Manufacturer_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

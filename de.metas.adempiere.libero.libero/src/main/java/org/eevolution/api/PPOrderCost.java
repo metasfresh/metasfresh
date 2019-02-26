@@ -91,7 +91,8 @@ public class PPOrderCost
 			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
 			{
-				throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
+				//TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
+//				throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
 			}
 		}
 		else

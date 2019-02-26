@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1956284711L;
+	private static final long serialVersionUID = -1311556793L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 			setIsOneInstanceOnly (false); // N
 			setIsReport (false);
 			setIsServerProcess (false);
+			setIsTranslateExcelHeaders (true); // Y
 			setIsUseBPartnerLanguage (true); // Y
 			setName (null);
 			setRefreshAllAfterExecution (false); // N
@@ -538,6 +539,29 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return false;
 	}
 
+	/** Set Translate Excel Headers.
+		@param IsTranslateExcelHeaders Translate Excel Headers	  */
+	@Override
+	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders)
+	{
+		set_Value (COLUMNNAME_IsTranslateExcelHeaders, Boolean.valueOf(IsTranslateExcelHeaders));
+	}
+
+	/** Get Translate Excel Headers.
+		@return Translate Excel Headers	  */
+	@Override
+	public boolean isTranslateExcelHeaders () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsTranslateExcelHeaders);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set IsUseBPartnerLanguage.
 		@param IsUseBPartnerLanguage IsUseBPartnerLanguage	  */
 	@Override
@@ -687,8 +711,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	 * Reference name: ShowHelp List
 	 */
 	public static final int SHOWHELP_AD_Reference_ID=50007;
-	/** Ask user (for future use) = A */
-	public static final String SHOWHELP_AskUserForFutureUse = "A";
 	/** Don't show help = N */
 	public static final String SHOWHELP_DonTShowHelp = "N";
 	/** Show Help = Y */

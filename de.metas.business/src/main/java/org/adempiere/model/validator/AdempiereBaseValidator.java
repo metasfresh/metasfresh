@@ -192,9 +192,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		//
 		// BPartner
 		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner(), client);
-		//
-		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
-		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
 
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance, client);

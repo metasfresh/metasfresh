@@ -1,5 +1,7 @@
 package de.metas.pricing.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -9,6 +11,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 
 /*
@@ -39,6 +42,7 @@ public class ProductPriceBuilder
 	private final I_M_Product product;
 	private BigDecimal price;
 	private I_M_AttributeSetInstance asi;
+	private TaxCategoryId taxCategoryId;
 
 	public ProductPriceBuilder(final I_M_PriceList_Version plv, final I_M_Product product)
 	{
@@ -58,10 +62,12 @@ public class ProductPriceBuilder
 		pp.setIsAttributeDependant(asi != null);
 		pp.setM_AttributeSetInstance(asi);
 		
+		pp.setC_TaxCategory_ID(taxCategoryId.getRepoId());
+
 		final int nextMatchSeqNo = Services.get(IPriceListDAO.class).retrieveNextMatchSeqNo(pp);
 		pp.setMatchSeqNo(nextMatchSeqNo);
 
-		InterfaceWrapperHelper.save(pp);
+		saveRecord(pp);
 		return pp;
 	}
 
@@ -77,4 +83,9 @@ public class ProductPriceBuilder
 		return this;
 	}
 
+	public ProductPriceBuilder setTaxCategoryId(final TaxCategoryId taxCategoryId)
+	{
+		this.taxCategoryId = taxCategoryId;
+		return this;
+	}
 }

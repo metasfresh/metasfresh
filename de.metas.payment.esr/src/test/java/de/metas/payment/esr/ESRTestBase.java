@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -68,6 +69,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -116,6 +119,9 @@ public class ESRTestBase
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
+
+		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
+		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
 
 		// register processors
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);

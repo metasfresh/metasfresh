@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +35,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
@@ -562,7 +562,7 @@ public class CalloutInvoice extends CalloutEngine
 		final int productID = invoiceLine.getM_Product_ID();
 		final PriceListId priceListID = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 		// final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
-		final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListID);
+		final CurrencyPrecision stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListID);
 
 		// get values
 		final BigDecimal qtyEntered = invoiceLine.getQtyEntered();
@@ -661,7 +661,7 @@ public class CalloutInvoice extends CalloutEngine
 			priceEntered = (BigDecimal)value;
 
 			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
-			priceActual = priceEntered.setScale(stdPrecision, RoundingMode.HALF_UP);
+			priceActual = stdPrecision.round(priceEntered);
 			//
 			log.debug("amt - PriceEntered=" + priceEntered
 					+ " -> PriceActual=" + priceActual);
@@ -738,11 +738,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// Line Net Amt
-		BigDecimal lineNetAmt = qtyInvoiced.multiply(priceActual);
-		if (lineNetAmt.scale() > stdPrecision)
-		{
-			lineNetAmt = lineNetAmt.setScale(stdPrecision, BigDecimal.ROUND_HALF_UP);
-		}
+		BigDecimal lineNetAmt = stdPrecision.roundIfNeeded(qtyInvoiced.multiply(priceActual));
 		log.info("amt = LineNetAmt=" + lineNetAmt);
 
 		invoiceLine.setLineNetAmt(lineNetAmt);
@@ -765,7 +761,7 @@ public class CalloutInvoice extends CalloutEngine
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, stdPrecision);
+					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, stdPrecision.toInt());
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}
