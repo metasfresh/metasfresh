@@ -29,6 +29,7 @@ import org.adempiere.user.api.IUserDAO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -256,12 +257,12 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), MDocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
 
 		//	Add up Amounts
-		int precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
+		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
 		BigDecimal totalLines = BigDecimal.ZERO;
 		for (MRequisitionLine line : lines)
 		{
 			BigDecimal lineNet = line.getQty().multiply(line.getPriceActual());
-			lineNet = lineNet.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			lineNet = precision.round(lineNet);
 			if (lineNet.compareTo(line.getLineNetAmt()) != 0)
 			{
 				line.setLineNetAmt(lineNet);

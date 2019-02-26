@@ -6,7 +6,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
-import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -146,7 +145,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		if (existsOrderLineWithNoPricingConditions)
 		{
 			final ITranslatableString translatableMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoPricingConditionsError);
-			throw new AdempiereException(translatableMsg.translate(Env.getAD_Language()));
+			throw new AdempiereException(translatableMsg)
+					.setParameter("HowToDisablePricingConditionsCheck", "To disable it, please set " + SYSCONFIG_NoPriceConditionsColorName + " to `-`");
 		}
 	}
 

@@ -29,6 +29,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.impexp.IImportProcessFactory;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
@@ -36,6 +37,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
+import org.compiere.model.I_I_ElementValue;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
@@ -46,6 +48,7 @@ import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctList
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.impexp.AccountImportProcess;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
@@ -90,6 +93,8 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		}
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
 	}
 
 	@Override

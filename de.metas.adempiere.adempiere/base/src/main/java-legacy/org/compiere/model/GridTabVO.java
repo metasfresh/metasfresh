@@ -48,6 +48,7 @@ import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 
 /**
@@ -317,6 +318,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			catch (Exception e)
 			{
 			}
+			
+			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
+			
 			loadTabDetails_metas(vo, rs); // metas
 		}
 		catch (SQLException ex)
@@ -513,6 +517,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	private List<GridFieldVO> _fields = null; // lazy
 	private Optional<GridFieldVO> _keyField = null; // lazy
 	private Set<String> _linkColumnNames = null; // lazy
+	
+	@Getter
+	private boolean allowQuickInput;
 
 	@Override
 	public String toString()
@@ -734,6 +741,9 @@ public class GridTabVO implements Evaluatee, Serializable
 		//  Derived
 		clone.onlyCurrentRows = true;
 		clone.onlyCurrentDays = 0;
+		
+		clone.allowQuickInput = allowQuickInput;
+		
 		clone_metas(ctx, windowNo, clone); // metas
 
 		final List<GridFieldVO> fields = _fields;

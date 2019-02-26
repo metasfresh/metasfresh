@@ -513,6 +513,34 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
+	protected final AdempiereException putParametetersFrom(@Nullable final Throwable ex)
+	{
+		if (ex instanceof AdempiereException)
+		{
+			this.putParameteters(((AdempiereException)ex).parameters);
+		}
+
+		return this;
+	}
+
+	private final AdempiereException putParameteters(@Nullable final Map<String, Object> parameters)
+	{
+		if (parameters == null || parameters.isEmpty())
+		{
+			return this;
+		}
+
+		if (this.parameters == null)
+		{
+			this.parameters = new LinkedHashMap<>();
+		}
+
+		parameters.forEach((name, value) -> this.parameters.put(name, Null.box(value)));
+		resetMessageBuilt();
+
+		return this;
+	}
+
 	@OverridingMethodsMustInvokeSuper
 	public <T extends Enum<?>> AdempiereException setParameter(@NonNull final T enumValue)
 	{

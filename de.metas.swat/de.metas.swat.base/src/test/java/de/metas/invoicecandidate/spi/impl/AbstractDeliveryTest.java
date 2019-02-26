@@ -56,6 +56,7 @@ import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -136,13 +137,13 @@ public abstract class AbstractDeliveryTest
 			taxBL.getTax(
 					ctx,
 					order,
-					-1, // taxCategoryId
-			 orderLine.getM_Product_ID(),
-			 order.getDatePromised(),
-			 OrgId.ofRepoId(order.getAD_Org_ID()),
-			 WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-			 order.getC_BPartner_Location_ID(),
-			 order.isSOTrx());
+					(TaxCategoryId)null, // taxCategoryId
+					orderLine.getM_Product_ID(),
+					order.getDatePromised(),
+					OrgId.ofRepoId(order.getAD_Org_ID()),
+					WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+					order.getC_BPartner_Location_ID(),
+					order.isSOTrx());
 
 			minTimes = 0;
 			result = 3;

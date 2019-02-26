@@ -1,7 +1,6 @@
 package de.metas.bpartner;
 
-import lombok.Value;
-
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -13,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -70,12 +70,17 @@ public class BPartnerId implements RepoIdAware
 
 	private BPartnerId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "bpartnerId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BPartner_ID");
 	}
 
 	@JsonValue
 	public int toJson()
 	{
 		return getRepoId();
+	}
+
+	public static boolean equals(final BPartnerId o1, final BPartnerId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

@@ -23,6 +23,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Currency;
@@ -54,6 +55,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.time.SystemTime;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -87,15 +89,37 @@ public class RefundTestTools
 	private static final BigDecimal TWO = new BigDecimal("2");
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
 
-	private static final LocalDate ASSIGNABLE_CANDIDATE_INVOICE_DATE = LocalDate.now();
-	private static final LocalDate REFUND_CANDIDATE_INVOICE_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(1);
+	private static final LocalDate ASSIGNABLE_CANDIDATE_INVOICE_DATE = computeAssignableCandidateInvoiceDate();
+
+	private static final LocalDate REFUND_CANDIDATE_INVOICE_DATE = computeRefundCandidateInvoiceDate(ASSIGNABLE_CANDIDATE_INVOICE_DATE);
 
 	public static final LocalDate CONTRACT_START_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.minusDays(2);
 	public static final LocalDate CONTRACT_END_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(10);
 
 	// we want this day of month to be after REFUND_CANDIDATE_INVOICE_DATE,
 	// because otherwise the refund candidate we create in here is not found to be a match when searched for via ASSIGNABLE_CANDIDATE_INVOICE_DATE
-	private static final int INVOICE_SCHEDULE_DAY_OF_MONTH = (REFUND_CANDIDATE_INVOICE_DATE.getDayOfMonth() + 4) % 30;
+	// note that we also need to make sure to have 1 as the min number
+	@VisibleForTesting
+	static final int INVOICE_SCHEDULE_DAY_OF_MONTH = computeInvoiceScheduleDayOfMonth();
+
+	private static LocalDate computeAssignableCandidateInvoiceDate()
+	{
+		return SystemTime.asLocalDate();
+	}
+
+	@VisibleForTesting
+	static int computeInvoiceScheduleDayOfMonth()
+	{
+		final LocalDate assignableCandidateInvoiceDate = computeAssignableCandidateInvoiceDate();
+		final LocalDate refundCandidateInvoiceDate = computeRefundCandidateInvoiceDate(assignableCandidateInvoiceDate);
+
+		return ((refundCandidateInvoiceDate.getDayOfMonth() + 4) % 28) + 1;
+	}
+
+	private static LocalDate computeRefundCandidateInvoiceDate(final LocalDate assignableCandidateInvoiceDate)
+	{
+		return assignableCandidateInvoiceDate.plusDays(1);
+	}
 
 	@Getter
 	private final Currency currency;

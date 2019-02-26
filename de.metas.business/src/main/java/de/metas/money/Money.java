@@ -20,12 +20,17 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -56,6 +61,7 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Money
 {
 	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
@@ -96,13 +102,17 @@ public class Money
 		return new Money(ZERO, currencyId);
 	}
 
+	@JsonProperty("value")
 	BigDecimal value;
+
+	@JsonProperty("currencyId")
 	CurrencyId currencyId;
 
 	@Builder
+	@JsonCreator
 	private Money(
-			@NonNull final BigDecimal value,
-			@NonNull final CurrencyId currencyId)
+			@JsonProperty("value") @NonNull final BigDecimal value,
+			@JsonProperty("currencyId") @NonNull final CurrencyId currencyId)
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value); // stripping trailing zeros to make sure that 4 EUR equal 4.00 EUR
 		this.currencyId = currencyId;
@@ -270,5 +280,10 @@ public class Money
 			return ZERO;
 		}
 		return money.getValue();
+	}
+
+	public Amount toAmount(@NonNull final Function<CurrencyId, String> currencyCodeMapper)
+	{
+		return Amount.of(getValue(), currencyCodeMapper.apply(getCurrencyId()));
 	}
 }

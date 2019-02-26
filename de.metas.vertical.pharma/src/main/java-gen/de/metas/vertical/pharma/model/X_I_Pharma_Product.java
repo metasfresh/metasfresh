@@ -15,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1716265489L;
+	private static final long serialVersionUID = 177384329L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
       /** if (I_Pharma_Product_ID == 0)
         {
 			setA00ANBNR5 (0); // 0
+			setIsPriceCreated (false); // N
         } */
     }
 
@@ -3115,6 +3116,29 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Price Created.
+		@param IsPriceCreated Price Created	  */
+	@Override
+	public void setIsPriceCreated (boolean IsPriceCreated)
+	{
+		set_Value (COLUMNNAME_IsPriceCreated, Boolean.valueOf(IsPriceCreated));
+	}
+
+	/** Get Price Created.
+		@return Price Created	  */
+	@Override
+	public boolean isPriceCreated () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPriceCreated);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override

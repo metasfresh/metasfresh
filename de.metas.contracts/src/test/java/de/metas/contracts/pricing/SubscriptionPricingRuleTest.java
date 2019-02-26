@@ -19,7 +19,6 @@ import de.metas.pricing.service.impl.PricingTestHelper;
 
 public class SubscriptionPricingRuleTest
 {
-
 	private SubscriptionPricingTestHelper helper;
 
 	@Before
@@ -40,7 +39,6 @@ public class SubscriptionPricingRuleTest
 		final I_M_PriceList priceListCH = helper.createPriceList(helper.getDefaultPricingSystem(), contryCH);
 		final I_M_PriceList_Version plvCH = helper.createPriceListVersion(priceListCH);
 
-
 		helper.newProductPriceBuilder(plvCH)
 				.setPrice(3)
 				.build();
@@ -58,11 +56,10 @@ public class SubscriptionPricingRuleTest
 		final IPricingResult result = helper.calculatePrice(pricingCtx);
 		Assert.assertThat("PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(5)));
 	}
-	
+
 	@Test
 	public void calculateSubscriptionPriceEmptyCountryInPriceList_test()
 	{
-
 		final I_C_Country contryDE = helper.createCountry("DE", PricingTestHelper.C_Currency_ID_EUR);
 		final I_M_PriceList priceListDE = helper.createPriceList(helper.getDefaultPricingSystem(), contryDE);
 		priceListDE.setC_Country_ID(-1);
@@ -72,7 +69,6 @@ public class SubscriptionPricingRuleTest
 		final I_C_Country contryCH = helper.createCountry("CH", PricingTestHelper.C_Currency_ID_CHF);
 		final I_M_PriceList priceListCH = helper.createPriceList(helper.getDefaultPricingSystem(), contryCH);
 		final I_M_PriceList_Version plvCH = helper.createPriceListVersion(priceListCH);
-
 
 		helper.newProductPriceBuilder(plvCH)
 				.setPrice(3)

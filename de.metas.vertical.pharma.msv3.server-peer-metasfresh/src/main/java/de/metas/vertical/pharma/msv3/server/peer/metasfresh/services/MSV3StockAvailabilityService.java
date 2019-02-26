@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockDataAggregateItem;
 import de.metas.material.cockpit.stock.StockDataAggregateQuery;
@@ -84,12 +85,13 @@ public class MSV3StockAvailabilityService
 	public MSV3StockAvailabilityService(
 			@NonNull final StockRepository stockRepository,
 			@NonNull final MSV3ServerConfigService msv3ServerConfigService,
-			@NonNull final MSV3ServerPeerService msv3ServerPeerService)
+			@NonNull final MSV3ServerPeerService msv3ServerPeerService,
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
 	{
 		this.stockRepository = stockRepository;
 		this.msv3ServerConfigService = msv3ServerConfigService;
 		this.msv3ServerPeerService = msv3ServerPeerService;
-		this.eventVersionGenerator = new MSV3EventVersionGenerator();
+		this.eventVersionGenerator = new MSV3EventVersionGenerator(documentNoBuilderFactory);
 	}
 
 	private MSV3ServerConfig getServerConfig()

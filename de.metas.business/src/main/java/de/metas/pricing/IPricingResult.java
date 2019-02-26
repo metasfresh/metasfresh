@@ -29,11 +29,13 @@ import java.util.List;
 
 import org.adempiere.uom.UomId;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -43,8 +45,6 @@ import lombok.NonNull;
  */
 public interface IPricingResult
 {
-	int NO_PRECISION = -1;
-
 	CurrencyId getCurrencyId();
 
 	void setCurrencyId(CurrencyId currencyId);
@@ -87,9 +87,9 @@ public interface IPricingResult
 
 	void setDiscount(Percent discount);
 
-	int getPrecision();
+	CurrencyPrecision getPrecision();
 
-	void setPrecision(int precision);
+	void setPrecision(CurrencyPrecision precision);
 
 	boolean isTaxIncluded();
 
@@ -129,11 +129,9 @@ public interface IPricingResult
 
 	void addPricingRuleApplied(IPricingRule rule);
 
-	List<IPricingRule> getPricingRulesApplied();
+	TaxCategoryId getTaxCategoryId();
 
-	int getC_TaxCategory_ID();
-
-	void setC_TaxCategory_ID(int C_TaxCategory_ID);
+	void setTaxCategoryId(TaxCategoryId taxCategoryId);
 
 	ProductId getProductId();
 
@@ -160,13 +158,6 @@ public interface IPricingResult
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
 	LocalDate getPriceDate();
-
-	/**
-	 * See {@link #getPriceDate()}.
-	 *
-	 * @param priceDate
-	 */
-	void setPriceDate(LocalDate priceDate);
 
 	boolean isPriceEditable();
 

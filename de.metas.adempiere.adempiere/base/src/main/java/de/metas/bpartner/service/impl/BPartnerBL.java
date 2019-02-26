@@ -456,6 +456,8 @@ public class BPartnerBL implements IBPartnerBL
 			bpContact.setLastname(template.getLastname());
 			bpContact.setPhone(template.getPhone());
 			bpContact.setEMail(template.getEMail());
+			bpContact.setIsNewsletter(template.isNewsletter());
+			bpContact.setC_BPartner_Location(bpLocation);
 			if (template.isCustomer())
 			{
 				bpContact.setIsSalesContact(true);
