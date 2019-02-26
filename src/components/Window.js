@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
 import Table from '../components/table/Table';
-import EntryTable from '../components/Table/EntryTable';
+// import EntryTable from '../components/Table/EntryTable';
+import EntryTable from '../components/widget/Entry';
 import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
 import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
@@ -33,6 +34,7 @@ class Window extends PureComponent {
     }
 
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
+    this.handleBlurWidget = this.handleBlurWidget.bind(this);
   }
 
   toggleTableFullScreen = () => {
@@ -164,7 +166,8 @@ class Window extends PureComponent {
       return (
         <div className="row" key={'section' + id}>
           {title && <Separator {...{ title }} />}
-          {columns && this.renderColumns(columns, isFirst, dataEntry, extendedData)}
+          {columns &&
+            this.renderColumns(columns, isFirst, dataEntry, extendedData)}
         </div>
       );
     });
@@ -195,12 +198,20 @@ class Window extends PureComponent {
     });
   };
 
+  addRefToWidgets = c => {
+    if (c) {
+      this.widgets.push(c);
+    }
+  };
+
   renderEntryTable = (groups, isFirst, extendedData) => {
     const rows = groups.reduce((rowsArray, group) => {
       rowsArray.push(group.elementsLine[0].elements);
 
       return rowsArray;
     }, []);
+    const rowData = this.props.rowData.get(extendedData.tabId);
+    const { fullScreen } = this.state;
 
     return (
       <div
@@ -212,10 +223,15 @@ class Window extends PureComponent {
       >
         <EntryTable
           {...{
-            rows,
             ...this.props,
-            ...extendedData,
+            isFirst,
+            rows,
+            rowData,
+            extendedData,
+            fullScreen,
           }}
+          addRefToWidgets={this.addRefToWidgets}
+          handleBlurWidget={this.handleBlurWidget}
         />
       </div>
     );
@@ -301,7 +317,7 @@ class Window extends PureComponent {
           autoFocus={!modal && autoFocus}
           fullScreen={fullScreen}
           fieldName={fieldName}
-          onBlurWidget={this.handleBlurWidget.bind(this, fieldName)}
+          onBlurWidget={this.handleBlurWidget}
           {...elem}
         />
       );
