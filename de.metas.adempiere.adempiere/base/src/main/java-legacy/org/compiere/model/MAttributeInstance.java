@@ -128,29 +128,7 @@ public class MAttributeInstance extends X_M_AttributeInstance
 			setValue("0");
 			return;
 		}
-		//	Display number w/o decimal 0
-		char[] chars = ValueNumber.toString().toCharArray();
-		StringBuffer display = new StringBuffer();
-		boolean add = false;
-		for (int i = chars.length-1; i >= 0; i--)
-		{
-			char c = chars[i];
-			if (add)
-				display.insert(0, c);
-			else
-			{
-				if (c == '0')
-					continue;
-				else if (c == '.')	//	decimal point
-					add = true;
-				else
-				{
-					display.insert(0, c);
-					add = true;
-				}
-			}
-		}
-		setValue(display.toString());
+		setValue(ValueNumber.toString());
 	}	//	setValueNumber
 
 
