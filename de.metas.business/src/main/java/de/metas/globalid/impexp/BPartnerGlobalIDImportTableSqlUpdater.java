@@ -75,8 +75,8 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_BPartner_GlobalID.Table_Name)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=GlobalID is mandatory, ' ")
-				.append("WHERE Value IS NULL ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Partner is mandatory, ' ")
+				.append("WHERE " + I_I_BPartner_GlobalID.COLUMNNAME_C_BPartner_ID + " IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
