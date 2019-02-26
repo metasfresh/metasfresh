@@ -324,7 +324,7 @@ public final class DataTypes
 		if (value instanceof String)
 		{
 			final String valueStr = (String)value;
-			return valueStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(valueStr);
+			return valueStr.isEmpty() ? null : new BigDecimal(valueStr);
 		}
 		else if (value instanceof Integer)
 		{
