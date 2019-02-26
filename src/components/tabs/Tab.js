@@ -31,6 +31,7 @@ class Tab extends Component {
         getTab(tabId, windowId, docId).then(res => {
           if (res.length) {
             dispatch(updateMasterData(res[0]));
+            dispatch(addRowData({ [tabId]: res }, 'master'));
           }
         });
       } else {

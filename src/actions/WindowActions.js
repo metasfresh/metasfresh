@@ -525,11 +525,11 @@ function initTabs(layout, windowType, docId, isModal) {
 
     layout &&
       layout.map((tab, index) => {
-        tabTmp[tab.tabid] = {};
+        tabTmp[tab.tabId] = {};
 
         if (index === 0 || !tab.queryOnActivate) {
-          getTab(tab.tabid, windowType, docId).then(res => {
-            tabTmp[tab.tabid] = res;
+          getTab(tab.tabId, windowType, docId).then(res => {
+            tabTmp[tab.tabId] = res;
             dispatch(addRowData(tabTmp, getScope(isModal)));
           });
         }
@@ -765,7 +765,7 @@ function updateRow(row, scope) {
           );
         });
       } else {
-        dispatch(updateRowProperty(key, row[key], row.tabid, row.rowId, scope));
+        dispatch(updateRowProperty(key, row[key], row.tabId, row.rowId, scope));
       }
     });
   };
