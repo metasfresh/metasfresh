@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
 import Table from '../components/table/Table';
+import EntryTable from '../components/Table/EntryTable';
 import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
 import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
@@ -66,9 +67,9 @@ class Window extends PureComponent {
 
       tabsByIds[elem.tabId] = elem;
 
-      const renderSingle = singleRowDetailView || false;
+      const dataEntry = singleRowDetailView || false;
 
-      if (renderSingle) {
+      if (dataEntry) {
         tabsArray.push(
           <TabSingleEntry
             docId={dataId}
@@ -87,7 +88,7 @@ class Window extends PureComponent {
               internalName,
             }}
           >
-            {sections && this.renderSections(sections, { tabId })}
+            {sections && this.renderSections(sections, dataEntry, { tabId })}
           </TabSingleEntry>
         );
       } else {
@@ -155,42 +156,77 @@ class Window extends PureComponent {
     );
   };
 
-  renderSections = (sections, extendedData = {}) => {
+  renderSections = (sections, dataEntry, extendedData = {}) => {
     return sections.map((elem, id) => {
       const { title, columns } = elem;
       const isFirst = id === 0;
+
       return (
         <div className="row" key={'section' + id}>
           {title && <Separator {...{ title }} />}
-          {columns && this.renderColumns(columns, isFirst, extendedData)}
+          {columns && this.renderColumns(columns, isFirst, dataEntry, extendedData)}
         </div>
       );
     });
   };
 
-  renderColumns = (columns, isSectionFirst, extendedData) => {
+  renderColumns = (columns, isSectionFirst, dataEntry, extendedData) => {
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
 
     return columns.map((elem, id) => {
       const isFirst = id === 0 && isSectionFirst;
       const elementGroups = elem.elementGroups;
-      return (
-        <div className={'col-sm-' + colWidth} key={'col' + id}>
-          {elementGroups &&
-            this.renderElementGroups(elementGroups, isFirst, extendedData)}
-        </div>
-      );
+
+      if (dataEntry) {
+        return (
+          <div className={'col-sm-' + colWidth} key={'col' + id}>
+            {this.renderEntryTable(elementGroups, isFirst, extendedData)}
+          </div>
+        );
+      } else {
+        return (
+          <div className={'col-sm-' + colWidth} key={'col' + id}>
+            {elementGroups &&
+              this.renderElementGroups(elementGroups, isFirst, extendedData)}
+          </div>
+        );
+      }
     });
   };
 
-  renderElementGroups = (group, isFirst, extendedData) => {
+  renderEntryTable = (groups, isFirst, extendedData) => {
+    const rows = groups.reduce((rowsArray, group) => {
+      rowsArray.push(group.elementsLine[0].elements);
+
+      return rowsArray;
+    }, []);
+
+    return (
+      <div
+        className={classnames(
+          'panel panel-primary panel-bordered',
+          'panel-bordered-force table-flex-wrapper',
+          'document-list-table js-not-unselect'
+        )}
+      >
+        <EntryTable
+          {...{
+            rows,
+            ...this.props,
+            ...extendedData,
+          }}
+        />
+      </div>
+    );
+  };
+
+  renderElementGroups = (groups, isFirst) => {
     const { isModal } = this.props;
 
-    return group.map((elem, id) => {
+    return groups.map((elem, id) => {
       const { type, elementsLine } = elem;
       const shouldBeFocused = isFirst && id === 0;
-
       const tabIndex =
         type === 'primary'
           ? this.tabIndex.firstColumn
@@ -211,42 +247,29 @@ class Window extends PureComponent {
               'panel-secondary': type !== 'primary',
             })}
           >
-            {this.renderElementsLine(
-              elementsLine,
-              tabIndex,
-              shouldBeFocused,
-              extendedData
-            )}
+            {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
           </div>
         )
       );
     });
   };
 
-  renderElementsLine = (
-    elementsLine,
-    tabIndex,
-    shouldBeFocused,
-    extendedData
-  ) => {
+  renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
     return elementsLine.map((elem, id) => {
       const { elements } = elem;
       const isFocused = shouldBeFocused && id === 0;
       return (
         elements &&
         elements.length > 0 && (
-          <div
-            className={classnames('elements-line', { row: extendedData.tabId })}
-            key={'line' + id}
-          >
-            {this.renderElements(elements, tabIndex, isFocused, extendedData)}
+          <div className="elements-line" key={'line' + id}>
+            {this.renderElements(elements, tabIndex, isFocused)}
           </div>
         )
       );
     });
   };
 
-  renderElements = (elements, tabIndex, isFocused, extendedData) => {
+  renderElements = (elements, tabIndex, isFocused) => {
     const { windowId } = this.props.layout;
     const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
     const { fullScreen } = this.state;
@@ -270,13 +293,14 @@ class Window extends PureComponent {
           dataId={dataId}
           widgetData={widgetData}
           isModal={!!modal}
-          tabId={tabId || extendedData.tabId}
-          rowId={extendedData.tabId ? dataId : rowId}
+          tabId={tabId}
+          rowId={rowId}
           relativeDocId={relativeDocId}
           isAdvanced={isAdvanced}
           tabIndex={tabIndex}
           autoFocus={!modal && autoFocus}
           fullScreen={fullScreen}
+          fieldName={fieldName}
           onBlurWidget={this.handleBlurWidget.bind(this, fieldName)}
           {...elem}
         />
