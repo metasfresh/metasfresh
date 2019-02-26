@@ -1,6 +1,7 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 
@@ -55,11 +56,16 @@ public abstract class ProductsToPickViewBasedProcess extends ViewBasedProcessTem
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public final List<ProductsToPickRow> getAllRows()
+	protected final List<ProductsToPickRow> getAllRows()
+	{
+		return streamAllRows()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	protected Stream<ProductsToPickRow> streamAllRows()
 	{
 		return getView()
-				.streamByIds(DocumentIdsSelection.ALL)
-				.collect(ImmutableList.toImmutableList());
+				.streamByIds(DocumentIdsSelection.ALL);
 	}
 
 	protected void updateViewRowFromPickingCandidate(@NonNull final DocumentId rowId, @NonNull final PickingCandidate pickingCandidate)

@@ -1,12 +1,30 @@
 package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.product.ProductId;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilters;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
@@ -46,11 +64,15 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	}
 
 	private final ProductsProposalRowsData rowsData;
+	private final ImmutableList<RelatedProcessDescriptor> processes;
+	private final ViewId initialViewId;
 
 	@Builder
 	private ProductsProposalView(
 			@NonNull final WindowId windowId,
-			@NonNull final ProductsProposalRowsData rowsData)
+			@NonNull final ProductsProposalRowsData rowsData,
+			@Nullable final List<RelatedProcessDescriptor> processes,
+			@Nullable final ViewId initialViewId)
 	{
 		super(
 				ViewId.random(windowId),
@@ -59,6 +81,9 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				NullDocumentFilterDescriptorsProvider.instance);
 
 		this.rowsData = rowsData;
+		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
+
+		this.initialViewId = initialViewId;
 	}
 
 	@Override
@@ -79,9 +104,57 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		throw new UnsupportedOperationException();
 	}
 
-	public OrderId getOrderId()
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return processes;
+	}
+
+	public ViewId getInitialViewId()
+	{
+		return initialViewId != null ? initialViewId : getViewId();
+	}
+
+	@Override
+	public ViewId getParentViewId()
+	{
+		return initialViewId;
+	}
+
+	public Optional<OrderId> getOrderId()
 	{
 		return rowsData.getOrderId();
+	}
+
+	public Optional<BPartnerId> getBpartnerId()
+	{
+		return rowsData.getBpartnerId();
+	}
+
+	public SOTrx getSoTrx()
+	{
+		return rowsData.getSoTrx();
+	}
+
+	public Set<ProductId> getProductIds()
+	{
+		return rowsData.getProductIds();
+	}
+
+	public Optional<PriceListVersionId> getSinglePriceListVersionId()
+	{
+		return rowsData.getSinglePriceListVersionId();
+	}
+
+	public Optional<PriceListVersionId> getBasePriceListVersionId()
+	{
+		return rowsData.getBasePriceListVersionId();
+	}
+
+	public PriceListVersionId getBasePriceListVersionIdOrFail()
+	{
+		return rowsData.getBasePriceListVersionId()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Pricelist_Version_Base_ID@"));
 	}
 
 	public List<ProductsProposalRow> getRowsWithQtySet()
@@ -90,5 +163,34 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 				.stream()
 				.filter(ProductsProposalRow::isQtySet)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
+	{
+		rowsData.addOrUpdateRows(requests);
+		invalidateAll();
+	}
+
+	public void patchViewRow(@NonNull final DocumentId rowId, @NonNull final ProductsProposalRowChangeRequest request)
+	{
+		rowsData.patchRow(rowId, request);
+	}
+
+	public void removeRowsByIds(final Set<DocumentId> rowIds)
+	{
+		rowsData.removeRowsByIds(rowIds);
+		invalidateAll();
+	}
+
+	public ProductsProposalView filter(final ProductsProposalViewFilter filter)
+	{
+		rowsData.filter(filter);
+		return this;
+	}
+
+	@Override
+	public List<DocumentFilter> getFilters()
+	{
+		return ProductsProposalViewFilters.toDocumentFilters(rowsData.getFilter());
 	}
 }

@@ -3,7 +3,6 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +17,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -51,6 +51,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
@@ -135,6 +136,7 @@ class ProductsToPickRowsDataFactory
 		return ProductsToPickRowsData.builder()
 				.pickingCandidateService(pickingCandidateService)
 				.rows(rows)
+				.orderBy(DocumentQueryOrderBy.byFieldName(ProductsToPickRow.FIELD_Locator))
 				.build();
 	}
 
@@ -143,10 +145,8 @@ class ProductsToPickRowsDataFactory
 		final AllocablePackageable allocablePackageable = AllocablePackageable.of(packageable);
 
 		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
-		rows.addAll(createRowsFromPickingCandidates(allocablePackageable));
+		rows.addAll(createRowsFromExistingPickingCandidates(allocablePackageable));
 		rows.addAll(createRowsFromHUs(allocablePackageable));
-
-		Collections.sort(rows, Comparator.comparing(ProductsToPickRow::getLocatorName));
 
 		if (!allocablePackageable.isAllocated())
 		{
@@ -156,25 +156,34 @@ class ProductsToPickRowsDataFactory
 		return rows.stream();
 	}
 
-	private List<ProductsToPickRow> createRowsFromPickingCandidates(final AllocablePackageable packageable)
+	private List<ProductsToPickRow> createRowsFromExistingPickingCandidates(final AllocablePackageable packageable)
 	{
 		final List<PickingCandidate> pickingCandidates = pickingCandidateRepo.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.Draft);
 
 		return pickingCandidates
 				.stream()
-				.map(pickingCandidate -> createRowFromPickingCandidate(packageable, pickingCandidate))
+				.map(pickingCandidate -> createRowFromExistingPickingCandidate(packageable, pickingCandidate))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ProductsToPickRow createRowFromPickingCandidate(final AllocablePackageable packageable, final PickingCandidate pickingCandidate)
+	private ProductsToPickRow createRowFromExistingPickingCandidate(final AllocablePackageable packageable, final PickingCandidate existingPickingCandidate)
 	{
-		final HuId pickFromHUId = pickingCandidate.getPickFromHuId();
-		final ProductId productId = packageable.getProductId();
-		final ReservableStorage storage = getStorage(pickFromHUId, productId);
-		final Quantity qty = storage.reserve(packageable, pickingCandidate.getQtyPicked());
+		final Quantity qty;
 
-		return createRow(packageable, qty, pickFromHUId, pickingCandidate);
+		final HuId pickFromHUId = existingPickingCandidate.getPickFromHuId();
+		if (pickFromHUId != null)
+		{
+			final ProductId productId = packageable.getProductId();
+			final ReservableStorage storage = getStorage(pickFromHUId, productId);
+			qty = storage.reserve(packageable, existingPickingCandidate.getQtyPicked());
+		}
+		else
+		{
+			qty = existingPickingCandidate.getQtyPicked();
+		}
+
+		return createRow(packageable, qty, pickFromHUId, existingPickingCandidate);
 	}
 
 	private List<ProductsToPickRow> createRowsFromHUs(final AllocablePackageable packageable)
@@ -242,21 +251,16 @@ class ProductsToPickRowsDataFactory
 		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
-				.huId(null)
 				.productId(productInfo.getProductId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.huId(null)
 				.build();
 
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
-				//
-				.productValue(productInfo.getCode())
-				.productName(productInfo.getName())
-				.productPackageSize(productInfo.getPackageSize())
-				//
+				.productInfo(productInfo)
 				.locator(null) // will be updated from picking candidate
-				//
 				.qty(packageable.getQtyToAllocate())
-				//
 				.shipmentScheduleId(shipmentScheduleId)
 				.build();
 	}
@@ -264,27 +268,26 @@ class ProductsToPickRowsDataFactory
 	private ProductsToPickRow createRow(
 			@NonNull final AllocablePackageable packageable,
 			@NonNull final Quantity qty,
-			@NonNull final HuId pickFromHUId,
+			@Nullable final HuId pickFromHUId,
 			@Nullable final PickingCandidate existingPickingCandidate)
 	{
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
 		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
-		final LookupValue locator = getLocatorLookupValueByHuId(pickFromHUId);
-		final ImmutableAttributeSet attributes = getHUAttributes(pickFromHUId);
+		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
+		final ImmutableAttributeSet attributes = pickFromHUId != null ? getHUAttributes(pickFromHUId) : ImmutableAttributeSet.EMPTY;
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
-				.huId(pickFromHUId)
 				.productId(productInfo.getProductId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.huId(pickFromHUId)
 				.build();
 
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
 				//
-				.productValue(productInfo.getCode())
-				.productName(productInfo.getName())
-				.productPackageSize(productInfo.getPackageSize())
+				.productInfo(productInfo)
 				//
 				.locator(locator)
 				//
@@ -302,7 +305,22 @@ class ProductsToPickRowsDataFactory
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)
 	{
-		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
+		final I_M_Product productRecord = productsRepo.getById(productId);
+
+		final int packageUOMId = productRecord.getPackage_UOM_ID();
+		final String packageSizeUOM;
+		if (packageUOMId > 0)
+		{
+			final I_C_UOM packageUOM = uomsRepo.getById(packageUOMId);
+			packageSizeUOM = packageUOM.getUOMSymbol();
+		}
+		else
+		{
+			packageSizeUOM = null;
+		}
 
 		final ITranslatableString productName = InterfaceWrapperHelper.getModelTranslationMap(productRecord)
 				.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName());
@@ -312,6 +330,7 @@ class ProductsToPickRowsDataFactory
 				.code(productRecord.getValue())
 				.name(productName)
 				.packageSize(productRecord.getPackageSize())
+				.packageSizeUOM(packageSizeUOM)
 				.build();
 	}
 
@@ -434,19 +453,6 @@ class ProductsToPickRowsDataFactory
 		{
 			return packageable.getSalesOrderLineIdOrNull();
 		}
-	}
-
-	@Value
-	@Builder
-	private static class ProductInfo
-	{
-		@NonNull
-		ProductId productId;
-		@NonNull
-		String code;
-		@NonNull
-		ITranslatableString name;
-		String packageSize;
 	}
 
 	@Value(staticConstructor = "of")

@@ -634,25 +634,27 @@ public class LayoutFactory
 			return null;
 		}
 
-		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
+		return DocumentLayoutDetailDescriptor.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
 				.internalName(entityDescriptor.getInternalName())
 				.gridLayout(layoutGridView())
 				.singleRowLayout(layoutSingleRow())
-				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
+				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate())
+				.supportQuickInput(isSupportQuickInput(entityDescriptor));
+	}
 
-		//
-		// Quick input
+	private boolean isSupportQuickInput(final DocumentEntityDescriptor.Builder entityDescriptor)
+	{
+		if (!entityDescriptor.isAllowQuickInput())
 		{
-			final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor(
-					entityDescriptor.getDocumentType(),
-					entityDescriptor.getDocumentTypeId(),
-					entityDescriptor.getTableNameOrNull(),
-					entityDescriptor.getDetailId(),
-					entityDescriptor.getSOTrx());
-			layoutDetail.supportQuickInput(supportQuickInput);
+			return false;
 		}
 
-		return layoutDetail;
+		return quickInputDescriptors.hasQuickInputEntityDescriptor(
+				entityDescriptor.getDocumentType(),
+				entityDescriptor.getDocumentTypeId(),
+				entityDescriptor.getTableName(),
+				entityDescriptor.getDetailId(),
+				entityDescriptor.getSOTrx());
 	}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final DocumentFieldDescriptor.Builder field)
@@ -671,7 +673,7 @@ public class LayoutFactory
 				.setSupportZoomInto(field.isSupportZoomInto())
 				.trackField(field);
 
-		if(!Check.isEmpty(field.getTooltipIconName()))
+		if (!Check.isEmpty(field.getTooltipIconName()))
 		{
 			layoutElementFieldBuilder.setFieldType(FieldType.Tooltip);
 			layoutElementFieldBuilder.setTooltipIconName(field.getTooltipIconName());

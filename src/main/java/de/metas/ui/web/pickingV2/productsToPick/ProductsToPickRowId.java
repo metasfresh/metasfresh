@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
@@ -39,18 +40,18 @@ final class ProductsToPickRowId
 {
 	@Getter
 	private final HuId huId;
-	// private final ProductId productId;
 
-	private DocumentId documentId;
+	private final DocumentId documentId;
 
 	@Builder
 	private ProductsToPickRowId(
-			@Nullable final HuId huId,
-			@NonNull final ProductId productId)
+			@NonNull final ProductId productId,
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@Nullable final HuId huId)
 	{
 		this.huId = huId;
 		// this.productId = productId;
-		this.documentId = createDocumentId(huId, productId);
+		this.documentId = createDocumentId(productId, shipmentScheduleId, huId);
 	}
 
 	public DocumentId toDocumentId()
@@ -58,16 +59,21 @@ final class ProductsToPickRowId
 		return documentId;
 	}
 
-	private static DocumentId createDocumentId(final HuId huId, final ProductId productId)
+	private static DocumentId createDocumentId(
+			@NonNull final ProductId productId,
+			final ShipmentScheduleId shipmentScheduleId,
+			final HuId huId)
 	{
-		if (huId == null)
+		final StringBuilder sb = new StringBuilder();
+		sb.append("P").append(productId.getRepoId());
+		sb.append("_").append("S").append(shipmentScheduleId.getRepoId());
+
+		if (huId != null)
 		{
-			return DocumentId.of(productId);
+			sb.append("_").append("HU").append(huId.getRepoId());
 		}
-		else
-		{
-			return DocumentId.ofString(huId.getRepoId() + "_" + productId.getRepoId());
-		}
+
+		return DocumentId.ofString(sb.toString());
 	}
 
 }

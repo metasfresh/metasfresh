@@ -15,6 +15,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -65,6 +66,12 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	}
 
 	@Override
+	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	{
+		return rowsData.getOrderBys();
+	}
+
+	@Override
 	public boolean isAllowClosingPerUserRequest()
 	{
 		// don't allow closing per user request because the same view is used the the Picker and the Reviewer.
@@ -88,6 +95,12 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	public boolean isEligibleForReview()
 	{
 		if (size() == 0)
+		{
+			return false;
+		}
+
+		final boolean allApproved = streamByIds(DocumentIdsSelection.ALL).allMatch(ProductsToPickRow::isApproved);
+		if (allApproved)
 		{
 			return false;
 		}
@@ -116,7 +129,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	public LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
 	{
 		throw new UnsupportedOperationException();
-}
+	}
 
 	@Override
 	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName)

@@ -58,16 +58,22 @@ import lombok.ToString;
 public class ProductsToPickRow implements IViewRow
 {
 	static final String FIELD_ProductValue = "productValue";
-	@ViewColumn(fieldName = FIELD_ProductValue, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductValue", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_ProductValue, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductValue",
+			// captionKeyIsSysConfig=true, // TODO
+			widgetSize = WidgetSize.Small)
 	private final String productValue;
 
 	static final String FIELD_ProductName = "productName";
-	@ViewColumn(fieldName = FIELD_ProductName, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductName", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_ProductName, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductName", widgetSize = WidgetSize.Medium)
 	private final ITranslatableString productName;
 
 	static final String FIELD_ProductPackageSize = "productPackageSize";
 	@ViewColumn(fieldName = FIELD_ProductPackageSize, widgetType = DocumentFieldWidgetType.Text, captionKey = "PackageSize", widgetSize = WidgetSize.Small)
 	private final String productPackageSize;
+
+	static final String FIELD_ProductPackageSizeUOM = "productPackageSizeUOM";
+	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID", widgetSize = WidgetSize.Small)
+	private final String productPackageSizeUOM;
 
 	static final String FIELD_Locator = "locator";
 	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
@@ -104,6 +110,7 @@ public class ProductsToPickRow implements IViewRow
 
 	static final String FIELD_PickStatus = "pickStatus";
 	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
+	@Getter
 	private final PickingCandidatePickStatus pickStatus;
 
 	static final String FIELD_ApprovalStatus = "approvalStatus";
@@ -112,6 +119,7 @@ public class ProductsToPickRow implements IViewRow
 
 	//
 	private final ProductsToPickRowId rowId;
+	private final ProductInfo productInfo;
 	private boolean processed;
 	@Getter
 	private final ShipmentScheduleId shipmentScheduleId;
@@ -126,9 +134,7 @@ public class ProductsToPickRow implements IViewRow
 	private ProductsToPickRow(
 			@NonNull final ProductsToPickRowId rowId,
 			//
-			@NonNull final String productValue,
-			@NonNull ITranslatableString productName,
-			final String productPackageSize,
+			@NonNull final ProductInfo productInfo,
 			//
 			final LookupValue locator,
 			//
@@ -148,9 +154,12 @@ public class ProductsToPickRow implements IViewRow
 	{
 		this.rowId = rowId;
 
-		this.productValue = productValue;
-		this.productName = productName;
-		this.productPackageSize = productPackageSize;
+		this.productInfo = productInfo;
+		this.productValue = productInfo.getCode();
+		this.productName = productInfo.getName();
+
+		this.productPackageSize = productInfo.getPackageSize();
+		this.productPackageSizeUOM = productInfo.getPackageSizeUOM();
 
 		this.locator = locator;
 		this.lotNumber = lotNumber;
@@ -253,18 +262,13 @@ public class ProductsToPickRow implements IViewRow
 
 	public boolean isEligibleForPacking()
 	{
-		return !isProcessed() && isApproved();
+		return !isProcessed() && isApproved() && !pickStatus.isPickRejected();
 	}
 
 	public boolean isEligibleForReview()
 	{
 		return !isProcessed()
 				&& (pickStatus.isPicked() || pickStatus.isPickRejected());
-	}
-
-	public boolean isEligibleForProcessing()
-	{
-		return !isProcessed() && isApproved() && pickStatus.isPacked();
 	}
 
 	public String getLocatorName()

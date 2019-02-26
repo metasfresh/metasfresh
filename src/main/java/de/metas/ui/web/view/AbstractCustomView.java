@@ -230,14 +230,16 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public final ViewResult getPage(final int firstRow, final int pageLength, @NonNull final List<DocumentQueryOrderBy> orderBys)
 	{
+		final List<DocumentQueryOrderBy> orderBysEffective = !orderBys.isEmpty() ? orderBys : getDefaultOrderBys();
+
 		final List<IViewRow> pageRows = getRows()
 				.stream()
-				.sorted(DocumentQueryOrderBys.asComparator(orderBys))
+				.sorted(DocumentQueryOrderBys.asComparator(orderBysEffective))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
 
-		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, pageRows);
+		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBysEffective, pageRows);
 	}
 
 	@Override

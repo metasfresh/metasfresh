@@ -51,14 +51,6 @@ public interface IViewFactory
 
 	default IView filterView(
 			@NonNull final IView view,
-			@NonNull final JSONFilterViewRequest filterViewRequest)
-	{
-		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
-		return createView(createViewRequest);
-	}
-
-	default IView filterView(
-			@NonNull final IView view,
 			@NonNull final JSONFilterViewRequest filterViewRequest,
 			@NonNull final Supplier<IViewsRepository> viewsRepo)
 	{

@@ -1,8 +1,10 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.pickingV2.productsToPick;
 
-import de.metas.ui.web.order.products_proposal.view.ProductsProposalRow.ProductsProposalRowBuilder;
+import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,21 +28,17 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public class ProductsProposalRowReducers
+@Value
+@Builder
+class ProductInfo
 {
-	public static ProductsProposalRow copyAndChange(
-			@NonNull final ProductsProposalRowChangeRequest request,
-			@NonNull final ProductsProposalRow row)
-	{
-		final ProductsProposalRowBuilder newRowBuilder = row.toBuilder();
+	@NonNull
+	ProductId productId;
+	@NonNull
+	String code;
+	@NonNull
+	ITranslatableString name;
 
-		if (request.getQty() != null)
-		{
-			newRowBuilder.qty(request.getQty().orElse(null));
-		}
-
-		return newRowBuilder.build();
-	}
-
+	String packageSize;
+	String packageSizeUOM;
 }

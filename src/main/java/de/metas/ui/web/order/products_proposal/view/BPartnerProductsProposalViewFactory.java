@@ -1,5 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -7,19 +9,25 @@ import org.adempiere.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
-import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_BPartner_ProductsProposal_Launcher;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
@@ -67,8 +75,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	@Override
 	protected ViewLayout createViewLayout(ViewLayoutKey key)
 	{
-		final ITranslatableString caption = Services.get(IADProcessDAO.class)
-				.retrieveProcessNameByClassIfUnique(WEBUI_BPartner_ProductsProposal_Launcher.class)
+		final ITranslatableString caption = getProcessCaption(WEBUI_BPartner_ProductsProposal_Launcher.class)
 				.orElse(null);
 
 		return ViewLayout.builder()
@@ -112,23 +119,25 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@");
 		}
 
-		final Set<PriceListId> priceListIds = priceListsRepo.retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
-				.filterAndListIds(countryIds);
+		final LocalDate today = SystemTime.asLocalDate();
+		final Set<PriceListVersionId> priceListVersionIds = priceListsRepo.retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
+				.filterAndStreamIds(countryIds)
+				.map(priceListId -> priceListsRepo.retrievePriceListVersionId(priceListId, today))
+				.collect(ImmutableSet.toImmutableSet());
 
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
-				.priceListIds(priceListIds)
-				.date(SystemTime.asLocalDate())
+				.priceListVersionIds(priceListVersionIds)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
 				.build();
 	}
 
 	@Override
-	protected void beforeViewClose(ViewId viewId, ViewCloseAction closeAction)
+	protected List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
-		// TODO Auto-generated method stub
-
+		return ImmutableList.of(
+				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class),
+				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class));
 	}
-
 }

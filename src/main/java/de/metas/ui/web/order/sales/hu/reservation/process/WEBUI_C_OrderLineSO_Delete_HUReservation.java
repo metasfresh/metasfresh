@@ -53,9 +53,14 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(),salesOrderLineRepository);
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(),salesOrderLineRepository)
+				.orElse(null);
+		if(salesOrderLine == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order was set");
+		}
+		
 		final ProductId productId = salesOrderLine.getProductId();
-
 		final Quantity unreservableQty = retrieveUnreservableQuantity(productId);
 		if (unreservableQty.signum() <= 0)
 		{

@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -218,11 +219,11 @@ public class HUEditorView implements IView
 		return value != null ? value.booleanValue() : defaultValue;
 	}
 
-	public <T extends RepoIdAware> T getParameterAsIdOrNull(final String name)
+	public <T extends RepoIdAware> Optional<T> getParameterAsId(final String name)
 	{
 		@SuppressWarnings("unchecked")
 		final T value = (T)parameters.get(name);
-		return value;
+		return Optional.ofNullable(value);
 	}
 
 	@Override

@@ -13,14 +13,14 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.Env;
+import org.compiere.model.X_AD_Process;
+import org.compiere.util.Util;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
@@ -148,6 +148,8 @@ import lombok.NonNull;
 				.displayPlaces(relatedProcessDescriptor.getDisplayPlaces())
 				.defaultQuickAction(relatedProcessDescriptor.isWebuiDefaultQuickAction())
 				//
+				.shortcut(relatedProcessDescriptor.getWebuiShortcut())
+				//
 				.preconditionsResolutionSupplier(preconditionsResolutionSupplier)
 				//
 				.build();
@@ -160,7 +162,8 @@ import lombok.NonNull;
 
 	private ProcessDescriptor retrieveProcessDescriptor(final ProcessId processId)
 	{
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), processId.getProcessIdAsInt(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
+		final I_AD_Process adProcess = adProcessesRepo.getById(processId.toAdProcessId());
 		if (adProcess == null)
 		{
 			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
@@ -172,7 +175,7 @@ import lombok.NonNull;
 
 		//
 		// Parameters document descriptor
-		final DocumentEntityDescriptor processDescriptor;
+		final DocumentEntityDescriptor parametersDescriptor;
 		{
 			final DocumentEntityDescriptor.Builder parametersDescriptorBuilder = DocumentEntityDescriptor.builder()
 					.setDocumentType(DocumentType.Process, processId.toDocumentId())
@@ -187,7 +190,7 @@ import lombok.NonNull;
 					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
 					.forEach(processParaDescriptor -> parametersDescriptorBuilder.addField(processParaDescriptor));
 
-			processDescriptor = parametersDescriptorBuilder.build();
+			parametersDescriptor = parametersDescriptorBuilder.build();
 		}
 
 		//
@@ -195,9 +198,14 @@ import lombok.NonNull;
 		final ProcessLayout.Builder layout = ProcessLayout.builder()
 				.setProcessId(processId)
 				.setLayoutType(webuiProcesClassInfo.getLayoutType())
-				.setCaption(processDescriptor.getCaption())
-				.setDescription(processDescriptor.getDescription())
-				.addElements(processDescriptor);
+				.setCaption(parametersDescriptor.getCaption())
+				.setDescription(parametersDescriptor.getDescription())
+				.addElements(parametersDescriptor);
+
+		final boolean startProcessDirectly = computeIsStartProcessDirectly(
+				adProcess.getShowHelp(),
+				!parametersDescriptor.getFields().isEmpty() // hasProcessParameters
+		);
 
 		//
 		// Process descriptor
@@ -206,9 +214,34 @@ import lombok.NonNull;
 				.setInternalName(adProcess.getValue())
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
-				.setParametersDescriptor(processDescriptor)
+				.setParametersDescriptor(parametersDescriptor)
+				.setStartProcessDirectly(startProcessDirectly)
 				.setLayout(layout.build())
 				.build();
+	}
+
+	private static boolean computeIsStartProcessDirectly(
+			final String showHelpParam,
+			final boolean hasProcessParameters)
+	{
+		final String showHelp = Util.coalesce(showHelpParam, X_AD_Process.SHOWHELP_DonTShowHelp);
+
+		if (X_AD_Process.SHOWHELP_ShowHelp.equals(showHelp))
+		{
+			return false;
+		}
+		else if (X_AD_Process.SHOWHELP_DonTShowHelp.equals(showHelp))
+		{
+			return !hasProcessParameters;
+		}
+		else if (X_AD_Process.SHOWHELP_RunSilently_TakeDefaults.equals(showHelp))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(

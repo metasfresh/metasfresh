@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
@@ -37,17 +38,16 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class WEBUI_C_OrderLineSO_Util
+final class WEBUI_C_OrderLineSO_Util
 {
-	public SalesOrderLine retrieveSalesOrderLine(
+	public Optional<SalesOrderLine> retrieveSalesOrderLine(
 			@NonNull final HUEditorView huEditorView,
 			@NonNull final SalesOrderLineRepository salesOrderLineRepository)
 	{
-		final OrderLineId orderLineId = huEditorView
-				.getParameterAsIdOrNull(WEBUI_C_OrderLineSO_Launch_HUEditor.VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID);
+		final Optional<OrderLineId> orderLineId = huEditorView
+				.getParameterAsId(WEBUI_C_OrderLineSO_Launch_HUEditor.VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID);
 
-		final SalesOrderLine salesOrderLine = salesOrderLineRepository.getById(orderLineId);
-		return salesOrderLine;
+		return orderLineId.map(salesOrderLineRepository::getById);
 	}
 
 	public RetrieveHUsQtyRequest createHuQuantityRequest(

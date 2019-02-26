@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPreconditionsContext;
@@ -65,12 +66,18 @@ public final class ProcessDescriptor implements ETagAware
 	@Getter
 	private final String internalName;
 
+	@Getter
 	private final ProcessDescriptorType type;
-	private final Class<? extends IProcessDefaultParametersProvider> defaultParametersProviderClass;
+	@Getter
 	private final String processClassname;
+	private final Class<? extends IProcessDefaultParametersProvider> defaultParametersProviderClass;
 
-	private final DocumentEntityDescriptor parametersDescriptor;
+	@Getter
 	private final ProcessLayout layout;
+	private final DocumentEntityDescriptor parametersDescriptor;
+
+	@Getter
+	private final boolean startProcessDirectly;
 
 	// ETag support
 	private static final Supplier<ETag> nextETagSupplier = ETagAware.newETagGenerator();
@@ -88,6 +95,8 @@ public final class ProcessDescriptor implements ETagAware
 		parametersDescriptor = builder.getParametersDescriptor();
 
 		layout = builder.getLayout();
+
+		startProcessDirectly = builder.isStartProcessDirectly();
 	}
 
 	@Override
@@ -112,16 +121,6 @@ public final class ProcessDescriptor implements ETagAware
 	public ITranslatableString getDescription()
 	{
 		return getLayout().getDescription();
-	}
-
-	public ProcessDescriptorType getType()
-	{
-		return type;
-	}
-
-	public String getProcessClassname()
-	{
-		return processClassname;
 	}
 
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
@@ -178,10 +177,11 @@ public final class ProcessDescriptor implements ETagAware
 		return parametersDescriptor;
 	}
 
-	public ProcessLayout getLayout()
-	{
-		return layout;
-	}
+	//
+	//
+	//
+	//
+	//
 
 	public static final class Builder
 	{
@@ -196,6 +196,8 @@ public final class ProcessDescriptor implements ETagAware
 
 		private DocumentEntityDescriptor parametersDescriptor;
 		private ProcessLayout layout;
+
+		private Boolean startProcessDirectly;
 
 		private Builder()
 		{
@@ -313,6 +315,30 @@ public final class ProcessDescriptor implements ETagAware
 		{
 			Check.assumeNotNull(layout, "Parameter layout is not null");
 			return layout;
+		}
+
+		public Builder setStartProcessDirectly(final boolean startProcessDirectly)
+		{
+			this.startProcessDirectly = startProcessDirectly;
+			return this;
+		}
+
+		private boolean isStartProcessDirectly()
+		{
+			if (startProcessDirectly != null)
+			{
+				return startProcessDirectly;
+			}
+			else
+			{
+				return computeIsStartProcessDirectly();
+			}
+		}
+
+		private boolean computeIsStartProcessDirectly()
+		{
+			return (getParametersDescriptor() == null || getParametersDescriptor().getFields().isEmpty())
+					&& ImmutableTranslatableString.isEmpty(getLayout().getDescription());
 		}
 	}
 

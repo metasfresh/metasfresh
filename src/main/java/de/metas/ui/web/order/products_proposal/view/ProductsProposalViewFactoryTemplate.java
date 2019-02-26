@@ -1,5 +1,7 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -10,7 +12,15 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import de.metas.cache.CCache;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
+import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -22,6 +32,7 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -86,6 +97,12 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 
 	protected abstract ViewLayout createViewLayout(final ViewLayoutKey key);
 
+	protected <T extends JavaProcess> Optional<ITranslatableString> getProcessCaption(@NonNull final Class<T> processClass)
+	{
+		return Services.get(IADProcessDAO.class)
+				.retrieveProcessNameByClassIfUnique(processClass);
+	}
+
 	public final CreateViewRequest createViewRequest(final TableRecordReference recordRef)
 	{
 		return CreateViewRequest.builder(getWindowId())
@@ -94,30 +111,54 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 	}
 
 	@Override
-	public final IView createView(@NonNull final CreateViewRequest request)
+	public final ProductsProposalView createView(@NonNull final CreateViewRequest request)
 	{
 		final ProductsProposalRowsData rowsData = loadRowsData(request);
 
 		return ProductsProposalView.builder()
 				.windowId(getWindowId())
 				.rowsData(rowsData)
+				.processes(getRelatedProcessDescriptors())
 				.build();
 	}
 
 	private final ProductsProposalRowsData loadRowsData(final CreateViewRequest request)
+	{
+		final TableRecordReference recordRef = getRecordReference(request);
+		final ProductsProposalRowsLoader loader = createRowsLoaderFromRecord(recordRef);
+
+		return loader.load();
+	}
+
+	private final TableRecordReference getRecordReference(final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = request.getParameterAs(PARAM_RecordRef, TableRecordReference.class);
 		if (recordRef == null)
 		{
 			throw new AdempiereException("Invalid request, parameter " + PARAM_RecordRef + " is not set: " + request);
 		}
-
-		final ProductsProposalRowsLoader loader = createRowsLoaderFromRecord(recordRef);
-
-		return loader.load();
+		return recordRef;
 	}
 
 	protected abstract ProductsProposalRowsLoader createRowsLoaderFromRecord(TableRecordReference recordRef);
+
+	protected abstract List<RelatedProcessDescriptor> getRelatedProcessDescriptors();
+
+	protected final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId == null)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.anyTable().anyWindow()
+				.displayPlace(DisplayPlace.ViewQuickActions)
+				.build();
+	}
 
 	@Override
 	public final void put(final IView view)
@@ -150,7 +191,10 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 		views.cleanUp();
 	}
 
-	protected abstract void beforeViewClose(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction);
+	protected void beforeViewClose(@NonNull final ViewId viewId, @NonNull final ViewCloseAction closeAction)
+	{
+		// nothing on this level
+	}
 
 	@Override
 	public final Stream<IView> streamAllViews()

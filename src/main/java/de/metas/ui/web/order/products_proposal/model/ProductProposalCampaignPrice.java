@@ -1,10 +1,12 @@
-package de.metas.ui.web.order.products_proposal.view;
+package de.metas.ui.web.order.products_proposal.model;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
+import de.metas.currency.Amount;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -28,9 +30,29 @@ import lombok.Value;
  * #L%
  */
 
-@Value
 @Builder
-public class ProductsProposalRowChangeRequest
+@EqualsAndHashCode
+@ToString
+public final class ProductProposalCampaignPrice
 {
-	Optional<BigDecimal> qty;
+	@NonNull
+	private final Amount amount;
+	private final boolean applyOnlyIfLessThanStandardPrice;
+
+	public Amount applyOn(@NonNull final Amount standardPrice)
+	{
+		if (applyOnlyIfLessThanStandardPrice)
+		{
+			return this.amount.min(standardPrice);
+		}
+		else
+		{
+			return amount;
+		}
+	}
+
+	public boolean amountValueComparingEqualsTo(@NonNull final BigDecimal other)
+	{
+		return amount.valueComparingEqualsTo(other);
+	}
 }

@@ -73,9 +73,12 @@ public interface IQuickInputDescriptorFactory
 			return new MatchingKey(documentType, documentTypeId, tableName);
 		}
 
-		public static final MatchingKey includedDocument(final DocumentType documentType, final DocumentId documentTypeId, final String tableName)
+		public static final MatchingKey includedDocument(
+				final DocumentType rootDocumentType, 
+				final DocumentId rootDocumentTypeId,
+				final String includedTableName)
 		{
-			return new MatchingKey(documentType, documentTypeId, tableName);
+			return new MatchingKey(rootDocumentType, rootDocumentTypeId, includedTableName);
 		}
 
 		public static final MatchingKey ofTableName(final String tableName)
