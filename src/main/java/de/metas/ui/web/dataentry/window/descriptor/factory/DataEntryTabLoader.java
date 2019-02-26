@@ -42,7 +42,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -255,7 +254,7 @@ public class DataEntryTabLoader
 		return elementGroup;
 	}
 
-	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(final DataEntryField field)
+	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(@NonNull final DataEntryField field)
 	{
 		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
 				.builder(createFieldNameFor(field))
@@ -269,6 +268,13 @@ public class DataEntryTabLoader
 				.setWidgetType(ofFieldType(field.getType()))
 				.setWidgetSize(WidgetSize.Large)
 				.addField(fieldBuilder);
+
+		if (FieldType.LONG_TEXT.equals(field.getType()))
+		{
+			element.setMultilineText(true);
+			element.setMultilineTextLines(10);
+		}
+
 		return element;
 	}
 
@@ -293,36 +299,6 @@ public class DataEntryTabLoader
 				.setWidgetType(type)
 				.setWidgetSize(WidgetSize.Small)
 				.addField(fieldBuilder);
-		return element;
-	}
-
-	/** doesn't work*/
-	private static DocumentLayoutElementDescriptor.Builder createCreatedElementDescriptor(@NonNull final DataEntryFieldId dataEntryFieldId)
-	{
-		final String createdByColName = constructCreatedUpdatedFieldColumnName(COLUMNNAME_CreatedBy, dataEntryFieldId);
-		final String createdColName = constructCreatedUpdatedFieldColumnName(COLUMNNAME_Created, dataEntryFieldId);
-
-		final DocumentLayoutElementFieldDescriptor.Builder createdByFieldBuilder = DocumentLayoutElementFieldDescriptor
-				.builder(createdByColName)
-				.setLookupSource(LookupSource.lookup)
-				.setEmptyText(ITranslatableString.empty());
-
-		final DocumentLayoutElementFieldDescriptor.Builder createdFieldBuilder = DocumentLayoutElementFieldDescriptor
-				.builder(createdColName)
-				.setLookupSource(LookupSource.text)
-				.setEmptyText(ITranslatableString.empty());
-
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
-				.builder()
-				.setCaption(msgBL.translatable(createdByColName))
-				.setDescription(ITranslatableString.empty())
-				.setViewEditorRenderMode(ViewEditorRenderMode.NEVER)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setWidgetSize(WidgetSize.Small)
-				.addField(createdByFieldBuilder)
-				.addField(createdFieldBuilder);
 		return element;
 	}
 
@@ -504,6 +480,7 @@ public class DataEntryTabLoader
 				.setWidgetType(ofFieldType(dataEntryField.getType()))
 				.setLookupDescriptorProvider(fieldLookupDescriptorProvider)
 				.addCharacteristic(Characteristic.PublicField)
+				.setMandatoryLogic(ConstantLogicExpression.of(dataEntryField.isMandatory()))
 				.setDataBinding(dataBinding);
 	}
 

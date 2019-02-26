@@ -11,6 +11,7 @@ import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 
 /*
@@ -39,11 +40,15 @@ import lombok.NonNull;
 @Interceptor(I_DataEntry_ListValue.class)
 public class DataEntry_ListValue
 {
-	private DocumentDescriptorFactory documentDescriptorFactory;
+	private final DocumentDescriptorFactory documentDescriptorFactory;
+	private final DocumentCollection documentCollection;
 
-	public DataEntry_ListValue(@NonNull final DocumentDescriptorFactory documentDescriptorFactory)
+	public DataEntry_ListValue(
+			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
+			@NonNull final DocumentCollection documentCollection)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.documentCollection = documentCollection;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
@@ -73,5 +78,6 @@ public class DataEntry_ListValue
 			return;
 		}
 		documentDescriptorFactory.invalidateForWindow(WindowId.of(windowId));
+		documentCollection.cacheReset();
 	}
 }

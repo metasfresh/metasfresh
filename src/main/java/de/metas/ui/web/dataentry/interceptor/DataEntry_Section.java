@@ -6,7 +6,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.dataentry.model.I_DataEntry_Group;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -34,14 +34,14 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_SubGroup")
-@Interceptor(I_DataEntry_SubGroup.class)
-public class DataEntry_SubGroup
+@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_Section")
+@Interceptor(I_DataEntry_Section.class)
+public class DataEntry_Section
 {
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final DocumentCollection documentCollection;
 
-	public DataEntry_SubGroup(
+	public DataEntry_Section(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentCollection documentCollection)
 	{
@@ -50,13 +50,13 @@ public class DataEntry_SubGroup
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_SubGroup dataEntrySubGroupRecord)
+	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_Section dataEntrysectionRecord)
 	{
-		if (dataEntrySubGroupRecord.getDataEntry_Group_ID() <= 0)
+		if (dataEntrysectionRecord.getDataEntry_Group_ID() <= 0)
 		{
 			return;
 		}
-		final I_DataEntry_Group dataEntryGroupRecord = dataEntrySubGroupRecord.getDataEntry_Group();
+		final I_DataEntry_Group dataEntryGroupRecord = dataEntrysectionRecord.getDataEntry_Group();
 
 		final int windowId = dataEntryGroupRecord.getDataEntry_TargetWindow_ID();
 		if (windowId <= 0)
