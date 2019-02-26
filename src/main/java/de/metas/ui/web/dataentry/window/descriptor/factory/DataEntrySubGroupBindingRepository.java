@@ -16,7 +16,6 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
@@ -25,12 +24,9 @@ import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
@@ -66,7 +62,10 @@ import lombok.NonNull;
 
 public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 {
-	private DataEntryRecordRepository dataEntryRecordRepository;
+	private static final String VERSION_DEFAULT = "0";
+
+	private final DataEntryRecordRepository dataEntryRecordRepository;
+
 
 	public DataEntrySubGroupBindingRepository(@NonNull final DataEntryRecordRepository dataEntryRecordRepository)
 	{
@@ -258,10 +257,9 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 				continue;
 			}
 
-			final Object dataEntryFieldValue = extractFieldValue(fieldView);
+			final Object dataEntryFieldValue = DataEntryWebuiTools.extractFieldValueForDataEntry(fieldView);
 
-			final String fieldName = fieldView.getFieldName();
-			final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName)); // TODO extract this code and the code form DataEntryTabLoader into a common class
+			final DataEntryFieldId dataEntryFieldId = DataEntryWebuiTools.computeDataEntryFieldId(fieldView);
 
 			final boolean valueChanged = dataEntryRecord.setRecordField(dataEntryFieldId, userId, dataEntryFieldValue);
 			refreshNeeded = refreshNeeded || valueChanged;
@@ -316,67 +314,8 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		return dataEntrySubGroupId;
 	}
 
-	private static Object extractFieldValue(final IDocumentFieldView fieldView)
-	{
-		final Object value = fieldView.getValue();
 
-		final DocumentFieldDescriptor descriptor = fieldView.getDescriptor();
-		final DataEntryFieldBindingDescriptor dataBinding = descriptor.getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
 
-		final FieldType fieldType = dataBinding.getFieldType();
-
-		if (value == null)
-		{
-			return null;
-		}
-
-		final Object result;
-		switch (fieldType)
-		{
-			case DATE:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case LIST:
-				final LookupDescriptor lookupDescriptor = descriptor.getLookupDescriptor(LookupScope.DocumentField);
-				final DataEntryListValueDataSourceFetcher fetcher = (DataEntryListValueDataSourceFetcher)lookupDescriptor.getLookupDataSourceFetcher();
-				result = fetcher.getListValueIdForLookup((IntegerLookupValue)value);
-				break;
-			case NUMBER:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case TEXT:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case LONG_TEXT:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case YESNO:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case CREATED:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case CREATED_BY:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case UPDATED:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case UPDATED_BY:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case PARENT_LINK_ID:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case SUB_GROUP_ID:
-				result = fieldType.getClazz().cast(value);
-				break;
-			default:
-				throw new AdempiereException("Unexpected fieldType=" + fieldType);
-		}
-
-		return result;
-	}
 
 	@Override
 	public void delete(@NonNull final Document document)
@@ -402,8 +341,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	@Override
 	public String retrieveVersion(DocumentEntityDescriptor entityDescriptor, int documentIdAsInt)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return VERSION_DEFAULT;
 	}
 
 	@Override
@@ -411,8 +349,6 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	{
 		return 0;
 	}
-
-	private static final String VERSION_DEFAULT = "0";
 
 	private static final class DataEntryDocumentValuesSupplier implements DocumentValuesSupplier
 	{
@@ -442,30 +378,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		@Override
 		public Object getValue(@NonNull final DocumentFieldDescriptor fieldDescriptor)
 		{
-			final DataEntryFieldBindingDescriptor dataBinding = fieldDescriptor.getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
-
-			final DataEntryFieldId dataEntryFieldId = dataBinding.getDataEntryFieldId();
-			switch (dataBinding.getFieldType())
-			{
-				case CREATED:
-					return dataEntryRecord.getCreatedValue(dataEntryFieldId).orElse(null);
-				case CREATED_BY:
-					return dataEntryRecord.getCreatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
-				case UPDATED:
-					return dataEntryRecord.getUpdatedValue(dataEntryFieldId).orElse(null);
-				case UPDATED_BY:
-					return dataEntryRecord.getUpdatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
-				case PARENT_LINK_ID:
-					return dataEntryRecord.getMainRecord().getRecord_ID();
-				case SUB_GROUP_ID:
-					return dataEntryRecord.getDataEntrySubGroupId().getRepoId();
-				case LIST:
-					final DataEntryListValueId dataEntryListValueId = (DataEntryListValueId)dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
-					final DataEntryListValueDataSourceFetcher fetcher = (DataEntryListValueDataSourceFetcher)fieldDescriptor.getLookupDescriptor(LookupScope.DocumentField).getLookupDataSourceFetcher();
-					return fetcher.getLookupForForListValueId(dataEntryListValueId);
-				default:
-					return dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
-			}
+			return DataEntryWebuiTools.extractDataEntryValueForField(dataEntryRecord, fieldDescriptor);
 		}
 
 	}

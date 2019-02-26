@@ -257,7 +257,7 @@ public class DataEntryTabLoader
 	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(@NonNull final DataEntryField field)
 	{
 		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
-				.builder(createFieldNameFor(field))
+				.builder(DataEntryWebuiTools.computeFieldName(field.getId()))
 				.setEmptyText(ITranslatableString.empty());
 
 		final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
@@ -300,11 +300,6 @@ public class DataEntryTabLoader
 				.setWidgetSize(WidgetSize.Small)
 				.addField(fieldBuilder);
 		return element;
-	}
-
-	private static String createFieldNameFor(@NonNull final DataEntryField field)
-	{
-		return Integer.toString(field.getId().getRepoId());
 	}
 
 	public List<DocumentEntityDescriptor> loadDocumentEntity()
@@ -455,9 +450,11 @@ public class DataEntryTabLoader
 
 	private DocumentFieldDescriptor.Builder createFieldDescriptor(@NonNull final DataEntryField dataEntryField)
 	{
+		final String fieldName = DataEntryWebuiTools.computeFieldName(dataEntryField.getId());
+
 		final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
 				.builder()
-				.columnName(createFieldNameFor(dataEntryField))
+				.columnName(fieldName)
 				.mandatory(dataEntryField.isMandatory())
 				.dataEntryFieldId(dataEntryField.getId())
 				.fieldType(dataEntryField.getType())
@@ -474,7 +471,7 @@ public class DataEntryTabLoader
 			fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
 		}
 
-		return DocumentFieldDescriptor.builder(createFieldNameFor(dataEntryField))
+		return DocumentFieldDescriptor.builder(fieldName)
 				.setCaption(dataEntryField.getCaption())
 				.setDescription(dataEntryField.getDescription())
 				.setWidgetType(ofFieldType(dataEntryField.getType()))
