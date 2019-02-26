@@ -108,7 +108,7 @@ public class AccountImportProcess extends AbstractImportProcess<I_I_ElementValue
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_ElementValue importRecord) throws Exception
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_ElementValue importRecord) 
 	{
 		//
 		// Get previous values
