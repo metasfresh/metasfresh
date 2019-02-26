@@ -788,7 +788,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				}
 			}
 
-			// TODO: handle not updateable columns... i think we shall set them only if the PO is new
+			// TODO: handle not updatable columns... i think we shall set them only if the PO is new
 
 			// NOTE: at this point we shall not do any other validations like "mandatory but null", value min/max range check,
 			// because we shall rely completely on Document level validations and not duplicate the logic here.
