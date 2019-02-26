@@ -1,18 +1,15 @@
-// import update from 'immutability-helper';
-// import { is } from 'immutable';
-// import * as _ from 'lodash';
 import React, { Component } from 'react';
-// import onClickOutside from 'react-onclickoutside';
-// import classnames from 'classnames';
+import classnames from 'classnames';
+
 import MasterWidget from '../widget/MasterWidget';
+import { getSizeClass } from '../../utils/tableHelpers';
 
 export default class EntryTable extends Component {
-  renderElements = elements => {
+  renderElements = (elements, autoFocus) => {
     const {
       data,
       rowData,
       extendedData,
-      isFirst,
       addRefToWidgets,
       handleBlurWidget,
       windowId,
@@ -21,20 +18,25 @@ export default class EntryTable extends Component {
       fullScreen,
     } = this.props;
 
-    console.log('ROWDATA222: ', rowData );
-
     if (rowData && rowData.size) {
       return elements.map((elem, idx) => {
-        const autoFocus = isFirst && idx === 0;
-        const widgetData = rowData.fieldsByName.get(extendedData.tabId);
         const fieldName = elem.fields ? elem.fields[0].field : '';
+        const widgetData = [rowData.get(0).fieldsByName[fieldName]];
         const relativeDocId = data.ID && data.ID.value;
-        // tabIndex
-
-        console.log(' renderElements: ', autoFocus, idx, ', fieldName: ', fieldName, ', rowData: ', rowData);
 
         return (
-          <td key={`${fieldName}-cell-${idx}`}>
+          <td
+            key={`${fieldName}-cell-${idx}`}
+            className={classnames(
+              {
+                [`text-${widgetData.gridAlign}`]: widgetData.gridAlign,
+                'cell-disabled': widgetData[0].readonly,
+                'cell-mandatory': widgetData[0].mandatory,
+              },
+              getSizeClass(widgetData),
+              widgetData.widgetType
+            )}
+          >
             <MasterWidget
               ref={addRefToWidgets}
               entity="window"
@@ -52,7 +54,6 @@ export default class EntryTable extends Component {
               onBlurWidget={() => handleBlurWidget(fieldName)}
               {...elem}
             />
-            {fieldName}
           </td>
         );
       });
@@ -62,14 +63,27 @@ export default class EntryTable extends Component {
   };
 
   render() {
-    const { rows } = this.props;
+    const { rows, isFirst } = this.props;
 
     return (
-      <table>
+      <table className="table table-bordered-vertically table-striped js-table layout-fix">
         <tbody>
-          {rows.map(cols => (
-            <tr>{this.renderElements(cols)}</tr>
-          ))}
+          {rows.map((cols, idx) => {
+            const selected = isFirst && idx === 0;
+
+            return (
+              <tr
+                key={`entry-row-${idx}`}
+                className={classnames({
+                  'row-selected': selected,
+                  'tr-odd': idx % 2,
+                  'tr-even': !(idx % 2),
+                })}
+              >
+                {this.renderElements(cols, selected)}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     );
