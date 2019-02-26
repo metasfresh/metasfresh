@@ -1,8 +1,8 @@
 /// <reference types="Cypress" />
 
-import { BPartner, BPartnerLocation } from '../support/utils/bpartner';
-import { DiscountSchema, DiscountBreak } from '../support/utils/discountschema';
-import { PurchaseOrder, PurchaseOrderLine } from '../support/utils/purchase_order';
+import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
+import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
+import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
 describe('purchase order Test', function() {
     before(function() {
