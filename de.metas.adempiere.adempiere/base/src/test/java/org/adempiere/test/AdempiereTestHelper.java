@@ -58,8 +58,8 @@ import de.metas.util.Services;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.time.SystemTime;
 import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.matchrule.JSONAssertMatchRule;
-import io.github.jsonSnapshot.matchrule.SnapshotMatchRule;
+import io.github.jsonSnapshot.SnapshotMatchingStragety;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.
@@ -83,9 +83,9 @@ public class AdempiereTestHelper
 		}
 
 		@Override
-		public SnapshotMatchRule getSnapshotMatchRule()
+		public SnapshotMatchingStragety getSnapshotMatchRule()
 		{
-			return JSONAssertMatchRule.INSTANCE_STRICT;
+			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
 		}
 	};
 
