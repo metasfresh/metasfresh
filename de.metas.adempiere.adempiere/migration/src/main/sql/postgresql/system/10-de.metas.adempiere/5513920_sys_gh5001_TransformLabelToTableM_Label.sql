@@ -343,31 +343,6 @@ UPDATE AD_Column SET AD_Element_ID=576157, AD_Reference_ID=19, ColumnName='M_Lab
 UPDATE AD_Field SET Name='Label List', Description=NULL, Help=NULL WHERE AD_Column_ID=563878
 ;
 
--- 2019-02-27T18:10:29.480
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,576157,627344,574514,0,540573,TO_TIMESTAMP('2019-02-27 18:10:29','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-02-27 18:10:29','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2019-02-27T18:10:32.356
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET AD_Name_ID=576005, Name='Label',Updated=TO_TIMESTAMP('2019-02-27 18:10:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=574514
-;
-
--- 2019-02-27T18:10:32.362
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=627344
-;
-
--- 2019-02-27T18:10:32.427
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,576005,627345,574514,0,540573,TO_TIMESTAMP('2019-02-27 18:10:32','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-02-27 18:10:32','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2019-02-27T18:10:32.429
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(576005) 
-;
-
 -- 2019-02-27T18:10:40.365
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('M_Product_Certificate','ALTER TABLE public.M_Product_Certificate ADD COLUMN M_Label_ID NUMERIC(10)')
