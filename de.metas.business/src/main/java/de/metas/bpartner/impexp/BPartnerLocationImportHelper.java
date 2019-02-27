@@ -203,6 +203,7 @@ import lombok.NonNull;
 		location.setCity(importRecord.getCity());
 		location.setC_Region_ID(importRecord.getC_Region_ID());
 		location.setC_Country_ID(importRecord.getC_Country_ID());
+		location.setPOBox(importRecord.getPOBox());
 		InterfaceWrapperHelper.save(location);
 	}
 

@@ -50,7 +50,7 @@ public class BPartnerImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
 
-	public void updateBPartnerImtortTable(@NonNull final String whereClause)
+	public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateOrgs(whereClause);
 

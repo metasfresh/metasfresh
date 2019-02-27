@@ -79,7 +79,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	protected void updateAndValidateImportRecords()
 	{
 		final String whereClause = getWhereClause();
-		BPartnerImportTableSqlUpdater.updateBPartnerImtortTable(whereClause);
+		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
 	}
 
 	private static final class BPartnerImportContext
