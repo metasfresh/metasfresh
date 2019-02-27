@@ -44,6 +44,46 @@
     }
 }
 
+.collapsible-section {
+    position: relative;
+
+     .panel-size-button {
+        display: block;
+        width: auto;
+        height: auto;
+        position: absolute;
+        padding: 0;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+
+         .btn {
+            padding: .125rem .25rem;
+            line-height: 1rem;
+        }
+    }
+
+    .section {
+        transition: height, padding .25s ease-in-out;
+
+         &.collapsed {
+            height: 0;
+            padding: .75em;
+            overflow: hidden;
+            transition: height, padding .25s ease-in-out;
+
+             * {
+                visibility: hidden;
+                transition: visibility .25s ease-in-out;
+            }
+        }
+
+         * {
+            transition: visibility .25s ease-in-out;
+        }
+    }
+}
+
 .tab-sections {
     flex-grow: 1;
     flex-direction: column;

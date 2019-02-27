@@ -17,6 +17,7 @@ class Window extends PureComponent {
     this.state = {
       fullScreen: null,
       dragActive: false,
+      collapsedSections: {},
     };
 
     if (props.isModal) {
@@ -158,16 +159,48 @@ class Window extends PureComponent {
     );
   };
 
+  toggleSection = idx => {
+    this.setState({
+      collapsedSections: {
+        ...this.state.collapsedSections,
+        [idx]: !this.state.collapsedSections[idx],
+      },
+    });
+  };
+
+  sectionCollapsed = idx => {
+    return this.state.collapsedSections[idx];
+  };
+
   renderSections = (sections, dataEntry, extendedData = {}) => {
-    return sections.map((elem, id) => {
+    return sections.map((elem, idx) => {
       const { title, columns } = elem;
-      const isFirst = id === 0;
+      const isFirst = idx === 0;
+      const sectionCollapsed = dataEntry && this.sectionCollapsed(idx);
 
       return (
-        <div className="row" key={'section' + id}>
-          {title && <Separator {...{ title }} />}
-          {columns &&
-            this.renderColumns(columns, isFirst, dataEntry, extendedData)}
+        <div key={`section-${idx}`} className="collapsible-section">
+          <div className="panel-size-button">
+            <button
+              className={classnames(
+                'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
+                {
+                  'meta-icon-show': !sectionCollapsed,
+                  'meta-icon-hide': sectionCollapsed,
+                }
+              )}
+              onClick={() => this.toggleSection(idx)}
+            />
+          </div>
+          <div
+            className={classnames('row section', {
+              collapsed: sectionCollapsed,
+            })}
+          >
+            {title && <Separator {...{ title }} />}
+            {columns &&
+              this.renderColumns(columns, isFirst, dataEntry, extendedData)}
+          </div>
         </div>
       );
     });
