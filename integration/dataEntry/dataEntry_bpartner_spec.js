@@ -1,5 +1,4 @@
 
-import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DataEntryGroup, DataEntrySubGroup, DataEntrySection } from '../../support/utils/dataEntryGroup';
 import { DataEntryField, DataEntryListValue } from '../../support/utils/dataEntryField';
 
@@ -72,7 +71,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
                 .setSeqNo(30)
                 .addDataEntryListValue(new DataEntryListValue
                     .builder('ListItem 1')
-                    .setDescription('ListItem 2 Description')
+                    .setDescription('ListItem 1 Description')
                     .setSeqNo(20)
                     .build())
                 .addDataEntryListValue(new DataEntryListValue
@@ -85,8 +84,8 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
         cy.visitWindow('123', 'NEW')
         cy.writeIntoStringField('CompanyName', `DataEntryBPartnerTestName ${timestamp}`)
-        cy.selectTab('Group1-Tab1')
-        cy.selectTab('Group1-Tab1-SubTab1')
+        cy.selectTab(dataEntryGroupName)
+        cy.selectTab(dataEntrySubGroup1Name)
     });
 
 
