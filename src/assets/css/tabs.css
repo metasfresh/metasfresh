@@ -48,43 +48,33 @@
     flex-grow: 1;
     flex-direction: column;
     display: flex;
-    -webkit-box-flex: 1;
     overflow: scroll;
 
-    .row {
-        .panel-distance {
-            padding-bottom: 2px !important;
-            margin: 0 !important;
-        }
-
-        &:first-child .panel-distance:first-child {
-            margin-top: 1.25rem !important;
-        }
+    .separator {
+        padding-bottom: 20px;
     }
 
-    .elements-line {
-        flex-wrap: nowrap;
-        margin: 0;
+    .table {
+        td {
+            width: max-content;
+            max-width: max-content;
+            min-width: min-content;
 
-        * {
-            flex: 0 0 auto;
-        }
+            .row {
+                flex-wrap: nowrap;
+                margin: 0;
 
-        .row {
-            margin: 0;
-            display: inline-flex;
-            flex-wrap: nowrap;
-            flex-grow: 1;
-
-            .col-sm-9 {
-                max-width: fit-content;
+                margin: 0;
+                display: inline-flex;
+                flex-wrap: nowrap;
                 flex-grow: 1;
-                flex-shrink: 0;
-                flex-basis: 100%;
             }
 
-            .form-control-label {
-                max-width: fit-content;
+            .form-group {
+                > div {
+                    flex: 1 0 100%;
+                    max-width: fit-content;
+                }
             }
         }
     }

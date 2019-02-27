@@ -12,7 +12,7 @@ export default class EntryTable extends Component {
       extendedData,
       addRefToWidgets,
       handleBlurWidget,
-      windowId,
+      layout,
       dataId,
       tabIndex,
       fullScreen,
@@ -40,7 +40,7 @@ export default class EntryTable extends Component {
             <MasterWidget
               ref={addRefToWidgets}
               entity="window"
-              windowType={windowId}
+              windowType={layout.windowId}
               dataId={dataId}
               widgetData={widgetData}
               isModal={false}
