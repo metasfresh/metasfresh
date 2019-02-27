@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
 import Table from '../components/table/Table';
-import EntryTable from '../components/Table/EntryTable';
+import EntryTable from '../components/table/EntryTable';
 import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
 import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
