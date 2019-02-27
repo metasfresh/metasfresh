@@ -7,7 +7,6 @@
 **/.classpath
 **/.project
 
-**/activemq-data/
 **/data/
 
 # we have a java packages with de.metas.event.log.. so this doesn't work
@@ -33,3 +32,7 @@ de.metas.endcustomer.mf15/metasfresh.properties
 **/rebel.xml
 
 de.metas.shipper.gateway.go/src/main/resources/application.properties
+
+#Ignore IDEA files
+*.iml
+**/.idea

@@ -103,7 +103,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
 					<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/edi/esb/de.metas.edi.esb.camel/${MF_VERSION}/de.metas.edi.esb.camel-${MF_VERSION}.jar\">de.metas.edi.esb.camel-${MF_VERSION}.jar</a></li>
-					<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/printing/de.metas.printing.esb.base/${MF_VERSION}/de.metas.printing.esb.base-${MF_VERSION}.jar\">de.metas.printing.esb.base-${MF_VERSION}.jar</a></li>
 				</ul>""";
 
 				junit '**/target/surefire-reports/*.xml'
