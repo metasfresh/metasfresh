@@ -121,11 +121,40 @@ context('Reusable "login" custom command', function() {
   });
 });
 
-
-Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
+/*
+ * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
   describe('Click on a checkbox field', function() {
-    cy.get(`.form-field-${fieldName}`)
+
+    cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
+
+    cy.server()
+    cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox')
+    cy.route('GET', '/rest/api/window/**').as('getData')
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+  
+    cy.get(path)
       .find('.input-checkbox-tick')
+      .click()
+      .wait(['@patchCheckBox', '@getData'])
+  });
+});
+
+Cypress.Commands.add('clickOnIsActive', (modal) => {
+  describe('Click on the IsActive slider', function() {
+
+    let path = `.form-field-IsActive`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    cy.get(path)
+      .find('.input-slider')
       .click();
   });
 });
@@ -133,21 +162,24 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
 /** 
  * Should also work for date columns, e.g. '01/01/2018{enter}'.
  * 
- * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
   describe('Enter value into string field', function() {
 
     cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
+   
+    cy.server()
+    cy.route('PATCH', '/rest/api/window/**').as(`patchInputField`)
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
-      //path = `.panel-modal-content ${path}`;
       path = `.panel-modal ${path}`;
     }
     cy.get(path)
       .find('input')
-      .type(stringValue);
+      .type(`${stringValue}{enter}`)
+      .wait('@patchInputField')
   });
 });
 
@@ -159,14 +191,17 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
 
       cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
+      cy.server()
+      cy.route('PATCH', '/rest/api/window/**').as('patchTextArea')
+
       let path = `.form-field-${fieldName}`;
       if (modal) {
-        //path = `.panel-modal-content ${path}`;
         path = `.panel-modal ${path}`;
       }
       cy.get(path)
         .find('textarea')
-        .type(stringValue);
+        .type(stringValue)
+        .wait('@patchTextArea')
     });
   });
 
@@ -207,6 +242,9 @@ Cypress.Commands.add(
  */
 Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
   describe('Select value in list field', function() {
+
+      cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
+
       let path = `.form-field-${fieldName}`;
       if (modal) {
         //path = `.panel-modal-content ${path}`;
@@ -495,3 +533,14 @@ Cypress.Commands.add('clickHeaderNav', (navName) => {
   });
 });
 
+Cypress.Commands.add('visitWindow', (windowId, recordId) => {
+  describe('Open metasfresh window and wait for layout and data', function() {
+
+    cy.server()
+    cy.route('GET', `/rest/api/window/${windowId}/layout`).as('getLayout')
+    cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as('getRecordData')
+
+    cy.visit(`/window/${windowId}/${recordId}`)
+      .wait([ '@getLayout', '@getRecordData'])
+  })
+})
