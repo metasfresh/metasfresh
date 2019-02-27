@@ -75,7 +75,6 @@ export default class EntryTable extends Component {
               <tr
                 key={`entry-row-${idx}`}
                 className={classnames({
-                  'row-selected': selected,
                   'tr-odd': idx % 2,
                   'tr-even': !(idx % 2),
                 })}

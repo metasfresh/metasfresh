@@ -44,7 +44,7 @@
     }
 }
 
-.collapsible-section {
+.section {
     position: relative;
 
      .panel-size-button {
@@ -63,7 +63,7 @@
         }
     }
 
-    .section {
+    .collapsible-section {
         transition: height, padding .25s ease-in-out;
 
          &.collapsed {
@@ -90,11 +90,23 @@
     display: flex;
     overflow: scroll;
 
+    .section {
+        margin-bottom: 20px;
+    }
+
     .separator {
         padding-bottom: 20px;
+        margin-top: 0;
+    }
+
+    .panel {
+        padding-bottom: 0px !important;
     }
 
     .table {
+        width: max-content;
+        margin-bottom: 0;
+
         td {
             width: max-content;
             max-width: max-content;
