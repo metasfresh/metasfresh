@@ -3257,3 +3257,28 @@ UPDATE AD_ImpFormat_Row SET StartNo=1,Updated=TO_TIMESTAMP('2019-02-26 18:12:11'
 UPDATE AD_ImpFormat_Row SET StartNo=2,Updated=TO_TIMESTAMP('2019-02-26 18:12:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541028
 ;
 
+
+
+
+--------------------------------------------------------------------------------------------
+
+-- 2019-02-27T14:46:14.360
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsIdentifier='Y', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2019-02-27 14:46:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564247
+;
+
+-- 2019-02-27T14:46:24.730
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FilterDefaultValue='N', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2019-02-27 14:46:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564231
+;
+
+-- 2019-02-27T14:46:48.774
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='N', SeqNo=0,Updated=TO_TIMESTAMP('2019-02-27 14:46:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=575078
+;
+
+-- 2019-02-27T14:46:52.237
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2019-02-27 14:46:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=575078
+;
+
