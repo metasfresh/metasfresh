@@ -4,6 +4,7 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
@@ -40,14 +41,14 @@ timestamps
 
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
-	currentBuild.displayName="artifact-version ${MF_VERSION}";
+	currentBuild.displayName="artifact-version ${MF_VERSION}"
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
 	{
 		// checkout our code
-		checkout scm; // i hope this to do all the magic we need
+		checkout scm // i hope this to do all the magic we need
 		sh 'git clean -d --force -x' // clean the workspace
 	}
 
@@ -72,18 +73,18 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// update the parent pom version
 				mvnUpdateParentPomVersion mvnConf
 
-				final String mavenUpdatePropertyParam;
+				final String mavenUpdatePropertyParam
 				if(params.MF_UPSTREAM_VERSION)
 				{
-					final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
+					final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]" }
 					// update the property, use the metasfresh version that we were given by the upstream job.
 					// the square brackets are required if we have a conrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(params.MF_UPSTREAM_VERSION)}";
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(params.MF_UPSTREAM_VERSION)}"
 				}
 				else
 				{
 					// still update the property, but use the latest version
-					mavenUpdatePropertyParam='-Dproperty=metasfresh.version';
+					mavenUpdatePropertyParam='-Dproperty=metasfresh.version'
 				}
 
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
@@ -103,16 +104,26 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
 					<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/edi/esb/de.metas.edi.esb.camel/${MF_VERSION}/de.metas.edi.esb.camel-${MF_VERSION}.jar\">de.metas.edi.esb.camel-${MF_VERSION}.jar</a></li>
-				</ul>""";
+				</ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
 
 				jacoco()
 
+				final DockerConf dockerConf = new DockerConf(
+						'de-metas-edi-esb-camel', // artifactName
+						MF_UPSTREAM_BRANCH, // branchName
+						MF_VERSION, // versionSuffix
+						'./') // workDir
+				final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
+
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-				env.MF_VERSION="${MF_VERSION}";
+				env.BUILD_DOCKER_IMAGE = publishedDockerImageName
+				env.MF_VERSION="${MF_VERSION}"
+
+
       } // stage
 		} // withMaven
 	} // configFileProvider
