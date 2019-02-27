@@ -3,6 +3,7 @@ package de.metas.dataentry.layout;
 import static de.metas.util.Check.fail;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -10,6 +11,7 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -30,6 +32,7 @@ import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -59,6 +62,9 @@ import lombok.NonNull;
 @Repository
 public class DataEntryLayoutRepository
 {
+
+	private static final Logger logger = LogManager.getLogger(DataEntryLayoutRepository.class);
+
 	public ImmutableList<DataEntryGroup> getByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		final ImmutableList<I_DataEntry_Group> groupRecords = retrieveGroupRecords(adWindowId);
@@ -119,7 +125,7 @@ public class DataEntryLayoutRepository
 				.documentLinkColumnName(DocumentLinkColumnName.of(parentLinkColumnName))
 				.caption(captionTrl)
 				.description(descriptionTrl)
-				.internalName(groupRecord.getName())
+				.internalName(I_DataEntry_Group.COLUMNNAME_DataEntry_Group_ID + "-" + groupRecord.getDataEntry_Group_ID())
 				.dataEntrySubGroups(subGroups.build())
 				.build();
 		return group;
@@ -183,8 +189,8 @@ public class DataEntryLayoutRepository
 			// use default for dataEntrySectionId=0, but also if the section record somehow got lost
 			final DataEntrySectionBuilder sectionBuilder = id2SectionBuilder.computeIfAbsent(dataEntrySectionId, id -> defaultSectionBuilder);
 
-			final DataEntryField field = ofRecord(fieldRecord);
-			sectionBuilder.dataEntryField(field);
+			final Optional<DataEntryField> field = ofRecord(fieldRecord);
+			field.ifPresent(sectionBuilder::dataEntryField);
 		}
 
 		final ImmutableList<DataEntrySection> dataEntrySections = id2SectionBuilder.values().stream()
@@ -232,7 +238,7 @@ public class DataEntryLayoutRepository
 				.internalName(I_DataEntry_Section.COLUMNNAME_DataEntry_Section_ID + "-" + sectionRecord.getDataEntry_Section_ID());
 	}
 
-	private static DataEntryField ofRecord(final I_DataEntry_Field fieldRecord)
+	private static Optional<DataEntryField> ofRecord(final I_DataEntry_Field fieldRecord)
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(fieldRecord);
 
@@ -251,11 +257,16 @@ public class DataEntryLayoutRepository
 			type = FieldType.LIST;
 
 			final ImmutableList<I_DataEntry_ListValue> listValueRecords = retrieveListValueRecords(fieldRecord);
+			if (listValueRecords.isEmpty())
+			{
+				logger.warn("Skipping DataEntry_Field_ID={} which has no DataEntry_ListValue records", fieldRecord.getDataEntry_Field_ID());
+				return Optional.empty();
+			}
+
 			for (final I_DataEntry_ListValue listValueRecord : listValueRecords)
 			{
 				listValues.add(ofRecord(listValueRecord));
 			}
-
 		}
 		else if (X_DataEntry_Field.DATAENTRY_RECORDTYPE_Date.equals(recordType))
 		{
@@ -282,7 +293,7 @@ public class DataEntryLayoutRepository
 			fail("Unexpected type={}; DataEntry_Field={}", recordType, fieldRecord);
 			type = null;
 		}
-		return DataEntryField
+		final DataEntryField field = DataEntryField
 				.builder()
 				.id(DataEntryFieldId.ofRepoId(fieldRecord.getDataEntry_Field_ID()))
 				.caption(nameTrl)
@@ -291,6 +302,7 @@ public class DataEntryLayoutRepository
 				.type(type)
 				.listValues(listValues.build())
 				.build();
+		return Optional.of(field);
 	}
 
 	private static ImmutableList<I_DataEntry_ListValue> retrieveListValueRecords(@NonNull final I_DataEntry_Field fieldRecord)
