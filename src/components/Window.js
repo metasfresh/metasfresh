@@ -9,6 +9,7 @@ import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
 import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
+import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
 
 class Window extends PureComponent {
   constructor(props) {
@@ -174,30 +175,37 @@ class Window extends PureComponent {
 
   renderSections = (sections, dataEntry, extendedData = {}) => {
     return sections.map((elem, idx) => {
-      const { title, columns } = elem;
+      const { title, columns, closableMode } = elem;
       const isFirst = idx === 0;
       const sectionCollapsed = dataEntry && this.sectionCollapsed(idx);
+      const collapsible =
+        closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
 
       return (
-        <div key={`section-${idx}`} className="collapsible-section">
-          <div className="panel-size-button">
-            <button
-              className={classnames(
-                'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
-                {
-                  'meta-icon-show': !sectionCollapsed,
-                  'meta-icon-hide': sectionCollapsed,
-                }
-              )}
-              onClick={() => this.toggleSection(idx)}
-            />
-          </div>
+        <div key={`section-${idx}`} className="section">
+          {title && <Separator {...{ title }} />}
+          {collapsible && (
+            <div className="panel-size-button">
+              <button
+                className={classnames(
+                  'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
+                  {
+                    'meta-icon-show':
+                      sectionCollapsed || closableMode === INITIALLY_OPEN,
+                    'meta-icon-hide':
+                      !sectionCollapsed || closableMode === INITIALLY_CLOSED,
+                  }
+                )}
+                onClick={() => this.toggleSection(idx)}
+              />
+            </div>
+          )}
           <div
-            className={classnames('row section', {
+            className={classnames('row', {
+              'collapsible-section': collapsible,
               collapsed: sectionCollapsed,
             })}
           >
-            {title && <Separator {...{ title }} />}
             {columns &&
               this.renderColumns(columns, isFirst, dataEntry, extendedData)}
           </div>
