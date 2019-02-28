@@ -379,6 +379,11 @@ public class ProductDAO implements IProductDAO
 			product.setIsVerified(request.getBomVerified());
 		}
 
+		if (request.getPlanningSchemaSelector() != null)
+		{
+			product.setM_ProductPlanningSchema_Selector(request.getPlanningSchemaSelector().getValueAsString());
+		}
+
 		saveRecord(product);
 
 		return product;

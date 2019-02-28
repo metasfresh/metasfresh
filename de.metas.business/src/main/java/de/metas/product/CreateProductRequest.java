@@ -57,4 +57,7 @@ public class CreateProductRequest
 
 	@Nullable
 	Boolean bomVerified;
+
+	@Nullable
+	ProductPlanningSchemaSelector planningSchemaSelector;
 }
