@@ -58,6 +58,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -386,10 +387,11 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
-		if (order.getC_DocType_ID() > 0 && docTypeBL.isProposal(order.getC_DocType()))
+		
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (docTypeId != null && docTypeBL.isSalesProposal(docTypeId))
 		{
-			logger.debug("C_Order {} of given orderLine {} has C_DocType {} which is a proposal; setting QtyReserved=0.",
-					new Object[] { order, orderLine, order.getC_DocType() });
+			logger.debug("C_Order {} of given orderLine {} has C_DocType {} which is a proposal; setting QtyReserved=0.", order, orderLine, docTypeId);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
