@@ -59,6 +59,7 @@ import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
@@ -321,6 +322,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.purchased(false)
 				.sold(false)
 				.bomVerified(true)
+				.planningSchemaSelector(ProductPlanningSchemaSelector.GENERATE_QUOTATION_BOM_PRODUCT)
 				.build());
 
 		//
