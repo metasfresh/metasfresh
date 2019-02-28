@@ -224,6 +224,29 @@ public interface I_AD_ImpFormat
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set isManualImport.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setisManualImport (boolean isManualImport);
+
+	/**
+	 * Get isManualImport.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isManualImport();
+
+    /** Column definition for isManualImport */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat, Object> COLUMN_isManualImport = new org.adempiere.model.ModelColumn<I_AD_ImpFormat, Object>(I_AD_ImpFormat.class, "isManualImport", null);
+    /** Column name isManualImport */
+    public static final String COLUMNNAME_isManualImport = "isManualImport";
+
+	/**
 	 * Set Multi Line.
 	 *
 	 * <br>Type: YesNo
