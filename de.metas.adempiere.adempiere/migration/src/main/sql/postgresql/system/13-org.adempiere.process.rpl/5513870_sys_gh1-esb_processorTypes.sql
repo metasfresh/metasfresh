@@ -1,0 +1,3 @@
+INSERT INTO public.imp_processor_type (imp_processor_type_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, value, name, description, help, javaclass) VALUES (1000001, 1000000, 1000000, 'Y', '2019-02-26 11:21:18+02', 100, '2019-02-26 11:21:18+02', 100, 'RabbitMQ', 'RabbitMQ', NULL, NULL, 'org.adempiere.server.rpl.imp.RabbitMqImportProcessor');
+INSERT INTO public.exp_processor_type (exp_processor_type_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, value, name, description, help, javaclass) VALUES (540007, 0, 0, 'Y', '2019-02-26 17:04:08+02', 100, '2019-02-26 17:04:08+02', 100, 'RabbitMQ', 'RabbitMQ', NULL, NULL, 'org.adempiere.server.rpl.exp.RabbitMqExportProcessor');
+
