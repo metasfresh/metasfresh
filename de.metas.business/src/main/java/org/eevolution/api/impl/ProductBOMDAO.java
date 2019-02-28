@@ -1,7 +1,10 @@
 package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -37,14 +40,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -158,19 +164,15 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public I_PP_Product_BOM getById(final int productBomId)
+	public I_PP_Product_BOM getById(@NonNull final ProductBOMId bomId)
 	{
-		return retrieveById(Env.getCtx(), productBomId);
+		return retrieveById(Env.getCtx(), bomId);
 	}
 
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#" + I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
-	public I_PP_Product_BOM retrieveById(@CacheCtx final Properties ctx, final int productBomId)
+	public I_PP_Product_BOM retrieveById(@CacheCtx final Properties ctx, final ProductBOMId productBomId)
 	{
-		if (productBomId <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(ctx, productBomId, I_PP_Product_BOM.class, ITrx.TRXNAME_None);
+		return loadOutOfTrx(productBomId, I_PP_Product_BOM.class);
 	}
 
 	@Override
@@ -286,5 +288,52 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public void save(@NonNull final I_PP_Product_BOMLine bomLine)
 	{
 		saveRecord(bomLine);
+	}
+
+	@Override
+	public ProductBOMId createBOM(@NonNull final BOMCreateRequest request)
+	{
+		final OrgId orgId = request.getOrgId();
+		final LocalDate validFrom = request.getValidFrom();
+
+		final I_PP_Product_BOM bomRecord = newInstance(I_PP_Product_BOM.class);
+		bomRecord.setAD_Org_ID(orgId.getRepoId());
+		bomRecord.setM_Product_ID(request.getProductId().getRepoId());
+		bomRecord.setValue(request.getProductValue());
+		bomRecord.setName(request.getProductName());
+		bomRecord.setBOMType(request.getBomType());
+		bomRecord.setBOMUse(request.getBomUse());
+		bomRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		saveRecord(bomRecord);
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());
+
+		request.getLines().forEach(line -> createBOMLine(line, bomId, orgId, validFrom));
+
+		return bomId;
+	}
+
+	private void createBOMLine(
+			final BOMCreateRequest.BOMLine line,
+			final ProductBOMId bomId,
+			final OrgId orgId,
+			final LocalDate validFrom)
+	{
+		final I_PP_Product_BOMLine bomLineRecord = newInstance(I_PP_Product_BOMLine.class);
+		bomLineRecord.setAD_Org_ID(orgId.getRepoId());
+		bomLineRecord.setPP_Product_BOM_ID(bomId.getRepoId());
+		bomLineRecord.setM_Product_ID(line.getProductId().getRepoId());
+		bomLineRecord.setC_UOM_ID(line.getQty().getUOMId());
+		bomLineRecord.setQtyBOM(line.getQty().getAsBigDecimal());
+		bomLineRecord.setIsQtyPercentage(false);
+		bomLineRecord.setComponentType(line.getComponentType().getCode());
+		bomLineRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		saveRecord(bomLineRecord);
+	}
+
+	@Override
+	public ProductId getBOMProductId(@NonNull final ProductBOMId bomId)
+	{
+		final I_PP_Product_BOM bom = getById(bomId);
+		return ProductId.ofRepoId(bom.getM_Product_ID());
 	}
 }
