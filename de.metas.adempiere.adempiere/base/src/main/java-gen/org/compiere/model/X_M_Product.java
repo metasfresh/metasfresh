@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1255610024L;
+	private static final long serialVersionUID = 819129509L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -1036,6 +1036,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public static final int M_PRODUCTPLANNINGSCHEMA_SELECTOR_AD_Reference_ID=540829;
 	/** Normal = N */
 	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal = "N";
+	/** QuotationBOMProduct = Q */
+	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_QuotationBOMProduct = "Q";
 	/** Set M_ProductPlanningSchema_Selector.
 		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
 	@Override
