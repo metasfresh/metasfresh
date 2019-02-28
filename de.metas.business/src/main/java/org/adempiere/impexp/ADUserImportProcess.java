@@ -157,7 +157,9 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_User importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_User importRecord,
+			final boolean isInsertOnly /* not used, this importer always inserts */ ) throws Exception
 	{
 		//
 		// Create a new user
@@ -194,7 +196,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		//
 		return ImportRecordResult.Inserted;
 	}
-	
+
 	private void setUserFieldsAndSave(@NonNull final I_AD_User user, @NonNull final I_I_User importRecord)
 	{
 		user.setFirstname(importRecord.getFirstname());
@@ -202,11 +204,11 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		// set value after we set first name and last name
 		user.setValue(importRecord.getValue());
 		user.setEMail(importRecord.getEMail());
-		
+
 		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
 		loginUser.setLogin(importRecord.getLogin());
 		loginUser.setIsSystemUser(importRecord.isSystemUser());
-		
+
 		final IUserBL userBL = Services.get(IUserBL.class);
 		userBL.changePasswordAndSave(loginUser, RandomStringUtils.randomAlphanumeric(8));
 	}

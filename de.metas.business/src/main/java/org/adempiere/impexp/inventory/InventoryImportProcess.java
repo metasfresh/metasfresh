@@ -104,7 +104,9 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Inventory importRecord) throws Exception
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+			@NonNull final I_I_Inventory importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 		//
 		// Get previous values
@@ -125,6 +127,12 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		final boolean firstImportRecordOrNewMInventory = previousImportRecord == null
 				|| !Objects.equals(importRecord.getWarehouseValue(), previousWarehouseValue)
 				|| !Objects.equals(importRecord.getMovementDate(), previousMovementDate);
+
+		if (!firstImportRecordOrNewMInventory && isInsertOnly)
+		{
+			// #4994 do not update
+			return ImportRecordResult.Nothing;
+		}
 
 		if (firstImportRecordOrNewMInventory)
 		{
@@ -327,7 +335,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		InterfaceWrapperHelper.save(attributeValue);
 		return attributeValue;
 	}
-	
+
 	private I_M_AttributeInstance getCreateAttributeInstanceForSubproducer(final I_M_AttributeSetInstance asi, final I_M_AttributeValue attributeValue)
 	{
 		Check.assumeNotNull(attributeValue, "attributeValue not null");
@@ -354,6 +362,5 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 
 		return attributeInstance;
 	}
-
 
 }

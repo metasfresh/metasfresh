@@ -95,7 +95,7 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 			dbUpdateStatusIds(sqlImportWhereClause);
 		}
 	}
-	
+
 	private void dbUpdateBPartnerIds(final String sqlImportWhereClause)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
@@ -180,7 +180,9 @@ public class RequestImportProcess extends AbstractImportProcess<I_I_Request>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Request importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_Request importRecord,
+			final boolean isInsertOnly /* not used, this importer always inserts */) throws Exception
 	{
 		//
 		// Create a new request
