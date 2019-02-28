@@ -10,11 +10,13 @@ import {
   createProcess,
   createWindow,
   handleProcessResponse,
+  fetchChangeLog,
   patch,
   startProcess,
 } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
+import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
 import Window from '../Window';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
@@ -28,6 +30,7 @@ class Modal extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     isNewDoc: PropTypes.bool,
+    staticModalType: PropTypes.string,
   };
 
   constructor(props) {
@@ -121,6 +124,7 @@ class Modal extends Component {
       tabId,
       rowId,
       modalType,
+      staticModalType,
       parentSelection,
       parentType,
       isAdvanced,
@@ -134,6 +138,25 @@ class Modal extends Component {
     } = this.props;
 
     switch (modalType) {
+      case 'static':
+        {
+          let request = null;
+          if (staticModalType === 'about') {
+            request = dispatch(
+              fetchChangeLog(windowType, dataId, tabId, rowId)
+            );
+          }
+
+          try {
+            await request;
+          } catch (error) {
+            this.handleClose();
+
+            throw error;
+          }
+        }
+        break;
+
       case 'window':
         try {
           await dispatch(
@@ -144,7 +167,6 @@ class Modal extends Component {
 
           throw error;
         }
-
         break;
 
       case 'process':
@@ -324,10 +346,26 @@ class Modal extends Component {
       modalType,
       windowType,
       isAdvanced,
+      staticModalType,
     } = this.props;
     const { pending } = this.state;
 
     switch (modalType) {
+      case 'static': {
+        let content = null;
+        if (staticModalType === 'about') {
+          content = <ChangeLogModal data={data} />;
+        }
+        return (
+          <div className="window-wrapper">
+            <div className="document-file-dropzone">
+              <div className="sections-wrapper">
+                <div className="row">{content}</div>
+              </div>
+            </div>
+          </div>
+        );
+      }
       case 'window':
         return (
           <Window
@@ -342,7 +380,6 @@ class Modal extends Component {
             tabsInfo={null}
           />
         );
-
       case 'process':
         return (
           <Process
@@ -549,7 +586,7 @@ class Modal extends Component {
   };
 
   render() {
-    const { layout } = this.props;
+    const { layout, modalType } = this.props;
     let renderedContent = null;
 
     if (layout && Object.keys(layout) && Object.keys(layout).length) {
@@ -558,9 +595,9 @@ class Modal extends Component {
       } else if (layout.layoutType === 'singleOverlayField') {
         renderedContent = this.renderOverlay();
       }
-    }
-
-    if (!Object.keys(layout).length) {
+    } else if (modalType === 'static') {
+      renderedContent = this.renderPanel();
+    } else {
       return null;
     }
 

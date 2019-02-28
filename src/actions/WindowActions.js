@@ -340,8 +340,8 @@ export function noConnection(status) {
 
 export function openModal(
   title,
-  windowType,
-  type,
+  windowId,
+  modalType,
   tabId,
   rowId,
   isAdvanced,
@@ -352,7 +352,8 @@ export function openModal(
   parentViewId,
   parentViewSelectedIds,
   childViewId,
-  childViewSelectedIds
+  childViewSelectedIds,
+  staticModalType
 ) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
@@ -363,8 +364,7 @@ export function openModal(
 
   return {
     type: OPEN_MODAL,
-    windowType: windowType,
-    modalType: type,
+    windowType: windowId,
     tabId: tabId,
     rowId: rowId,
     viewId: viewId,
@@ -373,6 +373,8 @@ export function openModal(
     isAdvanced: isAdvanced,
     viewDocumentIds: viewDocumentIds,
     triggerField: triggerField,
+    modalType,
+    staticModalType,
     parentViewId,
     parentViewSelectedIds,
     childViewId,
@@ -438,7 +440,7 @@ export function deselectTableItems(ids, windowType, viewId) {
  * Main method to generate window
  */
 export function createWindow(
-  windowType,
+  windowId,
   docId = 'NEW',
   tabId,
   rowId,
@@ -452,70 +454,70 @@ export function createWindow(
 
     // this chain is really important,
     // to do not re-render widgets on init
-    return dispatch(
-      initWindow(windowType, docId, tabId, rowId, isAdvanced)
-    ).then(response => {
-      if (!response) {
-        return;
-      }
-      if (docId == 'NEW' && !isModal) {
-        dispatch(setLatestNewDocument(response.data[0].id));
-        // redirect immedietely
-        return dispatch(
-          replace(`/window/${windowType}/${response.data[0].id}`)
-        );
-      }
-
-      let elem = 0;
-
-      response.data.forEach((value, index) => {
-        if (value.rowId === rowId) {
-          elem = index;
+    return dispatch(initWindow(windowId, docId, tabId, rowId, isAdvanced)).then(
+      response => {
+        if (!response) {
+          return;
         }
-      });
-
-      if (docId === 'NEW') {
-        dispatch(updateModal(null, response.data[0].id));
-      }
-
-      docId = response.data[elem].id;
-      dispatch(
-        initDataSuccess({
-          data: parseToDisplay(response.data[elem].fieldsByName),
-          docId,
-          saveStatus: response.data[0].saveStatus,
-          scope: getScope(isModal),
-          standardActions: response.data[0].standardActions,
-          validStatus: response.data[0].validStatus,
-          includedTabsInfo: response.data[0].includedTabsInfo,
-          websocket: response.data[0].websocketEndpoint,
-        })
-      );
-
-      if (isModal) {
-        if (rowId === 'NEW') {
-          dispatch(
-            mapDataToState(response.data, false, 'NEW', docId, windowType)
+        if (docId == 'NEW' && !isModal) {
+          dispatch(setLatestNewDocument(response.data[0].id));
+          // redirect immedietely
+          return dispatch(
+            replace(`/window/${windowId}/${response.data[0].id}`)
           );
-          dispatch(updateStatus(response.data));
-          dispatch(updateModal(response.data[0].rowId));
         }
-      } else {
-        dispatch(getWindowBreadcrumb(windowType));
-      }
 
-      initLayout('window', windowType, tabId, null, null, isAdvanced)
-        .then(response =>
-          dispatch(initLayoutSuccess(response.data, getScope(isModal)))
-        )
-        .then(response => {
-          if (!isModal) {
-            dispatch(
-              initTabs(response.layout.tabs, windowType, docId, isModal)
-            );
+        let elem = 0;
+
+        response.data.forEach((value, index) => {
+          if (value.rowId === rowId) {
+            elem = index;
           }
         });
-    });
+
+        if (docId === 'NEW') {
+          dispatch(updateModal(null, response.data[0].id));
+        }
+
+        docId = response.data[elem].id;
+        dispatch(
+          initDataSuccess({
+            data: parseToDisplay(response.data[elem].fieldsByName),
+            docId,
+            saveStatus: response.data[0].saveStatus,
+            scope: getScope(isModal),
+            standardActions: response.data[0].standardActions,
+            validStatus: response.data[0].validStatus,
+            includedTabsInfo: response.data[0].includedTabsInfo,
+            websocket: response.data[0].websocketEndpoint,
+          })
+        );
+
+        if (isModal) {
+          if (rowId === 'NEW') {
+            dispatch(
+              mapDataToState(response.data, false, 'NEW', docId, windowId)
+            );
+            dispatch(updateStatus(response.data));
+            dispatch(updateModal(response.data[0].rowId));
+          }
+        } else {
+          dispatch(getWindowBreadcrumb(windowId));
+        }
+
+        initLayout('window', windowId, tabId, null, null, isAdvanced)
+          .then(response =>
+            dispatch(initLayoutSuccess(response.data, getScope(isModal)))
+          )
+          .then(response => {
+            if (!isModal) {
+              dispatch(
+                initTabs(response.layout.tabs, windowId, docId, isModal)
+              );
+            }
+          });
+      }
+    );
   };
 }
 
@@ -595,6 +597,40 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
         });
       }
     }
+  };
+}
+
+const getChangelogUrl = function(windowId, docId, tabId, rowId) {
+  return `${config.API_URL}/window/${windowId}/${docId}${
+    rowId && tabId ? `/${tabId}/${rowId}` : ''
+  }/changeLog`;
+};
+
+export function fetchChangeLog(windowId, docId, tabId, rowId) {
+  return dispatch => {
+    const parentUrl = getChangelogUrl(windowId, docId);
+
+    return axios.get(parentUrl).then(async response => {
+      const data = response.data;
+      let rowData = null;
+
+      if (rowId) {
+        const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
+        rowData = await axios.get(childUrl).then(resp => resp.data);
+      }
+
+      if (rowData) {
+        data.rowsData = rowData;
+      }
+
+      dispatch(
+        initDataSuccess({
+          data,
+          docId,
+          scope: 'modal',
+        })
+      );
+    });
   };
 }
 
