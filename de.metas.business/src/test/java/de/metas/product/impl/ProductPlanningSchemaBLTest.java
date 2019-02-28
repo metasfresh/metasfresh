@@ -147,7 +147,7 @@ public class ProductPlanningSchemaBLTest
 		final DistributionNetworkId distributionNetworkId = createNetworkDistribution("NwDist1");
 		final ProductPlanningSchema schema1 = createSchema(warehouseId1, distributionNetworkId, selector);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchema(schema1);
+		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
@@ -179,7 +179,7 @@ public class ProductPlanningSchemaBLTest
 				.build();
 		ProductPlanningSchemaDAO.save(schema1);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchema(schema1);
+		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
@@ -205,7 +205,7 @@ public class ProductPlanningSchemaBLTest
 
 		setProductSelector(productId1, null);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchema(schema1);
+		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
 
 		assertThat(defaultProductPlanningsForAllProducts).isEmpty();
 

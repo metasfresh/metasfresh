@@ -5,9 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -188,7 +188,7 @@ final class ProductPlanningSchemaDAO
 	/**
 	 * @return Products that don't have PP_ProductPlanning entries
 	 */
-	public static Iterator<I_M_Product> retrieveProductsWithNoProductPlanning()
+	public static Stream<I_M_Product> streamProductsWithNoProductPlanningButWithSchemaSelector()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -201,7 +201,8 @@ final class ProductPlanningSchemaDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addNotInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_M_Product_ID, existentProductPlanning)
+				.addNotNull(I_M_Product.COLUMN_M_ProductPlanningSchema_Selector)
 				.create()
-				.iterate(I_M_Product.class);
+				.iterateAndStream();
 	}
 }
