@@ -26,13 +26,6 @@ import SideList from './SideList';
 import Subheader from './SubHeader';
 import UserDropdown from './UserDropdown';
 
-const mapStateToProps = state => ({
-  inbox: state.appHandler.inbox,
-  me: state.appHandler.me,
-  pathname: state.routing.locationBeforeTransitions.pathname,
-  plugins: state.pluginsHandler.files,
-});
-
 class Header extends Component {
   state = {
     isSubheaderShow: false,
@@ -176,20 +169,22 @@ class Header extends Component {
   };
 
   openModal = (
-    windowType,
-    type,
+    windowId,
+    modalType,
     caption,
     isAdvanced,
     selected,
     childViewId,
-    childViewSelectedIds
+    childViewSelectedIds,
+    staticModalType
   ) => {
     const { dispatch, query } = this.props;
+
     dispatch(
       openModal(
         caption,
-        windowType,
-        type,
+        windowId,
+        modalType,
         null,
         null,
         isAdvanced,
@@ -200,33 +195,59 @@ class Header extends Component {
         null,
         null,
         childViewId,
-        childViewSelectedIds
+        childViewSelectedIds,
+        staticModalType
       )
     );
   };
 
-  openModalRow = (windowType, type, caption, tabId, rowId) => {
+  openModalRow = (
+    windowId,
+    modalType,
+    caption,
+    tabId,
+    rowId,
+    staticModalType
+  ) => {
     const { dispatch } = this.props;
 
-    dispatch(openModal(caption, windowType, type, tabId, rowId));
-  };
-
-  handlePrint = (windowType, docId, docNo) => {
-    openFile(
-      'window',
-      windowType,
-      docId,
-      'print',
-      windowType + '_' + (docNo ? docNo : docId) + '.pdf'
+    dispatch(
+      openModal(
+        caption,
+        windowId,
+        modalType,
+        tabId,
+        rowId,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        staticModalType
+      )
     );
   };
 
-  handleClone = (windowType, docId) => {
+  handlePrint = (windowId, docId, docNo) => {
+    openFile(
+      'window',
+      windowId,
+      docId,
+      'print',
+      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+    );
+  };
+
+  handleClone = (windowId, docId) => {
     const { dispatch } = this.props;
 
-    duplicateRequest('window', windowType, docId).then(response => {
+    duplicateRequest('window', windowId, docId).then(response => {
       if (response && response.data && response.data.id) {
-        dispatch(push(`/window/${windowType}/${response.data.id}`));
+        dispatch(push(`/window/${windowId}/${response.data.id}`));
       }
     });
   };
@@ -259,7 +280,7 @@ class Header extends Component {
     });
   };
 
-  handlePromptSubmitClick = (windowType, docId) => {
+  handlePromptSubmitClick = (windowId, docId) => {
     const { dispatch, handleDeletedStatus } = this.props;
 
     this.setState(
@@ -267,9 +288,9 @@ class Header extends Component {
         prompt: Object.assign({}, this.state.prompt, { open: false }),
       },
       () => {
-        deleteRequest('window', windowType, null, null, [docId]).then(() => {
+        deleteRequest('window', windowId, null, null, [docId]).then(() => {
           handleDeletedStatus(true);
-          dispatch(push('/window/' + windowType));
+          dispatch(push(`/window/${windowId}`));
         });
       }
     );
@@ -343,7 +364,6 @@ class Header extends Component {
       docNoData,
       docStatus,
       docStatusData,
-      windowType,
       dataId,
       breadcrumb,
       showSidelist,
@@ -351,6 +371,7 @@ class Header extends Component {
       entity,
       query,
       showIndicator,
+      windowId,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       notfound,
@@ -361,6 +382,7 @@ class Header extends Component {
       activeTab,
       plugins,
     } = this.props;
+
     const {
       isSubheaderShow,
       isSideListShow,
@@ -384,9 +406,7 @@ class Header extends Component {
             text="Are you sure?"
             buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={() =>
-              this.handlePromptSubmitClick(windowType, dataId)
-            }
+            onSubmitClick={() => this.handlePromptSubmitClick(windowId, dataId)}
           />
         )}
 
@@ -428,7 +448,7 @@ class Header extends Component {
 
                 <Breadcrumb
                   breadcrumb={breadcrumb}
-                  windowType={windowType}
+                  windowType={windowId}
                   docSummaryData={docSummaryData}
                   dataId={dataId}
                   siteName={siteName}
@@ -455,7 +475,7 @@ class Header extends Component {
                   >
                     <MasterWidget
                       entity="window"
-                      windowType={windowType}
+                      windowType={windowId}
                       dataId={dataId}
                       widgetData={[docStatusData]}
                       noLabel
@@ -589,7 +609,7 @@ class Header extends Component {
             query={query}
             entity={entity}
             dataId={dataId}
-            windowType={windowType}
+            windowId={windowId}
             viewId={query && query.viewId}
             siteName={siteName}
             editmode={editmode}
@@ -600,7 +620,7 @@ class Header extends Component {
 
         {showSidelist && isSideListShow && (
           <SideList
-            windowType={windowType ? windowType : ''}
+            windowType={windowId ? windowId : ''}
             closeOverlays={this.closeOverlays}
             closeSideList={this.handleSidelistToggle}
             isSideListShow={isSideListShow}
@@ -613,14 +633,14 @@ class Header extends Component {
 
         {isEmailOpen && (
           <NewEmail
-            windowId={windowType ? windowType : ''}
+            windowId={windowId ? windowId : ''}
             docId={dataId}
             handleCloseEmail={this.handleCloseEmail}
           />
         )}
         {isLetterOpen && (
           <NewLetter
-            windowId={windowType ? windowType : ''}
+            windowId={windowId ? windowId : ''}
             docId={dataId}
             handleCloseLetter={this.handleCloseLetter}
           />
@@ -637,24 +657,23 @@ class Header extends Component {
           handleUDToggle={this.handleUDToggle}
           openModal={
             dataId
-              ? () =>
-                  this.openModal(windowType, 'window', 'Advanced edit', true)
+              ? () => this.openModal(windowId, 'window', 'Advanced edit', true)
               : undefined
           }
           handlePrint={
             dataId
-              ? () => this.handlePrint(windowType, dataId, docNoData.value)
+              ? () => this.handlePrint(windowId, dataId, docNoData.value)
               : undefined
           }
           handleEmail={this.handleEmail}
           handleLetter={this.handleLetter}
           handleDelete={dataId ? this.handleDelete : undefined}
           handleClone={
-            dataId ? () => this.handleClone(windowType, dataId) : undefined
+            dataId ? () => this.handleClone(windowId, dataId) : undefined
           }
           redirect={
-            windowType
-              ? () => this.redirect('/window/' + windowType + '/new')
+            windowId
+              ? () => this.redirect(`/window/${windowId}/new`)
               : undefined
           }
           handleDocStatusToggle={
@@ -669,5 +688,12 @@ class Header extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  inbox: state.appHandler.inbox,
+  me: state.appHandler.me,
+  pathname: state.routing.locationBeforeTransitions.pathname,
+  plugins: state.pluginsHandler.files,
+});
 
 export default connect(mapStateToProps)(Header);

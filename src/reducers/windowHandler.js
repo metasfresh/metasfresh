@@ -76,6 +76,7 @@ const initialState = {
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
+    staticModalType: '',
   },
   overlay: {
     visible: false,
@@ -130,9 +131,9 @@ export const NO_SELECTION = [];
  * with a random uuid hash whenever table row is selected/deleted.
  */
 /* eslint-disable no-unused-vars */
-export const getSelectionData = (state, { windowType, viewId }, hash) => {
-  const windowTypeSelections = state.windowHandler.selections[windowType];
-  const id = viewId || windowType;
+export const getSelectionData = (state, { windowId, viewId }, hash) => {
+  const windowTypeSelections = state.windowHandler.selections[windowId];
+  const id = viewId || windowId;
 
   return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
 };
@@ -142,14 +143,14 @@ export const getSelectionInstant = createSelector(
   items => items
 );
 
-export const getSelection = ({ state, windowType, viewId }) => {
-  const windowTypeSelections = state.windowHandler.selections[windowType];
-  const id = viewId || windowType;
+export const getSelection = ({ state, windowId, viewId }) => {
+  const windowTypeSelections = state.windowHandler.selections[windowId];
+  const id = viewId || windowId;
 
   return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
 };
-export const getSelectionDirect = (selections, windowType, viewId) => {
-  const windowTypeSelections = selections[windowType];
+export const getSelectionDirect = (selections, windowId, viewId) => {
+  const windowTypeSelections = selections[windowId];
 
   return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
 };
@@ -168,6 +169,7 @@ export default function windowHandler(state = initialState, action) {
           ...state.modal,
           visible: true,
           type: action.windowType,
+          staticModalType: action.staticModalType,
           dataId: action.dataId,
           tabId: action.tabId,
           rowId: action.rowId,
