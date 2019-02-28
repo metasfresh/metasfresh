@@ -67,3 +67,15 @@ UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-02-26 17:36:53','
 ;
 
 
+
+
+-- 2019-02-27T13:36:12.829
+-- #298 changing anz. stellen
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-02-27 13:36:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552452
+;
+
+
+
+
+
+
