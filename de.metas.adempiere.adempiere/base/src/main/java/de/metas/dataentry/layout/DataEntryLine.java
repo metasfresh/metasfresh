@@ -1,9 +1,10 @@
-package de.metas.dataentry;
+package de.metas.dataentry.layout;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.util.List;
 
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,35 +28,10 @@ import lombok.Getter;
  * #L%
  */
 
-public enum FieldType
+@Value
+@Builder
+public class DataEntryLine
 {
-	SUB_GROUP_ID(Integer.class),
-	PARENT_LINK_ID(Integer.class),
-
-//	CREATED(ZonedDateTime.class),
-//	CREATED_BY(Integer.class),
-//	UPDATED(ZonedDateTime.class),
-//	UPDATED_BY(Integer.class),
-
-	CREATED_UPDATED_INFO(String.class),
-
-	TEXT(String.class),
-
-	LONG_TEXT(String.class),
-
-	NUMBER(BigDecimal.class),
-
-	DATE(ZonedDateTime.class),
-
-	LIST(DataEntryListValueId.class),
-
-	YESNO(Boolean.class);
-
-	@Getter
-	private final Class<?> clazz;
-
-	private FieldType(Class<?> clazz)
-	{
-		this.clazz = clazz;
-	}
+	@Singular
+	List<DataEntryField> dataEntryFields;
 }

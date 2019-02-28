@@ -2,7 +2,6 @@ package de.metas.dataentry.layout;
 
 import static de.metas.util.Check.fail;
 
-import java.util.LinkedHashMap;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -22,10 +21,14 @@ import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
+import de.metas.dataentry.layout.DataEntryGroup.DataEntryGroupBuilder;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
+import de.metas.dataentry.layout.DataEntryLine.DataEntryLineBuilder;
 import de.metas.dataentry.layout.DataEntrySection.DataEntrySectionBuilder;
+import de.metas.dataentry.layout.DataEntrySubGroup.DataEntrySubGroupBuilder;
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
+import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
@@ -77,13 +80,13 @@ public class DataEntryLayoutRepository
 
 		for (final I_DataEntry_Group groupRecord : groupRecords)
 		{
-			final DataEntryGroup group = ofRecord(groupRecord);
-			result.add(group);
+			final Optional<DataEntryGroup> group = ofRecord(groupRecord);
+			group.ifPresent(result::add);
 		}
 		return result.build();
 	}
 
-	private ImmutableList<I_DataEntry_Group> retrieveGroupRecords(final AdWindowId adWindowId)
+	private ImmutableList<I_DataEntry_Group> retrieveGroupRecords(@NonNull final AdWindowId adWindowId)
 	{
 		final ImmutableList<I_DataEntry_Group> groupRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Group.class)
@@ -95,7 +98,7 @@ public class DataEntryLayoutRepository
 		return groupRecords;
 	}
 
-	private static DataEntryGroup ofRecord(@NonNull final I_DataEntry_Group groupRecord)
+	private static Optional<DataEntryGroup> ofRecord(@NonNull final I_DataEntry_Group groupRecord)
 	{
 		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(groupRecord.getDataEntry_TargetWindow_ID());
 		final I_AD_Table windowMainTable = firstADTab.getAD_Table();
@@ -109,26 +112,23 @@ public class DataEntryLayoutRepository
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_Group.COLUMNNAME_Description, groupRecord.getDescription());
 
-		final ImmutableList<I_DataEntry_SubGroup> subGroupRecords = retrieveSubgroupRecords(groupRecord);
-		final ImmutableList<I_DataEntry_Section> sectionRecord = retrieveSectionRecords(groupRecord);
-
-		final ImmutableList.Builder<DataEntrySubGroup> subGroups = ImmutableList.builder();
-		for (final I_DataEntry_SubGroup subGroupRecord : subGroupRecords)
-		{
-			final DataEntrySubGroup subGroup = ofRecord(subGroupRecord, sectionRecord);
-			subGroups.add(subGroup);
-		}
-
-		final DataEntryGroup group = DataEntryGroup
+		final DataEntryGroupBuilder group = DataEntryGroup
 				.builder()
 				.id(DataEntryGroupId.ofRepoId(groupRecord.getDataEntry_Group_ID()))
 				.documentLinkColumnName(DocumentLinkColumnName.of(parentLinkColumnName))
 				.caption(captionTrl)
 				.description(descriptionTrl)
-				.internalName(I_DataEntry_Group.COLUMNNAME_DataEntry_Group_ID + "-" + groupRecord.getDataEntry_Group_ID())
-				.dataEntrySubGroups(subGroups.build())
-				.build();
-		return group;
+				.internalName(I_DataEntry_Group.COLUMNNAME_DataEntry_Group_ID + "-" + groupRecord.getDataEntry_Group_ID());
+
+		final ImmutableList<I_DataEntry_SubGroup> subGroupRecords = retrieveSubgroupRecords(groupRecord);
+		for (final I_DataEntry_SubGroup subGroupRecord : subGroupRecords)
+		{
+			final Optional<DataEntrySubGroup> subGroup = ofRecord(subGroupRecord);
+			subGroup.ifPresent(group::dataEntrySubGroup);
+		}
+
+		final DataEntryGroup result = group.build();
+		return result.getDataEntrySubGroups().isEmpty() ? Optional.empty() : Optional.of(result);
 	}
 
 	private static ImmutableList<I_DataEntry_SubGroup> retrieveSubgroupRecords(@NonNull final I_DataEntry_Group groupRecord)
@@ -143,23 +143,9 @@ public class DataEntryLayoutRepository
 		return subGroupRecords;
 	}
 
-	private static ImmutableList<I_DataEntry_Section> retrieveSectionRecords(@NonNull final I_DataEntry_Group groupRecord)
-	{
-		final ImmutableList<I_DataEntry_Section> subGroupRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DataEntry_Section.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DataEntry_Section.COLUMN_DataEntry_Group_ID, groupRecord.getDataEntry_Group_ID())
-				.orderBy(I_DataEntry_Section.COLUMN_SeqNo)
-				.create()
-				.listImmutable(I_DataEntry_Section.class);
-
-		return subGroupRecords;
-	}
-
 	/** @param sectionRecords ordered by SeqNo */
-	private static DataEntrySubGroup ofRecord(
-			@NonNull final I_DataEntry_SubGroup subGroupRecord,
-			@NonNull final ImmutableList<I_DataEntry_Section> sectionRecords)
+	private static Optional<DataEntrySubGroup> ofRecord(
+			@NonNull final I_DataEntry_SubGroup subGroupRecord)
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(subGroupRecord);
 
@@ -169,59 +155,37 @@ public class DataEntryLayoutRepository
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_SubGroup.COLUMNNAME_Description, subGroupRecord.getDescription());
 
-		final ImmutableList<I_DataEntry_Field> fieldRecords = retrieveFieldRecords(subGroupRecord);
-
-		final LinkedHashMap<DataEntrySectionId, DataEntrySectionBuilder> id2SectionBuilder = new LinkedHashMap<>();
-
-		final DataEntrySectionBuilder defaultSectionBuilder = DataEntrySection.newDefaultSectionBuilder();
-
-		for (final I_DataEntry_Section sectionRecord : sectionRecords)
-		{
-			id2SectionBuilder.put(
-					DataEntrySectionId.ofRepoId(sectionRecord.getDataEntry_Section_ID()),
-					ofRecord(sectionRecord));
-		}
-
-		for (final I_DataEntry_Field fieldRecord : fieldRecords)
-		{
-			final DataEntrySectionId dataEntrySectionId = DataEntrySectionId.ofRepoId(fieldRecord.getDataEntry_Section_ID()); // zero-ID is allowed
-
-			// use default for dataEntrySectionId=0, but also if the section record somehow got lost
-			final DataEntrySectionBuilder sectionBuilder = id2SectionBuilder.computeIfAbsent(dataEntrySectionId, id -> defaultSectionBuilder);
-
-			final Optional<DataEntryField> field = ofRecord(fieldRecord);
-			field.ifPresent(sectionBuilder::dataEntryField);
-		}
-
-		final ImmutableList<DataEntrySection> dataEntrySections = id2SectionBuilder.values().stream()
-				.map(DataEntrySectionBuilder::build)
-				.filter(s -> !s.getDataEntryFields().isEmpty())
-				.collect(ImmutableList.toImmutableList());
-
-		final DataEntrySubGroup subgroup = DataEntrySubGroup.builder()
+		final DataEntrySubGroupBuilder subgroup = DataEntrySubGroup.builder()
 				.id(DataEntrySubGroupId.ofRepoId(subGroupRecord.getDataEntry_SubGroup_ID()))
 				.caption(captionTrl)
 				.description(descriptionTrl)
-				.internalName(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID + "-" + subGroupRecord.getDataEntry_SubGroup_ID())
-				.dataEntrySections(dataEntrySections)
-				.build();
+				.internalName(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID + "-" + subGroupRecord.getDataEntry_SubGroup_ID());
 
-		return subgroup;
+		final ImmutableList<I_DataEntry_Section> sectionRecords = retrieveSectionRecords(subGroupRecord);
+		for (final I_DataEntry_Section sectionRecord : sectionRecords)
+		{
+			final Optional<DataEntrySection> dataEntrySection = ofRecord(sectionRecord);
+			dataEntrySection.ifPresent(subgroup::dataEntrySection);
+		}
+
+		final DataEntrySubGroup result = subgroup.build();
+		return result.getDataEntrySections().isEmpty() ? Optional.empty() : Optional.of(result);
 	}
 
-	private static ImmutableList<I_DataEntry_Field> retrieveFieldRecords(final I_DataEntry_SubGroup subGroupRecord)
+	private static ImmutableList<I_DataEntry_Section> retrieveSectionRecords(@NonNull final I_DataEntry_SubGroup subGroupRecord)
 	{
-		final ImmutableList<I_DataEntry_Field> fieldRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DataEntry_Field.class)
+		final ImmutableList<I_DataEntry_Section> subGroupRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DataEntry_Section.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DataEntry_Field.COLUMN_DataEntry_SubGroup_ID, subGroupRecord.getDataEntry_SubGroup_ID())
-				.orderBy(I_DataEntry_Field.COLUMN_SeqNo)
+				.addEqualsFilter(I_DataEntry_Section.COLUMN_DataEntry_SubGroup_ID, subGroupRecord.getDataEntry_SubGroup_ID())
+				.orderBy(I_DataEntry_Section.COLUMN_SeqNo)
 				.create()
-				.listImmutable(I_DataEntry_Field.class);
-		return fieldRecords;
+				.listImmutable(I_DataEntry_Section.class);
+
+		return subGroupRecords;
 	}
 
-	private static DataEntrySectionBuilder ofRecord(@NonNull final I_DataEntry_Section sectionRecord)
+	private static Optional<DataEntrySection> ofRecord(@NonNull final I_DataEntry_Section sectionRecord)
 	{
 		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(sectionRecord);
 
@@ -231,11 +195,60 @@ public class DataEntryLayoutRepository
 		final ITranslatableString descriptionTrl = modelTranslationMap
 				.getColumnTrl(I_DataEntry_Section.COLUMNNAME_Description, sectionRecord.getDescription());
 
-		return DataEntrySection.builder()
+		final DataEntrySectionBuilder section = DataEntrySection.builder()
 				.id(DataEntrySectionId.ofRepoId(sectionRecord.getDataEntry_Section_ID()))
 				.caption(captionTrl)
 				.description(descriptionTrl)
 				.internalName(I_DataEntry_Section.COLUMNNAME_DataEntry_Section_ID + "-" + sectionRecord.getDataEntry_Section_ID());
+
+		final ImmutableList<I_DataEntry_Line> lineRecords = retrieveLineRecords(sectionRecord);
+		for (final I_DataEntry_Line lineRecord : lineRecords)
+		{
+			final Optional<DataEntryLine> line = ofRecord(lineRecord);
+			line.ifPresent(section::dataEntryLine);
+		}
+
+		final DataEntrySection result = section.build();
+		return result.getDataEntryLines().isEmpty() ? Optional.empty() : Optional.of(result);
+	}
+
+	private static ImmutableList<I_DataEntry_Line> retrieveLineRecords(@NonNull final I_DataEntry_Section sectionRecord)
+	{
+		final ImmutableList<I_DataEntry_Line> lineRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DataEntry_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DataEntry_Line.COLUMN_DataEntry_Section_ID, sectionRecord.getDataEntry_Section_ID())
+				.orderBy(I_DataEntry_Line.COLUMN_SeqNo)
+				.create()
+				.listImmutable(I_DataEntry_Line.class);
+		return lineRecords;
+	}
+
+	private static Optional<DataEntryLine> ofRecord(@NonNull final I_DataEntry_Line lineRecord)
+	{
+		final ImmutableList<I_DataEntry_Field> fieldRecords = retrieveFieldRecords(lineRecord);
+
+		final DataEntryLineBuilder line = DataEntryLine.builder();
+
+		for (final I_DataEntry_Field fieldRecord : fieldRecords)
+		{
+			final Optional<DataEntryField> field = ofRecord(fieldRecord);
+			field.ifPresent(line::dataEntryField);
+		}
+		final DataEntryLine result = line.build();
+		return result.getDataEntryFields().isEmpty() ? Optional.empty() : Optional.of(result);
+	}
+
+	private static ImmutableList<I_DataEntry_Field> retrieveFieldRecords(@NonNull final I_DataEntry_Line lineRecord)
+	{
+		final ImmutableList<I_DataEntry_Field> fieldRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DataEntry_Field.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DataEntry_Field.COLUMN_DataEntry_Line_ID, lineRecord.getDataEntry_Line_ID())
+				.orderBy(I_DataEntry_Field.COLUMN_SeqNo)
+				.create()
+				.listImmutable(I_DataEntry_Field.class);
+		return fieldRecords;
 	}
 
 	private static Optional<DataEntryField> ofRecord(final I_DataEntry_Field fieldRecord)

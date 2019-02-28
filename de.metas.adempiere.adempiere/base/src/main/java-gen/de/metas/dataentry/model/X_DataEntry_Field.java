@@ -14,7 +14,7 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -492349012L;
+	private static final long serialVersionUID = 61705954L;
 
     /** Standard Constructor */
     public X_DataEntry_Field (Properties ctx, int DataEntry_Field_ID, String trxName)
@@ -23,8 +23,8 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
       /** if (DataEntry_Field_ID == 0)
         {
 			setDataEntry_Field_ID (0);
+			setDataEntry_Line_ID (0);
 			setDataEntry_RecordType (null); // T
-			setDataEntry_SubGroup_ID (0);
 			setIsMandatory (false); // N
 			setName (null);
 			setPersonalDataCategory (null); // NP
@@ -69,6 +69,40 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 		return ii.intValue();
 	}
 
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_Line getDataEntry_Line() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Line_ID, de.metas.dataentry.model.I_DataEntry_Line.class);
+	}
+
+	@Override
+	public void setDataEntry_Line(de.metas.dataentry.model.I_DataEntry_Line DataEntry_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_Line_ID, de.metas.dataentry.model.I_DataEntry_Line.class, DataEntry_Line);
+	}
+
+	/** Set Zeile.
+		@param DataEntry_Line_ID Zeile	  */
+	@Override
+	public void setDataEntry_Line_ID (int DataEntry_Line_ID)
+	{
+		if (DataEntry_Line_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_DataEntry_Line_ID, Integer.valueOf(DataEntry_Line_ID));
+	}
+
+	/** Get Zeile.
+		@return Zeile	  */
+	@Override
+	public int getDataEntry_Line_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Line_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * DataEntry_RecordType AD_Reference_ID=540956
 	 * Reference name: DataEntry_RecordType
@@ -101,74 +135,6 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	public java.lang.String getDataEntry_RecordType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_RecordType);
-	}
-
-	@Override
-	public de.metas.dataentry.model.I_DataEntry_Section getDataEntry_Section() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_Section_ID, de.metas.dataentry.model.I_DataEntry_Section.class);
-	}
-
-	@Override
-	public void setDataEntry_Section(de.metas.dataentry.model.I_DataEntry_Section DataEntry_Section)
-	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_Section_ID, de.metas.dataentry.model.I_DataEntry_Section.class, DataEntry_Section);
-	}
-
-	/** Set DataEntry_Section.
-		@param DataEntry_Section_ID DataEntry_Section	  */
-	@Override
-	public void setDataEntry_Section_ID (int DataEntry_Section_ID)
-	{
-		if (DataEntry_Section_ID < 1) 
-			set_Value (COLUMNNAME_DataEntry_Section_ID, null);
-		else 
-			set_Value (COLUMNNAME_DataEntry_Section_ID, Integer.valueOf(DataEntry_Section_ID));
-	}
-
-	/** Get DataEntry_Section.
-		@return DataEntry_Section	  */
-	@Override
-	public int getDataEntry_Section_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Section_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class);
-	}
-
-	@Override
-	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup)
-	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class, DataEntry_SubGroup);
-	}
-
-	/** Set Untergruppe.
-		@param DataEntry_SubGroup_ID Untergruppe	  */
-	@Override
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID)
-	{
-		if (DataEntry_SubGroup_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, Integer.valueOf(DataEntry_SubGroup_ID));
-	}
-
-	/** Get Untergruppe.
-		@return Untergruppe	  */
-	@Override
-	public int getDataEntry_SubGroup_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubGroup_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Beschreibung.
@@ -240,8 +206,8 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	public static final String PERSONALDATACATEGORY_Personal = "P";
 	/** SensitivePersonal = SP */
 	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
-	/** Set Personal Data Category.
-		@param PersonalDataCategory Personal Data Category	  */
+	/** Set Datenschutz-Kategorie.
+		@param PersonalDataCategory Datenschutz-Kategorie	  */
 	@Override
 	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
 	{
@@ -249,8 +215,8 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
 	}
 
-	/** Get Personal Data Category.
-		@return Personal Data Category	  */
+	/** Get Datenschutz-Kategorie.
+		@return Datenschutz-Kategorie	  */
 	@Override
 	public java.lang.String getPersonalDataCategory () 
 	{

@@ -14,7 +14,7 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 309134467L;
+	private static final long serialVersionUID = 1248932730L;
 
     /** Standard Constructor */
     public X_DataEntry_Section (Properties ctx, int DataEntry_Section_ID, String trxName)
@@ -22,10 +22,10 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
       super (ctx, DataEntry_Section_ID, trxName);
       /** if (DataEntry_Section_ID == 0)
         {
-			setDataEntry_Group_ID (0);
 			setDataEntry_Section_ID (0);
+			setDataEntry_SubGroup_ID (0);
 			setIsInitiallyClosed (false); // N
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Section WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
+			setSeqNo (0);
         } */
     }
 
@@ -44,42 +44,8 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
       return poi;
     }
 
-	@Override
-	public de.metas.dataentry.model.I_DataEntry_Group getDataEntry_Group() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_Group_ID, de.metas.dataentry.model.I_DataEntry_Group.class);
-	}
-
-	@Override
-	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_Group_ID, de.metas.dataentry.model.I_DataEntry_Group.class, DataEntry_Group);
-	}
-
-	/** Set Eingabegruppe.
-		@param DataEntry_Group_ID Eingabegruppe	  */
-	@Override
-	public void setDataEntry_Group_ID (int DataEntry_Group_ID)
-	{
-		if (DataEntry_Group_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, Integer.valueOf(DataEntry_Group_ID));
-	}
-
-	/** Get Eingabegruppe.
-		@return Eingabegruppe	  */
-	@Override
-	public int getDataEntry_Group_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Group_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set DataEntry_Section.
-		@param DataEntry_Section_ID DataEntry_Section	  */
+	/** Set Sektion.
+		@param DataEntry_Section_ID Sektion	  */
 	@Override
 	public void setDataEntry_Section_ID (int DataEntry_Section_ID)
 	{
@@ -89,12 +55,46 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
 			set_ValueNoCheck (COLUMNNAME_DataEntry_Section_ID, Integer.valueOf(DataEntry_Section_ID));
 	}
 
-	/** Get DataEntry_Section.
-		@return DataEntry_Section	  */
+	/** Get Sektion.
+		@return Sektion	  */
 	@Override
 	public int getDataEntry_Section_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Section_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class);
+	}
+
+	@Override
+	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class, DataEntry_SubGroup);
+	}
+
+	/** Set Untergruppe.
+		@param DataEntry_SubGroup_ID Untergruppe	  */
+	@Override
+	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID)
+	{
+		if (DataEntry_SubGroup_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_SubGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_DataEntry_SubGroup_ID, Integer.valueOf(DataEntry_SubGroup_ID));
+	}
+
+	/** Get Untergruppe.
+		@return Untergruppe	  */
+	@Override
+	public int getDataEntry_SubGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -122,6 +122,33 @@ public interface I_DataEntry_Field
     public static final String COLUMNNAME_DataEntry_Field_ID = "DataEntry_Field_ID";
 
 	/**
+	 * Set Zeile.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Line_ID (int DataEntry_Line_ID);
+
+	/**
+	 * Get Zeile.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_Line_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_Line getDataEntry_Line();
+
+	public void setDataEntry_Line(de.metas.dataentry.model.I_DataEntry_Line DataEntry_Line);
+
+    /** Column definition for DataEntry_Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_Line> COLUMN_DataEntry_Line_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_Line>(I_DataEntry_Field.class, "DataEntry_Line_ID", de.metas.dataentry.model.I_DataEntry_Line.class);
+    /** Column name DataEntry_Line_ID */
+    public static final String COLUMNNAME_DataEntry_Line_ID = "DataEntry_Line_ID";
+
+	/**
 	 * Set Datentyp.
 	 *
 	 * <br>Type: List
@@ -143,60 +170,6 @@ public interface I_DataEntry_Field
     public static final org.adempiere.model.ModelColumn<I_DataEntry_Field, Object> COLUMN_DataEntry_RecordType = new org.adempiere.model.ModelColumn<I_DataEntry_Field, Object>(I_DataEntry_Field.class, "DataEntry_RecordType", null);
     /** Column name DataEntry_RecordType */
     public static final String COLUMNNAME_DataEntry_RecordType = "DataEntry_RecordType";
-
-	/**
-	 * Set DataEntry_Section.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDataEntry_Section_ID (int DataEntry_Section_ID);
-
-	/**
-	 * Get DataEntry_Section.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getDataEntry_Section_ID();
-
-	public de.metas.dataentry.model.I_DataEntry_Section getDataEntry_Section();
-
-	public void setDataEntry_Section(de.metas.dataentry.model.I_DataEntry_Section DataEntry_Section);
-
-    /** Column definition for DataEntry_Section_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_Section> COLUMN_DataEntry_Section_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_Section>(I_DataEntry_Field.class, "DataEntry_Section_ID", de.metas.dataentry.model.I_DataEntry_Section.class);
-    /** Column name DataEntry_Section_ID */
-    public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
-
-	/**
-	 * Set Untergruppe.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID);
-
-	/**
-	 * Get Untergruppe.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getDataEntry_SubGroup_ID();
-
-	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup();
-
-	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup);
-
-    /** Column definition for DataEntry_SubGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_SubGroup> COLUMN_DataEntry_SubGroup_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Field, de.metas.dataentry.model.I_DataEntry_SubGroup>(I_DataEntry_Field.class, "DataEntry_SubGroup_ID", de.metas.dataentry.model.I_DataEntry_SubGroup.class);
-    /** Column name DataEntry_SubGroup_ID */
-    public static final String COLUMNNAME_DataEntry_SubGroup_ID = "DataEntry_SubGroup_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -295,7 +268,7 @@ public interface I_DataEntry_Field
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Personal Data Category.
+	 * Set Datenschutz-Kategorie.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -304,7 +277,7 @@ public interface I_DataEntry_Field
 	public void setPersonalDataCategory (java.lang.String PersonalDataCategory);
 
 	/**
-	 * Get Personal Data Category.
+	 * Get Datenschutz-Kategorie.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

@@ -99,34 +99,7 @@ public interface I_DataEntry_Section
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Eingabegruppe.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDataEntry_Group_ID (int DataEntry_Group_ID);
-
-	/**
-	 * Get Eingabegruppe.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getDataEntry_Group_ID();
-
-	public de.metas.dataentry.model.I_DataEntry_Group getDataEntry_Group();
-
-	public void setDataEntry_Group(de.metas.dataentry.model.I_DataEntry_Group DataEntry_Group);
-
-    /** Column definition for DataEntry_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_Group> COLUMN_DataEntry_Group_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_Group>(I_DataEntry_Section.class, "DataEntry_Group_ID", de.metas.dataentry.model.I_DataEntry_Group.class);
-    /** Column name DataEntry_Group_ID */
-    public static final String COLUMNNAME_DataEntry_Group_ID = "DataEntry_Group_ID";
-
-	/**
-	 * Set DataEntry_Section.
+	 * Set Sektion.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -135,7 +108,7 @@ public interface I_DataEntry_Section
 	public void setDataEntry_Section_ID (int DataEntry_Section_ID);
 
 	/**
-	 * Get DataEntry_Section.
+	 * Get Sektion.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -147,6 +120,33 @@ public interface I_DataEntry_Section
     public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, Object> COLUMN_DataEntry_Section_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, Object>(I_DataEntry_Section.class, "DataEntry_Section_ID", null);
     /** Column name DataEntry_Section_ID */
     public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
+
+	/**
+	 * Set Untergruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID);
+
+	/**
+	 * Get Untergruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_SubGroup_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup();
+
+	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup);
+
+    /** Column definition for DataEntry_SubGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubGroup> COLUMN_DataEntry_SubGroup_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubGroup>(I_DataEntry_Section.class, "DataEntry_SubGroup_ID", de.metas.dataentry.model.I_DataEntry_SubGroup.class);
+    /** Column name DataEntry_SubGroup_ID */
+    public static final String COLUMNNAME_DataEntry_SubGroup_ID = "DataEntry_SubGroup_ID";
 
 	/**
 	 * Set Beschreibung.

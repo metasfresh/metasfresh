@@ -10,123 +10,8 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
         "value": "groupRecord1_description",
         "anyLanguage": true
       },
-      "internalName": "groupRecord1_name",
+      "internalName": "DataEntry_Group_ID-100003",
       "dataEntrySubGroups": [
-        {
-          "id": 100006,
-          "caption": {
-            "value": "subgroupRecord1_1_tabName",
-            "anyLanguage": true
-          },
-          "description": {
-            "value": "subgroupRecord1_1_description",
-            "anyLanguage": true
-          },
-          "internalName": "DataEntry_SubGroup_ID-100006",
-          "dataEntrySections": [
-            {
-              "id": 100005,
-              "caption": {
-                "value": "sectionRecord1_2_sectionName",
-                "anyLanguage": true
-              },
-              "description": {
-                "value": "sectionRecord1_2_description",
-                "anyLanguage": true
-              },
-              "internalName": "DataEntry_Section_ID-100005",
-              "initallyClosed": false,
-              "dataEntryFields": [
-                {
-                  "id": 100015,
-                  "caption": {
-                    "value": "fieldRecord1_2_4_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_2_4_description",
-                    "anyLanguage": true
-                  },
-                  "type": "TEXT",
-                  "mandatory": true,
-                  "listValues": [ ]
-                }
-              ]
-            },
-            {
-              "id": 100004,
-              "caption": {
-                "value": "sectionRecord1_1_sectionName",
-                "anyLanguage": true
-              },
-              "description": {
-                "value": "sectionRecord1_1_description",
-                "anyLanguage": true
-              },
-              "internalName": "DataEntry_Section_ID-100004",
-              "initallyClosed": false,
-              "dataEntryFields": [
-                {
-                  "id": 100008,
-                  "caption": {
-                    "value": "fieldRecord1_1_2_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_1_2_description",
-                    "anyLanguage": true
-                  },
-                  "type": "NUMBER",
-                  "mandatory": false,
-                  "listValues": [ ]
-                },
-                {
-                  "id": 100007,
-                  "caption": {
-                    "value": "fieldRecord1_1_1_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_1_1_description",
-                    "anyLanguage": true
-                  },
-                  "type": "TEXT",
-                  "mandatory": true,
-                  "listValues": [ ]
-                }
-              ]
-            },
-            {
-              "id": 0,
-              "caption": {
-                "value": "",
-                "anyLanguage": true
-              },
-              "description": {
-                "value": "",
-                "anyLanguage": true
-              },
-              "internalName": "DEFAULT",
-              "initallyClosed": false,
-              "dataEntryFields": [
-                {
-                  "id": 100016,
-                  "caption": {
-                    "value": "fieldRecord1_2_5_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_2_5_description",
-                    "anyLanguage": true
-                  },
-                  "type": "LONG_TEXT",
-                  "mandatory": true,
-                  "listValues": [ ]
-                }
-              ]
-            }
-          ]
-        },
         {
           "id": 100009,
           "caption": {
@@ -134,90 +19,183 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
             "anyLanguage": true
           },
           "description": {
-            "value": "subgroupRecord1_2_description",
+            "value": "subgroupRecord1_2_description - seqNo10",
             "anyLanguage": true
           },
           "internalName": "DataEntry_SubGroup_ID-100009",
           "dataEntrySections": [
             {
-              "id": 100005,
+              "id": 100010,
               "caption": {
-                "value": "sectionRecord1_2_sectionName",
+                "value": "sectionRecord1_2_1_sectionName",
                 "anyLanguage": true
               },
               "description": {
-                "value": "sectionRecord1_2_description",
+                "value": "sectionRecord1_2_1_description - seqNo20",
+                "anyLanguage": true
+              },
+              "internalName": "DataEntry_Section_ID-100010",
+              "initallyClosed": false,
+              "dataEntryLines": [
+                {
+                  "dataEntryFields": [
+                    {
+                      "id": 100012,
+                      "caption": {
+                        "value": "fieldRecord1_2_1_1_1_name",
+                        "anyLanguage": true
+                      },
+                      "description": {
+                        "value": "fieldRecord1_2_1_1_1_description - seqNo10",
+                        "anyLanguage": true
+                      },
+                      "type": "DATE",
+                      "mandatory": false,
+                      "listValues": [ ]
+                    },
+                    {
+                      "id": 100013,
+                      "caption": {
+                        "value": "fieldRecord1_2_1_1_2_name",
+                        "anyLanguage": true
+                      },
+                      "description": {
+                        "value": "fieldRecord1_2_1_1_2_description",
+                        "anyLanguage": true
+                      },
+                      "type": "LIST",
+                      "mandatory": false,
+                      "listValues": [
+                        {
+                          "id": 100015,
+                          "dataEntryFieldId": 100013,
+                          "name": {
+                            "value": "listValueRecord1_2_1_1_2_2_name",
+                            "anyLanguage": true
+                          },
+                          "description": {
+                            "value": "listValueRecord1_2_1_1_2_2_description - seqNo10",
+                            "anyLanguage": true
+                          }
+                        },
+                        {
+                          "id": 100014,
+                          "dataEntryFieldId": 100013,
+                          "name": {
+                            "value": "listValueRecord1_2_1_1_2_1_name",
+                            "anyLanguage": true
+                          },
+                          "description": {
+                            "value": "listValueRecord1_2_1_1_2_1_description - seqNo20",
+                            "anyLanguage": true
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": 100016,
+                      "caption": {
+                        "value": "fieldRecord1_2_1_1_3_name",
+                        "anyLanguage": true
+                      },
+                      "description": {
+                        "value": "fieldRecord1_2_1_1_3_description",
+                        "anyLanguage": true
+                      },
+                      "type": "YESNO",
+                      "mandatory": false,
+                      "listValues": [ ]
+                    },
+                    {
+                      "id": 100017,
+                      "caption": {
+                        "value": "fieldRecord1_2_1_1_4_name",
+                        "anyLanguage": true
+                      },
+                      "description": {
+                        "value": "fieldRecord1_2_1_1_4_description",
+                        "anyLanguage": true
+                      },
+                      "type": "TEXT",
+                      "mandatory": true,
+                      "listValues": [ ]
+                    },
+                    {
+                      "id": 100018,
+                      "caption": {
+                        "value": "fieldRecord1_2_1_1_5_name",
+                        "anyLanguage": true
+                      },
+                      "description": {
+                        "value": "fieldRecord1_2_1_1_5_description",
+                        "anyLanguage": true
+                      },
+                      "type": "LONG_TEXT",
+                      "mandatory": true,
+                      "listValues": [ ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 100004,
+          "caption": {
+            "value": "subgroupRecord1_1_tabName",
+            "anyLanguage": true
+          },
+          "description": {
+            "value": "subgroupRecord1_1_description - seqNo20",
+            "anyLanguage": true
+          },
+          "internalName": "DataEntry_SubGroup_ID-100004",
+          "dataEntrySections": [
+            {
+              "id": 100005,
+              "caption": {
+                "value": "sectionRecord1_1_2_sectionName",
+                "anyLanguage": true
+              },
+              "description": {
+                "value": "sectionRecord1_1_2_description - seqNo10",
                 "anyLanguage": true
               },
               "internalName": "DataEntry_Section_ID-100005",
               "initallyClosed": false,
-              "dataEntryFields": [
+              "dataEntryLines": [
                 {
-                  "id": 100010,
-                  "caption": {
-                    "value": "fieldRecord1_1_1_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_1_1_description",
-                    "anyLanguage": true
-                  },
-                  "type": "DATE",
-                  "mandatory": false,
-                  "listValues": [ ]
-                },
-                {
-                  "id": 100011,
-                  "caption": {
-                    "value": "fieldRecord1_1_2_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_1_2_description",
-                    "anyLanguage": true
-                  },
-                  "type": "LIST",
-                  "mandatory": false,
-                  "listValues": [
+                  "dataEntryFields": [
                     {
-                      "id": 100012,
-                      "dataEntryFieldId": 100011,
-                      "name": {
-                        "value": "listValueRecord_1_2_2_1_name",
+                      "id": 100008,
+                      "caption": {
+                        "value": "fieldRecord1_1_2_1_2_name",
                         "anyLanguage": true
                       },
                       "description": {
-                        "value": "listValueRecord_1_2_2_1_description",
+                        "value": "fieldRecord1_1_2_1_2_description - seqNo10",
                         "anyLanguage": true
-                      }
+                      },
+                      "type": "NUMBER",
+                      "mandatory": false,
+                      "listValues": [ ]
                     },
                     {
-                      "id": 100013,
-                      "dataEntryFieldId": 100011,
-                      "name": {
-                        "value": "listValueRecord_1_2_2_2_name",
+                      "id": 100007,
+                      "caption": {
+                        "value": "fieldRecord1_1_2_1_1_name",
                         "anyLanguage": true
                       },
                       "description": {
-                        "value": "listValueRecord_1_2_2_2_description",
+                        "value": "fieldRecord1_1_2_1_1_description - seqNo20",
                         "anyLanguage": true
-                      }
+                      },
+                      "type": "TEXT",
+                      "mandatory": true,
+                      "listValues": [ ]
                     }
                   ]
-                },
-                {
-                  "id": 100014,
-                  "caption": {
-                    "value": "fieldRecord1_1_3_name",
-                    "anyLanguage": true
-                  },
-                  "description": {
-                    "value": "fieldRecord1_1_3_description",
-                    "anyLanguage": true
-                  },
-                  "type": "YESNO",
-                  "mandatory": false,
-                  "listValues": [ ]
                 }
               ]
             }

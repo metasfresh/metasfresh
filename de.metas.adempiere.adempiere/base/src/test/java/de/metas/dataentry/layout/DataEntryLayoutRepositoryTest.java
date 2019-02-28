@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Group;
+import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
@@ -102,135 +103,140 @@ public class DataEntryLayoutRepositoryTest
 		groupRecord1.setTabName("groupRecord1_tabName");
 		saveRecord(groupRecord1);
 
-		// note: the section records are created in reverse order (SeqNo)
-		final I_DataEntry_Section sectionRecord1_1 = newInstance(I_DataEntry_Section.class);
-		sectionRecord1_1.setDataEntry_Group(groupRecord1);
-		sectionRecord1_1.setSeqNo(20);
-		sectionRecord1_1.setIsInitiallyClosed(true);
-		sectionRecord1_1.setName("sectionRecord1_1_name");
-		sectionRecord1_1.setSectionName("sectionRecord1_1_sectionName");
-		sectionRecord1_1.setDescription("sectionRecord1_1_description");
-		saveRecord(sectionRecord1_1);
-
-		final I_DataEntry_Section sectionRecord1_2 = newInstance(I_DataEntry_Section.class);
-		sectionRecord1_2.setDataEntry_Group(groupRecord1);
-		sectionRecord1_2.setSeqNo(10);
-		sectionRecord1_2.setIsInitiallyClosed(false);
-		sectionRecord1_2.setName("sectionRecord1_2_name");
-		sectionRecord1_2.setSectionName("sectionRecord1_2_sectionName");
-		sectionRecord1_2.setDescription("sectionRecord1_2_description");
-		saveRecord(sectionRecord1_2);
-
 		//
 		// subgroup 1
 		final I_DataEntry_SubGroup subgroupRecord1_1 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_1.setDataEntry_Group(groupRecord1);
 		subgroupRecord1_1.setName("subgroupRecord1_1_name");
-		subgroupRecord1_1.setDescription("subgroupRecord1_1_description");
+		subgroupRecord1_1.setDescription("subgroupRecord1_1_description - seqNo20");
 		subgroupRecord1_1.setTabName("subgroupRecord1_1_tabName");
+		subgroupRecord1_1.setSeqNo(20);
 		saveRecord(subgroupRecord1_1);
 
-		// note: the fields of group 1 are created in reverse order (SeqNo)
-		final I_DataEntry_Field fieldRecord1_1_1 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_1_1.setDataEntry_SubGroup(subgroupRecord1_1);
-		fieldRecord1_1_1.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
-		fieldRecord1_1_1.setName("fieldRecord1_1_1_name");
-		fieldRecord1_1_1.setDescription("fieldRecord1_1_1_description");
-		fieldRecord1_1_1.setIsMandatory(true);
-		fieldRecord1_1_1.setSeqNo(20);
-		fieldRecord1_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
-		fieldRecord1_1_1.setDataEntry_Section(sectionRecord1_1);
-		saveRecord(fieldRecord1_1_1);
+		final I_DataEntry_Section sectionRecord1_1_2 = newInstance(I_DataEntry_Section.class);
+		sectionRecord1_1_2.setDataEntry_SubGroup(subgroupRecord1_1);
+		sectionRecord1_1_2.setSeqNo(10);
+		sectionRecord1_1_2.setIsInitiallyClosed(false);
+		sectionRecord1_1_2.setName("sectionRecord1_1_2_name");
+		sectionRecord1_1_2.setSectionName("sectionRecord1_1_2_sectionName");
+		sectionRecord1_1_2.setDescription("sectionRecord1_1_2_description - seqNo10");
+		saveRecord(sectionRecord1_1_2);
 
-		final I_DataEntry_Field fieldRecord1_1_2 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_1_2.setDataEntry_SubGroup(subgroupRecord1_1);
-		fieldRecord1_1_2.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Number);
-		fieldRecord1_1_2.setName("fieldRecord1_1_2_name");
-		fieldRecord1_1_2.setDescription("fieldRecord1_1_2_description");
-		fieldRecord1_1_2.setIsMandatory(false);
-		fieldRecord1_1_2.setSeqNo(10);
-		fieldRecord1_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
-		fieldRecord1_1_2.setDataEntry_Section(sectionRecord1_1);
-		saveRecord(fieldRecord1_1_2);
+		final I_DataEntry_Line lineRecord1_1_2_1 = newInstance(I_DataEntry_Line.class);
+		lineRecord1_1_2_1.setDataEntry_Section(sectionRecord1_1_2);
+		lineRecord1_1_2_1.setSeqNo(10);
+		saveRecord(lineRecord1_1_2_1);
+
+		// note: the fields of group 1 are created in reverse order (SeqNo)
+		final I_DataEntry_Field fieldRecord1_1_2_1_1 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_1_2_1_1.setDataEntry_Line(lineRecord1_1_2_1);
+		fieldRecord1_1_2_1_1.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
+		fieldRecord1_1_2_1_1.setName("fieldRecord1_1_2_1_1_name");
+		fieldRecord1_1_2_1_1.setDescription("fieldRecord1_1_2_1_1_description - seqNo20");
+		fieldRecord1_1_2_1_1.setIsMandatory(true);
+		fieldRecord1_1_2_1_1.setSeqNo(20);
+		fieldRecord1_1_2_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		saveRecord(fieldRecord1_1_2_1_1);
+
+		final I_DataEntry_Field fieldRecord1_1_2_1_2 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_1_2_1_2.setDataEntry_Line(lineRecord1_1_2_1);
+		fieldRecord1_1_2_1_2.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Number);
+		fieldRecord1_1_2_1_2.setName("fieldRecord1_1_2_1_2_name");
+		fieldRecord1_1_2_1_2.setDescription("fieldRecord1_1_2_1_2_description - seqNo10");
+		fieldRecord1_1_2_1_2.setIsMandatory(false);
+		fieldRecord1_1_2_1_2.setSeqNo(10);
+		fieldRecord1_1_2_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
+		saveRecord(fieldRecord1_1_2_1_2);
 
 		//
 		// subgroup 2
 		final I_DataEntry_SubGroup subgroupRecord1_2 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_2.setDataEntry_Group(groupRecord1);
 		subgroupRecord1_2.setName("subgroupRecord1_2_name");
-		subgroupRecord1_2.setDescription("subgroupRecord1_2_description");
+		subgroupRecord1_2.setDescription("subgroupRecord1_2_description - seqNo10");
 		subgroupRecord1_2.setTabName("subgroupRecord1_2_tabName");
+		subgroupRecord1_2.setSeqNo(10);
 		saveRecord(subgroupRecord1_2);
 
-		final I_DataEntry_Field fieldRecord1_2_1 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_2_1.setDataEntry_SubGroup(subgroupRecord1_2);
-		fieldRecord1_2_1.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Date);
-		fieldRecord1_2_1.setName("fieldRecord1_1_1_name");
-		fieldRecord1_2_1.setDescription("fieldRecord1_1_1_description");
-		fieldRecord1_2_1.setIsMandatory(false);
-		fieldRecord1_2_1.setSeqNo(10);
-		fieldRecord1_2_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
-		fieldRecord1_2_1.setDataEntry_Section(sectionRecord1_2);
-		saveRecord(fieldRecord1_2_1);
+		// note: the section records are created in reverse order (SeqNo)
+		final I_DataEntry_Section sectionRecord1_2_1 = newInstance(I_DataEntry_Section.class);
+		sectionRecord1_2_1.setDataEntry_SubGroup(subgroupRecord1_2);
+		sectionRecord1_2_1.setSeqNo(20);
+		sectionRecord1_2_1.setIsInitiallyClosed(true);
+		sectionRecord1_2_1.setName("sectionRecord1_2_1_name");
+		sectionRecord1_2_1.setSectionName("sectionRecord1_2_1_sectionName");
+		sectionRecord1_2_1.setDescription("sectionRecord1_2_1_description - seqNo20");
+		saveRecord(sectionRecord1_2_1);
 
-		final I_DataEntry_Field fieldRecord1_2_2 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_2_2.setDataEntry_SubGroup(subgroupRecord1_2);
-		fieldRecord1_2_2.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_List);
-		fieldRecord1_2_2.setName("fieldRecord1_1_2_name");
-		fieldRecord1_2_2.setDescription("fieldRecord1_1_2_description");
-		fieldRecord1_2_2.setIsMandatory(false);
-		fieldRecord1_2_2.setSeqNo(20);
-		fieldRecord1_2_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
-		fieldRecord1_2_2.setDataEntry_Section(sectionRecord1_2);
-		saveRecord(fieldRecord1_2_2);
+		final I_DataEntry_Line lineRecord1_2_1_1 = newInstance(I_DataEntry_Line.class);
+		lineRecord1_2_1_1.setDataEntry_Section(sectionRecord1_2_1);
+		lineRecord1_2_1_1.setSeqNo(10);
+		saveRecord(lineRecord1_2_1_1);
 
-		final I_DataEntry_ListValue listValueRecord_1_2_2_1 = newInstance(I_DataEntry_ListValue.class);
-		listValueRecord_1_2_2_1.setDataEntry_Field(fieldRecord1_2_2);
-		listValueRecord_1_2_2_1.setName("listValueRecord_1_2_2_1_name");
-		listValueRecord_1_2_2_1.setDescription("listValueRecord_1_2_2_1_description");
-		listValueRecord_1_2_2_1.setSeqNo(10);
-		saveRecord(listValueRecord_1_2_2_1);
+		final I_DataEntry_Field fieldRecord1_2_1_1_1 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_1_1_1.setDataEntry_Line(lineRecord1_2_1_1);
+		fieldRecord1_2_1_1_1.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Date);
+		fieldRecord1_2_1_1_1.setName("fieldRecord1_2_1_1_1_name");
+		fieldRecord1_2_1_1_1.setDescription("fieldRecord1_2_1_1_1_description - seqNo10");
+		fieldRecord1_2_1_1_1.setIsMandatory(false);
+		fieldRecord1_2_1_1_1.setSeqNo(10);
+		fieldRecord1_2_1_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		saveRecord(fieldRecord1_2_1_1_1);
 
-		final I_DataEntry_ListValue listValueRecord_1_2_2_2 = newInstance(I_DataEntry_ListValue.class);
-		listValueRecord_1_2_2_2.setDataEntry_Field(fieldRecord1_2_2);
-		listValueRecord_1_2_2_2.setName("listValueRecord_1_2_2_2_name");
-		listValueRecord_1_2_2_2.setDescription("listValueRecord_1_2_2_2_description");
-		listValueRecord_1_2_2_2.setSeqNo(20);
-		saveRecord(listValueRecord_1_2_2_2);
+		final I_DataEntry_Field fieldRecord1_2_1_1_2 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_1_1_2.setDataEntry_Line(lineRecord1_2_1_1);
+		fieldRecord1_2_1_1_2.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_List);
+		fieldRecord1_2_1_1_2.setName("fieldRecord1_2_1_1_2_name");
+		fieldRecord1_2_1_1_2.setDescription("fieldRecord1_2_1_1_2_description");
+		fieldRecord1_2_1_1_2.setIsMandatory(false);
+		fieldRecord1_2_1_1_2.setSeqNo(20);
+		fieldRecord1_2_1_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
+		saveRecord(fieldRecord1_2_1_1_2);
 
-		final I_DataEntry_Field fieldRecord1_2_3 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_2_3.setDataEntry_SubGroup(subgroupRecord1_2);
-		fieldRecord1_2_3.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_YesNo);
-		fieldRecord1_2_3.setName("fieldRecord1_1_3_name");
-		fieldRecord1_2_3.setDescription("fieldRecord1_1_3_description");
-		fieldRecord1_2_3.setIsMandatory(false);
-		fieldRecord1_2_3.setSeqNo(30);
-		fieldRecord1_2_3.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
-		fieldRecord1_2_3.setDataEntry_Section(sectionRecord1_2);
-		saveRecord(fieldRecord1_2_3);
+		final I_DataEntry_ListValue listValueRecord1_2_1_1_2_1 = newInstance(I_DataEntry_ListValue.class);
+		listValueRecord1_2_1_1_2_1.setDataEntry_Field(fieldRecord1_2_1_1_2);
+		listValueRecord1_2_1_1_2_1.setName("listValueRecord1_2_1_1_2_1_name");
+		listValueRecord1_2_1_1_2_1.setDescription("listValueRecord1_2_1_1_2_1_description - seqNo20");
+		listValueRecord1_2_1_1_2_1.setSeqNo(20);
+		saveRecord(listValueRecord1_2_1_1_2_1);
 
-		final I_DataEntry_Field fieldRecord1_2_4 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_2_4.setDataEntry_SubGroup(subgroupRecord1_1);
-		fieldRecord1_2_4.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
-		fieldRecord1_2_4.setName("fieldRecord1_2_4_name");
-		fieldRecord1_2_4.setDescription("fieldRecord1_2_4_description");
-		fieldRecord1_2_4.setIsMandatory(true);
-		fieldRecord1_2_4.setSeqNo(40);
-		fieldRecord1_2_4.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
-		fieldRecord1_2_4.setDataEntry_Section(sectionRecord1_2);
-		saveRecord(fieldRecord1_2_4);
+		final I_DataEntry_ListValue listValueRecord1_2_1_1_2_2 = newInstance(I_DataEntry_ListValue.class);
+		listValueRecord1_2_1_1_2_2.setDataEntry_Field(fieldRecord1_2_1_1_2);
+		listValueRecord1_2_1_1_2_2.setName("listValueRecord1_2_1_1_2_2_name");
+		listValueRecord1_2_1_1_2_2.setDescription("listValueRecord1_2_1_1_2_2_description - seqNo10");
+		listValueRecord1_2_1_1_2_2.setSeqNo(10);
+		saveRecord(listValueRecord1_2_1_1_2_2);
+
+		final I_DataEntry_Field fieldRecord1_2_1_1_3 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_1_1_3.setDataEntry_Line(lineRecord1_2_1_1);;
+		fieldRecord1_2_1_1_3.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_YesNo);
+		fieldRecord1_2_1_1_3.setName("fieldRecord1_2_1_1_3_name");
+		fieldRecord1_2_1_1_3.setDescription("fieldRecord1_2_1_1_3_description");
+		fieldRecord1_2_1_1_3.setIsMandatory(false);
+		fieldRecord1_2_1_1_3.setSeqNo(30);
+		fieldRecord1_2_1_1_3.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
+		saveRecord(fieldRecord1_2_1_1_3);
+
+		final I_DataEntry_Field fieldRecord1_2_1_1_4 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_1_1_4.setDataEntry_Line(lineRecord1_2_1_1);
+		fieldRecord1_2_1_1_4.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
+		fieldRecord1_2_1_1_4.setName("fieldRecord1_2_1_1_4_name");
+		fieldRecord1_2_1_1_4.setDescription("fieldRecord1_2_1_1_4_description");
+		fieldRecord1_2_1_1_4.setIsMandatory(true);
+		fieldRecord1_2_1_1_4.setSeqNo(40);
+		fieldRecord1_2_1_1_4.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
+		saveRecord(fieldRecord1_2_1_1_4);
 
 		// the last field has no section so it shall be added to the "default" section
-		final I_DataEntry_Field fieldRecord1_2_5 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_2_5.setDataEntry_SubGroup(subgroupRecord1_1);
-		fieldRecord1_2_5.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_LongText);
-		fieldRecord1_2_5.setName("fieldRecord1_2_5_name");
-		fieldRecord1_2_5.setDescription("fieldRecord1_2_5_description");
-		fieldRecord1_2_5.setIsMandatory(true);
-		fieldRecord1_2_5.setSeqNo(50);
-		fieldRecord1_2_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
-		// fieldRecord1_2_5.setDataEntry_Section(sectionRecord1_2);
-		saveRecord(fieldRecord1_2_5);
+		final I_DataEntry_Field fieldRecord1_2_1_1_5 = newInstance(I_DataEntry_Field.class);
+		fieldRecord1_2_1_1_5.setDataEntry_Line(lineRecord1_2_1_1);
+		fieldRecord1_2_1_1_5.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_LongText);
+		fieldRecord1_2_1_1_5.setName("fieldRecord1_2_1_1_5_name");
+		fieldRecord1_2_1_1_5.setDescription("fieldRecord1_2_1_1_5_description");
+		fieldRecord1_2_1_1_5.setIsMandatory(true);
+		fieldRecord1_2_1_1_5.setSeqNo(50);
+		fieldRecord1_2_1_1_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
+		saveRecord(fieldRecord1_2_1_1_5);
 
 		return groupRecord1;
 	}

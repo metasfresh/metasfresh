@@ -34,14 +34,14 @@ import lombok.Value;
 @Value
 public class DataEntrySection
 {
-	public static DataEntrySectionBuilder newDefaultSectionBuilder()
-	{
-		return DataEntrySection.builder()
-				.id(DataEntrySectionId.DEFAULT)
-				.description(ITranslatableString.empty())
-				.caption(ITranslatableString.empty())
-				.internalName("DEFAULT");
-	}
+//	public static DataEntrySectionBuilder newDefaultSectionBuilder()
+//	{
+//		return DataEntrySection.builder()
+//				.id(DataEntrySectionId.DEFAULT)
+//				.description(ITranslatableString.empty())
+//				.caption(ITranslatableString.empty())
+//				.internalName("DEFAULT");
+//	}
 
 	DataEntrySectionId id;
 
@@ -52,7 +52,7 @@ public class DataEntrySection
 
 	boolean initallyClosed;
 
-	List<DataEntryField> dataEntryFields;
+	List<DataEntryLine> dataEntryLines;
 
 	@Builder
 	private DataEntrySection(
@@ -61,13 +61,13 @@ public class DataEntrySection
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			final boolean initallyClosed,
-			@Singular List<DataEntryField> dataEntryFields)
+			@Singular final List<DataEntryLine> dataEntryLines)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
 		this.initallyClosed = initallyClosed;
-		this.dataEntryFields = dataEntryFields;
+		this.dataEntryLines = dataEntryLines;
 	}
 }
