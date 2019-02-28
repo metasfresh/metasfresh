@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: metasfresh-esb-camel
-        image: metasfresh-esb-camel:latest
+        image: docker.metasfresh.com/metasfresh/de-metas-edi-esb-camel:master_LATEST
         imagePullPolicy: Always
         ports:
           - containerPort: 8184
