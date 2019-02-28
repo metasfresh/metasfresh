@@ -386,9 +386,6 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 			documentsBL.processEx(newSalesOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
-		if (true)
-			throw new AdempiereException("FAIL!"); // FIXME: DEBUGGING
-
 		return newSalesOrder;
 	}
 
