@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -54,6 +55,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
@@ -355,5 +357,30 @@ public class ProductDAO implements IProductDAO
 				.addOnlyContextClient()
 				.create()
 				.delete();
+	}
+
+	@Override
+	public I_M_Product createProduct(@NonNull final CreateProductRequest request)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		if (request.getProductValue() != null)
+		{
+			product.setValue(request.getProductValue());
+		}
+		product.setName(request.getProductName());
+		product.setM_Product_Category_ID(request.getProductCategoryId().getRepoId());
+		product.setProductType(request.getProductType());
+		product.setC_UOM_ID(request.getUomId().getRepoId());
+		product.setIsPurchased(request.isPurchased());
+		product.setIsSold(request.isSold());
+
+		if (request.getBomVerified() != null)
+		{
+			product.setIsVerified(request.getBomVerified());
+		}
+
+		saveRecord(product);
+
+		return product;
 	}
 }
