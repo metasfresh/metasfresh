@@ -1,10 +1,3 @@
--- delete possible existent data
-DELETE FROM c_dataimport WHERE exists (select 1 from ad_impformat f where f.ad_impformat_id = c_dataimport.ad_impformat_id and  ad_impformat_id = 1000001 AND ad_table_ID = 534);
-DELETE FROM ad_impformat_row WHERE exists (select 1 from ad_impformat f where f.ad_impformat_id = ad_impformat_row.ad_impformat_id and  ad_impformat_id = 1000001 AND ad_table_ID = 534);
-DELETE FROM ad_impformat WHERE ad_impformat_id = 1000001 AND ad_table_ID = 534;
-
-
-
 -- 2019-02-28T11:36:37.408
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_ImpFormat SET IsActive='Y',Updated=TO_TIMESTAMP('2019-02-28 11:36:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_ID=102
