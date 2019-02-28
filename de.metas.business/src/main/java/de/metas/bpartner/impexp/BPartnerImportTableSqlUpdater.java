@@ -640,7 +640,7 @@ public class BPartnerImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET M_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem ps"
-				+ " WHERE i.PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and IsActive='Y' ) "
+				+ " WHERE i.PricingSystem_Value=ps.value AND ps.AD_Client_ID IN (0, i.AD_Client_ID) and ps.IsActive='Y' ) "
 				+ "WHERE M_PricingSystem_ID IS NULL AND PricingSystem_Value IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
