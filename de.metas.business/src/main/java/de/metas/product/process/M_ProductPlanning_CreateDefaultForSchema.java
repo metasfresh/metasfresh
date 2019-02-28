@@ -2,8 +2,7 @@ package de.metas.product.process;
 
 import de.metas.process.JavaProcess;
 import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.model.I_M_Product_PlanningSchema;
-import de.metas.util.Check;
+import de.metas.product.ProductPlanningSchemaId;
 import de.metas.util.Services;
 
 /*
@@ -33,14 +32,10 @@ public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final I_M_Product_PlanningSchema productPlanningSchema = getRecord(I_M_Product_PlanningSchema.class);
-		Check.assumeNotNull(productPlanningSchema, "@NoSelection@");
-
-		productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchema(productPlanningSchema);
-
-
+		final ProductPlanningSchemaId schemaId = ProductPlanningSchemaId.ofRepoId(getRecord_ID());
+		productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchemaId(schemaId);
 		return MSG_OK;
 	}
 
