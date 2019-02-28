@@ -1,22 +1,15 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Created;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_CreatedBy;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Updated;
-import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_UpdatedBy;
-
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
@@ -24,11 +17,11 @@ import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
+import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
 import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -42,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -51,8 +45,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -221,87 +213,107 @@ public class DataEntryTabLoader
 				.setClosableMode(closableMode)
 				.setCaptionMode(CaptionMode.DISPLAY);
 
-		final List<DataEntryField> fields = dataEntrySection.getDataEntryFields();
-		for (final DataEntryField field : fields)
+		final List<DataEntryLine> lines = dataEntrySection.getDataEntryLines();
+		for (final DataEntryLine line : lines)
 		{
-			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = createLayoutElemementGroup(field);
+			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = createLayoutElemementGroup(line);
 			column.addElementGroup(elementGroup);
 		}
 		return section;
 	}
 
-	private static DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(final DataEntryField field)
+	private static DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(final DataEntryLine line)
+	{
+
+		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
+				.builder()
+				.setColumnCount(line.getDataEntryFields().size());
+
+		final List<DataEntryField> fields = line.getDataEntryFields();
+		for (final DataEntryField field : fields)
+		{
+			final DocumentLayoutElementLineDescriptor.Builder elementLine = createLayoutElemementLine(field);
+			elementGroup.addElementLine(elementLine);
+		}
+
+		return elementGroup;
+	}
+
+	private static DocumentLayoutElementLineDescriptor.Builder createLayoutElemementLine(final DataEntryField field)
 	{
 		// note that each element builder can be used/"consumed" only ones
 		final DocumentLayoutElementDescriptor.Builder dataElement = createFieldElementDescriptor(field);
 
-		final DocumentLayoutElementDescriptor.Builder createdElement = createFieldElementDescriptor(COLUMNNAME_Created, field.getId(), DocumentFieldWidgetType.DateTime);
-		final DocumentLayoutElementDescriptor.Builder createdByElement = createFieldElementDescriptor(COLUMNNAME_CreatedBy, field.getId(), DocumentFieldWidgetType.Lookup);
-		final DocumentLayoutElementDescriptor.Builder updatedElement = createFieldElementDescriptor(COLUMNNAME_Updated, field.getId(), DocumentFieldWidgetType.DateTime);
-		final DocumentLayoutElementDescriptor.Builder updatedByElement = createFieldElementDescriptor(COLUMNNAME_UpdatedBy, field.getId(), DocumentFieldWidgetType.Lookup);
+		// final DocumentLayoutElementDescriptor.Builder createdElement = createFieldElementDescriptor(COLUMNNAME_Created, field.getId(), DocumentFieldWidgetType.DateTime);
+		// final DocumentLayoutElementDescriptor.Builder createdByElement = createFieldElementDescriptor(COLUMNNAME_CreatedBy, field.getId(), DocumentFieldWidgetType.Lookup);
+		// final DocumentLayoutElementDescriptor.Builder updatedElement = createFieldElementDescriptor(COLUMNNAME_Updated, field.getId(), DocumentFieldWidgetType.DateTime);
+		// final DocumentLayoutElementDescriptor.Builder updatedByElement = createFieldElementDescriptor(COLUMNNAME_UpdatedBy, field.getId(), DocumentFieldWidgetType.Lookup);
 
 		final DocumentLayoutElementLineDescriptor.Builder elementLine = DocumentLayoutElementLineDescriptor
 				.builder()
 				.addElement(dataElement)
-				.addElement(createdElement)
-				.addElement(createdByElement)
-				.addElement(updatedElement)
-				.addElement(updatedByElement);
-
-		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
-				.builder()
-				.setColumnCount(2)
-				.addElementLine(elementLine);
-		return elementGroup;
+		// .addElement(createdElement)
+		// .addElement(createdByElement)
+		// .addElement(updatedElement)
+		// .addElement(updatedByElement)
+		;
+		return elementLine;
 	}
 
 	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(@NonNull final DataEntryField field)
 	{
-		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
-				.builder(DataEntryWebuiTools.computeFieldName(field.getId()))
-				.setEmptyText(ITranslatableString.empty());
-
 		final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
 				.builder()
 				.setCaption(field.getCaption())
 				.setDescription(field.getDescription())
 				.setViewEditorRenderMode(ViewEditorRenderMode.ALWAYS)
 				.setWidgetType(ofFieldType(field.getType()))
-				.setWidgetSize(WidgetSize.Large)
-				.addField(fieldBuilder);
-
+				.setWidgetSize(WidgetSize.Default);
 		if (FieldType.LONG_TEXT.equals(field.getType()))
 		{
 			element.setMultilineText(true);
 			element.setMultilineTextLines(10);
 		}
 
-		return element;
-	}
+		final String fieldName = DataEntryWebuiTools.computeFieldName(field.getId());
 
-	private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(
-			@NonNull final String columnName,
-			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DocumentFieldWidgetType type)
-	{
-		final String columnNametoUse = constructCreatedUpdatedFieldColumnName(columnName, dataEntryFieldId);
-
-		final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
-				.builder(columnNametoUse)
+		final DocumentLayoutElementFieldDescriptor.Builder dataField = DocumentLayoutElementFieldDescriptor
+				.builder(fieldName)
 				.setEmptyText(ITranslatableString.empty());
+		element.addField(dataField);
 
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final DocumentLayoutElementFieldDescriptor.Builder infoField = DocumentLayoutElementFieldDescriptor
+				.builder(fieldName + "_CreateUpdatedInfo")
+				.setEmptyText(ITranslatableString.empty())
+				.setLookupSource(LookupSource.text);
+		element.addField(infoField);
 
-		final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
-				.builder()
-				.setCaption(msgBL.translatable(columnName))
-				.setDescription(ITranslatableString.empty())
-				.setViewEditorRenderMode(ViewEditorRenderMode.NEVER)
-				.setWidgetType(type)
-				.setWidgetSize(WidgetSize.Small)
-				.addField(fieldBuilder);
 		return element;
 	}
+
+	// private static DocumentLayoutElementDescriptor.Builder createFieldElementDescriptor(
+	// @NonNull final String columnName,
+	// @NonNull final DataEntryFieldId dataEntryFieldId,
+	// @NonNull final DocumentFieldWidgetType type)
+	// {
+	// final String columnNametoUse = constructCreatedUpdatedFieldColumnName(columnName, dataEntryFieldId);
+	//
+	// final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder = DocumentLayoutElementFieldDescriptor
+	// .builder(columnNametoUse)
+	// .setEmptyText(ITranslatableString.empty());
+	//
+	// final IMsgBL msgBL = Services.get(IMsgBL.class);
+	//
+	// final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor
+	// .builder()
+	// .setCaption(msgBL.translatable(columnName))
+	// .setDescription(ITranslatableString.empty())
+	// .setViewEditorRenderMode(ViewEditorRenderMode.NEVER)
+	// .setWidgetType(type)
+	// .setWidgetSize(WidgetSize.Small)
+	// .addField(fieldBuilder);
+	// return element;
+	// }
 
 	public List<DocumentEntityDescriptor> loadDocumentEntity()
 	{
@@ -391,20 +403,26 @@ public class DataEntryTabLoader
 
 		for (final DataEntrySection dataEntrySection : dataEntrySubGroup.getDataEntrySections())
 		{
-			for (final DataEntryField dataEntryField : dataEntrySection.getDataEntryFields())
+			for (final DataEntryLine dataEntryLine : dataEntrySection.getDataEntryLines())
 			{
-				final DocumentFieldDescriptor.Builder dataField = createFieldDescriptor(dataEntryField);
+				for (final DataEntryField dataEntryField : dataEntryLine.getDataEntryFields())
+				{
+					final DocumentFieldDescriptor.Builder dataField = createDataFieldDescriptor(dataEntryField);
 
-				final DocumentFieldDescriptor.Builder createdField = createFieldDescriptor(dataEntryField.getId(), FieldType.CREATED);
-				final DocumentFieldDescriptor.Builder createdByField = createFieldDescriptor(dataEntryField.getId(), FieldType.CREATED_BY);
-				final DocumentFieldDescriptor.Builder updatedField = createFieldDescriptor(dataEntryField.getId(), FieldType.UPDATED);
-				final DocumentFieldDescriptor.Builder updatedByField = createFieldDescriptor(dataEntryField.getId(), FieldType.UPDATED_BY);
+					// final DocumentFieldDescriptor.Builder createdField = createFieldDescriptor(dataEntryField.getId(), FieldType.CREATED);
+					// final DocumentFieldDescriptor.Builder createdByField = createFieldDescriptor(dataEntryField.getId(), FieldType.CREATED_BY);
+					// final DocumentFieldDescriptor.Builder updatedField = createFieldDescriptor(dataEntryField.getId(), FieldType.UPDATED);
+					// final DocumentFieldDescriptor.Builder updatedByField = createFieldDescriptor(dataEntryField.getId(), FieldType.UPDATED_BY);
 
-				documentEntityDescriptor.addField(dataField);
-				documentEntityDescriptor.addField(createdField);
-				documentEntityDescriptor.addField(createdByField);
-				documentEntityDescriptor.addField(updatedField);
-				documentEntityDescriptor.addField(updatedByField);
+					documentEntityDescriptor.addField(dataField);
+					// documentEntityDescriptor.addField(createdField);
+					// documentEntityDescriptor.addField(createdByField);
+					// documentEntityDescriptor.addField(updatedField);
+					// documentEntityDescriptor.addField(updatedByField);
+
+					final DocumentFieldDescriptor.Builder createdUpdatedInfoField = createCreatedUpdatedInfoFieldDescriptor(dataEntryField);
+					documentEntityDescriptor.addField(createdUpdatedInfoField);
+				}
 			}
 		}
 
@@ -449,7 +467,7 @@ public class DataEntryTabLoader
 				.setDataBinding(dataBinding);
 	}
 
-	private DocumentFieldDescriptor.Builder createFieldDescriptor(@NonNull final DataEntryField dataEntryField)
+	private DocumentFieldDescriptor.Builder createDataFieldDescriptor(@NonNull final DataEntryField dataEntryField)
 	{
 		final String fieldName = DataEntryWebuiTools.computeFieldName(dataEntryField.getId());
 
@@ -482,75 +500,98 @@ public class DataEntryTabLoader
 				.setDataBinding(dataBinding);
 	}
 
-	private DocumentFieldDescriptor.Builder createFieldDescriptor(
-			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final FieldType fieldType)
+	private DocumentFieldDescriptor.Builder createCreatedUpdatedInfoFieldDescriptor(@NonNull final DataEntryField dataEntryField)
 	{
 
-		final String columnName;
-		final LookupDescriptorProvider fieldLookupDescriptorProvider;
-		switch (fieldType)
-		{
-			case CREATED:
-				columnName = COLUMNNAME_Created;
-				fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
-				break;
-			case CREATED_BY:
-				columnName = COLUMNNAME_CreatedBy;
-				fieldLookupDescriptorProvider = createAdUserLookupDescriptor();
-				break;
-			case UPDATED:
-				columnName = COLUMNNAME_Updated;
-				fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
-				break;
-			case UPDATED_BY:
-				columnName = COLUMNNAME_UpdatedBy;
-				fieldLookupDescriptorProvider = createAdUserLookupDescriptor();
-				break;
-			default:
-				throw new AdempiereException("Unexpected fieldType=" + fieldType);
-		}
-
-		final String columnNameToUse = constructCreatedUpdatedFieldColumnName(columnName, dataEntryFieldId);
+		final String fieldName = DataEntryWebuiTools.computeFieldName(dataEntryField.getId()) + "_Info";
 
 		final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
 				.builder()
-				.columnName(columnNameToUse)
+				.columnName(fieldName)
 				.mandatory(false)
-				.dataEntryFieldId(dataEntryFieldId)
-				.fieldType(fieldType)
+				.dataEntryFieldId(dataEntryField.getId())
+				.fieldType(FieldType.CREATED_UPDATED_INFO)
 				.build();
 
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final ITranslatableString caption = msgBL.translatable(columnName);
-
-		return DocumentFieldDescriptor.builder(columnNameToUse)
-				.setCaption(caption)
-				.setDescription(ITranslatableString.empty())
-				.setWidgetType(ofFieldType(fieldType))
-				.setLookupDescriptorProvider(fieldLookupDescriptorProvider)
+		return DocumentFieldDescriptor.builder(fieldName)
+				// .setCaption(dataEntryField.getCaption())
+				// .setDescription(dataEntryField.getDescription())
+				.setWidgetType(ofFieldType(dataEntryField.getType()))
+				.setLookupDescriptorProvider(LookupDescriptorProvider.NULL)
 				.addCharacteristic(Characteristic.PublicField)
-				.setReadonlyLogic(ConstantLogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.of(dataEntryField.isMandatory()))
 				.setDataBinding(dataBinding);
 	}
 
-	private static String constructCreatedUpdatedFieldColumnName(
-			@NonNull final String columnName,
-			@NonNull final DataEntryFieldId dataEntryFieldId)
-	{
-		return columnName + "_" + dataEntryFieldId.getRepoId();
-	}
+	// private DocumentFieldDescriptor.Builder createFieldDescriptor(
+	// @NonNull final DataEntryFieldId dataEntryFieldId,
+	// @NonNull final FieldType fieldType)
+	// {
+	//
+	// final String columnName;
+	// final LookupDescriptorProvider fieldLookupDescriptorProvider;
+	// switch (fieldType)
+	// {
+	// case CREATED:
+	// columnName = COLUMNNAME_Created;
+	// fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
+	// break;
+	// case CREATED_BY:
+	// columnName = COLUMNNAME_CreatedBy;
+	// fieldLookupDescriptorProvider = createAdUserLookupDescriptor();
+	// break;
+	// case UPDATED:
+	// columnName = COLUMNNAME_Updated;
+	// fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
+	// break;
+	// case UPDATED_BY:
+	// columnName = COLUMNNAME_UpdatedBy;
+	// fieldLookupDescriptorProvider = createAdUserLookupDescriptor();
+	// break;
+	// default:
+	// throw new AdempiereException("Unexpected fieldType=" + fieldType);
+	// }
+	//
+	// final String columnNameToUse = constructCreatedUpdatedFieldColumnName(columnName, dataEntryFieldId);
+	//
+	// final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
+	// .builder()
+	// .columnName(columnNameToUse)
+	// .mandatory(false)
+	// .dataEntryFieldId(dataEntryFieldId)
+	// .fieldType(fieldType)
+	// .build();
+	//
+	// final IMsgBL msgBL = Services.get(IMsgBL.class);
+	// final ITranslatableString caption = msgBL.translatable(columnName);
+	//
+	// return DocumentFieldDescriptor.builder(columnNameToUse)
+	// .setCaption(caption)
+	// .setDescription(ITranslatableString.empty())
+	// .setWidgetType(ofFieldType(fieldType))
+	// .setLookupDescriptorProvider(fieldLookupDescriptorProvider)
+	// .addCharacteristic(Characteristic.PublicField)
+	// .setReadonlyLogic(ConstantLogicExpression.TRUE)
+	// .setDataBinding(dataBinding);
+	// }
 
-	private LookupDescriptorProvider createAdUserLookupDescriptor()
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return LookupDescriptorProvider.NULL;
-		}
-
-		// SqlLookupDescriptor uses MLookupFactory somewhere under the hood, which needs a DB connection
-		return SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
-	}
+//	private static String constructCreatedUpdatedFieldColumnName(
+//			@NonNull final String columnName,
+//			@NonNull final DataEntryFieldId dataEntryFieldId)
+//	{
+//		return columnName + "_" + dataEntryFieldId.getRepoId();
+//	}
+//
+//	private LookupDescriptorProvider createAdUserLookupDescriptor()
+//	{
+//		if (Adempiere.isUnitTestMode())
+//		{
+//			return LookupDescriptorProvider.NULL;
+//		}
+//
+//		// SqlLookupDescriptor uses MLookupFactory somewhere under the hood, which needs a DB connection
+//		return SqlLookupDescriptor.searchInTable(I_AD_User.Table_Name);
+//	}
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)
 	{
@@ -578,14 +619,16 @@ public class DataEntryTabLoader
 				return DocumentFieldWidgetType.LongText;
 			case YESNO:
 				return DocumentFieldWidgetType.YesNo;
-			case CREATED:
-				return DocumentFieldWidgetType.ZonedDateTime;
-			case CREATED_BY:
-				return DocumentFieldWidgetType.Lookup;
-			case UPDATED:
-				return DocumentFieldWidgetType.ZonedDateTime;
-			case UPDATED_BY:
-				return DocumentFieldWidgetType.Lookup;
+			case CREATED_UPDATED_INFO:
+				return DocumentFieldWidgetType.Text;
+			// case CREATED:
+			// return DocumentFieldWidgetType.ZonedDateTime;
+			// case CREATED_BY:
+			// return DocumentFieldWidgetType.Lookup;
+			// case UPDATED:
+			// return DocumentFieldWidgetType.ZonedDateTime;
+			// case UPDATED_BY:
+			// return DocumentFieldWidgetType.Lookup;
 			case SUB_GROUP_ID:
 				return DocumentFieldWidgetType.Integer;
 			case PARENT_LINK_ID:

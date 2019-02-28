@@ -6,9 +6,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.dataentry.model.I_DataEntry_Group;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 
 /*
@@ -37,27 +34,17 @@ import lombok.NonNull;
 @Interceptor(I_DataEntry_Group.class)
 public class DataEntry_Group
 {
-	private final DocumentDescriptorFactory documentDescriptorFactory;
-	private final DocumentCollection documentCollection;
+	private final DataEntryInterceptorUtil dataEntryInterceptorUtil;
 
 	public DataEntry_Group(
-			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
-			@NonNull final DocumentCollection documentCollection)
+			@NonNull final DataEntryInterceptorUtil dataEntryInterceptorUtil)
 	{
-		this.documentDescriptorFactory = documentDescriptorFactory;
-		this.documentCollection = documentCollection;
+		this.dataEntryInterceptorUtil = dataEntryInterceptorUtil;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_Group dataEntryGroupRecord)
 	{
-		final int windowId = dataEntryGroupRecord.getDataEntry_TargetWindow_ID();
-		if (windowId <= 0)
-		{
-			return;
-		}
-
-		documentDescriptorFactory.invalidateForWindow(WindowId.of(windowId));
-		documentCollection.cacheReset();
+		dataEntryInterceptorUtil.resetCacheFor(dataEntryGroupRecord);
 	}
 }

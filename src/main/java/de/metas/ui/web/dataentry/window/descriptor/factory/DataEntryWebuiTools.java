@@ -1,17 +1,19 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -52,7 +54,6 @@ public class DataEntryWebuiTools
 		return Integer.toString(dataEntryFieldId.getRepoId());
 	}
 
-
 	public Object extractDataEntryValueForField(
 			@NonNull final DataEntryRecord dataEntryRecord,
 			@NonNull final DocumentFieldDescriptor fieldDescriptor)
@@ -62,14 +63,16 @@ public class DataEntryWebuiTools
 		final DataEntryFieldId dataEntryFieldId = dataBinding.getDataEntryFieldId();
 		switch (dataBinding.getFieldType())
 		{
-			case CREATED:
-				return dataEntryRecord.getCreatedValue(dataEntryFieldId).orElse(null);
-			case CREATED_BY:
-				return dataEntryRecord.getCreatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
-			case UPDATED:
-				return dataEntryRecord.getUpdatedValue(dataEntryFieldId).orElse(null);
-			case UPDATED_BY:
-				return dataEntryRecord.getUpdatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
+			// case CREATED:
+			// return dataEntryRecord.getCreatedValue(dataEntryFieldId).orElse(null);
+			// case CREATED_BY:
+			// return dataEntryRecord.getCreatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
+			// case UPDATED:
+			// return dataEntryRecord.getUpdatedValue(dataEntryFieldId).orElse(null);
+			// case UPDATED_BY:
+			// return dataEntryRecord.getUpdatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
+			case CREATED_UPDATED_INFO:
+				return extractCreatedUpdatedInfo(dataEntryRecord, dataEntryFieldId);
 			case PARENT_LINK_ID:
 				return dataEntryRecord.getMainRecord().getRecord_ID();
 			case SUB_GROUP_ID:
@@ -81,6 +84,19 @@ public class DataEntryWebuiTools
 			default:
 				return dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
 		}
+	}
+
+	private ITranslatableString extractCreatedUpdatedInfo(
+			@NonNull final DataEntryRecord dataEntryRecord,
+			@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		final ITranslatableString createdUpdatedInfo = Services.get(IMsgBL.class).getTranslatableMsgText(
+				"de.metas.dataentry_Created_Updated_Info",
+				dataEntryRecord.getCreatedByValue(dataEntryFieldId),
+				dataEntryRecord.getCreatedValue(dataEntryFieldId),
+				dataEntryRecord.getUpdatedByValue(dataEntryFieldId),
+				dataEntryRecord.getUpdatedValue(dataEntryFieldId));
+		return createdUpdatedInfo;
 	}
 
 	public Object extractFieldValueForDataEntry(@NonNull final IDocumentFieldView fieldView)
@@ -120,18 +136,18 @@ public class DataEntryWebuiTools
 			case YESNO:
 				result = fieldType.getClazz().cast(value);
 				break;
-			case CREATED:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case CREATED_BY:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case UPDATED:
-				result = fieldType.getClazz().cast(value);
-				break;
-			case UPDATED_BY:
-				result = fieldType.getClazz().cast(value);
-				break;
+//			case CREATED:
+//				result = fieldType.getClazz().cast(value);
+//				break;
+//			case CREATED_BY:
+//				result = fieldType.getClazz().cast(value);
+//				break;
+//			case UPDATED:
+//				result = fieldType.getClazz().cast(value);
+//				break;
+//			case UPDATED_BY:
+//				result = fieldType.getClazz().cast(value);
+//				break;
 			case PARENT_LINK_ID:
 				result = fieldType.getClazz().cast(value);
 				break;

@@ -5,13 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 
 /*
@@ -40,44 +34,17 @@ import lombok.NonNull;
 @Interceptor(I_DataEntry_ListValue.class)
 public class DataEntry_ListValue
 {
-	private final DocumentDescriptorFactory documentDescriptorFactory;
-	private final DocumentCollection documentCollection;
+	private final DataEntryInterceptorUtil dataEntryInterceptorUtil;
 
 	public DataEntry_ListValue(
-			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
-			@NonNull final DocumentCollection documentCollection)
+			@NonNull final DataEntryInterceptorUtil dataEntryInterceptorUtil)
 	{
-		this.documentDescriptorFactory = documentDescriptorFactory;
-		this.documentCollection = documentCollection;
+		this.dataEntryInterceptorUtil = dataEntryInterceptorUtil;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_ListValue dataEntryListValueRecord)
 	{
-		if (dataEntryListValueRecord.getDataEntry_Field_ID() <= 0)
-		{
-			return;
-		}
-		final I_DataEntry_Field dataEntryFieldRecord = dataEntryListValueRecord.getDataEntry_Field();
-
-		if (dataEntryFieldRecord.getDataEntry_SubGroup_ID() <= 0)
-		{
-			return;
-		}
-		final I_DataEntry_SubGroup dataEntrySubGroupRecord = dataEntryFieldRecord.getDataEntry_SubGroup();
-
-		if (dataEntrySubGroupRecord.getDataEntry_Group_ID() <= 0)
-		{
-			return;
-		}
-		final I_DataEntry_Group dataEntryGroupRecord = dataEntrySubGroupRecord.getDataEntry_Group();
-
-		final int windowId = dataEntryGroupRecord.getDataEntry_TargetWindow_ID();
-		if (windowId <= 0)
-		{
-			return;
-		}
-		documentDescriptorFactory.invalidateForWindow(WindowId.of(windowId));
-		documentCollection.cacheReset();
+		dataEntryInterceptorUtil.resetCacheFor(dataEntryListValueRecord);
 	}
 }
