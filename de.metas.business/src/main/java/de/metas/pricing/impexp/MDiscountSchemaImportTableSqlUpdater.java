@@ -135,7 +135,8 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("AND coalesce(dsb.PricingSystemSurchargeAmt, 0) = coalesce(i.PricingSystemSurchargeAmt,0) ")
 				.append("AND coalesce(dsb.C_Currency_ID,0) = coalesce(i.C_Currency_ID,0) ")
 				.append("AND i.M_DiscountSchemaBreak_ID IS NULL ")
-				.append("AND I_IsImported<>'Y' ");
+				.append("AND I_IsImported <> 'Y' ")
+				.append("AND dsb.IsActive = 'Y' ");
 				
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
