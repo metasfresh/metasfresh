@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,7 +40,9 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public class JSONDocumentLayoutElementLine implements Serializable
 {
-	static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementsLines, final JSONOptions jsonOpts)
+	static List<JSONDocumentLayoutElementLine> ofList(
+			@NonNull final List<DocumentLayoutElementLineDescriptor> elementsLines,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		return elementsLines.stream()
 				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonOpts))
@@ -47,7 +50,9 @@ public class JSONDocumentLayoutElementLine implements Serializable
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
+	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(
+			@NonNull final DocumentLayoutElementLineDescriptor elementLine,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementLine(elementLine, jsonOpts);
 	}
@@ -56,7 +61,9 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutElementLine(
+			@NonNull final DocumentLayoutElementLineDescriptor elementLine,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonOpts);
 		this.elements = ImmutableList.copyOf(elements);

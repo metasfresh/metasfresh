@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -13,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Getter;
 
 /*
  * #%L
@@ -45,14 +47,24 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	}
 
 	/** Element group type (primary aka bordered, transparent etc) */
+	@Getter
 	private final LayoutType layoutType;
 
+	@Getter
 	private final List<DocumentLayoutElementLineDescriptor> elementLines;
+
+	@Getter
+	private final Integer columnCount;
+
+	@Getter
+	private final String internalName;
 
 	private DocumentLayoutElementGroupDescriptor(final Builder builder)
 	{
 		layoutType = builder.layoutType;
 		elementLines = ImmutableList.copyOf(builder.buildElementLines());
+		columnCount = builder.columnCount;
+		internalName = builder.internalName;
 	}
 
 	@Override
@@ -61,18 +73,10 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("type", layoutType)
+				.add("columnCount", columnCount)
+				.add("internalName", internalName)
 				.add("elements", elementLines.isEmpty() ? null : elementLines)
 				.toString();
-	}
-
-	public LayoutType getLayoutType()
-	{
-		return layoutType;
-	}
-
-	public List<DocumentLayoutElementLineDescriptor> getElementLines()
-	{
-		return elementLines;
 	}
 
 	public boolean hasElementLines()
@@ -86,6 +90,8 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 		private String internalName;
 		private LayoutType layoutType;
+		public Integer columnCount = null;
+
 		private final List<DocumentLayoutElementLineDescriptor.Builder> elementLinesBuilders = new ArrayList<>();
 
 		private Builder()
@@ -149,9 +155,10 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return this;
 		}
 
-		public LayoutType getLayoutType()
+		public Builder setColumnCount(final int columnCount)
 		{
-			return layoutType;
+			this.columnCount = Util.firstGreaterThanZero(columnCount, 1);
+			return this;
 		}
 
 		public Builder addElementLine(final DocumentLayoutElementLineDescriptor.Builder elementLineBuilder)

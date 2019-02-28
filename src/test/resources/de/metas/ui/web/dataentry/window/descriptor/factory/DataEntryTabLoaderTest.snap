@@ -3994,7 +3994,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -4012,8 +4013,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 "widgetType" : "LongText",
                                 "allowShowPassword" : false,
-                                "multilineText" : false,
-                                "multilineTextLines" : 0,
+                                "multilineText" : true,
+                                "multilineTextLines" : 10,
                                 "widgetSize" : "L",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
@@ -4177,7 +4178,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -4360,7 +4362,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       }
                     ]
                   }
@@ -4562,7 +4565,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -4745,7 +4749,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -4928,7 +4933,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       }
                     ]
                   }
@@ -5162,7 +5168,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -5180,8 +5187,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 "widgetType" : "LongText",
                                 "allowShowPassword" : false,
-                                "multilineText" : false,
-                                "multilineTextLines" : 0,
+                                "multilineText" : true,
+                                "multilineTextLines" : 10,
                                 "widgetSize" : "L",
                                 "advancedField" : false,
                                 "restrictToMediaTypes" : [ ],
@@ -5345,7 +5352,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -5528,7 +5536,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       }
                     ]
                   }
@@ -5730,7 +5739,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -5913,7 +5923,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       },
                       {
                         "elementLines" : [
@@ -6096,7 +6107,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               }
                             ]
                           }
-                        ]
+                        ],
+                        "columnCount" : 2
                       }
                     ]
                   }
@@ -6141,6 +6153,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 {
                   "elementGroups" : [
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6209,6 +6222,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6216,6 +6230,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "longTextField11_caption",
                               "description" : "longTextField1_description",
                               "widgetType" : "LongText",
+                              "multilineText" : true,
+                              "multilineTextLines" : 10,
                               "size" : "L",
                               "viewEditorRenderMode" : "always",
                               "fields" : [
@@ -6277,6 +6293,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6356,6 +6373,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 {
                   "elementGroups" : [
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6424,6 +6442,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6492,6 +6511,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6583,6 +6603,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 {
                   "elementGroups" : [
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6651,6 +6672,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6658,6 +6680,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               "caption" : "longTextField21_caption",
                               "description" : "longTextField1_description",
                               "widgetType" : "LongText",
+                              "multilineText" : true,
+                              "multilineTextLines" : 10,
                               "size" : "L",
                               "viewEditorRenderMode" : "always",
                               "fields" : [
@@ -6719,6 +6743,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6798,6 +6823,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 {
                   "elementGroups" : [
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6866,6 +6892,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -6934,6 +6961,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       ]
                     },
                     {
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [

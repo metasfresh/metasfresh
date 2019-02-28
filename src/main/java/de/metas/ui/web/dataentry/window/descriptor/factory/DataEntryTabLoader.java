@@ -250,6 +250,7 @@ public class DataEntryTabLoader
 
 		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
 				.builder()
+				.setColumnCount(2)
 				.addElementLine(elementLine);
 		return elementGroup;
 	}
