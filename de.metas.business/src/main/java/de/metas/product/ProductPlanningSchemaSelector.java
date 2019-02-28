@@ -1,12 +1,14 @@
 package de.metas.product;
 
-import java.util.Objects;
+import org.adempiere.exceptions.AdempiereException;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMap;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
+import de.metas.product.model.X_M_Product_PlanningSchema;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,49 +32,34 @@ import lombok.EqualsAndHashCode;
  * #L%
  */
 
-@EqualsAndHashCode
-public final class ProductPlanningSchemaSelector
+public enum ProductPlanningSchemaSelector implements ReferenceListAwareEnum
 {
-	@JsonCreator
-	public static ProductPlanningSchemaSelector ofString(final String value)
+	NORMAL(X_M_Product_PlanningSchema.M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal), //
+	GENERATE_QUOTATION_BOM_PRODUCT(X_M_Product_PlanningSchema.M_PRODUCTPLANNINGSCHEMA_SELECTOR_QuotationBOMProduct) //
+	;
+
+	private static final ImmutableMap<String, ProductPlanningSchemaSelector> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+
+	@Getter
+	private String code;
+
+	private ProductPlanningSchemaSelector(final String code)
 	{
-		return new ProductPlanningSchemaSelector(value);
+		this.code = code;
 	}
 
-	public static ProductPlanningSchemaSelector ofStringOrNull(final String value)
+	public static ProductPlanningSchemaSelector ofNullableCode(final String code)
 	{
-		if (Check.isEmpty(value, true))
+		return code != null ? ofCode(code) : null;
+	}
+
+	public static ProductPlanningSchemaSelector ofCode(@NonNull final String code)
+	{
+		final ProductPlanningSchemaSelector type = typesByCode.get(code);
+		if (type == null)
 		{
-			return null;
+			throw new AdempiereException("No " + ProductPlanningSchemaSelector.class + " found for: " + code);
 		}
-		else
-		{
-			return new ProductPlanningSchemaSelector(value);
-		}
-	}
-
-	private final String value;
-
-	private ProductPlanningSchemaSelector(final String value)
-	{
-		this.value = value.trim();
-	}
-
-	@Override
-	@Deprecated
-	public String toString()
-	{
-		return getValueAsString();
-	}
-
-	@JsonValue
-	public String getValueAsString()
-	{
-		return value;
-	}
-
-	public static boolean equals(final ProductPlanningSchemaSelector o1, final ProductPlanningSchemaSelector o2)
-	{
-		return Objects.equals(o1, o2);
+		return type;
 	}
 }

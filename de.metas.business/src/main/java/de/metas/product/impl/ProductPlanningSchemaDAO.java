@@ -79,7 +79,7 @@ final class ProductPlanningSchemaDAO
 				.createQueryBuilder(I_M_Product_PlanningSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector.getValueAsString())
+				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
 				.create()
 				.stream()
 				.map(record -> toProductPlanningSchema(record))
@@ -90,7 +90,7 @@ final class ProductPlanningSchemaDAO
 	{
 		return ProductPlanningSchema.builder()
 				.id(ProductPlanningSchemaId.ofRepoId(record.getM_Product_PlanningSchema_ID()))
-				.selector(ProductPlanningSchemaSelector.ofString(record.getM_ProductPlanningSchema_Selector()))
+				.selector(ProductPlanningSchemaSelector.ofCode(record.getM_ProductPlanningSchema_Selector()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.plantId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
 				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
@@ -118,7 +118,7 @@ final class ProductPlanningSchemaDAO
 			record = newInstance(I_M_Product_PlanningSchema.class);
 		}
 
-		record.setM_ProductPlanningSchema_Selector(schema.getSelector().getValueAsString());
+		record.setM_ProductPlanningSchema_Selector(schema.getSelector().getCode());
 		record.setAD_Org_ID(schema.getOrgId().getRepoId());
 		record.setS_Resource_ID(ResourceId.toRepoId(schema.getPlantId()));
 		record.setM_Warehouse_ID(WarehouseId.toRepoId(schema.getWarehouseId()));
@@ -161,7 +161,7 @@ final class ProductPlanningSchemaDAO
 				.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector.getValueAsString())
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
 				.create()
 				.listIds(ProductId::ofRepoId);
 	}

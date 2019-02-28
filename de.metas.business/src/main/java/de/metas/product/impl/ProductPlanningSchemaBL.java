@@ -62,7 +62,7 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		for (final I_M_Product product : IteratorUtils.asIterable(productsWithNoProductPlanning))
 		{
 			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-			final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofStringOrNull(product.getM_ProductPlanningSchema_Selector());
+			final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
 			if (selector == null)
 			{
 				// nothing to do
@@ -100,8 +100,8 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		{
 			final ProductId productId = ProductId.ofRepoId(planning.getM_Product_ID());
 			final I_M_Product product = productsRepo.getById(productId);
-			final ProductPlanningSchemaSelector productSchemaSelector = ProductPlanningSchemaSelector.ofStringOrNull(product.getM_ProductPlanningSchema_Selector());
-			if (!ProductPlanningSchemaSelector.equals(selector, productSchemaSelector))
+			final ProductPlanningSchemaSelector productSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
+			if (!selector.equals(productSchemaSelector))
 			{
 				delete(planning);
 			}

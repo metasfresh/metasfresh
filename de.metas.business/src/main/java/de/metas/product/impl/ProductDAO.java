@@ -381,7 +381,7 @@ public class ProductDAO implements IProductDAO
 
 		if (request.getPlanningSchemaSelector() != null)
 		{
-			product.setM_ProductPlanningSchema_Selector(request.getPlanningSchemaSelector().getValueAsString());
+			product.setM_ProductPlanningSchema_Selector(request.getPlanningSchemaSelector().getCode());
 		}
 
 		saveRecord(product);

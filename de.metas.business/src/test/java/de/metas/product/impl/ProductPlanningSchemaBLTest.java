@@ -62,7 +62,7 @@ public class ProductPlanningSchemaBLTest
 	@Test
 	public void createProductPlanningForAllProducts_1Schema()
 	{
-		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofString("N");
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.NORMAL;
 		final ProductId productId1 = createProduct("Product1", selector);
 
 		final WarehouseId warehouseId = createWarehouse("wh1");
@@ -85,7 +85,7 @@ public class ProductPlanningSchemaBLTest
 	@Test
 	public void createProductPlanningForAllProducts_2Schema()
 	{
-		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofString("N");
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.NORMAL;
 		final ProductId productId1 = createProduct("Product1", selector);
 
 		final WarehouseId warehouseId1 = createWarehouse("wh1");
@@ -140,7 +140,7 @@ public class ProductPlanningSchemaBLTest
 	@Test
 	public void createProductPlanningsForSchema()
 	{
-		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofString("N");
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.NORMAL;
 		final ProductId productId1 = createProduct("Product1", selector);
 
 		final WarehouseId warehouseId1 = createWarehouse("wh1");
@@ -163,7 +163,7 @@ public class ProductPlanningSchemaBLTest
 	@Test
 	public void updateProductPlanningForSchema()
 	{
-		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofString("N");
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.NORMAL;
 		final ProductId productId1 = createProduct("Product1", selector);
 
 		final WarehouseId warehouseId1 = createWarehouse("wh1");
@@ -193,7 +193,7 @@ public class ProductPlanningSchemaBLTest
 	@Test
 	public void updateProductPlanningForSchema_deleteSelectorFromProduct()
 	{
-		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofString("N");
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.NORMAL;
 		final ProductId productId1 = createProduct("Product1", selector);
 
 		final WarehouseId warehouseId1 = createWarehouse("wh1");
@@ -251,7 +251,7 @@ public class ProductPlanningSchemaBLTest
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setValue(name);
 		product.setName(name);
-		product.setM_ProductPlanningSchema_Selector(selector.getValueAsString());
+		product.setM_ProductPlanningSchema_Selector(selector.getCode());
 		saveRecord(product);
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
@@ -259,7 +259,7 @@ public class ProductPlanningSchemaBLTest
 	private void setProductSelector(final ProductId productId, ProductPlanningSchemaSelector selector)
 	{
 		I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		product.setM_ProductPlanningSchema_Selector(selector != null ? selector.getValueAsString() : null);
+		product.setM_ProductPlanningSchema_Selector(selector != null ? selector.getCode() : null);
 		saveRecord(product);
 	}
 }
