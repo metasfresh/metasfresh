@@ -61,7 +61,8 @@ public class BPartnerGlobalIDImportTableSqlUpdater
 				.append("SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p ")
 				.append("WHERE i." + I_I_BPartner_GlobalID.COLUMNNAME_globalid)
 				.append("=p." + I_C_BPartner.COLUMNNAME_globalid)
-				.append(" AND p.AD_Client_ID=i.AD_Client_ID) ")
+				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
+				.append(" AND p.IsActive='Y') ")
 				.append("WHERE C_BPartner_ID IS NULL AND " + I_I_BPartner_GlobalID.COLUMNNAME_globalid + " IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(whereClause);
