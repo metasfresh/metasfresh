@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1894571372L;
+	private static final long serialVersionUID = -1255610024L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -30,6 +30,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			setIsInvoicePrintDetails (false);
 			setIsPickListPrintDetails (false);
 			setIsPurchased (true); // Y
+			setIsQuotationGroupping (false); // N
 			setIsSelfService (true); // Y
 			setIsSold (true); // Y
 			setIsStocked (true); // Y
@@ -620,6 +621,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return false;
 	}
 
+	/** Set Ist Angebotsgruppe.
+		@param IsQuotationGroupping Ist Angebotsgruppe	  */
+	@Override
+	public void setIsQuotationGroupping (boolean IsQuotationGroupping)
+	{
+		set_Value (COLUMNNAME_IsQuotationGroupping, Boolean.valueOf(IsQuotationGroupping));
+	}
+
+	/** Get Ist Angebotsgruppe.
+		@return Ist Angebotsgruppe	  */
+	@Override
+	public boolean isQuotationGroupping () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsQuotationGroupping);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Selbstbedienung.
 		@param IsSelfService 
 		This is a Self-Service entry or this entry can be changed via Self-Service
@@ -1148,19 +1172,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return ii.intValue();
 	}
 
-	/** Set Package Size.
-		@param PackageSize 
-		Size of a package
-	  */
+	/** Set Pck. Gr..
+		@param PackageSize Pck. Gr.	  */
 	@Override
 	public void setPackageSize (java.lang.String PackageSize)
 	{
 		set_Value (COLUMNNAME_PackageSize, PackageSize);
 	}
 
-	/** Get Package Size.
-		@return Size of a package
-	  */
+	/** Get Pck. Gr..
+		@return Pck. Gr.	  */
 	@Override
 	public java.lang.String getPackageSize () 
 	{
