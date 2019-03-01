@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 271891149L;
+	private static final long serialVersionUID = 801659246L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -828,22 +828,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getEMail () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMail);
-	}
-
-	/** Set Externer Kunde Nr..
-		@param ExternalCustomerNo Externer Kunde Nr.	  */
-	@Override
-	public void setExternalCustomerNo (java.lang.String ExternalCustomerNo)
-	{
-		set_Value (COLUMNNAME_ExternalCustomerNo, ExternalCustomerNo);
-	}
-
-	/** Get Externer Kunde Nr..
-		@return Externer Kunde Nr.	  */
-	@Override
-	public java.lang.String getExternalCustomerNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalCustomerNo);
 	}
 
 	/** Set External ID.
@@ -1809,6 +1793,44 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getMemo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
+	/** Set Memo_Delivery.
+		@param Memo_Delivery 
+		Memo Lieferung
+	  */
+	@Override
+	public void setMemo_Delivery (java.lang.String Memo_Delivery)
+	{
+		set_Value (COLUMNNAME_Memo_Delivery, Memo_Delivery);
+	}
+
+	/** Get Memo_Delivery.
+		@return Memo Lieferung
+	  */
+	@Override
+	public java.lang.String getMemo_Delivery () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo_Delivery);
+	}
+
+	/** Set Memo_Invoicing.
+		@param Memo_Invoicing 
+		Memo Abrechnung
+	  */
+	@Override
+	public void setMemo_Invoicing (java.lang.String Memo_Invoicing)
+	{
+		set_Value (COLUMNNAME_Memo_Invoicing, Memo_Invoicing);
+	}
+
+	/** Get Memo_Invoicing.
+		@return Memo Abrechnung
+	  */
+	@Override
+	public java.lang.String getMemo_Invoicing () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo_Invoicing);
 	}
 
 	/** 
