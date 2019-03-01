@@ -314,7 +314,12 @@ INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Or
 ;
 
 
+DELETE FROM ad_ui_elementgroup where ad_ui_column_id in (select ad_ui_column_id FROM ad_ui_column where ad_ui_section_id in (SELECT ad_ui_section_id FROM ad_ui_section WHERE AD_Tab_ID=541560));
+DELETE FROM ad_ui_column where ad_ui_section_id in (SELECT ad_ui_section_id FROM ad_ui_section WHERE AD_Tab_ID=541560);
+DELETE FROM ad_ui_section_trl where ad_ui_section_id in (SELECT ad_ui_section_id FROM ad_ui_section WHERE AD_Tab_ID=541560);
+DELETE FROM ad_ui_section WHERE AD_Tab_ID=541560;
 delete from ad_ui_element where AD_Field_ID IN (select AD_Field_ID from AD_Field WHERE AD_Tab_ID=541560);
+
 delete from AD_Field WHERE AD_Tab_ID=541560;
 
 delete from ad_element_link WHERE AD_Tab_ID=541560;
