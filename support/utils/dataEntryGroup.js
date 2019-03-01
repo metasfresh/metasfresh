@@ -15,8 +15,8 @@ export class DataEntryGroup
     apply() 
     {
         cy.log(`DataEntryGroup - apply - START (name=${this.name})`);
-        applyDataEntryGroup(this);
-        cy.log(`DataEntryGroup - apply - END (name=${this.name})`);
+        const result = applyDataEntryGroup(this);
+        cy.log(`DataEntryGroup - apply - END (name=${this.name}; result=${JSON.stringify(result)})`);
         return this;
     }
 
@@ -26,15 +26,15 @@ export class DataEntryGroup
         {
             constructor(name, targetWindowName) 
             {
-              cy.log(`DataEntryGroupBuilder - set name = ${name}; targetWindowName = ${targetWindowName}`);
-              this.name = name;
-              this.tabName = name;
-              this.targetWindowName = targetWindowName;
-              this.seqNo = undefined;
-              this.description = undefined;
-              this.isActive = true;
-              this.dataEntrySubGroups = [];
-              this.dataEntrySections = [];
+              cy.log(`DataEntryGroupBuilder - set name = ${name}; targetWindowName = ${targetWindowName}`)
+              this.name = name
+              this.tabName = name
+              this.targetWindowName = targetWindowName
+              this.seqNo = undefined
+              this.description = undefined
+              this.isActive = true
+              this.dataEntrySubGroups = []
+              this.dataEntrySections = []
             }
 
             setTabName(tabName)
@@ -206,7 +206,9 @@ function applyDataEntryGroup(dataEntryGroup)
 {
     describe(`Create new dataEntryGroup ${dataEntryGroup.name}`, function () {
 
-        cy.visitWindow('540571', 'NEW')
+        cy.visitWindow('540571', 'NEW', dataEntryGroup.name/*documentIdAliasName*/)
+
+        cy.log(`applyDataEntryGroup - visitWindow yielded ${JSON.stringify(this.dataEntryGroupId)}`);
 
         cy.writeIntoStringField('Name', dataEntryGroup.name);
         cy.writeIntoStringField('TabName', dataEntryGroup.tabName);
@@ -230,21 +232,13 @@ function applyDataEntryGroup(dataEntryGroup)
             cy.get('table tbody tr')
                 .should('have.length', dataEntryGroup.dataEntrySubGroups.length);
         }
-        if(dataEntryGroup.dataEntrySections.length > 0)
-        {
-            dataEntryGroup.dataEntrySections.forEach(function (dataEntrySection) {
-                applyDataEntrySection(dataEntrySection);
-            });
-            cy.get('table tbody tr')
-                .should('have.length', dataEntryGroup.dataEntrySections.length);
-        }
     });
 }
 
 function applyDataEntrySubGroup(dataEntrySubGroup)
 {
     cy.selectTab('DataEntry_SubGroup');
-    cy.pressAddNewButton();
+    cy.pressAddNewButton(dataEntrySubGroup.name);
 
     cy.writeIntoStringField('Name', dataEntrySubGroup.name, true/*modal*/);
     cy.writeIntoStringField('TabName', dataEntrySubGroup.tabName, true/*modal*/);
@@ -259,24 +253,4 @@ function applyDataEntrySubGroup(dataEntrySubGroup)
     }
 
     cy.pressDoneButton();  
-}
-
-function applyDataEntrySection(dataEntrySection)
-{
-    cy.selectTab('DataEntry_Section');
-    cy.pressAddNewButton();
-
-    cy.writeIntoStringField('Name', dataEntrySection.name, true/*modal*/);
-    cy.writeIntoStringField('SectionName', dataEntrySection.sectionName);
-    if(dataEntrySection.seqNo) {
-        cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntrySection.seqNo}`, true/*modal*/);
-    }
-    if(dataEntrySection.description) {
-        cy.writeIntoTextField('Description', dataEntrySection.description, true/*modal*/);
-    }
-    if(!dataEntrySection.isActive) {
-        cy.clickOnIsActive(true/*modal*/);
-    }
-
-    cy.pressDoneButton();
 }

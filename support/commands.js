@@ -169,8 +169,9 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => 
 
     cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
    
+    // here we want to match URLs that don *not* end with "/NEW"
     cy.server()
-    cy.route('PATCH', '/rest/api/window/**').as(`patchInputField`)
+    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchInputField`)
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -190,9 +191,10 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
   describe('Enter value into text field', function() {
 
       cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
-
+      
+      // here we want to match URLs that don *not* end with "/NEW"
       cy.server()
-      cy.route('PATCH', '/rest/api/window/**').as('patchTextArea')
+      cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as('patchTextArea')
 
       let path = `.form-field-${fieldName}`;
       if (modal) {
@@ -297,23 +299,27 @@ Cypress.Commands.add('openAdvancedEdit', () => {
   })
 });
 
-/** 
- * @param waitBeforePress if truthy, call cy.wait with the given parameter first
- */
-Cypress.Commands.add('pressAddNewButton', (waitBeforePress) => {
+Cypress.Commands.add('pressAddNewButton', (includedDocumentIdAliasName='newIncludedDocumentId') => {
   describe('Press table\'s add-new-record-button', function() {
 
-    if(waitBeforePress) {
-      cy.wait(waitBeforePress)
-    }
+    cy.server()
+    // window/<windowId>/<rootDocumentId>/<tabId>/NEW
+    cy.route('PATCH', new RegExp('/rest/api/window/[^/]+/[^/]+/[^/]+/NEW$')).as('patchNewIncludedDocument')
+
     const addNewText = Cypress.messages.window.addNew.caption;
     cy.get('.btn')
         .contains(addNewText)
         .should('exist')
-        .click();
-        
-    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-        .should('exist');
+        .click()
+        .wait('@patchNewIncludedDocument')
+        .then((xhr) => {
+
+          return { documentId: xhr.response.body[0].rowId }
+        })
+        .as(includedDocumentIdAliasName)
+
+    cy.get('.panel-modal')
+        .should('exist')
   })
 });
 
@@ -533,7 +539,7 @@ Cypress.Commands.add('clickHeaderNav', (navName) => {
   });
 });
 
-Cypress.Commands.add('visitWindow', (windowId, recordId) => {
+Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName='visitedDocumentId') => {
   describe('Open metasfresh window and wait for layout and data', function() {
 
     cy.server()
@@ -541,6 +547,12 @@ Cypress.Commands.add('visitWindow', (windowId, recordId) => {
     cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as('getRecordData')
 
     cy.visit(`/window/${windowId}/${recordId}`)
-      .wait([ '@getLayout', '@getRecordData'], {requestTimeout: 20000, responseTimeout: 20000})
+      .wait('@getLayout', {requestTimeout: 20000, responseTimeout: 20000})
+      .wait('@getRecordData', {requestTimeout: 20000, responseTimeout: 20000})
+      .then((xhr) => {
+
+          return { documentId: xhr.response.body[0].id }
+        })
+      .as(documentIdAliasName)
   })
 })
