@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.CreatedUpdatedInfo;
+import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -81,7 +82,8 @@ public class DataEntryWebuiTools
 			// case UPDATED_BY:
 			// return dataEntryRecord.getUpdatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
 			case CREATED_UPDATED_INFO:
-				return extractCreatedUpdatedInfo(dataEntryRecord, dataEntryFieldId);
+				final ITranslatableString trlString = extractCreatedUpdatedInfo(dataEntryRecord, dataEntryFieldId);
+				return trlString.translate(Env.getAD_Language());
 			case PARENT_LINK_ID:
 				return dataEntryRecord.getMainRecord().getRecord_ID();
 			case SUB_GROUP_ID:
@@ -109,12 +111,13 @@ public class DataEntryWebuiTools
 	@VisibleForTesting
 	ITranslatableString extractCreatedUpdatedInfo(@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
 	{
-		final ITranslatableString createdUpdatedInfoString = Services.get(IMsgBL.class).getTranslatableMsgText(
-				MSG_CREATED_UPDATED_INFO,
-				createdUpdatedInfo.getCreatedBy(),
-				createdUpdatedInfo.getCreated(),
-				createdUpdatedInfo.getUpdatedBy(),
-				createdUpdatedInfo.getCreated());
+		final ITranslatableString createdUpdatedInfoString = Services.get(IMsgBL.class)
+				.getTranslatableMsgText(
+						MSG_CREATED_UPDATED_INFO,
+						createdUpdatedInfo.getCreatedBy(),
+						createdUpdatedInfo.getCreated(),
+						createdUpdatedInfo.getUpdatedBy(),
+						createdUpdatedInfo.getCreated());
 
 		return createdUpdatedInfoString;
 	}

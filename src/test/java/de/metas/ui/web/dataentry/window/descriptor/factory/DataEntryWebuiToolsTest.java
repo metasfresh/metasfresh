@@ -13,7 +13,10 @@ import org.compiere.model.I_AD_Message;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.impl.MsgBL;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -43,6 +46,8 @@ public class DataEntryWebuiToolsTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(IMsgBL.class, new MsgBL()); // for this test we need the "real thing"
+
 		final I_AD_Message messageRecord = newInstance(I_AD_Message.class);
 		messageRecord.setValue(DataEntryWebuiTools.MSG_CREATED_UPDATED_INFO);
 		messageRecord.setMsgText("Erstellt von {0} am {1,dateTime}; Aktualisiert von {2} am {3,dateTime}");
@@ -57,6 +62,9 @@ public class DataEntryWebuiToolsTest
 		final ITranslatableString result = DataEntryWebuiTools.extractCreatedUpdatedInfo(createdUpdatedInfo);
 
 		assertThat(result).isNotNull();
+		// TODO
+//		final String resultTrl = result.translate("de_DE");
+//		assertThat(resultTrl).isEqualTo("Erstellt von {0} am {1,dateTime}; Aktualisiert von {2} am {3,dateTime}");
 	}
 
 }

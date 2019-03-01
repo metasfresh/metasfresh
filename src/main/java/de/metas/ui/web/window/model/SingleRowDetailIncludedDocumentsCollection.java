@@ -102,11 +102,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.setOrderBys(orderBys)
 				.retriveDocumentOrNull();
-
-		if (document.isNew())
-		{
-			setSingleDocument(document);
-		}
+		setSingleDocument(document);
 
 		return OrderedDocumentsList.of(ImmutableList.of(document), orderBys);
 	}
@@ -206,7 +202,6 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	@Override
 	public void saveIfHasChanges()
 	{
-
 		if (singleDocument != null)
 		{
 			final DocumentSaveStatus saveStatus = singleDocument.saveIfHasChanges();

@@ -212,7 +212,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "LongText",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
               "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
@@ -316,9 +316,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Number",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.math.BigDecimal",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -420,9 +420,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "ZonedDateTime",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.time.ZonedDateTime",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -524,9 +524,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "YesNo",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.lang.Boolean",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -664,9 +664,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "List",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$StringLookupValue",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1128,7 +1128,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "LongText",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
               "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
@@ -1232,9 +1232,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "Number",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.math.BigDecimal",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1336,9 +1336,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "ZonedDateTime",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.time.ZonedDateTime",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1440,9 +1440,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "YesNo",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "java.lang.Boolean",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1580,9 +1580,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "List",
+              "widgetType" : "Text",
               "allowShowPassword" : false,
-              "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$StringLookupValue",
+              "valueClass" : "java.lang.String",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1980,6 +1980,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1111_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2038,6 +2040,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1112_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2096,6 +2100,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1113_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2173,6 +2179,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1121_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2226,6 +2234,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1122_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2279,6 +2289,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1123_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2388,6 +2400,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1211_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2446,6 +2460,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1212_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2504,6 +2520,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1213_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2581,6 +2599,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1221_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2634,6 +2654,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1222_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2687,6 +2709,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   },
                                   {
                                     "field" : "1223_CreateUpdatedInfo",
+                                    "fieldType" : "Tooltip",
+                                    "tooltipIconName" : "text",
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
@@ -2765,6 +2789,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1111_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2792,6 +2818,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1112_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2817,6 +2845,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1113_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2853,6 +2883,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1121_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2873,6 +2905,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1122_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2893,6 +2927,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1123_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2941,6 +2977,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1211_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2968,6 +3006,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1212_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -2993,6 +3033,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1213_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -3029,6 +3071,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1221_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -3049,6 +3093,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1222_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]
@@ -3069,6 +3115,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 },
                                 {
                                   "field" : "1223_CreateUpdatedInfo",
+                                  "type" : "Tooltip",
+                                  "tooltipIconName" : "text",
                                   "source" : "text"
                                 }
                               ]

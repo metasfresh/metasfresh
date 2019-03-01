@@ -66,7 +66,6 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 	private final DataEntryRecordRepository dataEntryRecordRepository;
 
-
 	public DataEntrySubGroupBindingRepository(@NonNull final DataEntryRecordRepository dataEntryRecordRepository)
 	{
 		this.dataEntryRecordRepository = dataEntryRecordRepository;
@@ -249,12 +248,11 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			final FieldType fieldType = dataBinding.getFieldType();
 			if (fieldType.equals(FieldType.SUB_GROUP_ID)
 					|| fieldType.equals(FieldType.PARENT_LINK_ID)
-//					|| fieldType.equals(FieldType.CREATED)
-//					|| fieldType.equals(FieldType.CREATED_BY)
-//					|| fieldType.equals(FieldType.UPDATED)
-//					|| fieldType.equals(FieldType.UPDATED_BY)
-					|| fieldType.equals(FieldType.CREATED_UPDATED_INFO)
-					)
+					// || fieldType.equals(FieldType.CREATED)
+					// || fieldType.equals(FieldType.CREATED_BY)
+					// || fieldType.equals(FieldType.UPDATED)
+					// || fieldType.equals(FieldType.UPDATED_BY)
+					|| fieldType.equals(FieldType.CREATED_UPDATED_INFO))
 			{
 				continue;
 			}
@@ -315,9 +313,6 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(subGroupId);
 		return dataEntrySubGroupId;
 	}
-
-
-
 
 	@Override
 	public void delete(@NonNull final Document document)

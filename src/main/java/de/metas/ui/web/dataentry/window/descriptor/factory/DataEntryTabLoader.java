@@ -507,11 +507,12 @@ public class DataEntryTabLoader
 	{
 
 		final String fieldName = DataEntryWebuiTools.computeFieldName(dataEntryField.getId()) + "_Info";
+		final boolean mandatory = false;
 
 		final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
 				.builder()
 				.columnName(fieldName)
-				.mandatory(false)
+				.mandatory(mandatory)
 				.dataEntryFieldId(dataEntryField.getId())
 				.fieldType(FieldType.CREATED_UPDATED_INFO)
 				.build();
@@ -519,10 +520,10 @@ public class DataEntryTabLoader
 		return DocumentFieldDescriptor.builder(fieldName)
 				// .setCaption(dataEntryField.getCaption())
 				// .setDescription(dataEntryField.getDescription())
-				.setWidgetType(ofFieldType(dataEntryField.getType()))
+				.setWidgetType(ofFieldType(FieldType.CREATED_UPDATED_INFO))
 				.setLookupDescriptorProvider(LookupDescriptorProvider.NULL)
 				.addCharacteristic(Characteristic.PublicField)
-				.setMandatoryLogic(ConstantLogicExpression.of(dataEntryField.isMandatory()))
+				.setMandatoryLogic(ConstantLogicExpression.of(mandatory))
 				.setDataBinding(dataBinding);
 	}
 
