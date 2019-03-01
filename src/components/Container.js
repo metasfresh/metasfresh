@@ -77,29 +77,31 @@ class Container extends Component {
         {!hideHeader && (
           // Forcing refresh component
           <Header
-            entity={entity}
-            docStatusData={docStatusData}
-            docNoData={docNoData}
-            docSummaryData={docSummaryData}
-            handleDeletedStatus={handleDeletedStatus}
-            isDocumentNotSaved={isDocumentNotSaved}
-            showIndicator={showIndicator}
-            query={query}
-            siteName={siteName}
-            showSidelist={showSidelist}
-            attachments={attachments}
-            actions={actions}
-            references={references}
-            windowType={windowType}
-            breadcrumb={breadcrumb}
-            dataId={dataId}
-            dropzoneFocused={dropzoneFocused}
-            notfound={notfound}
-            docId={docId}
-            editmode={editmode}
-            handleEditModeToggle={handleEditModeToggle}
-            activeTab={activeTab}
             docStatus={docActionElem}
+            windowId={windowType}
+            {...{
+              entity,
+              docStatusData,
+              docNoData,
+              docSummaryData,
+              handleDeletedStatus,
+              isDocumentNotSaved,
+              showIndicator,
+              query,
+              siteName,
+              showSidelist,
+              attachments,
+              actions,
+              references,
+              breadcrumb,
+              dataId,
+              dropzoneFocused,
+              notfound,
+              docId,
+              editmode,
+              handleEditModeToggle,
+              activeTab,
+            }}
           />
         )}
 
@@ -113,29 +115,18 @@ class Container extends Component {
         >
           {modal.visible && (
             <Modal
+              {...modal}
               windowType={modal.type}
               dataId={modal.dataId ? modal.dataId : dataId}
-              data={modal.data}
-              layout={modal.layout}
-              rowData={modal.rowData}
-              tabId={modal.tabId}
-              rowId={modal.rowId}
               modalTitle={modal.title}
-              modalType={modal.modalType}
               modalViewId={modal.viewId}
-              isAdvanced={modal.isAdvanced}
               parentType={windowType}
               parentDataId={dataId}
-              triggerField={modal.triggerField}
               query={query}
               viewId={query && query.viewId}
               rawModalVisible={rawModal.visible}
               indicator={indicator}
               modalViewDocumentIds={modal.viewDocumentIds}
-              childViewId={modal.childViewId}
-              childViewSelectedIds={modal.childViewSelectedIds}
-              parentViewId={modal.parentViewId}
-              parentViewSelectedIds={modal.parentViewSelectedIds}
               closeCallback={closeModalCallback}
               modalSaveStatus={
                 modal.saveStatus && modal.saveStatus.saved !== undefined

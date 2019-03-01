@@ -76,7 +76,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	else 
 	{
 		withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
-			sh 'yarn test --ci --testResultsProcessor="jest-junit"'
+			sh 'yarn test --ci --reporters="default" --reporters="jest-junit"'
 		}
 		junit 'jest-test-results.xml'
 	}
