@@ -223,7 +223,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.collect(ImmutableList.toImmutableList());
 		if (quotationGroupProductLines.isEmpty())
 		{
-			throw new AdempiereException("No quotation groupping product found for lines: " + extractLineNosAsString(quotationLines)); // TODO TRL
+			throw new AdempiereException("NoQuotationGrouppingProductFoundForLines", new Object[] { extractLineNosAsString(quotationLines) });
 		}
 		else if (quotationGroupProductLines.size() == 1)
 		{
@@ -231,7 +231,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		}
 		else
 		{
-			throw new AdempiereException("More than one quotation groupping product lines found: " + extractLineNosAsString(quotationGroupProductLines)); // TODO TRL
+			throw new AdempiereException("MoreThanOneQuotationGrouppingProductLinesFound", new Object[] { extractLineNosAsString(quotationGroupProductLines) });
 		}
 	}
 
