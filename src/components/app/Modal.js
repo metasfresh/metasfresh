@@ -189,7 +189,7 @@ class Modal extends Component {
             rowId,
           };
 
-          if (activeTabId && parentSelection && parentSelection.length) {
+          if (activeTabId && parentSelection) {
             options.selectedTab = {
               tabId: activeTabId,
               rowIds: parentSelection,
