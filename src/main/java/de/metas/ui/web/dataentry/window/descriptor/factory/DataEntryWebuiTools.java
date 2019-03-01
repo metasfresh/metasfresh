@@ -10,8 +10,6 @@ import org.adempiere.user.UserRepository;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
@@ -51,8 +49,7 @@ import lombok.NonNull;
 @Service
 public class DataEntryWebuiTools
 {
-	@VisibleForTesting
-	static final String MSG_CREATED_UPDATED_INFO_6P = "de.metas.dataentry_Created_Updated_Info";
+	private final String MSG_CREATED_UPDATED_INFO_6P = "de.metas.dataentry_Created_Updated_Info";
 
 	private UserRepository userRepository;
 
