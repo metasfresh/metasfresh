@@ -88,7 +88,7 @@ import de.metas.util.Check;
 
 		final String url = importRecord.getURL();
 
-		if(!Check.isEmpty(url))
+		if (!Check.isEmpty(url))
 		{
 			bpartner.setURL(url);
 		}
@@ -134,6 +134,8 @@ import de.metas.util.Check;
 		bpartner.setQualification(importRecord.getQualification());
 		bpartner.setM_PricingSystem_ID(importRecord.getM_PricingSystem_ID());
 		bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
+		bpartner.setMemo_Delivery(importRecord.getMemo_Delivery());
+		bpartner.setMemo_Invoicing(importRecord.getMemo_Invoicing());
 
 		return bpartner;
 	}
@@ -166,7 +168,7 @@ import de.metas.util.Check;
 		bpartner = importRecord.getC_BPartner();
 
 		final String partnerExternalId = importRecord.getC_BPartner_ExternalId();
-		if(partnerExternalId != null)
+		if (partnerExternalId != null)
 		{
 			bpartner.setExternalId(partnerExternalId);
 		}
@@ -265,7 +267,18 @@ import de.metas.util.Check;
 			bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
 		}
 
-		
+		final String memoInvoicing = importRecord.getMemo_Invoicing();
+		if (!Check.isEmpty(memoInvoicing))
+		{
+			bpartner.setMemo_Invoicing(memoInvoicing);
+		}
+
+		final String memoDelivery = importRecord.getMemo_Delivery();
+		if (!Check.isEmpty(memoDelivery))
+		{
+			bpartner.setMemo_Delivery(memoDelivery);
+		}
+
 		return bpartner;
 	}
 
