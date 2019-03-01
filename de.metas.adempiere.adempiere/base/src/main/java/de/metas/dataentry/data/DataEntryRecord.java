@@ -132,30 +132,32 @@ public class DataEntryRecord
 
 	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		return getOptional(dataEntryFieldId)
-				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+		return getCreatedUpdatedInfo(dataEntryFieldId)
 				.map(CreatedUpdatedInfo::getCreated);
 	}
 
 	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		return getOptional(dataEntryFieldId)
-				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+		return getCreatedUpdatedInfo(dataEntryFieldId)
 				.map(CreatedUpdatedInfo::getCreatedBy);
 	}
 
 	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		return getOptional(dataEntryFieldId)
-				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+		return getCreatedUpdatedInfo(dataEntryFieldId)
 				.map(CreatedUpdatedInfo::getUpdated);
 	}
 
 	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		return getOptional(dataEntryFieldId)
-				.map(DataEntryRecordField::getCreatedUpdatedInfo)
+		return getCreatedUpdatedInfo(dataEntryFieldId)
 				.map(CreatedUpdatedInfo::getUpdatedBy);
+	}
+
+	public Optional<CreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId dataEntryFieldId)
+	{
+		return getOptional(dataEntryFieldId)
+				.map(DataEntryRecordField::getCreatedUpdatedInfo);
 	}
 
 	public Optional<Object> getFieldValue(@NonNull final DataEntryFieldId dataEntryFieldId)
