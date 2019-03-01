@@ -182,22 +182,11 @@ class Window extends PureComponent {
 
       return (
         <div key={`section-${idx}`} className="section">
-          {title && <Separator {...{ title }} />}
-          {collapsible && (
-            <div className="panel-size-button">
-              <button
-                className={classnames(
-                  'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
-                  {
-                    'meta-icon-show':
-                      sectionCollapsed || closableMode === INITIALLY_OPEN,
-                    'meta-icon-hide':
-                      !sectionCollapsed || closableMode === INITIALLY_CLOSED,
-                  }
-                )}
-                onClick={() => this.toggleSection(idx)}
-              />
-            </div>
+          {title && (
+            <Separator
+              {...{ title, idx, closableMode, sectionCollapsed, collapsible }}
+              onClick={this.toggleSection}
+            />
           )}
           <div
             className={classnames('row', {
