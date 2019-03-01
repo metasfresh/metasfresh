@@ -39,6 +39,18 @@ export class DataEntryField
                 this.dataEntryListValues = []
             }
 
+            setName(name)
+            {
+               cy.log(`DataEntryFieldBuilder - set name = ${name}`);
+               this.name = name;
+               return this;
+            }
+            setDataEntryLine(dataEntryLine)
+            {
+               cy.log(`DataEntryFieldBuilder - set dataEntryLine = ${dataEntryLine}`);
+               this.dataEntryLine = dataEntryLine;
+               return this;
+            }
             setSeqNo(seqNo)
             {
                cy.log(`DataEntryFieldBuilder - set seqNo = ${seqNo}`);
