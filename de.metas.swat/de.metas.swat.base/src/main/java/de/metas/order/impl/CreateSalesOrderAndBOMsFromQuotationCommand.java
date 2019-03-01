@@ -295,10 +295,14 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		}
 	}
 
-	private BOMCreateRequest.BOMLine toBOMLineCreateRequest(final I_C_OrderLine quotationLine)
+	private BOMCreateRequest.BOMLine toBOMLineCreateRequest(
+			@NonNull final I_C_OrderLine quotationLine,
+			@NonNull final BigDecimal qtyOfBOMProduct)
 	{
 		final I_C_UOM uom = uomsRepo.getById(quotationLine.getC_UOM_ID());
-		final Quantity qty = Quantity.of(quotationLine.getQtyEntered(), uom);
+		final Quantity qty = Quantity.of(quotationLine.getQtyEntered(), uom)
+				.divide(qtyOfBOMProduct);
+
 		return BOMCreateRequest.BOMLine.builder()
 				.componentType(BOMComponentType.Component)
 				.productId(ProductId.ofRepoId(quotationLine.getM_Product_ID()))
@@ -338,7 +342,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.validFrom(salesOrderDateOrdered)
 				.lines(additionalQuotationLines
 						.stream()
-						.map(this::toBOMLineCreateRequest)
+						.map(quotationLine -> toBOMLineCreateRequest(quotationLine, candidate.getQty()))
 						.collect(ImmutableList.toImmutableList()))
 				.build());
 
