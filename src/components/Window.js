@@ -223,13 +223,13 @@ class Window extends PureComponent {
 
       if (dataEntry) {
         return (
-          <div className={'col-sm-' + colWidth} key={'col' + id}>
-            {this.renderEntryTable(elementGroups, isFirst, extendedData)}
+          <div className="col-sm-12" key={`col-${id}`}>
+            {this.renderEntryTable(elementGroups, extendedData)}
           </div>
         );
       } else {
         return (
-          <div className={'col-sm-' + colWidth} key={'col' + id}>
+          <div className={`col-sm-${colWidth}`} key={`col-${id}`}>
             {elementGroups &&
               this.renderElementGroups(elementGroups, isFirst, extendedData)}
           </div>
@@ -244,9 +244,12 @@ class Window extends PureComponent {
     }
   };
 
-  renderEntryTable = (groups, isFirst, extendedData) => {
+  renderEntryTable = (groups, extendedData) => {
     const rows = groups.reduce((rowsArray, group) => {
-      rowsArray.push(group.elementsLine[0].elements);
+      rowsArray.push({
+        cols: [group.elementsLine[0].elements[0]],
+        colsCount: group.columnCount,
+      });
 
       return rowsArray;
     }, []);
@@ -264,7 +267,6 @@ class Window extends PureComponent {
         <EntryTable
           {...{
             ...this.props,
-            isFirst,
             rows,
             rowData,
             extendedData,
