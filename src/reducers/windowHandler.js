@@ -131,9 +131,14 @@ export const NO_SELECTION = [];
  * with a random uuid hash whenever table row is selected/deleted.
  */
 /* eslint-disable no-unused-vars */
-export const getSelectionData = (state, { windowId, viewId }, hash) => {
-  const windowTypeSelections = state.windowHandler.selections[windowId];
-  const id = viewId || windowId;
+export const getSelectionData = (
+  state,
+  { windowId, windowType, viewId },
+  hash
+) => {
+  const winId = windowId || windowType;
+  const windowTypeSelections = state.windowHandler.selections[winId];
+  const id = viewId || winId;
 
   return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
 };
