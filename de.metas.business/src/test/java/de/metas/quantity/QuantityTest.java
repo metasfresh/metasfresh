@@ -331,4 +331,14 @@ public class QuantityTest
 		assertThat(Quantity.of(100, uom5).add(Percent.of(33)).getAsBigDecimal())
 				.isEqualTo("133.00000");
 	}
+
+	@Test
+	public void divideUsingUOMScale()
+	{
+		final I_C_UOM uom = uomHelper.createUOM(5);
+		final Quantity qty = Quantity.of(1, uom)
+				.divide(BigDecimal.valueOf(3));
+
+		assertThat(qty.getAsBigDecimal()).isEqualByComparingTo("0.33333");
+	}
 }
