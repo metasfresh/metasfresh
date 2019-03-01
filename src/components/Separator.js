@@ -1,18 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-class Separator extends Component {
-  constructor(props) {
-    super(props);
-  }
+const Separator = props => {
+  const { title } = props;
 
-  render() {
-    const { title } = this.props;
-    return (
-      <div className="separator col-12">
-        <span className="separator-title">{title}</span>
-      </div>
-    );
-  }
-}
+  return (
+    <div className="separator col-12">
+      <span className="separator-title">{title}</span>
+    </div>
+  );
+};
 
 export default Separator;
