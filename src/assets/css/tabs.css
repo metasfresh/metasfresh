@@ -104,22 +104,20 @@
     }
 
     .table {
-        width: max-content;
+        width: 100%;
         margin-bottom: 0;
 
+        tr {
+            width: 100%;
+
+            &:last-child {
+                border: none;
+            }
+        }
+
         td {
-            width: max-content;
-            max-width: max-content;
-            min-width: min-content;
-
             .row {
-                flex-wrap: nowrap;
                 margin: 0;
-
-                margin: 0;
-                display: inline-flex;
-                flex-wrap: nowrap;
-                flex-grow: 1;
             }
 
             .form-group {
