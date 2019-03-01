@@ -183,7 +183,7 @@ stage('Invoke downstream jobs')
 				}
 				else
 				{
-					echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger downstream builds"
+					echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so other than metasfresh-e2e we do not trigger any downstream builds"
 				}
 			},
 			metasfresh_e2e : {

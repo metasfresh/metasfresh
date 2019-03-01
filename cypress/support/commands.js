@@ -206,7 +206,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
   });
 
 /**
- * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param modal - use true, if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
 Cypress.Commands.add(
   'writeIntoLookupListField',
@@ -541,6 +541,6 @@ Cypress.Commands.add('visitWindow', (windowId, recordId) => {
     cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as('getRecordData')
 
     cy.visit(`/window/${windowId}/${recordId}`)
-      .wait([ '@getLayout', '@getRecordData'])
+      .wait([ '@getLayout', '@getRecordData'], {requestTimeout: 20000, responseTimeout: 20000})
   })
 })
