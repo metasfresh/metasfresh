@@ -86,6 +86,11 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not an sales quotation");
 		}
 
+		if (quotation.getRef_Order_ID() > 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("a sales order was already generated");
+		}
+
 		final DocTypeId quotationDocTypeId = DocTypeId.ofRepoId(quotation.getC_DocType_ID());
 		if (!docTypeBL.isSalesProposalOrQuotation(quotationDocTypeId))
 		{
@@ -100,6 +105,9 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 	protected String doIt()
 	{
 		final OrderId quotationId = OrderId.ofRepoId(getRecord_ID());
+
+		checkEligibleSalesQuotation(quotationId)
+				.throwExceptionIfRejected();
 
 		final I_C_Order salesOrder = CreateSalesOrderAndBOMsFromQuotationCommand.builder()
 				.fromQuotationId(quotationId)
