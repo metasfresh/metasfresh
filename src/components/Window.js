@@ -182,22 +182,11 @@ class Window extends PureComponent {
 
       return (
         <div key={`section-${idx}`} className="section">
-          {title && <Separator {...{ title }} />}
-          {collapsible && (
-            <div className="panel-size-button">
-              <button
-                className={classnames(
-                  'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
-                  {
-                    'meta-icon-show':
-                      sectionCollapsed || closableMode === INITIALLY_OPEN,
-                    'meta-icon-hide':
-                      !sectionCollapsed || closableMode === INITIALLY_CLOSED,
-                  }
-                )}
-                onClick={() => this.toggleSection(idx)}
-              />
-            </div>
+          {title && (
+            <Separator
+              {...{ title, idx, closableMode, sectionCollapsed, collapsible }}
+              onClick={this.toggleSection}
+            />
           )}
           <div
             className={classnames('row', {
@@ -223,13 +212,13 @@ class Window extends PureComponent {
 
       if (dataEntry) {
         return (
-          <div className={'col-sm-' + colWidth} key={'col' + id}>
-            {this.renderEntryTable(elementGroups, isFirst, extendedData)}
+          <div className="col-sm-12" key={`col-${id}`}>
+            {this.renderEntryTable(elementGroups, extendedData)}
           </div>
         );
       } else {
         return (
-          <div className={'col-sm-' + colWidth} key={'col' + id}>
+          <div className={`col-sm-${colWidth}`} key={`col-${id}`}>
             {elementGroups &&
               this.renderElementGroups(elementGroups, isFirst, extendedData)}
           </div>
@@ -244,9 +233,12 @@ class Window extends PureComponent {
     }
   };
 
-  renderEntryTable = (groups, isFirst, extendedData) => {
+  renderEntryTable = (groups, extendedData) => {
     const rows = groups.reduce((rowsArray, group) => {
-      rowsArray.push(group.elementsLine[0].elements);
+      rowsArray.push({
+        cols: [group.elementsLine[0].elements[0]],
+        colsCount: group.columnCount,
+      });
 
       return rowsArray;
     }, []);
@@ -264,7 +256,6 @@ class Window extends PureComponent {
         <EntryTable
           {...{
             ...this.props,
-            isFirst,
             rows,
             rowData,
             extendedData,
