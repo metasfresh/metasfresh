@@ -1,10 +1,14 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.CreatedUpdatedInfo;
+import org.adempiere.user.User;
+import org.adempiere.user.UserRepository;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -21,7 +25,6 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -45,11 +48,18 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
+@Service
 public class DataEntryWebuiTools
 {
 	@VisibleForTesting
-	static final String MSG_CREATED_UPDATED_INFO = "de.metas.dataentry_Created_Updated_Info";
+	static final String MSG_CREATED_UPDATED_INFO_6P = "de.metas.dataentry_Created_Updated_Info";
+
+	private UserRepository userRepository;
+
+	public DataEntryWebuiTools(@NonNull final UserRepository userRepository)
+	{
+		this.userRepository = userRepository;
+	}
 
 	public DataEntryFieldId computeDataEntryFieldId(@NonNull final IDocumentFieldView field)
 	{
@@ -73,14 +83,6 @@ public class DataEntryWebuiTools
 		final DataEntryFieldId dataEntryFieldId = dataBinding.getDataEntryFieldId();
 		switch (dataBinding.getFieldType())
 		{
-			// case CREATED:
-			// return dataEntryRecord.getCreatedValue(dataEntryFieldId).orElse(null);
-			// case CREATED_BY:
-			// return dataEntryRecord.getCreatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
-			// case UPDATED:
-			// return dataEntryRecord.getUpdatedValue(dataEntryFieldId).orElse(null);
-			// case UPDATED_BY:
-			// return dataEntryRecord.getUpdatedByValue(dataEntryFieldId).map(UserId::getRepoId).orElse(0);
 			case CREATED_UPDATED_INFO:
 				final ITranslatableString trlString = extractCreatedUpdatedInfo(dataEntryRecord, dataEntryFieldId);
 				return trlString.translate(Env.getAD_Language());
@@ -104,20 +106,24 @@ public class DataEntryWebuiTools
 		final Optional<CreatedUpdatedInfo> createdUpdatedInfo = dataEntryRecord.getCreatedUpdatedInfo(dataEntryFieldId);
 
 		return createdUpdatedInfo
-				.map(DataEntryWebuiTools::extractCreatedUpdatedInfo)
+				.map(this::extractCreatedUpdatedInfo)
 				.orElse(ITranslatableString.empty());
 	}
 
-	@VisibleForTesting
-	ITranslatableString extractCreatedUpdatedInfo(@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
+	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
 	{
+		final User creator = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());
+		final User updater = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());
+
 		final ITranslatableString createdUpdatedInfoString = Services.get(IMsgBL.class)
 				.getTranslatableMsgText(
-						MSG_CREATED_UPDATED_INFO,
-						createdUpdatedInfo.getCreatedBy(),
-						createdUpdatedInfo.getCreated(),
-						createdUpdatedInfo.getUpdatedBy(),
-						createdUpdatedInfo.getCreated());
+						MSG_CREATED_UPDATED_INFO_6P,
+						creator.getName(),
+						Date.from(createdUpdatedInfo.getCreated().toInstant()),
+						Date.from(createdUpdatedInfo.getCreated().toInstant()),
+						updater.getName(),
+						Date.from(createdUpdatedInfo.getUpdated().toInstant()),
+						Date.from(createdUpdatedInfo.getUpdated().toInstant()));
 
 		return createdUpdatedInfoString;
 	}
@@ -159,18 +165,6 @@ public class DataEntryWebuiTools
 			case YESNO:
 				result = fieldType.getClazz().cast(value);
 				break;
-			// case CREATED:
-			// result = fieldType.getClazz().cast(value);
-			// break;
-			// case CREATED_BY:
-			// result = fieldType.getClazz().cast(value);
-			// break;
-			// case UPDATED:
-			// result = fieldType.getClazz().cast(value);
-			// break;
-			// case UPDATED_BY:
-			// result = fieldType.getClazz().cast(value);
-			// break;
 			case PARENT_LINK_ID:
 				result = fieldType.getClazz().cast(value);
 				break;
@@ -178,7 +172,7 @@ public class DataEntryWebuiTools
 				result = fieldType.getClazz().cast(value);
 				break;
 			default:
-				// this includes CREATED_UPDATED_INFO, PARENT_LINK_ID and SUB_GROUP_ID; we don't expect the document repo to try an extract these
+				// this includes CREATED_UPDATED_INFO, PARENT_LINK_ID and SUB_GROUP_ID; we don't expect the document repo to try and extract these
 				throw new AdempiereException("Unexpected fieldType=" + fieldType);
 		}
 

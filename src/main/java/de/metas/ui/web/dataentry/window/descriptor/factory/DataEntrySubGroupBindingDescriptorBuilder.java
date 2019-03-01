@@ -6,6 +6,7 @@ import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -35,12 +36,19 @@ public class DataEntrySubGroupBindingDescriptorBuilder implements DocumentEntity
 {
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
-	public DataEntrySubGroupBindingDescriptorBuilder(@NonNull final DataEntryRecordRepository dataEntryRecordRepository)
-	{
-		final DataEntrySubGroupBindingRepository dataEntrySubGroupBindingRepository //
-				= new DataEntrySubGroupBindingRepository(dataEntryRecordRepository);
+	@Getter
+	private final DataEntryWebuiTools dataEntryWebuiTools;
 
-		dataBinding = new DocumentEntityDataBindingDescriptor()
+	public DataEntrySubGroupBindingDescriptorBuilder(
+			@NonNull final DataEntryRecordRepository dataEntryRecordRepository,
+			@NonNull final DataEntryWebuiTools dataEntryWebuiTools)
+	{
+		this.dataEntryWebuiTools = dataEntryWebuiTools;
+
+		final DataEntrySubGroupBindingRepository dataEntrySubGroupBindingRepository //
+				= new DataEntrySubGroupBindingRepository(dataEntryRecordRepository, dataEntryWebuiTools);
+
+		this.dataBinding = new DocumentEntityDataBindingDescriptor()
 		{
 			@Override
 			public DocumentsRepository getDocumentsRepository()

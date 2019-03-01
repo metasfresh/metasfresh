@@ -66,8 +66,13 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 	private final DataEntryRecordRepository dataEntryRecordRepository;
 
-	public DataEntrySubGroupBindingRepository(@NonNull final DataEntryRecordRepository dataEntryRecordRepository)
+	private final DataEntryWebuiTools dataEntryWebuiTools;
+
+	public DataEntrySubGroupBindingRepository(
+			@NonNull final DataEntryRecordRepository dataEntryRecordRepository,
+			@NonNull final DataEntryWebuiTools dataEntryWebuiTools)
 	{
+		this.dataEntryWebuiTools = dataEntryWebuiTools;
 		this.dataEntryRecordRepository = dataEntryRecordRepository;
 	}
 
@@ -118,7 +123,9 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			return Optional.empty();
 		}
 
-		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(dataEntryRecord.get());
+		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(
+				dataEntryRecord.get(),
+				dataEntryWebuiTools);
 
 		Document document = null;
 		if (existingDocumentsSupplier != null)
@@ -214,7 +221,9 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			return;
 		}
 
-		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(dataEntryRecord.get());
+		final DocumentValuesSupplier documentValuesSupplier = new DataEntryDocumentValuesSupplier(
+				dataEntryRecord.get(),
+				dataEntryWebuiTools);
 		document.refreshFromSupplier(documentValuesSupplier);
 	}
 
@@ -257,9 +266,9 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 				continue;
 			}
 
-			final Object dataEntryFieldValue = DataEntryWebuiTools.extractFieldValueForDataEntry(fieldView);
+			final Object dataEntryFieldValue = dataEntryWebuiTools.extractFieldValueForDataEntry(fieldView);
 
-			final DataEntryFieldId dataEntryFieldId = DataEntryWebuiTools.computeDataEntryFieldId(fieldView);
+			final DataEntryFieldId dataEntryFieldId = dataEntryWebuiTools.computeDataEntryFieldId(fieldView);
 
 			final boolean valueChanged = dataEntryRecord.setRecordField(dataEntryFieldId, userId, dataEntryFieldValue);
 			refreshNeeded = refreshNeeded || valueChanged;
@@ -350,9 +359,13 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	private static final class DataEntryDocumentValuesSupplier implements DocumentValuesSupplier
 	{
 		private final DataEntryRecord dataEntryRecord;
+		private final DataEntryWebuiTools dataEntryWebuiTools;
 
-		private DataEntryDocumentValuesSupplier(@NonNull final DataEntryRecord dataEntryRecord)
+		private DataEntryDocumentValuesSupplier(
+				@NonNull final DataEntryRecord dataEntryRecord,
+				@NonNull DataEntryWebuiTools dataEntryWebuiTools)
 		{
+			this.dataEntryWebuiTools = dataEntryWebuiTools;
 			this.dataEntryRecord = dataEntryRecord;
 		}
 
@@ -375,7 +388,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		@Override
 		public Object getValue(@NonNull final DocumentFieldDescriptor fieldDescriptor)
 		{
-			return DataEntryWebuiTools.extractDataEntryValueForField(dataEntryRecord, fieldDescriptor);
+			return dataEntryWebuiTools.extractDataEntryValueForField(dataEntryRecord, fieldDescriptor);
 		}
 
 	}
