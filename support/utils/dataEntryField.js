@@ -6,8 +6,7 @@ export class DataEntryField
         this.seqNo = builder.seqNo
         this.description = builder.description
         this.isActive = builder.isActive
-        this.dataEntrySubGroup = builder.dataEntrySubGroup
-        this.dataEntrySection = builder.dataEntrySection
+        this.dataEntryLine = builder.dataEntryLine
         this.dataEntryRecordType = builder.dataEntryRecordType
         this.isMandatory = builder.isMandatory
         this.personalDataCategory = builder.personalDataCategory
@@ -16,25 +15,24 @@ export class DataEntryField
 
     apply() 
     {
-        cy.log(`DataEntryField - apply - START (name=${this.name})`);
-        applyDataEntryField(this);
-        cy.log(`DataEntryField - apply - END (name=${this.name})`);
-        return this;
+        cy.log(`DataEntryField - apply - START (name=${this.name})`)
+        applyDataEntryField(this)
+        cy.log(`DataEntryField - apply - END (name=${this.name})`)
+        return this
     }
 
     static get builder() 
     {
         class Builder 
         {
-            constructor(name, dataEntrySubGroup) 
+            constructor(name, dataEntryLine) 
             {
-                cy.log(`DataEntryFieldBuilder - set name = ${name}; dataEntrySubGroup = ${dataEntrySubGroup}`);
+                cy.log(`DataEntryFieldBuilder - set name = ${name}; dataEntryLine = ${dataEntryLine}`);
                 this.name = name
-                this.dataEntrySubGroup = dataEntrySubGroup
+                this.dataEntryLine = dataEntryLine
                 this.seqNo = undefined
                 this.description = undefined
                 this.isActive = true
-                this.dataEntrySection = undefined
                 this.dataEntryRecordType = undefined
                 this.isMandatory = undefined
                 this.personalDataCategory = undefined
@@ -57,12 +55,6 @@ export class DataEntryField
             {
                 cy.log(`DataEntryFieldBuilder - set isActive = ${isActive}`);
                 this.isActive = isActive;
-                return this;
-            }
-            setDataEntrySection(dataEntrySection)
-            {
-                cy.log(`DataEntryFieldBuilder - set dataEntrySection = ${dataEntrySection}`);
-                this.dataEntrySection = dataEntrySection;
                 return this;
             }
             setDataEntryRecordType(dataEntryRecordType)
@@ -159,8 +151,8 @@ function applyDataEntryField(dataEntryField)
         cy.visitWindow('540572', 'NEW')
        
         cy.writeIntoStringField('Name', dataEntryField.name);
-        cy.writeIntoLookupListField('DataEntry_Section_ID', dataEntryField.dataEntrySection, dataEntryField.dataEntrySection)
-        cy.writeIntoLookupListField('DataEntry_SubGroup_ID', dataEntryField.dataEntrySubGroup, dataEntryField.dataEntrySubGroup)
+        cy.writeIntoLookupListField('DataEntry_Line_ID', dataEntryField.dataEntryLine, dataEntryField.dataEntryLine)
+
         if(dataEntryField.seqNo) {
             cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryField.seqNo}`)
         }
