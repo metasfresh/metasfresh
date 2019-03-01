@@ -8,7 +8,7 @@ import {
   rowActionsRequest,
 } from '../../actions/GenericActions';
 import Loader from '../app/Loader';
-import { getSelection } from '../../reducers/windowHandler';
+import { getSelectionInstant } from '../../reducers/windowHandler';
 
 class Actions extends Component {
   static propTypes = {
@@ -319,11 +319,11 @@ const mapStateToProps = (state, props) => {
   const includedView = state.listHandler.includedView;
 
   const result = {
-    selected: getSelection({
+    selected: getSelectionInstant(
       state,
-      windowType: props.windowType,
-      viewId: props.viewId,
-    }),
+      props,
+      state.windowHandler.selectionsHash
+    ),
     plugins: state.pluginsHandler.files,
   };
 
