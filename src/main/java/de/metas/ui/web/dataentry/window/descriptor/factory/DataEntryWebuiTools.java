@@ -1,6 +1,11 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.CreatedUpdatedInfo;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
@@ -42,6 +47,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DataEntryWebuiTools
 {
+	@VisibleForTesting
+	static final String MSG_CREATED_UPDATED_INFO = "de.metas.dataentry_Created_Updated_Info";
+
 	public DataEntryFieldId computeDataEntryFieldId(@NonNull final IDocumentFieldView field)
 	{
 		final String fieldName = field.getFieldName();
@@ -54,6 +62,7 @@ public class DataEntryWebuiTools
 		return Integer.toString(dataEntryFieldId.getRepoId());
 	}
 
+	/** Extracts/converts a data entry value for the webui. */
 	public Object extractDataEntryValueForField(
 			@NonNull final DataEntryRecord dataEntryRecord,
 			@NonNull final DocumentFieldDescriptor fieldDescriptor)
@@ -90,13 +99,24 @@ public class DataEntryWebuiTools
 			@NonNull final DataEntryRecord dataEntryRecord,
 			@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		final ITranslatableString createdUpdatedInfo = Services.get(IMsgBL.class).getTranslatableMsgText(
-				"de.metas.dataentry_Created_Updated_Info",
-				dataEntryRecord.getCreatedByValue(dataEntryFieldId),
-				dataEntryRecord.getCreatedValue(dataEntryFieldId),
-				dataEntryRecord.getUpdatedByValue(dataEntryFieldId),
-				dataEntryRecord.getUpdatedValue(dataEntryFieldId));
-		return createdUpdatedInfo;
+		final Optional<CreatedUpdatedInfo> createdUpdatedInfo = dataEntryRecord.getCreatedUpdatedInfo(dataEntryFieldId);
+
+		return createdUpdatedInfo
+				.map(DataEntryWebuiTools::extractCreatedUpdatedInfo)
+				.orElse(ITranslatableString.empty());
+	}
+
+	@VisibleForTesting
+	ITranslatableString extractCreatedUpdatedInfo(@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
+	{
+		final ITranslatableString createdUpdatedInfoString = Services.get(IMsgBL.class).getTranslatableMsgText(
+				MSG_CREATED_UPDATED_INFO,
+				createdUpdatedInfo.getCreatedBy(),
+				createdUpdatedInfo.getCreated(),
+				createdUpdatedInfo.getUpdatedBy(),
+				createdUpdatedInfo.getCreated());
+
+		return createdUpdatedInfoString;
 	}
 
 	public Object extractFieldValueForDataEntry(@NonNull final IDocumentFieldView fieldView)
@@ -136,18 +156,18 @@ public class DataEntryWebuiTools
 			case YESNO:
 				result = fieldType.getClazz().cast(value);
 				break;
-//			case CREATED:
-//				result = fieldType.getClazz().cast(value);
-//				break;
-//			case CREATED_BY:
-//				result = fieldType.getClazz().cast(value);
-//				break;
-//			case UPDATED:
-//				result = fieldType.getClazz().cast(value);
-//				break;
-//			case UPDATED_BY:
-//				result = fieldType.getClazz().cast(value);
-//				break;
+			// case CREATED:
+			// result = fieldType.getClazz().cast(value);
+			// break;
+			// case CREATED_BY:
+			// result = fieldType.getClazz().cast(value);
+			// break;
+			// case UPDATED:
+			// result = fieldType.getClazz().cast(value);
+			// break;
+			// case UPDATED_BY:
+			// result = fieldType.getClazz().cast(value);
+			// break;
 			case PARENT_LINK_ID:
 				result = fieldType.getClazz().cast(value);
 				break;
@@ -155,6 +175,7 @@ public class DataEntryWebuiTools
 				result = fieldType.getClazz().cast(value);
 				break;
 			default:
+				// this includes CREATED_UPDATED_INFO, PARENT_LINK_ID and SUB_GROUP_ID; we don't expect the document repo to try an extract these
 				throw new AdempiereException("Unexpected fieldType=" + fieldType);
 		}
 

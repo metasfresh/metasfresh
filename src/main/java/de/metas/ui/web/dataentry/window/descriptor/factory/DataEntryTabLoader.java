@@ -6,6 +6,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.model.X_AD_UI_ElementField;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -285,6 +286,8 @@ public class DataEntryTabLoader
 		final DocumentLayoutElementFieldDescriptor.Builder infoField = DocumentLayoutElementFieldDescriptor
 				.builder(fieldName + "_CreateUpdatedInfo")
 				.setEmptyText(ITranslatableString.empty())
+				.setFieldType(DocumentLayoutElementFieldDescriptor.FieldType.Tooltip)
+				.setTooltipIconName(X_AD_UI_ElementField.TOOLTIPICONNAME_Text)
 				.setLookupSource(LookupSource.text);
 		element.addField(infoField);
 
