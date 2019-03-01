@@ -40,13 +40,13 @@ export default class BarcodeScanner extends Component {
   };
 
   _handleStop = close => {
-    this.reader.stop();
+    this.reader.stopStreams();
 
     close && this.props.onClose();
   };
 
   _changeReader = () => {
-    this.reader.stop();
+    this.reader.stopStreams();
     this.reader = new BrowserBarcodeReader();
 
     this.props.onClose(true);
