@@ -53,17 +53,20 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.currency.ICurrencyBL;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -84,12 +87,15 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 public class PricingConditionsRepository implements IPricingConditionsRepository
 {
+	private static final Logger logger = LogManager.getLogger(PricingConditionsRepository.class);
+
 	private final CCache<PricingConditionsId, PricingConditions> pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> builder()
 			.tableName(I_M_DiscountSchema.Table_Name)
 			.initialCapacity(10)
@@ -237,7 +243,15 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
-			final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoId(discountSchemaBreakRecord.getBase_PricingSystem_ID());
+			final int basePricingSystemRepoId = discountSchemaBreakRecord.getBase_PricingSystem_ID();
+			final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoIdOrNull(basePricingSystemRepoId);
+			if (basePricingSystemId == null)
+			{
+				Loggables.get().withLogger(logger, Level.WARN).addLog(
+						"Ignoring M_DiscountSchemaBreak_ID={} of M_DiscountSchema_ID={} which has PriceBase=P(ricingSystem), but Base_PricingSystem_ID={}",
+						discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID(), basePricingSystemRepoId);
+				return PriceSpecification.none();
+			}
 
 			final BigDecimal surchargeAmt = discountSchemaBreakRecord.getPricingSystemSurchargeAmt();
 			if (surchargeAmt == null || surchargeAmt.signum() == 0)
