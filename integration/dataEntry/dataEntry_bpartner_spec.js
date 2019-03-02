@@ -64,6 +64,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             .setName('Tab1-Section1-Line2-Field2')
             .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_20`)
             .setDescription('LongText, first field in its line')
+            .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
             .setDataEntryRecordType('Long text')
             // .setSeqNo('00000000000000010')
             .build().apply()
@@ -101,7 +102,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
         new DataEntryField
             .builder('Tab1-Section2-Line1-Field1', `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
             .setDescription('Tab1-Section2-Field1 Description')
-            .setMandatory(false)
+            .setMandatory(true)
             .setDataEntryRecordType('Date')
             // .setSeqNo('000000000000000010')
             .build().apply()
@@ -109,7 +110,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
         new DataEntryField
             .builder('Tab1-Section2-Line1-Field2', `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
             .setDescription('Tab1-Section2-Field2 Description')
-            .setMandatory(true)
+            .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
             .setDataEntryRecordType('List')
                 // .setSeqNo('000000000000000020')
             .addDataEntryListValue(new DataEntryListValue
