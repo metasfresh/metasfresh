@@ -66,11 +66,6 @@ public final class DocumentLayoutElementLineDescriptor
 		return elements;
 	}
 
-	public boolean hasElements()
-	{
-		return !elements.isEmpty();
-	}
-
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementLineDescriptor.Builder.class);

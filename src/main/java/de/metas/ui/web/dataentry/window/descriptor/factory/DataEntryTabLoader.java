@@ -158,11 +158,6 @@ public class DataEntryTabLoader
 			subGroupLayoutDescriptors.add(subGroupLayoutDescriptor);
 		}
 
-		if (dataEntryGroup.isAnonymous())
-		{
-			return subGroupLayoutDescriptors.build();
-		}
-
 		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
 				.builder(windowId, createDetailIdFor(dataEntryGroup))
 				.caption(dataEntryGroup.getCaption())
@@ -362,11 +357,6 @@ public class DataEntryTabLoader
 		{
 			final DocumentEntityDescriptor subGroupEntityDescriptor = createSubGroupEntityDescriptor(dataEntrySubGroup, dataEntryGroup.getDocumentLinkColumnName());
 			subGroupEntityDescriptors.add(subGroupEntityDescriptor);
-		}
-
-		if (dataEntryGroup.isAnonymous())
-		{
-			return subGroupEntityDescriptors.build();
 		}
 
 		final DataEntryGroupBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntryGroupBindingDescriptorBuilder();

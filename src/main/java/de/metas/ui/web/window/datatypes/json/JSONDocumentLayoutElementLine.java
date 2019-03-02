@@ -46,7 +46,6 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	{
 		return elementsLines.stream()
 				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonOpts))
-				.filter(jsonElementsLine -> jsonElementsLine.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -93,10 +92,5 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
-	}
-
-	public boolean hasElements()
-	{
-		return !elements.isEmpty();
 	}
 }
