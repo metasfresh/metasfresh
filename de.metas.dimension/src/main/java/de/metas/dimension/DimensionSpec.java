@@ -38,7 +38,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -288,10 +287,11 @@ public class DimensionSpec
 			@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
 	{
 
-		final List<I_DIM_Dimension_Spec_Attribute> attrs = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
+		final List<I_DIM_Dimension_Spec_Attribute> attrs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMN_DIM_Dimension_Spec_ID, dimensionSpecRecord.getDIM_Dimension_Spec_ID())
-				.orderBy().addColumn(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID).endOrderBy() // important to get a correct AttributesKey
+				.orderBy(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID) // important to get a correct AttributesKey
 				.create()
 				.list();
 
@@ -391,7 +391,7 @@ public class DimensionSpec
 			final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(entry.getValue());
 
 			final DimensionSpecGroup newGroup = new DimensionSpecGroup(
-					groupNameTrl,
+					() -> groupNameTrl,
 					attributesKey,
 					groupAttributeId);
 			list.add(newGroup);
