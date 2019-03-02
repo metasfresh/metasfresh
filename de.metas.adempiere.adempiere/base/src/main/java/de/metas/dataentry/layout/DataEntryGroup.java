@@ -45,9 +45,6 @@ public class DataEntryGroup
 
 	List<DataEntrySubGroup> dataEntrySubGroups;
 
-	/** if true, then there shall be now tab shown for this group and the sub-groups shall be shown on the same level as the normal AD_Tab based groups. */
-	boolean anonymous;
-
 	/** The column name of the record/document (e.g. C_BPartner_ID) against {@link I_DataEntry_Record_Assignment}s are linked. */
 	DocumentLinkColumnName documentLinkColumnName;
 
@@ -58,7 +55,6 @@ public class DataEntryGroup
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName,
-			final boolean anonymous,
 			@Singular final List<DataEntrySubGroup> dataEntrySubGroups)
 	{
 		this.id = id;
@@ -66,7 +62,6 @@ public class DataEntryGroup
 		this.description = description;
 		this.internalName = internalName;
 		this.documentLinkColumnName = documentLinkColumnName;
-		this.anonymous = anonymous;
 		this.dataEntrySubGroups = dataEntrySubGroups;
 	}
 
