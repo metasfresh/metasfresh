@@ -202,7 +202,6 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
           ]
         }
       ],
-      "anonymous": false,
       "documentLinkColumnName": {
         "asString": "tableRecord_1_tableName_ID"
       }
