@@ -12,9 +12,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -122,19 +122,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return elementLinesBuilders
 					.stream()
 					.map(elementLinesBuilder -> elementLinesBuilder.build())
-					.filter(elementLine -> checkValid(elementLine))
 					.collect(GuavaCollectors.toImmutableList());
-		}
-
-		private final boolean checkValid(final DocumentLayoutElementLineDescriptor elementLine)
-		{
-			if (!elementLine.hasElements())
-			{
-				logger.trace("Skip adding {} to {} because it's empty", elementLine, this);
-				return false;
-			}
-
-			return true;
 		}
 
 		public Builder setInternalName(final String internalName)
@@ -161,10 +149,15 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder addElementLine(final DocumentLayoutElementLineDescriptor.Builder elementLineBuilder)
+		public Builder addElementLine(@NonNull final DocumentLayoutElementLineDescriptor.Builder elementLineBuilder)
 		{
-			Check.assumeNotNull(elementLineBuilder, "Parameter elementLineBuilder is not null");
 			elementLinesBuilders.add(elementLineBuilder);
+			return this;
+		}
+
+		public Builder addElementLines(@NonNull final List<DocumentLayoutElementLineDescriptor.Builder> elementLineBuilders)
+		{
+			elementLinesBuilders.addAll(elementLineBuilders);
 			return this;
 		}
 

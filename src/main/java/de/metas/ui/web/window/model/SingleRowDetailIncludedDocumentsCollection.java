@@ -70,8 +70,7 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	/** copy constructor */
 	private SingleRowDetailIncludedDocumentsCollection(
 			@NonNull final SingleRowDetailIncludedDocumentsCollection from,
-			@NonNull final Document parentDocumentCopy,
-			@NonNull final CopyMode copyMode)
+			@NonNull final Document parentDocumentCopy)
 	{
 		this.parentDocument = parentDocumentCopy;
 		this.parentDocumentPath = from.parentDocumentPath;
@@ -89,9 +88,9 @@ public class SingleRowDetailIncludedDocumentsCollection implements IIncludedDocu
 	}
 
 	@Override
-	public IIncludedDocumentsCollection copy(@NonNull final Document parentDocumentCopy, @NonNull final CopyMode copyMode)
+	public IIncludedDocumentsCollection copy(@NonNull final Document parentDocumentCopy, @NonNull final CopyMode copyMode_IGNORED)
 	{
-		return new SingleRowDetailIncludedDocumentsCollection(this, parentDocumentCopy, copyMode);
+		return new SingleRowDetailIncludedDocumentsCollection(this, parentDocumentCopy);
 	}
 
 	@Override

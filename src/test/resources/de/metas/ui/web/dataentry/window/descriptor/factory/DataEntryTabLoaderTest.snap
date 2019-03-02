@@ -84,8 +84,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1111,
                   "fieldType" : "TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -136,8 +136,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1111,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -188,8 +188,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1112,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -240,8 +240,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1112,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -292,8 +292,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1113,
                   "fieldType" : "NUMBER",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -344,8 +344,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1113,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -396,8 +396,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1121,
                   "fieldType" : "DATE",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -448,8 +448,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1121,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -500,8 +500,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1122,
                   "fieldType" : "YESNO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -552,8 +552,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1122,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -640,8 +640,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1123,
                   "fieldType" : "LIST",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -692,8 +692,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1123,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -743,8 +743,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -795,8 +795,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -848,8 +848,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -901,8 +901,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderBy" : false,
-                "defaultOrderByAscending" : true
+                "defaultOrderByAscending" : true,
+                "defaultOrderBy" : false
               },
               "present" : true
             },
@@ -1000,8 +1000,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1211,
                   "fieldType" : "TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1052,8 +1052,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1211,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1104,8 +1104,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1212,
                   "fieldType" : "LONG_TEXT",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1156,8 +1156,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1212,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1208,8 +1208,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1213,
                   "fieldType" : "NUMBER",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1260,8 +1260,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1213,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1312,8 +1312,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1221,
                   "fieldType" : "DATE",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1364,8 +1364,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1221,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1416,8 +1416,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1222,
                   "fieldType" : "YESNO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1468,8 +1468,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1222,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1556,8 +1556,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1223,
                   "fieldType" : "LIST",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1608,8 +1608,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "mandatory" : false,
                   "dataEntryFieldId" : 1223,
                   "fieldType" : "CREATED_UPDATED_INFO",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1659,8 +1659,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1711,8 +1711,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "documentLinkColumnName",
                   "mandatory" : true,
                   "fieldType" : "PARENT_LINK_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1764,8 +1764,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "columnName" : "DataEntry_SubGroup_ID",
                   "mandatory" : true,
                   "fieldType" : "SUB_GROUP_ID",
-                  "defaultOrderBy" : false,
-                  "defaultOrderByAscending" : true
+                  "defaultOrderByAscending" : true,
+                  "defaultOrderBy" : false
                 },
                 "present" : true
               },
@@ -1817,8 +1817,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "columnName" : "documentLinkColumnName",
                 "mandatory" : true,
                 "fieldType" : "PARENT_LINK_ID",
-                "defaultOrderBy" : false,
-                "defaultOrderByAscending" : true
+                "defaultOrderByAscending" : true,
+                "defaultOrderBy" : false
               },
               "present" : true
             },
@@ -1928,7 +1928,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "sections" : [
               {
                 "caption" : {
-                  "value" : "dataEntrySection11_caption",
+                  "value" : "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
                   "anyLanguage" : false
                 },
                 "description" : {
@@ -1997,12 +1997,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 ]
                               }
                             ]
-                          }
-                        ],
-                        "columnCount" : 1
-                      },
-                      {
-                        "elementLines" : [
+                          },
+                          {
+                            "elements" : [ ]
+                          },
                           {
                             "elements" : [
                               {
@@ -2057,12 +2055,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 ]
                               }
                             ]
-                          }
-                        ],
-                        "columnCount" : 1
-                      },
-                      {
-                        "elementLines" : [
+                          },
                           {
                             "elements" : [
                               {
@@ -2119,7 +2112,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             ]
                           }
                         ],
-                        "columnCount" : 1
+                        "columnCount" : 2
                       }
                     ]
                   }
@@ -2131,7 +2124,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "anyLanguage" : false
                 },
                 "description" : {
-                  "value" : "dataEntrySection12_description",
+                  "value" : "dataEntrySection12 - section with one line and 3 fields",
                   "anyLanguage" : false
                 },
                 "internalName" : "dataEntrySection2_internalName",
@@ -2348,7 +2341,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "sections" : [
               {
                 "caption" : {
-                  "value" : "dataEntrySection21_caption",
+                  "value" : "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
                   "anyLanguage" : false
                 },
                 "description" : {
@@ -2417,12 +2410,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 ]
                               }
                             ]
-                          }
-                        ],
-                        "columnCount" : 1
-                      },
-                      {
-                        "elementLines" : [
+                          },
+                          {
+                            "elements" : [ ]
+                          },
                           {
                             "elements" : [
                               {
@@ -2477,12 +2468,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                 ]
                               }
                             ]
-                          }
-                        ],
-                        "columnCount" : 1
-                      },
-                      {
-                        "elementLines" : [
+                          },
                           {
                             "elements" : [
                               {
@@ -2539,7 +2525,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             ]
                           }
                         ],
-                        "columnCount" : 1
+                        "columnCount" : 2
                       }
                     ]
                   }
@@ -2551,7 +2537,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "anyLanguage" : false
                 },
                 "description" : {
-                  "value" : "dataEntrySection22_description",
+                  "value" : "dataEntrySection22 - section with one line and 3 fields",
                   "anyLanguage" : false
                 },
                 "internalName" : "dataEntrySection2_internalName",
@@ -2767,13 +2753,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "description" : "dataEntrySubGroup1_description",
           "sections" : [
             {
-              "title" : "dataEntrySection11_caption",
+              "title" : "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
               "description" : "dataEntrySection1_description",
               "columns" : [
                 {
                   "elementGroups" : [
                     {
-                      "columnCount" : 1,
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -2796,12 +2782,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               ]
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "columnCount" : 1,
-                      "elementsLine" : [
+                        },
                         {
                           "elements" : [
                             {
@@ -2825,12 +2806,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               ]
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "columnCount" : 1,
-                      "elementsLine" : [
+                        },
                         {
                           "elements" : [
                             {
@@ -2862,7 +2838,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             },
             {
               "title" : "dataEntrySection12_caption",
-              "description" : "dataEntrySection12_description",
+              "description" : "dataEntrySection12 - section with one line and 3 fields",
               "columns" : [
                 {
                   "elementGroups" : [
@@ -2955,13 +2931,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "description" : "dataEntrySubGroup2_description",
           "sections" : [
             {
-              "title" : "dataEntrySection21_caption",
+              "title" : "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
               "description" : "dataEntrySection1_description",
               "columns" : [
                 {
                   "elementGroups" : [
                     {
-                      "columnCount" : 1,
+                      "columnCount" : 2,
                       "elementsLine" : [
                         {
                           "elements" : [
@@ -2984,12 +2960,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               ]
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "columnCount" : 1,
-                      "elementsLine" : [
+                        },
                         {
                           "elements" : [
                             {
@@ -3013,12 +2984,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                               ]
                             }
                           ]
-                        }
-                      ]
-                    },
-                    {
-                      "columnCount" : 1,
-                      "elementsLine" : [
+                        },
                         {
                           "elements" : [
                             {
@@ -3050,7 +3016,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             },
             {
               "title" : "dataEntrySection22_caption",
-              "description" : "dataEntrySection22_description",
+              "description" : "dataEntrySection22 - section with one line and 3 fields",
               "columns" : [
                 {
                   "elementGroups" : [

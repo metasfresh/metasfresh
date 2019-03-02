@@ -23,6 +23,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -58,6 +59,7 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 
 	private final ImmutableBiMap<DataEntryListValueId, IntegerLookupValue> id2LookupValue;
 
+	@Getter
 	private final DataEntryFieldId dataEntryFieldId;
 
 	public DataEntryListValueDataSourceFetcher(@NonNull final List<DataEntryListValue> listValues)

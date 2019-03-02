@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -59,12 +60,19 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
 	}
 
-	/** Element group type (primary aka bordered, transparent etc) */
+	@ApiModelProperty(allowEmptyValue = true)
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
 	private final JSONLayoutType type;
 
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Number of equal-width-columns into which the included elementsLines shall be displayed:\n"
+					+ "Notes:\n"
+					+ "* one element line per cell"
+					+ "* an empty element line shall be rendered as empty cell"
+					+ "* if you have e.g. columnCount=3 and four element lines, then the rightmost two cells of the last line shall be empty"
+					+ "* if this property is missing, then <code>1</code> should be assumed")
 	@JsonProperty("columnCount")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
@@ -75,14 +83,18 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	@Getter
 	private final String internalName;
 
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Container for elementy that are supposed to be displayed next to each other\n"
+					+ "Notes:"
+					+ "* individual element lines might be empty for layout purposes; see <code>columnCount</code>\n"
+					+ "* in most of the cases, each elementLine has one element")
 	@JsonProperty("elementsLine")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonInclude(JsonInclude.Include.ALWAYS)
 	@Getter
 	private final List<JSONDocumentLayoutElementLine> elementLines;
 
 	private JSONDocumentLayoutElementGroup(
 			@NonNull final DocumentLayoutElementGroupDescriptor elementGroup,
-
 			@NonNull final JSONOptions jsonOpts)
 	{
 		this.type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());

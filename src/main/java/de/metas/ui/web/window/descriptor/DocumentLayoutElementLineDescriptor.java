@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,9 +45,8 @@ public final class DocumentLayoutElementLineDescriptor
 	private final String internalName;
 	private final List<DocumentLayoutElementDescriptor> elements;
 
-	private DocumentLayoutElementLineDescriptor(final Builder builder)
+	private DocumentLayoutElementLineDescriptor(@NonNull final Builder builder)
 	{
-		super();
 		internalName = builder.internalName;
 		elements = ImmutableList.copyOf(builder.buildElements());
 	}
@@ -80,7 +80,6 @@ public final class DocumentLayoutElementLineDescriptor
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -118,13 +117,13 @@ public final class DocumentLayoutElementLineDescriptor
 				logger.trace("Skip adding {} to {} because it's already consumed", elementBuilder, this);
 				return false;
 			}
-			
+
 			if(elementBuilder.getFieldsCount() <= 0)
 			{
 				logger.trace("Skip adding {} to {} because it does not have fields", elementBuilder, this);
 				return false;
 			}
-			
+
 			return true;
 		}
 
@@ -150,12 +149,12 @@ public final class DocumentLayoutElementLineDescriptor
 			elementsBuilders.add(elementBuilder);
 			return this;
 		}
-		
+
 		public boolean hasElements()
 		{
 			return !elementsBuilders.isEmpty();
 		}
-		
+
 		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
 			return elementsBuilders.stream();

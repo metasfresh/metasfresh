@@ -154,7 +154,9 @@ public class DataEntryTabLoaderTest
 
 				.dataEntrySection(DataEntrySection.builder()
 						.id(DataEntrySectionId.ofRepoId(parseInt(idPrefix + "1")))
-						.caption(ImmutableTranslatableString.constant("dataEntrySection" + subgroupNo + "1_caption"))
+						.caption(ImmutableTranslatableString.constant("dataEntrySection" + subgroupNo + "1 - section with 2 lines. "
+								+ "The 1st line has 1 field, the 2nd line has 2 fields. "
+								+ "Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty"))
 						.description(ImmutableTranslatableString.constant("dataEntrySection1_description"))
 						.internalName("dataEntrySection1_internalName")
 						.initallyClosed(false)
@@ -173,8 +175,7 @@ public class DataEntryTabLoaderTest
 										.description(ImmutableTranslatableString.constant("longTextField1_description"))
 										.type(FieldType.LONG_TEXT)
 										.build())
-								.build())
-						.dataEntryLine(DataEntryLine.builder()
+
 								.dataEntryField(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "13")))
 										.caption(ImmutableTranslatableString.constant("numberField" + subgroupNo + "1_caption"))
@@ -187,10 +188,9 @@ public class DataEntryTabLoaderTest
 				.dataEntrySection(DataEntrySection.builder()
 						.id(DataEntrySectionId.ofRepoId(parseInt(idPrefix + "2")))
 						.caption(ImmutableTranslatableString.constant("dataEntrySection" + subgroupNo + "2_caption"))
-						.description(ImmutableTranslatableString.constant("dataEntrySection" + subgroupNo + "2_description"))
+						.description(ImmutableTranslatableString.constant("dataEntrySection" + subgroupNo + "2 - section with one line and 3 fields"))
 						.internalName("dataEntrySection2_internalName")
 						.initallyClosed(true)
-
 						.dataEntryLine(DataEntryLine.builder()
 								.dataEntryField(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "21")))

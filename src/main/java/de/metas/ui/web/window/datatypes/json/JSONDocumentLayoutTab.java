@@ -48,12 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-/**
- * Window included tab layout (JSON)
- *
- * @author metas-dev <dev@metasfresh.com>
- */
-@ApiModel("tab")
+@ApiModel(value = "tab", description = "Window included tab layout")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutTab
 {
@@ -113,17 +108,22 @@ public final class JSONDocumentLayoutTab
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String emptyResultHint;
 
-	/** Filled unless {@link #singleRowDetailLayout} is {@code true}. */
+	/**  */
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Required to render the table columns for this tab.<br>"
+					+ "Therefore filled, unless <code>singleRowDetailLayout</code> is <code>true</code>.")
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	/** Filled unless {@link #singleRowDetailLayout} is {@code true}. */
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Subtabs of this tab; note: there are either subtabs or sections, but not both.")
 	@JsonProperty("tabs")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutTab> subTabs;
 
-	/** Filled if {@link #singleRowDetailLayout} is {@code true}. */
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "\"detail\" layout of the rows in this tab; required if singleRowDetailView is <code>true</code> and in advanced edit mode")
 	@JsonProperty("sections")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutSection> sections;
@@ -143,7 +143,7 @@ public final class JSONDocumentLayoutTab
 	private final boolean queryOnActivate;
 
 	@ApiModelProperty(allowEmptyValue = true, //
-			value = "If set to true, then frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
+			value = "If set to true, then the frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
 					+ "If empty, assume false.")
 	@JsonProperty("singleRowDetailView")
 	@JsonInclude(JsonInclude.Include.NON_NULL)

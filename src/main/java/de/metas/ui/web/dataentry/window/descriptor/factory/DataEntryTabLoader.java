@@ -1,5 +1,7 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
@@ -213,7 +215,7 @@ public class DataEntryTabLoader
 				? ClosableMode.INITIALLY_CLOSED
 				: ClosableMode.INITIALLY_OPEN;
 
-		final DocumentLayoutSectionDescriptor.Builder section = DocumentLayoutSectionDescriptor
+		final DocumentLayoutSectionDescriptor.Builder layoutSection = DocumentLayoutSectionDescriptor
 				.builder()
 				.setCaption(dataEntrySection.getCaption())
 				.setDescription(dataEntrySection.getDescription())
@@ -222,30 +224,71 @@ public class DataEntryTabLoader
 				.setClosableMode(closableMode)
 				.setCaptionMode(CaptionMode.DISPLAY);
 
-		final List<DataEntryLine> lines = dataEntrySection.getDataEntryLines();
-		for (final DataEntryLine line : lines)
-		{
-			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = createLayoutElemementGroup(line);
-			column.addElementGroup(elementGroup);
-		}
-		return section;
+		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = createLayoutElemementGroup(dataEntrySection);
+		column.addElementGroup(elementGroup);
+
+		return layoutSection;
 	}
 
-	private DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(@NonNull final DataEntryLine line)
+	private DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(@NonNull final DataEntrySection dataEntrySection)
 	{
+		final Integer columnCount = dataEntrySection.getDataEntryLines().stream()
+				.map(DataEntryLine::getDataEntryFields)
+				.map(Collection::size)
+				.max(Comparator.naturalOrder()).orElse(0);
+
 		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
 				.builder()
-				.setColumnCount(line.getDataEntryFields().size());
+				.setColumnCount(columnCount);
 
-		final List<DataEntryField> fields = line.getDataEntryFields();
-		for (final DataEntryField field : fields)
+		final List<DataEntryLine> dataEntryLines = dataEntrySection.getDataEntryLines();
+		for (final DataEntryLine dataEntryLine : dataEntryLines)
 		{
-			final DocumentLayoutElementLineDescriptor.Builder elementLine = createLayoutElemementLine(field);
-			elementGroup.addElementLine(elementLine);
+			final ImmutableList<DocumentLayoutElementLineDescriptor.Builder> elementLines = createLayoutElemementLine(dataEntryLine, columnCount);
+			elementGroup.addElementLines(elementLines);
 		}
 
 		return elementGroup;
 	}
+
+	private ImmutableList<DocumentLayoutElementLineDescriptor.Builder> createLayoutElemementLine(
+			@NonNull final DataEntryLine dataEntryLine,
+			final int columnCount)
+	{
+		final ImmutableList.Builder<DocumentLayoutElementLineDescriptor.Builder> result = ImmutableList.builder();
+
+		final List<DataEntryField> fields = dataEntryLine.getDataEntryFields();
+		for (final DataEntryField field : fields)
+		{
+			final DocumentLayoutElementLineDescriptor.Builder elementLine = createLayoutElemementLine(field);
+			result.add(elementLine);
+		}
+
+		// fill the gap with "empty cells" if this line has less fields than columnCount specifies
+		for (int i = fields.size(); i < columnCount; i++)
+		{
+			final DocumentLayoutElementLineDescriptor.Builder emptyElementLine = DocumentLayoutElementLineDescriptor.builder();
+			result.add(emptyElementLine);
+		}
+
+		return result.build();
+	}
+
+//	private DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(@NonNull final DataEntryLine line)
+//	{
+//		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
+//				.builder()
+//				.setColumnCount(line.getDataEntryFields().size());
+//
+//		final List<DataEntryField> fields = line.getDataEntryFields();
+//		for (final DataEntryField field : fields)
+//		{
+//			final DocumentLayoutElementLineDescriptor.Builder elementLine = createLayoutElemementLine(field);
+//			elementGroup.addElementLine(elementLine);
+//		}
+//
+//		return elementGroup;
+//	}
 
 	private DocumentLayoutElementLineDescriptor.Builder createLayoutElemementLine(@NonNull final DataEntryField field)
 	{
