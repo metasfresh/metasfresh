@@ -24,6 +24,7 @@ import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.model.X_DataEntry_Field;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -103,8 +104,15 @@ public class DataEntryLayoutRepositoryTest
 		groupRecord1.setTabName("groupRecord1_tabName");
 		saveRecord(groupRecord1);
 
-		//
-		// subgroup 1
+		createSubgroup1Records(groupRecord1);
+
+		createSubgroup2Records(groupRecord1);
+
+		return groupRecord1;
+	}
+
+	private void createSubgroup1Records(@NonNull final I_DataEntry_Group groupRecord1)
+	{
 		final I_DataEntry_SubGroup subgroupRecord1_1 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_1.setDataEntry_Group(groupRecord1);
 		subgroupRecord1_1.setName("subgroupRecord1_1_name");
@@ -147,9 +155,10 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_1_2_1_2.setSeqNo(10);
 		fieldRecord1_1_2_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
 		saveRecord(fieldRecord1_1_2_1_2);
+	}
 
-		//
-		// subgroup 2
+	private void createSubgroup2Records(@NonNull final I_DataEntry_Group groupRecord1)
+	{
 		final I_DataEntry_SubGroup subgroupRecord1_2 = newInstance(I_DataEntry_SubGroup.class);
 		subgroupRecord1_2.setDataEntry_Group(groupRecord1);
 		subgroupRecord1_2.setName("subgroupRecord1_2_name");
@@ -237,7 +246,5 @@ public class DataEntryLayoutRepositoryTest
 		fieldRecord1_2_1_1_5.setSeqNo(50);
 		fieldRecord1_2_1_1_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
 		saveRecord(fieldRecord1_2_1_1_5);
-
-		return groupRecord1;
 	}
 }

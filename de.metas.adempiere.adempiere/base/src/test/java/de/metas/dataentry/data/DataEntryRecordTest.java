@@ -85,7 +85,7 @@ public class DataEntryRecordTest
 		dataEntryRecord.setRecordField(fieldId3, UserId.ofRepoId(20), "longText");
 		dataEntryRecord.setRecordField(fieldId4, UserId.ofRepoId(20), true);
 		dataEntryRecord.setRecordField(fieldId5, UserId.ofRepoId(20), new BigDecimal("15"));
-		dataEntryRecord.setRecordField(fieldId6, UserId.ofRepoId(20), DataEntryRecordTestConstants.DATE_TIME);
+		dataEntryRecord.setRecordField(fieldId6, UserId.ofRepoId(20), DATE_TIME);
 
 		assertThat(dataEntryRecord.getFields()).isNotEmpty();
 		assertThat(dataEntryRecord.getFields()).doesNotContainNull();
