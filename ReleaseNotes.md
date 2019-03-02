@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.94
+# Features
+* metasfresh-webui
+  * [#1945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1945) "About" action in webui
+
 # metasfresh 5.93
 # Features
 * metasfresh
