@@ -34,7 +34,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
         new DataEntrySection
             .builder(dataEntrySection1Name, dataEntrySubGroup1Name)
-            .setDescription('Section with 3 lines; in the 1st, just one col is used; in the 2nd, one filed is long-text, yet the two fields of the 3rd line shall still be alligned!')
+            .setDescription('Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!')
             //.setSeqNo(15)
             .addDataEntryLine(new DataEntryLine
                 .builder()
@@ -52,8 +52,8 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             .apply()
 
         const section1FieldBuilder = new DataEntryField
-            .builder('Tab1-Field1', `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
-            .setDescription('Tab1-Section1-Field1 single field in its line')
+            .builder('Tab1-Section1-Line1-Field1', `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
+            .setDescription('Yes-No, single field in its line')
             .setMandatory(true)
             .setDataEntryRecordType('Yes-No')
             .setPersonalDataCategory('Personal')
@@ -61,28 +61,28 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
         section1FieldBuilder.build().apply()
         section1FieldBuilder
-            .setName('Tab1-Section1-Field2')
+            .setName('Tab1-Section1-Line2-Field2')
             .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_20`)
-            .setDescription('Tab1-Section1-Field2 LongText')
+            .setDescription('LongText, first field in its line')
             .setDataEntryRecordType('Long text')
             // .setSeqNo('00000000000000010')
             .build().apply()
         section1FieldBuilder
-            .setName('Tab1-Section1-Field3')
-            .setDescription('Tab1-Section1-Field2 Yes-No')
+            .setName('Tab1-Section1-Line2-Field3')
+            .setDescription('Yes-No, second fields in its line')
             .setDataEntryRecordType('Yes-No')
             // .setSeqNo('00000000000000020')
             .build().apply()
         section1FieldBuilder
-            .setName('Tab1-Section1-Field5')
+            .setName('Tab1-Section1-Line3-Field4')
             .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_30`)
-            .setDescription('Tab1-Section1-Field3 Text')
+            .setDescription('Text, first field in its line')
             .setDataEntryRecordType('Text')
             // .setSeqNo('00000000000000010')
             .build().apply()
         section1FieldBuilder
-            .setName('Tab1-Section1-Field5')
-            .setDescription('Tab1-Section1-Field5 Text')
+            .setName('Tab1-Section1-Line3-Field5')
+            .setDescription('Text, second field in its line')
             // .setSeqNo('00000000000000020')
             .build().apply()
 
@@ -99,7 +99,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             .apply()
 
         new DataEntryField
-            .builder('Tab1-Section2-Field1', `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
+            .builder('Tab1-Section2-Line1-Field1', `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
             .setDescription('Tab1-Section2-Field1 Description')
             .setMandatory(false)
             .setDataEntryRecordType('Date')
@@ -107,7 +107,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             .build().apply()
 
         new DataEntryField
-            .builder('Tab1-Section2-Field2', `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
+            .builder('Tab1-Section2-Line1-Field2', `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`)
             .setDescription('Tab1-Section2-Field2 Description')
             .setMandatory(true)
             .setDataEntryRecordType('List')
