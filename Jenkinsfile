@@ -218,7 +218,6 @@ This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDow
 				final def misc = new de.metas.jenkins.Misc();
 				final String branchName = misc.retrieveEffectiveBranchName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
-actuelle revision rauskriegen, dann branuchen wir kein metasfresh-webui-frontend!
 				final def e2eDownStreamBuildResult = build 
 					job: metasfreshE2eJobName,
 					parameters: [
