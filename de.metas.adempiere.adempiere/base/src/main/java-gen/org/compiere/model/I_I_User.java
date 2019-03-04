@@ -181,6 +181,33 @@ public interface I_I_User
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_ID (int C_DataImport_ID);
+
+	/**
+	 * Get Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_ID();
+
+	public org.compiere.model.I_C_DataImport getC_DataImport();
+
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
+
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_User, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_User, org.compiere.model.I_C_DataImport>(I_I_User.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -209,29 +236,6 @@ public interface I_I_User
     public static final org.adempiere.model.ModelColumn<I_I_User, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_User, org.compiere.model.I_AD_User>(I_I_User.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set dusie.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDusie (java.lang.String Dusie);
-
-	/**
-	 * Get dusie.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDusie();
-
-    /** Column definition for Dusie */
-    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Dusie = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Dusie", null);
-    /** Column name Dusie */
-    public static final String COLUMNNAME_Dusie = "Dusie";
 
 	/**
 	 * Set eMail.
@@ -282,52 +286,6 @@ public interface I_I_User
     public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Firstname = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Firstname", null);
     /** Column name Firstname */
     public static final String COLUMNNAME_Firstname = "Firstname";
-
-	/**
-	 * Set Geschlecht.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setGender (java.lang.String Gender);
-
-	/**
-	 * Get Geschlecht.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getGender();
-
-    /** Column definition for Gender */
-    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Gender = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Gender", null);
-    /** Column name Gender */
-    public static final String COLUMNNAME_Gender = "Gender";
-
-	/**
-	 * Set Global ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setGlobalID (java.lang.String GlobalID);
-
-	/**
-	 * Get Global ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getGlobalID();
-
-    /** Column definition for GlobalID */
-    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_GlobalID = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "GlobalID", null);
-    /** Column name GlobalID */
-    public static final String COLUMNNAME_GlobalID = "GlobalID";
 
 	/**
 	 * Set Import-Fehlermeldung.

@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1808359186L;
+	private static final long serialVersionUID = -1438768016L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -175,30 +175,38 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
-	/** 
-	 * Dusie AD_Reference_ID=540960
-	 * Reference name: I_User_Dusie
-	 */
-	public static final int DUSIE_AD_Reference_ID=540960;
-	/** Du = Du */
-	public static final String DUSIE_Du = "Du";
-	/** Sie = Sie */
-	public static final String DUSIE_Sie = "Sie";
-	/** Set dusie.
-		@param Dusie dusie	  */
 	@Override
-	public void setDusie (java.lang.String Dusie)
+	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
 	{
-
-		set_Value (COLUMNNAME_Dusie, Dusie);
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
 	}
 
-	/** Get dusie.
-		@return dusie	  */
 	@Override
-	public java.lang.String getDusie () 
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Dusie);
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Data import.
+		@param C_DataImport_ID Data import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_Value (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Data import.
+		@return Data import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set eMail.
@@ -237,38 +245,6 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	public java.lang.String getFirstname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
-	}
-
-	/** Set Geschlecht.
-		@param Gender Geschlecht	  */
-	@Override
-	public void setGender (java.lang.String Gender)
-	{
-		set_Value (COLUMNNAME_Gender, Gender);
-	}
-
-	/** Get Geschlecht.
-		@return Geschlecht	  */
-	@Override
-	public java.lang.String getGender () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Gender);
-	}
-
-	/** Set Global ID.
-		@param GlobalID Global ID	  */
-	@Override
-	public void setGlobalID (java.lang.String GlobalID)
-	{
-		set_Value (COLUMNNAME_GlobalID, GlobalID);
-	}
-
-	/** Get Global ID.
-		@return Global ID	  */
-	@Override
-	public java.lang.String getGlobalID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
 	}
 
 	/** Set Import-Fehlermeldung.
