@@ -319,7 +319,7 @@ public class DataEntryTabLoader
 		element.addField(dataField);
 
 		final DocumentLayoutElementFieldDescriptor.Builder infoField = DocumentLayoutElementFieldDescriptor
-				.builder(fieldName + "_CreateUpdatedInfo")
+				.builder(createInfoFieldName(field))
 				.setEmptyText(ITranslatableString.empty())
 				.setFieldType(DocumentLayoutElementFieldDescriptor.FieldType.Tooltip)
 				.setTooltipIconName(X_AD_UI_ElementField.TOOLTIPICONNAME_Text)
@@ -511,8 +511,7 @@ public class DataEntryTabLoader
 
 	private DocumentFieldDescriptor.Builder createCreatedUpdatedInfoFieldDescriptor(@NonNull final DataEntryField dataEntryField)
 	{
-
-		final String fieldName = dataEntryWebuiTools.computeFieldName(dataEntryField.getId()) + "_Info";
+		final String fieldName = createInfoFieldName(dataEntryField);
 		final boolean mandatory = false;
 
 		final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
@@ -531,6 +530,11 @@ public class DataEntryTabLoader
 				.addCharacteristic(Characteristic.PublicField)
 				.setMandatoryLogic(ConstantLogicExpression.of(mandatory))
 				.setDataBinding(dataBinding);
+	}
+
+	private String createInfoFieldName(@NonNull final DataEntryField dataEntryField)
+	{
+		return dataEntryWebuiTools.computeFieldName(dataEntryField.getId()) + "_Info";
 	}
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)
