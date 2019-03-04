@@ -305,8 +305,7 @@ This build triggered the <b>metasfresh-esb-camel</b> jenkins job <a href="${esbC
 	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
 	parallel (
 		metasfresh_dist: {
-			final def metasFreshDistBuildResult = build 
-				job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
+			final def metasFreshDistBuildResult = build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
 			  parameters: distJobParameters,
 			  wait: true
 
