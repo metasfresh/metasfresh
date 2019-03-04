@@ -45,8 +45,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	final def WEBUI_FRONTEND_SHA1
 	// check out the metasfresh-webui-frontend version that whose cypress tests we are going to execute
 	dir('cypress-git-repo') {
-    	final def scmVars = checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'metas-dev-ssh-key', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
-		WEBUI_FRONTEND_SHA1 = scmVars.GIT_COMMIT
+    	final def webuiFrontendScmVars = checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'metas-dev-ssh-key', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
+		WEBUI_FRONTEND_SHA1 = webuiFrontendScmVars.GIT_COMMIT
 	}
 
  	final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
