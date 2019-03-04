@@ -15,7 +15,9 @@ const Separator = props => {
 
   return (
     <div className="separator col-12">
-      <span className="separator-title">{title} - {sectionCollapsed}</span>
+      <span className="separator-title">
+        {title} - {sectionCollapsed}
+      </span>
       {collapsible && (
         <div className="panel-size-button">
           <button
