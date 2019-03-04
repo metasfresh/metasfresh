@@ -205,10 +205,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		user.setValue(importRecord.getValue());
 		user.setEMail(importRecord.getEMail());
 
-		// #4994
 		user.setIsNewsletter(importRecord.isNewsletter());
-		user.setGender(importRecord.getGender());
-		user.setDusie(importRecord.getDusie());
 		user.setMobilePhone(importRecord.getMobilePhone());
 		//user.gen
 
