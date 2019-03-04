@@ -103,7 +103,6 @@ timestamps
 	final def misc = new de.metas.jenkins.Misc();
 	final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
 
-// to build the client-exe on linux, we need 32bit libs!
 node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
