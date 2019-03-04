@@ -1,8 +1,4 @@
 
--- 2019-03-04T13:24:16.301
--- #298 changing anz. stellen
-/* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN Dusie VARCHAR(250)')
-;
 
 
 
@@ -26,13 +22,6 @@ UPDATE I_User SET IsNewsletter='N' WHERE IsNewsletter IS NULL
 
 
 
--- 2019-03-04T13:22:02.815
--- #298 changing anz. stellen
-/* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN Gender VARCHAR(250)')
-;
-
-
-
 -- 2019-03-04T13:24:42.107
 -- #298 changing anz. stellen
 /* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN MobilePhone VARCHAR(250)')
@@ -41,25 +30,14 @@ UPDATE I_User SET IsNewsletter='N' WHERE IsNewsletter IS NULL
 
 
 
-
--- 2019-03-04T13:27:00.139
+-- 2019-03-04T18:41:57.029
 -- #298 changing anz. stellen
-/* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN GlobalID VARCHAR(250)')
+/* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN C_DataImport_ID NUMERIC(10)')
 ;
 
-
--- 2019-03-04T14:56:59.759
+-- 2019-03-04T18:41:57.041
 -- #298 changing anz. stellen
-INSERT INTO t_alter_column values('i_user','Dusie','CHAR(1)',null,'N')
+ALTER TABLE I_User ADD CONSTRAINT CDataImport_IUser FOREIGN KEY (C_DataImport_ID) REFERENCES public.C_DataImport DEFERRABLE INITIALLY DEFERRED
 ;
 
--- 2019-03-04T14:56:59.927
--- #298 changing anz. stellen
-UPDATE I_User SET Dusie='N' WHERE Dusie IS NULL
-;
-
--- 2019-03-04T14:56:59.928
--- #298 changing anz. stellen
-INSERT INTO t_alter_column values('i_user','Dusie',null,'NOT NULL',null)
-;
 
