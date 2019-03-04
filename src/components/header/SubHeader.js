@@ -265,7 +265,7 @@ class SubHeader extends Component {
           }
         },
         icon: 'meta-icon-more',
-        caption: counterpart.translate('window.About.caption'),
+        caption: counterpart.translate('window.about.caption'),
         hotkey: keymap.ABOUT_DOCUMENT,
       },
     ]
