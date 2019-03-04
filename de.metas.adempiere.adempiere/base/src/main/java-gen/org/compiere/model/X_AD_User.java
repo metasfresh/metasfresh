@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -398380187L;
+	private static final long serialVersionUID = 2096145125L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -656,29 +656,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set dusie.
-		@param Dusie dusie	  */
-	@Override
-	public void setDusie (boolean Dusie)
-	{
-		set_Value (COLUMNNAME_Dusie, Boolean.valueOf(Dusie));
-	}
-
-	/** Get dusie.
-		@return dusie	  */
-	@Override
-	public boolean isDusie () 
-	{
-		Object oo = get_Value(COLUMNNAME_Dusie);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set eMail.

@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2036389308L;
+	private static final long serialVersionUID = -1808359186L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -22,7 +22,6 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
       super (ctx, I_User_ID, trxName);
       /** if (I_User_ID == 0)
         {
-			setDusie (false); // N
 			setI_IsImported (null); // N
 			setI_User_ID (0);
 			setIsNewsletter (false); // N
@@ -176,27 +175,30 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
+	/** 
+	 * Dusie AD_Reference_ID=540960
+	 * Reference name: I_User_Dusie
+	 */
+	public static final int DUSIE_AD_Reference_ID=540960;
+	/** Du = Du */
+	public static final String DUSIE_Du = "Du";
+	/** Sie = Sie */
+	public static final String DUSIE_Sie = "Sie";
 	/** Set dusie.
 		@param Dusie dusie	  */
 	@Override
-	public void setDusie (boolean Dusie)
+	public void setDusie (java.lang.String Dusie)
 	{
-		set_Value (COLUMNNAME_Dusie, Boolean.valueOf(Dusie));
+
+		set_Value (COLUMNNAME_Dusie, Dusie);
 	}
 
 	/** Get dusie.
 		@return dusie	  */
 	@Override
-	public boolean isDusie () 
+	public java.lang.String getDusie () 
 	{
-		Object oo = get_Value(COLUMNNAME_Dusie);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_Dusie);
 	}
 
 	/** Set eMail.

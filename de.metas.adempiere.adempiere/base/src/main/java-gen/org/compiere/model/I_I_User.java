@@ -213,20 +213,20 @@ public interface I_I_User
 	/**
 	 * Set dusie.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDusie (boolean Dusie);
+	public void setDusie (java.lang.String Dusie);
 
 	/**
 	 * Get dusie.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDusie();
+	public java.lang.String getDusie();
 
     /** Column definition for Dusie */
     public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Dusie = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Dusie", null);

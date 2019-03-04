@@ -672,29 +672,6 @@ public interface I_AD_User
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set dusie.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDusie (boolean Dusie);
-
-	/**
-	 * Get dusie.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDusie();
-
-    /** Column definition for Dusie */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Dusie = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Dusie", null);
-    /** Column name Dusie */
-    public static final String COLUMNNAME_Dusie = "Dusie";
-
-	/**
 	 * Set eMail.
 	 * EMail-Adresse
 	 *
