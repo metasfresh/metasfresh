@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -295942236L;
+	private static final long serialVersionUID = 1122038571L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
         {
 			setI_IsImported (null); // N
 			setI_User_ID (0);
+			setIsNewsletter (false); // N
 			setIsSystemUser (false); // N
 			setProcessed (false); // N
         } */
@@ -118,9 +119,9 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
-	/** Set Nr..
+	/** Set BPValue.
 		@param BPValue 
-		Sponsor-Nr.
+		BP Value
 	  */
 	@Override
 	public void setBPValue (java.lang.String BPValue)
@@ -128,8 +129,8 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		set_Value (COLUMNNAME_BPValue, BPValue);
 	}
 
-	/** Get Nr..
-		@return Sponsor-Nr.
+	/** Get BPValue.
+		@return BP Value
 	  */
 	@Override
 	public java.lang.String getBPValue () 
@@ -174,6 +175,22 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
+	/** Set dusie.
+		@param Dusie dusie	  */
+	@Override
+	public void setDusie (java.lang.String Dusie)
+	{
+		set_Value (COLUMNNAME_Dusie, Dusie);
+	}
+
+	/** Get dusie.
+		@return dusie	  */
+	@Override
+	public java.lang.String getDusie () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Dusie);
+	}
+
 	/** Set eMail.
 		@param EMail 
 		EMail-Adresse
@@ -210,6 +227,38 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	public java.lang.String getFirstname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
+	}
+
+	/** Set Geschlecht.
+		@param Gender Geschlecht	  */
+	@Override
+	public void setGender (java.lang.String Gender)
+	{
+		set_Value (COLUMNNAME_Gender, Gender);
+	}
+
+	/** Get Geschlecht.
+		@return Geschlecht	  */
+	@Override
+	public java.lang.String getGender () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Gender);
+	}
+
+	/** Set Global ID.
+		@param GlobalID Global ID	  */
+	@Override
+	public void setGlobalID (java.lang.String GlobalID)
+	{
+		set_Value (COLUMNNAME_GlobalID, GlobalID);
+	}
+
+	/** Get Global ID.
+		@return Global ID	  */
+	@Override
+	public java.lang.String getGlobalID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
 	}
 
 	/** Set Import-Fehlermeldung.
@@ -284,6 +333,29 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
+	/** Set Newsletter.
+		@param IsNewsletter Newsletter	  */
+	@Override
+	public void setIsNewsletter (boolean IsNewsletter)
+	{
+		set_Value (COLUMNNAME_IsNewsletter, Boolean.valueOf(IsNewsletter));
+	}
+
+	/** Get Newsletter.
+		@return Newsletter	  */
+	@Override
+	public boolean isNewsletter () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNewsletter);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Systembenutzer.
 		@param IsSystemUser Systembenutzer	  */
 	@Override
@@ -340,6 +412,22 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	public java.lang.String getLogin () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Login);
+	}
+
+	/** Set Handynummer.
+		@param MobilePhone Handynummer	  */
+	@Override
+	public void setMobilePhone (java.lang.String MobilePhone)
+	{
+		set_Value (COLUMNNAME_MobilePhone, MobilePhone);
+	}
+
+	/** Get Handynummer.
+		@return Handynummer	  */
+	@Override
+	public java.lang.String getMobilePhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MobilePhone);
 	}
 
 	/** Set Verarbeitet.

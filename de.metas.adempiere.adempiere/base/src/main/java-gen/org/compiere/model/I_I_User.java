@@ -127,8 +127,8 @@ public interface I_I_User
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Nr..
-	 * Sponsor-Nr.
+	 * Set BPValue.
+	 * BP Value
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -137,8 +137,8 @@ public interface I_I_User
 	public void setBPValue (java.lang.String BPValue);
 
 	/**
-	 * Get Nr..
-	 * Sponsor-Nr.
+	 * Get BPValue.
+	 * BP Value
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -211,6 +211,29 @@ public interface I_I_User
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set dusie.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDusie (java.lang.String Dusie);
+
+	/**
+	 * Get dusie.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDusie();
+
+    /** Column definition for Dusie */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Dusie = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Dusie", null);
+    /** Column name Dusie */
+    public static final String COLUMNNAME_Dusie = "Dusie";
+
+	/**
 	 * Set eMail.
 	 * EMail-Adresse
 	 *
@@ -259,6 +282,52 @@ public interface I_I_User
     public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Firstname = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Firstname", null);
     /** Column name Firstname */
     public static final String COLUMNNAME_Firstname = "Firstname";
+
+	/**
+	 * Set Geschlecht.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGender (java.lang.String Gender);
+
+	/**
+	 * Get Geschlecht.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGender();
+
+    /** Column definition for Gender */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Gender = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Gender", null);
+    /** Column name Gender */
+    public static final String COLUMNNAME_Gender = "Gender";
+
+	/**
+	 * Set Global ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGlobalID (java.lang.String GlobalID);
+
+	/**
+	 * Get Global ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGlobalID();
+
+    /** Column definition for GlobalID */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_GlobalID = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "GlobalID", null);
+    /** Column name GlobalID */
+    public static final String COLUMNNAME_GlobalID = "GlobalID";
 
 	/**
 	 * Set Import-Fehlermeldung.
@@ -359,6 +428,29 @@ public interface I_I_User
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsNewsletter (boolean IsNewsletter);
+
+	/**
+	 * Get Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isNewsletter();
+
+    /** Column definition for IsNewsletter */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_IsNewsletter = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "IsNewsletter", null);
+    /** Column name IsNewsletter */
+    public static final String COLUMNNAME_IsNewsletter = "IsNewsletter";
+
+	/**
 	 * Set Systembenutzer.
 	 *
 	 * <br>Type: YesNo
@@ -428,6 +520,29 @@ public interface I_I_User
     public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Login = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Login", null);
     /** Column name Login */
     public static final String COLUMNNAME_Login = "Login";
+
+	/**
+	 * Set Handynummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMobilePhone (java.lang.String MobilePhone);
+
+	/**
+	 * Get Handynummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMobilePhone();
+
+    /** Column definition for MobilePhone */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_MobilePhone = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "MobilePhone", null);
+    /** Column name MobilePhone */
+    public static final String COLUMNNAME_MobilePhone = "MobilePhone";
 
 	/**
 	 * Set Verarbeitet.
