@@ -1,9 +1,27 @@
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
+import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
 
 export default class EntryTable extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      tooltipToggled: false,
+    };
+  }
+
+  widgetTooltipToggle = (field, value) => {
+    const curVal = this.state.tooltipToggled;
+    const newVal = value != null ? value : !curVal;
+
+    this.setState({
+      tooltipToggled: newVal,
+    });
+  };
+
   renderElements = (elements, columnsCount) => {
     const {
       data,
@@ -16,6 +34,7 @@ export default class EntryTable extends Component {
       tabIndex,
       fullScreen,
     } = this.props;
+    const { tooltipToggled } = this.state;
     const renderedArray = [];
     const colWidth = Math.floor(12 / columnsCount);
 
@@ -27,6 +46,19 @@ export default class EntryTable extends Component {
           const fieldName = elem.fields ? elem.fields[0].field : '';
           const widgetData = [rowData.get(0).fieldsByName[fieldName]];
           const relativeDocId = data.ID && data.ID.value;
+          let tooltipData = null;
+          let tooltipWidget = elem.fields
+            ? elem.fields.find((field, idx) => {
+                if (field.type === 'Tooltip') {
+                  tooltipData = widgetData[idx];
+
+                  if (tooltipData && tooltipData.value) {
+                    return field;
+                  }
+                }
+                return false;
+              })
+            : null;
 
           renderedArray.push(
             <td
@@ -57,6 +89,14 @@ export default class EntryTable extends Component {
                 onBlurWidget={() => handleBlurWidget(fieldName)}
                 {...elem}
               />
+              {tooltipWidget && (
+                <WidgetTooltip
+                  widget={tooltipWidget}
+                  data={tooltipData}
+                  isToggled={tooltipToggled}
+                  onToggle={val => this.widgetTooltipToggle(elem.field, val)}
+                />
+              )}
             </td>
           );
         } else {
