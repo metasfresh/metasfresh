@@ -75,14 +75,15 @@ import lombok.NonNull;
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
-		return ImmutableSet.of(MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_SalesOrder, org.compiere.model.I_C_OrderLine.Table_Name));
+		return ImmutableSet.of(MatchingKey.ofTableName(I_C_OrderLine.Table_Name));
+		// return ImmutableSet.of(MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_SalesOrder, org.compiere.model.I_C_OrderLine.Table_Name));
 	}
 
 	@Override
 	public QuickInputDescriptor createQuickInputDescriptor(
-			final DocumentType documentType, 
-			final DocumentId documentTypeId, 
-			final DetailId detailId, 
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
 			final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createDescriptorBuilder(documentTypeId, detailId, soTrx)
