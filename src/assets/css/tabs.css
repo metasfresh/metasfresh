@@ -45,7 +45,7 @@
 }
 
 .section {
-     .panel-size-button {
+    .panel-size-button {
         display: block;
         width: auto;
         height: auto;
@@ -56,7 +56,7 @@
         right: 0;
         z-index: 1000;
 
-         .btn {
+        .btn {
             padding: .25rem .25rem;
             line-height: 1rem;
         }
@@ -77,8 +77,9 @@
 
     .collapsible-section {
         transition: height, padding .25s ease-in-out;
+        margin: 0;
 
-         &.collapsed {
+        &.collapsed {
             padding: 0;
             height: 0;
             overflow: hidden;
@@ -128,6 +129,8 @@
         }
 
         td {
+            position: relative;
+
             .row {
                 margin: 0;
             }
@@ -138,7 +141,21 @@
                     max-width: fit-content;
                 }
             }
+
+            .form-control-label {
+                padding-left: 25px;
+            }
+
+            .widget-tooltip {
+                position: absolute;
+                top: 12px;
+                left: 10px;
+            }
         }
+    }
+
+    .tooltip-wrapp {
+        margin-left: auto;
     }
 }
 
