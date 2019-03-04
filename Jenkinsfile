@@ -11,7 +11,7 @@ import de.metas.jenkins.MvnConf
 // always offer deployment, because there might be different tasks/branches to roll out
 final skipDeploymentParamDefaultValue = false;
 
-final String MF_SQL_DEED_DUMP_URL_DEFAULT = 
+final String MF_SQL_SEED_DUMP_URL_DEFAULT = 
 	env.BRANCH_NAME == 'release' 
 		? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump' 
 		: 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
@@ -62,32 +62,39 @@ For docker we currently don not have such an arrangement.''',
 			description: 'Version of the metasfresh-esb (camel) bundles to include in the distribution. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_ESB_CAMEL_VERSION'),
 
-		string(defaultValue: MF_SQL_DEED_DUMP_URL_DEFAULT,
+		string(defaultValue: '',
+			description: 'e2e docker image. Leave empty and this build will <code>&gt;effective-branch-name&lt;_LATEST</code>',
+			name: 'MF_METASFRESH_E2E_DOCKER_IMAGE'),
+
+		string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
 			description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
-			name: 'MF_SQL_DEED_DUMP_URL')
+			name: 'MF_SQL_SEED_DUMP_URL')
 
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
 
-// gh #968 create a map equal to the one we create in metasfresh/Jenkinsfile. The way we use it further down is also similar
-final MF_ARTIFACT_VERSIONS = [:];
-MF_ARTIFACT_VERSIONS['metasfresh'] = params.MF_METASFRESH_VERSION ?: "LATEST";
-MF_ARTIFACT_VERSIONS['metasfresh-admin'] = params.MF_METASFRESH_ADMIN_VERSION ?: "LATEST";
-MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = params.MF_METASFRESH_PROCUREMENT_WEBUI_VERSION ?: "LATEST";
-MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSION ?: "LATEST";
-MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
-MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = params.MF_METASFRESH_ESB_CAMEL_VERSION ?: "LATEST";
-
-
-final MF_ARTIFACT_URLS = [:];
-String dbInitDockerImageName; // will be set if and when the docker image is created
-
 timestamps
 {
 	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
+
+	// gh #968 create a map equal to the one we create in metasfresh/Jenkinsfile. The way we use it further down is also similar
+	final MF_ARTIFACT_VERSIONS = [:];
+	MF_ARTIFACT_VERSIONS['metasfresh'] = params.MF_METASFRESH_VERSION ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh-admin'] = params.MF_METASFRESH_ADMIN_VERSION ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = params.MF_METASFRESH_PROCUREMENT_WEBUI_VERSION ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSION ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = params.MF_METASFRESH_ESB_CAMEL_VERSION ?: "LATEST";
+
+	final MF_DOCKER_IMAGES = [:];
+	MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE ?: "${MF_UPSTREAM_BRANCH}_LATEST"
+
+	final MF_ARTIFACT_URLS = [:];
+	String dbInitDockerImageName; // will be set if and when the docker image is created
+
 
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 	final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
@@ -193,11 +200,11 @@ node('agent && linux')
 				//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 				//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 
-				String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>";
+				String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS, MF_DOCKER_IMAGES)}</li>";
 				if(MF_UPSTREAM_BRANCH == 'release')
 				{
 					releaseLinkWithText = """	${releaseLinkWithText}
-	<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>"""
+	<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS, MF_DOCKER_IMAGES)}</li>"""
 				} 
 
 				currentBuild.description="""
@@ -231,6 +238,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <ul>
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
 	${releaseLinkWithText}
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${MF_DOCKER_IMAGES['metasfresh-e2e']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using the upstream metasfresh-e2e tests.</li>
 </ul>
 <p>
 <h3>Additional notes</h3>
@@ -278,15 +286,15 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 
 	stage('Test SQL-Migration (docker)')
 	{
-		if(params.MF_SQL_DEED_DUMP_URL)
+		if(params.MF_SQL_SEED_DUMP_URL)
 		{
 			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
-			sh "docker run --rm -e \"URL_SEED_DUMP=${params.MF_SQL_DEED_DUMP_URL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
+			sh "docker run --rm -e \"URL_SEED_DUMP=${params.MF_SQL_SEED_DUMP_URL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\" ${dbInitDockerImageName}"
 			sh "docker rmi ${dbInitDockerImageName}"
 		}
 		else
 		{
-			echo "We skip applying the migration scripts because params.MF_SQL_DEED_DUMP_URL was not set"
+			echo "We skip applying the migration scripts because params.MF_SQL_SEED_DUMP_URL was not set"
 		}
 	}
 } // node
