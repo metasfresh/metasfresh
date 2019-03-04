@@ -43,6 +43,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -102,7 +103,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-	private IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -347,6 +349,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.build());
 
 		orderGroupsRepo.setGroupProductBOMId(candidate.getQuotationGroupId(), bomId);
+
+		productPlanningsRepo.setProductBOMIdIfAbsent(bomProductId, bomId);
 
 		return bomProductId;
 	}
