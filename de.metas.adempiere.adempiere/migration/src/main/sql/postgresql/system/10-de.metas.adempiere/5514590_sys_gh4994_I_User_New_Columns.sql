@@ -1,17 +1,4 @@
--- 2019-03-04T12:32:27.490
--- #298 changing anz. stellen
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,541067,'Y','de.metas.process.ExecuteUpdateSQL','N',TO_TIMESTAMP('2019-03-04 12:32:27','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.yo98','Y','N','N','N','N','N','N','Y','Y',0,'Ascarix Partner Import','N','N','Select updatePartnerImportAscarix();','SQL',TO_TIMESTAMP('2019-03-04 12:32:27','YYYY-MM-DD HH24:MI:SS'),100,'AscarixPartnerImport')
-;
 
--- 2019-03-04T12:32:27.494
--- #298 changing anz. stellen
-INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Process_ID=541067 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
-;
-
--- 2019-03-04T12:34:17.799
--- #298 changing anz. stellen
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541067,533,540678,172,TO_TIMESTAMP('2019-03-04 12:34:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.yo98','Y',TO_TIMESTAMP('2019-03-04 12:34:17','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
-;
 
 -- 2019-03-04T13:21:00.080
 -- #298 changing anz. stellen
