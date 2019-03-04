@@ -216,7 +216,7 @@ This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDow
 			metasfresh_e2e: {
 				
 				final def misc = new de.metas.jenkins.Misc();
-				final String branchName = misc.retrieveEffectiveBranchName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
+				final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
 				final def e2eDownStreamBuildResult = build 
 					job: metasfreshE2eJobName,
