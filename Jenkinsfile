@@ -6,6 +6,10 @@
 @Library('misc')
 import de.metas.jenkins.DockerConf
 
+// first things first
+chuckNorris()
+
+
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
@@ -23,7 +27,8 @@ Examples:
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
 
-chuckNorris()
+
+String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
 
 timestamps
 {
@@ -33,7 +38,8 @@ timestamps
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
-	checkout scm // i hope this to do all the magic we need
+	final def scmVars = checkout scm
+	BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
 	sh 'git clean -d --force -x' // clean the workspace
 
 	final def WEBUI_FRONTEND_SHA1
@@ -94,5 +100,10 @@ Related jenkins jobs:
 <li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_REGISTRY=${e2eDockerConf.pushRegistry}&MF_DOCKER_IMAGE=${e2eDockerImageNameNoRegistry}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this job's docker image.</li>
 </ul>
 """
+
+	// gh #968: set version and docker image name to be available to a possible upstream job that might have called us
+	env.MF_VERSION=MF_VERSION
+	env.MF_DOCKER_IMAGE=publishedE2eDockerImageName
+	env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
 } // node
 } // timestamps
