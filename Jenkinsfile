@@ -160,7 +160,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	// gh #968: set docker image name to be available to a possible upstream job that might have called us
 	env.MF_DOCKER_IMAGE=publishedDockerImageName
 
-	final misc = new de.metas.jenkins.Misc()
 	final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
 	final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
