@@ -136,6 +136,7 @@ import de.metas.util.Check;
 		bpartner.setPO_PricingSystem_ID(importRecord.getPO_PricingSystem_ID());
 		bpartner.setMemo_Delivery(importRecord.getMemo_Delivery());
 		bpartner.setMemo_Invoicing(importRecord.getMemo_Invoicing());
+		bpartner.setglobalid(importRecord.getGlobalID());
 
 		return bpartner;
 	}
@@ -277,6 +278,12 @@ import de.metas.util.Check;
 		if (!Check.isEmpty(memoDelivery))
 		{
 			bpartner.setMemo_Delivery(memoDelivery);
+		}
+
+		final String globalId = importRecord.getGlobalID();
+		if (!Check.isEmpty(globalId))
+		{
+			bpartner.setglobalid(globalId);
 		}
 
 		return bpartner;

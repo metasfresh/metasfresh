@@ -83,11 +83,6 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (isManualImport())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("This Import Formt is used only for Manual Imports");
-		}
-
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -198,6 +193,12 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	private void importLine(final ImpDataLine line)
 	{
 		line.importToDB();
+
+		if(isManualImport())
+		{
+			// nothing to do
+			return;
+		}
 
 		final ImportStatus importStatus = line.getImportStatus();
 		if (ImportStatus.ImportPrepared == importStatus)
