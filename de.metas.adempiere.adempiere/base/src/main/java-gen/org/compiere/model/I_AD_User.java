@@ -893,54 +893,6 @@ public interface I_AD_User
     public static final String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
 
 	/**
-	 * Set Geschlecht.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setGender (java.lang.String Gender);
-
-	/**
-	 * Get Geschlecht.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getGender();
-
-    /** Column definition for Gender */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Gender = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Gender", null);
-    /** Column name Gender */
-    public static final String COLUMNNAME_Gender = "Gender";
-
-	/**
-	 * Set Global ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setGlobalID (java.lang.String GlobalID);
-
-	/**
-	 * Get Global ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.lang.String getGlobalID();
-
-    /** Column definition for GlobalID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_GlobalID = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "GlobalID", null);
-    /** Column name GlobalID */
-    public static final String COLUMNNAME_GlobalID = "GlobalID";
-
-	/**
 	 * Set Anrede.
 	 * Für Briefe - z.B. "Sehr geehrter 
 {

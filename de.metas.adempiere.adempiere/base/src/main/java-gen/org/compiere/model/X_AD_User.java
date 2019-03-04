@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2096145125L;
+	private static final long serialVersionUID = 172095627L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -831,47 +831,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getFresh_xmas_Gift () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Fresh_xmas_Gift);
-	}
-
-	/** 
-	 * Gender AD_Reference_ID=540838
-	 * Reference name: Gender List
-	 */
-	public static final int GENDER_AD_Reference_ID=540838;
-	/** Frau = Frau */
-	public static final String GENDER_Frau = "Frau";
-	/** Mann = Mann */
-	public static final String GENDER_Mann = "Mann";
-	/** Set Geschlecht.
-		@param Gender Geschlecht	  */
-	@Override
-	public void setGender (java.lang.String Gender)
-	{
-
-		set_Value (COLUMNNAME_Gender, Gender);
-	}
-
-	/** Get Geschlecht.
-		@return Geschlecht	  */
-	@Override
-	public java.lang.String getGender () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Gender);
-	}
-
-	/** Set Global ID.
-		@param GlobalID Global ID	  */
-	@Override
-	public void setGlobalID (java.lang.String GlobalID)
-	{
-		throw new IllegalArgumentException ("GlobalID is virtual column");	}
-
-	/** Get Global ID.
-		@return Global ID	  */
-	@Override
-	public java.lang.String getGlobalID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
 	}
 
 	/** Set Anrede.
