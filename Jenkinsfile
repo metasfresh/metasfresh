@@ -348,7 +348,7 @@ This build triggered the <b>metasfresh-dist</b> jenkins job <a href="${metasFres
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
  *
- * @return the the build result. Its buildVariables (a map) ususally also contains (to be set by our Jenkinsfiles):
+ * @return the the build result. Its buildVariables (a map) ususally also contaisn (to be set by our Jenkinsfiles):
  * <li>{@code MF_BUILD_VERSION}: the version the maven artifacts were deployed with
  * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
  *
