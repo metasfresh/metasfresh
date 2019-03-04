@@ -265,12 +265,11 @@ class SubHeader extends Component {
           }
         },
         icon: 'meta-icon-more',
-        // caption: counterpart.translate('window.About.caption'),
-        caption: 'About',
+        caption: counterpart.translate('window.About.caption'),
         hotkey: keymap.ABOUT_DOCUMENT,
       },
     ]
-      // TODO: Temporarily hardcoded 'about' - Kuba
+      // TODO: Hardcoded 'about' - Kuba
       .filter(
         docLink =>
           standardActions.has(docLink.action) || docLink.action === 'about'
