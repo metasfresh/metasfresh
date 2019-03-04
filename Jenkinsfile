@@ -218,8 +218,7 @@ This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDow
 				final def misc = new de.metas.jenkins.Misc();
 				final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
-				final def e2eDownStreamBuildResult = build 
-					job: metasfreshE2eJobName,
+				final def e2eDownStreamBuildResult = build job: metasfreshE2eJobName,
 					parameters: [
 						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: webuiFrontendDownStreamBuildResult.buildVariables.BUILD_GIT_SHA1)
 					], 
