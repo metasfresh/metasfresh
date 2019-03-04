@@ -95,6 +95,10 @@
             transition: visibility .25s ease-in-out;
         }
     }
+
+    .panel {
+        overflow: visible;
+    }
 }
 
 .tab-sections {

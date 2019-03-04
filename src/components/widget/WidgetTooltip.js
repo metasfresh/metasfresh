@@ -29,6 +29,7 @@ class WidgetTooltip extends PureComponent {
       preventOverflow: {
         enabled: false,
         boundariesElement: 'viewport',
+        escapeWithReference: true,
       },
       flip: {
         enabled: true,
@@ -49,7 +50,7 @@ class WidgetTooltip extends PureComponent {
             )}
           </Reference>
           {isToggled && (
-            <Popper placement="right-start" modifiers={modifiers}>
+            <Popper placement="right-start" modifiers={modifiers} outOfBoundaries={true}>
               {({ ref, style, placement }) => (
                 <div
                   ref={ref}
