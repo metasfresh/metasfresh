@@ -14,7 +14,7 @@ import {
   patch,
   startProcess,
 } from '../../actions/WindowActions';
-import { getSelection } from '../../reducers/windowHandler';
+import { getSelectionInstant } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
 import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
@@ -189,7 +189,7 @@ class Modal extends Component {
             rowId,
           };
 
-          if (activeTabId && parentSelection && parentSelection.length) {
+          if (activeTabId && parentSelection) {
             options.selectedTab = {
               tabId: activeTabId,
               rowIds: parentSelection,
@@ -614,11 +614,11 @@ class Modal extends Component {
 }
 
 const mapStateToProps = (state, props) => ({
-  parentSelection: getSelection({
+  parentSelection: getSelectionInstant(
     state,
-    windowType: props.parentType,
-    viewId: props.viewId,
-  }),
+    { ...props, windowType: props.parentType },
+    state.windowHandler.selectionsHash
+  ),
   activeTabId: state.windowHandler.master.layout.activeTab,
 });
 
