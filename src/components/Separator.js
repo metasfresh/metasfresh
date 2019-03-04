@@ -15,7 +15,11 @@ const Separator = props => {
 
   return (
     <div className="separator col-12">
-      <span className="separator-title">
+      <span className={classnames('separator-title', {
+          collapsible,
+        })}
+        onClick={() => onClick(idx)}
+      >
         {title} - {sectionCollapsed}
       </span>
       {collapsible && (

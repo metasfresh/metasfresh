@@ -81,7 +81,6 @@
          &.collapsed {
             padding: 0;
             height: 0;
-            padding: .75em;
             overflow: hidden;
             transition: height, padding .25s ease-in-out;
 
