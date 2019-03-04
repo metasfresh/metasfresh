@@ -202,7 +202,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
       }
       cy.get(path)
         .find('textarea')
-        .type(stringValue)
+        .type(`${stringValue}{enter}`)
         .wait('@patchTextArea')
     });
   });
