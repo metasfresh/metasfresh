@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -980702719L;
+	private static final long serialVersionUID = 1733127012L;
 
     /** Standard Constructor */
     public X_C_ElementValue (Properties ctx, int C_ElementValue_ID, String trxName)
@@ -38,26 +22,18 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
       super (ctx, C_ElementValue_ID, trxName);
       /** if (C_ElementValue_ID == 0)
         {
-			setAccountSign (null);
-// N
-			setAccountType (null);
-// E
+			setAccountSign (null); // N
+			setAccountType (null); // E
 			setC_Element_ID (0);
 			setC_ElementValue_ID (0);
-			setIsAutoTaxAccount (false);
-// N
-			setIsMandatoryActivity (false);
-// N
+			setIsAutoTaxAccount (false); // N
+			setIsMandatoryActivity (false); // N
 			setIsSummary (false);
 			setName (null);
-			setPostActual (true);
-// Y
-			setPostBudget (true);
-// Y
-			setPostEncumbrance (true);
-// Y
-			setPostStatistical (true);
-// Y
+			setPostActual (true); // Y
+			setPostBudget (true); // Y
+			setPostEncumbrance (true); // Y
+			setPostStatistical (true); // Y
 			setValue (null);
         } */
     }
@@ -143,6 +119,43 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	public java.lang.String getAccountType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AccountType);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
+	}
+
+	@Override
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
+	}
+
+	/** Set Kostenstelle.
+		@param C_Activity_ID 
+		Kostenstelle
+	  */
+	@Override
+	public void setC_Activity_ID (int C_Activity_ID)
+	{
+		if (C_Activity_ID < 1) 
+			set_Value (COLUMNNAME_C_Activity_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+	}
+
+	/** Get Kostenstelle.
+		@return Kostenstelle
+	  */
+	@Override
+	public int getC_Activity_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

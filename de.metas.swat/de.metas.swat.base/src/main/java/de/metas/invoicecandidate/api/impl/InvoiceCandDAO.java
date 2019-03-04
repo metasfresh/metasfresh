@@ -1,9 +1,5 @@
 package de.metas.invoicecandidate.api.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -41,6 +37,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -113,6 +111,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
@@ -915,7 +914,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.updateDirectly()
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, recomputeTag.getPinstanceId())
 				.execute();
-		logger.debug("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
+
+		Loggables.get().withLogger(logger, Level.DEBUG)
+				.addLog("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
+
 		logger.debug("Query: {}", query);
 		logger.debug("Tagger: {}", tagRequest);
 
@@ -957,7 +959,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
 		final int count = query.deleteDirectly();
-		logger.debug("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
+
+		Loggables.get().withLogger(logger, Level.DEBUG)
+				.addLog("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
 		logger.debug("Query: {}", query);
 
 		// invalidate the invoice candidate cache after commit

@@ -10,6 +10,33 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.94
+# Features
+* metasfresh-webui
+  * [#1945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1945) "About" action in webui
+
+# metasfresh 5.93
+# Features
+* metasfresh
+  * [#4967](https://github.com/metasfresh/metasfresh/issues/4967) Warehouse Customization: Picking
+
+* metasfresh-webui-api
+  * [#1154](https://github.com/metasfresh/metasfresh-webui-api/issues/1154) Take out "Back" action from quick actions in "More products..." modal
+  * [#1155](https://github.com/metasfresh/metasfresh-webui-api/issues/1155) Support providing shortcuts for processes
+
+* metasfresh-webui-frontend 
+  * [#2182](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2182) Back button for modals
+  * [#2183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2183) frontend: Scan using camera shall be translatable
+  * [#2193](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2193) View quick actions: provide viewProfileId when calling /quickActions endpoint
+
+# Fixes
+* metasfresh
+  * [#4964](https://github.com/metasfresh/metasfresh/issues/4964) Services.get(IDocumentNoBuilderFactory.class) calls the wrong constructor
+  * [#4976](https://github.com/metasfresh/metasfresh/issues/4976) M_DiscountSchemaBreak.PriceBase shall be nullable
+
+* metasfresh-dist
+  * [#57](https://github.com/metasfresh/metasfresh-dist/issues/57) PostgreSQL applying our migration scripts not working anymore
+
 # metasfresh 5.92
 # Features
 * metasfresh
