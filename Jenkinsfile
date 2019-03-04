@@ -242,7 +242,7 @@ This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStr
           MF_VERSION,
           true, // wait=true
           'metasfresh-procurement-webui');
-				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = webuiDownStreamBuildResult.buildVariables.MF_VERSION;
+				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamBuildResult.buildVariables.MF_VERSION;
 
 				// note that as of now, metasfresh-procurement-webui does not publish a docker image
 				currentBuild.description="""${currentBuild.description}<p/>
