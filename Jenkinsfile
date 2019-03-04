@@ -185,8 +185,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream jobs')
 	{
-		build 
-			job: metasfreshJobName,
+		build job: metasfreshJobName,
 			parameters: [
 				string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 				string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
