@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1122038571L;
+	private static final long serialVersionUID = -2036389308L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
       super (ctx, I_User_ID, trxName);
       /** if (I_User_ID == 0)
         {
+			setDusie (false); // N
 			setI_IsImported (null); // N
 			setI_User_ID (0);
 			setIsNewsletter (false); // N
@@ -178,17 +179,24 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/** Set dusie.
 		@param Dusie dusie	  */
 	@Override
-	public void setDusie (java.lang.String Dusie)
+	public void setDusie (boolean Dusie)
 	{
-		set_Value (COLUMNNAME_Dusie, Dusie);
+		set_Value (COLUMNNAME_Dusie, Boolean.valueOf(Dusie));
 	}
 
 	/** Get dusie.
 		@return dusie	  */
 	@Override
-	public java.lang.String getDusie () 
+	public boolean isDusie () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Dusie);
+		Object oo = get_Value(COLUMNNAME_Dusie);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set eMail.

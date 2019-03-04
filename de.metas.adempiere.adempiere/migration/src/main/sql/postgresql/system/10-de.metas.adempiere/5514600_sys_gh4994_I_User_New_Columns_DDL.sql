@@ -47,3 +47,19 @@ UPDATE I_User SET IsNewsletter='N' WHERE IsNewsletter IS NULL
 /* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN GlobalID VARCHAR(250)')
 ;
 
+
+-- 2019-03-04T14:56:59.759
+-- #298 changing anz. stellen
+INSERT INTO t_alter_column values('i_user','Dusie','CHAR(1)',null,'N')
+;
+
+-- 2019-03-04T14:56:59.927
+-- #298 changing anz. stellen
+UPDATE I_User SET Dusie='N' WHERE Dusie IS NULL
+;
+
+-- 2019-03-04T14:56:59.928
+-- #298 changing anz. stellen
+INSERT INTO t_alter_column values('i_user','Dusie',null,'NOT NULL',null)
+;
+

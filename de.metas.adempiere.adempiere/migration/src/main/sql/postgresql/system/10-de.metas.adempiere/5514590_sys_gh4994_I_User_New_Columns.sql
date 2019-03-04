@@ -65,3 +65,55 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- #298 changing anz. stellen
 UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-04 13:25:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564331
 ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2019-03-04T14:28:53.283
+-- #298 changing anz. stellen
+UPDATE AD_Column SET AD_Reference_Value_ID=138,Updated=TO_TIMESTAMP('2019-03-04 14:28:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559494
+;
+
+-- 2019-03-04T14:34:21.721
+-- #298 changing anz. stellen
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-04 14:34:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560058
+;
+
+
+
+
+
+
+
+
+
+
+
+-- 2019-03-04T14:53:00.265
+-- #298 changing anz. stellen
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-04 14:53:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=542511
+;
+
+
+
+
+
+-- 2019-03-04T14:56:57.241
+-- #298 changing anz. stellen
+UPDATE AD_Column SET AD_Reference_ID=20, DefaultValue='N', FieldLength=1, IsMandatory='Y',Updated=TO_TIMESTAMP('2019-03-04 14:56:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564329
+;
