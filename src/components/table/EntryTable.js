@@ -50,7 +50,7 @@ export default class EntryTable extends Component {
           let tooltipWidget = elem.fields
             ? elem.fields.find((field, idx) => {
                 if (field.type === 'Tooltip') {
-                  tooltipData = widgetData[idx];
+                  tooltipData = rowData.get(0).fieldsByName[field.field];
 
                   if (tooltipData && tooltipData.value) {
                     return field;
@@ -78,6 +78,7 @@ export default class EntryTable extends Component {
                 entity="window"
                 windowType={layout.windowId}
                 dataId={dataId}
+                fieldName={fieldName}
                 widgetData={widgetData}
                 isModal={false}
                 tabId={extendedData.tabId}
@@ -86,15 +87,16 @@ export default class EntryTable extends Component {
                 isAdvanced={false}
                 tabIndex={tabIndex}
                 fullScreen={fullScreen}
-                onBlurWidget={() => handleBlurWidget(fieldName)}
+                onBlurWidget={handleBlurWidget}
                 {...elem}
               />
               {tooltipWidget && (
                 <WidgetTooltip
                   widget={tooltipWidget}
                   data={tooltipData}
+                  fieldName={fieldName}
                   isToggled={tooltipToggled}
-                  onToggle={val => this.widgetTooltipToggle(elem.field, val)}
+                  onToggle={this.widgetTooltipToggle}
                 />
               )}
             </td>

@@ -12,19 +12,29 @@ class WidgetTooltip extends PureComponent {
    * on focus.
    */
   handleClick = () => {
-    const { onToggle } = this.props;
+    const { onToggle, fieldName } = this.props;
 
-    onToggle();
+    onToggle(fieldName);
   };
 
   handleClickOutside() {
-    const { onToggle } = this.props;
+    const { fieldName, onToggle } = this.props;
 
-    onToggle(false);
+    onToggle(fieldName, false);
   }
 
   render() {
     const { isToggled, widget, data } = this.props;
+    const modifiers = {
+      preventOverflow: {
+        enabled: false,
+        boundariesElement: 'viewport',
+      },
+      flip: {
+        enabled: true,
+        boundariesElement: 'viewport',
+      }
+    };
 
     return (
       <Manager>
@@ -39,13 +49,14 @@ class WidgetTooltip extends PureComponent {
             )}
           </Reference>
           {isToggled && (
-            <Popper placement="auto-start">
+            <Popper placement="right-start" modifiers={modifiers}>
               {({ ref, style, placement }) => (
                 <div
                   ref={ref}
                   style={style}
                   data-placement={placement}
                   className="tooltip-wrapp tooltip-content"
+                  modifiers={modifiers}
                 >
                   <span>{data.value}</span>
                 </div>
