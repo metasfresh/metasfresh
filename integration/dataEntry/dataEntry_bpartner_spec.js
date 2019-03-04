@@ -22,12 +22,12 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             .setTabName('Group1-Tab1')
             // .setSeqNo(20)
             .setDescription(`Description of ${dataEntryGroupName}`)
-            //.setActive(false) // you can set it to inactive, but then no subgroups or section can be added
+            //.setActive(false) // you can set it to inactive, but then no subgroups can be added
             .addDataEntrySubGroup(new DataEntrySubGroup
                 .builder(dataEntrySubGroup1Name)
                 .setTabName('Group1-Tab1-SubTab1')
                 .setDescription(`${dataEntrySubGroup1Name} - Description`)
-                // .setSeqNo('000000000000000010')
+                // .setSeqNo('10')
                 .build())
             .build()
             .apply()
@@ -38,15 +38,15 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             //.setSeqNo(15)
             .addDataEntryLine(new DataEntryLine
                 .builder()
-                // .setSeqNo('000000000000000010')
+                // .setSeqNo('10')
                 .build())
             .addDataEntryLine(new DataEntryLine
                 .builder()
-                // .setSeqNo('000000000000000020')
+                // .setSeqNo('20')
                 .build())
             .addDataEntryLine(new DataEntryLine
                 .builder()
-                // .setSeqNo('000000000000000030')
+                // .setSeqNo('30')
                 .build())
             .build()
             .apply()
@@ -57,7 +57,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
             .setMandatory(true)
             .setDataEntryRecordType('Yes-No')
             .setPersonalDataCategory('Personal')
-            // .setSeqNo('000000000000000010');
+            // .setSeqNo('10');
 
         section1FieldBuilder.build().apply()
         section1FieldBuilder
