@@ -15,6 +15,7 @@ Here come the actual release notes:
 * metasfresh
   * [#4913](https://github.com/metasfresh/metasfresh/issues/4913) Add payment discount when importing discount schema
   * [#4961](https://github.com/metasfresh/metasfresh/issues/4961) Chart of Accounts Import
+  * [#4982](https://github.com/metasfresh/metasfresh/issues/4982) AD_Element_Trl customization
   * [#4988](https://github.com/metasfresh/metasfresh/issues/4988) Improve async workpackage logging for shipment schedule and invoice candidate updating
   * [#4991](https://github.com/metasfresh/metasfresh/issues/4991) URL csv Importer for BPartner
   * [#4997](https://github.com/metasfresh/metasfresh/issues/4997) Handle M_DiscountSchemaBreak with PriceBase=P(ricingSystem) & missing Base_PricingSystem_ID
