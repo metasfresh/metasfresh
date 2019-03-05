@@ -343,7 +343,6 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.uomId(bomProductUomId)
 				.bomUse(X_PP_Product_BOM.BOMUSE_Manufacturing)
 				.bomType(X_PP_Product_BOM.BOMTYPE_Make_To_Order)
-				.validFrom(LocalDate.MIN)
 				.lines(additionalQuotationLines
 						.stream()
 						.map(quotationLine -> toBOMLineCreateRequest(quotationLine, candidate.getQty()))
