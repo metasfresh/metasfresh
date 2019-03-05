@@ -1,8 +1,12 @@
 package org.eevolution.api;
 
 import java.time.LocalDate;
+import java.time.Month;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 
 import com.google.common.collect.ImmutableList;
 
@@ -44,6 +48,7 @@ public class BOMCreateRequest
 	ProductId productId;
 	String productValue;
 	String productName;
+	UomId uomId;
 	String bomType;
 	String bomUse;
 	LocalDate validFrom;
@@ -55,9 +60,10 @@ public class BOMCreateRequest
 			@NonNull final ProductId productId,
 			@NonNull final String productValue,
 			@NonNull final String productName,
+			@NonNull final UomId uomId,
 			@NonNull final String bomType,
 			@NonNull final String bomUse,
-			@NonNull final LocalDate validFrom,
+			@Nullable final LocalDate validFrom,
 			@NonNull @Singular final ImmutableList<BOMLine> lines)
 	{
 		Check.assumeNotEmpty(lines, "lines is not empty");
@@ -66,9 +72,10 @@ public class BOMCreateRequest
 		this.productId = productId;
 		this.productValue = productValue;
 		this.productName = productName;
+		this.uomId = uomId;
 		this.bomType = bomType;
 		this.bomUse = bomUse;
-		this.validFrom = validFrom;
+		this.validFrom = validFrom != null ? validFrom : LocalDate.of(1970, Month.JANUARY, 1);
 		this.lines = lines;
 	}
 

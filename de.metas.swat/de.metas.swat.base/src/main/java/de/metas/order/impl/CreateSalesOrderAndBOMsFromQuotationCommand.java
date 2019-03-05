@@ -334,11 +334,13 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		//
 		// Create BOM
 		final ProductId bomProductId = ProductId.ofRepoId(bomProduct.getM_Product_ID());
+		final UomId bomProductUomId = UomId.ofRepoId(bomProduct.getC_UOM_ID());
 		final ProductBOMId bomId = bomsRepo.createBOM(BOMCreateRequest.builder()
 				.orgId(candidate.getOrgId())
 				.productId(bomProductId)
 				.productValue(bomProduct.getValue())
 				.productName(bomProduct.getName())
+				.uomId(bomProductUomId)
 				.bomUse(X_PP_Product_BOM.BOMUSE_Manufacturing)
 				.bomType(X_PP_Product_BOM.BOMTYPE_Make_To_Order)
 				.validFrom(LocalDate.MIN)

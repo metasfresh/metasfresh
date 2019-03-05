@@ -301,6 +301,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setM_Product_ID(request.getProductId().getRepoId());
 		bomRecord.setValue(request.getProductValue());
 		bomRecord.setName(request.getProductName());
+		bomRecord.setC_UOM_ID(request.getUomId().getRepoId());
 		bomRecord.setBOMType(request.getBomType());
 		bomRecord.setBOMUse(request.getBomUse());
 		bomRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
