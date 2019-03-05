@@ -56,7 +56,7 @@ class WidgetTooltip extends PureComponent {
                   ref={ref}
                   style={style}
                   data-placement={placement}
-                  className="tooltip-wrapp tooltip-content"
+                  className="tooltip-content"
                   modifiers={modifiers}
                 >
                   <span>{data.value}</span>

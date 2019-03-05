@@ -152,9 +152,11 @@
             }
 
             .widget-tooltip {
-                position: absolute;
-                top: 12px;
-                left: 10px;
+                img {
+                    position: absolute;
+                    top: 12px;
+                    left: 10px;
+                }
             }
         }
     }
