@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -120,7 +121,9 @@ public class PosOrderModel extends MOrder {
 
         //create new line
 		MOrderLine line = new MOrderLine(this);
-		line.setProduct(product);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(product.getC_UOM_ID());
+		line.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		line.setQty(QtyOrdered);
 
 		line.setPrice(); //	sets List/limit

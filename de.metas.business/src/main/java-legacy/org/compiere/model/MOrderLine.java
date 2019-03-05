@@ -42,6 +42,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
@@ -440,33 +441,11 @@ public class MOrderLine extends X_C_OrderLine
 		return DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
 	}	// getPrecision
 
-	/**
-	 * Set Product
-	 *
-	 * @param product product
-	 */
-	public void setProduct(MProduct product)
+	public void setM_Product_ID(final int productRepoId, final boolean setUOM)
 	{
-		Services.get(IOrderLineBL.class).setM_Product_ID(
-				InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class),
-				product.getM_Product_ID(),
-				true);
-	}	// setProduct
-
-	/**
-	 * Set M_Product_ID
-	 *
-	 * @param M_Product_ID product
-	 * @param setUOM set also UOM
-	 */
-	public void setM_Product_ID(int M_Product_ID, boolean setUOM)
-	{
-		if (setUOM)
-			setProduct(MProduct.get(getCtx(), M_Product_ID));
-		else
-			super.setM_Product_ID(M_Product_ID);
-		setM_AttributeSetInstance_ID(0);
-	}	// setM_Product_ID
+		final ProductId productId = ProductId.ofRepoId(productRepoId);
+		Services.get(IOrderLineBL.class).setProductId(this, productId, setUOM);
+	}
 
 	/**
 	 * Set Product and UOM

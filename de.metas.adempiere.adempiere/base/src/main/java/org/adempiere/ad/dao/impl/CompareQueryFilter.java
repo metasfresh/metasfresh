@@ -36,6 +36,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import de.metas.util.Check;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -246,8 +247,8 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		catch (final Exception ex)
 		{
 			throw new IllegalStateException("Failed comparing values:"
-					+ "\n value1: '" + value1 + "' (" + value1.getClass() + "), normalized to " + value1Norm + " (" + value1Norm.getClass() + ")"
-					+ "\n value2: '" + value2 + "' (" + value2.getClass() + "), normalized to " + value2Norm + " (" + value2Norm.getClass() + ")",
+					+ "\n value1: '" + value1 + "' (" + value1.getClass() + "), normalized to '" + value1Norm + "' (" + value1Norm.getClass() + ")"
+					+ "\n value2: '" + value2 + "' (" + value2.getClass() + "), normalized to '" + value2Norm + "' (" + value2Norm.getClass() + ")",
 					ex);
 		}
 	}
@@ -261,6 +262,10 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		else if (value instanceof RepoIdAware)
 		{
 			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)value).getCode();
 		}
 		else if (TimeUtil.isDateOrTimeObject(value))
 		{

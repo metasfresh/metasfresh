@@ -7,6 +7,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -133,8 +134,19 @@ public class AD_Field
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeFieldDelete(final I_AD_Field field)
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
+		final AdTabId adTabId = AdTabId.ofRepoId(field.getAD_Tab_ID());
+		final AdFieldId adFieldId = AdFieldId.ofRepoId(field.getAD_Field_ID());
+
+		adWindowDAO.deleteUIElementsByFieldId(adTabId, adFieldId);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
-	public void onFieldDelete(final I_AD_Field field) throws SQLException
+	public void afterFieldDelete(final I_AD_Field field)
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 

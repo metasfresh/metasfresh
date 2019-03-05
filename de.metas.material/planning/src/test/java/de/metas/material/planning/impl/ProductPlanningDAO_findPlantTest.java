@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
 public class ProductPlanningDAO_findPlantTest
@@ -46,8 +47,8 @@ public class ProductPlanningDAO_findPlantTest
 	@Test
 	public void findPlant_WarehouseWithPlant()
 	{
-		final I_S_Resource plant = createPlant("Plant");
-		final I_M_Warehouse warehouse = createWarehouse("Warehouse", plant);
+		final ResourceId plantId = createPlant("Plant");
+		final I_M_Warehouse warehouse = createWarehouse("Warehouse", plantId);
 		final int adOrgId = -1; // N/A
 		final int productId = -1; // N/A
 		final int attributeSetInstanceId = AttributeConstants.M_AttributeSetInstance_ID_None;
@@ -59,7 +60,7 @@ public class ProductPlanningDAO_findPlantTest
 				attributeSetInstanceId);
 
 		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plant.getS_Resource_ID(), plantActual.getS_Resource_ID());
+		Assert.assertEquals("invalid plant", plantId.getRepoId(), plantActual.getS_Resource_ID());
 	}
 
 	/**
@@ -72,8 +73,8 @@ public class ProductPlanningDAO_findPlantTest
 	@Test
 	public void findPlant_WarehouseWithPlant_ValidProductPlanning()
 	{
-		final I_S_Resource plant = createPlant("Plant");
-		final I_M_Warehouse warehouse = createWarehouse("Warehouse", plant);
+		final ResourceId plantId = createPlant("Plant");
+		final I_M_Warehouse warehouse = createWarehouse("Warehouse", plantId);
 		I_AD_Org org = createOrg("org");
 		final I_M_Product product = createProduct("product");
 		createProductPlanningWithPlant(org, warehouse, product);
@@ -85,7 +86,7 @@ public class ProductPlanningDAO_findPlantTest
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
 		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plant.getS_Resource_ID(), plantActual.getS_Resource_ID());
+		Assert.assertEquals("invalid plant", plantId.getRepoId(), plantActual.getS_Resource_ID());
 	}
 
 	/**
@@ -156,11 +157,11 @@ public class ProductPlanningDAO_findPlantTest
 		I_AD_Org org = createOrg("org");
 		final I_M_Product product = createProduct("product");
 		final I_PP_Product_Planning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
-		final I_S_Resource plant = productPlanning.getS_Resource();
+		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
 
 		// create some more product planning records, but with same plant and without any plant
-		createProductPlanning(org, warehouse, product, plant);
-		createProductPlanning(org, warehouse, product, plant);
+		createProductPlanning(org, warehouse, product, plantId);
+		createProductPlanning(org, warehouse, product, plantId);
 		createProductPlanning(org, warehouse, product, null);
 		createProductPlanning(org, warehouse, product, null);
 
@@ -171,25 +172,28 @@ public class ProductPlanningDAO_findPlantTest
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
 		Assert.assertNotNull("plant shall be found", plantActual);
-		Assert.assertEquals("invalid plant", plant.getS_Resource_ID(), plantActual.getS_Resource_ID());
+		Assert.assertEquals("invalid plant", plantId.getRepoId(), plantActual.getS_Resource_ID());
 	}
 
-	private final I_S_Resource createPlant(final String name)
+	private final ResourceId createPlant(final String name)
 	{
 		final I_S_Resource plant = InterfaceWrapperHelper.newInstance(I_S_Resource.class, context);
 		plant.setValue(name);
 		plant.setName(name);
 		plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
 		InterfaceWrapperHelper.save(plant);
-		return plant;
+		return ResourceId.ofRepoId(plant.getS_Resource_ID());
 	}
 
-	private final I_M_Warehouse createWarehouse(final String name, final I_S_Resource plant)
+	private final I_M_Warehouse createWarehouse(final String name, final ResourceId plantId)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, context);
 		warehouse.setValue(name);
 		warehouse.setName(name);
-		warehouse.setPP_Plant(plant);
+		if (plantId != null)
+		{
+			warehouse.setPP_Plant_ID(plantId.getRepoId());
+		}
 		InterfaceWrapperHelper.save(warehouse);
 		return warehouse;
 	}
@@ -217,18 +221,21 @@ public class ProductPlanningDAO_findPlantTest
 	private I_PP_Product_Planning createProductPlanningWithPlant(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product)
 	{
 		final int plantNo = createProductPlanningWithPlant_NextPlantNo.getAndIncrement();
-		final I_S_Resource plant = createPlant("Plant_From_ProductPlanning_" + plantNo);
-		return createProductPlanning(org, warehouse, product, plant);
+		final ResourceId plantId = createPlant("Plant_From_ProductPlanning_" + plantNo);
+		return createProductPlanning(org, warehouse, product, plantId);
 	}
 
-	private I_PP_Product_Planning createProductPlanning(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product, I_S_Resource plant)
+	private I_PP_Product_Planning createProductPlanning(I_AD_Org org, I_M_Warehouse warehouse, I_M_Product product, ResourceId plantId)
 	{
 		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
 		pp.setIsAttributeDependant(false);
 		pp.setAD_Org(org);
 		pp.setM_Warehouse(warehouse);
 		pp.setM_Product(product);
-		pp.setS_Resource(plant);
+		if (plantId != null)
+		{
+			pp.setS_Resource_ID(plantId.getRepoId());
+		}
 		InterfaceWrapperHelper.save(pp);
 		return pp;
 	}

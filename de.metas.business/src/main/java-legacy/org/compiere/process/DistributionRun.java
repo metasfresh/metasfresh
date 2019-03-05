@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
@@ -575,7 +576,9 @@ public class DistributionRun extends JavaProcess
 					line.setC_BPartner_Location_ID(detail.getC_BPartner_Location_ID());
 			}
 			//
-			line.setProduct(product);
+			line.setM_Product_ID(product.getM_Product_ID());
+			line.setC_UOM_ID(product.getC_UOM_ID());
+			line.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 			line.setQty(detail.getActualAllocation());
 			line.setPrice();
 			if (!line.save())

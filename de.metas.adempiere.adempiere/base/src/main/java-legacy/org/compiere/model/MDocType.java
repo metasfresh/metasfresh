@@ -202,43 +202,6 @@ public class MDocType extends X_C_DocType
 	}	//	toString
 
 	/**
-	 * Is this a Quotation (Binding)
-	 *
-	 * @return true if Quotation
-	 * @deprecated please use {@link IDocTypeBL#isQuotation(I_C_DocType)} instead.
-	 */
-	@Deprecated
-	public boolean isQuotation()
-	{
-		return Services.get(IDocTypeBL.class).isQuotation(this);
-	}	// isQuotation
-
-	/**
-	 * Is this a Proposal (Not binding)
-	 *
-	 * @return true if proposal
-	 * @deprecated please use {@link IDocTypeBL#isProposal(I_C_DocType)} instead.
-	 */
-	@Deprecated
-	public boolean isProposal()
-	{
-		return Services.get(IDocTypeBL.class).isProposal(this);
-	}	// isProposal
-
-	/**
-	 * Is this a Proposal or Quotation
-	 *
-	 * @return true if proposal or quotation
-	 * @deprecated please use {@link IDocTypeBL#isOffer(I_C_DocType)} instead.
-	 */
-	@Deprecated
-	public boolean isOffer()
-	{
-		return Services.get(IDocTypeBL.class).isOffer(this);
-	}	// isOffer
-
-
-	/**
 	 * 	Get Print Name
 	 * 	@param AD_Language language
 	 *	@return print Name if available translated
