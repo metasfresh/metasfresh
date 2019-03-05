@@ -36,7 +36,7 @@ class WidgetTooltip extends PureComponent {
       flip: {
         enabled: true,
         boundariesElement: 'viewport',
-      }
+      },
     };
 
     return (
@@ -52,7 +52,11 @@ class WidgetTooltip extends PureComponent {
             )}
           </Reference>
           {isToggled && (
-            <Popper placement="right-start" modifiers={modifiers} outOfBoundaries={true}>
+            <Popper
+              placement="right-start"
+              modifiers={modifiers}
+              outOfBoundaries={true}
+            >
               {({ ref, style, placement }) => (
                 <div
                   ref={ref}
@@ -75,6 +79,7 @@ class WidgetTooltip extends PureComponent {
 WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,
+  fieldName: PropTypes.string.isRequired,
   isToggled: PropTypes.bool.isRequired,
   onToggle: PropTypes.func,
 };

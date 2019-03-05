@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import { INITIALLY_OPENED } from '../constants/Constants';
@@ -15,7 +16,8 @@ const Separator = props => {
 
   return (
     <div className="separator col-12">
-      <span className={classnames('separator-title', {
+      <span
+        className={classnames('separator-title', {
           collapsible,
         })}
         onClick={() => onClick(idx)}
@@ -41,6 +43,15 @@ const Separator = props => {
       )}
     </div>
   );
+};
+
+Separator.propTypes = {
+  title: PropTypes.string,
+  collapsible: PropTypes.bool,
+  closableMode: PropTypes.string,
+  sectionCollapsed: PropTypes.bool,
+  idx: PropTypes.number,
+  onClick: PropTypes.func,
 };
 
 export default Separator;
