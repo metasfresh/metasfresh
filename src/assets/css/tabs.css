@@ -54,7 +54,7 @@
         padding: 0;
         top: 0;
         right: 0;
-        z-index: 1000;
+        z-index: 100;
 
         .btn {
             padding: .25rem .25rem;
@@ -135,15 +135,21 @@
 
         td {
             position: relative;
+            height: 45px;
 
             .row {
                 margin: 0;
+                flex-wrap: nowrap;
             }
 
             .form-group {
                 > div {
                     flex: 1 0 100%;
                     max-width: fit-content;
+                }
+
+                .input-primary, .input-secondary {
+                    padding-bottom: 0;
                 }
             }
 
@@ -154,7 +160,7 @@
             .widget-tooltip {
                 img {
                     position: absolute;
-                    top: 12px;
+                    top: 15px;
                     left: 10px;
                 }
             }
