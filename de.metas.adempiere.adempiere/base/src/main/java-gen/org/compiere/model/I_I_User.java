@@ -263,6 +263,31 @@ public interface I_I_User
     public static final String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set Fax.
+	 * Faxnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFax (java.lang.String Fax);
+
+	/**
+	 * Get Fax.
+	 * Faxnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFax();
+
+    /** Column definition for Fax */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Fax = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Fax", null);
+    /** Column name Fax */
+    public static final String COLUMNNAME_Fax = "Fax";
+
+	/**
 	 * Set Vorname.
 	 * Vorname
 	 *

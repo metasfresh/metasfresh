@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 707707385L;
+	private static final long serialVersionUID = 1467149051L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -226,6 +226,25 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	public java.lang.String getEMail () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+	}
+
+	/** Set Fax.
+		@param Fax 
+		Faxnummer
+	  */
+	@Override
+	public void setFax (java.lang.String Fax)
+	{
+		set_Value (COLUMNNAME_Fax, Fax);
+	}
+
+	/** Get Fax.
+		@return Faxnummer
+	  */
+	@Override
+	public java.lang.String getFax () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Fax);
 	}
 
 	/** Set Vorname.
