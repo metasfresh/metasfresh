@@ -124,8 +124,9 @@
         width: 100%;
         margin-bottom: 0;
 
-        tr {
+        .table-row {
             width: 100%;
+            display: flex;
 
             &:last-child {
                 border: none;

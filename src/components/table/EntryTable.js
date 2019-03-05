@@ -119,7 +119,7 @@ export default class EntryTable extends Component {
         <tbody>
           {rows.map((cols, idx) => {
             return (
-              <tr key={`entry-row-${idx}`}>
+              <tr className="table-row" key={`entry-row-${idx}`}>
                 {this.renderElements(cols, cols.colsCount)}
               </tr>
             );
