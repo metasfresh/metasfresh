@@ -207,6 +207,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		user.setIsNewsletter(importRecord.isNewsletter());
 		user.setPhone(importRecord.getPhone());
+		user.setFax(importRecord.getFax());
 		user.setMobilePhone(importRecord.getMobilePhone());
 		//user.gen
 
