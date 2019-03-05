@@ -58,14 +58,10 @@ MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
  -Dsun.misc.URLClassPath.disableJarChecking=true\
  -Djava.security.egd=file:/dev/./urandom\
  -Dserver.port=${server_port}\
- -Dspring.rabbitmq.host=${rabbitmq_host}\
- -Dspring.rabbitmq.port=${rabbitmq_port}\
- -Dspring.rabbitmq.username=${rabbitmq_user}\
- -Dspring.rabbitmq.password=${rabbitmq_password}\
- -Dspring.datasource.url=jdbc:postgresql://${db_host}/${db_name}\
- -Dspring.datasource.username=${db_user}\
- -Dspring.datasource.password=${db_password}\
- -Dspring.jpa.show-sql=${debug_jpa_show_sql}\
+ -Dcamel.component.rabbitmq.hostname=${rabbitmq_host}\
+ -Dcamel.component.rabbitmq.port-number=${rabbitmq_port}\
+ -Dcamel.component.rabbitmq.username=${rabbitmq_user}\
+ -Dcamel.component.rabbitmq.password=${rabbitmq_password}\
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  -jar de-metas-edi-esb-camel.jar
 }
