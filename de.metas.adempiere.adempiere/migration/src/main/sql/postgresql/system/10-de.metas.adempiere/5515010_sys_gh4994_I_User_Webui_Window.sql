@@ -365,4 +365,239 @@ UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2019-03-05 15:07:28','YY
 
 
 
+-- 2019-03-05T15:18:21.006
+-- #298 changing anz. stellen
+INSERT INTO AD_Menu (AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES (0,543431,541210,0,TO_TIMESTAMP('2019-03-05 15:18:20','YYYY-MM-DD HH24:MI:SS'),100,'D','I_User','Y','N','N','N','N','Import User',TO_TIMESTAMP('2019-03-05 15:18:20','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-05T15:18:21.016
+-- #298 changing anz. stellen
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Menu_ID=541210 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2019-03-05T15:18:21.026
+-- #298 changing anz. stellen
+INSERT  INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 541210, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=541210)
+;
+
+-- 2019-03-05T15:18:21.036
+-- #298 changing anz. stellen
+/* DDL */  select update_menu_translation_from_ad_element(543431) 
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540905 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540814 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540803 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540904 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540749 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540779 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.117
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540910 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540758 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540759 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540806 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540891 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540896 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540903 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540906 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540907 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540908 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541015 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=17, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541016 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541042 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=19, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541120 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=20, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541125 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=21, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000056 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=22, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000064 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=23, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000072 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:21.127
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=24, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541210 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:36.267
+-- #298 changing anz. stellen
+UPDATE AD_Menu SET Action='W', AD_Window_ID=540368, Name='Import Users',Updated=TO_TIMESTAMP('2019-03-05 15:18:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541210
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541187 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541045 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000021 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000023 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541141 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541157 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540815 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541200 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541210 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541186 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000042 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541193 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000024 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000025 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541197 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.001
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541198 AND AD_Tree_ID=10
+;
+
+-- 2019-03-05T15:18:43.011
+-- #298 changing anz. stellen
+UPDATE AD_TreeNodeMM SET Parent_ID=1000008, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541199 AND AD_Tree_ID=10
+;
+
 
