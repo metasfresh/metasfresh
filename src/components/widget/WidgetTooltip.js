@@ -18,9 +18,11 @@ class WidgetTooltip extends PureComponent {
   };
 
   handleClickOutside() {
-    const { fieldName, onToggle } = this.props;
+    const { fieldName, onToggle, isToggled } = this.props;
 
-    onToggle(fieldName, false);
+    if (isToggled) {
+      onToggle(fieldName, false);
+    }
   }
 
   render() {

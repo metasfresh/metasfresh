@@ -9,13 +9,17 @@ export default class EntryTable extends Component {
     super(props);
 
     this.state = {
-      tooltipToggled: false,
+      tooltipToggled: null,
     };
   }
 
   widgetTooltipToggle = (field, value) => {
     const curVal = this.state.tooltipToggled;
-    const newVal = value != null ? value : !curVal;
+    let newVal = field;
+
+    if (value === false || field === curVal) {
+      newVal = null;
+    }
 
     this.setState({
       tooltipToggled: newVal,
@@ -42,7 +46,7 @@ export default class EntryTable extends Component {
       for (let i = 0; i < columnsCount; i += 1) {
         const elem = elements.cols[i];
 
-        if (elem) {
+        if (elem && elem.fields && elem.fields.length) {
           const fieldName = elem.fields ? elem.fields[0].field : '';
           const widgetData = [rowData.get(0).fieldsByName[fieldName]];
           const relativeDocId = data.ID && data.ID.value;
@@ -95,7 +99,7 @@ export default class EntryTable extends Component {
                   widget={tooltipWidget}
                   data={tooltipData}
                   fieldName={fieldName}
-                  isToggled={tooltipToggled}
+                  isToggled={tooltipToggled === fieldName}
                   onToggle={this.widgetTooltipToggle}
                 />
               )}
