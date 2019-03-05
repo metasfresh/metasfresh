@@ -503,6 +503,31 @@ public interface I_I_User
     public static final String COLUMNNAME_MobilePhone = "MobilePhone";
 
 	/**
+	 * Set Telefon.
+	 * Beschreibt eine Telefon Nummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPhone (java.lang.String Phone);
+
+	/**
+	 * Get Telefon.
+	 * Beschreibt eine Telefon Nummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPhone();
+
+    /** Column definition for Phone */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Phone = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Phone", null);
+    /** Column name Phone */
+    public static final String COLUMNNAME_Phone = "Phone";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *

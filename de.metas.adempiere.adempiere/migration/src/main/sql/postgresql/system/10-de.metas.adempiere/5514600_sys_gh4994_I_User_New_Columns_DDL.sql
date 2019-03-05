@@ -41,3 +41,10 @@ ALTER TABLE I_User ADD CONSTRAINT CDataImport_IUser FOREIGN KEY (C_DataImport_ID
 ;
 
 
+
+
+-- 2019-03-05T11:33:21.248
+-- #298 changing anz. stellen
+/* DDL */ SELECT public.db_alter_table('I_User','ALTER TABLE public.I_User ADD COLUMN Phone VARCHAR(250)')
+;
+

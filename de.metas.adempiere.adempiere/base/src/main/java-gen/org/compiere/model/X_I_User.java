@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1438768016L;
+	private static final long serialVersionUID = 707707385L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -414,6 +414,25 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	public java.lang.String getMobilePhone () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MobilePhone);
+	}
+
+	/** Set Telefon.
+		@param Phone 
+		Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public void setPhone (java.lang.String Phone)
+	{
+		set_Value (COLUMNNAME_Phone, Phone);
+	}
+
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public java.lang.String getPhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
 	/** Set Verarbeitet.
