@@ -610,8 +610,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     },
                     "dataEntryFieldId" : 1123,
-                    "cached" : true,
-                    "numericKey" : false
+                    "numericKey" : false,
+                    "cached" : true
                   },
                   "highVolume" : false,
                   "numericKey" : true
@@ -1526,8 +1526,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       }
                     },
                     "dataEntryFieldId" : 1223,
-                    "cached" : true,
-                    "numericKey" : false
+                    "numericKey" : false,
+                    "cached" : true
                   },
                   "highVolume" : false,
                   "numericKey" : true
@@ -2000,7 +2000,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           },
                           {
                             "elements" : [ ]
-                          },
+                          }
+                        ],
+                        "columnCount" : 2
+                      },
+                      {
+                        "elementLines" : [
                           {
                             "elements" : [
                               {
@@ -2413,7 +2418,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           },
                           {
                             "elements" : [ ]
-                          },
+                          }
+                        ],
+                        "columnCount" : 2
+                      },
+                      {
+                        "elementLines" : [
                           {
                             "elements" : [
                               {
@@ -2783,7 +2793,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             }
                           ]
                         },
-                        { },
+                        { }
+                      ]
+                    },
+                    {
+                      "columnCount" : 2,
+                      "elementsLine" : [
                         {
                           "elements" : [
                             {
@@ -2962,7 +2977,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             }
                           ]
                         },
-                        { },
+                        { }
+                      ]
+                    },
+                    {
+                      "columnCount" : 2,
+                      "elementsLine" : [
                         {
                           "elements" : [
                             {

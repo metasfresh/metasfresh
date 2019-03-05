@@ -126,6 +126,12 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 
+		public Builder addElementGroups(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
+		{
+			elementGroupsBuilders.addAll(elementGroupBuilders);
+			return this;
+		}
+
 		public Builder addElementGroup(@NonNull final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder)
 		{
 			elementGroupsBuilders.add(elementGroupBuilder);

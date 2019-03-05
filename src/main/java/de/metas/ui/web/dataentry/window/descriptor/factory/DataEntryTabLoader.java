@@ -219,31 +219,38 @@ public class DataEntryTabLoader
 				.setClosableMode(closableMode)
 				.setCaptionMode(CaptionMode.DISPLAY);
 
-		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = createLayoutElemementGroup(dataEntrySection);
-		column.addElementGroup(elementGroup);
+		final ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> //
+		elementGroups = createLayoutElemementGroup(dataEntrySection);
+
+		column.addElementGroups(elementGroups);
 
 		return layoutSection;
 	}
 
-	private DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(@NonNull final DataEntrySection dataEntrySection)
+	private ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> createLayoutElemementGroup(@NonNull final DataEntrySection dataEntrySection)
 	{
 		final Integer columnCount = dataEntrySection.getDataEntryLines().stream()
 				.map(DataEntryLine::getDataEntryFields)
 				.map(Collection::size)
 				.max(Comparator.naturalOrder()).orElse(0);
 
-		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
-				.builder()
-				.setColumnCount(columnCount);
+		ImmutableList.Builder<DocumentLayoutElementGroupDescriptor.Builder> elementGroups = ImmutableList.builder();
+
 
 		final List<DataEntryLine> dataEntryLines = dataEntrySection.getDataEntryLines();
 		for (final DataEntryLine dataEntryLine : dataEntryLines)
 		{
+			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
+					.builder()
+					.setColumnCount(columnCount);
+
 			final ImmutableList<DocumentLayoutElementLineDescriptor.Builder> elementLines = createLayoutElemementLine(dataEntryLine, columnCount);
 			elementGroup.addElementLines(elementLines);
+
+			elementGroups.add(elementGroup);
 		}
 
-		return elementGroup;
+		return elementGroups.build();
 	}
 
 	private ImmutableList<DocumentLayoutElementLineDescriptor.Builder> createLayoutElemementLine(
