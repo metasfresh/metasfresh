@@ -71,3 +71,19 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,576010,0,441,556948,541264,'F',TO_TIMESTAMP('2019-03-05 16:13:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'POBox',110,0,0,TO_TIMESTAMP('2019-03-05 16:13:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2019-03-05T17:48:35.237
+-- #298 changing anz. stellen
+UPDATE AD_Column SET AD_Reference_ID=14, FieldLength=2000,Updated=TO_TIMESTAMP('2019-03-05 17:48:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564250
+;
+
+
+
+
+
+-- 2019-03-05T17:49:06.348
+-- #298 changing anz. stellen
+INSERT INTO t_alter_column values('i_bpartner','Memo_Invoicing','VARCHAR(2000)',null,null)
+;
+
+
