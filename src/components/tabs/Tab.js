@@ -52,6 +52,10 @@ class Tab extends Component {
 Tab.propTypes = {
   dispatch: PropTypes.func.isRequired,
   children: PropTypes.any,
+  singleRowView: PropTypes.bool,
+  windowId: PropTypes.string,
+  tabId: PropTypes.string,
+  docId: PropTypes.string,
 };
 
 export default connect()(Tab);

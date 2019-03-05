@@ -204,6 +204,7 @@ class TableContextMenu extends Component {
 
 TableContextMenu.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onOpenNewTab: PropTypes.func,
 };
 
 export default connect()(TableContextMenu);
