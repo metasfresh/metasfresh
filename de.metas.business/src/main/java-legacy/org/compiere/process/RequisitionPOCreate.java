@@ -485,7 +485,8 @@ public class RequisitionPOCreate extends JavaProcess
 		m_orderLine.setDatePromised(rLine.getDateRequired());
 		if (product != null)
 		{
-			m_orderLine.setProduct(product);
+			m_orderLine.setM_Product_ID(product.getM_Product_ID());
+			m_orderLine.setC_UOM_ID(product.getC_UOM_ID());
 			m_orderLine.setM_AttributeSetInstance_ID(rLine.getM_AttributeSetInstance_ID());
 		}
 		else

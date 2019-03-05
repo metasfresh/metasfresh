@@ -42,6 +42,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import com.google.common.collect.ImmutableList;
@@ -243,5 +244,24 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	public void save(final I_PP_Product_Planning productPlanningRecord)
 	{
 		saveRecord(productPlanningRecord);
+	}
+
+	@Override
+	public void setProductBOMIdIfAbsent(
+			@NonNull final ProductId productId,
+			@NonNull final ProductBOMId bomId)
+	{
+		final List<I_PP_Product_Planning> productPlanningRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Product_Planning.class)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMN_PP_Product_BOM_ID, null)
+				.create()
+				.list();
+
+		for (final I_PP_Product_Planning productPlanningRecord : productPlanningRecords)
+		{
+			productPlanningRecord.setPP_Product_BOM_ID(bomId.getRepoId());
+			save(productPlanningRecord);
+		}
 	}
 }
