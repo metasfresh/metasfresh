@@ -74,7 +74,7 @@ export default class EntryTable extends Component {
                   'cell-disabled': widgetData[0].readonly,
                   'cell-mandatory': widgetData[0].mandatory,
                 },
-                widgetData.widgetType
+                `field-${widgetData[0].widgetType}`
               )}
             >
               <MasterWidget
