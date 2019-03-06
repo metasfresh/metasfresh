@@ -593,7 +593,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 }
 
 const getChangelogUrl = function(windowId, docId, tabId, rowId) {
-  return `${config.API_URL}/window/${windowId}/${docId}${
+  return `${config.API_URL}/window/${windowId}${docId ? `/${docId}` : ''}${
     rowId && tabId ? `/${tabId}/${rowId}` : ''
   }/changeLog`;
 };

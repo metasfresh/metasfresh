@@ -64,6 +64,10 @@ export default class ChangeLogModal extends Component {
   render() {
     const { data } = this.props;
 
+    if (!data || !data.createdByUsername) {
+      return null;
+    }
+
     return (
       <div className="col-12">
         <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
