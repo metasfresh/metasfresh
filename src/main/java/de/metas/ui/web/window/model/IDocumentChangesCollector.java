@@ -145,6 +145,5 @@ public interface IDocumentChangesCollector
 
 			return reasonSupplier.get();
 		}
-
 	}
 }
