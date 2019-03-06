@@ -215,6 +215,10 @@ Cypress.Commands.add(
   (fieldName, partialValue, listValue, modal) => {
     describe('Enter value into lookup list field', function() {
 
+      // here we want to match URLs that don *not* end with "/NEW"
+      cy.server()
+      cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchLookupField`)
+
       let path = `#lookup_${fieldName}`;
       if (modal) {
         //path = `.panel-modal-content ${path}`;
@@ -231,9 +235,10 @@ Cypress.Commands.add(
           return cy.get('.lookup-dropdown').click();
         })
 
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+      cy.get('.input-dropdown-list').should('exist')
+      cy.contains('.input-dropdown-list-option', listValue).click({ force: true })
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist')
+      cy.wait('@patchLookupField')
     });
 });
 
@@ -247,6 +252,10 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
       cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
+      // here we want to match URLs that don *not* end with "/NEW"
+      cy.server()
+      cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchListField`)
+
       let path = `.form-field-${fieldName}`;
       if (modal) {
         //path = `.panel-modal-content ${path}`;
@@ -258,9 +267,9 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
       cy
         .contains('.input-dropdown-list-option', listValue)
-        .click();
-    }
-  );
+        .click()
+        .wait('@patchListField')
+    });
 });
 
 /**
@@ -555,4 +564,29 @@ Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName='vi
         })
       .as(documentIdAliasName)
   })
+})
+
+// may be useful to wait for the response to a particular patch where a particular field value was set
+// not yet tested
+// thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
+Cypress.Commands.add('waitForFieldValue', (alias, fieldName, fieldValue) => {
+  cy.wait(alias)
+    .then(function(xhr){
+      const responseBody = xhr.responseBody
+      if (!responseBody.length <= 0) {
+        cy.log(`waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body is empty; continuing to wait`)
+        return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit        
+      }
+
+      if (!responseBody.fieldsByName) {
+        cy.log(`waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body has no fieldsByName property; continuing to wait`)
+        return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit        
+      }
+
+      const fieldsByName = responseBody[0].fieldsByName
+      if (fieldsByName[fieldName] !== fieldValue) {
+        cy.log(`waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the field has value=${fieldsByName[fieldName]}; continuing to wait`)
+        return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
+      }
+    })
 })

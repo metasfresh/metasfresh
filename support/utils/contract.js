@@ -89,7 +89,7 @@ export function createAndCompleteRefundAmountConditions(conditionsName, transiti
 
 function createAmountConfig(refundMode, minQty, amount) 
 {
-    cy.pressAddNewButton(1000);
+    cy.pressAddNewButton();
     
     cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
     cy.wait(500);
