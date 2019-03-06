@@ -99,7 +99,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public final IPostingRequestBuilder postIt()
+	public final void postIt()
 	{
 		setExecuted();
 
@@ -107,7 +107,7 @@ import lombok.ToString;
 		{
 			setPostedError("Accounting module is disabled");
 			postingComplete();
-			return this;
+			return;
 		}
 
 		//
@@ -115,9 +115,8 @@ import lombok.ToString;
 		// If not, we will enqueue it.
 		if (!isPostImmediate())
 		{
-			postIt_Enqueue();
-			postingComplete();
-			return this;
+			postAfterTrxCommit(this::postIt_Enqueue);
+			return;
 		}
 
 		//
@@ -128,26 +127,12 @@ import lombok.ToString;
 			// we shall do it after the transaction is commited, because some of the Doc* implementations
 			// are realying on the case that dependent objects are accessible out of transaction.
 			postAfterTrxCommit(this::postIt_Directly);
-			return this;
+			return;
 		}
 
 		//
 		// Post it on server
-		try
-		{
-			//
-			// Post the document, after this transaction is committed, because
-			// there is a big chance the document will not be accessible on server until the transaction is not finished,
-			// so instead of asking the server to post it immediately, we will ask the server after the transaction is completed.
-			postAfterTrxCommit(this::postIt_Enqueue);
-		}
-		catch (final Exception e)
-		{
-			setPostedError(e);
-		}
-
-		postingComplete();
-		return this;
+		postAfterTrxCommit(this::postIt_Enqueue);
 	}
 
 	/**
@@ -172,8 +157,6 @@ import lombok.ToString;
 
 	/**
 	 * Directly Post the document (without contacting the server!)
-	 *
-	 * @param trxName transaction to be used for posting; NOTE: it could be different from {@link #getTrxName()}.
 	 */
 	private final void postIt_Directly()
 	{
@@ -201,12 +184,6 @@ import lombok.ToString;
 			final boolean repost = true;
 			doc.post(force, repost);
 		}
-		catch (final Exception ex)
-		{
-			setPostedError(ex);
-		}
-
-		postingComplete();
 	}
 
 	/** Makes sure we are still in configuration phase and not in execution phase */
@@ -353,8 +330,7 @@ import lombok.ToString;
 			//
 			// Check if PostImmediate is allowed by AD_Client configuration
 			final I_AD_Client client = clientDAO.getById(getClientId().getRepoId());
-			final boolean allowPosting = client.isPostImmediate();
-			return allowPosting;
+			return client.isPostImmediate();
 		}
 		else
 		{
@@ -467,6 +443,16 @@ import lombok.ToString;
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false) // invoking the method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> postRunnable.run());
+				.registerHandlingMethod(innerTrx -> {
+					try
+					{
+						postRunnable.run();
+					}
+					catch (Exception ex)
+					{
+						setPostedError(ex);
+					}
+					postingComplete();
+				});
 	}
 }
