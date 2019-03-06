@@ -165,8 +165,16 @@
                 }
             }
 
-            textarea {
-                background: white;
+            .input-body-container {
+                &.focused {
+                    z-index: 100;
+
+                    textarea {
+                        height: auto;
+                        min-height: 50px;
+                        max-height: 150px;
+                    }
+                }
             }
         }
     }

@@ -867,7 +867,12 @@ export class RawWidget extends Component {
       widgetType,
       handleZoomInto,
     } = this.props;
-    const { errorPopup, clearedFieldWarning, tooltipToggled } = this.state;
+    const {
+      errorPopup,
+      clearedFieldWarning,
+      tooltipToggled,
+      isEdited,
+    } = this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
 
@@ -968,7 +973,11 @@ export class RawWidget extends Component {
             </div>
           )}
 
-          <div className="input-body-container" title={valueDescription}>
+          <div className={classnames('input-body-container', {
+              focused: isEdited,
+            })}
+            title={valueDescription}
+          >
             <ReactCSSTransitionGroup
               transitionName="fade"
               transitionEnterTimeout={200}
