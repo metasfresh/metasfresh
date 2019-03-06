@@ -236,7 +236,11 @@ class Window extends PureComponent {
   renderEntryTable = (groups, extendedData) => {
     const rows = groups.reduce((rowsArray, group) => {
       const cols = [];
-      group.elementsLine.forEach(line => cols.push(line.elements[0]));
+      group.elementsLine.forEach(line => {
+        if (line && line.elements && line.elements.length) {
+          cols.push(line.elements[0]);
+        }
+      });
 
       rowsArray.push({
         cols,
