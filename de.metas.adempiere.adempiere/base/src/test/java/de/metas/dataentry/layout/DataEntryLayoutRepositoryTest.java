@@ -217,7 +217,7 @@ public class DataEntryLayoutRepositoryTest
 		saveRecord(listValueRecord1_2_1_1_2_2);
 
 		final I_DataEntry_Field fieldRecord1_2_1_1_3 = newInstance(I_DataEntry_Field.class);
-		fieldRecord1_2_1_1_3.setDataEntry_Line(lineRecord1_2_1_1);;
+		fieldRecord1_2_1_1_3.setDataEntry_Line(lineRecord1_2_1_1);
 		fieldRecord1_2_1_1_3.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_YesNo);
 		fieldRecord1_2_1_1_3.setName("fieldRecord1_2_1_1_3_name");
 		fieldRecord1_2_1_1_3.setDescription("fieldRecord1_2_1_1_3_description");
