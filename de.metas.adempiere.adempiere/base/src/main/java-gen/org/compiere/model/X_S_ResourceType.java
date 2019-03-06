@@ -14,7 +14,7 @@ public class X_S_ResourceType extends org.compiere.model.PO implements I_S_Resou
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1196785462L;
+	private static final long serialVersionUID = -665473995L;
 
     /** Standard Constructor */
     public X_S_ResourceType (Properties ctx, int S_ResourceType_ID, String trxName)
@@ -23,7 +23,6 @@ public class X_S_ResourceType extends org.compiere.model.PO implements I_S_Resou
       /** if (S_ResourceType_ID == 0)
         {
 			setAllowUoMFractions (false); // N
-			setC_TaxCategory_ID (0);
 			setC_UOM_ID (0);
 			setIsDateSlot (false);
 			setIsSingleAssignment (false);
@@ -81,43 +80,6 @@ public class X_S_ResourceType extends org.compiere.model.PO implements I_S_Resou
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	@Override
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
-	}
-
-	@Override
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
-	}
-
-	/** Set Steuerkategorie.
-		@param C_TaxCategory_ID 
-		Tax Category
-	  */
-	@Override
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
-	}
-
-	/** Get Steuerkategorie.
-		@return Tax Category
-	  */
-	@Override
-	public int getC_TaxCategory_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	@Override

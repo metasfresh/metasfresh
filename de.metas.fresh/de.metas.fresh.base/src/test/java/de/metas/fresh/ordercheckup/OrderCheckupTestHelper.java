@@ -39,10 +39,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_S_Resource;
+import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -127,9 +129,7 @@ public class OrderCheckupTestHelper
 
 	public void createManufacturingProductPlanning(final I_M_Product product, final I_M_Warehouse warehouse, final I_AD_User responsibleUser)
 	{
-		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
-		workflow.setAD_User_InCharge(responsibleUser);
-		save(workflow);
+		final I_AD_Workflow workflow = createManufacturingRouting(responsibleUser);
 
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(ctx, I_PP_Product_Planning.class, ITrx.TRXNAME_None);
 		productPlanning.setM_Product(product);
@@ -139,6 +139,27 @@ public class OrderCheckupTestHelper
 		productPlanning.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
 		productPlanning.setAD_Workflow(workflow);
 		InterfaceWrapperHelper.save(productPlanning);
+	}
+
+	private I_AD_Workflow createManufacturingRouting(final I_AD_User responsibleUser)
+	{
+		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
+		workflow.setValue("wf");
+		workflow.setAD_User_InCharge(responsibleUser);
+		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
+		save(workflow);
+
+		final I_AD_WF_Node wfNode = newInstance(I_AD_WF_Node.class);
+		wfNode.setValue("node1");
+		wfNode.setName("node1");
+		wfNode.setAD_Workflow_ID(workflow.getAD_Workflow_ID());
+		wfNode.setS_Resource_ID(123);
+		save(wfNode);
+
+		workflow.setAD_WF_Node_ID(wfNode.getAD_WF_Node_ID());
+		save(workflow);
+
+		return workflow;
 	}
 
 	public I_C_Order createSalesOrder(final I_M_Warehouse warehouse)

@@ -613,6 +613,20 @@ public final class Quantity implements Comparable<Quantity>
 		return diff.signum();
 	}
 
+	public Quantity divide(@NonNull final BigDecimal divisor)
+	{
+		if(BigDecimal.ONE.compareTo(divisor) == 0)
+		{
+			return this;
+		}
+		
+		return new Quantity(
+				qty.divide(divisor, uom.getStdPrecision(), RoundingMode.HALF_UP),
+				uom,
+				sourceQty.divide(divisor, sourceUom.getStdPrecision(), RoundingMode.HALF_UP),
+				sourceUom);
+	}
+
 	public Quantity divide(final BigDecimal divisor, final int scale, final RoundingMode roundingMode)
 	{
 		return new Quantity(

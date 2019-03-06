@@ -50,6 +50,7 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -90,7 +91,8 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void handleComplete(final I_C_Order order)
 	{
-		if (Services.get(IDocTypeBL.class).isOffer(order.getC_DocType()))
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		if (Services.get(IDocTypeBL.class).isSalesProposalOrQuotation(docTypeId))
 		{
 			return;
 		}

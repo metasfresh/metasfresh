@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -26,6 +27,7 @@ import org.adempiere.util.lang.MutableInt;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
+import org.eevolution.api.ProductBOMId;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicates;
@@ -48,7 +50,6 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -118,7 +119,7 @@ public class OrderGroupRepository implements GroupRepository
 		}
 	}
 
-	public static GroupId extractSingleGroupId(final List<I_C_OrderLine> orderLines)
+	public static GroupId extractSingleGroupId(final Collection<I_C_OrderLine> orderLines)
 	{
 		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
 		return orderLines.stream()
@@ -403,7 +404,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
-		
+
 		Services.get(IOrderLineBL.class).updateLineNetAmt(compensationLinePO);
 	}
 
@@ -540,8 +541,14 @@ public class OrderGroupRepository implements GroupRepository
 
 		setGroupIdToLines(orderLines, null);
 
-		final I_C_Order_CompensationGroup orderCompensationGroup = load(group.getGroupId().getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
+		final I_C_Order_CompensationGroup orderCompensationGroup = retrieveGroupRecord(group.getGroupId());
 		delete(orderCompensationGroup);
+	}
+
+	private I_C_Order_CompensationGroup retrieveGroupRecord(final GroupId groupId)
+	{
+		assertOrderGroupId(groupId);
+		return load(groupId.getOrderCompensationGroupId(), I_C_Order_CompensationGroup.class);
 	}
 
 	public Group createPartialGroupFromCompensationLine(final I_C_OrderLine compensationLinePO)
@@ -697,5 +704,22 @@ public class OrderGroupRepository implements GroupRepository
 		//
 		// Remaining ungrouped order lines
 		notGroupedOrderLines.forEach(orderLineSequenceUpdater);
+	}
+
+	public OrderGroupInfo getGroupInfoById(@NonNull final GroupId groupId)
+	{
+		final I_C_Order_CompensationGroup groupRecord = retrieveGroupRecord(groupId);
+		return OrderGroupInfo.builder()
+				.groupId(groupId)
+				.name(groupRecord.getName())
+				.bomId(ProductBOMId.optionalOfRepoId(groupRecord.getPP_Product_BOM_ID()))
+				.build();
+	}
+
+	public void setGroupProductBOMId(@NonNull final GroupId groupId, @NonNull ProductBOMId bomId)
+	{
+		final I_C_Order_CompensationGroup groupRecord = retrieveGroupRecord(groupId);
+		groupRecord.setPP_Product_BOM_ID(bomId.getRepoId());
+		saveRecord(groupRecord);
 	}
 }

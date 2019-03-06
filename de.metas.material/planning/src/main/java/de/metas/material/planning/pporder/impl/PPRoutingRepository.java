@@ -14,6 +14,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_WF_NodeNext;
@@ -123,6 +124,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.duration(duration)
 				.qtyPerBatch(qtyPerBatch)
 				.yield(Percent.of(routingRecord.getYield()))
+				.userInChargeId(UserId.ofRepoIdOrNull(routingRecord.getAD_User_InCharge_ID()))
 				.firstActivityId(firstActivityId)
 				.activities(activities)
 				.build();
