@@ -139,6 +139,39 @@ class SubHeader extends Component {
     }
   };
 
+  handleAboutButton = () => {
+    const {
+      selected,
+      activeTab,
+      windowId,
+      dataId,
+      openModalRow,
+      openModal,
+    } = this.props;
+
+    if (selected && selected.length) {
+      openModalRow(
+        windowId,
+        'static',
+        counterpart.translate('window.about.caption'),
+        activeTab,
+        selected,
+        'about'
+      );
+    } else {
+      openModal(
+        windowId,
+        'static',
+        counterpart.translate('window.about.caption'),
+        null,
+        null,
+        null,
+        null,
+        'about'
+      );
+    }
+  };
+
   renderDocLink = ({ action, handler, icon, caption, hotkey }) => {
     const { closeSubheader } = this.props;
 
@@ -166,14 +199,12 @@ class SubHeader extends Component {
     const {
       dataId,
       docNo,
-      // activeTab,
       handleClone,
       handleDelete,
       handleEmail,
       handleLetter,
       handlePrint,
       openModal,
-      openModalRow,
       standardActions,
       windowId,
     } = this.props;
@@ -237,43 +268,8 @@ class SubHeader extends Component {
         caption: counterpart.translate('window.Delete.caption'),
         hotkey: keymap.DELETE_DOCUMENT,
       },
-      {
-        action: 'about',
-        handler: () => {
-          const { selected, activeTab } = this.props;
-
-          if (selected && selected.length) {
-            openModalRow(
-              windowId,
-              'static',
-              'About',
-              activeTab,
-              selected,
-              'about'
-            );
-          } else {
-            openModal(
-              windowId,
-              'static',
-              'About',
-              null,
-              null,
-              null,
-              null,
-              'about'
-            );
-          }
-        },
-        icon: 'meta-icon-more',
-        caption: counterpart.translate('window.about.caption'),
-        hotkey: keymap.ABOUT_DOCUMENT,
-      },
     ]
-      // TODO: Hardcoded 'about' - Kuba
-      .filter(
-        docLink =>
-          standardActions.has(docLink.action) || docLink.action === 'about'
-      )
+      .filter(docLink => standardActions.has(docLink.action))
       .map(docLink => {
         return this.renderDocLink(docLink);
       });
@@ -284,6 +280,7 @@ class SubHeader extends Component {
   renderNavColumn = () => {
     const {
       closeSubheader,
+      dataId,
       editmode,
       handleEditModeToggle,
       query,
@@ -347,6 +344,23 @@ class SubHeader extends Component {
             <span className="tooltip-inline">{keymap.NEW_DOCUMENT}</span>
           </div>
         )}
+
+        {dataId || (windowId && selected.length === 1) ? (
+          <div
+            id={`subheaderNav_${simplifyName(
+              counterpart.translate('window.about.caption')
+            )}`}
+            className="subheader-item js-subheader-item"
+            tabIndex={0}
+            onClick={this.handleAboutButton}
+          >
+            <i className="meta-icon-more" />
+
+            {counterpart.translate('window.about.caption')}
+
+            <span className="tooltip-inline">{keymap.ABOUT_DOCUMENT}</span>
+          </div>
+        ) : null}
 
         {windowId && query && query.viewId && (
           <a
@@ -446,6 +460,9 @@ SubHeader.propTypes = {
   dispatch: PropTypes.func.isRequired,
   activeTab: PropTypes.string,
   windowId: PropTypes.string.isRequired,
+  viewId: PropTypes.string,
+  openModalRow: PropTypes.func,
+  openModal: PropTypes.func,
 };
 
 const mapStateToProps = (state, props) => ({
