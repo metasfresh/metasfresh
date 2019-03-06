@@ -34,15 +34,6 @@ import lombok.Value;
 @Value
 public class DataEntrySection
 {
-//	public static DataEntrySectionBuilder newDefaultSectionBuilder()
-//	{
-//		return DataEntrySection.builder()
-//				.id(DataEntrySectionId.DEFAULT)
-//				.description(ITranslatableString.empty())
-//				.caption(ITranslatableString.empty())
-//				.internalName("DEFAULT");
-//	}
-
 	DataEntrySectionId id;
 
 	ITranslatableString caption;

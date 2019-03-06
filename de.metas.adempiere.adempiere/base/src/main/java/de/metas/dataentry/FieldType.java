@@ -32,11 +32,6 @@ public enum FieldType
 	SUB_GROUP_ID(Integer.class),
 	PARENT_LINK_ID(Integer.class),
 
-//	CREATED(ZonedDateTime.class),
-//	CREATED_BY(Integer.class),
-//	UPDATED(ZonedDateTime.class),
-//	UPDATED_BY(Integer.class),
-
 	CREATED_UPDATED_INFO(String.class),
 
 	TEXT(String.class),

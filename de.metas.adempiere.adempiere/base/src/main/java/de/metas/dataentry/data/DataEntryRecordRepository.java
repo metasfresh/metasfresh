@@ -77,24 +77,6 @@ public class DataEntryRecordRepository
 		return Optional.of(ofRecord(record));
 	}
 
-	private IQuery<I_DataEntry_Record> createQuery(final DataEntryRecordQuery dataEntryRecordQuery)
-	{
-		final DataEntrySubGroupId dataEntrySubGroupId = dataEntryRecordQuery.getDataEntrySubGroupId();
-		final ITableRecordReference tableRecordReference = dataEntryRecordQuery.getTableRecordReference();
-
-		final int adTableId = tableRecordReference.getAD_Table_ID();
-		final int recordId = tableRecordReference.getRecord_ID();
-
-		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_DataEntry_Record.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupId)
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
-				.create();
-		return query;
-	}
-
 	public DataEntryRecord getBy(@NonNull final DataEntryRecordId dataEntryRecordId)
 	{
 		final I_DataEntry_Record record = load(dataEntryRecordId, I_DataEntry_Record.class);
@@ -149,5 +131,24 @@ public class DataEntryRecordRepository
 		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
 
 		query.delete();
+	}
+
+
+	private IQuery<I_DataEntry_Record> createQuery(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	{
+		final DataEntrySubGroupId dataEntrySubGroupId = dataEntryRecordQuery.getDataEntrySubGroupId();
+		final ITableRecordReference tableRecordReference = dataEntryRecordQuery.getTableRecordReference();
+
+		final int adTableId = tableRecordReference.getAD_Table_ID();
+		final int recordId = tableRecordReference.getRecord_ID();
+
+		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DataEntry_Record.class)
+				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupId)
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
+				.create();
+		return query;
 	}
 }
