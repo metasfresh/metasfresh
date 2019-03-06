@@ -828,6 +828,35 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_C_Job_ID = "C_Job_ID";
 
 	/**
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PaymentTerm_ID();
+
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
+
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
+
+    /** Column definition for C_PaymentTerm_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_PaymentTerm>(I_I_BPartner.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
+    /** Column name C_PaymentTerm_ID */
+    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+
+	/**
 	 * Set Region.
 	 * Identifies a geographical Region
 	 *
@@ -2182,6 +2211,31 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PaymentTerm = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PaymentTerm", null);
     /** Column name PaymentTerm */
     public static final String COLUMNNAME_PaymentTerm = "PaymentTerm";
+
+	/**
+	 * Set Zahlungskonditions-Schlüssel.
+	 * Suchschlüssel für die Zahlungskondition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentTermValue (java.lang.String PaymentTermValue);
+
+	/**
+	 * Get Zahlungskonditions-Schlüssel.
+	 * Suchschlüssel für die Zahlungskondition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaymentTermValue();
+
+    /** Column definition for PaymentTermValue */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PaymentTermValue = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PaymentTermValue", null);
+    /** Column name PaymentTermValue */
+    public static final String COLUMNNAME_PaymentTermValue = "PaymentTermValue";
 
 	/**
 	 * Set Telefon.

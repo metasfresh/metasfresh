@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1826012770L;
+	private static final long serialVersionUID = -1097821102L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -799,6 +799,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_Job_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Job_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
+	}
+
+	/** Set Zahlungsbedingung.
+		@param C_PaymentTerm_ID 
+		Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+	}
+
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public int getC_PaymentTerm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1973,6 +2010,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPaymentTerm () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentTerm);
+	}
+
+	/** Set Zahlungskonditions-Schlüssel.
+		@param PaymentTermValue 
+		Suchschlüssel für die Zahlungskondition
+	  */
+	@Override
+	public void setPaymentTermValue (java.lang.String PaymentTermValue)
+	{
+		set_Value (COLUMNNAME_PaymentTermValue, PaymentTermValue);
+	}
+
+	/** Get Zahlungskonditions-Schlüssel.
+		@return Suchschlüssel für die Zahlungskondition
+	  */
+	@Override
+	public java.lang.String getPaymentTermValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentTermValue);
 	}
 
 	/** Set Telefon.
