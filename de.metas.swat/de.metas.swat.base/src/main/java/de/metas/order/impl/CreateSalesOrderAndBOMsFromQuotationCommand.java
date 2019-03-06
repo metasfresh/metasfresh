@@ -467,8 +467,10 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.setFrom(fromQuotationLine)
 				.setSkipCalculatedColumns(true)
 				.copyToNew(I_C_OrderLine.class);
-
+		
 		salesOrderLine.setC_Order_ID(newOrder.getC_Order_ID());
+		orderLineBL.setOrder(salesOrderLine, newOrder);
+
 		attributeSetInstanceBL.cloneASI(salesOrderLine, fromQuotationLine);
 
 		saveRecord(salesOrderLine);
