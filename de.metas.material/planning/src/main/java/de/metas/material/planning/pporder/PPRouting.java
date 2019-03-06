@@ -6,7 +6,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalUnit;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.UserId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -70,6 +73,9 @@ public class PPRouting
 	@NonNull
 	@Default
 	Percent yield = Percent.ONE_HUNDRED;
+
+	@Nullable
+	UserId userInChargeId;
 
 	@NonNull
 	PPRoutingActivityId firstActivityId;

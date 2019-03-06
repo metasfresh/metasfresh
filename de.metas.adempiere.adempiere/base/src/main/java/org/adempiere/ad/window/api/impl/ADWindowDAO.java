@@ -908,6 +908,18 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	public void deleteFieldsByColumnId(final int adColumnId)
+	{
+		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
+
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Field.class)
+				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Column_ID, adColumnId)
+				.create()
+				.delete();
+	}
+
+	@Override
 	public Set<AdTabId> retrieveTabIdsWithMissingADElements()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
@@ -1142,5 +1154,16 @@ public class ADWindowDAO implements IADWindowDAO
 		{
 			delete(fieldADElementLink);
 		}
+	}
+
+	@Override
+	public void deleteUIElementsByFieldId(@NonNull final AdTabId adTabId, @NonNull final AdFieldId adFieldId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		queryBL.createQueryBuilder(I_AD_UI_Element.class)
+				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Tab_ID, adTabId)
+				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
+				.create()
+				.delete();
 	}
 }

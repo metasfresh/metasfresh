@@ -26,6 +26,9 @@ import org.compiere.util.DB;
 
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IProductPlanningSchemaBL;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.util.Services;
 
 /**
@@ -339,9 +342,28 @@ public class MProduct extends X_M_Product
 					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
+		
+		if(newRecord)
+		{
+			createOrUpdateProductPlanningsForSelector();
+		}
 
-		return success;
+		return true;
 	}	// afterSave
+	
+	private void createOrUpdateProductPlanningsForSelector()
+	{
+		final ProductPlanningSchemaSelector productPlanningSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(getM_ProductPlanningSchema_Selector());
+		if (productPlanningSchemaSelector == null)
+		{
+			return;
+		}
+		
+		final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+
+		final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
+		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, productPlanningSchemaSelector);
+	}
 
 	@Override
 	protected boolean beforeDelete()

@@ -33,6 +33,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
@@ -108,4 +109,6 @@ public interface IProductPlanningDAO extends ISingletonService
 	List<I_M_Warehouse> retrieveWarehousesForPlant(Properties ctx, I_AD_Org org, I_S_Resource plant);
 
 	void save(I_PP_Product_Planning productPlanningRecord);
+
+	void setProductBOMIdIfAbsent(ProductId productId, ProductBOMId bomId);
 }
