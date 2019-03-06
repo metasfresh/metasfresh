@@ -973,7 +973,8 @@ export class RawWidget extends Component {
             </div>
           )}
 
-          <div className={classnames('input-body-container', {
+          <div
+            className={classnames('input-body-container', {
               focused: isEdited,
             })}
             title={valueDescription}
