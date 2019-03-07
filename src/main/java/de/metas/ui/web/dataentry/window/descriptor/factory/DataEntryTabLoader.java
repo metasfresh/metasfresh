@@ -234,8 +234,7 @@ public class DataEntryTabLoader
 				.map(Collection::size)
 				.max(Comparator.naturalOrder()).orElse(0);
 
-		ImmutableList.Builder<DocumentLayoutElementGroupDescriptor.Builder> elementGroups = ImmutableList.builder();
-
+		final ImmutableList.Builder<DocumentLayoutElementGroupDescriptor.Builder> elementGroups = ImmutableList.builder();
 
 		final List<DataEntryLine> dataEntryLines = dataEntrySection.getDataEntryLines();
 		for (final DataEntryLine dataEntryLine : dataEntryLines)
