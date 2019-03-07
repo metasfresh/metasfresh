@@ -325,7 +325,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoIdOrNull(invoiceCandidate.getC_Invoice_Candidate_ID());
+		if (invoiceCandidateId == null)
+		{
+			return ImmutableList.of(); // no associations for new/not saved ICs
+		}
+		
 		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
 	}
 
