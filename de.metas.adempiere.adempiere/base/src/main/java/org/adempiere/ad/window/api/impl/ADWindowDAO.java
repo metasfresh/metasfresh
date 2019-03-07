@@ -343,9 +343,9 @@ public class ADWindowDAO implements IADWindowDAO
 				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
-				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
+				.orderBy(I_AD_Tab.COLUMNNAME_SeqNo) // just take the first one; it might have seqno != 10
 				.create()
-				.firstOnly(I_AD_Tab.class);
+				.first(I_AD_Tab.class);
 	}
 
 	@Override

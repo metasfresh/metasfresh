@@ -919,21 +919,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	}	// beforeSave
 
 	/**
-	 * Before Delete
-	 *
-	 * @return true if it can be deleted
-	 */
-	@Override
-	protected boolean beforeDelete()
-	{
-		if (getC_Order_ID() != 0)
-		{
-			throw new AdempiereException("@CannotDelete@");
-		}
-		return true;
-	}	// beforeDelete
-
-	/**
 	 * String Representation
 	 *
 	 * @return info

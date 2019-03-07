@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.material</groupId>
 		<artifactId>metasfresh-material</artifactId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
