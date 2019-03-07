@@ -1,5 +1,7 @@
 package org.adempiere.ad.element.api;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -42,7 +44,7 @@ public class AdTabId implements RepoIdAware
 		return repoId > 0 ? new AdTabId(repoId) : null;
 	}
 
-	public static int toRepoId(final AdTabId id)
+	public static int toRepoId(@Nullable final AdTabId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

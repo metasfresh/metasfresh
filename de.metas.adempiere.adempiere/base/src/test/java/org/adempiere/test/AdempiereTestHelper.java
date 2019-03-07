@@ -57,6 +57,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.time.SystemTime;
+import io.github.jsonSnapshot.SnapshotConfig;
+import io.github.jsonSnapshot.SnapshotMatchingStragety;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.
@@ -69,6 +72,22 @@ public class AdempiereTestHelper
 	private static final AdempiereTestHelper instance = new AdempiereTestHelper();
 
 	public static final String AD_LANGUAGE = "de_DE";
+
+	/** This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars */
+	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
+	{
+		@Override
+		public String getFilePath()
+		{
+			return "src/test/resources/";
+		}
+
+		@Override
+		public SnapshotMatchingStragety getSnapshotMatchRule()
+		{
+			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
+		}
+	};
 
 	public static AdempiereTestHelper get()
 	{

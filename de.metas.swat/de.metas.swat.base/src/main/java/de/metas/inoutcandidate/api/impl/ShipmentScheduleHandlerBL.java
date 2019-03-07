@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -57,6 +58,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingC
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -167,7 +169,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
 
 			final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
-			while(missingCandidateModels.hasNext())
+			while (missingCandidateModels.hasNext())
 			{
 				final Object model = missingCandidateModels.next();
 				final List<ModelWithoutShipmentScheduleVetoer> vetoListeners = new ArrayList<>();
@@ -175,9 +177,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				for (final ModelWithoutShipmentScheduleVetoer l : tableName2Listeners.get(tableName))
 				{
 					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model);
-					if (listenerResult == ModelWithoutShipmentScheduleVetoer.OnMissingCandidate.I_VETO)
+					if (listenerResult == OnMissingCandidate.I_VETO)
 					{
-						logger.debug("IInOutCandHandlerListener " + l + " doesn't want us to create a shipment schedule");
+						Loggables.get().withLogger(logger, Level.DEBUG)
+								.addLog("IInOutCandHandlerListener {} doesn't want us to create a shipment schedule", l);
 						vetoListeners.add(l);
 					}
 				}
