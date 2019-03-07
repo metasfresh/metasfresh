@@ -116,5 +116,7 @@ public interface IADWindowDAO extends ISingletonService
 
 	void deleteExistingADElementLinkForFieldId(AdFieldId adFieldId);
 
-	void deleteUIElementsByFieldId(AdTabId adTabId, AdFieldId adFieldId);
+	void deleteUIElementsByFieldId(AdFieldId adFieldId);
+
+	void deleteUISectionsByTabId(AdTabId adTabId);
 }
