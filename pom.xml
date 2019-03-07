@@ -105,7 +105,15 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				</exclusion>
 				<exclusion>
 					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter-engine</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.jupiter</groupId>
 					<artifactId>junit-jupiter-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.mockito</groupId>
@@ -129,6 +137,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-commons</artifactId>
@@ -141,6 +150,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			<version>1.4.0</version>
 			<scope>test</scope>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -151,6 +161,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			<groupId>org.junit.vintage</groupId>
 			<artifactId>junit-vintage-engine</artifactId>
 			<version>5.4.0</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!--
