@@ -607,8 +607,10 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
       let rowData = null;
 
       if (rowId) {
-        const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
-        rowData = await axios.get(childUrl).then(resp => resp.data);
+        if (rowId.length === 1) {
+          const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
+          rowData = await axios.get(childUrl).then(resp => resp.data);
+        }
       }
 
       if (rowData) {

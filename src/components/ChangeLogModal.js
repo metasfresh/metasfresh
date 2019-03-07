@@ -30,7 +30,7 @@ export default class ChangeLogModal extends Component {
   renderRowsData = () => {
     const { data } = this.props;
 
-    if (data.rowsData && data.rowsData.length === 1) {
+    if (data.rowsData) {
       return (
         <div className="panel panel-spaced changelog-rows">
           <h5>{counterpart.translate('view.about.row')}:</h5>
