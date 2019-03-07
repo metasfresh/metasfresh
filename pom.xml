@@ -76,13 +76,114 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		</repository>
 	</distributionManagement>
 
+	<dependencies>
+		<!-- Using our own artifact, see 
+			https://github.com/json-snapshot/json-snapshot.github.io/pull/12#issuecomment-462660733
+			and 
+			https://github.com/json-snapshot/json-snapshot.github.io/issues/9#issuecomment-462880359 -->
+		<!-- This lib has 
+		    * two different versions (1.2.0 and 1.3.2) of junit-platform-commons
+		    * two different versions (1.2.0 and 1.3.2) of junit-platform-engine
+		    * two different versions (5.1.1 and 5.3.2) of junit-jupiter-api
+		    * two different versions (2.23.0 and 2.23.4) of mockito-core
+			in its dependency tree. That's why we exclude them and then explicitly add them. 
+			Also: mockito-core, jackson-databind, jackson-core, commons-lang3 and slf4j-api are used throughout the system, some we try our luck with the respective existing versions
+			-->
+		<dependency>
+			<groupId>io.github.json-snapshot</groupId>
+			<artifactId>json-snapshot-PR</artifactId>
+			<version>1.0.18</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.platform</groupId>
+					<artifactId>junit-platform-commons</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.platform</groupId>
+					<artifactId>junit-platform-engine</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter-engine</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.mockito</groupId>
+					<artifactId>mockito-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-lang3</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!--
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-commons</artifactId>
+			<version>1.4.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-engine</artifactId>
+			<version>1.4.0</version>
+			<scope>test</scope>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.4.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<version>5.4.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!--
+		we currently don't use this mockito version
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>2.23.4</version>
+			<scope>test</scope>
+		</dependency>
+		-->
+	</dependencies>
+
 	<dependencyManagement>
 
 		<dependencies>
+
 			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
 				<version>${assertj.version}</version>
+				<scope>test</scope>
 			</dependency>
 
 			<dependency>
@@ -270,13 +371,20 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
+					<!-- 3.0.0-M2 gives me "Some plugins are missing valid versions" 
+						 when building downstream projects (i.e. metasfresh),
+						 although I set the version here in build/pluginManagenemt management.
+						Example:
+						org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
+				
+						Note that "3.0.0" is the version that I specified in pluginManagenemt -->
 					<version>3.0.0-M1</version>
 					<dependencies>
 						<!-- needed for banDuplicateClasses -->
 						<dependency>
 							<groupId>org.codehaus.mojo</groupId>
 							<artifactId>extra-enforcer-rules</artifactId>
-							<version>1.0-beta-4</version>
+							<version>1.0-beta-9</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -352,7 +460,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<profile>
 			<!-- 
 				The enforcer plugin can be a tremendous nuisance.
-				It fails because we use version ranges in our parent pom declarations with this outout:
+				It fails because we use version ranges in our parent pom declarations with this output:
 
 [WARNING] Could not find org.jmockit:jmockit:jar:1.30:test at null
 [WARNING] Rule 0: org.apache.maven.plugins.enforcer.RequirePluginVersions failed with message:
@@ -377,7 +485,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									That version didn't support the way, we configured it and failed with an
 									error message. This shall not happen again. -->
 								<requirePluginVersions>
-									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin versionm !!</message>
+									<message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
 									<banLatest>true</banLatest>
 									<banRelease>true</banRelease>
 									<banSnapshots>true</banSnapshots>
@@ -404,6 +512,9 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
 								<banDuplicateClasses>
 									<ignoreClasses>
+
+										<!-- https://github.com/mojohaus/extra-enforcer-rules/issues/42 -->
+										<ignoreClass>*.module-info</ignoreClass>
 
 										<!-- itext-2.1.7 has two different versions as dependences -->
 										<ignoreClass>org.bouncycastle.*</ignoreClass>
@@ -780,7 +891,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								-->
 								<groupId>org.springframework</groupId>
 								<artifactId>spring-beans</artifactId>
-  								<version>4.3.8.RELEASE</version>
+								<version>4.3.8.RELEASE</version>
 							</dependency>
 							<dependency>
 								<groupId>net.sf.barcode4j</groupId>
