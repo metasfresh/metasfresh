@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -61,16 +62,15 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall be allowed to process");
 		}
-		
+
 		if (!getView().isApproved())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows were approved");
 		}
 
-		final Set<PickingCandidateId> pickingCandidateIds = getPickingCandidateIds();
-		if (pickingCandidateIds.isEmpty())
+		if (!getRowsNotAlreadyProcessed().stream().allMatch(this::isEligibleForProcessing))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no rows eligible for processing found");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows eligible for processing");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -91,8 +91,15 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 
 	private ImmutableList<PickingCandidate> processAllPickingCandidates()
 	{
+		final ImmutableSet<PickingCandidateId> pickingCandidateIdsToProcess = getRowsNotAlreadyProcessed()
+				.stream()
+				.filter(this::isEligibleForProcessing)
+				.map(ProductsToPickRow::getPickingCandidateId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+
 		return pickingCandidatesService
-				.process(getPickingCandidateIds())
+				.process(pickingCandidateIdsToProcess)
 				.getPickingCandidates();
 	}
 
@@ -117,12 +124,11 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.generateShippingDocuments();
 	}
 
-	private ImmutableSet<PickingCandidateId> getPickingCandidateIds()
+	private List<ProductsToPickRow> getRowsNotAlreadyProcessed()
 	{
 		return streamAllRows()
-				.filter(this::isEligibleForProcessing)
-				.map(ProductsToPickRow::getPickingCandidateId)
-				.collect(ImmutableSet.toImmutableSet());
+				.filter(row -> !row.isProcessed())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private boolean isEligibleForProcessing(final ProductsToPickRow row)
