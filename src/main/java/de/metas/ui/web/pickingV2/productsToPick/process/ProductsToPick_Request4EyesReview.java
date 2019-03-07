@@ -34,7 +34,7 @@ public class ProductsToPick_Request4EyesReview extends ProductsToPickViewBasedPr
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(getViewProfileId()))
+		if (isReviewProfile())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("already reviewing");
 		}

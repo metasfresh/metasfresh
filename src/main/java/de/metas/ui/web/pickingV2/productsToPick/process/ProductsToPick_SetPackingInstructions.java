@@ -52,6 +52,11 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if (!isPickerProfile())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pack");
+		}
+		
 		if (!streamRowsEligibleForPacking().findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible rows were selected");

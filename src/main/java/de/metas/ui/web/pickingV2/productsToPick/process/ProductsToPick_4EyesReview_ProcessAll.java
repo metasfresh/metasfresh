@@ -57,6 +57,11 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if (!isPickerProfile())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall be allowed to process");
+		}
+		
 		if (!getView().isApproved())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows were approved");

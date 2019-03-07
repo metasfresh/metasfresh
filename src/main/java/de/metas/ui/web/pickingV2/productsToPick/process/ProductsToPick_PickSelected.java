@@ -41,6 +41,11 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if (!isPickerProfile())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
+		}
+		
 		final List<ProductsToPickRow> selectedRows = getSelectedRows();
 		if (selectedRows.isEmpty())
 		{
