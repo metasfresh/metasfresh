@@ -36,6 +36,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -70,7 +74,10 @@ public class ProcessPickingCandidatesCommand
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -130,10 +137,7 @@ public class ProcessPickingCandidatesCommand
 		if (pc.isRejectedToPick())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
-			if (!shipmentSchedule.isClosed())
-			{
-				shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
-			}
+			closeShipmentScheduleAndInvoiceCandidates(shipmentSchedule);
 			packedToHuId = null;
 		}
 		else
@@ -155,6 +159,27 @@ public class ProcessPickingCandidatesCommand
 
 		pc.changeStatusToProcessed(packedToHuId);
 		pickingCandidateRepository.save(pc);
+	}
+
+	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		if (shipmentSchedule.isClosed())
+		{
+			return;
+		}
+
+		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+
+		//
+		// Close related invoices candidates too
+		final List<I_C_Invoice_Candidate> invoiceCandidates = getInvoiceCandidatesForShipmentSchedule(shipmentSchedule);
+		invoiceCandidatesService.closeInvoiceCandidates(invoiceCandidates);
+	}
+
+	private List<I_C_Invoice_Candidate> getInvoiceCandidatesForShipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
+		return invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 	}
 
 	private IAllocationRequest createPackToAllocationRequest(final PickingCandidate pc)
@@ -188,7 +213,6 @@ public class ProcessPickingCandidatesCommand
 		final int packageNo = packToInstructionsId.isVirtual() ? PACKAGE_NO_SEQUENCE.getAndIncrement() : PACKAGE_NO_ZERO;
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
 		final LocatorId locatorId = shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule);
 
