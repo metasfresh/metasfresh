@@ -10,6 +10,31 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.94
+# Features
+* metasfresh
+  * [#4913](https://github.com/metasfresh/metasfresh/issues/4913) Add payment discount when importing discount schema
+  * [#4961](https://github.com/metasfresh/metasfresh/issues/4961) Chart of Accounts Import
+  * [#4982](https://github.com/metasfresh/metasfresh/issues/4982) AD_Element_Trl customization
+  * [#4988](https://github.com/metasfresh/metasfresh/issues/4988) Improve async workpackage logging for shipment schedule and invoice candidate updating
+  * [#4991](https://github.com/metasfresh/metasfresh/issues/4991) URL csv Importer for BPartner
+  * [#4997](https://github.com/metasfresh/metasfresh/issues/4997) Handle M_DiscountSchemaBreak with PriceBase=P(ricingSystem) & missing Base_PricingSystem_ID
+  * [#5001](https://github.com/metasfresh/metasfresh/issues/5001) Create a table for storing product certificate informations
+
+* metasfresh-webui
+  * [#1945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1945) "About" action in webui
+
+* metasfresh-webui-frontend
+  * [#2197](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2197) Don't show input field for QR reader on mobile
+
+# Fixes
+* metasfresh
+  * [#4966](https://github.com/metasfresh/metasfresh/issues/4966) Prolonging contract does not working anymore
+  * [#4975](https://github.com/metasfresh/metasfresh/issues/4975) LastShipmentDate not displayed anymore in Products Proposal
+  * [#4985](https://github.com/metasfresh/metasfresh/issues/4985) MemorizingSupplier.get returns null while it actually couldn't
+  * [#4987](https://github.com/metasfresh/metasfresh/issues/4987) M_Attribute_Value is not saved correctly
+  * [#4989](https://github.com/metasfresh/metasfresh/issues/4989) Problem posting documents with zero-amounts
+
 # metasfresh 5.93
 # Features
 * metasfresh

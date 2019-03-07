@@ -86,7 +86,7 @@ public class EventLogServiceTest
 		assertThat(eventLogRecord.getEventData())
 				.isEqualToNormalizingWhitespace("{\n" +
 						"  \"uuid\" : \"5fc6dbeb-aee4-4ac7-89ca-d31ff50d6421\",\n" +
-						"  \"when\" : 1514876894.521000000,\n" +
+						"  \"when\" : \"2018-01-02T07:08:14.521Z\",\n" +
 						"  \"senderId\" : \"testSenderId\",\n" +
 						"  \"storeEvent\" : false\n" +
 						"}");

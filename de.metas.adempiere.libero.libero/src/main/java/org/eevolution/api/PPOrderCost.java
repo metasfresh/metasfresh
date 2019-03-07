@@ -91,8 +91,8 @@ public class PPOrderCost
 			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
 			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
 			{
-				//TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
-//				throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
+				// TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
+				// throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
 			}
 		}
 		else
@@ -143,7 +143,10 @@ public class PPOrderCost
 		{
 			return this;
 		}
-		if (amt.signum() != qty.signum())
+
+		final boolean amtIsPositiveOrZero = amt.signum() >= 0;
+		final boolean qtyIsPositiveOrZero = qty.signum() >= 0;
+		if (amtIsPositiveOrZero == qtyIsPositiveOrZero)
 		{
 			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}

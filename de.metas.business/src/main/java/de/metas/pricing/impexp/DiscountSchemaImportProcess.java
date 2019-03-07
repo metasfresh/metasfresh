@@ -192,7 +192,12 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setSeqNo(10);
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
+
 		//
+		if (importRecord.getDiscount() != null && importRecord.getDiscount().signum() > 0)
+		{
+			schemaBreak.setPaymentDiscount(importRecord.getDiscount());
+		}
 		schemaBreak.setM_Product_ID(importRecord.getM_Product_ID());
 		schemaBreak.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		//

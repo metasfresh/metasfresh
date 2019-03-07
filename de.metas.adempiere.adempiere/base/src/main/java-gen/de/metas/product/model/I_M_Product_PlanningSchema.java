@@ -378,8 +378,7 @@ public interface I_M_Product_PlanningSchema
     public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
 
 	/**
-	 * Set Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Set Wird Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -388,8 +387,7 @@ public interface I_M_Product_PlanningSchema
 	public void setIsPurchased (java.lang.String IsPurchased);
 
 	/**
-	 * Get Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Get Wird Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

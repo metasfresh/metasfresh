@@ -53,6 +53,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		dbUpdateProducts(whereClause);
 		dbUpdateC_PaymentTerms(whereClause);
 		dbUpdateM_PricingSystems(whereClause);
+		dbUpdateDiscountSchemaBreaks();
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -65,7 +66,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateDiscountSchema(@NonNull final String whereClause)
@@ -77,7 +78,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE M_DiscountSchema_ID IS NULL AND C_BPartner_ID IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateProducts(@NonNull final String whereClause)
@@ -88,7 +89,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateC_PaymentTerms(final String whereClause)
@@ -119,6 +120,27 @@ public class MDiscountSchemaImportTableSqlUpdater
 		logger.debug("Set C_PaymentTerm={}", no);
 	}
 
+	private void dbUpdateDiscountSchemaBreaks()
+	{
+		StringBuilder sql = new StringBuilder("UPDATE I_DiscountSchema i SET M_DiscountSchemaBreak_ID = dsb.M_DiscountSchemaBreak_ID ")
+				.append("FROM M_DiscountSchemaBreak dsb ")
+				.append("WHERE  dsb.M_DiscountSchema_ID = i.M_DiscountSchema_ID ")
+				.append("AND dsb.M_Product_ID = i.M_Product_ID ")
+				.append("AND dsb.c_paymentterm_id = i.c_paymentterm_id ")
+				.append("AND coalesce(dsb.breakdiscount, 0) = coalesce(i.breakdiscount,0) ")
+				.append("AND coalesce(dsb.breakvalue, 0) = coalesce(i.breakvalue,0) ")
+				.append("AND dsb.PriceBase = i.PriceBase ")
+				.append("AND dsb.Base_PricingSystem_ID = i.Base_PricingSystem_ID ")
+				.append("AND coalesce(dsb.PriceStdFixed, 0) = coalesce(i.PriceStdFixed, 0) ")
+				.append("AND coalesce(dsb.PricingSystemSurchargeAmt, 0) = coalesce(i.PricingSystemSurchargeAmt,0) ")
+				.append("AND coalesce(dsb.C_Currency_ID,0) = coalesce(i.C_Currency_ID,0) ")
+				.append("AND i.M_DiscountSchemaBreak_ID IS NULL ")
+				.append("AND I_IsImported <> 'Y' ")
+				.append("AND dsb.IsActive = 'Y' ");
+				
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
@@ -129,7 +151,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No BPartner = {}", no);
@@ -140,7 +162,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Product = {}", no);

@@ -739,6 +739,29 @@ public interface I_M_Product
     public static final String COLUMNNAME_IsPurchased = "IsPurchased";
 
 	/**
+	 * Set Ist Angebotsgruppe.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsQuotationGroupping (boolean IsQuotationGroupping);
+
+	/**
+	 * Get Ist Angebotsgruppe.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isQuotationGroupping();
+
+    /** Column definition for IsQuotationGroupping */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_IsQuotationGroupping = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "IsQuotationGroupping", null);
+    /** Column name IsQuotationGroupping */
+    public static final String COLUMNNAME_IsQuotationGroupping = "IsQuotationGroupping";
+
+	/**
 	 * Set Selbstbedienung.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
@@ -1211,8 +1234,7 @@ public interface I_M_Product
     public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
 
 	/**
-	 * Set Package Size.
-	 * Size of a package
+	 * Set Pck. Gr..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1221,8 +1243,7 @@ public interface I_M_Product
 	public void setPackageSize (java.lang.String PackageSize);
 
 	/**
-	 * Get Package Size.
-	 * Size of a package
+	 * Get Pck. Gr..
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1680,7 +1701,7 @@ public interface I_M_Product
 	/**
 	 * Set Lager- und Transporttemperatur.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1689,7 +1710,7 @@ public interface I_M_Product
 	/**
 	 * Get Lager- und Transporttemperatur.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

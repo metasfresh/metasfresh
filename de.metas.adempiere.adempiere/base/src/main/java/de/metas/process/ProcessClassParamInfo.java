@@ -2,6 +2,11 @@ package de.metas.process;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -11,6 +16,7 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.reflect.ClassReference;
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.util.Check;
@@ -188,11 +194,34 @@ public final class ProcessClassParamInfo
 			final String valueStr = parameterTo ? source.getParameter_ToAsString(parameterName) : source.getParameterAsString(parameterName);
 			value = DisplayType.toBoolean(valueStr, (Boolean)null);
 		}
+		//
+		// Dates
 		else if (java.util.Date.class.isAssignableFrom(fieldType))
 		{
 			// this catches both Date and Timestamp
 			value = parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName);
 		}
+		else if (LocalDate.class.equals(fieldType))
+		{
+			value = TimeUtil.asLocalDate(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
+		}
+		else if (LocalDateTime.class.equals(fieldType))
+		{
+			value = TimeUtil.asLocalDateTime(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
+		}
+		else if (LocalTime.class.equals(fieldType))
+		{
+			value = TimeUtil.asLocalTime(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
+		}
+		else if (ZonedDateTime.class.equals(fieldType))
+		{
+			value = TimeUtil.asZonedDateTime(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
+		}
+		else if (Instant.class.equals(fieldType))
+		{
+			value = TimeUtil.asInstant(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
+		}
+		//
 		else if (fieldType.isAssignableFrom(String.class))
 		{
 			value = parameterTo ? source.getParameter_ToAsString(parameterName) : source.getParameterAsString(parameterName);
@@ -234,7 +263,6 @@ public final class ProcessClassParamInfo
 		}
 		else
 		{
-
 			throw new IllegalStateException("Field type " + fieldType + " is not supported for " + this);
 		}
 

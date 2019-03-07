@@ -94,35 +94,6 @@ public interface I_S_ResourceType
     public static final String COLUMNNAME_AllowUoMFractions = "AllowUoMFractions";
 
 	/**
-	 * Set Steuerkategorie.
-	 * Tax Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Steuerkategorie.
-	 * Tax Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_TaxCategory_ID();
-
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory();
-
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory);
-
-    /** Column definition for C_TaxCategory_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_ResourceType, org.compiere.model.I_C_TaxCategory> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_S_ResourceType, org.compiere.model.I_C_TaxCategory>(I_S_ResourceType.class, "C_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
-    /** Column name C_TaxCategory_ID */
-    public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
-
-	/**
 	 * Set Maßeinheit.
 	 * Unit of Measure
 	 *
