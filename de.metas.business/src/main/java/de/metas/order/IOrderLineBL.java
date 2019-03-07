@@ -35,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
@@ -141,7 +142,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param M_Product_ID
 	 * @param setUomFromProduct
 	 */
-	void setM_Product_ID(I_C_OrderLine orderLine, int M_Product_ID, boolean setUomFromProduct);
+	void setProductId(org.compiere.model.I_C_OrderLine orderLine, ProductId productId, boolean setUomFromProduct);
 
 	/**
 	 * Gets the corresponding pricelist version for the order line. If it is not set in the order line then fallback to order with:

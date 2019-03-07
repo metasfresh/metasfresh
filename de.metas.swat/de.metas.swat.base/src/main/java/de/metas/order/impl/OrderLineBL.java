@@ -33,12 +33,13 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_AD_Org;
@@ -57,6 +58,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -385,10 +387,11 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
-		if (order.getC_DocType_ID() > 0 && docTypeBL.isProposal(order.getC_DocType()))
+		
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (docTypeId != null && docTypeBL.isSalesProposal(docTypeId))
 		{
-			logger.debug("C_Order {} of given orderLine {} has C_DocType {} which is a proposal; setting QtyReserved=0.",
-					new Object[] { order, orderLine, order.getC_DocType() });
+			logger.debug("C_Order {} of given orderLine {} has C_DocType {} which is a proposal; setting QtyReserved=0.", order, orderLine, docTypeId);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -419,20 +422,19 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setM_Product_ID(final I_C_OrderLine orderLine, int M_Product_ID, boolean setUOM)
+	public void setProductId(
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine,
+			@NonNull final ProductId productId,
+			boolean setUOM)
 	{
+		orderLine.setM_Product_ID(productId.getRepoId());
 		if (setUOM)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-			final I_M_Product product = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, ITrx.TRXNAME_None);
-			orderLine.setM_Product(product);
-			orderLine.setC_UOM_ID(product.getC_UOM_ID());
+			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			orderLine.setC_UOM_ID(uomId.getRepoId());
 		}
-		else
-		{
-			orderLine.setM_Product_ID(M_Product_ID);
-		}
-		orderLine.setM_AttributeSetInstance_ID(0);
+		
+		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 	}	// setM_Product_ID
 
 	@Override

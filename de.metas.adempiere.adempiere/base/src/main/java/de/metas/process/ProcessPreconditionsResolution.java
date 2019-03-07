@@ -4,6 +4,8 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
@@ -12,7 +14,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -244,4 +245,11 @@ public final class ProcessPreconditionsResolution
 		return resolutionSupplier.get();
 	}
 
+	public void throwExceptionIfRejected()
+	{
+		if (isRejected())
+		{
+			throw new AdempiereException(getRejectReason());
+		}
+	}
 }

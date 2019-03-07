@@ -92,6 +92,8 @@ public interface IADWindowDAO extends ISingletonService
 
 	void deleteFieldsByTabId(AdTabId tabId);
 
+	void deleteFieldsByColumnId(int adColumnId);
+
 	Set<AdTabId> retrieveTabIdsWithMissingADElements();
 
 	Set<AdWindowId> retrieveWindowIdsWithMissingADElements();
@@ -114,4 +116,5 @@ public interface IADWindowDAO extends ISingletonService
 
 	void deleteExistingADElementLinkForFieldId(AdFieldId adFieldId);
 
+	void deleteUIElementsByFieldId(AdTabId adTabId, AdFieldId adFieldId);
 }

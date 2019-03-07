@@ -81,7 +81,7 @@ public interface IPostingRequestBuilder
 	/**
 	 * Post the document (i.e. execute this request).
 	 */
-	IPostingRequestBuilder postIt();
+	void postIt();
 
 	/**
 	 * Sets what do to in case an error is encounted while posting.

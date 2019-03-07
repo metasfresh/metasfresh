@@ -71,7 +71,7 @@ public interface I_C_Order_CompensationGroup
 	/**
 	 * Set Compensation Group Schema.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -80,7 +80,7 @@ public interface I_C_Order_CompensationGroup
 	/**
 	 * Get Compensation Group Schema.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -255,6 +255,35 @@ public interface I_C_Order_CompensationGroup
     public static final org.adempiere.model.ModelColumn<I_C_Order_CompensationGroup, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Order_CompensationGroup, Object>(I_C_Order_CompensationGroup.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set BOM & Formula.
+	 * BOM & Formula
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
+
+	/**
+	 * Get BOM & Formula.
+	 * BOM & Formula
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Product_BOM_ID();
+
+	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM();
+
+	public void setPP_Product_BOM(org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
+
+    /** Column definition for PP_Product_BOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_CompensationGroup, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new org.adempiere.model.ModelColumn<I_C_Order_CompensationGroup, org.eevolution.model.I_PP_Product_BOM>(I_C_Order_CompensationGroup.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
+    /** Column name PP_Product_BOM_ID */
+    public static final String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
 
 	/**
 	 * Get Aktualisiert.
