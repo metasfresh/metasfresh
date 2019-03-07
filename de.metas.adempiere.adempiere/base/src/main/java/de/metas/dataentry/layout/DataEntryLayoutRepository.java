@@ -199,6 +199,7 @@ public class DataEntryLayoutRepository
 				.id(DataEntrySectionId.ofRepoId(sectionRecord.getDataEntry_Section_ID()))
 				.caption(captionTrl)
 				.description(descriptionTrl)
+				.initallyClosed(sectionRecord.isInitiallyClosed())
 				.internalName(I_DataEntry_Section.COLUMNNAME_DataEntry_Section_ID + "-" + sectionRecord.getDataEntry_Section_ID());
 
 		final ImmutableList<I_DataEntry_Line> lineRecords = retrieveLineRecords(sectionRecord);
