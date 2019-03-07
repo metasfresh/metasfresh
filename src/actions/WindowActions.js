@@ -601,20 +601,26 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 }
 
 const getChangelogUrl = function(windowId, docId, tabId, rowId) {
-  return `${config.API_URL}/window/${windowId}${docId ? `/${docId}` : ''}${
-    rowId && tabId ? `/${tabId}/${rowId}` : ''
-  }/changeLog`;
+  let documentId = docId;
+
+  if (!docId && rowId) {
+    documentId = rowId[0];
+  }
+
+  return `${config.API_URL}/window/${windowId}${
+    documentId ? `/${documentId}` : ''
+  }${rowId && tabId ? `/${tabId}/${rowId}` : ''}/changeLog`;
 };
 
 export function fetchChangeLog(windowId, docId, tabId, rowId) {
   return dispatch => {
-    const parentUrl = getChangelogUrl(windowId, docId);
+    const parentUrl = getChangelogUrl(windowId, docId, null, rowId);
 
     return axios.get(parentUrl).then(async response => {
       const data = response.data;
       let rowData = null;
 
-      if (rowId) {
+      if (docId && rowId) {
         if (rowId.length === 1) {
           const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
           rowData = await axios.get(childUrl).then(resp => resp.data);

@@ -144,7 +144,6 @@ class SubHeader extends Component {
       selected,
       activeTab,
       windowId,
-      dataId,
       openModalRow,
       openModal,
     } = this.props;
