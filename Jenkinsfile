@@ -23,7 +23,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
 
-		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere',
+		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere.<br>
+<b>Important:</b> metasfreseh-e2e is always triggered''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
 
 		booleanParam(defaultValue: false,
@@ -158,26 +159,32 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 </ul>"""
  } // node
 
-if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+
+stage('Invoke downstream jobs')
 {
-	stage('Invoke downstream jobs')
-	{
 		final misc = new de.metas.jenkins.Misc()
 		final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
 		final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
 
 		parallel (
 			metasfresh : {
-				build job: metasfreshJobName,
-					parameters: [
-						string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-						string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
-						string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-						string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
-						booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
-						booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-					],
-					wait: false
+				if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+				{
+					build job: metasfreshJobName,
+						parameters: [
+							string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+							string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+							string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
+							string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
+							booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+							booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+						],
+						wait: false
+				}
+				else
+				{
+					echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so other than metasfresh-e2e we do not trigger any downstream builds"
+				}
 			},
 			metasfresh_e2e : {
 				final def buildResult = build job: metasfreshE2eJobName,
@@ -193,10 +200,5 @@ This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${buildResul
 				"""
 			}
 		)
-	}
-}
-else
-{
-	echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
 }
 } // timestamps

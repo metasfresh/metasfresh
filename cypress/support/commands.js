@@ -121,11 +121,40 @@ context('Reusable "login" custom command', function() {
   });
 });
 
-
-Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
+/*
+ * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
   describe('Click on a checkbox field', function() {
-    cy.get(`.form-field-${fieldName}`)
+
+    cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
+
+    cy.server()
+    cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox')
+    cy.route('GET', '/rest/api/window/**').as('getData')
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+  
+    cy.get(path)
       .find('.input-checkbox-tick')
+      .click()
+      .wait(['@patchCheckBox', '@getData'])
+  });
+});
+
+Cypress.Commands.add('clickOnIsActive', (modal) => {
+  describe('Click on the IsActive slider', function() {
+
+    let path = `.form-field-IsActive`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    cy.get(path)
+      .find('.input-slider')
       .click();
   });
 });
@@ -133,21 +162,25 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
 /** 
  * Should also work for date columns, e.g. '01/01/2018{enter}'.
  * 
- * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
   describe('Enter value into string field', function() {
 
     cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
+   
+    // here we want to match URLs that don *not* end with "/NEW"
+    cy.server()
+    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchInputField`)
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
-      //path = `.panel-modal-content ${path}`;
       path = `.panel-modal ${path}`;
     }
     cy.get(path)
       .find('input')
-      .type(stringValue);
+      .type(`${stringValue}{enter}`)
+      .wait('@patchInputField')
   });
 });
 
@@ -158,25 +191,33 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
   describe('Enter value into text field', function() {
 
       cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
+      
+      // here we want to match URLs that don *not* end with "/NEW"
+      cy.server()
+      cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as('patchTextArea')
 
       let path = `.form-field-${fieldName}`;
       if (modal) {
-        //path = `.panel-modal-content ${path}`;
         path = `.panel-modal ${path}`;
       }
       cy.get(path)
         .find('textarea')
-        .type(stringValue);
+        .type(`${stringValue}{enter}`)
+        .wait('@patchTextArea')
     });
   });
 
 /**
- * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param modal - use true, if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
 Cypress.Commands.add(
   'writeIntoLookupListField',
   (fieldName, partialValue, listValue, modal) => {
     describe('Enter value into lookup list field', function() {
+
+      // here we want to match URLs that don *not* end with "/NEW"
+      cy.server()
+      cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchLookupField`)
 
       let path = `#lookup_${fieldName}`;
       if (modal) {
@@ -194,9 +235,10 @@ Cypress.Commands.add(
           return cy.get('.lookup-dropdown').click();
         })
 
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+      cy.get('.input-dropdown-list').should('exist')
+      cy.contains('.input-dropdown-list-option', listValue).click({ force: true })
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist')
+      cy.wait('@patchLookupField')
     });
 });
 
@@ -207,6 +249,13 @@ Cypress.Commands.add(
  */
 Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
   describe('Select value in list field', function() {
+
+      cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
+
+      // here we want to match URLs that don *not* end with "/NEW"
+      cy.server()
+      cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchListField`)
+
       let path = `.form-field-${fieldName}`;
       if (modal) {
         //path = `.panel-modal-content ${path}`;
@@ -218,9 +267,9 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
       cy
         .contains('.input-dropdown-list-option', listValue)
-        .click();
-    }
-  );
+        .click()
+        .wait('@patchListField')
+    });
 });
 
 /**
@@ -259,23 +308,27 @@ Cypress.Commands.add('openAdvancedEdit', () => {
   })
 });
 
-/** 
- * @param waitBeforePress if truthy, call cy.wait with the given parameter first
- */
-Cypress.Commands.add('pressAddNewButton', (waitBeforePress) => {
+Cypress.Commands.add('pressAddNewButton', (includedDocumentIdAliasName='newIncludedDocumentId') => {
   describe('Press table\'s add-new-record-button', function() {
 
-    if(waitBeforePress) {
-      cy.wait(waitBeforePress)
-    }
+    cy.server()
+    // window/<windowId>/<rootDocumentId>/<tabId>/NEW
+    cy.route('PATCH', new RegExp('/rest/api/window/[^/]+/[^/]+/[^/]+/NEW$')).as('patchNewIncludedDocument')
+
     const addNewText = Cypress.messages.window.addNew.caption;
     cy.get('.btn')
         .contains(addNewText)
         .should('exist')
-        .click();
-        
-    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-        .should('exist');
+        .click()
+        .wait('@patchNewIncludedDocument')
+        .then((xhr) => {
+
+          return { documentId: xhr.response.body[0].rowId }
+        })
+        .as(includedDocumentIdAliasName)
+
+    cy.get('.panel-modal')
+        .should('exist')
   })
 });
 
@@ -495,3 +548,45 @@ Cypress.Commands.add('clickHeaderNav', (navName) => {
   });
 });
 
+Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName='visitedDocumentId') => {
+  describe('Open metasfresh window and wait for layout and data', function() {
+
+    cy.server()
+    cy.route('GET', `/rest/api/window/${windowId}/layout`).as('getLayout')
+    cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as('getRecordData')
+
+    cy.visit(`/window/${windowId}/${recordId}`)
+      .wait('@getLayout', {requestTimeout: 20000, responseTimeout: 20000})
+      .wait('@getRecordData', {requestTimeout: 20000, responseTimeout: 20000})
+      .then((xhr) => {
+
+          return { documentId: xhr.response.body[0].id }
+        })
+      .as(documentIdAliasName)
+  })
+})
+
+// may be useful to wait for the response to a particular patch where a particular field value was set
+// not yet tested
+// thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
+Cypress.Commands.add('waitForFieldValue', (alias, fieldName, fieldValue) => {
+  cy.wait(alias)
+    .then(function(xhr){
+      const responseBody = xhr.responseBody
+      if (!responseBody.length <= 0) {
+        cy.log(`waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body is empty; continuing to wait`)
+        return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit        
+      }
+
+      if (!responseBody.fieldsByName) {
+        cy.log(`waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body has no fieldsByName property; continuing to wait`)
+        return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit        
+      }
+
+      const fieldsByName = responseBody[0].fieldsByName
+      if (fieldsByName[fieldName] !== fieldValue) {
+        cy.log(`waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the field has value=${fieldsByName[fieldName]}; continuing to wait`)
+        return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
+      }
+    })
+})

@@ -68,6 +68,7 @@ export class BPartner
             }
             addContact(contact) 
             {
+                cy.log(`BPartnerBuilder - add contact = ${JSON.stringify(contact)}`);
                 this.contacts.push(contact);
                 return this;
             }
@@ -172,8 +173,8 @@ function applyBPartner(bPartner)
 {
     describe(`Create new bPartner ${bPartner.name}`, function () {
 
-        cy.visit('/window/123/NEW')
-        cy.wait(500) // TODO: better figure out how to wait until the layout was gotten and processed
+        cy.visitWindow('123', 'NEW')
+
         cy.writeIntoStringField('CompanyName', bPartner.name);
         cy.writeIntoStringField('Name2', bPartner.name);
 

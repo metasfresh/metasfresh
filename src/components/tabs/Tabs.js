@@ -7,6 +7,10 @@ import { Set } from 'immutable';
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
 
+const TabSingleEntry = props => (
+  <div className="tab-sections">{props.children}</div>
+);
+
 class Tabs extends Component {
   constructor(props) {
     super(props);
@@ -144,7 +148,7 @@ class Tabs extends Component {
   };
 
   renderTabs = tabs => {
-    const { toggleTableFullScreen, windowType } = this.props;
+    const { toggleTableFullScreen, windowId } = this.props;
     const { selected } = this.state;
 
     return tabs.map(item => {
@@ -157,7 +161,13 @@ class Tabs extends Component {
       };
 
       if (selected.last() === item.key) {
-        const { tabId, queryOnActivate, docId, orderBy } = item.props;
+        const {
+          tabId,
+          queryOnActivate,
+          docId,
+          orderBy,
+          singleRowView,
+        } = item.props;
 
         return (
           <div key={'pane-' + item.key} className="tab-pane active">
@@ -166,8 +176,9 @@ class Tabs extends Component {
                 queryOnActivate,
                 tabId,
                 docId,
-                windowType,
+                windowId,
                 orderBy,
+                singleRowView,
               }}
             >
               {itemWithProps}
@@ -209,3 +220,5 @@ Tabs.propTypes = {
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
 }))(Tabs);
+
+export { TabSingleEntry };

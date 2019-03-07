@@ -70,9 +70,9 @@ class TableContextMenu extends Component {
   };
 
   getReferences = () => {
-    const { docId, tabId, type, selected } = this.props;
+    const { docId, tabId, windowId, selected } = this.props;
 
-    referencesRequest('window', type, docId, tabId, selected[0]).then(
+    referencesRequest('window', windowId, docId, tabId, selected[0]).then(
       response => {
         this.setState({
           references: response.data.references,
@@ -82,16 +82,22 @@ class TableContextMenu extends Component {
   };
 
   handleReferenceClick = (refType, filter) => {
-    const { dispatch, type, docId, tabId, selected } = this.props;
+    const { dispatch, windowId, docId, tabId, selected } = this.props;
 
     dispatch(setFilter(filter, refType));
 
     window.open(
-      `/window/${refType}?refType=${type}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
+      `/window/${refType}?refType=${windowId}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
         selected || []
       )}`,
       '_blank'
     );
+  };
+
+  handleOpenNewTab = () => {
+    const { selected, windowId, onOpenNewTab } = this.props;
+
+    onOpenNewTab(windowId, selected);
   };
 
   render() {
@@ -100,7 +106,6 @@ class TableContextMenu extends Component {
       selected,
       mainTable,
       handleAdvancedEdit,
-      handleOpenNewTab,
       handleDelete,
       handleFieldEdit,
       handleZoomInto,
@@ -163,7 +168,7 @@ class TableContextMenu extends Component {
         )}
 
         {mainTable && (
-          <div className="context-menu-item" onClick={handleOpenNewTab}>
+          <div className="context-menu-item" onClick={this.handleOpenNewTab}>
             <i className="meta-icon-file" />
             {` ${counterpart.translate('window.table.openInNewTab')}`}
             <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
@@ -199,6 +204,7 @@ class TableContextMenu extends Component {
 
 TableContextMenu.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onOpenNewTab: PropTypes.func,
 };
 
 export default connect()(TableContextMenu);

@@ -63,11 +63,16 @@ export default class App extends Component {
         const errorPrototype = Object.getPrototypeOf(error);
 
         // This is a canceled request error
-        if (errorPrototype && errorPrototype.__CANCEL__) {
+        if (
+          !error ||
+          !error.response ||
+          !error.response.status ||
+          (errorPrototype && errorPrototype.__CANCEL__)
+        ) {
           return Promise.reject(error);
         }
 
-        if (!error.response) {
+        if (!error || !error.response || !error.response.status) {
           store.dispatch(noConnection(true));
         }
 
