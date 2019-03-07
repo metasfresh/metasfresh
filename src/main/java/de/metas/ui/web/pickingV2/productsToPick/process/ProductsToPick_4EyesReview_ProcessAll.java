@@ -68,7 +68,12 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows were approved");
 		}
 
-		if (!getRowsNotAlreadyProcessed().stream().allMatch(this::isEligibleForProcessing))
+		final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
+		if (rows.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
+		}
+		if (!rows.stream().allMatch(this::isEligibleForProcessing))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows eligible for processing");
 		}
@@ -86,6 +91,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 
 		final List<PickingCandidate> pickingCandidates = processAllPickingCandidates();
 		deliverAndInvoice(pickingCandidates);
+
 		return MSG_OK;
 	}
 
