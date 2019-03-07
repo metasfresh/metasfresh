@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -79,7 +78,6 @@ import com.google.common.collect.ImmutableSet;
 import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheModel;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -88,6 +86,7 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -323,31 +322,34 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.match();
 	}
 
-	@Cached(cacheName = I_C_InvoiceCandidate_InOutLine.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 	@Override
-	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@CacheModel final I_C_Invoice_Candidate invoiceCandidate)
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+	}
 
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
 		// load all I_C_InvoiceCandidate_InOutLine and filter locally.
 		// i think it's safe to assume that there are not 1000s of records to load and this way the code is simpler
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_C_InvoiceCandidate_InOutLine> result = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, invoiceCandidate)
-				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID())
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
 				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID).endOrderBy()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.create()
 				.stream(I_C_InvoiceCandidate_InOutLine.class)
-				.filter(iciol -> {
+				.filter(this::isInOutCompletedOrClosed)
+				.collect(ImmutableList.toImmutableList());
+	}
 
-					final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
+	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
+	{
+		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-					return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
-				})
-				.collect(Collectors.toList());
-
-		return result;
+		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
+		return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
 	}
 
 	@Override
