@@ -2,7 +2,7 @@
 -- Data for Name: dataentry_group; Type: TABLE DATA; Schema: public; Owner: metasfresh
 --
 
-INSERT INTO public.dataentry_group (ad_client_id, ad_org_id, created, createdby, dataentry_group_id, dataentry_targetwindow_id, description, isactive, name, tabname, updated, updatedby, seqno) VALUES (1000000, 1000000, '2019-03-07 08:04:00+00', 100, 100000, 540599, 'Description of Example-Group1', 'N', 'Example-Group1', 'Group1-Tab1', '2019-03-07 09:29:43+00', 100, 10);
+INSERT INTO public.dataentry_group (ad_client_id, ad_org_id, created, createdby, dataentry_group_id, dataentry_targetwindow_id, description, isactive, name, tabname, updated, updatedby, seqno) VALUES (1000000, 1000000, '2019-03-07 08:04:00+00', 100, 100000, 123, 'Description of Example-Group1', 'N', 'Example-Group1', 'Group1-Tab1', '2019-03-07 09:29:43+00', 100, 10);
 
 
 --
