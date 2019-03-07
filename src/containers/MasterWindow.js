@@ -173,16 +173,17 @@ class MasterWindow extends Component {
       this.removeEventListeners();
     }
 
-    // When closing modal, we need to update the stale tabs
+    // When closing modal, we need to update the stale tab
     if (
       !modal.visible &&
       modal.visible !== prevProps.modal.visible &&
-      master.includedTabsInfo
+      master.includedTabsInfo &&
+      master.layout
     ) {
-      Object.keys(master.includedTabsInfo).map(tabId => {
-        getTab(tabId, params.windowType, master.docId).then(tab => {
-          dispatch(addRowData({ [tabId]: tab }, 'master'));
-        });
+      const tabId = master.layout.activeTab;
+
+      getTab(tabId, params.windowType, master.docId).then(tab => {
+        dispatch(addRowData({ [tabId]: tab }, 'master'));
       });
     }
   }

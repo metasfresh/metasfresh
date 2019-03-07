@@ -79,7 +79,7 @@ class WidgetTooltip extends PureComponent {
 WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,
-  fieldName: PropTypes.string.isRequired,
+  fieldName: PropTypes.string,
   isToggled: PropTypes.bool.isRequired,
   onToggle: PropTypes.func,
 };
