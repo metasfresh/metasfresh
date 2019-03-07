@@ -3,6 +3,8 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -51,29 +53,26 @@ public final class JSONDocumentLayoutColumn implements Serializable
 	{
 		return new JSONDocumentLayoutColumn(column, jsonOpts);
 	}
-	
+
 	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
 
 	@JsonProperty("elementGroups")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElementGroup> elementGroups;
-	
+
 	private JSONDocumentLayoutColumn()
 	{
-		super();
 		this.elementGroups = ImmutableList.of();
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutColumn(@JsonProperty("elementGroups") final List<JSONDocumentLayoutElementGroup> elementGroups)
+	private JSONDocumentLayoutColumn(@Nullable @JsonProperty("elementGroups") final List<JSONDocumentLayoutElementGroup> elementGroups)
 	{
-		super();
 		this.elementGroups = elementGroups == null ? ImmutableList.of() : ImmutableList.copyOf(elementGroups);
 	}
 
 	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
 	{
-		super();
 		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
 	}
 

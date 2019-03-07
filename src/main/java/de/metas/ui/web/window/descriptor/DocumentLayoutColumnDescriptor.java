@@ -10,8 +10,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,7 +47,6 @@ public class DocumentLayoutColumnDescriptor
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
-		super();
 		internalName = builder.internalName;
 		elementGroups = ImmutableList.copyOf(builder.buildElementGroups());
 	}
@@ -81,9 +80,8 @@ public class DocumentLayoutColumnDescriptor
 
 		private Builder()
 		{
-			super();
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -97,7 +95,7 @@ public class DocumentLayoutColumnDescriptor
 		public DocumentLayoutColumnDescriptor build()
 		{
 			final DocumentLayoutColumnDescriptor result = new DocumentLayoutColumnDescriptor(this);
-			
+
 			logger.trace("Built {} for {}", result, this);
 			return result;
 		}
@@ -110,7 +108,7 @@ public class DocumentLayoutColumnDescriptor
 					.filter(elementGroup -> checkValid(elementGroup))
 					.collect(GuavaCollectors.toImmutableList());
 		}
-		
+
 		private boolean checkValid(final DocumentLayoutElementGroupDescriptor elementGroup)
 		{
 			if(!elementGroup.hasElementLines())
@@ -118,23 +116,28 @@ public class DocumentLayoutColumnDescriptor
 				logger.trace("Skip adding {} to {} because it does not have element line", elementGroup, this);
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		public Builder setInternalName(String internalName)
 		{
 			this.internalName = internalName;
 			return this;
 		}
 
-		public Builder addElementGroup(final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder)
+		public Builder addElementGroups(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
 		{
-			Check.assumeNotNull(elementGroupBuilder, "Parameter elementGroupBuilder is not null");
+			elementGroupsBuilders.addAll(elementGroupBuilders);
+			return this;
+		}
+
+		public Builder addElementGroup(@NonNull final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder)
+		{
 			elementGroupsBuilders.add(elementGroupBuilder);
 			return this;
 		}
-		
+
 		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
 			return elementGroupsBuilders.stream().flatMap(DocumentLayoutElementGroupDescriptor.Builder::streamElementBuilders);

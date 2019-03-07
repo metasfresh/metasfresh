@@ -2,6 +2,8 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,7 +11,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,6 +48,30 @@ public final class JSONDocumentLayoutSection
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public enum JSONClosableMode
+	{
+		ALWAYS_OPEN,
+
+		INITIALLY_OPEN,
+
+		INITIALLY_CLOSED;
+
+		public static JSONClosableMode ofClosableMode(@NonNull final ClosableMode closableMode)
+		{
+			switch (closableMode)
+			{
+				case ALWAYS_OPEN:
+					return ALWAYS_OPEN;
+				case INITIALLY_CLOSED:
+					return INITIALLY_CLOSED;
+				case INITIALLY_OPEN:
+					return INITIALLY_OPEN;
+				default:
+					throw new AdempiereException("Unexpected closableMode=" + closableMode);
+			}
+		}
+	}
+
 	@JsonProperty("title")
 	@JsonInclude(Include.NON_EMPTY)
 	private final String title;
@@ -55,20 +84,48 @@ public final class JSONDocumentLayoutSection
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
 
-	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
+	@JsonProperty("closableMode")
+	@JsonInclude(Include.NON_EMPTY)
+	private final JSONClosableMode closableMode;
+
+	private JSONDocumentLayoutSection(
+			final DocumentLayoutSectionDescriptor section,
+			final JSONOptions jsonOpts)
 	{
-		// Show section title only for advanced layouts
-		if (jsonOpts.isShowAdvancedFields())
+		this.title = exctractTitle(section, jsonOpts);
+
+		this.description = section.getDescription(jsonOpts.getAD_Language()).trim();
+		this.columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
+		this.closableMode = JSONClosableMode.ofClosableMode(section.getClosableMode());
+	}
+
+	private String exctractTitle(
+			@NonNull final DocumentLayoutSectionDescriptor section,
+			@NonNull final JSONOptions jsonOpts)
+	{
+		if (CaptionMode.DISPLAY.equals(section.getCaptionMode()))
 		{
-			title = section.getCaption(jsonOpts.getAD_Language()).trim();
+			return section.getCaption(jsonOpts.getAD_Language()).trim();
 		}
-		else
+		else if (CaptionMode.DISPLAY_IN_ADV_EDIT.equals(section.getCaptionMode()))
 		{
-			title = null;
+			if (jsonOpts.isShowAdvancedFields())
+			{
+				return section.getCaption(jsonOpts.getAD_Language()).trim();
+			}
+			else
+			{
+				return null;
+			}
 		}
-		
-		description = section.getDescription(jsonOpts.getAD_Language()).trim();
-		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
+		else if (CaptionMode.DONT_DISPLAY.equals(section.getCaptionMode()))
+		{
+			return null;
+		}
+
+		throw new AdempiereException("Unexpected captionMode=" + section.getCaptionMode())
+				.appendParametersToMessage()
+				.setParameter("documentLayoutSectionDescriptor", section);
 	}
 
 	@Override

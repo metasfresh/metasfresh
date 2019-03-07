@@ -118,7 +118,11 @@ public final class DocumentChanges
 		}
 
 		return fieldChangesByName.computeIfAbsent(documentField.getFieldName(), (fieldName) -> {
-			final DocumentFieldChange event = DocumentFieldChange.of(fieldName, documentField.isKey(), documentField.isPublicField(), documentField.isAdvancedField(), documentField.getWidgetType());
+			final DocumentFieldChange event = DocumentFieldChange.of(fieldName,
+					documentField.isKey(),
+					documentField.isPublicField(),
+					documentField.isAdvancedField(),
+					documentField.getWidgetType());
 			if (WindowConstants.isProtocolDebugging())
 			{
 				event.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, documentField.toString());
