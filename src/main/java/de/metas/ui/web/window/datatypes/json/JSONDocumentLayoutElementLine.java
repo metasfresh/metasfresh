@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -94,6 +95,7 @@ public class JSONDocumentLayoutElementLine implements Serializable
 		return elements;
 	}
 
+	@JsonIgnore
 	public boolean isEmpty()
 	{
 		return elements.isEmpty();
