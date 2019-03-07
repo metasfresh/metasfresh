@@ -111,7 +111,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		env.BUILD_CHANGE_URL = env.CHANGE_URL
 		env.MF_VERSION = MF_VERSION
 		env.BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
-		env.BUILD_DOCKER_IMAGE = publishedDockerImageName
+		env.MF_DOCKER_IMAGE = publishedDockerImageName
 		env.MF_VERSION = MF_VERSION
 
 		currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
