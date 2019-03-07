@@ -39,7 +39,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
@@ -51,6 +50,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
@@ -103,8 +103,6 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIl(I_C_InvoiceLine il);
 
 	I_C_Invoice_Line_Alloc retrieveIlaForIcAndIl(I_C_Invoice_Candidate invoiceCand, org.compiere.model.I_C_InvoiceLine invoiceLine);
-
-	List<I_C_Invoice_Candidate> retrieveForBillPartner(I_C_BPartner bpartner);
 
 	/**
 	 * Loads those invoice candidates
@@ -315,7 +313,7 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine inoutLine);
 
-	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(I_C_OrderLine orderLine);
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
 	/**
 	 * Return the active <code>M_InOutLine</code>s for the given invoice candidate.

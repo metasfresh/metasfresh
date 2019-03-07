@@ -104,6 +104,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -298,11 +299,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(final I_C_OrderLine orderLine)
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class, orderLine)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				//
 				.create()
@@ -1034,14 +1035,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, pinstanceId)
 				.create()
 				.match();
-	}
-
-	@Override
-	public final List<I_C_Invoice_Candidate> retrieveForBillPartner(final I_C_BPartner bpartner)
-	{
-		return retrieveForBillPartnerQuery(bpartner)
-				.create()
-				.list(I_C_Invoice_Candidate.class);
 	}
 
 	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveForBillPartnerQuery(final I_C_BPartner bpartner)

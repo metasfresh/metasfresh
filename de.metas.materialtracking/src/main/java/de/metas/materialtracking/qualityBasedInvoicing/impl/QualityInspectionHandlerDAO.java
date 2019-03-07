@@ -44,6 +44,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Check;
@@ -62,8 +63,10 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final List<T> result = new ArrayList<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+
 			final List<T> invoiceCandidates = InterfaceWrapperHelper.createList(
-					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
+					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId),
 					clazz);
 			result.addAll(invoiceCandidates);
 		}
