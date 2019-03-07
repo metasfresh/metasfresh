@@ -173,6 +173,10 @@
                 textarea {
                     height: 6.8rem;
                 }
+
+                .input-checkbox {
+                    margin-left: 0;
+                }
             }
         }
     }
