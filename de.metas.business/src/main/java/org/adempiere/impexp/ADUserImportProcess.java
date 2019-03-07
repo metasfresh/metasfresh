@@ -133,10 +133,6 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		final int no = DB.executeUpdateEx(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
-		//
-		// Flag missing AD_Role_ID
-		markAsError("Role not found", I_I_User.COLUMNNAME_AD_Role_ID + " IS NULL"
-				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
@@ -176,17 +172,14 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 			user.setC_BPartner_ID(bpartnerId);
 		}
 		//
-		// check role
-		int roleId = importRecord.getAD_Role_ID();
-		if (roleId <= 0)
-		{
-			throw new AdempiereException("Role not found");
-		}
-		//
 		// set data from the other fields
 		setUserFieldsAndSave(user, importRecord);
+
 		//
 		// Assign Role
+		int roleId = importRecord.getAD_Role_ID();
+
+		if (roleId > 0)
 		{
 			Services.get(IRoleDAO.class).createUserRoleAssignmentIfMissing(user.getAD_User_ID(), roleId);
 		}
