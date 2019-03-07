@@ -38,10 +38,74 @@ class Window extends PureComponent {
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
   }
 
+  componentMountUpdate() {
+    this._setInitialSectionsState();
+  }
+
+  _setInitialSectionsState = () => {
+    const sections = this._getInitialSectionsState();
+
+    this.setState({
+      collapsedSections: sections,
+    });
+  };
+
+  _getInitialSectionsState = () => {
+    const { tabs, activeTab } = this.props.layout;
+
+    if (tabs) {
+      const tabObject = tabs.find(tab => {
+        let ret = false;
+        if (tab.tabId === activeTab) {
+          ret = true;
+        }
+        if (tab.tabs) {
+          for (let i = 0; i < tab.tabs.length; i += 1) {
+            if (tab.tabs[i].tabId === activeTab) {
+              ret = true;
+              break;
+            }
+          }
+        }
+
+        return ret;
+      });
+
+      if (tabObject && tabObject.tabs && tabObject.tabs.length) {
+        return tabObject.tabs.reduce((sectionsObject, tab) => {
+          if (tab.sections) {
+            tab.sections.forEach((sec, idx) => {
+              if (sec.closableMode === INITIALLY_CLOSED) {
+                sectionsObject[`${tab.tabId}_${idx}`] = true;
+              }
+            });
+          }
+
+          return sectionsObject;
+        }, {});
+      }
+    }
+
+    return {};
+  };
+
   toggleTableFullScreen = () => {
     this.setState({
       fullScreen: !this.state.fullScreen,
     });
+  };
+
+  toggleSection = (idx, tabId = '') => {
+    this.setState({
+      collapsedSections: {
+        ...this.state.collapsedSections,
+        [`${tabId}_${idx}`]: !this.state.collapsedSections[`${tabId}_${idx}`],
+      },
+    });
+  };
+
+  sectionCollapsed = (idx, tabId = '') => {
+    return this.state.collapsedSections[`${tabId}_${idx}`];
   };
 
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
@@ -152,6 +216,7 @@ class Window extends PureComponent {
         toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
         windowId={windowId}
+        onChange={this._setInitialSectionsState}
         {...{ tabs, tabsByIds }}
       >
         {tabsArray}
@@ -159,24 +224,12 @@ class Window extends PureComponent {
     );
   };
 
-  toggleSection = idx => {
-    this.setState({
-      collapsedSections: {
-        ...this.state.collapsedSections,
-        [idx]: !this.state.collapsedSections[idx],
-      },
-    });
-  };
-
-  sectionCollapsed = idx => {
-    return this.state.collapsedSections[idx];
-  };
-
   renderSections = (sections, dataEntry, extendedData = {}) => {
     return sections.map((elem, idx) => {
       const { title, columns, closableMode } = elem;
       const isFirst = idx === 0;
-      const sectionCollapsed = dataEntry && this.sectionCollapsed(idx);
+      const sectionCollapsed =
+        dataEntry && this.sectionCollapsed(idx, extendedData.tabId);
       const collapsible =
         closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
 
@@ -184,7 +237,8 @@ class Window extends PureComponent {
         <div key={`section-${idx}`} className="section">
           {title && (
             <Separator
-              {...{ title, idx, closableMode, sectionCollapsed, collapsible }}
+              {...{ title, idx, sectionCollapsed, collapsible }}
+              tabId={extendedData.tabId}
               onClick={this.toggleSection}
             />
           )}

@@ -16,6 +16,7 @@ class Tab extends Component {
       dispatch,
       tabId,
       windowId,
+      onChange,
       queryOnActivate,
       singleRowView,
       docId,
@@ -32,11 +33,13 @@ class Tab extends Component {
           if (res.length) {
             dispatch(updateMasterData(res[0]));
             dispatch(addRowData({ [tabId]: res }, 'master'));
+            onChange && onChange();
           }
         });
       } else {
         getTab(tabId, windowId, docId, query).then(res => {
           dispatch(addRowData({ [tabId]: res }, 'master'));
+          onChange && onChange();
         });
       }
     }
@@ -51,6 +54,7 @@ class Tab extends Component {
 
 Tab.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onChange: PropTypes.func,
   children: PropTypes.any,
   singleRowView: PropTypes.bool,
   windowId: PropTypes.string,
