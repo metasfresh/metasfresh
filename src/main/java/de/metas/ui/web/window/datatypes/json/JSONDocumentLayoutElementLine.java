@@ -3,6 +3,8 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,11 +29,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -69,15 +71,13 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutElementLine(@JsonProperty("elements") final List<JSONDocumentLayoutElement> elements)
+	private JSONDocumentLayoutElementLine(@Nullable @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements)
 	{
-		super();
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 	}
 
 	private JSONDocumentLayoutElementLine(final JSONDocumentLayoutElement element)
 	{
-		super();
 		elements = ImmutableList.of(element);
 	}
 
@@ -92,5 +92,10 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
+	}
+
+	public boolean isEmpty()
+	{
+		return elements.isEmpty();
 	}
 }

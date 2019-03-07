@@ -50,6 +50,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	{
 		return elementGroups.stream()
 				.map(elementGroup -> of(elementGroup, jsonOpts))
+				.filter(group -> !group.isEmpty())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -125,5 +126,13 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 				.add("columnCount", columnCount)
 				.add("elements", elementLines.isEmpty() ? null : elementLines)
 				.toString();
+	}
+
+	private boolean isEmpty()
+	{
+		final boolean atLeastOneLineIsFilled = elementLines
+				.stream()
+				.anyMatch(line -> !line.isEmpty());
+		return !atLeastOneLineIsFilled;
 	}
 }
