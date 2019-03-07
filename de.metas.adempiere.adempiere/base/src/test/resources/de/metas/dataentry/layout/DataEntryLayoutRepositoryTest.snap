@@ -35,7 +35,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                 "anyLanguage": true
               },
               "internalName": "DataEntry_Section_ID-100010",
-              "initallyClosed": false,
+              "initallyClosed": true,
               "dataEntryLines": [
                 {
                   "dataEntryFields": [
