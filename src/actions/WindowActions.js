@@ -38,6 +38,7 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
@@ -203,6 +204,13 @@ export function initDataSuccess({
     type: INIT_DATA_SUCCESS,
     validStatus,
     websocket,
+  };
+}
+
+export function updateMasterData(data) {
+  return {
+    type: UPDATE_MASTER_DATA,
+    payload: data.fieldsByName,
   };
 }
 
@@ -519,11 +527,11 @@ function initTabs(layout, windowType, docId, isModal) {
 
     layout &&
       layout.map((tab, index) => {
-        tabTmp[tab.tabid] = {};
+        tabTmp[tab.tabId] = {};
 
         if (index === 0 || !tab.queryOnActivate) {
-          getTab(tab.tabid, windowType, docId).then(res => {
-            tabTmp[tab.tabid] = res;
+          getTab(tab.tabId, windowType, docId).then(res => {
+            tabTmp[tab.tabId] = res;
             dispatch(addRowData(tabTmp, getScope(isModal)));
           });
         }
@@ -793,7 +801,7 @@ function updateRow(row, scope) {
           );
         });
       } else {
-        dispatch(updateRowProperty(key, row[key], row.tabid, row.rowId, scope));
+        dispatch(updateRowProperty(key, row[key], row.tabId, row.rowId, scope));
       }
     });
   };

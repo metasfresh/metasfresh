@@ -58,7 +58,7 @@ Note that you might need to first install cypress; [this documentation](https://
 
 > npm install cypress --save-dev
 
-Also note that in additiona you might also need to do a full `npm install` afterwards.
+Also note that in addition you might also need to do a full `npm install` afterwards.
 
 Also, you'll need to configure the login credentials/API endpoints. One file is responsible for this:
 
@@ -94,7 +94,7 @@ module.exports = {
 
 ...and start cypress like this:
 
-> CYPRESS_baseUrl=http://192.168.99.100:30080 npm run cypress:open
+> CYPRESS_baseUrl=http://localhost:30080 npm run cypress:open
 
 For a dev-instance (dev133 in this example)
 

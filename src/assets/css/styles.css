@@ -1420,6 +1420,10 @@ td.pulse-off input {
     white-space: nowrap;
     color: $brand-font-color-weak;
     font-size: 15px;
+
+    &.collapsible {
+        cursor: pointer;
+    }
 }
 
 .avatar {

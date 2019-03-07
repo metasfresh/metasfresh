@@ -152,6 +152,14 @@
 .widget-tooltip {}
 
 .tooltip-content {
+    background: white;
+    color: $brand-font-color-secondary;
+    font-size: 10px;
+    border: 1px solid $tooltip-border-color;
+    padding: 5px;
+    text-align: center;
+    z-index: 200;
+    border-radius: 3px;
     max-width: 300px;
     width: auto;
     height: auto;
