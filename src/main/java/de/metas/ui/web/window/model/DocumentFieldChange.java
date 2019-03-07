@@ -89,7 +89,6 @@ public final class DocumentFieldChange
 
 	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField, final DocumentFieldWidgetType widgetType)
 	{
-		super();
 		this.fieldName = Preconditions.checkNotNull(fieldName, "fieldName shall not be null");
 		this.key = key;
 		this.publicField = publicField;
@@ -327,7 +326,7 @@ public final class DocumentFieldChange
 		{
 			validStatus = fromEvent.validStatus;
 		}
-		
+
 		if(fromEvent.fieldWarning != null)
 		{
 			fieldWarning = fromEvent.fieldWarning;

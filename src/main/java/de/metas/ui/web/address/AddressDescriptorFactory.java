@@ -224,7 +224,6 @@ public class AddressDescriptorFactory
 
 		private AddressDataBindingDescriptorBuilder()
 		{
-			super();
 		}
 
 		@Override

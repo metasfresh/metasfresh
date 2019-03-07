@@ -5,7 +5,7 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.LayoutType;
-import io.swagger.annotations.ApiModel;
+import de.pentabyte.springfox.ApiEnum;
 
 /*
  * #%L
@@ -29,18 +29,16 @@ import io.swagger.annotations.ApiModel;
  * #L%
  */
 
-/** Field/widget layout */
-@ApiModel("layout-type")
 public enum JSONLayoutType
 {
-	/** Primary layout: it will render the label and beneath the field */
+	@ApiEnum("Primary layout: it will render the label and beneath the field")
 	primary,
-	/**
-	 * Same as {@link #primary} but will advice the frontend to render long labels.
-	 * At the moment it's used for filter checkboxes
-	 */
+
+	@ApiEnum("Same as <code>primary</code> but will advice the frontend to render long labels.<br>"
+			+ "At the moment it's used for filter checkboxes")
 	primaryLongLabels,
-	/** Secondary layout: it will render the label and the field on same line */
+
+	@ApiEnum("It will render the label and the field on same line")
 	secondary;
 
 	public static JSONLayoutType fromNullable(final LayoutType layoutType)

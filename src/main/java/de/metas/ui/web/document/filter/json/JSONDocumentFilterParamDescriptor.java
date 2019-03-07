@@ -14,6 +14,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.ToString;
 
 /*
@@ -69,6 +70,7 @@ import lombok.ToString;
 	@JsonProperty("defaultValue")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Object defaultValue;
+
 	@JsonProperty("defaultValueTo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Object defaultValueTo;
@@ -82,7 +84,7 @@ import lombok.ToString;
 	@JsonProperty("readonly")
 	private final boolean readonly;
 
-	/** Type: primary, secondary */
+	@ApiModelProperty(allowEmptyValue = false)
 	@JsonProperty("type")
 	private final JSONLayoutType type;
 

@@ -72,7 +72,6 @@ public class ASIDescriptorFactory
 
 	private ASIDescriptorFactory()
 	{
-		super();
 	}
 
 	private ASIDataBindingDescriptorBuilder getASIBindingsBuilder()
@@ -266,7 +265,6 @@ public class ASIDescriptorFactory
 
 		private ASIDataBindingDescriptorBuilder()
 		{
-			super();
 		}
 
 		@Override
@@ -291,8 +289,6 @@ public class ASIDescriptorFactory
 				, final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod //
 		)
 		{
-			super();
-
 			Check.assume(attributeId > 0, "attributeId > 0");
 			this.attributeId = attributeId;
 

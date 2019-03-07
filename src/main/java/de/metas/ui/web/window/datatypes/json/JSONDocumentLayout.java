@@ -21,6 +21,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -80,11 +81,6 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final String caption;
 
-	// NOTE: we are no longer using documentNoElement (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 ).
-	// @JsonProperty("documentNoElement")
-	// @JsonInclude(Include.NON_NULL)
-	// private final JSONDocumentLayoutElement documentNoElement;
-
 	@JsonProperty("documentSummaryElement")
 	@JsonInclude(Include.NON_NULL)
 	private final JSONDocumentLayoutElement documentSummaryElement;
@@ -119,14 +115,16 @@ public final class JSONDocumentLayout implements Serializable
 	/**
 	 * Header layout constructor
 	 */
-	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
+	private JSONDocumentLayout(
+			@NonNull final DocumentLayoutDescriptor layout,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		this.windowId = layout.getWindowId();
 		type = windowId;
 
 		tabId = null;
 		tabid = tabId;
-		
+
 		internalName = null;
 
 		caption = layout.getCaption(jsonOpts.getAD_Language());
@@ -163,9 +161,6 @@ public final class JSONDocumentLayout implements Serializable
 
 	/**
 	 * From detail tab constructor.
-	 *
-	 * @param detailLayout
-	 * @param jsonOpts
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
@@ -184,7 +179,7 @@ public final class JSONDocumentLayout implements Serializable
 		docActionElement = null;
 
 		sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
-		tabs = ImmutableList.of(); // Included tabs
+		tabs = ImmutableList.of(); // a tab(-group) has no included tabs
 
 		filters = null;
 
@@ -199,7 +194,7 @@ public final class JSONDocumentLayout implements Serializable
 				.omitNullValues()
 				.add("windowId", windowId)
 				.add("sections", sections.isEmpty() ? null : sections)
-				.add("tabs", tabs.isEmpty() ? null : tabs)
+				.add("tabGroups", tabs.isEmpty() ? null : tabs)
 				.add("filters", filters.isEmpty() ? null : filters)
 				.toString();
 	}

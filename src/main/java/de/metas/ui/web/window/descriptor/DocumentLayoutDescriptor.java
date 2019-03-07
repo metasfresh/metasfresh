@@ -23,8 +23,6 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-
 import lombok.NonNull;
 
 /*
@@ -69,8 +67,16 @@ public final class DocumentLayoutDescriptor
 	/** Side list layout */
 	private final ViewLayout sideListView;
 
-	/** Single row layout: included tabs */
+	// private final Map<DocumentLayoutDetailGroupDescriptor, List<DocumentLayoutDetailDescriptor>> detailGroupToDetails = new HashMap<>();
+	//
+
+	// private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
+
+	/** Single row layout: included tabs. */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
+
+	/** {@link #details} plus their included details. */
+	private final Map<DetailId, DocumentLayoutDetailDescriptor> allDetails;
 
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
@@ -78,13 +84,14 @@ public final class DocumentLayoutDescriptor
 	private DocumentLayoutDescriptor(@NonNull final Builder builder)
 	{
 		windowId = builder.windowId;
-		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+		Check.assumeNotNull(windowId, "builder.windowId may not be null; builder={}", builder);
 
 		caption = builder.caption;
 
 		documentSummaryElement = builder.documentSummaryElement;
 		docActionElement = builder.docActionElement;
 
+		Check.assumeNotNull(builder.getSingleRowLayout(), "builder.singleRowLayout may not be null; builder={}", builder);
 		singleRowLayout = builder.getSingleRowLayout()
 				.setWindowId(windowId)
 				.build();
@@ -92,6 +99,7 @@ public final class DocumentLayoutDescriptor
 				.setWindowId(windowId)
 				.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
+		allDetails = ImmutableMap.copyOf(builder.buildAllDetails());
 		sideListView = builder.getSideList();
 
 		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
@@ -114,7 +122,7 @@ public final class DocumentLayoutDescriptor
 	{
 		return windowId;
 	}
-	
+
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -148,6 +156,7 @@ public final class DocumentLayoutDescriptor
 		return sideListView;
 	}
 
+	/** the this instance's "direct" details, without their included sub-details. */
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
 	{
 		return details.values();
@@ -158,7 +167,7 @@ public final class DocumentLayoutDescriptor
 	 */
 	public DocumentLayoutDetailDescriptor getDetail(final DetailId detailId)
 	{
-		final DocumentLayoutDetailDescriptor detail = details.get(detailId);
+		final DocumentLayoutDetailDescriptor detail = allDetails.get(detailId);
 		if (detail == null)
 		{
 			throw new DocumentLayoutDetailNotFoundException("Tab '" + detailId + "' was not found. Available tabs are: " + details.keySet());
@@ -174,7 +183,6 @@ public final class DocumentLayoutDescriptor
 
 	public static final class Builder
 	{
-
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
 
 		private WindowId windowId;
@@ -186,14 +194,13 @@ public final class DocumentLayoutDescriptor
 		private ViewLayout.Builder _gridView;
 		private ViewLayout _sideListView;
 
-		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
+		private final List<DocumentLayoutDetailDescriptor> details = new ArrayList<>();
 
 		private final Map<String, String> debugProperties = new LinkedHashMap<>();
 		private Stopwatch stopwatch;
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -220,11 +227,42 @@ public final class DocumentLayoutDescriptor
 
 		private Map<DetailId, DocumentLayoutDetailDescriptor> buildDetails()
 		{
-			return detailsBuilders
-					.stream()
-					.map(detailBuilder -> detailBuilder.build())
-					.filter(detail -> !detail.isEmpty())
-					.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getDetailId()));
+			final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map = ImmutableMap.builder();
+			for (final DocumentLayoutDetailDescriptor detail : details)
+			{
+				putIfNotEmpty(detail, map);
+			}
+			return map.build();
+		}
+
+		private Map<DetailId, DocumentLayoutDetailDescriptor> buildAllDetails()
+		{
+			final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map = ImmutableMap.builder();
+			for (final DocumentLayoutDetailDescriptor detail : details)
+			{
+				buildDetailsRecurse(detail, map);
+			}
+			return map.build();
+		}
+
+		private void buildDetailsRecurse(
+				@NonNull final DocumentLayoutDetailDescriptor detail,
+				@NonNull final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map)
+		{
+			putIfNotEmpty(detail, map);
+			for (final DocumentLayoutDetailDescriptor subDetail : detail.getSubTabLayouts())
+			{
+				buildDetailsRecurse(subDetail, map);
+			}
+		}
+
+		private void putIfNotEmpty(final DocumentLayoutDetailDescriptor detail, final ImmutableMap.Builder<DetailId, DocumentLayoutDetailDescriptor> map)
+		{
+			if (detail.isEmpty())
+			{
+				return;
+			}
+			map.put(detail.getDetailId(), detail);
 		}
 
 		public Builder setWindowId(WindowId windowId)
@@ -257,7 +295,7 @@ public final class DocumentLayoutDescriptor
 			return this;
 		}
 
-		public Builder setSingleRowLayout(DocumentLayoutSingleRow.Builder singleRowLayout)
+		public Builder setSingleRowLayout(@NonNull final DocumentLayoutSingleRow.Builder singleRowLayout)
 		{
 			this.singleRowLayout = singleRowLayout;
 			return this;
@@ -273,25 +311,20 @@ public final class DocumentLayoutDescriptor
 			return _gridView;
 		}
 
-		/**
-		 * Adds detail/tab if it's valid.
-		 *
-		 * @param detailBuilder detail/tab builder
-		 */
-		public Builder addDetailIfValid(@Nullable final DocumentLayoutDetailDescriptor.Builder detailBuilder)
+		public Builder addDetail(@Nullable final DocumentLayoutDetailDescriptor detail)
 		{
-			if (detailBuilder == null)
+			if (detail == null)
 			{
 				return this;
 			}
 
-			if (detailBuilder.isEmpty())
+			if (detail.isEmpty())
 			{
-				logger.trace("Skip adding detail tab to layout because it does not have elements: {}", detailBuilder);
+				logger.trace("Skip adding detail to layout because it is empty; detail={}", detail);
 				return this;
 			}
+			details.add(detail);
 
-			detailsBuilders.add(detailBuilder);
 			return this;
 		}
 
