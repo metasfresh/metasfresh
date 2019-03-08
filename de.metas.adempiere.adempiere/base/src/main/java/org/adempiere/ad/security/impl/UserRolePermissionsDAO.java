@@ -24,7 +24,6 @@ import org.adempiere.ad.security.IUserRolePermissionsBuilder;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsEventBus;
 import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.Access;
 import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.security.permissions.ElementPermissions;
@@ -503,7 +502,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	final <AccessTableType> ElementPermissions retrieveElementPermissions(final int adRoleId, final int adClientId, final Class<AccessTableType> accessTableClass, final String elementTableName, final String elementColumnName)
 	{
 		final Properties ctx = Env.getCtx();
-		final IQueryFilter<AccessTableType> aspFilter = Services.get(IASPFiltersFactory.class).getASPFiltersForClient(adClientId).getFilter(accessTableClass);
 
 		//
 		// EntityType filter: filter out those elements where EntityType is not displayed
@@ -520,7 +518,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.createQueryBuilder(accessTableClass, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
-				.filter(aspFilter)
 				.filter(entityTypeFilter)
 				.create()
 				.listDistinct(elementColumnName, COLUMNNAME_IsReadWrite);

@@ -68,7 +68,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
@@ -1161,21 +1160,16 @@ public class Viewer extends CFrame
 			tabAndTemplateTabId = TabAndTemplateTabId.NONE;
 		}
 
-		// ASP
-		final String ASPFilter = Services.get(IASPFiltersFactory.class)
-				.getASPFiltersForClient(Env.getAD_Client_ID(Env.getCtx()))
-				.getSQLWhereClause(I_AD_Tab.class);
-
 		//
 		sql = "SELECT Name, TableName"
 				+ ", " + I_AD_Tab.COLUMNNAME_MaxQueryRecords
-				+ " FROM AD_Tab_v WHERE AD_Tab_ID=? " + ASPFilter;
+				+ " FROM AD_Tab_v WHERE AD_Tab_ID=? ";
 		if (!Env.isBaseLanguage(Env.getCtx(), "AD_Tab"))
 		{
 			sql = "SELECT Name, TableName"
 					+ ", " + I_AD_Tab.COLUMNNAME_MaxQueryRecords
 					+ " FROM AD_Tab_vt WHERE AD_Tab_ID=?"
-					+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "' " + ASPFilter;
+					+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "' ";
 		}
 
 		String title = null;

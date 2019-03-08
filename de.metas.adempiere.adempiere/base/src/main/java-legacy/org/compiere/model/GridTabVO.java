@@ -31,7 +31,6 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.TableAccessLevel;
-import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -384,16 +383,6 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			sql.append(" AND AD_Language=?");
 			sqlParams.add(Env.getAD_Language(ctx));
-		}
-
-		//
-		// ASP filter
-		final String ASPFilter = Services.get(IASPFiltersFactory.class)
-				.getASPFiltersForClient(Env.getAD_Client_ID(ctx))
-				.getSQLWhereClause(I_AD_Tab.class);
-		if (!Check.isEmpty(ASPFilter, true))
-		{
-			sql.append(ASPFilter);
 		}
 
 		//
