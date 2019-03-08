@@ -2,8 +2,6 @@ package de.metas.dataentry.data;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import lombok.EqualsAndHashCode;

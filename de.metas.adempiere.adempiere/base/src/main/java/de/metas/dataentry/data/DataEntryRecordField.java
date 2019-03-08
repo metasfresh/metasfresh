@@ -7,8 +7,6 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.metas.dataentry.DataEntryFieldId;

@@ -1,4 +1,4 @@
-package org.adempiere.user;
+package de.metas.dataentry.data;
 
 import java.time.ZonedDateTime;
 
