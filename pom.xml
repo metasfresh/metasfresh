@@ -115,6 +115,7 @@
 		<module>de.metas.invoice_gateway.spi</module>
 
 		<module>de.metas.inbound.mail</module>
+		<module>de.metas.invoice.rest-api</module>
 
 		<module>de.metas.fresh</module>
 
