@@ -4,13 +4,13 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.CreatedUpdatedInfo;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
+import de.metas.dataentry.data.CreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
