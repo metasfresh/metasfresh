@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.IUserMenuFavoritesDAO;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -23,6 +22,7 @@ import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
+import de.metas.user.api.IUserMenuFavoritesDAO;
 import de.metas.util.Services;
 
 /*
