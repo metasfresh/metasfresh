@@ -43,7 +43,6 @@ import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -182,20 +181,6 @@ public class UserDAO implements IUserDAO
 			throw new AdempiereException("No user found for ID=" + adUserId);
 		}
 		return user;
-	}
-
-	@Override
-	public I_AD_User retrieveDefaultUser(final I_C_BPartner bpartner)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
-				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
-				.create()
-				.first(I_AD_User.class);
-
 	}
 
 	@Override

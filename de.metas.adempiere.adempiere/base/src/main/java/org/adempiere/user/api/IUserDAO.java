@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
-import org.compiere.model.I_C_BPartner;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
@@ -56,9 +55,9 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User retrieveUser(int adUserId);
 
-	I_AD_User retrieveUserInTrx(int adUserId);
+	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
 
-	I_AD_User retrieveDefaultUser(I_C_BPartner bpartner);
+	I_AD_User retrieveUserInTrx(int adUserId);
 
 	/** @return user's full name or <code>?</code> if no found */
 	String retrieveUserFullname(int userRepoId);
@@ -76,6 +75,4 @@ public interface IUserDAO extends ISingletonService
 	List<Integer> retrieveSystemUserIds();
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
-
-	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
 }
