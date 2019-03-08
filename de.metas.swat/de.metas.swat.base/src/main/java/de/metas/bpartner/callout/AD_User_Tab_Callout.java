@@ -32,6 +32,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Services;
 
 // TODO delete it; it's not used
+@Deprecated
 public class AD_User_Tab_Callout extends TabCalloutAdapter
 {
 

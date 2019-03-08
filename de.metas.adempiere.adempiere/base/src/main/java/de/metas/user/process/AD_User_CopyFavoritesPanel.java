@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.adempiere.ad.process;
+package de.metas.user.process;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package org.compiere.process;
+package de.metas.user.process;
 
 /*
  * #%L
@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.util.TrxRunnable;
@@ -39,11 +38,11 @@ import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**
- * Recalculate for {@link I_AD_User_SortPref_Line_Product}
+ * Recalculate for {@link I_AD_User_SortPref_Line}
  *
  * @author al
  */
-public class AD_User_SortPref_Hdr_RecalculateSeqNo extends JavaProcess
+public class AD_User_SortPref_Line_RecalculateSeqNo extends JavaProcess
 {
 	@Override
 	protected void prepare()
@@ -52,7 +51,7 @@ public class AD_User_SortPref_Hdr_RecalculateSeqNo extends JavaProcess
 	}
 
 	/**
-	 * Recalculates SeqNo in AD_User_SortPref_Line in 10-steps for the current AD_User_SortPref_Hdr, keeping the order they already had
+	 * Recalculates SeqNo in AD_User_SortPref_Line_Product in 10-steps for the current AD_User_SortPref_Line, keeping the order they already had
 	 */
 	@Override
 	protected String doIt() throws Exception
@@ -73,14 +72,14 @@ public class AD_User_SortPref_Hdr_RecalculateSeqNo extends JavaProcess
 
 				final ProcessInfo processInfo = getProcessInfo();
 				final int recordId = processInfo.getRecord_ID();
-				final I_AD_User_SortPref_Hdr hdr = InterfaceWrapperHelper.create(ctx, recordId, I_AD_User_SortPref_Hdr.class, localTrxName);
+				final I_AD_User_SortPref_Line sortPreferenceLine = InterfaceWrapperHelper.create(ctx, recordId, I_AD_User_SortPref_Line.class, localTrxName);
 
-				final Iterator<I_AD_User_SortPref_Line> sortPreferenceLines = userSortPrefDAO.retrieveSortPreferenceLines(hdr).iterator();
-				while (sortPreferenceLines.hasNext())
+				final Iterator<I_AD_User_SortPref_Line_Product> sortPreferenceLineProducts = userSortPrefDAO.retrieveSortPreferenceLineProducts(sortPreferenceLine).iterator();
+				while (sortPreferenceLineProducts.hasNext())
 				{
-					final I_AD_User_SortPref_Line sortPreferenceLine = sortPreferenceLines.next();
-					sortPreferenceLine.setSeqNo(seqNumber);
-					InterfaceWrapperHelper.save(sortPreferenceLine);
+					final I_AD_User_SortPref_Line_Product sortPreferenceLineProduct = sortPreferenceLineProducts.next();
+					sortPreferenceLineProduct.setSeqNo(seqNumber);
+					InterfaceWrapperHelper.save(sortPreferenceLineProduct);
 
 					seqNumber = seqNumber + 10;
 				}
