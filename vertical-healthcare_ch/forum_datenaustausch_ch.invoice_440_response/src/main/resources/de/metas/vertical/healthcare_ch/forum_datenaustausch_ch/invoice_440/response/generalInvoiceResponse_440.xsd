@@ -42,7 +42,7 @@
   		http://www.w3c.org/TR/xmldsig-core/xmldsig-core-schema.xsd
  ======================================================================= -->
    <import namespace="http://www.w3.org/2000/09/xmldsig#" 
-   		   schemaLocation="xmldsig-core-schema.xsd"/>
+   		   schemaLocation="http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/xmldsig-core-schema.xsd"/> 
    <import namespace="http://www.w3.org/2001/04/xmlenc#" 
    		   schemaLocation="xenc-schema.xsd"/>
 
