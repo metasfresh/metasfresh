@@ -78,8 +78,7 @@ public class AD_Window
 		window.setDescription(windowElement.getDescription());
 		window.setHelp(windowElement.getHelp());
 
-
-		if(InterfaceWrapperHelper.isNew(window))
+		if (InterfaceWrapperHelper.isNew(window))
 		{
 			// nothing to do. Window was not yet saved
 			return;
@@ -90,16 +89,14 @@ public class AD_Window
 		adWindowDAO.createADElementLinkForWindowId(adWindowId);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
-
-	public void onWindowDelete(final I_AD_Window window) throws SQLException
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(final I_AD_Window window)
 	{
-		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-
 		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
 
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		adWindowDAO.deleteTabsByWindowId(adWindowId);
 		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)

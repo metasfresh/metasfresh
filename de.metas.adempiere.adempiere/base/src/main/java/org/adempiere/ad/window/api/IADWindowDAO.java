@@ -74,6 +74,8 @@ public interface IADWindowDAO extends ISingletonService
 
 	List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow);
 
+	void deleteTabsByWindowId(AdWindowId adWindowId);
+
 	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
 
 	void moveElement(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup toUIElementGroup);
