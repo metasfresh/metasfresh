@@ -47,8 +47,6 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User getByPasswordResetCode(String passwordResetCode);
 
-	List<I_AD_User> retrieveUsersSubstitudedBy(I_AD_User user);
-
 	List<I_AD_User> retrieveUsersSubstitudedBy(Properties ctx, int adUserId, Timestamp date, String trxName);
 
 	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);

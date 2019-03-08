@@ -37,7 +37,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User_Substitute;
@@ -53,7 +52,6 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class UserDAO implements IUserDAO
@@ -109,18 +107,6 @@ public class UserDAO implements IUserDAO
 		}
 
 		return user;
-	}
-
-	@Override
-	public List<I_AD_User> retrieveUsersSubstitudedBy(final I_AD_User user)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(user);
-		final String trxName = InterfaceWrapperHelper.getTrxName(user);
-
-		final Timestamp date = SystemTime.asDayTimestamp();
-		final int adUserId = user.getAD_User_ID();
-
-		return retrieveUsersSubstitudedBy(ctx, adUserId, date, trxName);
 	}
 
 	@Override
