@@ -343,9 +343,9 @@ public class ADWindowDAO implements IADWindowDAO
 				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
-				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
+				.orderBy(I_AD_Tab.COLUMNNAME_SeqNo) // just take the first one; it might have seqno != 10
 				.create()
-				.firstOnly(I_AD_Tab.class);
+				.first(I_AD_Tab.class);
 	}
 
 	@Override
@@ -1157,13 +1157,23 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public void deleteUIElementsByFieldId(@NonNull final AdTabId adTabId, @NonNull final AdFieldId adFieldId)
+	public void deleteUIElementsByFieldId(@NonNull final AdFieldId adFieldId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Element.class)
-				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Tab_ID, adTabId)
 				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
 				.create()
 				.delete();
+	}
+
+	@Override
+	public void deleteUISectionsByTabId(@NonNull final AdTabId adTabId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		queryBL.createQueryBuilder(I_AD_UI_Section.class)
+				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
+				.create()
+				.delete();
+
 	}
 }

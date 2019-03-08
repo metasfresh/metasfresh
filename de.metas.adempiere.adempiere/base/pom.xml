@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -127,7 +127,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.2.5</version>
 		</dependency>
 
 		<!-- Scripting support -->

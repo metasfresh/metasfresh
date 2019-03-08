@@ -8,7 +8,6 @@
 **/.project
 
 **/activemq-data/
-**/data/
 
 # we have a java packages with de.metas.event.log.. so this doesn't work
 # **/log/

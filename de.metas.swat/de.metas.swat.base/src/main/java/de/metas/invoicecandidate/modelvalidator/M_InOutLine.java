@@ -30,11 +30,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 
 @Validator(I_M_InOutLine.class)
@@ -87,16 +90,16 @@ public class M_InOutLine
 
 		//
 		// Get Order Line
-		if (inOutLine.getC_OrderLine_ID() <= 0)
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
 			return; // nothing to do
 		}
-		final org.compiere.model.I_C_OrderLine orderLine = inOutLine.getC_OrderLine();
 
 		//
 		// Iterate all invoice candidates linked to our order line
 		// * create link between invoice candidate and our inout line
-		for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine))
+		for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId))
 		{
 			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, inOutLine);
 			iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
@@ -116,6 +119,7 @@ public class M_InOutLine
 
 		// invalidate the candidates related to the inOutLine's order line..i'm not 100% if it's necessary, but we might need to e.g. update the
 		// QtyDelivered or QtyPicked or whatever...
+		final I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(orderLine);
 	}
 }

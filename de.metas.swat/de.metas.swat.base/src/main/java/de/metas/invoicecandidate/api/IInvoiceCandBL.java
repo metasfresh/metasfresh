@@ -44,6 +44,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  *
@@ -416,10 +417,13 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Iterate the candidates to close and close them one by one.
-	 *
-	 * @param candidatesToClose
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
+	
+	default void closeInvoiceCandidates(@NonNull final Iterable<I_C_Invoice_Candidate> candidatesToClose)
+	{
+		closeInvoiceCandidates(candidatesToClose.iterator());
+	}
 
 	/**
 	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
