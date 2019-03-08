@@ -71,7 +71,6 @@ import org.adempiere.images.Images;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -107,6 +106,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserSortPrefDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

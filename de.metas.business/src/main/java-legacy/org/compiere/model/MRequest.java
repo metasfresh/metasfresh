@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -53,6 +52,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
+import de.metas.user.api.IUserDAO;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.util.Services;
 

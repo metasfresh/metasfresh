@@ -7,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -23,6 +22,7 @@ import de.metas.product.ProductPlanningSchema;
 import de.metas.product.ProductPlanningSchemaId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;

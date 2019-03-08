@@ -1,4 +1,4 @@
-package org.adempiere.user;
+package de.metas.user;
 
 import java.time.Instant;
 import java.util.Collection;

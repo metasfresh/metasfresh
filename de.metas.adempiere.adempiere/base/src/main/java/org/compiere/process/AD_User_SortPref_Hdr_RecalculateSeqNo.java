@@ -28,13 +28,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserSortPrefDAO;
 import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.process.ProcessInfo;
+import de.metas.user.api.IUserSortPrefDAO;
 import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 

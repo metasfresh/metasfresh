@@ -1,4 +1,4 @@
-package org.adempiere.user.process;
+package de.metas.user.process;
 
 /*
  * #%L
@@ -35,33 +35,13 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
 
-public class UserAccountExpireLocks extends JavaProcess
+public class AD_User_ExpireLocks extends JavaProcess
 {
-	@Override
-	protected void prepare()
-	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
-		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-			{
-			}
-			else
-			{
-				log.error("prepare - Unknown Parameter: " + name);
-			}
-		}
-	} // prepare
-
 	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("UserAccountExpireLocks");
-
 		final int accountLockExpire = MSysConfig.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 
 		final String sql = "SELECT * FROM AD_User" + " WHERE IsAccountLocked = 'Y'";

@@ -1,4 +1,4 @@
-package org.adempiere.user;
+package de.metas.user;
 
 import javax.annotation.Nullable;
 

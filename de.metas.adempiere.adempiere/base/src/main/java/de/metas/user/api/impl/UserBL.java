@@ -1,4 +1,4 @@
-package org.adempiere.user.api.impl;
+package de.metas.user.api.impl;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,8 +16,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -33,6 +31,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;

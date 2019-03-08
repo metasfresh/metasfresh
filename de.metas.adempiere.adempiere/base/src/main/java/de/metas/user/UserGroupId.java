@@ -1,4 +1,4 @@
-package org.adempiere.user;
+package de.metas.user;
 
 import java.util.Objects;
 

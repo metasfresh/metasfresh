@@ -7,10 +7,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.adempiere.user.CreatedUpdatedInfo;
-import org.adempiere.user.UserId;
 import org.junit.Test;
 
 import de.metas.dataentry.DataEntryFieldId;
+import de.metas.user.UserId;
 import de.metas.util.time.SystemTime;
 
 /*

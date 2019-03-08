@@ -1,4 +1,4 @@
-package org.adempiere.user.spi.impl;
+package de.metas.user.async;
 
 /*
  * #%L
@@ -26,7 +26,6 @@ package org.adempiere.user.spi.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.IUserBL;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IQueueDAO;
@@ -34,6 +33,7 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.email.IMailBL;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 
 public class PasswordResetWorkpackageProcessor implements IWorkpackageProcessor

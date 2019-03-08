@@ -1,14 +1,14 @@
-package org.adempiere.user.api.impl;
+package de.metas.user.api.impl;
 
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserMenuFavoritesDAO;
 import org.compiere.model.I_AD_TreeBar;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserMenuFavoritesDAO;
 import de.metas.util.Services;
 
 /*

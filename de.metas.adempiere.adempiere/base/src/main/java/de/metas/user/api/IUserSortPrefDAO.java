@@ -1,4 +1,4 @@
-package org.adempiere.user.api;
+package de.metas.user.api;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package org.adempiere.user.api.impl;
+package de.metas.user.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -39,8 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.Query;
@@ -51,6 +49,8 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;

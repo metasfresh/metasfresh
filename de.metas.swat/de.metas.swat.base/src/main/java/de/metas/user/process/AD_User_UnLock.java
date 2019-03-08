@@ -1,11 +1,11 @@
-package org.adempiere.user.process;
+package de.metas.user.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
 
-public class UserAccountUnlock extends JavaProcess
+public class AD_User_UnLock extends JavaProcess
 {
 	@Override
 	protected String doIt() throws Exception

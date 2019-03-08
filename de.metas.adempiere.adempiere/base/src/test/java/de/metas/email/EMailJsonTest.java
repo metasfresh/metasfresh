@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Random;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 import org.compiere.Adempiere;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,6 +11,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import de.metas.user.UserId;
 
 /*
  * #%L

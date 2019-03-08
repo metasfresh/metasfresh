@@ -58,7 +58,6 @@ import javax.swing.table.DefaultTableModel;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.grid.VTable;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_User;
@@ -78,6 +77,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**

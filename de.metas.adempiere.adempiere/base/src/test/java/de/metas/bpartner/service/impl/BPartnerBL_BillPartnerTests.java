@@ -9,8 +9,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.User;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -23,6 +21,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;

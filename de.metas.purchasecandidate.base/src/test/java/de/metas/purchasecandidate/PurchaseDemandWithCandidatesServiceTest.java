@@ -14,7 +14,6 @@ import java.util.Optional;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_OrderLine;
@@ -59,6 +58,7 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
+import de.metas.user.UserRepository;
 import de.metas.util.time.SystemTime;
 
 /*

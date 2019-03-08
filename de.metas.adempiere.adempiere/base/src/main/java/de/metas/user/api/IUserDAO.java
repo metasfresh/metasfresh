@@ -1,4 +1,4 @@
-package org.adempiere.user.api;
+package de.metas.user.api;
 
 /*
  * #%L
@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 public interface IUserDAO extends ISingletonService

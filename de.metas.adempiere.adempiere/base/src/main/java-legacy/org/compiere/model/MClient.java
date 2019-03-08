@@ -31,7 +31,6 @@ import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -41,6 +40,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.i18n.Language;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**

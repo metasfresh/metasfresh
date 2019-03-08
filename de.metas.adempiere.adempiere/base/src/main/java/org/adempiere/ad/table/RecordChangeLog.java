@@ -3,10 +3,9 @@ package org.adempiere.ad.table;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import org.adempiere.user.UserId;
-
 import com.google.common.collect.ImmutableList;
 
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

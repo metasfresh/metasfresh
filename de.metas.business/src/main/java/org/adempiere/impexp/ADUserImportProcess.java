@@ -31,7 +31,6 @@ import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.lang.IMutable;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.compiere.model.I_AD_User;
@@ -42,6 +41,7 @@ import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 

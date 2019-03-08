@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.adempiere.user.CreatedUpdatedInfo;
-import org.adempiere.user.UserId;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
@@ -15,6 +14,7 @@ import com.google.common.io.Resources;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 
 /*

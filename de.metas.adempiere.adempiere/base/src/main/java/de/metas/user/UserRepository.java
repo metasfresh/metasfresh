@@ -1,16 +1,16 @@
-package org.adempiere.user;
+package de.metas.user;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.adempiere.user.api.IUserBL;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

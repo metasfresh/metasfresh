@@ -11,7 +11,6 @@ import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.UserId;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
 import org.compiere.util.Env;
@@ -21,6 +20,7 @@ import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 @Interceptor(I_AD_Role.class)

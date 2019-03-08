@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.table.RecordChangeLog.RecordChangeLogBuilder;
-import org.adempiere.user.UserId;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfo;
@@ -20,6 +19,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
 

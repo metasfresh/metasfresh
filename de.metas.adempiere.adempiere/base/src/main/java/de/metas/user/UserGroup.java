@@ -1,8 +1,4 @@
-package org.adempiere.user;
-
-import java.time.Instant;
-
-import com.google.common.collect.Range;
+package de.metas.user;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,13 +28,10 @@ import lombok.Value;
 
 @Value
 @Builder
-public class UserGroupUserAssignment
+public class UserGroup
 {
 	@NonNull
-	UserGroupId userGroupId;
+	UserGroupId id;
 	@NonNull
-	UserId userId;
-
-	@NonNull
-	Range<Instant> validDates;
+	String name;
 }

@@ -9,7 +9,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.user.CreatedUpdatedInfo;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.base.Objects;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.user.UserId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

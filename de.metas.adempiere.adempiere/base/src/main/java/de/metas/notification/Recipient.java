@@ -1,8 +1,8 @@
 package de.metas.notification;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
 
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
