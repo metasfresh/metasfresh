@@ -142,7 +142,8 @@ public class ProcessPickingCandidatesCommand
 		}
 		else
 		{
-			final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId());
+			final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId())
+					.setDestroyEmptyHUs(true);
 			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pc);
 
 			HULoader.of(pickFromSource, packToDestination)
