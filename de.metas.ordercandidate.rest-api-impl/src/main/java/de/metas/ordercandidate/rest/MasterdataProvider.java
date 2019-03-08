@@ -9,6 +9,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.IOrgDAO.OrgQuery;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Currency;
@@ -21,6 +22,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -117,6 +119,8 @@ public final class MasterdataProvider
 			final JsonOrganization json,
 			@Nullable OrgId existingOrgId)
 	{
+		final SyncAdvise orgSyncAdvise = json.getSyncAdvise();
+
 		if (existingOrgId == null)
 		{
 			final String code = json.getCode();
@@ -125,7 +129,15 @@ public final class MasterdataProvider
 				throw new MissingPropertyException("Missing property Code; JsonOrganization={}", json);
 			}
 
-			existingOrgId = orgsRepo.getOrgIdByValue(code).orElse(null);
+			final OrgQuery query = OrgQuery.builder()
+					.orgValue(code)
+					.failIfNotExists(orgSyncAdvise.isFailIfNotExists())
+					.outOfTrx(false)
+					.build();
+
+			existingOrgId = orgsRepo
+					.retrieveOrgIdBy(query)
+					.orElse(null);
 		}
 
 		final I_AD_Org orgRecord;
@@ -138,9 +150,12 @@ public final class MasterdataProvider
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
-		updateOrgRecord(orgRecord, json);
-		permissionService.assertCanCreateOrUpdate(orgRecord);
-		orgsRepo.save(orgRecord);
+		if (IfExists.UPDATE.equals(orgSyncAdvise.getIfExists()))
+		{
+			updateOrgRecord(orgRecord, json);
+			permissionService.assertCanCreateOrUpdate(orgRecord);
+			orgsRepo.save(orgRecord);
+		}
 
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)
@@ -150,7 +165,6 @@ public final class MasterdataProvider
 							json.getBpartner(),
 							orgId);
 		}
-
 		return orgId;
 	}
 

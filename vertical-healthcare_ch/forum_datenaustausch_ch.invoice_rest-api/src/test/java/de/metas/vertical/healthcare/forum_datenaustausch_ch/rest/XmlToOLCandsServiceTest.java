@@ -63,11 +63,12 @@ public class XmlToOLCandsServiceTest
 
 	private void performTest(@NonNull final RequestType xmlInvoice)
 	{
+		final SyncAdvise orgSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise productsSyncAdvise = SyncAdvise.READ_ONLY;
 
 		final JsonOLCandCreateBulkRequest result = new XmlToOLCandsService(orderCandidatesRestEndpoint)
-				.createJsonOLCandCreateBulkRequest(xmlInvoice, bPartnersSyncAdvise, productsSyncAdvise);
+				.createJsonOLCandCreateBulkRequest(xmlInvoice, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
 
 		assertThat(result).isNotNull();
 		final List<JsonOLCandCreateRequest> requests = result.getRequests();

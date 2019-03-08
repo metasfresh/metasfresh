@@ -65,7 +65,7 @@ public final class JsonOLCandCreateRequest
 			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this OLCand came from.")
 	String dataSourceInternalName;
 
-		@ApiModelProperty( //
+	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "Internal name of the <code>AD_InputDataSource</code> record that tells what shall be happen with this OLCand.")
 	private String dataDestInternalName;
@@ -127,7 +127,6 @@ public final class JsonOLCandCreateRequest
 	private int packingMaterialId;
 
 	private String pricingSystemCode;
-
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -220,7 +219,6 @@ public final class JsonOLCandCreateRequest
 		this.invoiceDocType = invoiceDocType;
 	}
 
-
 	/**
 	 * Since we want to use {@code ..build().toBuilder()} to get copies if the builder,
 	 * we have a number of mandatory fields which are not annotated with {@link NonNull}.
@@ -246,6 +244,20 @@ public final class JsonOLCandCreateRequest
 					this);
 		}
 		return this;
+	}
+
+	public JsonOLCandCreateRequest withOrgSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	{
+		if (syncAdvise == null)
+		{
+			return this;
+		}
+		final JsonOLCandCreateRequestBuilder builder = toBuilder();
+		if (org != null)
+		{
+			builder.org(org.toBuilder().syncAdvise(syncAdvise).build());
+		}
+		return builder.build();
 	}
 
 	/** Creates an instance with the given {@code syncAdvise} in all bPartners. */

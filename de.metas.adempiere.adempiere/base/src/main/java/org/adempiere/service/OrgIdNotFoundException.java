@@ -1,10 +1,12 @@
-package de.metas.invoice.rest.model;
+package org.adempiere.service;
+
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * de.metas.invoice.rest-api
+ * de.metas.ordercandidate.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +24,13 @@ package de.metas.invoice.rest.model;
  * #L%
  */
 
-public class JsonSalesInvoicePaymentStatus
-{
 
+public class OrgIdNotFoundException extends AdempiereException
+{
+	private static final long serialVersionUID = -4776977540135879202L;
+
+	public OrgIdNotFoundException(String msg)
+	{
+		super(msg);
+	}
 }
