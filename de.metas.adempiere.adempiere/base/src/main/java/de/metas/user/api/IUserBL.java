@@ -25,12 +25,11 @@ package de.metas.user.api;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
 
@@ -59,36 +58,6 @@ public interface IUserBL extends ISingletonService
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 
-	/**
-	 * Generates and sets a new password for given user. The user will be also saved.
-	 *
-	 * @param user
-	 * @return new password
-	 */
-	String generatedAndSetPassword(I_AD_User user);
-
-	/**
-	 * Asserts given user password is valid according to our security settings.
-	 */
-	void assertValidPassword(String passwordPlain);
-
-	/**
-	 * create a new user in specified org with the specified name
-	 *
-	 * @param name
-	 * @param org
-	 * @return
-	 */
-	I_AD_User createUser(String name, I_AD_Org org);
-
-	/**
-	 * Checks if given user has a C_BPartner which is an employee.
-	 *
-	 * @param user
-	 * @return true if is employee
-	 */
-	boolean isEmployee(final org.compiere.model.I_AD_User user);
-
 	String buildContactName(final String firstName, final String lastName);
 
 	/**
@@ -112,7 +81,10 @@ public interface IUserBL extends ISingletonService
 		final ITranslatableString errmsg = checkCanSendEMail(adUserId);
 		if (errmsg != null)
 		{
-			throw new AdempiereException("User cannot send emails: " + errmsg.translate(Env.getAD_Language(Env.getCtx())));
+			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+					.append("User cannot send emails: ")
+					.append(errmsg)
+					.build());
 		}
 	}
 

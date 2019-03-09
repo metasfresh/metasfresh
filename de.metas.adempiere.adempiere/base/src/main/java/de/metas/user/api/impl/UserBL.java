@@ -3,7 +3,6 @@ package de.metas.user.api.impl;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.mail.internet.AddressException;
@@ -14,12 +13,11 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -41,9 +39,6 @@ import lombok.NonNull;
 public class UserBL implements IUserBL
 {
 	private static final transient Logger logger = LogManager.getLogger(UserBL.class);
-
-	private final String passwordCharset = "0123456789";
-	private final int passwordLength = 6;
 
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
@@ -76,41 +71,13 @@ public class UserBL implements IUserBL
 		return userPassword.isMatching(password);
 	}
 
-	private final String generatePassword()
-	{
-		final Random rand = new Random(System.currentTimeMillis());
-
-		int passwordLength = this.passwordLength;
-		final int minPasswordLength = getMinPasswordLength();
-		if (minPasswordLength > 0 && passwordLength < minPasswordLength)
-		{
-			passwordLength = minPasswordLength;
-		}
-
-		final StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < passwordLength; i++)
-		{
-			final int pos = rand.nextInt(passwordCharset.length());
-			sb.append(passwordCharset.charAt(pos));
-		}
-		return sb.toString();
-	}
-
-	@Override
-	public String generatedAndSetPassword(final I_AD_User user)
-	{
-		final String newPassword = generatePassword();
-		changePasswordAndSave(user, newPassword);
-		return newPassword;
-	}
-
 	@Override
 	public void createResetPasswordByEMailRequest(final String userId)
 	{
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);
 
 		final I_AD_User user = usersRepo.retrieveLoginUserByUserId(userId);
-		if (user.getAD_Client_ID() == Env.CTXVALUE_AD_Client_ID_System)
+		if (user.getAD_Client_ID() == ClientId.SYSTEM.getRepoId())
 		{
 			throw new AdempiereException("Reseting password for system users is not allowed");
 		}
@@ -275,8 +242,7 @@ public class UserBL implements IUserBL
 		return true; // old password is required
 	}
 
-	@Override
-	public void assertValidPassword(final String passwordPlain)
+	private void assertValidPassword(final String passwordPlain)
 	{
 		final int minPasswordLength = getMinPasswordLength();
 		if (Check.isEmpty(passwordPlain))
@@ -303,24 +269,6 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public boolean isEmployee(final org.compiere.model.I_AD_User user)
-	{
-		if (user == null)
-		{
-			return false;
-		}
-
-		// User does not have a BP => we consider not an employee
-		if (user.getC_BPartner_ID() <= 0)
-		{
-			return false;
-		}
-
-		final I_C_BPartner bpartner = user.getC_BPartner();
-		return bpartner.isEmployee();
-	}
-
-	@Override
 	public String buildContactName(final String firstName, final String lastName)
 	{
 		final StringBuilder contactName = new StringBuilder();
@@ -339,19 +287,6 @@ public class UserBL implements IUserBL
 		}
 
 		return contactName.toString();
-	}
-
-	@Override
-	public I_AD_User createUser(final String name, final I_AD_Org org)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(org, true);
-		final String trxName = InterfaceWrapperHelper.getTrxName(org);
-		final I_AD_User user = InterfaceWrapperHelper.create(ctx, I_AD_User.class, trxName);
-		user.setName(name);
-		user.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(user);
-
-		return user;
 	}
 
 	@Override
