@@ -60,7 +60,7 @@ public class UserSessionRepository
 
 	public void load(final UserSession userSession)
 	{
-		final I_AD_User fromUser = Services.get(IUserDAO.class).retrieveUser(userSession.getAD_User_ID());
+		final I_AD_User fromUser = Services.get(IUserDAO.class).getById(userSession.getAD_User_ID());
 		loadFromAD_User(userSession, fromUser);
 	}
 
@@ -164,7 +164,7 @@ public class UserSessionRepository
 
 	public void setAD_Language(final int adUserId, final String adLanguage)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserInTrx(adUserId);
+		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId);
 		user.setAD_Language(adLanguage);
 		InterfaceWrapperHelper.save(user);
 	}

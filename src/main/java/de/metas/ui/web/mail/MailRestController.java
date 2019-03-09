@@ -201,7 +201,7 @@ public class MailRestController
 		// Create the email object
 		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), userSession.getAD_Client_ID());
 		final String mailCustomType = null;
-		final I_AD_User from = Services.get(IUserDAO.class).retrieveUser(webuiEmail.getFrom().getIdAsInt());
+		final I_AD_User from = Services.get(IUserDAO.class).getById(webuiEmail.getFrom().getIdAsInt());
 		final List<String> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
@@ -252,7 +252,7 @@ public class MailRestController
 					}
 					else
 					{
-						final I_AD_User adUser = userDAO.retrieveUser(adUserId);
+						final I_AD_User adUser = userDAO.getById(adUserId);
 						final String email = adUser.getEMail();
 						if (Check.isEmpty(email, true))
 						{
