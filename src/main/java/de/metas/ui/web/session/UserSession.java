@@ -4,8 +4,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -18,6 +16,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;

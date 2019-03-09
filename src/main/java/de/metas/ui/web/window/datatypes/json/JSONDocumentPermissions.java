@@ -3,8 +3,7 @@ package de.metas.ui.web.window.datatypes.json;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.Document;

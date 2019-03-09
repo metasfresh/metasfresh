@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -43,6 +42,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.notification.UserNotificationTargetType;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.config.WebConfig;

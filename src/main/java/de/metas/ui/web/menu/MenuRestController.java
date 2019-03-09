@@ -3,7 +3,6 @@ package de.metas.ui.web.menu;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;

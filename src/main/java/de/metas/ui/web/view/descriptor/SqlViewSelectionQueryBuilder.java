@@ -15,8 +15,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.IStringExpressionWrapper;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -24,6 +22,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.document.filter.DocumentFilter;

@@ -2,10 +2,6 @@ package de.metas.ui.web.menu;
 
 import java.util.Enumeration;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MTree;
@@ -15,6 +11,10 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.permissions.UserMenuInfo;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.DocumentId;

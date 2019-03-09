@@ -8,8 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +19,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.session.UserSession;
 import de.metas.user.api.IUserMenuFavoritesDAO;
 import de.metas.util.Services;

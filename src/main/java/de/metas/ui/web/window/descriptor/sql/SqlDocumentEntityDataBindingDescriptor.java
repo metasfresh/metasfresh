@@ -12,8 +12,6 @@ import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.POInfo;
@@ -23,6 +21,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;

@@ -2,8 +2,6 @@ package de.metas.ui.web.window.controller;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IRolePermLoggingBL;
@@ -11,6 +9,8 @@ import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.ElementPermission;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;

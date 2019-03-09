@@ -14,8 +14,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -36,6 +34,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;

@@ -3,7 +3,6 @@ package de.metas.ui.web.process.descriptor;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -16,6 +15,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.cache.ETag;
 import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.process.ProcessId;

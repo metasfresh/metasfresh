@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestAttributes;
@@ -20,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ILanguageDAO;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;

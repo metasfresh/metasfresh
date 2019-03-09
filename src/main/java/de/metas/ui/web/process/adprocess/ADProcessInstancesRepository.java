@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -31,6 +30,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
