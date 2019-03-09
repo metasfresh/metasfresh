@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -37,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

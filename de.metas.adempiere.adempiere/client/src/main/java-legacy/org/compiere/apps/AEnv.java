@@ -46,7 +46,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
@@ -73,6 +72,7 @@ import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

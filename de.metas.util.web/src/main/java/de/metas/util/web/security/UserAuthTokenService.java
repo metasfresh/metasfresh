@@ -2,12 +2,6 @@ package de.metas.util.web.security;
 
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserAuthToken;
-import org.adempiere.ad.security.UserAuthTokenRepository;
-import org.adempiere.ad.security.UserNotAuthorizedException;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -16,6 +10,12 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Supplier;
 
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserAuthToken;
+import de.metas.security.UserAuthTokenRepository;
+import de.metas.security.UserNotAuthorizedException;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;

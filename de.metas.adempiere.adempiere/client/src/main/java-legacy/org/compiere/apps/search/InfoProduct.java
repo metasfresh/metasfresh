@@ -38,7 +38,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.warehouse.WarehouseId;
@@ -72,6 +71,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.StringUtils;
 
 /**

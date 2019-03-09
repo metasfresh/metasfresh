@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -68,6 +67,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -43,7 +43,6 @@ import javax.swing.RootPaneContainer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorUI;
 import org.adempiere.service.ISysConfigBL;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.layout.CC;

@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
 import org.compiere.model.I_AD_OrgInfo;
@@ -43,6 +42,7 @@ import org.compiere.wf.MWorkflowProcessorLog;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.security.IRoleDAO;
 import de.metas.util.Services;
 
 

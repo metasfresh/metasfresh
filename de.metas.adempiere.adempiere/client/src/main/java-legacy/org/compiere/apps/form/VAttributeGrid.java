@@ -40,7 +40,6 @@ import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ALayout;
@@ -69,6 +68,7 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.security.IUserRolePermissions;
 
 /**
  * Product Attribute Table.

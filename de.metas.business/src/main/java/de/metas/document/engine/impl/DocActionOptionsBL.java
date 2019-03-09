@@ -4,9 +4,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
@@ -18,6 +15,9 @@ import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
 
 public class DocActionOptionsBL implements IDocActionOptionsBL

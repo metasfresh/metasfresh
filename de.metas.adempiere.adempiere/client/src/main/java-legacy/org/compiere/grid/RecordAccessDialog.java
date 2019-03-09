@@ -29,8 +29,6 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import org.adempiere.ad.security.IRoleDAO;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,6 +53,8 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.Msg;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Services;
 
 /**

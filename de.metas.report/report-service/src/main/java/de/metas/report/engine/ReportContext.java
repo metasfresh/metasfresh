@@ -3,7 +3,6 @@ package de.metas.report.engine;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.util.Env;
 
@@ -16,6 +15,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;

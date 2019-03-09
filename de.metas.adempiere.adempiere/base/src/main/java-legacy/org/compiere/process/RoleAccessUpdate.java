@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Role;
@@ -29,6 +28,7 @@ import org.compiere.model.I_AD_Role;
 import de.metas.cache.CacheMgt;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 

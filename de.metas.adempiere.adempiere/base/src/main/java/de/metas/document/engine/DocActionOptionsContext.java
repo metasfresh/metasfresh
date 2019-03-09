@@ -2,13 +2,13 @@ package de.metas.document.engine;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.service.ClientId;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
+import de.metas.security.UserRolePermissionsKey;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;

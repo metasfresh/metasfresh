@@ -45,7 +45,6 @@ import javax.swing.KeyStroke;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -85,6 +84,7 @@ import de.metas.adempiere.model.I_AD_Form;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
 /**

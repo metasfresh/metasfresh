@@ -37,7 +37,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Process;
@@ -57,6 +56,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;

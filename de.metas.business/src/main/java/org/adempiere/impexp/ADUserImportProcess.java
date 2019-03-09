@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,6 +40,7 @@ import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.security.IRoleDAO;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.NonNull;

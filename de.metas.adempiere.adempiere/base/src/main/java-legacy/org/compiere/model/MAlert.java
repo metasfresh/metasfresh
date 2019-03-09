@@ -22,8 +22,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.ad.security.IRoleDAO;
-
+import de.metas.security.IRoleDAO;
 import de.metas.util.Services;
 
 /**

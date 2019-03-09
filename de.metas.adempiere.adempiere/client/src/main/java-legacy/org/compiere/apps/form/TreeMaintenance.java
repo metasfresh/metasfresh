@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;

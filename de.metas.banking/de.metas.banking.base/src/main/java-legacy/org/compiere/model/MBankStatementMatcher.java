@@ -21,12 +21,12 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.impexp.BankStatementMatcherInterface;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
 /**
  *	Bank Statement Matcher Algorithm

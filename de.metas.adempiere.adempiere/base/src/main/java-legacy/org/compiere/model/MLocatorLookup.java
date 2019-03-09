@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.LegacyAdapters;
@@ -37,6 +36,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 

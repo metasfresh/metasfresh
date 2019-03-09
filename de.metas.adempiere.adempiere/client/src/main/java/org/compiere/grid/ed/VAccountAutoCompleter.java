@@ -37,7 +37,6 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.IQuery;
@@ -49,6 +48,7 @@ import org.compiere.util.KeyNamePair;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.autocomplete.model.I_AD_Table;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
 public class VAccountAutoCompleter extends FieldAutoCompleter

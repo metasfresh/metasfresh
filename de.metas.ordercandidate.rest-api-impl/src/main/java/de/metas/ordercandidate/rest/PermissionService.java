@@ -14,14 +14,14 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.ordercandidate.rest.exceptions.PermissionNotGrantedException;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
 
 /*

@@ -30,7 +30,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Menu;
@@ -44,6 +43,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.i18n.Language;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

@@ -23,11 +23,11 @@ import java.util.Properties;
 import java.util.TreeSet;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
+import de.metas.security.IRoleDAO;
 import de.metas.util.Services;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 

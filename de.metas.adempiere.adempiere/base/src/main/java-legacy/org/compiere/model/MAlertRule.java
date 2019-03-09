@@ -23,11 +23,11 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 

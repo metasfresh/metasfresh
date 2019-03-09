@@ -13,10 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 
-import org.adempiere.ad.security.UserNotAuthorizedException;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.security.UserNotAuthorizedException;
 import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 

@@ -67,7 +67,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
@@ -110,6 +109,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import net.miginfocom.layout.AC;

@@ -29,7 +29,6 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -53,6 +52,7 @@ import de.metas.document.engine.IDocumentBL.IDocActionItem;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
 
 /**

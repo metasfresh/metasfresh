@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAging;
 import org.compiere.util.DB;
@@ -31,6 +30,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IUserRolePermissions;
 
 /**
  *	Invoice Aging Report.

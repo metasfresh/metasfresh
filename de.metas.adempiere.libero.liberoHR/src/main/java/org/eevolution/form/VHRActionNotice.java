@@ -37,7 +37,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -66,6 +65,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
 /**
  *  @author Oscar Gomez

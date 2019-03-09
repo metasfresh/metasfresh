@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +38,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;

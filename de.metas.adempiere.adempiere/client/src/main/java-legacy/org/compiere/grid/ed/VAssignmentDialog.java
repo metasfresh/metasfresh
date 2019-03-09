@@ -34,11 +34,11 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
 import javax.swing.JButton;
 import javax.swing.WindowConstants;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;

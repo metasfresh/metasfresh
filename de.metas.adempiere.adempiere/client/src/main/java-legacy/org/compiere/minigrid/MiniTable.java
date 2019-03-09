@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 
 import javax.swing.DefaultCellEditor;
@@ -47,7 +48,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
 import org.adempiere.ad.ui.ITableColorProvider;
 import org.compiere.apps.search.Info_Column;

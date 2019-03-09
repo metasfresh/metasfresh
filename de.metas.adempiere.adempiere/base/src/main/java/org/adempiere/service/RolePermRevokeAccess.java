@@ -1,6 +1,5 @@
 package org.adempiere.service;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import ch.qos.logback.classic.Level;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;

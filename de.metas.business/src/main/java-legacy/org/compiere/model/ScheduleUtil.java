@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DB;

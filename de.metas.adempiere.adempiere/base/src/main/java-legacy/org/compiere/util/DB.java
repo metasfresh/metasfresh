@@ -45,7 +45,6 @@ import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -79,6 +78,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;

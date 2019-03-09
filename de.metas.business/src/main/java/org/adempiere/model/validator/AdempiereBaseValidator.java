@@ -127,7 +127,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	{
 		// Security and User/Roles
 		{
-			engine.addModelValidator(org.adempiere.ad.security.model.validator.SecurityMainInterceptor.instance, client);
+			engine.addModelValidator(de.metas.security.model.interceptor.SecurityMainInterceptor.instance, client);
 		}
 
 		// Event bus

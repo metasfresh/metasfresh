@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,6 +36,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 import lombok.NonNull;
 

@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -46,6 +45,7 @@ import de.metas.cache.CCache;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
+import de.metas.security.TableAccessLevel;
 import lombok.NonNull;
 
 /**

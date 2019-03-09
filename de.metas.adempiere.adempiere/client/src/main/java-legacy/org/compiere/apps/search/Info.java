@@ -62,7 +62,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
@@ -106,6 +105,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.user.api.IUserSortPrefDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;

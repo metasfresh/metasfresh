@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -43,7 +44,6 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;

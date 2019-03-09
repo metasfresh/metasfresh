@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.model.I_Fact_Acct;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;

@@ -16,7 +16,6 @@ package org.compiere.apps.form;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.compiere.model.I_AD_Archive;
@@ -29,6 +28,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
 public class Archive {

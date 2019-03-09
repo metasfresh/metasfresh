@@ -6,11 +6,11 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.security.IUserRolePermissions;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.security.IUserRolePermissions;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -21,7 +21,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -40,6 +39,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Services;
 
 /**

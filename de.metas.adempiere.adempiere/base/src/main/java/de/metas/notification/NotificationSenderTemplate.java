@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,6 +39,7 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
+import de.metas.security.IRoleDAO;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;

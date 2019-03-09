@@ -33,7 +33,6 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
@@ -46,6 +45,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

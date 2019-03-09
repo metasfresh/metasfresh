@@ -26,8 +26,8 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MAllocationHdr;

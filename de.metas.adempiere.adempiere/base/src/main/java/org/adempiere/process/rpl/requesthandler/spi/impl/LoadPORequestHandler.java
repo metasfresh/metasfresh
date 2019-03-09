@@ -26,9 +26,9 @@ package org.adempiere.process.rpl.requesthandler.spi.impl;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerResult;

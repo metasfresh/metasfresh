@@ -40,7 +40,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
@@ -58,6 +57,7 @@ import org.slf4j.Logger;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 
 /**

@@ -2,7 +2,6 @@ package de.metas.printing.rest;
 
 import java.util.Collections;
 
-import org.adempiere.ad.security.UserAuthTokenRepository;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -17,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
+import de.metas.security.UserAuthTokenRepository;
 import de.metas.util.StringUtils;
 import de.metas.util.web.security.UserAuthTokenFilter;
 import de.metas.util.web.security.UserAuthTokenService;

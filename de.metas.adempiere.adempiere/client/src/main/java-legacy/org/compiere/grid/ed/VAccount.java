@@ -33,7 +33,6 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
@@ -51,6 +50,7 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 
 /**
  * Account Control - Displays ValidCombination and launches Dialog

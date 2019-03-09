@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import javax.sql.RowSet;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_AD_PrintFormatItem;
@@ -46,6 +45,7 @@ import de.metas.cache.interceptor.CacheCtxParamDescriptor;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.StringUtils;
 
 /**

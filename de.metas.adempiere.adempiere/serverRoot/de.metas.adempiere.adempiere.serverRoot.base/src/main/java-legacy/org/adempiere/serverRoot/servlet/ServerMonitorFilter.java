@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.bind.DatatypeConverter;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;

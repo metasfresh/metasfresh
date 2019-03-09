@@ -55,7 +55,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 import javax.swing.table.DefaultTableModel;
 
-import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.grid.VTable;
@@ -77,6 +76,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 

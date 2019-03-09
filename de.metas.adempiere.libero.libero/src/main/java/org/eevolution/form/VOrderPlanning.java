@@ -63,7 +63,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
@@ -93,6 +92,7 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessExecutionListener;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
 /**
