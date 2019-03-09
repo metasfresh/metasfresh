@@ -225,7 +225,7 @@ public class MChat extends X_CM_Chat
 				history.addElement(new hr());
 			//	User & Date
 			b b = new b();
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(entry.getCreatedBy());
+			final I_AD_User user = Services.get(IUserDAO.class).getById(entry.getCreatedBy());
 			b.addElement(user.getName());
 			b.addElement(" \t");
 			Timestamp created = entry.getCreated();

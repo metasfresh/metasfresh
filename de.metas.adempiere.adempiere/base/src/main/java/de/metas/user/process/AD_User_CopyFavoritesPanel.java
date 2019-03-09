@@ -75,7 +75,7 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 		
 		Check.assume(targetUser_ID > 0, "There is no record selected! ");
 
-		final I_AD_User targetUser = Services.get(IUserDAO.class).retrieveUser(targetUser_ID);
+		final I_AD_User targetUser = Services.get(IUserDAO.class).getById(targetUser_ID);
 		Check.assume(targetUser.isSystemUser(), "Selected user is not system user! ");
 
 		final String whereClause = I_AD_TreeBar.COLUMNNAME_AD_User_ID + " = ? ";

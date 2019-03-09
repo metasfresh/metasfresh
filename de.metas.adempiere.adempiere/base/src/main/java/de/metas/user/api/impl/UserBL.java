@@ -435,7 +435,7 @@ public class UserBL implements IUserBL
 	@Override
 	public ITranslatableString checkCanSendEMail(final int adUserId)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
+		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
 		return checkCanSendEMail(user);
 	}
 

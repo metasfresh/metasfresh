@@ -575,9 +575,9 @@ public class MRequest extends X_R_Request
 				final IUserDAO userDAO = Services.get(IUserDAO.class);
 				// RequestActionTransfer - Request {} was transfered by {} from {} to {}
 				Object[] args = new Object[] { getDocumentNo(),
-						userDAO.retrieveUser(AD_User_ID),
-						userDAO.retrieveUser(oldSalesRep_ID),
-						userDAO.retrieveUser(getSalesRep_ID())
+						userDAO.getById(AD_User_ID),
+						userDAO.getById(oldSalesRep_ID),
+						userDAO.getById(getSalesRep_ID())
 				};
 				String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "RequestActionTransfer", args);
 				addToResult(msg);

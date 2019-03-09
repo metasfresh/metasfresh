@@ -143,7 +143,7 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public I_AD_User retrieveUser(final int adUserId)
+	public I_AD_User getById(final int adUserId)
 	{
 		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId);
 		if (user == null)
@@ -155,7 +155,7 @@ public class UserDAO implements IUserDAO
 
 	// NOTE: never cache it
 	@Override
-	public I_AD_User retrieveUserInTrx(final int adUserId)
+	public I_AD_User getByIdInTrx(final int adUserId)
 	{
 		final I_AD_User user = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -265,7 +265,7 @@ public class UserDAO implements IUserDAO
 	@Override
 	public BPartnerId getBPartnerIdByUserId(@NonNull final UserId userId)
 	{
-		final I_AD_User userRecord = retrieveUser(userId.getRepoId());
+		final I_AD_User userRecord = getById(userId.getRepoId());
 		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
 	}
 

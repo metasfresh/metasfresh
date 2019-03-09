@@ -51,11 +51,11 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
 
-	I_AD_User retrieveUser(int adUserId);
+	I_AD_User getById(int adUserId);
 
 	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
 
-	I_AD_User retrieveUserInTrx(int adUserId);
+	I_AD_User getByIdInTrx(int adUserId);
 
 	/** @return user's full name or <code>?</code> if no found */
 	String retrieveUserFullname(int userRepoId);

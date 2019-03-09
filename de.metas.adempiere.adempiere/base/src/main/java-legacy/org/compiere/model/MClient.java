@@ -481,7 +481,7 @@ public class MClient extends X_AD_Client
 	@Deprecated
 	private boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments, boolean html)
 	{
-		final I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+		final I_AD_User to = Services.get(IUserDAO.class).getById(AD_User_ID);
 		String toEMail = to.getEMail();
 		if (toEMail == null || toEMail.length() == 0)
 		{

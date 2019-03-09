@@ -1408,7 +1408,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 		//
 		final I_AD_User oldUser = getAD_User();
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+		final I_AD_User user = Services.get(IUserDAO.class).getById(AD_User_ID);
 		// Update
 		setAD_User_ID(user.getAD_User_ID());
 		setTextMsg(textMsg);
@@ -1641,7 +1641,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		if (AD_User_ID > 0)
 		{
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+			final I_AD_User user = Services.get(IUserDAO.class).getById(AD_User_ID);
 			email = user.getEMail();
 			if (email != null && email.length() > 0)
 			{

@@ -68,7 +68,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 	{
 		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
 
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
+		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
 		final int userInChargeId = user.getAD_User_InCharge_ID();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
