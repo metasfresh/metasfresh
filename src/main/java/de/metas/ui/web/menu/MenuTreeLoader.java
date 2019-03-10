@@ -85,7 +85,7 @@ final class MenuTreeLoader
 		if (_userRolePermissions == null)
 		{
 			final UserRolePermissionsKey userRolePermissionsKey = getUserRolePermissionsKey();
-			_userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(userRolePermissionsKey);
+			_userRolePermissions = userRolePermissionsDAO.getUserRolePermissions(userRolePermissionsKey);
 		}
 		return _userRolePermissions;
 	}

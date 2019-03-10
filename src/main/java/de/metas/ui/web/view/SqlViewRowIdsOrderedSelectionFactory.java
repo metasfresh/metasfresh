@@ -92,7 +92,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final SqlDocumentFilterConverterContext context)
 	{
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
-		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
+		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(permissionsKey);
 		final int queryLimit = permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
 				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
 				.getMaxQueryRecordsPerRole();
