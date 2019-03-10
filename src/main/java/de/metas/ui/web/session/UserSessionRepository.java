@@ -19,6 +19,7 @@ import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,7 +61,7 @@ public class UserSessionRepository
 
 	public void load(final UserSession userSession)
 	{
-		final I_AD_User fromUser = Services.get(IUserDAO.class).getById(userSession.getAD_User_ID());
+		final I_AD_User fromUser = Services.get(IUserDAO.class).getById(userSession.getLoggedUserId());
 		loadFromAD_User(userSession, fromUser);
 	}
 
@@ -113,7 +114,7 @@ public class UserSessionRepository
 		final JSONUserSessionChangesEvent changesEvent = changesCollector.build();
 		if (!changesEvent.isEmpty())
 		{
-			final String websocketEndpoint = WebSocketConfig.buildUserSessionTopicName(userSession.getAD_User_ID());
+			final String websocketEndpoint = WebSocketConfig.buildUserSessionTopicName(userSession.getLoggedUserId());
 			websocketSender.convertAndSend(websocketEndpoint, changesEvent);
 
 		}
@@ -162,9 +163,9 @@ public class UserSessionRepository
 		return fullname.toString();
 	}
 
-	public void setAD_Language(final int adUserId, final String adLanguage)
+	public void setAD_Language(final UserId adUserId, final String adLanguage)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId);
+		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId, I_AD_User.class);
 		user.setAD_Language(adLanguage);
 		InterfaceWrapperHelper.save(user);
 	}
@@ -186,7 +187,8 @@ public class UserSessionRepository
 				return;
 			}
 
-			final UserSession userSession = UserSession.getCurrentIfMatchingOrNull(user.getAD_User_ID());
+			final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+			final UserSession userSession = UserSession.getCurrentIfMatchingOrNull(userId);
 			if (userSession == null)
 			{
 				return;

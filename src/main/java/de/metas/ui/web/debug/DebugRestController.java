@@ -42,8 +42,8 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
-import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.notification.UserNotificationTargetType;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -69,6 +69,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -258,7 +259,7 @@ public class DebugRestController
 
 		final UserNotificationRequestBuilder request = UserNotificationRequest.builder()
 				.topic(topic)
-				.recipientUserId(toUserId)
+				.recipientUserId(UserId.ofRepoIdOrNull(toUserId))
 				.important(important);
 
 		final UserNotificationTargetType targetType = Check.isEmpty(targetTypeStr) ? null : UserNotificationTargetType.forJsonValue(targetTypeStr);

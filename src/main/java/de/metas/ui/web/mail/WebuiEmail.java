@@ -3,6 +3,7 @@ package de.metas.ui.web.mail;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -36,8 +37,8 @@ public class WebuiEmail
 {
 	@NonNull
 	private final String emailId;
-	private final int ownerUserId;
-	
+	private final UserId ownerUserId;
+
 	private final LookupValue from;
 	@Default
 	private final LookupValuesList to = LookupValuesList.EMPTY;
@@ -45,8 +46,8 @@ public class WebuiEmail
 	private final String message;
 	@Default
 	private final LookupValuesList attachments = LookupValuesList.EMPTY;
-	
+
 	private final boolean sent;
-	
+
 	private final DocumentPath contextDocumentPath;
 }

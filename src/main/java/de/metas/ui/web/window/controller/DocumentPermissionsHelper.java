@@ -4,8 +4,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
+import org.adempiere.service.OrgId;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -111,7 +113,7 @@ public class DocumentPermissionsHelper
 
 		try
 		{
-			rolePermLoggingBL.logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
+			rolePermLoggingBL.logWindowAccess(permissions.getRoleId(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
 		}
 		catch (final NoSuchForeignKeyException noSuchForeignKeyException)
 		{
@@ -145,7 +147,7 @@ public class DocumentPermissionsHelper
 
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final int recordId = document.getDocumentId().toIntOr(-1);
-		final String errmsg = permissions.checkCanView(document.getAD_Client_ID(), document.getAD_Org_ID(), adTableId, recordId);
+		final String errmsg = permissions.checkCanView(document.getClientId(), document.getOrgId(), adTableId, recordId);
 		if (errmsg != null)
 		{
 			throw DocumentPermissionException.of(DocumentPermission.View, errmsg);
@@ -203,8 +205,8 @@ public class DocumentPermissionsHelper
 		}
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		int adClientId = document.getAD_Client_ID();
-		int adOrgId = document.getAD_Org_ID();
+		ClientId adClientId = document.getClientId();
+		OrgId adOrgId = document.getOrgId();
 		final int recordId = document.getDocumentId().toIntOr(-1);
 		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
 	}

@@ -34,6 +34,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -74,14 +75,14 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	public static final String TOPIC_Dashboard = "/dashboard";
 	public static final String TOPIC_Devices = "/devices";
 
-	public static final String buildUserSessionTopicName(final int adUserId)
+	public static final String buildUserSessionTopicName(@NonNull final UserId adUserId)
 	{
-		return TOPIC_UserSession + "/" + adUserId;
+		return TOPIC_UserSession + "/" + adUserId.getRepoId();
 	}
 
-	public static final String buildNotificationsTopicName(final int adUserId)
+	public static final String buildNotificationsTopicName(@NonNull final UserId adUserId)
 	{
-		return TOPIC_Notifications + "/" + adUserId;
+		return TOPIC_Notifications + "/" + adUserId.getRepoId();
 	}
 
 	public static final String buildViewNotificationsTopicName(final String viewId)

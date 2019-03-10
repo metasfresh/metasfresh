@@ -4,6 +4,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -17,6 +19,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
@@ -25,6 +28,7 @@ import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -90,14 +94,14 @@ public class UserSession
 		return userSession;
 	}
 
-	public static UserSession getCurrentIfMatchingOrNull(final int adUserId)
+	public static UserSession getCurrentIfMatchingOrNull(final UserId adUserId)
 	{
 		final UserSession userSession = getCurrentOrNull();
 		if (userSession == null)
 		{
 			return null;
 		}
-		if (userSession.getAD_User_ID() != adUserId)
+		if (!UserId.equals(userSession.getLoggedUserId(), adUserId))
 		{
 			return null;
 		}
@@ -154,7 +158,7 @@ public class UserSession
 	{
 		this.eventPublisher = eventPublisher;
 	}
-	
+
 	private InternalUserSessionData getData()
 	{
 		_data.initializeIfNeeded();
@@ -226,8 +230,8 @@ public class UserSession
 	{
 		assertLoggedIn();
 
-		final int adRoleId = getData().getAD_Role_ID();
-		if (adRoleId != IUserRolePermissions.SYSTEM_ROLE_ID)
+		final RoleId adRoleId = getData().getLoggedRoleId();
+		if (!adRoleId.isSystem())
 		{
 			throw new NotLoggedInAsSysAdminException();
 		}
@@ -261,27 +265,27 @@ public class UserSession
 		// Fire event
 		if (!Objects.equals(adLanguageOld, adLanguageNew))
 		{
-			eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, getAD_User_ID()));
+			eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, getLoggedUserId()));
 		}
 
 		return adLanguageOld;
 	}
 
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
-		return getData().getAD_Client_ID();
+		return getData().getClientId();
 	}
 
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
-		return getData().getAD_Org_ID();
+		return getData().getOrgId();
 	}
 
 	public String getAD_Language()
 	{
 		return getData().getAdLanguage();
 	}
-	
+
 	public Language getLanguage()
 	{
 		return getData().getLanguage();
@@ -316,9 +320,15 @@ public class UserSession
 		logSettingChanged("UseHttpAcceptLanguage", useHttpAcceptLanguage, useHttpAcceptLanguageOld);
 	}
 
-	public int getAD_User_ID()
+	public UserId getLoggedUserId()
 	{
-		return getData().getAD_User_ID();
+		return getData().getLoggedUserId();
+	}
+
+	public boolean isLoggedInAs(@NonNull final UserId userId)
+	{
+		return isLoggedIn()
+				&& UserId.equals(getLoggedUserId(), userId);
 	}
 
 	public String getUserName()
@@ -384,7 +394,7 @@ public class UserSession
 	/** @return websocket notifications endpoint on which the frontend shall listen */
 	public String getWebsocketEndpoint()
 	{
-		return WebSocketConfig.buildUserSessionTopicName(getAD_User_ID());
+		return WebSocketConfig.buildUserSessionTopicName(getLoggedUserId());
 	}
 
 	public void assertDeprecatedRestAPIAllowed()
@@ -453,6 +463,6 @@ public class UserSession
 	{
 		@NonNull
 		private final String adLanguage;
-		private final int adUserId;
+		private final UserId adUserId;
 	}
 }

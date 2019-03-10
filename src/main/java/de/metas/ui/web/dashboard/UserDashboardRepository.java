@@ -1,6 +1,5 @@
 package de.metas.ui.web.dashboard;
 
-import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -21,10 +20,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -122,12 +121,12 @@ public class UserDashboardRepository
 
 	private int retrieveUserDashboardId(final UserDashboardKey key)
 	{
-		final int adClientId = key.getAdClientId();
+		final ClientId adClientId = key.getAdClientId();
 
 		final int dashboardId = queryBL
 				.createQueryBuilder(I_WEBUI_Dashboard.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, adClientId)
+				.addInArrayFilter(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, ClientId.SYSTEM, adClientId)
 				//
 				.orderBy()
 				.addColumn(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)
@@ -534,22 +533,10 @@ public class UserDashboardRepository
 	//
 	//
 	//
-	@Immutable
-	@SuppressWarnings("serial")
-	@Value
-	public static final class UserDashboardKey implements Serializable
+	@Value(staticConstructor = "of")
+	public static final class UserDashboardKey
 	{
-		public static final UserDashboardKey of(final int adClientId)
-		{
-			return new UserDashboardKey(adClientId);
-		}
-
-		private final int adClientId;
-
-		private UserDashboardKey(final int adClientId)
-		{
-			super();
-			this.adClientId = adClientId < 0 ? -1 : adClientId;
-		}
+		@Nullable
+		ClientId adClientId;
 	}
 }

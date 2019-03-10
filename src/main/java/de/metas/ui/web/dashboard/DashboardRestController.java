@@ -89,7 +89,7 @@ public class DashboardRestController
 			return UserDashboard.EMPTY;
 		}
 
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getAD_Client_ID()));
+		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 		// TODO: assert readable by current user
 		return dashboard;
 	}
@@ -106,7 +106,7 @@ public class DashboardRestController
 			return UserDashboard.EMPTY;
 		}
 
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getAD_Client_ID()));
+		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 		// TODO: assert writable by current user
 		return dashboard;
 	}

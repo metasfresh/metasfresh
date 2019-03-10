@@ -10,6 +10,9 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -31,6 +34,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ILanguageBL;
+import de.metas.security.RoleId;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
@@ -47,6 +51,7 @@ import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.upload.WebuiImageService;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -104,7 +109,7 @@ public class LoginRestController
 	{
 		getLoginService()
 				.getCtx()
-				.getAD_User_ID_IfExists()
+				.getUserIdIfExists()
 				.orElseThrow(() -> new NotAuthenticatedException());
 	}
 
@@ -167,23 +172,24 @@ public class LoginRestController
 		final ImmutableSet.Builder<JSONLoginRole> jsonRoles = ImmutableSet.builder();
 		for (final KeyNamePair role : availableRoles)
 		{
-			final int AD_Role_ID = role.getKey();
-			final int AD_User_ID = ctx.getAD_User_ID();
-			for (final KeyNamePair tenant : loginService.getAvailableClients(AD_Role_ID, AD_User_ID))
+			final RoleId roleId = RoleId.ofRepoId(role.getKey());
+			final UserId userId = ctx.getUserId();
+			for (final KeyNamePair tenant : loginService.getAvailableClients(roleId, userId))
 			{
-				final int AD_Client_ID = tenant.getKey();
+				final ClientId clientId = ClientId.ofRepoId(tenant.getKey());
 
-				final Set<KeyNamePair> availableOrgs = loginService.getAvailableOrgs(AD_Role_ID, AD_User_ID, AD_Client_ID);
+				final Set<KeyNamePair> availableOrgs = loginService.getAvailableOrgs(roleId, userId, clientId);
 				for (final KeyNamePair org : availableOrgs)
 				{
 					// If there is more than one available Org, then skip the "*" org
-					if (availableOrgs.size() > 1 && org.getKey() == Env.CTXVALUE_AD_Org_ID_Any)
+					final OrgId orgId = OrgId.ofRepoIdOrAny(org.getKey());
+					if (availableOrgs.size() > 1 && orgId.isAny())
 					{
 						continue;
 					}
 
 					final String caption = Joiner.on(", ").join(role.getName(), tenant.getName(), org.getName());
-					final JSONLoginRole jsonRole = JSONLoginRole.of(caption, AD_Role_ID, AD_Client_ID, org.getKey());
+					final JSONLoginRole jsonRole = JSONLoginRole.of(caption, roleId.getRepoId(), clientId.getRepoId(), orgId.getRepoId());
 					jsonRoles.add(jsonRole);
 
 				}
@@ -296,10 +302,10 @@ public class LoginRestController
 		// Save user preferences
 		final LoginContext loginCtx = loginService.getCtx();
 		// userPreference.setProperty(UserPreference.P_LANGUAGE, Env.getContext(Env.getCtx(), UserPreference.LANGUAGE_NAME));
-		userPreference.setProperty(UserPreference.P_ROLE, loginCtx.getAD_Role_ID());
-		userPreference.setProperty(UserPreference.P_CLIENT, loginCtx.getAD_Client_ID());
-		userPreference.setProperty(UserPreference.P_ORG, loginCtx.getAD_Org_ID());
-		userPreference.setProperty(UserPreference.P_WAREHOUSE, loginCtx.getM_Warehouse_ID());
+		userPreference.setProperty(UserPreference.P_ROLE, RoleId.toRepoId(loginCtx.getRoleId()));
+		userPreference.setProperty(UserPreference.P_CLIENT, ClientId.toRepoId(loginCtx.getClientId()));
+		userPreference.setProperty(UserPreference.P_ORG, OrgId.toRepoId(loginCtx.getOrgId()));
+		userPreference.setProperty(UserPreference.P_WAREHOUSE, WarehouseId.toRepoId(loginCtx.getWarehouseId()));
 		userPreference.savePreference();
 
 		//
@@ -311,7 +317,10 @@ public class LoginRestController
 
 		//
 		// Enable user notifications
-		userNotificationsService.enableForSession(userSession.getSessionId(), userSession.getAD_User_ID(), userSession.getAD_Language());
+		userNotificationsService.enableForSession(
+				userSession.getSessionId(),
+				userSession.getLoggedUserId(),
+				userSession.getAD_Language());
 	}
 
 	@GetMapping("/isLoggedIn")

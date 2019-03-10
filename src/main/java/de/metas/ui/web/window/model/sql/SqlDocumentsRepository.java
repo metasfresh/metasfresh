@@ -23,6 +23,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
@@ -125,9 +126,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		final SqlDocumentEntityDataBindingDescriptor dataBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 
-		final int adClientId = UserSession.getCurrent().getAD_Client_ID();
+		final ClientId adClientId = UserSession.getCurrent().getClientId();
 		final String tableName = dataBinding.getTableName();
-		final int nextId = DB.getNextID(adClientId, tableName, ITrx.TRXNAME_ThreadInherited);
+		final int nextId = DB.getNextID(adClientId.getRepoId(), tableName, ITrx.TRXNAME_ThreadInherited);
 		if (nextId <= 0)
 		{
 			throw new DBException("Cannot retrieve next ID from database for " + entityDescriptor);

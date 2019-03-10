@@ -56,6 +56,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -116,13 +117,11 @@ public class MailRestController
 	private final void assertReadable(final WebuiEmail email)
 	{
 		// Make sure current logged in user is the owner
-		final int loggedUserId = userSession.getAD_User_ID();
-		if (email.getOwnerUserId() != loggedUserId)
+		if (!userSession.isLoggedInAs(email.getOwnerUserId()))
 		{
 			throw new AdempiereException("No credentials to change the email")
 					.setParameter("emailId", email.getEmailId())
-					.setParameter("ownerUserId", email.getOwnerUserId())
-					.setParameter("loggedUserId", loggedUserId);
+					.setParameter("ownerUserId", email.getOwnerUserId());
 		}
 
 	}
@@ -145,10 +144,10 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
-		final int adUserId = userSession.getAD_User_ID();
+		final UserId adUserId = userSession.getLoggedUserId();
 		Services.get(IUserBL.class).assertCanSendEMail(adUserId);
 
-		final IntegerLookupValue from = IntegerLookupValue.of(adUserId, userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
+		final IntegerLookupValue from = IntegerLookupValue.of(adUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
 
 		final BoilerPlateContext attributes = documentCollection.createBoilerPlateContext(contextDocumentPath);
@@ -199,7 +198,7 @@ public class MailRestController
 
 		//
 		// Create the email object
-		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), userSession.getAD_Client_ID());
+		final I_AD_Client adClient = Services.get(IClientDAO.class).getById(userSession.getClientId());
 		final String mailCustomType = null;
 		final I_AD_User from = Services.get(IUserDAO.class).getById(webuiEmail.getFrom().getIdAsInt());
 		final List<String> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
