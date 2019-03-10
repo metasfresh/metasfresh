@@ -233,7 +233,7 @@ public final class Env
 
 	public static final String CTXNAME_AD_Client_ID = "#AD_Client_ID";
 	public static final String CTXNAME_AD_Client_Name = "#AD_Client_Name";
-	public static final int CTXVALUE_AD_Client_ID_System = IClientDAO.SYSTEM_CLIENT_ID;
+	public static final int CTXVALUE_AD_Client_ID_System = ClientId.SYSTEM.getRepoId();
 
 	public static final String CTXNAME_AD_Org_ID = "#AD_Org_ID";
 	public static final String CTXNAME_AD_Org_Name = "#AD_Org_Name";
