@@ -32,7 +32,7 @@ public interface IScript
 
 	String getFileName();
 
-	String getType();
+	ScriptType getType();
 
 	File getLocalFile();
 
