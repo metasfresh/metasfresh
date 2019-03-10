@@ -269,7 +269,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		}
 
 		final AnonymousScript script = AnonymousScript.builder()
-				.fileName(AFTER_MIGRATION_FUNC_PATTERN + ".sql")
+				.fileName("after_migration.sql")
 				.scriptContent(functionNames.stream()
 						.map(functionName -> "select " + functionName + "();\n")
 						.collect(Collectors.joining()))
