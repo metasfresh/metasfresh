@@ -35,6 +35,7 @@ import de.metas.migration.impl.SQLDatabase;
 import de.metas.migration.scanner.IFileRef;
 import de.metas.migration.scanner.IScriptScanner;
 import de.metas.migration.scanner.IScriptScannerFactory;
+import de.metas.migration.scanner.impl.DefaultScriptFactory;
 import de.metas.migration.scanner.impl.FileRef;
 import de.metas.migration.scanner.impl.ScriptScannerFactory;
 import de.metas.migration.scanner.impl.ScriptScannerProviderWrapper;
@@ -52,6 +53,7 @@ public class ScriptApplierTestManual
 		// scriptExecutorFactory.registerScriptExecutorClass(IScriptExecutorFactory.TYPE_ANY, IScriptExecutorFactory.TYPE_ANY, NullScriptExecutor.class);
 
 		final IScriptScannerFactory scriptScannerFactory = new ScriptScannerFactory();
+		scriptScannerFactory.setScriptFactory(new DefaultScriptFactory("test"));
 		scriptScannerFactory.registerScriptScannerClassesFor(scriptExecutorFactory);
 
 		final IFileRef rootFileRef = new FileRef(new File("d:\\tmp\\testScripts"));
