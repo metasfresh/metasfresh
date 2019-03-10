@@ -226,7 +226,7 @@ public class UserBL implements IUserBL
 	private boolean isOldPasswordRequired(final Properties ctx, final UserId adUserId)
 	{
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.of(ctx));
+		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.getUserRolePermissions(UserRolePermissionsKey.of(ctx));
 
 		// Changing your own password always requires entering the old password
 		if (UserId.equals(loggedInPermissions.getUserId(), adUserId))

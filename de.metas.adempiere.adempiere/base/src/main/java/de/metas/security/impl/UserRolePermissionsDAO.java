@@ -3,8 +3,7 @@ package de.metas.security.impl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -63,6 +62,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
@@ -136,6 +136,11 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private final AtomicLong version = new AtomicLong(1);
 
+	private CCache<UserRolePermissionsKey, IUserRolePermissions> //
+	permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions> builder()
+			.tableName(I_AD_Role.Table_Name)
+			.build();
+
 	@Override
 	public Set<String> getRoleDependentTableNames()
 	{
@@ -203,6 +208,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		{
 			version.incrementAndGet();
 
+			permissionsByKey.reset();
+
 			final CacheMgt cacheManager = CacheMgt.get();
 			cacheManager.resetLocal(I_AD_Role.Table_Name); // cache reset role itself
 			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::resetLocal);
@@ -227,12 +234,12 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final boolean rw = false; // readonly access is fine for us
 		final ClientId adClientId = Env.getClientId(ctx);
-		final Instant date = TimeUtil.asInstant(Env.getDate(ctx));
+		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 
 		final ImmutableList.Builder<IUserRolePermissions> permissionsWithOrgAccess = ImmutableList.builder();
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
-			final IUserRolePermissions permissions = retrieveUserRolePermissions(roleId, adUserId, adClientId, date);
+			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, adClientId, date);
 			if (permissions.isOrgAccess(adOrgId, rw))
 			{
 				permissionsWithOrgAccess.add(permissions);
@@ -250,11 +257,11 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		final boolean rw = false; // readonly access is fine for us
 		final ClientId adClientId = Env.getClientId(ctx);
-		final Instant date = TimeUtil.asInstant(Env.getDate(ctx));
+		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
-			final IUserRolePermissions permissions = retrieveUserRolePermissions(roleId, adUserId, adClientId, date);
+			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, adClientId, date);
 			if (permissions.isOrgAccess(adOrgId, rw))
 			{
 				return Optional.of(permissions);
@@ -277,10 +284,10 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final Predicate<IUserRolePermissions> matcher)
 	{
 		final ClientId adClientId = Env.getClientId(ctx);
-		final Instant date = TimeUtil.asInstant(Env.getDate(ctx));
+		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
-			final IUserRolePermissions permissions = retrieveUserRolePermissions(roleId, adUserId, adClientId, date);
+			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, adClientId, date);
 
 			if (matcher.test(permissions))
 			{
@@ -293,30 +300,28 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Override
-	public IUserRolePermissions retrieveUserRolePermissions(
+	public IUserRolePermissions getUserRolePermissions(
 			final RoleId adRoleId,
 			final UserId adUserId,
 			final ClientId adClientId,
-			final Instant date)
+			final LocalDate date)
 	{
-		final long dateMillis = UserRolePermissionsKey.normalizeDate(date);
-		return retrieveUserRolePermissionsCached(adRoleId, adUserId, adClientId, dateMillis);
+		final UserRolePermissionsKey key = UserRolePermissionsKey.of(adRoleId, adUserId, adClientId, date);
+		return getUserRolePermissions(key);
 	}
 
 	@Override
-	public IUserRolePermissions retrieveUserRolePermissions(@NonNull final UserRolePermissionsKey key)
+	public IUserRolePermissions getUserRolePermissions(@NonNull final UserRolePermissionsKey key)
 	{
-		return retrieveUserRolePermissionsCached(key.getRoleId(), key.getUserId(), key.getClientId(), key.getDateMillis());
+		return permissionsByKey.getOrLoad(key, this::retrieveUserRolePermissions);
 	}
 
-	@Cached(cacheName = I_AD_Role.Table_Name + "#AggregatedRolePermissions", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public IUserRolePermissions retrieveUserRolePermissionsCached(
-			final RoleId adRoleId,
-			final UserId adUserId,
-			final ClientId adClientId,
-			final long dateMillis)
+	private IUserRolePermissions retrieveUserRolePermissions(@NonNull final UserRolePermissionsKey key)
 	{
-		final Date date = new Date(dateMillis);
+		final RoleId adRoleId = key.getRoleId();
+		final UserId adUserId = key.getUserId();
+		final ClientId adClientId = key.getClientId();
+		final LocalDate date = key.getDate();
 
 		try
 		{

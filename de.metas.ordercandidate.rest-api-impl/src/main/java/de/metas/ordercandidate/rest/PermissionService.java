@@ -99,7 +99,7 @@ public class PermissionService
 			return;
 		}
 
-		final IUserRolePermissions userPermissions = userRolePermissionsRepo.retrieveUserRolePermissions(userRolePermissionsKey);
+		final IUserRolePermissions userPermissions = userRolePermissionsRepo.getUserRolePermissions(userRolePermissionsKey);
 
 		final String errmsg;
 		if (request.getRecordId() >= 0)

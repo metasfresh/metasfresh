@@ -48,7 +48,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 		if (docTypeId != null)
 		{
 			final UserRolePermissionsKey permissionsKey = optionsCtx.getUserRolePermissionsKey();
-			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
+			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(permissionsKey);
 			role.applyActionAccess(optionsCtx);
 		}
 	}

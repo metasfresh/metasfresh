@@ -1,32 +1,10 @@
 package de.metas.security.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
@@ -41,64 +19,55 @@ import lombok.NonNull;
 
 class RolesTreeNode implements IRolesTreeNode
 {
-	public static RolesTreeNode of(final RoleId adRoleId, final UserId substitute_ForUserId, final Date substituteDate)
+	public static RolesTreeNode of(final RoleId adRoleId, final UserId substituteForUserId, final LocalDate substituteDate)
 	{
 		final int seqNo = 0;
-		final RolesTreeNode node = new RolesTreeNode(adRoleId, seqNo);
 
-		if (substitute_ForUserId != null)
+		if (substituteForUserId != null)
 		{
-			node.substitute_ForUserId = substitute_ForUserId;
-
 			Check.assumeNotNull(substituteDate, "substituteDate not null");
-			node.substitute_Date = (Date)substituteDate.clone();
+			return new RolesTreeNode(adRoleId, seqNo, substituteForUserId, substituteDate);
 		}
-
-		return node;
+		else
+		{
+			return new RolesTreeNode(adRoleId, seqNo, substituteForUserId, null);
+		}
 	}
 
 	private final RoleId roleId;
 	private final int seqNo;
-	private UserId substitute_ForUserId;
-	private Date substitute_Date = null;
-	private final Supplier<ImmutableList<IRolesTreeNode>> childrenSupplier = Suppliers.memoize(new Supplier<ImmutableList<IRolesTreeNode>>()
+	private final UserId substituteForUserId;
+	private final LocalDate substituteDate;
+	private final Supplier<ImmutableList<IRolesTreeNode>> childrenSupplier = Suppliers.memoize(this::retrieveChildren);
+
+	private RolesTreeNode(
+			@NonNull final RoleId adRoleId,
+			final int seqNo)
 	{
+		this(adRoleId, seqNo, (UserId)null, (LocalDate)null);
+	}
 
-		@Override
-		public ImmutableList<IRolesTreeNode> get()
-		{
-			final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-
-			ImmutableList.Builder<IRolesTreeNode> childrenBuilder = ImmutableList.builder();
-			for (final RoleInclude roleIncludeLink : roleDAO.retrieveRoleIncludes(getRoleId()))
-			{
-				final RoleId childRoleId = roleIncludeLink.getChildRoleId();
-				final int childSeqNo = roleIncludeLink.getSeqNo();
-				final RolesTreeNode child = new RolesTreeNode(childRoleId, childSeqNo);
-				childrenBuilder.add(child);
-			}
-
-			//
-			// Load roles which are temporary assigned to given user
-			if (substitute_ForUserId != null)
-			{
-				for (final RoleId childRoleId : roleDAO.getSubstituteRoleIds(substitute_ForUserId, substitute_Date))
-				{
-					final int childSeqNo = -1; // no particular sequence number
-					final RolesTreeNode child = new RolesTreeNode(childRoleId, childSeqNo);
-					childrenBuilder.add(child);
-				}
-			}
-
-			return childrenBuilder.build();
-		}
-
-	});
-
-	private RolesTreeNode(@NonNull final RoleId adRoleId, final int seqNo)
+	private RolesTreeNode(
+			@NonNull final RoleId adRoleId,
+			final int seqNo,
+			final UserId substituteForUserId,
+			final LocalDate substituteDate)
 	{
 		this.roleId = adRoleId;
 		this.seqNo = seqNo;
+
+		if (substituteForUserId != null)
+		{
+			this.substituteForUserId = substituteForUserId;
+
+			Check.assumeNotNull(substituteDate, "substituteDate not null");
+			this.substituteDate = substituteDate;
+		}
+		else
+		{
+			this.substituteForUserId = null;
+			this.substituteDate = null;
+		}
 	}
 
 	@Override
@@ -117,6 +86,34 @@ class RolesTreeNode implements IRolesTreeNode
 	public List<IRolesTreeNode> getChildren()
 	{
 		return childrenSupplier.get();
+	}
+
+	private ImmutableList<IRolesTreeNode> retrieveChildren()
+	{
+		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+
+		ImmutableList.Builder<IRolesTreeNode> childrenBuilder = ImmutableList.builder();
+		for (final RoleInclude roleIncludeLink : roleDAO.retrieveRoleIncludes(getRoleId()))
+		{
+			final RoleId childRoleId = roleIncludeLink.getChildRoleId();
+			final int childSeqNo = roleIncludeLink.getSeqNo();
+			final RolesTreeNode child = new RolesTreeNode(childRoleId, childSeqNo);
+			childrenBuilder.add(child);
+		}
+
+		//
+		// Load roles which are temporary assigned to given user
+		if (substituteForUserId != null)
+		{
+			for (final RoleId childRoleId : roleDAO.getSubstituteRoleIds(substituteForUserId, substituteDate))
+			{
+				final int childSeqNo = -1; // no particular sequence number
+				final RolesTreeNode child = new RolesTreeNode(childRoleId, childSeqNo);
+				childrenBuilder.add(child);
+			}
+		}
+
+		return childrenBuilder.build();
 	}
 
 	@Override

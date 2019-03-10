@@ -64,10 +64,10 @@ public class UserRolePermissionsDAOTest
 	@Test(expected = RolePermissionsNotFoundException.class)
 	public void test_retrieveUserRolePermissions_NotExistingRole()
 	{
-		dao.retrieveUserRolePermissions(
+		dao.getUserRolePermissions(
 				RoleId.ofRepoId(1),
 				UserId.ofRepoId(2),
 				ClientId.ofRepoId(3),
-				SystemTime.asInstant());
+				SystemTime.asLocalDate());
 	}
 }

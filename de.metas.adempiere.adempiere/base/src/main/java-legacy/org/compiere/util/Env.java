@@ -1255,18 +1255,18 @@ public final class Env
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 
 	public static IUserRolePermissions getUserRolePermissions(final UserRolePermissionsKey key)
 	{
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(key);
 	}
 
 	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 
 	public static int getAD_Session_ID(final Properties ctx)

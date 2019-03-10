@@ -2,6 +2,7 @@ package de.metas.security;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
@@ -53,17 +54,16 @@ public final class UserRolePermissionsKey implements Serializable
 		return of(RoleId.ofRepoId(adRoleId),
 				UserId.ofRepoId(adUserId),
 				ClientId.ofRepoId(adClientId),
-				TimeUtil.asInstant(date));
+				TimeUtil.asLocalDate(date));
 	}
 
 	public static final UserRolePermissionsKey of(
 			@NonNull final RoleId adRoleId,
 			@NonNull final UserId adUserId,
 			@NonNull final ClientId adClientId,
-			@NonNull final Instant date)
+			@NonNull final LocalDate date)
 	{
-		final long dateMillis = normalizeDate(date);
-		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, dateMillis);
+		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, date);
 	}
 
 	public static final UserRolePermissionsKey of(@NonNull final Properties ctx)
@@ -71,9 +71,8 @@ public final class UserRolePermissionsKey implements Serializable
 		final RoleId roleId = Env.getLoggedRoleId(ctx);
 		final UserId userId = Env.getLoggedUserId(ctx);
 		final ClientId adClientId = Env.getClientId(ctx);
-		final Date date = Env.getDate(ctx);
-		final long dateMillis = normalizeDate(date);
-		return new UserRolePermissionsKey(roleId, userId, adClientId, dateMillis);
+		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
+		return new UserRolePermissionsKey(roleId, userId, adClientId, date);
 	}
 
 	/**
@@ -96,19 +95,19 @@ public final class UserRolePermissionsKey implements Serializable
 		return UserRolePermissionsKey.fromString(permissionsKeyStrObj.toString());
 	}
 
-	public static final String toPermissionsKeyString(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId, final long dateMillis)
+	private static final String toPermissionsKeyString(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId, final LocalDate date)
 	{
 		return toPermissionsKeyString(
 				RoleId.toRepoId(adRoleId),
 				UserId.toRepoId(adUserId),
 				ClientId.toRepoId(adClientId),
-				dateMillis);
+				date);
 	}
 
-	public static final String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
+	private static final String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final LocalDate date)
 	{
 		// NOTE: keep in sync with the counterpart (i.e. the constructor)
-		return String.join("|", String.valueOf(adRoleId), String.valueOf(adUserId), String.valueOf(adClientId), String.valueOf(dateMillis));
+		return String.join("|", String.valueOf(adRoleId), String.valueOf(adUserId), String.valueOf(adClientId), date.toString());
 	}
 
 	public static final String toPermissionsKeyString(final Properties ctx)
@@ -116,9 +115,8 @@ public final class UserRolePermissionsKey implements Serializable
 		final int adRoleId = Env.getAD_Role_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
 		final int adClientId = Env.getAD_Client_ID(ctx);
-		final Date date = Env.getDate(ctx);
-		final long dateMillis = normalizeDate(date);
-		return toPermissionsKeyString(adRoleId, adUserId, adClientId, dateMillis);
+		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
+		return toPermissionsKeyString(adRoleId, adUserId, adClientId, date);
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsKey.class);
@@ -130,7 +128,7 @@ public final class UserRolePermissionsKey implements Serializable
 	@Getter
 	private final ClientId clientId;
 	@Getter
-	private final long dateMillis;
+	private final LocalDate date;
 
 	private transient String _permissionsKeyStr;
 
@@ -138,26 +136,23 @@ public final class UserRolePermissionsKey implements Serializable
 	private UserRolePermissionsKey(final RoleId roleId, final UserId userId, final ClientId clientId, final Date date)
 	{
 		this(roleId, userId, clientId,
-				normalizeDate(date != null ? date : SystemTime.asDayTimestamp()) // dateMillis
-		);
+				date != null ? TimeUtil.asLocalDate(date) : SystemTime.asLocalDate());
 	}
 
 	private UserRolePermissionsKey(
 			final RoleId roleId,
 			final UserId userId,
 			final ClientId clientId,
-			final long dateMillis)
+			final LocalDate date)
 	{
 		this.roleId = roleId;
 		this.userId = userId;
 		this.clientId = clientId;
-		this.dateMillis = dateMillis;
+		this.date = date;
 	}
 
 	private UserRolePermissionsKey(final String permissionsKeyStr)
 	{
-		super();
-
 		// NOTE: keep in sync with the counterpart method toPermissionsKeyString(...) !!!
 		try
 		{
@@ -170,7 +165,7 @@ public final class UserRolePermissionsKey implements Serializable
 			roleId = RoleId.ofRepoId(Integer.parseInt(list[0]));
 			userId = UserId.ofRepoId(Integer.parseInt(list[1]));
 			clientId = ClientId.ofRepoId(Integer.parseInt(list[2]));
-			dateMillis = Long.parseLong(list[3]);
+			date = LocalDate.parse(list[3]);
 			_permissionsKeyStr = permissionsKeyStr;
 		}
 		catch (final Exception e)
@@ -184,11 +179,12 @@ public final class UserRolePermissionsKey implements Serializable
 	 */
 	public String toPermissionsKeyString()
 	{
-		if (_permissionsKeyStr == null)
+		String permissionsKeyStr = _permissionsKeyStr;
+		if (permissionsKeyStr == null)
 		{
-			_permissionsKeyStr = toPermissionsKeyString(roleId, userId, clientId, dateMillis);
+			_permissionsKeyStr = permissionsKeyStr = toPermissionsKeyString(roleId, userId, clientId, date);
 		}
-		return _permissionsKeyStr;
+		return permissionsKeyStr;
 	}
 
 	public static final long normalizeDate(final Instant date)

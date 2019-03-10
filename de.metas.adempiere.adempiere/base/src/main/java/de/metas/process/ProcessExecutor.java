@@ -330,11 +330,11 @@ public final class ProcessExecutor
 
 	private final void assertPermissions()
 	{
-		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(
+		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(
 				pi.getRoleId(),
 				pi.getUserId(),
 				pi.getClientId(),
-				TimeUtil.asInstant(Env.getDate(pi.getCtx())));
+				TimeUtil.asLocalDate(Env.getDate(pi.getCtx())));
 
 		if (!permissions.getRoleId().isSystem())
 		{

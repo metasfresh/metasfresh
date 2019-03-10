@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -569,12 +569,12 @@ public class MMeasure extends X_PA_Measure
 		final Properties ctx = getCtx();
 		final UserId contextUserId = Env.getLoggedUserId(ctx);
 		final ClientId contextClientId = Env.getClientId(ctx);
-		final Instant contextDate = TimeUtil.asInstant(Env.getDate(ctx));
+		final LocalDate contextDate = TimeUtil.asLocalDate(Env.getDate(ctx));
 
 		IUserRolePermissions role = null;
 		if (goalRoleId != null)
 		{
-			role = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(
+			role = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(
 					goalRoleId,
 					goalUserId != null ? goalUserId : contextUserId,
 					contextClientId,

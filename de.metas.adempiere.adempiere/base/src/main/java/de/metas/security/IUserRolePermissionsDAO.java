@@ -1,6 +1,6 @@
 package de.metas.security;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -78,9 +78,9 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 * @return user/role permissions
 	 * @throws RolePermissionsNotFoundException if permissions could not be loaded
 	 */
-	IUserRolePermissions retrieveUserRolePermissions(RoleId adRoleId, UserId adUserId, ClientId adClientId, Instant date);
+	IUserRolePermissions getUserRolePermissions(RoleId adRoleId, UserId adUserId, ClientId adClientId, LocalDate date);
 
-	IUserRolePermissions retrieveUserRolePermissions(UserRolePermissionsKey key);
+	IUserRolePermissions getUserRolePermissions(UserRolePermissionsKey key);
 
 	/**
 	 * Retrieves {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.

@@ -87,7 +87,7 @@ public class UserAuthTokenService
 	private final Properties createContext(final UserAuthToken token)
 	{
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		final IUserRolePermissions permissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.builder()
+		final IUserRolePermissions permissions = userRolePermissionsDAO.getUserRolePermissions(UserRolePermissionsKey.builder()
 				.userId(token.getUserId())
 				.roleId(token.getRoleId())
 				.clientId(token.getClientId())

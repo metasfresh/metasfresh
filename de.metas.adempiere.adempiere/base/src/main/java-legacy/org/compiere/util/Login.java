@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -343,8 +343,8 @@ public class Login
 		//
 		// Get user role
 		final ClientId clientId = null; // N/A
-		final Instant loginDate = SystemTime.asInstant(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(roleId, userId, clientId, loginDate);
+		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 		return rolePermissions;
 	}
 
@@ -387,8 +387,8 @@ public class Login
 	{
 		//
 		// Get user role
-		final Instant loginDate = SystemTime.asInstant(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions role = userRolePermissionsDAO.retrieveUserRolePermissions(roleId, userId, clientId, loginDate);
+		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final IUserRolePermissions role = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 
 		//
 		// Get login organizations
@@ -490,20 +490,20 @@ public class Login
 
 		//
 		// Date (default today)
-		final Instant loginDate;
+		final LocalDate loginDate;
 		if (timestamp == null)
 		{
-			loginDate = SystemTime.asInstant();
+			loginDate = SystemTime.asLocalDate();
 		}
 		else
 		{
-			loginDate = TimeUtil.asInstant(TimeUtil.trunc(timestamp, TimeUtil.TRUNC_DAY));
+			loginDate = TimeUtil.asLocalDate(timestamp);
 		}
 		ctx.setLoginDate(loginDate);
 
 		//
 		// Role additional info
-		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(roleId, userId, clientId, loginDate);
+		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 		ctx.setUserOrgs(userRolePermissions.getAD_Org_IDs_AsString());
 
 		// Other

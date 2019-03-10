@@ -1,7 +1,7 @@
 package org.adempiere.ad.session;
 
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,7 +155,7 @@ public class MFSession
 			@NonNull final OrgId AD_Org_ID, 
 			@NonNull final RoleId AD_Role_ID, 
 			@NonNull final UserId AD_User_ID, 
-			@NonNull final Instant loginDate)
+			@NonNull final LocalDate loginDate)
 	{
 		final PO po = LegacyAdapters.convertToPO(sessionPO);
 		po.set_ValueNoCheck(I_AD_Session.COLUMNNAME_AD_Client_ID, AD_Client_ID.getRepoId()); // Force AD_Client_ID update

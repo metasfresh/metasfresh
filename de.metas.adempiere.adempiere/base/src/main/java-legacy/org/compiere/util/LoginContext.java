@@ -1,6 +1,6 @@
 package org.compiere.util;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -109,14 +109,14 @@ public class LoginContext
 		return Env.getContextAsInt(getCtx(), name);
 	}
 
-	private void setProperty(final String name, final Instant valueDate)
+	private void setProperty(final String name, final LocalDate valueDate)
 	{
 		Env.setContext(getCtx(), name, TimeUtil.asDate(valueDate));
 	}
 
-	private Instant getPropertyAsInstant(final String name)
+	private LocalDate getPropertyAsLocalDate(final String name)
 	{
-		return TimeUtil.asInstant(Env.getContextAsDate(getCtx(), name));
+		return TimeUtil.asLocalDate(Env.getContextAsDate(getCtx(), name));
 	}
 
 	private boolean getPropertyAsBoolean(final String name)
@@ -213,12 +213,12 @@ public class LoginContext
 		return ClientId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_Client_ID));
 	}
 
-	public Instant getLoginDate()
+	public LocalDate getLoginDate()
 	{
-		return getPropertyAsInstant(Env.CTXNAME_Date);
+		return getPropertyAsLocalDate(Env.CTXNAME_Date);
 	}
 
-	public void setLoginDate(final Instant date)
+	public void setLoginDate(final LocalDate date)
 	{
 		setProperty(Env.CTXNAME_Date, date);
 	}

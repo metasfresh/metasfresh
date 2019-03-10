@@ -3,31 +3,8 @@ package de.metas.security.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.time.LocalDate;
 import java.util.Collection;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,6 +19,7 @@ import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -236,12 +214,12 @@ public class RoleDAO implements IRoleDAO
 	}
 
 	@Override
-	public final Set<RoleId> getSubstituteRoleIds(@NonNull final UserId adUserId, @NonNull final Date date)
+	public final Set<RoleId> getSubstituteRoleIds(@NonNull final UserId adUserId, @NonNull final LocalDate date)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_User_Substitute.class)
 				.addOnlyActiveRecordsFilter()
-				.addValidFromToMatchesFilter(I_AD_User_Substitute.COLUMN_ValidFrom, I_AD_User_Substitute.COLUMN_ValidTo, date)
+				.addValidFromToMatchesFilter(I_AD_User_Substitute.COLUMN_ValidFrom, I_AD_User_Substitute.COLUMN_ValidTo, TimeUtil.asDate(date))
 				.addEqualsFilter(I_AD_User_Substitute.COLUMN_Substitute_ID, adUserId)
 				//
 				// Collect users which can be substituted by given user
@@ -288,9 +266,9 @@ public class RoleDAO implements IRoleDAO
 	}
 
 	@Override
-	public IRolesTreeNode retrieveRolesTree(final RoleId adRoleId, UserId substitute_ForUserId, Date substituteDate)
+	public IRolesTreeNode retrieveRolesTree(final RoleId adRoleId, UserId substituteForUserId, LocalDate substituteDate)
 	{
-		return RolesTreeNode.of(adRoleId, substitute_ForUserId, substituteDate);
+		return RolesTreeNode.of(adRoleId, substituteForUserId, substituteDate);
 	}
 
 	@Override
