@@ -12,11 +12,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 
@@ -111,8 +113,8 @@ public class R_Request
 	public void setSalesRep(final I_R_Request request)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(request);
-
-		final Role role = Services.get(IRoleDAO.class).getLoginRole(ctx);
+		final RoleId adRoleId = Env.getLoggedRoleId(ctx);
+		final Role role = Services.get(IRoleDAO.class).getById(adRoleId);
 
 		// task #577: The SalesRep in R_Request will be Role's supervisor
 		final UserId supervisorId = role.getSupervisorId();

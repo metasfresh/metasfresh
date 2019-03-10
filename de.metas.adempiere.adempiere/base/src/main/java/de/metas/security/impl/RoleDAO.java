@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,7 +17,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -49,18 +47,9 @@ import lombok.NonNull;
 
 public class RoleDAO implements IRoleDAO
 {
-	// private static final transient Logger logger = CLogMgt.getLogger(RoleDAO.class);
-
 	private CCache<RoleId, Role> rolesCache = CCache.<RoleId, Role> builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
-
-	@Override
-	public Role getLoginRole(final Properties ctx)
-	{
-		final RoleId adRoleId = Env.getLoggedRoleId(ctx);
-		return getById(adRoleId);
-	}
 
 	@Override
 	public Role getById(@NonNull final RoleId roleId)

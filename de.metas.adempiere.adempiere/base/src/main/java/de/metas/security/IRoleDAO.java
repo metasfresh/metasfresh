@@ -3,7 +3,6 @@ package de.metas.security;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -19,8 +18,6 @@ import de.metas.util.ISingletonService;
 public interface IRoleDAO extends ISingletonService
 {
 	Role getById(RoleId roleId);
-
-	Role getLoginRole(Properties ctx);
 
 	Set<RoleId> getUserRoleIds(UserId userId);
 
