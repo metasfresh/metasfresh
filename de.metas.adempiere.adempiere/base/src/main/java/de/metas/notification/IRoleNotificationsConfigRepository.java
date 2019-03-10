@@ -2,6 +2,7 @@ package de.metas.notification;
 
 import java.util.Set;
 
+import de.metas.security.RoleId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -28,7 +29,7 @@ import de.metas.util.ISingletonService;
 
 public interface IRoleNotificationsConfigRepository extends ISingletonService
 {
-	RoleNotificationsConfig getByRoleId(int adRoleId);
+	RoleNotificationsConfig getByRoleId(RoleId adRoleId);
 
-	Set<Integer> getRoleIdsContainingNotificationGroupName(NotificationGroupName notificationGroupName);
+	Set<RoleId> getRoleIdsContainingNotificationGroupName(NotificationGroupName notificationGroupName);
 }

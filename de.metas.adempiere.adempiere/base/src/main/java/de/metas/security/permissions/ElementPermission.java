@@ -13,15 +13,14 @@ package de.metas.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Set;
 
@@ -30,7 +29,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Application Dictionary element permission (e.g. Window, Process etc).
@@ -55,22 +54,18 @@ public final class ElementPermission extends AbstractPermission
 
 		return new ElementPermission(resource, accesses.build());
 	}
-	
+
 	public static final ElementPermission none(final ElementResource resource)
 	{
 		return new ElementPermission(resource, ImmutableSet.of());
 	}
-	
+
 	private final ElementResource resource;
 	private final ImmutableSet<Access> accesses;
 
-	private ElementPermission(final ElementResource resource, final Set<Access> accesses)
+	private ElementPermission(@NonNull final ElementResource resource, final Set<Access> accesses)
 	{
-		super();
-
-		Check.assumeNotNull(resource, "resource not null");
 		this.resource = resource;
-
 		this.accesses = ImmutableSet.copyOf(accesses);
 	}
 
@@ -119,12 +114,12 @@ public final class ElementPermission extends AbstractPermission
 	{
 		return accesses.contains(access);
 	}
-	
+
 	public boolean hasReadAccess()
 	{
 		return accesses.contains(Access.READ);
 	}
-	
+
 	public boolean hasWriteAccess()
 	{
 		return accesses.contains(Access.WRITE);

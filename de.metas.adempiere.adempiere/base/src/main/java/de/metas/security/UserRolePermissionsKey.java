@@ -1,22 +1,24 @@
 package de.metas.security;
 
-import lombok.Builder;
-import lombok.NonNull;
-
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -41,9 +43,24 @@ import de.metas.util.time.SystemTime;
  */
 
 @SuppressWarnings("serial")
+@EqualsAndHashCode
+@ToString(exclude = "_permissionsKeyStr")
 public final class UserRolePermissionsKey implements Serializable
 {
+	@Deprecated
 	public static final UserRolePermissionsKey of(final int adRoleId, final int adUserId, final int adClientId, final Date date)
+	{
+		return of(RoleId.ofRepoId(adRoleId),
+				UserId.ofRepoId(adUserId),
+				ClientId.ofRepoId(adClientId),
+				TimeUtil.asInstant(date));
+	}
+
+	public static final UserRolePermissionsKey of(
+			@NonNull final RoleId adRoleId,
+			@NonNull final UserId adUserId,
+			@NonNull final ClientId adClientId,
+			@NonNull final Instant date)
 	{
 		final long dateMillis = normalizeDate(date);
 		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, dateMillis);
@@ -51,12 +68,12 @@ public final class UserRolePermissionsKey implements Serializable
 
 	public static final UserRolePermissionsKey of(@NonNull final Properties ctx)
 	{
-		final int adRoleId = Env.getAD_Role_ID(ctx);
-		final int adUserId = Env.getAD_User_ID(ctx);
-		final int adClientId = Env.getAD_Client_ID(ctx);
+		final RoleId roleId = Env.getLoggedRoleId(ctx);
+		final UserId userId = Env.getLoggedUserId(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
 		final Date date = Env.getDate(ctx);
 		final long dateMillis = normalizeDate(date);
-		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, dateMillis);
+		return new UserRolePermissionsKey(roleId, userId, adClientId, dateMillis);
 	}
 
 	/**
@@ -79,6 +96,15 @@ public final class UserRolePermissionsKey implements Serializable
 		return UserRolePermissionsKey.fromString(permissionsKeyStrObj.toString());
 	}
 
+	public static final String toPermissionsKeyString(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId, final long dateMillis)
+	{
+		return toPermissionsKeyString(
+				RoleId.toRepoId(adRoleId),
+				UserId.toRepoId(adUserId),
+				ClientId.toRepoId(adClientId),
+				dateMillis);
+	}
+
 	public static final String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
 	{
 		// NOTE: keep in sync with the counterpart (i.e. the constructor)
@@ -97,27 +123,34 @@ public final class UserRolePermissionsKey implements Serializable
 
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsKey.class);
 
-	private final int adRoleId;
-	private final int adUserId;
-	private final int adClientId;
+	@Getter
+	private final RoleId roleId;
+	@Getter
+	private final UserId userId;
+	@Getter
+	private final ClientId clientId;
+	@Getter
 	private final long dateMillis;
 
-	private transient Integer _hashcode;
 	private transient String _permissionsKeyStr;
 
 	@Builder
-	private UserRolePermissionsKey(final int adRoleId, final int adUserId, final int adClientId, final Date date)
+	private UserRolePermissionsKey(final RoleId roleId, final UserId userId, final ClientId clientId, final Date date)
 	{
-		this(adRoleId, adUserId, adClientId,
+		this(roleId, userId, clientId,
 				normalizeDate(date != null ? date : SystemTime.asDayTimestamp()) // dateMillis
 		);
 	}
 
-	private UserRolePermissionsKey(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
+	private UserRolePermissionsKey(
+			final RoleId roleId,
+			final UserId userId,
+			final ClientId clientId,
+			final long dateMillis)
 	{
-		this.adRoleId = adRoleId;
-		this.adUserId = adUserId;
-		this.adClientId = adClientId;
+		this.roleId = roleId;
+		this.userId = userId;
+		this.clientId = clientId;
 		this.dateMillis = dateMillis;
 	}
 
@@ -134,9 +167,9 @@ public final class UserRolePermissionsKey implements Serializable
 				throw new IllegalArgumentException("invalid format");
 			}
 
-			adRoleId = Integer.parseInt(list[0]);
-			adUserId = Integer.parseInt(list[1]);
-			adClientId = Integer.parseInt(list[2]);
+			roleId = RoleId.ofRepoId(Integer.parseInt(list[0]));
+			userId = UserId.ofRepoId(Integer.parseInt(list[1]));
+			clientId = ClientId.ofRepoId(Integer.parseInt(list[2]));
 			dateMillis = Long.parseLong(list[3]);
 			_permissionsKeyStr = permissionsKeyStr;
 		}
@@ -153,49 +186,14 @@ public final class UserRolePermissionsKey implements Serializable
 	{
 		if (_permissionsKeyStr == null)
 		{
-			_permissionsKeyStr = toPermissionsKeyString(adRoleId, adUserId, adClientId, dateMillis);
+			_permissionsKeyStr = toPermissionsKeyString(roleId, userId, clientId, dateMillis);
 		}
 		return _permissionsKeyStr;
 	}
 
-	@Override
-	public String toString()
+	public static final long normalizeDate(final Instant date)
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("AD_Role_ID", adRoleId)
-				.add("AD_User_ID", adUserId)
-				.add("AD_Client_ID", adClientId)
-				.add("date", new Date(dateMillis))
-				.toString();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		if (_hashcode == null)
-		{
-			_hashcode = Objects.hash(adRoleId, adUserId, adClientId, dateMillis);
-		}
-		return _hashcode;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (!(obj instanceof UserRolePermissionsKey))
-		{
-			return false;
-		}
-
-		final UserRolePermissionsKey other = (UserRolePermissionsKey)obj;
-		return adRoleId == other.adRoleId
-				&& adUserId == other.adUserId
-				&& adClientId == other.adClientId
-				&& dateMillis == other.dateMillis;
+		return normalizeDate(TimeUtil.asDate(date));
 	}
 
 	public static final long normalizeDate(final Date date)
@@ -211,25 +209,5 @@ public final class UserRolePermissionsKey implements Serializable
 		}
 
 		return dateDayMillis;
-	}
-
-	public int getAD_Role_ID()
-	{
-		return adRoleId;
-	}
-
-	public int getAD_User_ID()
-	{
-		return adUserId;
-	}
-
-	public int getAD_Client_ID()
-	{
-		return adClientId;
-	}
-
-	public long getDateMillis()
-	{
-		return dateMillis;
 	}
 }

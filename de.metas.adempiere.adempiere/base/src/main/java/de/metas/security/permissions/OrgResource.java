@@ -13,31 +13,31 @@ package de.metas.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Function;
 
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Identifies a particular organization.
@@ -51,14 +51,14 @@ public final class OrgResource implements Resource
 	/** Any Org */
 	public static final OrgResource ANY = new OrgResource();
 
-	public static final OrgResource of(final int adClientId, final int adOrgId)
+	public static final OrgResource of(final ClientId adClientId, final OrgId adOrgId)
 	{
 		return new OrgResource(adClientId, adOrgId);
 	}
-	
-	public static final OrgResource anyOrg(final int adClientId)
+
+	public static final OrgResource anyOrg(final ClientId adClientId)
 	{
-		return new OrgResource(adClientId, Env.CTXVALUE_AD_Org_ID_Any);
+		return new OrgResource(adClientId, OrgId.ANY);
 	}
 
 	public static final Function<OrgResource, KeyNamePair> TO_ClientKeyNamePair_Function = new Function<OrgResource, KeyNamePair>()
@@ -80,9 +80,9 @@ public final class OrgResource implements Resource
 	};
 
 	/** Client */
-	private final int _adClientId;
+	private final ClientId _adClientId;
 	/** Organization */
-	private final int _adOrgId;
+	private final OrgId _adOrgId;
 
 	// cached values
 	private int hashcode = 0;
@@ -90,23 +90,17 @@ public final class OrgResource implements Resource
 	private String orgName;
 	private Boolean summaryOrg;
 
-	private OrgResource(final int adClientId, final int adOrgId)
+	private OrgResource(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
 	{
-		super();
-
-		Check.assume(adClientId >= 0, "adClientId >= 0");
 		_adClientId = adClientId;
-
-		Check.assume(adOrgId >= 0, "adOrgId >= 0");
 		_adOrgId = adOrgId;
 	}
 
 	/** Any Org constructor */
 	private OrgResource()
 	{
-		super();
-		_adClientId = -1;
-		_adOrgId = -1;
+		_adClientId = null;
+		_adOrgId = null;
 		clientName = "-";
 		orgName = "-";
 		summaryOrg = false;
@@ -162,10 +156,10 @@ public final class OrgResource implements Resource
 	{
 		if (clientName == null)
 		{
-			final int adClientId = getAD_Client_ID();
-			if (adClientId > 0)
+			final ClientId adClientId = getClientId();
+			if (adClientId != null)
 			{
-				final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), adClientId);
+				final I_AD_Client client = Services.get(IClientDAO.class).getById(adClientId);
 				clientName = client == null ? String.valueOf(adClientId) : client.getName();
 			}
 			else
@@ -181,10 +175,10 @@ public final class OrgResource implements Resource
 	{
 		if (orgName == null)
 		{
-			int adOrgId = getAD_Org_ID();
-			if (adOrgId > 0)
+			final OrgId adOrgId = getOrgId();
+			if (adOrgId != null)
 			{
-				final I_AD_Org org = Services.get(IOrgDAO.class).retrieveOrg(Env.getCtx(), adOrgId);
+				final I_AD_Org org = Services.get(IOrgDAO.class).getById(adOrgId);
 				orgName = org == null ? String.valueOf(adOrgId) : org.getName();
 			}
 			else
@@ -199,18 +193,23 @@ public final class OrgResource implements Resource
 	{
 		if (summaryOrg == null)
 		{
-			final I_AD_Org org = Services.get(IOrgDAO.class).retrieveOrg(Env.getCtx(), getAD_Org_ID());
+			final I_AD_Org org = Services.get(IOrgDAO.class).getById(getOrgId());
 			summaryOrg = org == null ? false : org.isSummary();
 		}
 		return summaryOrg;
 	}
 
-	public int getAD_Client_ID()
+	public boolean isRegularOrg()
+	{
+		return _adOrgId != null && _adOrgId.isRegular();
+	}
+
+	public ClientId getClientId()
 	{
 		return _adClientId;
 	}
 
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
 		return _adOrgId;
 	}
@@ -221,7 +220,7 @@ public final class OrgResource implements Resource
 		{
 			return KeyNamePair.EMPTY;
 		}
-		return new KeyNamePair(getAD_Client_ID(), getClientName());
+		return KeyNamePair.of(getClientId(), getClientName());
 	}
 
 	public KeyNamePair asOrgKeyNamePair()
@@ -230,7 +229,7 @@ public final class OrgResource implements Resource
 		{
 			return KeyNamePair.EMPTY;
 		}
-		return new KeyNamePair(getAD_Org_ID(), getOrgName());
+		return KeyNamePair.of(getOrgId(), getOrgName());
 	}
 
 }

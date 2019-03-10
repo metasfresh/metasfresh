@@ -75,17 +75,17 @@ public class ADWindowDAO implements IADWindowDAO
 	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
 
 	@Override
-	public ITranslatableString retrieveWindowName(final int adWindowId)
+	public ITranslatableString retrieveWindowName(final AdWindowId adWindowId)
 	{
 		return retrieveWindowNameCached(adWindowId);
 	}
 
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	public ITranslatableString retrieveWindowNameCached(final int adWindowId)
+	public ITranslatableString retrieveWindowNameCached(final AdWindowId adWindowId)
 	{
 		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
 		final I_AD_Window window = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Window.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()

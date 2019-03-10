@@ -5,10 +5,13 @@ import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,12 +72,12 @@ public class UserAuthTokenRepository
 	private static UserAuthToken toUserAuthToken(final I_AD_User_AuthToken userAuthTokenPO)
 	{
 		return UserAuthToken.builder()
-				.userId(userAuthTokenPO.getAD_User_ID())
+				.userId(UserId.ofRepoId(userAuthTokenPO.getAD_User_ID()))
 				.authToken(userAuthTokenPO.getAuthToken())
 				.description(userAuthTokenPO.getDescription())
-				.clientId(userAuthTokenPO.getAD_Client_ID())
-				.orgId(userAuthTokenPO.getAD_Org_ID())
-				.roleId(userAuthTokenPO.getAD_Role_ID())
+				.clientId(ClientId.ofRepoId(userAuthTokenPO.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
+				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
 				.build();
 	}
 

@@ -25,6 +25,8 @@ package de.metas.security;
 
 import java.util.Set;
 
+import org.adempiere.service.OrgId;
+
 /**
  * Security Rule: it's called by {@link IUserRolePermissions} to fine tune some permissions before giving an answer to caller.
  * 
@@ -50,7 +52,7 @@ public interface ISecurityRule
 	 * @param readWrite true if read-write access is required, false if read-only access is required
 	 * @param orgIds
 	 */
-	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean readWrite, Set<Integer> orgIds);
+	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean readWrite, Set<OrgId> orgIds);
 
 	/**
 	 * Check if the form is accessible from the given role

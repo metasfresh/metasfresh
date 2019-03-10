@@ -15,6 +15,7 @@ import de.metas.event.Topic;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -111,7 +112,7 @@ public class ReturnInOutUserNotificationsProducer
 		final String bpName = bpartner.getName();
 
 		final String adMessage = getNotificationAD_Message(inout);
-		final int recipientUserId = getNotificationRecipientUserId(inout);
+		final UserId recipientUserId = getNotificationRecipientUserId(inout);
 
 		final TableRecordReference inoutRef = TableRecordReference.of(inout);
 
@@ -143,7 +144,7 @@ public class ReturnInOutUserNotificationsProducer
 
 	}
 
-	private final int getNotificationRecipientUserId(final I_M_InOut inout)
+	private final UserId getNotificationRecipientUserId(final I_M_InOut inout)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
@@ -152,16 +153,16 @@ public class ReturnInOutUserNotificationsProducer
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)
 			{
-				return currentUserId;
+				return UserId.ofRepoId(currentUserId);
 			}
 
-			return inout.getUpdatedBy(); // last updated
+			return UserId.ofRepoId(inout.getUpdatedBy()); // last updated
 		}
 		//
 		// Fallback: notify only the creator
 		else
 		{
-			return inout.getCreatedBy();
+			return UserId.ofRepoId(inout.getCreatedBy());
 		}
 	}
 

@@ -1,7 +1,12 @@
 package de.metas.security;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
@@ -31,29 +36,28 @@ import lombok.Value;
 @ToString(exclude = "authToken")
 public class UserAuthToken
 {
-	int userId;
+	UserId userId;
 	String authToken;
 	String description;
 
-	int clientId;
-	int orgId;
-	int roleId;
+	ClientId clientId;
+	OrgId orgId;
+	RoleId roleId;
 
 	@Builder
 	private UserAuthToken(
-			final int userId,
+			@NonNull final UserId userId,
 			final String authToken,
 			final String description,
-			final int clientId,
-			final int orgId,
-			final int roleId)
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final RoleId roleId)
 	{
-		Check.assume(userId > 0, "userId > 0");
+		Check.assume(userId.isRegularUser(), "userId shall be regular user: {}", userId);
 		Check.assumeNotEmpty(authToken, "authToken is not empty");
-
-		Check.assume(clientId > 0, "clientId > 0");
-		Check.assume(orgId > 0, "orgId > 0");
-		Check.assume(roleId > 0, "roleId > 0");
+		Check.assume(clientId.isRegular(), "clientId shall be regular");
+		Check.assume(orgId.isRegular(), "orgId shall be regular");
+		Check.assume(roleId.isRegular(), "roleId shall be regular");
 
 		this.userId = userId;
 		this.authToken = authToken;

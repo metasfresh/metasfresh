@@ -25,6 +25,8 @@ package de.metas.security;
 
 import java.util.Set;
 
+import org.adempiere.service.OrgId;
+
 import de.metas.util.ISingletonService;
 
 /**
@@ -51,7 +53,7 @@ public interface ISecurityRuleEngine extends ISingletonService
 	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @param orgIds
 	 */
-	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean rw, Set<Integer> orgIds);
+	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean rw, Set<OrgId> orgIds);
 
 	/**
 	 * Check if the form is accessible from the given role

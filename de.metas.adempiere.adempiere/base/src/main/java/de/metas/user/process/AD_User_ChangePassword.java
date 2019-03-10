@@ -12,6 +12,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -75,10 +76,10 @@ public class AD_User_ChangePassword extends JavaProcess implements IProcessPreco
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("current logged in user");
 		}
-		
+
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), adUserId);
 		final de.metas.adempiere.model.I_AD_User userSystem = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
-		if(!userSystem.isSystemUser())
+		if (!userSystem.isSystemUser())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a system user");
 		}
@@ -98,8 +99,8 @@ public class AD_User_ChangePassword extends JavaProcess implements IProcessPreco
 
 		//
 		// Get the AD_User_ID and make sure it's NOT the currently logged on.
-		final int adUserId = getRecord_ID();
-		if (adUserId == Env.getAD_User_ID(ctx))
+		final UserId adUserId = UserId.ofRepoId(getRecord_ID());
+		if (UserId.equals(adUserId, Env.getLoggedUserId(ctx)))
 		{
 			throw new AdempiereException("Changing password for currently logged on user is not allowed by this process");
 		}

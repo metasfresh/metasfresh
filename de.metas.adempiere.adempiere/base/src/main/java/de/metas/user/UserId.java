@@ -105,4 +105,9 @@ public class UserId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public boolean isRegularUser()
+	{
+		return repoId != SYSTEM.repoId;
+	}
 }

@@ -1,5 +1,6 @@
 package org.adempiere.service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.compiere.util.Env;
@@ -122,5 +123,10 @@ public class OrgId implements RepoIdAware
 	public boolean isRegular()
 	{
 		return !isAny();
+	}
+
+	public static boolean equals(final OrgId id1, final OrgId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

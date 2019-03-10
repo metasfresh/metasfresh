@@ -13,33 +13,32 @@ package de.metas.security.model.interceptor;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 
 import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 
 @Interceptor(I_AD_Role_Included.class)
@@ -56,71 +55,57 @@ public class AD_Role_Included
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }
-			, ifColumnsChanged = I_AD_Role_Included.COLUMNNAME_Included_Role_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Role_Included.COLUMNNAME_Included_Role_ID)
 	public void assertNoLoops(final I_AD_Role_Included roleIncluded)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(roleIncluded);
-		List<Integer> trace = new ArrayList<Integer>();
-		if (hasLoop(I_AD_Role_Included.Table_Name,
-				I_AD_Role_Included.COLUMNNAME_Included_Role_ID,
-				I_AD_Role_Included.COLUMNNAME_AD_Role_ID,
-				roleIncluded.getIncluded_Role_ID(),
-				trace,
-				trxName))
+		final RoleId includedRoleId = RoleId.ofRepoIdOrNull(roleIncluded.getIncluded_Role_ID());
+		final List<RoleId> trace = new ArrayList<>();
+		if (hasLoop(includedRoleId, trace))
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(roleIncluded);
 			final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 			final StringBuilder roles = new StringBuilder();
-			for (int role_id : trace)
+			for (final RoleId roleId : trace)
 			{
 				if (roles.length() > 0)
 					roles.append(" - ");
-				roles.append(roleDAO.retrieveRoleName(ctx, role_id));
+				roles.append(roleDAO.getRoleName(roleId));
 			}
-			throw new AdempiereException("Loop has detected " + roles);
+			throw new AdempiereException("Loop has detected: " + roles);
 		}
 	}
 
 	/**
-	 * Check if there is a loop in the tree defined in given table
-	 * 
-	 * @param tableName
-	 * @param idColumnName Node_ID column name
-	 * @param parentIdColumnName Parent_ID column name
-	 * @param nodeId current Node_ID
-	 * @param trace current tree path (optional)
-	 * @param trxName transaction name
 	 * @return true if loop detected. If you specified not null trace, you will have in that list the IDs from the loop
 	 */
-	// TODO: refactor this method and move into org.compiere.util.DB class because it's general and usefull of others too
-	// TODO2: use recursive WITH sql clause
-	private static boolean hasLoop(String tableName, String idColumnName, String parentIdColumnName,
-			int nodeId, List<Integer> trace,
-			String trxName)
+	// TODO: use recursive WITH sql clause
+	private static boolean hasLoop(final RoleId roleId, final List<RoleId> trace)
 	{
-		final List<Integer> trace2;
+		final List<RoleId> trace2;
 		if (trace == null)
 		{
-			trace2 = new ArrayList<Integer>(10);
+			trace2 = new ArrayList<>();
 		}
 		else
 		{
-			trace2 = new ArrayList<Integer>(trace);
+			trace2 = new ArrayList<>(trace);
 		}
-		trace2.add(nodeId);
+		trace2.add(roleId);
 		//
-		final String sql = "SELECT " + idColumnName + "," + parentIdColumnName + " FROM " + tableName + " WHERE " + parentIdColumnName + "=?";
+		final String sql = "SELECT "
+				+ I_AD_Role_Included.COLUMNNAME_Included_Role_ID
+				+ "," + I_AD_Role_Included.COLUMNNAME_AD_Role_ID
+				+ " FROM " + I_AD_Role_Included.Table_Name
+				+ " WHERE " + I_AD_Role_Included.COLUMNNAME_AD_Role_ID + "=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			pstmt.setInt(1, nodeId);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, roleId);
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final int childId = rs.getInt(1);
+				final RoleId childId = RoleId.ofRepoId(rs.getInt(1));
 				if (trace2.contains(childId))
 				{
 					trace.clear();
@@ -128,7 +113,7 @@ public class AD_Role_Included
 					trace.add(childId);
 					return true;
 				}
-				if (hasLoop(tableName, idColumnName, parentIdColumnName, childId, trace2, trxName))
+				if (hasLoop(childId, trace2))
 				{
 					trace.clear();
 					trace.addAll(trace2);

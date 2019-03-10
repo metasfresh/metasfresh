@@ -42,6 +42,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
@@ -489,8 +491,8 @@ public class GridField
 		// Role Access & Column Access
 		if (checkContext)
 		{
-			int AD_Client_ID = Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Client_ID");
-			int AD_Org_ID = Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Org_ID");
+			final ClientId clientId = ClientId.ofRepoIdOrSystem(Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Client_ID"));
+			final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Org_ID"));
 			String keyColumn = Env.getContext(rowCtx, m_vo.WindowNo, m_vo.TabNo, GridTab.CTX_KeyColumnName);
 			if ("EntityType".equals(keyColumn))
 				keyColumn = "AD_EntityType_ID";
@@ -500,7 +502,7 @@ public class GridField
 			int AD_Table_ID = m_vo.getAD_Table_ID();
 
 			final IUserRolePermissions role = Env.getUserRolePermissions(getGridFieldContext());
-			if (!role.canUpdate(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, false))
+			if (!role.canUpdate(clientId, orgId, AD_Table_ID, Record_ID, false))
 			{
 				return false;
 			}

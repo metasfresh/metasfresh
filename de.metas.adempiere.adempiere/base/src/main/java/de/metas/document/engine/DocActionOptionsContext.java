@@ -67,6 +67,6 @@ public final class DocActionOptionsContext
 
 	public ClientId getAdClientId()
 	{
-		return ClientId.ofRepoId(getUserRolePermissionsKey().getAD_Client_ID());
+		return getUserRolePermissionsKey().getClientId();
 	}
 }

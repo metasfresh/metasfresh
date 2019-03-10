@@ -12,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -40,11 +41,12 @@ import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
 import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -180,14 +182,14 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isRole())
 		{
-			final int roleId = recipient.getRoleId();
+			final RoleId roleId = recipient.getRoleId();
 			return rolesRepo.retrieveUserIdsForRoleId(roleId)
 					.stream()
 					.map(userId -> Recipient.userAndRole(userId, roleId));
 		}
 		else if (recipient.isAllRolesContainingGroup())
 		{
-			final Set<Integer> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
+			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
 			return roleIds.stream()
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
@@ -353,7 +355,7 @@ public class NotificationSenderTemplate
 	{
 		final List<UserNotificationsConfig> result = new ArrayList<>();
 
-		final LinkedHashSet<Integer> seenUserIds = new LinkedHashSet<>();
+		final LinkedHashSet<UserId> seenUserIds = new LinkedHashSet<>();
 		UserNotificationsConfig currentNotificationsConfig = notificationsConfig;
 
 		while (currentNotificationsConfig != null)
@@ -432,15 +434,15 @@ public class NotificationSenderTemplate
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final I_AD_Client adClient = clientDAO.retriveClient(Env.getCtx(), notificationsConfig.getAdClientId());
+		final I_AD_Client adClient = clientDAO.getById(notificationsConfig.getClientId());
 		final Mailbox mailbox = mailBL.findMailBox(
 				adClient,
-				notificationsConfig.getAdOrgId(),
+				OrgId.toRepoId(notificationsConfig.getOrgId()),
 				0,  // AD_Process_ID
 				null,  // C_DocType - Task FRESH-203 this shall work as before
 				null,  // customType
 				null); // sender
-		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, notificationsConfig.getAdOrgId());
+		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, notificationsConfig.getOrgId());
 		return mailbox;
 	}
 

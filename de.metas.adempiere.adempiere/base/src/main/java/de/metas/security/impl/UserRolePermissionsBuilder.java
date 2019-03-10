@@ -25,34 +25,32 @@ package de.metas.security.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_Role;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsBuilder;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Constraints;
-import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.security.permissions.ElementPermissions;
 import de.metas.security.permissions.GenericPermissions;
-import de.metas.security.permissions.LoginOrgConstraint;
 import de.metas.security.permissions.OrgPermissions;
-import de.metas.security.permissions.StartupWindowConstraint;
+import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermissions;
-import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.security.permissions.UserMenuInfo;
-import de.metas.security.permissions.UserPreferenceLevelConstraint;
-import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
-import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 {
@@ -60,10 +58,10 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	//
 	// Parameters
 	private String name;
-	private Integer _adRoleId;
-	private I_AD_Role _role;
-	private Integer _userId;
-	private Integer _adClientId;
+	private RoleId _adRoleId;
+	private Role _role;
+	private UserId _userId;
+	private ClientId _adClientId;
 	private I_AD_Client _adClient; // lazy
 	private I_AD_ClientInfo _adClientInfo; // lazy
 	private TableAccessLevel userLevel;
@@ -97,13 +95,13 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	@Override
 	public IUserRolePermissions build()
 	{
-		final int adRoleId = getAD_Role_ID();
-		final int adUserId = getAD_User_ID();
-		final int adClientId = getAD_Client_ID();
+		final RoleId adRoleId = getRoleId();
+		final UserId adUserId = getUserId();
+		final ClientId adClientId = getClientId();
 
 		if (orgAccesses == null)
 		{
-			final I_AD_Role role = getAD_Role();
+			final Role role = getRole();
 			orgAccesses = userRolePermissionsDAO.retrieveOrgPermissions(role, adUserId);
 		}
 		if (tableAccesses == null)
@@ -141,12 +139,12 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 		if (miscPermissions == null)
 		{
-			miscPermissions = extractPermissions(getAD_Role(), getAD_Client());
+			miscPermissions = extractPermissions(getRole(), getAD_Client());
 		}
 
 		if (constraints == null)
 		{
-			constraints = extractConstraints(getAD_Role());
+			constraints = getRole().getConstraints();
 		}
 
 		final UserRolePermissionsIncludesList.Builder userRolePermissionsIncludedBuilder = UserRolePermissionsIncludesList.builder();
@@ -216,87 +214,46 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return new UserRolePermissions(this);
 	}
 
-	private GenericPermissions extractPermissions(final I_AD_Role role, final I_AD_Client adClient)
+	private GenericPermissions extractPermissions(final Role role, final I_AD_Client adClient)
 	{
-		final GenericPermissions.Builder rolePermissions = GenericPermissions.builder();
+		final GenericPermissions.Builder rolePermissions = role.getPermissions().toBuilder();
 
-		rolePermissions.addPermissionIfCondition(role.isAccessAllOrgs(), IUserRolePermissions.PERMISSION_AccessAllOrgs);
-
-		rolePermissions.addPermissionIfCondition(role.isCanReport(), IUserRolePermissions.PERMISSION_CanReport);
-		rolePermissions.addPermissionIfCondition(role.isCanExport(), IUserRolePermissions.PERMISSION_CanExport);
-		rolePermissions.addPermissionIfCondition(role.isPersonalAccess(), IUserRolePermissions.PERMISSION_PersonalAccess);
-		rolePermissions.addPermissionIfCondition(role.isPersonalLock(), IUserRolePermissions.PERMISSION_PersonalLock);
-		rolePermissions.addPermissionIfCondition(role.isOverwritePriceLimit(), IUserRolePermissions.PERMISSION_OverwritePriceLimit);
-		rolePermissions.addPermissionIfCondition(role.isChangeLog(), IUserRolePermissions.PERMISSION_ChangeLog);
-		rolePermissions.addPermissionIfCondition(role.isMenuAvailable(), IUserRolePermissions.PERMISSION_MenuAvailable);
-		rolePermissions.addPermissionIfCondition(role.isAutoRoleLogin(), IUserRolePermissions.PERMISSION_AutoRoleLogin);
-		rolePermissions.addPermissionIfCondition(role.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
-		rolePermissions.addPermissionIfCondition(role.isRoleAlwaysUseBetaFunctions() || adClient.isUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
-
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Schedule(), IUserRolePermissions.PERMISSION_InfoWindow_Schedule);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_MRP(), IUserRolePermissions.PERMISSION_InfoWindow_MRP);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_CRP(), IUserRolePermissions.PERMISSION_InfoWindow_CRP);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Order(), IUserRolePermissions.PERMISSION_InfoWindow_Order);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Invoice(), IUserRolePermissions.PERMISSION_InfoWindow_Invoice);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_InOut(), IUserRolePermissions.PERMISSION_InfoWindow_InOut);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Payment(), IUserRolePermissions.PERMISSION_InfoWindow_Payment);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_CashJournal(), IUserRolePermissions.PERMISSION_InfoWindow_CashJournal);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Resource(), IUserRolePermissions.PERMISSION_InfoWindow_Resource);
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Asset(), IUserRolePermissions.PERMISSION_InfoWindow_Asset);
-
-		//
-		// Accounting module
-		if (accountingModuleActive)
+		if (adClient.isUseBetaFunctions())
 		{
-			rolePermissions.addPermissionIfCondition(role.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
+			rolePermissions.addPermission(IUserRolePermissions.PERMISSION_UseBetaFunctions, CollisionPolicy.Override);
 		}
-		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
-		rolePermissions.addPermissionIfCondition(role.isAllowedTrlBox(), IUserRolePermissions.PERMISSION_TrlBox);
-		rolePermissions.addPermissionIfCondition(role.isAllowedMigrationScripts() , IUserRolePermissions.PERMISSION_MigrationScripts);
+
+		if (!accountingModuleActive)
+		{
+			rolePermissions.removePermission(IUserRolePermissions.PERMISSION_ShowAcct);
+		}
 
 		return rolePermissions.build();
 	}
 
-	private static final Constraints extractConstraints(final I_AD_Role role)
-	{
-		final Constraints.Builder constraints = Constraints.builder();
-
-		constraints.addConstraint(UserPreferenceLevelConstraint.forPreferenceType(role.getPreferenceType()));
-		constraints.addConstraint(WindowMaxQueryRecordsConstraint.of(role.getMaxQueryRecords(), role.getConfirmQueryRecords()));
-		constraints.addConstraintIfNotEquals(StartupWindowConstraint.ofAD_Form_ID(role.getAD_Form_ID()), StartupWindowConstraint.NULL);
-		constraints.addConstraint(DocumentApprovalConstraint.of(role.isCanApproveOwnDoc(), role.getAmtApproval(), role.getC_Currency_ID()));
-		constraints.addConstraint(LoginOrgConstraint.of(role.getLogin_Org_ID(), role.isOrgLoginMandatory()));
-		constraints.addConstraint(UIDisplayedEntityTypes.of(role.isShowAllEntityTypes()));
-
-		return constraints.build();
-	}
-
 	@Override
-	public UserRolePermissionsBuilder setAD_Role_ID(final int adRoleId)
+	public UserRolePermissionsBuilder setRoleId(@NonNull final RoleId adRoleId)
 	{
 		_adRoleId = adRoleId;
 		_role = null;
 		return this;
 	}
 
-	private final I_AD_Role getAD_Role()
+	private final Role getRole()
 	{
 		if (_role == null)
 		{
-			final int adRoleId = getAD_Role_ID();
-			_role = Services.get(IRoleDAO.class).retrieveRole(Env.getCtx(), adRoleId);
+			final RoleId adRoleId = getRoleId();
+			_role = Services.get(IRoleDAO.class).getById(adRoleId);
 			Check.assumeNotNull(_role, "AD_Role shall exist for {}", adRoleId);
 		}
 		return _role;
 	}
 
 	@Override
-	public final int getAD_Role_ID()
+	public final RoleId getRoleId()
 	{
-		Check.assumeNotNull(_adRoleId != null && _adRoleId >= 0, "AD_Role_ID shall be set but it was {}", _adRoleId);
+		Check.assumeNotNull(_adRoleId, "Role shall be set");
 		return _adRoleId;
 	}
 
@@ -306,7 +263,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		{
 			return name;
 		}
-		return getAD_Role().getName();
+		return getRole().getName();
 	}
 
 	public UserRolePermissionsBuilder setName(final String name)
@@ -316,45 +273,45 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	}
 
 	@Override
-	public UserRolePermissionsBuilder setAD_User_ID(final int adUserId)
+	public UserRolePermissionsBuilder setUserId(final UserId adUserId)
 	{
 		_userId = adUserId;
 		return this;
 	}
 
 	@Override
-	public final int getAD_User_ID()
+	public final UserId getUserId()
 	{
-		Check.assume(_userId != null && _userId >= 0, "userId shall be set but it was {}", _userId);
+		Check.assumeNotNull(_userId, "userId shall be set");
 		return _userId;
 	}
 
 	@Override
-	public UserRolePermissionsBuilder setAD_Client_ID(final int adClientId)
+	public UserRolePermissionsBuilder setClientId(final ClientId adClientId)
 	{
 		_adClientId = adClientId;
 		return this;
 	}
 
 	@Override
-	public final int getAD_Client_ID()
+	public final ClientId getClientId()
 	{
 		// Check if the AD_Client_ID was set and it was not set to something like "-1"
-		if (_adClientId != null && _adClientId >= 0)
+		if (_adClientId != null)
 		{
 			return _adClientId;
 		}
 
 		// Fallback: use role's AD_Client_ID
-		return getAD_Role().getAD_Client_ID();
+		return getRole().getClientId();
 	}
 
 	private I_AD_Client getAD_Client()
 	{
 		if (_adClient == null)
 		{
-			final int adClientId = getAD_Client_ID();
-			_adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), adClientId);
+			final ClientId adClientId = getClientId();
+			_adClient = Services.get(IClientDAO.class).getById(adClientId);
 		}
 		return _adClient;
 	}
@@ -363,8 +320,8 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	{
 		if (_adClientInfo == null)
 		{
-			final int adClientId = getAD_Client_ID();
-			_adClientInfo = Services.get(IClientDAO.class).retrieveClientInfo(Env.getCtx(), adClientId);
+			final ClientId adClientId = getClientId();
+			_adClientInfo = Services.get(IClientDAO.class).retrieveClientInfo(Env.getCtx(), adClientId.getRepoId());
 		}
 		return _adClientInfo;
 	}
@@ -383,7 +340,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		{
 			return userLevel;
 		}
-		return TableAccessLevel.forUserLevel(getAD_Role().getUserLevel());
+		return getRole().getUserLevel();
 	}
 
 	@Override
@@ -560,7 +517,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 	private UserMenuInfo findMenuInfo()
 	{
-		final I_AD_Role adRole = getAD_Role();
+		final Role adRole = getRole();
 		final int roleMenuTreeId = adRole.getAD_Tree_Menu_ID();
 		if (roleMenuTreeId > 0)
 		{

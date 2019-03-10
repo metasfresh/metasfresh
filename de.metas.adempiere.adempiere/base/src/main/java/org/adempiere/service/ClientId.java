@@ -71,6 +71,22 @@ public class ClientId implements RepoIdAware
 		}
 	}
 
+	public static ClientId ofRepoIdOrSystem(final int repoId)
+	{
+		if (repoId == SYSTEM.repoId)
+		{
+			return SYSTEM;
+		}
+		else if (repoId <= 0)
+		{
+			return SYSTEM;
+		}
+		else
+		{
+			return ofRepoId(repoId);
+		}
+	}
+
 	public static int toRepoId(final ClientId clientId)
 	{
 		return clientId != null ? clientId.getRepoId() : -1;
@@ -93,6 +109,11 @@ public class ClientId implements RepoIdAware
 	public boolean isSystem()
 	{
 		return repoId == Env.CTXVALUE_AD_Client_ID_System;
+	}
+
+	public boolean isRegular()
+	{
+		return !isSystem();
 	}
 
 	@Override

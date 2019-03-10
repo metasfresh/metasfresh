@@ -41,6 +41,8 @@ import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -175,8 +177,8 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		}
 		//
 		// check role
-		int roleId = importRecord.getAD_Role_ID();
-		if (roleId <= 0)
+		final RoleId roleId = RoleId.ofRepoIdOrNull(importRecord.getAD_Role_ID());
+		if (roleId == null)
 		{
 			throw new AdempiereException("Role not found");
 		}
@@ -186,7 +188,8 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		//
 		// Assign Role
 		{
-			Services.get(IRoleDAO.class).createUserRoleAssignmentIfMissing(user.getAD_User_ID(), roleId);
+			final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+			Services.get(IRoleDAO.class).createUserRoleAssignmentIfMissing(userId, roleId);
 		}
 		//
 		// Link back the request to current import record
@@ -194,7 +197,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		//
 		return ImportRecordResult.Inserted;
 	}
-	
+
 	private void setUserFieldsAndSave(@NonNull final I_AD_User user, @NonNull final I_I_User importRecord)
 	{
 		user.setFirstname(importRecord.getFirstname());
@@ -202,11 +205,11 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		// set value after we set first name and last name
 		user.setValue(importRecord.getValue());
 		user.setEMail(importRecord.getEMail());
-		
+
 		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
 		loginUser.setLogin(importRecord.getLogin());
 		loginUser.setIsSystemUser(importRecord.isSystemUser());
-		
+
 		final IUserBL userBL = Services.get(IUserBL.class);
 		userBL.changePasswordAndSave(loginUser, RandomStringUtils.randomAlphanumeric(8));
 	}

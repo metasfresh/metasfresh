@@ -23,6 +23,7 @@ package de.metas.security.impl;
  */
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,9 +37,9 @@ import de.metas.event.log.EventBus2EventLogHandler;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
 import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.impl.RolePermissionsNotFoundException;
-import de.metas.security.impl.UserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.security.model.interceptor.SecurityMainInterceptor;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -63,6 +64,10 @@ public class UserRolePermissionsDAOTest
 	@Test(expected = RolePermissionsNotFoundException.class)
 	public void test_retrieveUserRolePermissions_NotExistingRole()
 	{
-		dao.retrieveUserRolePermissions(1, 2, 3, SystemTime.asDayTimestamp());
+		dao.retrieveUserRolePermissions(
+				RoleId.ofRepoId(1),
+				UserId.ofRepoId(2),
+				ClientId.ofRepoId(3),
+				SystemTime.asInstant());
 	}
 }

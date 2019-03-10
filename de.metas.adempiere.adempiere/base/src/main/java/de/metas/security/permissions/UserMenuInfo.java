@@ -30,7 +30,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class UserMenuInfo
 {
-
 	public static final UserMenuInfo of(final int adTreeId, final int rootMenuId)
 	{
 		if (adTreeId <= 0)

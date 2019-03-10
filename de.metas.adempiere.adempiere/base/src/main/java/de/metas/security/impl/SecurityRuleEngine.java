@@ -25,6 +25,8 @@ package de.metas.security.impl;
 
 import java.util.Set;
 
+import org.adempiere.service.OrgId;
+
 import de.metas.security.ISecurityRule;
 import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
@@ -40,7 +42,7 @@ public class SecurityRuleEngine implements ISecurityRuleEngine
 	}
 
 	@Override
-	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final boolean rw, final Set<Integer> orgIds)
+	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final boolean rw, final Set<OrgId> orgIds)
 	{
 		compositeRule.filterOrgs(rolePermissions, tableName, rw, orgIds);
 	}

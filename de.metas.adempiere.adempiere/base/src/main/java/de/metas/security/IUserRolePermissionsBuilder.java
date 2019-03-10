@@ -1,23 +1,26 @@
 package de.metas.security;
 
+import org.adempiere.service.ClientId;
+
 import de.metas.security.permissions.ElementPermissions;
 import de.metas.security.permissions.OrgPermissions;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermissions;
+import de.metas.user.UserId;
 
 public interface IUserRolePermissionsBuilder
 {
 	IUserRolePermissions build();
 
-	IUserRolePermissionsBuilder setAD_Role_ID(int adRoleId);
-	int getAD_Role_ID();
+	IUserRolePermissionsBuilder setRoleId(RoleId adRoleId);
+	RoleId getRoleId();
 
-	IUserRolePermissionsBuilder setAD_User_ID(int adUserId);
-	int getAD_User_ID();
+	IUserRolePermissionsBuilder setUserId(UserId adUserId);
+	UserId getUserId();
 
-	IUserRolePermissionsBuilder setAD_Client_ID(int adClientId);
-	int getAD_Client_ID();
+	IUserRolePermissionsBuilder setClientId(ClientId adClientId);
+	ClientId getClientId();
 
 	IUserRolePermissionsBuilder setUserLevel(TableAccessLevel userLevel);
 	TableAccessLevel getUserLevel();

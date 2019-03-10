@@ -188,11 +188,6 @@ public class UserNotificationRequest
 
 	public static class UserNotificationRequestBuilder
 	{
-		public UserNotificationRequestBuilder recipientUserId(final int userId)
-		{
-			return recipient(Recipient.user(userId));
-		}
-		
 		public UserNotificationRequestBuilder recipientUserId(@NonNull final UserId userId)
 		{
 			return recipient(Recipient.user(userId));

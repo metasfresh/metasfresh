@@ -100,6 +100,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -2566,7 +2567,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return ImmutableSet.of();
 		}
 
-		final int adUserId = Env.getAD_User_ID(Env.getCtx());
+		final UserId adUserId = Env.getLoggedUserId();
 		return Services.get(IUserRolePermissionsDAO.class).retrievePrivateAccessRecordIds(adUserId, getAD_Table_ID());
 	}
 
@@ -2597,7 +2598,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public void lock(final int recordId, final boolean lock)
 	{
-		final int adUserId = Env.getAD_User_ID(Env.getCtx());
+		final UserId adUserId = Env.getLoggedUserId();
 		final int adTableId = getAD_Table_ID();
 
 		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);

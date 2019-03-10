@@ -11,6 +11,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
@@ -87,8 +88,8 @@ public class AD_User_ChangeMyPassword extends JavaProcess implements IProcessPre
 
 		//
 		// Get the AD_User_ID and make sure it's the currently logged on.
-		final int adUserId = getRecord_ID();
-		if (adUserId != Env.getAD_User_ID(ctx))
+		final UserId adUserId = UserId.ofRepoId(getRecord_ID());
+		if (!UserId.equals(adUserId, Env.getLoggedUserId(ctx)))
 		{
 			throw new AdempiereException("Changing password for other user is not allowed");
 		}

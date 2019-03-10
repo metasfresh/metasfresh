@@ -16,6 +16,7 @@ import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -43,7 +44,7 @@ import lombok.NonNull;
 
 public class RoleNotificationsConfigRepository implements IRoleNotificationsConfigRepository
 {
-	private final CCache<Integer, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<Integer, RoleNotificationsConfig> builder()
+	private final CCache<RoleId, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<RoleId, RoleNotificationsConfig> builder()
 			.tableName(I_AD_Role_NotificationGroup.Table_Name)
 			.initialCapacity(10)
 			.additionalTableNameToResetFor(I_AD_Role.Table_Name)
@@ -51,12 +52,12 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 			.build();
 
 	@Override
-	public RoleNotificationsConfig getByRoleId(final int adRoleId)
+	public RoleNotificationsConfig getByRoleId(@NonNull final RoleId adRoleId)
 	{
-		return roleNotificationsConfigsByRoleId.getOrLoad(adRoleId, () -> retrieveRoleNotificationsConfig(adRoleId));
+		return roleNotificationsConfigsByRoleId.getOrLoad(adRoleId, this::retrieveRoleNotificationsConfig);
 	}
 
-	private RoleNotificationsConfig retrieveRoleNotificationsConfig(final int adRoleId)
+	private RoleNotificationsConfig retrieveRoleNotificationsConfig(@NonNull final RoleId adRoleId)
 	{
 		final List<UserNotificationsGroup> notificationGroups = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Role_NotificationGroup.class)
@@ -91,18 +92,19 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 	}
 
 	@Override
-	public ImmutableSet<Integer> getRoleIdsContainingNotificationGroupName(@NonNull final NotificationGroupName notificationGroupName)
+	public ImmutableSet<RoleId> getRoleIdsContainingNotificationGroupName(@NonNull final NotificationGroupName notificationGroupName)
 	{
 		final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 		final int notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
 
-		final List<Integer> roleIds = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Role_NotificationGroup.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Role_NotificationGroup.COLUMN_AD_NotificationGroup_ID, notificationGroupId)
 				.create()
-				.listDistinct(I_AD_Role_NotificationGroup.COLUMNNAME_AD_Role_ID, Integer.class);
-
-		return ImmutableSet.copyOf(roleIds);
+				.listDistinct(I_AD_Role_NotificationGroup.COLUMNNAME_AD_Role_ID, Integer.class)
+				.stream()
+				.map(RoleId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

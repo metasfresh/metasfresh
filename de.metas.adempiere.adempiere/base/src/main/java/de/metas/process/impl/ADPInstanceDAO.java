@@ -69,6 +69,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.security.RoleId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -539,7 +540,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Update the AD_PInstance and save
 		adPInstance.setAD_Org_ID(pi.getAD_Org_ID());
 		adPInstance.setAD_User_ID(pi.getAD_User_ID());
-		adPInstance.setAD_Role_ID(pi.getAD_Role_ID());
+		adPInstance.setAD_Role_ID(RoleId.toRepoId(pi.getRoleId()));
 		adPInstance.setAD_Table_ID(pi.getTable_ID());
 		adPInstance.setRecord_ID(Util.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
 		adPInstance.setWhereClause(pi.getWhereClause());

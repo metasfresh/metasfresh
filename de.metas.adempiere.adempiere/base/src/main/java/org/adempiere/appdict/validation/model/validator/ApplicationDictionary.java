@@ -46,7 +46,7 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
 import de.metas.util.Check;
 
 /**
@@ -81,7 +81,8 @@ public class ApplicationDictionary implements ModelValidator
 	{
 		//
 		// Log Migration Scripts, if we log in with SysAdm role and the ID server is configured
-		if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID && MSequence.isExternalIDSystemEnabled())
+		final RoleId roleId = RoleId.ofRepoId(AD_Role_ID);
+		if (roleId.isSystem() && MSequence.isExternalIDSystemEnabled())
 		{
 			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 		}

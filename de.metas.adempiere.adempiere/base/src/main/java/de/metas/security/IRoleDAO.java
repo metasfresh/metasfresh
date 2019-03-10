@@ -1,5 +1,7 @@
 package de.metas.security;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,23 +15,22 @@ package de.metas.security;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
-import org.compiere.model.I_AD_Role_Included;
+import java.util.Set;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -40,43 +41,29 @@ import de.metas.util.ISingletonService;
  */
 public interface IRoleDAO extends ISingletonService
 {
-	I_AD_Role retrieveRole(Properties ctx);
+	Role getById(RoleId roleId);
 
-	I_AD_Role retrieveRole(Properties ctx, int AD_Role_ID);
+	Role getLoginRole(Properties ctx);
 
-	List<I_AD_Role> retrieveRolesForUser(Properties ctx, int adUserId);
+	Set<RoleId> getUserRoleIds(UserId userId);
 
-	/**
-	 * Retrieves substitute roles for a given user.
-	 * 
-	 * @param ctx
-	 * @param adUserId AD_User_ID
-	 * @param date date on which substitute roles shall be effective for given user
-	 * @return substitute roles
-	 */
-	List<I_AD_Role> retrieveSubstituteRoles(Properties ctx, int adUserId, Date date);
+	List<Role> getUserRoles(UserId adUserId);
 
-	List<I_AD_Role_Included> retrieveRoleIncludes(Properties ctx, int adRoleId);
+	Set<RoleId> getSubstituteRoleIds(UserId adUserId, Date date);
 
-	IRolesTreeNode retrieveRolesTree(int adRoleId, int substitute_ForUserId, Date substituteDate);
+	List<RoleInclude> retrieveRoleIncludes(RoleId adRoleId);
+
+	IRolesTreeNode retrieveRolesTree(RoleId adRoleId, UserId substitute_ForUserId, Date substituteDate);
 
 	/**
-	 * @param ctx
 	 * @return all roles (from all clients) which were configured to be automatically maintained
 	 */
-	List<I_AD_Role> retrieveAllRolesWithAutoMaintenance(Properties ctx);
+	Collection<Role> retrieveAllRolesWithAutoMaintenance();
 
 	/**
 	 * @return all roles on which current user has access
 	 */
-	List<I_AD_Role> retrieveAllRolesWithUserAccess(Properties ctx);
-
-	/**
-	 * @param ctx
-	 * @param adClientId AD_Client_ID
-	 * @return all roles of given AD_Client_ID
-	 */
-	List<I_AD_Role> retrieveRolesForClient(Properties ctx, int adClientId);
+	Collection<Role> retrieveAllRolesWithUserAccess();
 
 	/**
 	 * Convenient method to retrieve the role's name.
@@ -85,11 +72,11 @@ public interface IRoleDAO extends ISingletonService
 	 * @param adRoleId
 	 * @return role's name
 	 */
-	String retrieveRoleName(Properties ctx, int adRoleId);
+	String getRoleName(RoleId adRoleId);
 
-	List<Integer> retrieveUserIdsForRoleId(int adRoleId);
+	Set<UserId> retrieveUserIdsForRoleId(RoleId adRoleId);
 
-	int retrieveFirstRoleIdForUserId(int adUserId);
+	RoleId retrieveFirstRoleIdForUserId(UserId adUserId);
 
-	void createUserRoleAssignmentIfMissing(int adUserId, int adRoleId);
+	void createUserRoleAssignmentIfMissing(UserId adUserId, RoleId adRoleId);
 }

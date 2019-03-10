@@ -24,20 +24,20 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.OrgId;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.user.UserId;
 import de.metas.util.Services;
-
-import org.adempiere.exceptions.FillMandatoryException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 /**
  * 	Performance Goal
@@ -571,14 +571,17 @@ public class MGoal extends X_PA_Goal
 			&& getAD_User_ID() != 0)
 		{
 			final List<IUserRolePermissions> roles = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveUserRolesPermissionsForUserWithOrgAccess(getCtx(), getAD_User_ID(), getAD_Org_ID());
+					.retrieveUserRolesPermissionsForUserWithOrgAccess(
+							getCtx(),
+							UserId.ofRepoId(getAD_User_ID()),
+							OrgId.ofRepoId(getAD_Org_ID()));
 			if (roles.isEmpty())		//	No Role
 			{
 				setAD_Role_ID(0);
 			}
 			else if (roles.size() == 1)	//	One
 			{
-				setAD_Role_ID(roles.get(0).getAD_Role_ID());
+				setAD_Role_ID(roles.get(0).getRoleId().getRepoId());
 			}
 			else
 			{
@@ -588,7 +591,7 @@ public class MGoal extends X_PA_Goal
 					boolean found = false;
 					for (IUserRolePermissions role : roles)
 					{
-						if (AD_Role_ID == role.getAD_Role_ID())
+						if (AD_Role_ID == role.getRoleId().getRepoId())
 						{
 							found = true;
 							break;
@@ -598,7 +601,7 @@ public class MGoal extends X_PA_Goal
 						AD_Role_ID = 0;
 				}
 				if (AD_Role_ID == 0)		//	set to first one
-					setAD_Role_ID(roles.get(0).getAD_Role_ID());
+					setAD_Role_ID(roles.get(0).getRoleId().getRepoId());
 			}	//	multiple roles
 		}	//	user check
 

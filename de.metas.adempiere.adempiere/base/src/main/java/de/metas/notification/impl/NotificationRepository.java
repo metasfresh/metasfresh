@@ -30,6 +30,7 @@ import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.UserNotificationTargetType;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -79,7 +80,7 @@ public class NotificationRepository implements INotificationRepository
 	public UserNotification save(@NonNull final UserNotificationRequest request)
 	{
 		final I_AD_Note notificationPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Note.class);
-		notificationPO.setAD_User_ID(request.getRecipient().getUserId());
+		notificationPO.setAD_User_ID(request.getRecipient().getUserId().getRepoId());
 		notificationPO.setIsImportant(request.isImportant());
 
 		//
@@ -235,7 +236,7 @@ public class NotificationRepository implements INotificationRepository
 		return builder.build();
 	}
 
-	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(final int adUserId)
+	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(@NonNull final UserId adUserId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Note.class)
@@ -244,7 +245,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public List<UserNotification> getByUserId(final int adUserId, final int limit)
+	public List<UserNotification> getByUserId(final UserId adUserId, final int limit)
 	{
 		return retrieveNotesByUserId(adUserId)
 				.orderByDescending(I_AD_Note.COLUMNNAME_AD_Note_ID)
@@ -308,7 +309,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public void markAllAsReadByUserId(final int adUserId)
+	public void markAllAsReadByUserId(final UserId adUserId)
 	{
 		retrieveNotesByUserId(adUserId)
 				.create()
@@ -335,7 +336,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public void deleteAllByUserId(final int adUserId)
+	public void deleteAllByUserId(final UserId adUserId)
 	{
 		retrieveNotesByUserId(adUserId)
 				.create()
@@ -350,7 +351,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public int getUnreadCountByUserId(final int adUserId)
+	public int getUnreadCountByUserId(final UserId adUserId)
 	{
 		return retrieveNotesByUserId(adUserId)
 				.addEqualsFilter(I_AD_Note.COLUMN_Processed, false)
@@ -359,7 +360,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public int getTotalCountByUserId(final int adUserId)
+	public int getTotalCountByUserId(final UserId adUserId)
 	{
 		return retrieveNotesByUserId(adUserId)
 				.create()

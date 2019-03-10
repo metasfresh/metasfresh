@@ -25,7 +25,10 @@ package de.metas.security.impl;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.adempiere.service.OrgId;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.security.ISecurityRule;
 import de.metas.security.IUserRolePermissions;
@@ -84,7 +87,7 @@ final class CompositeSecurityRule implements ISecurityRule
 	}
 
 	@Override
-	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final boolean rw, final Set<Integer> orgIds)
+	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final boolean rw, final Set<OrgId> orgIds)
 	{
 		for (final ISecurityRule rule : rulesActive)
 		{

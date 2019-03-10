@@ -557,4 +557,12 @@ public class ADProcessDAO implements IADProcessDAO
 		}
 
 	}
+
+	@Override
+	public ITranslatableString getProcessNameById(final AdProcessId id)
+	{
+		final I_AD_Process process = getById(id);
+		return InterfaceWrapperHelper.getModelTranslationMap(process)
+				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, process.getName());
+	}
 }

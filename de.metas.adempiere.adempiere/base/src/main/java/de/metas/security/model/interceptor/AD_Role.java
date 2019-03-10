@@ -19,6 +19,7 @@ import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.security.impl.AD_Role_POCopyRecordSupport;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -69,40 +70,43 @@ public class AD_Role
 	{
 		// services:
 		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+		final RoleId roleId = RoleId.ofRepoId(role.getAD_Role_ID());
 
 		//
 		// Automatically assign new role to SuperUser and to the user who created it.
 		if (changeType.isNew())
 		{
 			// Add Role to SuperUser
-			roleDAO.createUserRoleAssignmentIfMissing(UserId.METASFRESH.getRepoId(), role.getAD_Role_ID());
+			roleDAO.createUserRoleAssignmentIfMissing(UserId.METASFRESH, roleId);
 
 			// Add Role to User which created this record
-			final int createdByUserId = role.getCreatedBy();
-			if (createdByUserId != UserId.METASFRESH.getRepoId())
+			final UserId createdByUserId = UserId.ofRepoId(role.getCreatedBy());
+			if (!createdByUserId.equals(UserId.METASFRESH))
 			{
-				roleDAO.createUserRoleAssignmentIfMissing(createdByUserId, role.getAD_Role_ID());
+				roleDAO.createUserRoleAssignmentIfMissing(createdByUserId, roleId);
 			}
 		}
 
 		//
 		// Update role access records
-		if (changeType.isNew()
-				|| InterfaceWrapperHelper.isValueChanged(role, org.compiere.model.I_AD_Role.COLUMNNAME_UserLevel))
+		if ((changeType.isNew() || InterfaceWrapperHelper.isValueChanged(role, I_AD_Role.COLUMNNAME_UserLevel))
+				&& !role.isManual())
 		{
-			Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
+			final UserId userId = UserId.ofRepoId(role.getUpdatedBy());
+			Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(roleId, userId);
 		}
 
 		//
 		// Reset the cached role permissions after the transaction is commited.
 		// NOTE: not needed because it's performed automatically
-		//Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
+		// Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
 	}	// afterSave
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteAccessRecords(final I_AD_Role role)
 	{
-		Services.get(IUserRolePermissionsDAO.class).deleteAccessRecords(role);
+		final RoleId roleId = RoleId.ofRepoId(role.getAD_Role_ID());
+		Services.get(IUserRolePermissionsDAO.class).deleteAccessRecords(roleId);
 	} 	// afterDelete
 
 }

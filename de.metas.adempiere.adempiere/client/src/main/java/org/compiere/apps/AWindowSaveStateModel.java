@@ -26,27 +26,25 @@ package org.compiere.apps;
 import java.util.Properties;
 import java.util.function.Predicate;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Role;
 import org.compiere.model.MTable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * 
@@ -58,7 +56,7 @@ public class AWindowSaveStateModel
 	private static final String ACTION_Name = "org.compiere.apps.AWindowSaveStateModel.action";
 
 	private static final transient Logger logger = LogManager.getLogger(AWindowSaveStateModel.class);
-	private static final transient CCache<Integer, Boolean> userId2enabled = new CCache<Integer, Boolean>(I_AD_Role.Table_Name, 5, 0);
+	private static final transient CCache<UserId, Boolean> userId2enabled = new CCache<>(I_AD_Role.Table_Name, 5, 0);
 
 	public String getActionName()
 	{
@@ -68,7 +66,7 @@ public class AWindowSaveStateModel
 	public boolean isEnabled()
 	{
 		final Properties ctx = Env.getCtx();
-		final int loggedUserId = Env.getAD_User_ID(ctx);
+		final UserId loggedUserId = Env.getLoggedUserId(ctx);
 
 		synchronized (userId2enabled)
 		{
@@ -90,9 +88,9 @@ public class AWindowSaveStateModel
 		}
 	}
 
-	private boolean retrieveEnabled(final Properties ctx, final int loggedUserId)
+	private boolean retrieveEnabled(final Properties ctx, final UserId loggedUserId)
 	{
-		if (loggedUserId < 0)
+		if (loggedUserId == null)
 		{
 			// shall not happen
 			return false;

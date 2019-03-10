@@ -60,6 +60,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -93,12 +94,12 @@ public final class ProcessInfo implements Serializable
 		adProcessId = builder.getAD_Process_ID();
 		pinstanceId = builder.getPInstanceId();
 
-		adClientId = builder.getAdClientId();
-		Check.assumeNotNull(adClientId, "Parameter adClientId is not null");
+		clientId = builder.getAdClientId();
+		Check.assumeNotNull(clientId, "Parameter adClientId is not null");
 
-		adOrgId = builder.getAdOrgId();
-		adUserId = builder.getAdUserId();
-		adRoleId = builder.getAD_Role_ID();
+		orgId = builder.getAdOrgId();
+		userId = builder.getAdUserId();
+		roleId = builder.getRoleId();
 
 		adWindowId = builder.getAdWindowId();
 
@@ -160,10 +161,10 @@ public final class ProcessInfo implements Serializable
 	private final Set<TableRecordReference> selectedIncludedRecords;
 
 	private final String whereClause;
-	private final ClientId adClientId;
-	private final OrgId adOrgId;
-	private final UserId adUserId;
-	private final int adRoleId;
+	private final ClientId clientId;
+	private final OrgId orgId;
+	private final UserId userId;
+	private final RoleId roleId;
 	private final AdWindowId adWindowId;
 
 	private final int windowNo;
@@ -476,7 +477,7 @@ public final class ProcessInfo implements Serializable
 
 	public ClientId getClientId()
 	{
-		return adClientId;
+		return clientId;
 	}
 
 	public int getAD_Client_ID()
@@ -484,14 +485,19 @@ public final class ProcessInfo implements Serializable
 		return getClientId().getRepoId();
 	}
 
-	public int getAD_User_ID()
+	public UserId getUserId()
 	{
-		return UserId.toRepoId(adUserId);
+		return userId;
 	}
 
-	public int getAD_Role_ID()
+	public int getAD_User_ID()
 	{
-		return adRoleId;
+		return UserId.toRepoId(getUserId());
+	}
+
+	public RoleId getRoleId()
+	{
+		return roleId;
 	}
 
 	public int getAD_Window_ID()
@@ -573,7 +579,7 @@ public final class ProcessInfo implements Serializable
 
 	public OrgId getOrgId()
 	{
-		return adOrgId;
+		return orgId;
 	}
 
 	public int getAD_Org_ID()
@@ -738,7 +744,7 @@ public final class ProcessInfo implements Serializable
 		private transient I_AD_Process _adProcess;
 		private ClientId _adClientId;
 		private UserId _adUserId;
-		private Integer _adRoleId;
+		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
 		private Optional<String> classname;
@@ -844,16 +850,16 @@ public final class ProcessInfo implements Serializable
 
 			//
 			// AD_Role
-			int adRoleId = getAD_Role_ID();
-			if (adRoleId < 0)
+			RoleId adRoleId = getRoleId();
+			if (adRoleId == null)
 			{
 				// Use the first user role, which has access to our organization.
 				final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId.getRepoId(), adOrgId.getRepoId())
+						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId, adOrgId)
 						.orNull();
-				adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
+				adRoleId = role == null ? null : role.getRoleId();
 			}
-			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
+			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(adRoleId, Env.CTXVALUE_AD_Role_ID_NONE));
 
 			//
 			// Date
@@ -899,7 +905,12 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_Client_ID(final int adClientId)
 		{
-			this._adClientId = ClientId.ofRepoIdOrNull(adClientId);
+			return setClientId(ClientId.ofRepoIdOrNull(adClientId));
+		}
+
+		public ProcessInfoBuilder setClientId(final ClientId adClientId)
+		{
+			this._adClientId = adClientId;
 			return this;
 		}
 
@@ -932,29 +943,40 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_User_ID(final int adUserId)
 		{
-			this._adUserId = UserId.ofRepoIdOrNull(adUserId);
+			return setUserId(UserId.ofRepoIdOrNull(adUserId));
+		}
+
+		public ProcessInfoBuilder setUserId(final UserId adUserId)
+		{
+			this._adUserId = adUserId;
 			return this;
 		}
 
 		public ProcessInfoBuilder setAD_Role_ID(final int adRoleId)
 		{
+			return setRoleId(RoleId.ofRepoIdOrNull(adRoleId));
+		}
+
+		public ProcessInfoBuilder setRoleId(final RoleId adRoleId)
+		{
 			this._adRoleId = adRoleId;
 			return this;
 		}
 
-		private int getAD_Role_ID()
+		private RoleId getRoleId()
 		{
 			if (_adRoleId != null)
 			{
 				return _adRoleId;
 			}
+
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null)
 			{
-				return adPInstance.getAD_Role_ID();
+				return RoleId.ofRepoId(adPInstance.getAD_Role_ID());
 			}
 
-			return Env.getAD_Role_ID(getCtx());
+			return Env.getLoggedRoleId(getCtx());
 		}
 
 		public ProcessInfoBuilder setAD_Window_ID(int adWindowId)

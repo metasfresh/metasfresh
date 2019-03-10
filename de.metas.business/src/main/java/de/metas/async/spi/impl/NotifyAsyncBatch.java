@@ -48,6 +48,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -155,7 +156,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 
 					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
 					notificationBL.send(UserNotificationRequest.builder()
-							.recipientUserId(asyncBatch.getCreatedBy())
+							.recipientUserId(UserId.ofRepoId(asyncBatch.getCreatedBy()))
 							.subjectPlain(text.getSubject())
 							.contentPlain(message)
 							.targetAction(TargetRecordAction.of(TableRecordReference.of(asyncBatch)))

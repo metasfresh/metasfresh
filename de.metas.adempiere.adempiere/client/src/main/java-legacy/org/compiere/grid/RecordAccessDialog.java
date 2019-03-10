@@ -32,13 +32,13 @@ import javax.swing.JLabel;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.I_AD_Record_Access;
-import org.compiere.model.I_AD_Role;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
@@ -55,6 +55,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.Msg;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 
 /**
@@ -106,9 +107,9 @@ public class RecordAccessDialog extends CDialog
 		//
 		// Load Roles
 		{
-			final List<KeyNamePair> roles = Services.get(IRoleDAO.class).retrieveAllRolesWithUserAccess(ctx)
+			final List<KeyNamePair> roles = Services.get(IRoleDAO.class).retrieveAllRolesWithUserAccess()
 					.stream()
-					.map(adRole -> KeyNamePair.of(adRole.getAD_Role_ID(), adRole.getName()))
+					.map(role -> KeyNamePair.of(role.getId(), role.getName()))
 					.sorted(Comparator.comparing(KeyNamePair::getName))
 					.collect(ImmutableList.toImmutableList());
 			roleField.setModel(ListComboBoxModel.ofNullable(roles));
@@ -116,8 +117,9 @@ public class RecordAccessDialog extends CDialog
 
 		// Load Record Access for all roles
 		{
-			final int adClientId = Env.getAD_Client_ID(ctx);
-			final List<I_AD_Record_Access> recordAccesses = Services.get(IUserRolePermissionsDAO.class).retrieveRecordAccesses(m_AD_Table_ID, m_Record_ID, adClientId);
+			final ClientId adClientId = Env.getClientId(ctx);
+			final IUserRolePermissionsDAO permissionsRepo = Services.get(IUserRolePermissionsDAO.class);
+			final List<I_AD_Record_Access> recordAccesses = permissionsRepo.retrieveRecordAccesses(m_AD_Table_ID, m_Record_ID, adClientId);
 			setRecordAccesses(recordAccesses);
 		}
 
@@ -374,7 +376,8 @@ public class RecordAccessDialog extends CDialog
 		{
 			throw new FillMandatoryException("AD_Role_ID");
 		}
-		final I_AD_Role role = Services.get(IRoleDAO.class).retrieveRole(Env.getCtx(), roleKNP.getKey());
+
+		final RoleId roleId = RoleId.ofRepoId(roleKNP.getKey());
 
 		//
 		final boolean isExclude = cbExclude.isSelected();
@@ -384,7 +387,8 @@ public class RecordAccessDialog extends CDialog
 		final I_AD_Record_Access currentRecordAccess = getCurrentRecordAccess();
 		final boolean isNew = currentRecordAccess == null;
 
-		Services.get(IUserRolePermissionsDAO.class).changeRecordAccess(role, m_AD_Table_ID, m_Record_ID, recordAccess -> {
+		final IUserRolePermissionsDAO permissionsRepo = Services.get(IUserRolePermissionsDAO.class);
+		permissionsRepo.changeRecordAccess(roleId, m_AD_Table_ID, m_Record_ID, recordAccess -> {
 			recordAccess.setIsActive(true);
 			recordAccess.setIsExclude(isExclude);
 			recordAccess.setIsReadOnly(isReadOnly);

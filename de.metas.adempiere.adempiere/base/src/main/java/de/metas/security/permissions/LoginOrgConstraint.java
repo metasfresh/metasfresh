@@ -2,7 +2,10 @@ package de.metas.security.permissions;
 
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.service.OrgId;
 
 /*
  * #%L
@@ -17,15 +20,14 @@ import javax.annotation.concurrent.Immutable;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.slf4j.Logger;
 
@@ -34,7 +36,7 @@ import de.metas.logging.LogManager;
 @Immutable
 public final class LoginOrgConstraint extends Constraint
 {
-	public static final LoginOrgConstraint of(final int loginOrgId, final boolean orgLoginMandatory)
+	public static final LoginOrgConstraint of(final OrgId loginOrgId, final boolean orgLoginMandatory)
 	{
 		return new LoginOrgConstraint(loginOrgId, orgLoginMandatory);
 	}
@@ -43,20 +45,18 @@ public final class LoginOrgConstraint extends Constraint
 
 	private static final transient Logger logger = LogManager.getLogger(LoginOrgConstraint.class);
 
-	private final int loginOrgId;
+	private final OrgId loginOrgId;
 	private final boolean orgLoginMandatory;
 
 	/** Defaults constructor */
 	private LoginOrgConstraint()
 	{
-		super();
-		this.loginOrgId = -1;
+		this.loginOrgId = null;
 		this.orgLoginMandatory = false;
 	}
 
-	private LoginOrgConstraint(int loginOrgId, boolean orgLoginMandatory)
+	private LoginOrgConstraint(@Nullable final OrgId loginOrgId, boolean orgLoginMandatory)
 	{
-		super();
 		this.loginOrgId = loginOrgId;
 		this.orgLoginMandatory = orgLoginMandatory;
 	}
@@ -66,9 +66,9 @@ public final class LoginOrgConstraint extends Constraint
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		if (loginOrgId > 0)
+		if (loginOrgId != null)
 		{
-			sb.append("@Login_Org_ID@=" + loginOrgId);
+			sb.append("@Login_Org_ID@=" + loginOrgId.getRepoId());
 		}
 
 		if (sb.length() > 0)
@@ -88,26 +88,27 @@ public final class LoginOrgConstraint extends Constraint
 		return false;
 	}
 
-	public int getLogin_Org_ID()
+	private OrgId getLoginOrgId()
 	{
 		return loginOrgId;
 	}
 
-	public boolean isOrgLoginMandatory()
+	private boolean isOrgLoginMandatory()
 	{
 		return orgLoginMandatory;
 	}
 
 	public boolean isValidOrg(final OrgResource org)
 	{
-		if (isOrgLoginMandatory() && org.getAD_Org_ID() <= 0)
+		if (isOrgLoginMandatory() && !org.isRegularOrg())
 		{
 			logger.debug("Not valid {} because is OrgLoginMandatory is set", org);
 			return false;
 		}
 
 		// Enforce Login_Org_ID:
-		if (getLogin_Org_ID() > 0 && org.getAD_Org_ID() != loginOrgId)
+		final OrgId loginOrgId = getLoginOrgId();
+		if (loginOrgId != null && !OrgId.equals(loginOrgId, org.getOrgId()))
 		{
 			logger.debug("Not valid {} because is not Login_Org_ID", org);
 			return false;

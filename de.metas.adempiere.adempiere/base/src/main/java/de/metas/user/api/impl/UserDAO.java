@@ -143,9 +143,9 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public I_AD_User getById(final int adUserId)
+	public I_AD_User getById(@NonNull final UserId adUserId)
 	{
-		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId);
+		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId());
 		if (user == null)
 		{
 			throw new AdempiereException("No user found for ID=" + adUserId);
@@ -250,7 +250,7 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public List<Integer> retrieveSystemUserIds()
+	public Set<UserId> retrieveSystemUserIds()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -259,7 +259,7 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
 				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
-				.listIds();
+				.listIds(UserId::ofRepoId);
 	}
 
 	@Override
@@ -268,7 +268,6 @@ public class UserDAO implements IUserDAO
 		final I_AD_User userRecord = getById(userId.getRepoId());
 		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
 	}
-
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T getByIdInTrx(final UserId userId, final Class<T> modelClass)

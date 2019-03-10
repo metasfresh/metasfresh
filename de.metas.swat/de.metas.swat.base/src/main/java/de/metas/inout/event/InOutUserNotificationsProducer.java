@@ -39,6 +39,7 @@ import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -121,7 +122,7 @@ public final class InOutUserNotificationsProducer
 		final String bpName = bpartner.getName();
 
 		final String adMessage = getNotificationAD_Message(inout);
-		final int recipientUserId = getNotificationRecipientUserId(inout);
+		final UserId recipientUserId = getNotificationRecipientUserId(inout);
 
 		final TableRecordReference inoutRef = TableRecordReference.of(inout);
 
@@ -153,7 +154,7 @@ public final class InOutUserNotificationsProducer
 		}
 	}
 
-	private final int getNotificationRecipientUserId(final I_M_InOut inout)
+	private final UserId getNotificationRecipientUserId(final I_M_InOut inout)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
@@ -162,23 +163,23 @@ public final class InOutUserNotificationsProducer
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)
 			{
-				return currentUserId;
+				return UserId.ofRepoId(currentUserId);
 			}
 
-			return inout.getUpdatedBy(); // last updated
+			return UserId.ofRepoId(inout.getUpdatedBy()); // last updated
 		}
 		//
 		// Fallback: notify only the creator
 		else
 		{
-			return inout.getCreatedBy();
+			return UserId.ofRepoId(inout.getCreatedBy());
 		}
 	}
 
 	public InOutUserNotificationsProducer notifyShipmentError(final String sourceInfo, final String errorMessage)
 	{
 		postNotification(newUserNotificationRequest()
-				.recipientUserId(Env.getAD_User_ID(Env.getCtx()))
+				.recipientUserId(Env.getLoggedUserId())
 				.contentADMessage(MSG_Event_ShipmentError)
 				.contentADMessageParam(sourceInfo)
 				.contentADMessageParam(errorMessage)

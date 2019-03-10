@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Profile;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -160,7 +161,8 @@ public class ServerMonitorFilter implements Filter
 				return false;
 			}
 
-			if(!Services.get(IUserRolePermissionsDAO.class).isAdministrator(Env.getCtx(), user.getAD_User_ID()))
+			final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+			if(!Services.get(IUserRolePermissionsDAO.class).isAdministrator(Env.getCtx(), userId))
 			{
 				log.warn("Not a Sys Admin: {}", name);
 				return false;

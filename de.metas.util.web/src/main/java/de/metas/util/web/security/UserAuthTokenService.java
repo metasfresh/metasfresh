@@ -3,6 +3,7 @@ package de.metas.util.web.security;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,12 @@ import com.google.common.base.Supplier;
 
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
 import de.metas.security.UserNotAuthorizedException;
 import de.metas.security.UserRolePermissionsKey;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -84,18 +87,18 @@ public class UserAuthTokenService
 	private final Properties createContext(final UserAuthToken token)
 	{
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.builder()
-				.adUserId(token.getUserId())
-				.adRoleId(token.getRoleId())
-				.adClientId(token.getClientId())
+		final IUserRolePermissions permissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.builder()
+				.userId(token.getUserId())
+				.roleId(token.getRoleId())
+				.clientId(token.getClientId())
 				.date(SystemTime.asDayTimestamp())
 				.build());
 
 		final Properties ctx = Env.newTemporaryCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, userRolePermissions.getAD_Client_ID());
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, token.getOrgId());
-		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, userRolePermissions.getAD_User_ID());
-		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, userRolePermissions.getAD_Role_ID());
+		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, permissions.getClientId().getRepoId());
+		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, OrgId.toRepoId(token.getOrgId()));
+		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, UserId.toRepoId(permissions.getUserId()));
+		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(permissions.getRoleId()));
 		// TODO: set other properties like language, warehouse etc...
 		return ctx;
 	}

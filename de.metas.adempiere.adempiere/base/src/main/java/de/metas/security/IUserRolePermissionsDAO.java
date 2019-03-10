@@ -1,34 +1,14 @@
 package de.metas.security;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Record_Access;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_OrgAccess;
@@ -41,6 +21,19 @@ import de.metas.security.permissions.OrgPermissions;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermissions;
+import de.metas.security.requests.CreateDocActionAccessRequest;
+import de.metas.security.requests.CreateFormAccessRequest;
+import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateTaskAccessRequest;
+import de.metas.security.requests.CreateWindowAccessRequest;
+import de.metas.security.requests.CreateWorkflowAccessRequest;
+import de.metas.security.requests.RemoveDocActionAccessRequest;
+import de.metas.security.requests.RemoveFormAccessRequest;
+import de.metas.security.requests.RemoveProcessAccessRequest;
+import de.metas.security.requests.RemoveTaskAccessRequest;
+import de.metas.security.requests.RemoveWindowAccessRequest;
+import de.metas.security.requests.RemoveWorkflowAccessRequest;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -85,7 +78,7 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 * @return user/role permissions
 	 * @throws RolePermissionsNotFoundException if permissions could not be loaded
 	 */
-	IUserRolePermissions retrieveUserRolePermissions(int adRoleId, int adUserId, int adClientId, Date date);
+	IUserRolePermissions retrieveUserRolePermissions(RoleId adRoleId, UserId adUserId, ClientId adClientId, Instant date);
 
 	IUserRolePermissions retrieveUserRolePermissions(UserRolePermissionsKey key);
 
@@ -97,7 +90,7 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 * @param adOrgId organization
 	 * @return permissions with organization access.
 	 */
-	List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(Properties ctx, int adUserId, int adOrgId);
+	List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(Properties ctx, UserId adUserId, OrgId adOrgId);
 
 	/**
 	 * Retrieves first {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
@@ -108,31 +101,31 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 * @return permissions with organization access.
 	 * @see #retrieveUserRolesPermissionsForUserWithOrgAccess(Properties, int, int)
 	 */
-	Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(Properties ctx, int adUserId, int adOrgId);
+	Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(Properties ctx, UserId adUserId, OrgId adOrgId);
 
-	boolean matchUserRolesPermissionsForUser(Properties ctx, int adUserId, Predicate<IUserRolePermissions> matcher);
+	boolean matchUserRolesPermissionsForUser(Properties ctx, UserId adUserId, Predicate<IUserRolePermissions> matcher);
 
-	OrgPermissions retrieveOrgPermissions(final I_AD_Role role, final int adUserId);
+	OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId);
 
-	OrgPermissions retrieveRoleOrgPermissions(final int adRoleId, final int adTreeOrgId);
+	OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final int adTreeOrgId);
 
-	OrgPermissions retrieveUserOrgPermissions(final int adUserId, final int adTreeOrgId);
+	OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final int adTreeOrgId);
 
-	ElementPermissions retrieveWorkflowPermissions(final int adRoleId, final int adClientId);
+	ElementPermissions retrieveWorkflowPermissions(final RoleId adRoleId, final ClientId adClientId);
 
-	ElementPermissions retrieveFormPermissions(final int adRoleId, final int adClientId);
+	ElementPermissions retrieveFormPermissions(final RoleId adRoleId, final ClientId adClientId);
 
-	ElementPermissions retrieveTaskPermissions(final int adRoleId, final int adClientId);
+	ElementPermissions retrieveTaskPermissions(final RoleId adRoleId, final ClientId adClientId);
 
-	ElementPermissions retrieveProcessPermissions(final int adRoleId, final int adClientId);
+	ElementPermissions retrieveProcessPermissions(final RoleId adRoleId, final ClientId adClientId);
 
-	ElementPermissions retrieveWindowPermissions(final int adRoleId, final int adClientId);
+	ElementPermissions retrieveWindowPermissions(final RoleId adRoleId, final ClientId adClientId);
 
-	TablePermissions retrieveTablePermissions(final int adRoleId);
+	TablePermissions retrieveTablePermissions(final RoleId adRoleId);
 
-	TableColumnPermissions retrieveTableColumnPermissions(final int adRoleId);
+	TableColumnPermissions retrieveTableColumnPermissions(final RoleId adRoleId);
 
-	TableRecordPermissions retrieveRecordPermissions(final int adRoleId);
+	TableRecordPermissions retrieveRecordPermissions(final RoleId adRoleId);
 
 	/**
 	 * Re-create Access Records for all automatic roles
@@ -144,14 +137,16 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 *
 	 * @return info
 	 */
-	String updateAccessRecords(I_AD_Role role);
+	String updateAccessRecords(Role role);
+
+	void updateAccessRecords(RoleId roleId, UserId createdByUserId);
 
 	/**
 	 * Delete Access Records of the role.
 	 *
 	 * WARNING: to be called after the role was (successfully) deleted.
 	 */
-	void deleteAccessRecords(I_AD_Role role);
+	void deleteAccessRecords(RoleId roleId);
 
 	/**
 	 * If this method was called, also consider accounting related permissions. Supposed to be called from the accounting module.
@@ -164,46 +159,46 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 */
 	boolean isAccountingModuleActive();
 
-	void createOrgAccess(int adRoleId, int adOrgId);
+	void createOrgAccess(RoleId adRoleId, OrgId adOrgId);
 
-	List<I_AD_Role_OrgAccess> retrieveRoleOrgAccessRecordsForOrg(int adOrgId);
+	List<I_AD_Role_OrgAccess> retrieveRoleOrgAccessRecordsForOrg(OrgId adOrgId);
 
-	void createWindowAccess(I_AD_Role role, int adWindowId, boolean readWrite);
+	void createWindowAccess(CreateWindowAccessRequest request);
 
-	void deleteWindowAccess(I_AD_Role role, int adWindowId);
+	void deleteWindowAccess(RemoveWindowAccessRequest request);
 
-	void createProcessAccess(I_AD_Role role, int adProcessId, boolean readWrite);
+	void createProcessAccess(CreateProcessAccessRequest request);
 
-	void deleteProcessAccess(I_AD_Role role, int adProcessId);
+	void deleteProcessAccess(RemoveProcessAccessRequest request);
 
-	void createFormAccess(I_AD_Role role, int adFormId, boolean readWrite);
+	void createFormAccess(CreateFormAccessRequest request);
 
-	void deleteFormAccess(I_AD_Role role, int adFormId);
+	void deleteFormAccess(RemoveFormAccessRequest request);
 
-	void createTaskAccess(I_AD_Role role, int adTaskId, boolean readWrite);
+	void createTaskAccess(CreateTaskAccessRequest request);
 
-	void deleteTaskAccess(I_AD_Role role, int adTaskId);
+	void deleteTaskAccess(RemoveTaskAccessRequest request);
 
-	void createWorkflowAccess(I_AD_Role role, int adWorkflowId, boolean readWrite);
+	void createWorkflowAccess(CreateWorkflowAccessRequest request);
 
-	void deleteWorkflowAccess(I_AD_Role role, int adWorkflowId);
+	void deleteWorkflowAccess(RemoveWorkflowAccessRequest request);
 
-	void createDocumentActionAccess(I_AD_Role role, int docTypeId, int docActionRefListId);
+	void createDocumentActionAccess(CreateDocActionAccessRequest request);
 
-	void deleteDocumentActionAccess(I_AD_Role role, int docTypeId, int docActionRefListId);
+	void deleteDocumentActionAccess(RemoveDocActionAccessRequest request);
 
-	I_AD_Record_Access changeRecordAccess(I_AD_Role role, int adTableId, int recordId, Consumer<I_AD_Record_Access> updater);
+	I_AD_Record_Access changeRecordAccess(RoleId roleId, int adTableId, int recordId, Consumer<I_AD_Record_Access> updater);
 
-	List<I_AD_Record_Access> retrieveRecordAccesses(int adTableId, int recordId, int adClientId);
+	List<I_AD_Record_Access> retrieveRecordAccesses(int adTableId, int recordId, ClientId adClientId);
 
-	void createPrivateAccess(int adUserId, int adTableId, int recordId);
+	void createPrivateAccess(UserId adUserId, int adTableId, int recordId);
 
-	void deletePrivateAccess(int adUserId, int adTableId, int recordId);
+	void deletePrivateAccess(UserId adUserId, int adTableId, int recordId);
 
-	Set<Integer> retrievePrivateAccessRecordIds(int adUserId, int adTableId);
+	Set<Integer> retrievePrivateAccessRecordIds(UserId adUserId, int adTableId);
 
 	/**
-	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()} 
+	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}
 	 */
-	boolean isAdministrator(Properties ctx, int adUserId);
+	boolean isAdministrator(Properties ctx, UserId adUserId);
 }

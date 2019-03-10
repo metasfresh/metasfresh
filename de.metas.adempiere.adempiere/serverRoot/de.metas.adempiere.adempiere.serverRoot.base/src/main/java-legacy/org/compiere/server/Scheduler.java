@@ -27,9 +27,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -70,6 +72,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -289,23 +292,21 @@ public class Scheduler extends AdempiereServer
 	{
 		final Properties schedulerCtx = Env.newTemporaryCtx();
 
-		final Properties ctx = getCtx(); // server context
-
 		//
 		// AD_Client, AD_Language
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
-		final int adClientId = m_model.getAD_Client_ID();
-		final I_AD_Client schedClient = clientDAO.retriveClient(ctx, adClientId);
+		final ClientId clientId = ClientId.ofRepoId(m_model.getAD_Client_ID());
+		final I_AD_Client schedClient = clientDAO.getById(clientId);
 		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Client_ID, schedClient.getAD_Client_ID());
 		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Language, schedClient.getAD_Language());
 
 		//
 		// AD_Org, M_Warehouse
-		final int adOrgId = m_model.getAD_Org_ID();
-		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Org_ID, adOrgId);
-		if (adOrgId > 0)
+		final OrgId orgId = OrgId.ofRepoId(m_model.getAD_Org_ID());
+		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Org_ID, orgId.getRepoId());
+		if (orgId.isRegular())
 		{
-			final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(schedulerCtx, adOrgId, ITrx.TRXNAME_None);
+			final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(schedulerCtx, orgId.getRepoId(), ITrx.TRXNAME_None);
 			if (schedOrg.getM_Warehouse_ID() > 0)
 			{
 				Env.setContext(schedulerCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getM_Warehouse_ID());
@@ -314,31 +315,31 @@ public class Scheduler extends AdempiereServer
 
 		//
 		// AD_User_ID, SalesRep_ID
-		final int adUserId = getAD_User_ID();
-		Env.setContext(schedulerCtx, Env.CTXNAME_AD_User_ID, adUserId);
-		Env.setContext(schedulerCtx, Env.CTXNAME_SalesRep_ID, adUserId);
+		final UserId adUserId = getUserId();
+		Env.setContext(schedulerCtx, Env.CTXNAME_AD_User_ID, adUserId.getRepoId());
+		Env.setContext(schedulerCtx, Env.CTXNAME_SalesRep_ID, adUserId.getRepoId());
 
 		//
 		// AD_Role
-		final int adRoleId;
+		final RoleId roleId;
 		if (!InterfaceWrapperHelper.isNull(m_model, I_AD_Scheduler.COLUMNNAME_AD_Role_ID))
 		{
-			adRoleId = m_model.getAD_Role_ID();
+			roleId = RoleId.ofRepoId(m_model.getAD_Role_ID());
 		}
 		else
 		{
 			// Use the first user role, which has access to our organization.
 			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(schedulerCtx, adUserId, adOrgId)
+					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(schedulerCtx, adUserId, orgId)
 					.orNull();
 
 			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.
 			Check.errorIf(role == null,
 					"Scheduler {} has does not reference an AD_Role and we were unable to retrieve one for AD_User_ID={} and AD_Org_ID={}; AD_Scheduler={}",
-					m_model.getName(), adUserId, adOrgId, m_model);
-			adRoleId = role.getAD_Role_ID();
+					m_model.getName(), adUserId, orgId, m_model);
+			roleId = role.getRoleId();
 		}
-		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
+		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
 
 		//
 		// Date
@@ -384,10 +385,9 @@ public class Scheduler extends AdempiereServer
 		final File report = re.getPDF();
 		// Notice
 		final int AD_Message_ID = 884;		// HARDCODED SchedulerResult
-		final Integer[] userIDs = m_model.getRecipientAD_User_IDs();
-		for (int i = 0; i < userIDs.length; i++)
+		for (final UserId userId : m_model.getRecipientAD_User_IDs())
 		{
-			final MNote noteRecord = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), ITrx.TRXNAME_ThreadInherited);
+			final MNote noteRecord = new MNote(ctx, AD_Message_ID, userId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 			noteRecord.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
 			noteRecord.setTextMsg(m_model.getName());
 			noteRecord.setDescription(m_model.getDescription());
@@ -477,30 +477,28 @@ public class Scheduler extends AdempiereServer
 		return summary;
 	}
 
-	private int getAD_User_ID()
+	private UserId getUserId()
 	{
 		// FIXME: i think we need to brainstorm and figure out how to get rid of checking UpdatedBy/CreatedBy,
 		// because those are totally unpredictable!!!
 
-		int AD_User_ID;
 		if (m_model.getSupervisor_ID() > 0)
 		{
-			AD_User_ID = m_model.getSupervisor_ID();
+			return UserId.ofRepoId(m_model.getSupervisor_ID());
 		}
 		// NOTE: for now i am turning off the UpdateBy checking because that is clearly not predictable
 		// else if (m_model.getUpdatedBy() > 0)
 		// {
-		// AD_User_ID = m_model.getUpdatedBy();
+		// return m_model.getUpdatedBy();
 		// }
 		else if (m_model.getCreatedBy() > 0)
 		{
-			AD_User_ID = m_model.getCreatedBy();
+			return UserId.ofRepoId(m_model.getCreatedBy());
 		}
 		else
 		{
-			AD_User_ID = UserId.METASFRESH.getRepoId(); // fall back to SuperUser
+			return UserId.METASFRESH; // fall back to SuperUser
 		}
-		return AD_User_ID;
 	}
 
 	/**
@@ -673,8 +671,8 @@ public class Scheduler extends AdempiereServer
 		{
 			if (sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_NOT_OK, false, adClientId, adOrgId))
 			{
-				final int supervisorId = m_model.getSupervisor_ID();
-				if (supervisorId > 0)
+				final UserId supervisorId = m_model.getSupervisor_ID() > 0 ? UserId.ofRepoId(m_model.getSupervisor_ID()) : null;
+				if (supervisorId != null)
 				{
 					notificationBL.send(UserNotificationRequest.builder()
 							.recipientUserId(supervisorId)
@@ -687,7 +685,7 @@ public class Scheduler extends AdempiereServer
 		}
 		else if (sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_OK, false, adClientId, adOrgId))
 		{
-			for (final int userId : m_model.getRecipientAD_User_IDs())
+			for (final UserId userId : m_model.getRecipientAD_User_IDs())
 			{
 				notificationBL.send(UserNotificationRequest.builder()
 						.recipientUserId(userId)

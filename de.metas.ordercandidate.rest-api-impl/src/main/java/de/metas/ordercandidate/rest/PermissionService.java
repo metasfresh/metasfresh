@@ -6,13 +6,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
@@ -23,6 +21,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -106,16 +105,16 @@ public class PermissionService
 		if (request.getRecordId() >= 0)
 		{
 			errmsg = userPermissions.checkCanUpdate(
-					userPermissions.getAD_Client_ID(),
-					request.getOrgId().getRepoId(),
+					userPermissions.getClientId(),
+					request.getOrgId(),
 					request.getAdTableId(),
 					request.getRecordId());
 		}
 		else
 		{
 			errmsg = userPermissions.checkCanCreateNewRecord(
-					userPermissions.getAD_Client_ID(),
-					request.getOrgId().getRepoId(),
+					userPermissions.getClientId(),
+					request.getOrgId(),
 					request.getAdTableId());
 		}
 

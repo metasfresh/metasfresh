@@ -1,5 +1,10 @@
 package de.metas.security.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,11 +29,14 @@ package de.metas.security.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_User_Roles;
@@ -36,77 +44,199 @@ import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_Role;
-import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.CCache;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.security.RoleInclude;
+import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Constraints;
+import de.metas.security.permissions.DocumentApprovalConstraint;
+import de.metas.security.permissions.GenericPermissions;
+import de.metas.security.permissions.LoginOrgConstraint;
+import de.metas.security.permissions.StartupWindowConstraint;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
+import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
+import de.metas.user.UserId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class RoleDAO implements IRoleDAO
 {
 	// private static final transient Logger logger = CLogMgt.getLogger(RoleDAO.class);
 
+	private CCache<RoleId, Role> rolesCache = CCache.<RoleId, Role> builder()
+			.tableName(I_AD_Role.Table_Name)
+			.build();
+
 	@Override
-	public I_AD_Role retrieveRole(final Properties ctx)
+	public Role getLoginRole(final Properties ctx)
 	{
-		return retrieveRole(ctx, Env.getAD_Role_ID(ctx));
+		final RoleId adRoleId = Env.getLoggedRoleId(ctx);
+		return getById(adRoleId);
 	}
 
 	@Override
-	// NOTE: we assume AD_Role table is configured in IModelCacheService.
-	// @Cached(cacheName = I_AD_Role.Table_Name + "#By#AD_Role_ID")
-	public I_AD_Role retrieveRole(@CacheCtx final Properties ctx, final int AD_Role_ID)
+	public Role getById(@NonNull final RoleId roleId)
 	{
-		if (AD_Role_ID < 0)
+		return rolesCache.getOrLoad(roleId, this::retrieveById);
+	}
+
+	public Collection<Role> getByIds(@NonNull final Set<RoleId> roleIds)
+	{
+		return rolesCache.getAllOrLoad(roleIds, this::retrieveByIds);
+	}
+
+	private Role retrieveById(@NonNull final RoleId roleId)
+	{
+		final I_AD_Role record = loadOutOfTrx(roleId, I_AD_Role.class);
+		return toRole(record);
+	}
+
+	private Map<RoleId, Role> retrieveByIds(@NonNull final Collection<RoleId> roleIds)
+	{
+		return loadByRepoIdAwares(ImmutableSet.copyOf(roleIds), I_AD_Role.class)
+				.stream()
+				.map(record -> toRole(record))
+				.collect(GuavaCollectors.toImmutableMapByKey(Role::getId));
+	}
+
+	private static Role toRole(final I_AD_Role record)
+	{
+		return Role.builder()
+				.id(RoleId.ofRepoId(record.getAD_Role_ID()))
+				//
+				.name(record.getName())
+				.description(record.getDescription())
+				//
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
+				//
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.accessAllOrgs(record.isAccessAllOrgs())
+				.useUserOrgAccess(record.isUseUserOrgAccess())
+				//
+				.supervisorId(UserId.ofRepoIdOrNull(record.getSupervisor_ID()))
+				//
+				.userLevel(TableAccessLevel.forUserLevel(record.getUserLevel()))
+				.permissions(extractPermissions(record))
+				.constraints(extractConstraints(record))
+				//
+				.manualMaintainance(record.isManual())
+				//
+				// Menu:
+				.AD_Tree_Menu_ID(record.getAD_Tree_Menu_ID())
+				.Root_Menu_ID(record.getRoot_Menu_ID())
+				//
+				.AD_Tree_Org_ID(record.getAD_Tree_Org_ID())
+				//
+				.webuiRole(record.isWEBUI_Role())
+				//
+				.updatedBy(UserId.ofRepoId(record.getUpdatedBy()))
+				//
+				.build();
+	}
+
+	private static GenericPermissions extractPermissions(final I_AD_Role record)
+	{
+		final GenericPermissions.Builder rolePermissions = GenericPermissions.builder();
+
+		rolePermissions.addPermissionIfCondition(record.isAccessAllOrgs(), IUserRolePermissions.PERMISSION_AccessAllOrgs);
+
+		rolePermissions.addPermissionIfCondition(record.isCanReport(), IUserRolePermissions.PERMISSION_CanReport);
+		rolePermissions.addPermissionIfCondition(record.isCanExport(), IUserRolePermissions.PERMISSION_CanExport);
+		rolePermissions.addPermissionIfCondition(record.isPersonalAccess(), IUserRolePermissions.PERMISSION_PersonalAccess);
+		rolePermissions.addPermissionIfCondition(record.isPersonalLock(), IUserRolePermissions.PERMISSION_PersonalLock);
+		rolePermissions.addPermissionIfCondition(record.isOverwritePriceLimit(), IUserRolePermissions.PERMISSION_OverwritePriceLimit);
+		rolePermissions.addPermissionIfCondition(record.isChangeLog(), IUserRolePermissions.PERMISSION_ChangeLog);
+		rolePermissions.addPermissionIfCondition(record.isMenuAvailable(), IUserRolePermissions.PERMISSION_MenuAvailable);
+		rolePermissions.addPermissionIfCondition(record.isAutoRoleLogin(), IUserRolePermissions.PERMISSION_AutoRoleLogin);
+		rolePermissions.addPermissionIfCondition(record.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
+		rolePermissions.addPermissionIfCondition(record.isRoleAlwaysUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
+
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Schedule(), IUserRolePermissions.PERMISSION_InfoWindow_Schedule);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_MRP(), IUserRolePermissions.PERMISSION_InfoWindow_MRP);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_CRP(), IUserRolePermissions.PERMISSION_InfoWindow_CRP);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Order(), IUserRolePermissions.PERMISSION_InfoWindow_Order);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Invoice(), IUserRolePermissions.PERMISSION_InfoWindow_Invoice);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_InOut(), IUserRolePermissions.PERMISSION_InfoWindow_InOut);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Payment(), IUserRolePermissions.PERMISSION_InfoWindow_Payment);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_CashJournal(), IUserRolePermissions.PERMISSION_InfoWindow_CashJournal);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Resource(), IUserRolePermissions.PERMISSION_InfoWindow_Resource);
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Asset(), IUserRolePermissions.PERMISSION_InfoWindow_Asset);
+
+		//
+		// Accounting module
+		rolePermissions.addPermissionIfCondition(record.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
+
+		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
+		rolePermissions.addPermissionIfCondition(record.isAllowedTrlBox(), IUserRolePermissions.PERMISSION_TrlBox);
+		rolePermissions.addPermissionIfCondition(record.isAllowedMigrationScripts(), IUserRolePermissions.PERMISSION_MigrationScripts);
+
+		return rolePermissions.build();
+	}
+
+	private static final Constraints extractConstraints(final I_AD_Role record)
+	{
+		return Constraints.builder()
+				.addConstraint(UserPreferenceLevelConstraint.forPreferenceType(record.getPreferenceType()))
+				.addConstraint(WindowMaxQueryRecordsConstraint.of(record.getMaxQueryRecords(), record.getConfirmQueryRecords()))
+				.addConstraintIfNotEquals(StartupWindowConstraint.ofAD_Form_ID(record.getAD_Form_ID()), StartupWindowConstraint.NULL)
+				.addConstraint(DocumentApprovalConstraint.of(record.isCanApproveOwnDoc(), record.getAmtApproval(), record.getC_Currency_ID()))
+				.addConstraint(extractLoginOrgConstraint(record))
+				.addConstraint(UIDisplayedEntityTypes.of(record.isShowAllEntityTypes()))
+				.build();
+	}
+
+	private static final LoginOrgConstraint extractLoginOrgConstraint(final I_AD_Role record)
+	{
+		return LoginOrgConstraint.of(OrgId.ofRepoIdOrNull(record.getLogin_Org_ID()), record.isOrgLoginMandatory());
+	}
+
+	@Override
+	public List<Role> getUserRoles(final UserId userId)
+	{
+		final ImmutableSet<RoleId> roleIds = getUserRoleIds(userId);
+		if (roleIds.isEmpty())
 		{
-			return null;
-		}
-		// special Handling for System Role because of ID=ZERO
-		else if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID)
-		{
-			// TODO: check retrieving from cache first
-			return Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
-					.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Role_ID, IUserRolePermissions.SYSTEM_ROLE_ID)
-					.create()
-					.firstOnlyNotNull(I_AD_Role.class);
+			return ImmutableList.of();
 		}
 		else
-		// if (AD_Role_ID > 0)
 		{
-			return InterfaceWrapperHelper.create(ctx, AD_Role_ID, I_AD_Role.class, ITrx.TRXNAME_None);
+			return ImmutableList.copyOf(getByIds(roleIds));
 		}
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Role.Table_Name + "#For#AD_User_ID")
-	public List<I_AD_Role> retrieveRolesForUser(@CacheCtx final Properties ctx, final int adUserId)
+	public ImmutableSet<RoleId> getUserRoleIds(@NonNull final UserId userId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Roles.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_User_Roles.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, adUserId)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, userId)
 				.andCollect(I_AD_User_Roles.COLUMN_AD_Role_ID)
 				.addOnlyActiveRecordsFilter()
-				//
-				.orderBy()
-				.addColumn(I_AD_Role.COLUMN_AD_Role_ID)
-				.endOrderBy()
-				//
+				.orderBy(I_AD_Role.COLUMN_AD_Role_ID)
 				.create()
-				.list(I_AD_Role.class);
+				.listIds(RoleId::ofRepoId);
 	}
 
 	@Override
-	public final List<I_AD_Role> retrieveSubstituteRoles(final Properties ctx, final int adUserId, final Date date)
+	public final Set<RoleId> getSubstituteRoleIds(@NonNull final UserId adUserId, @NonNull final Date date)
 	{
-		// final Date date = SystemTime.asDate();
-
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Substitute.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_User_Substitute.class)
 				.addOnlyActiveRecordsFilter()
 				.addValidFromToMatchesFilter(I_AD_User_Substitute.COLUMN_ValidFrom, I_AD_User_Substitute.COLUMN_ValidTo, date)
 				.addEqualsFilter(I_AD_User_Substitute.COLUMN_Substitute_ID, adUserId)
@@ -123,120 +253,126 @@ public class RoleDAO implements IRoleDAO
 				.andCollect(I_AD_User_Roles.COLUMN_AD_Role_ID)
 				.addOnlyActiveRecordsFilter()
 				//
-				.orderBy()
-				.addColumn(I_AD_Role.COLUMN_AD_Role_ID) // just to have a predictible order
-				.endOrderBy()
+				.orderBy(I_AD_Role.COLUMN_AD_Role_ID) // just to have a predictible order
 				//
-				.create().list(I_AD_Role.class);
+				.create()
+				.listIds(RoleId::ofRepoId);
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Role_Included.Table_Name + "#by#AD_Role_ID", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public List<I_AD_Role_Included> retrieveRoleIncludes(@CacheCtx final Properties ctx, final int adRoleId)
+	public List<RoleInclude> retrieveRoleIncludes(@NonNull final RoleId adRoleId)
 	{
-		final List<I_AD_Role_Included> roleIncludes = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role_Included.class, ctx, ITrx.TRXNAME_None)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Role_Included.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Role_Included.COLUMN_AD_Role_ID, adRoleId)
-				//
-				.orderBy()
-				.addColumn(I_AD_Role_Included.COLUMNNAME_SeqNo)
-				.addColumn(I_AD_Role_Included.COLUMN_Included_Role_ID)
-				.endOrderBy()
+				.orderBy(I_AD_Role_Included.COLUMNNAME_SeqNo)
+				.orderBy(I_AD_Role_Included.COLUMN_Included_Role_ID)
 				//
 				.create()
-				.list();
-		return ImmutableList.copyOf(roleIncludes);
+				.stream()
+				.map(record -> toRoleInclude(record))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static RoleInclude toRoleInclude(final I_AD_Role_Included record)
+	{
+		return RoleInclude.builder()
+				.childRoleId(RoleId.ofRepoId(record.getIncluded_Role_ID()))
+				.seqNo(record.getSeqNo())
+				.build();
 	}
 
 	@Override
-	public IRolesTreeNode retrieveRolesTree(final int adRoleId, int substitute_ForUserId, Date substituteDate)
+	public IRolesTreeNode retrieveRolesTree(final RoleId adRoleId, UserId substitute_ForUserId, Date substituteDate)
 	{
 		return RolesTreeNode.of(adRoleId, substitute_ForUserId, substituteDate);
 	}
 
 	@Override
-	public List<I_AD_Role> retrieveAllRolesWithAutoMaintenance(final Properties ctx)
+	public Collection<Role> retrieveAllRolesWithAutoMaintenance()
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
+		final Set<RoleId> roleIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Role.class)
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_IsManual, false)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list();
+				.listIds(RoleId::ofRepoId);
+
+		return getByIds(roleIds);
 	}
 
 	@Override
-	public List<I_AD_Role> retrieveAllRolesWithUserAccess(final Properties ctx)
+	public Collection<Role> retrieveAllRolesWithUserAccess()
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
+		final Set<RoleId> roleIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Role.class)
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_IsManual, false)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.setApplyAccessFilterRW(IUserRolePermissions.SQL_RO)
-				.list(I_AD_Role.class);
+				.listIds(RoleId::ofRepoId);
+
+		return getByIds(roleIds);
 	}
 
 	@Override
-	public List<I_AD_Role> retrieveRolesForClient(final Properties ctx, final int adClientId)
+	public String getRoleName(final RoleId adRoleId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Client_ID, adClientId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-	}
+		if (adRoleId == null)
+		{
+			return "?";
+		}
 
-	@Override
-	public String retrieveRoleName(final Properties ctx, final int adRoleId)
-	{
-		final I_AD_Role role = retrieveRole(ctx, adRoleId);
-		return role == null ? "<" + adRoleId + ">" : role.getName();
+		final Role role = getById(adRoleId);
+		return role.getName();
 	}
 
 	@Override
 	// @Cached(cacheName = I_AD_User_Roles.Table_Name + "#by#AD_Role_ID", expireMinutes = 0) // not sure if caching is needed...
-	public List<Integer> retrieveUserIdsForRoleId(final int adRoleId)
+	public Set<UserId> retrieveUserIdsForRoleId(final RoleId adRoleId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_Roles.class)
 				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listDistinct(I_AD_User_Roles.COLUMNNAME_AD_User_ID, Integer.class);
+				.listDistinct(I_AD_User_Roles.COLUMNNAME_AD_User_ID, Integer.class)
+				.stream()
+				.map(UserId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
-	public int retrieveFirstRoleIdForUserId(final int adUserId)
+	public RoleId retrieveFirstRoleIdForUserId(final UserId userId)
 	{
 		final Integer firstRoleId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_Roles.class)
-				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, adUserId)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, userId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.first(I_AD_User_Roles.COLUMNNAME_AD_Role_ID, Integer.class);
-		return firstRoleId == null ? -1 : firstRoleId;
+		return firstRoleId == null ? null : RoleId.ofRepoIdOrNull(firstRoleId);
 	}
 
 	@Override
-	public void createUserRoleAssignmentIfMissing(final int adUserId, final int adRoleId)
+	public void createUserRoleAssignmentIfMissing(final UserId adUserId, final RoleId adRoleId)
 	{
-		if(hasUserRoleAssignment(adUserId, adRoleId))
+		if (hasUserRoleAssignment(adUserId, adRoleId))
 		{
 			return;
 		}
 
 		final I_AD_User_Roles userRole = InterfaceWrapperHelper.newInstance(I_AD_User_Roles.class);
-		userRole.setAD_User_ID(adUserId);
-		userRole.setAD_Role_ID(adRoleId);
+		userRole.setAD_User_ID(adUserId.getRepoId());
+		userRole.setAD_Role_ID(adRoleId.getRepoId());
 		InterfaceWrapperHelper.save(userRole);
 
 		Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
 	}
 
-	private boolean hasUserRoleAssignment(final int adUserId, final int adRoleId)
+	private boolean hasUserRoleAssignment(final UserId adUserId, final RoleId adRoleId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_Roles.class)

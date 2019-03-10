@@ -2,6 +2,7 @@ package de.metas.user.api;
 
 import java.util.List;
 
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -28,9 +29,9 @@ import de.metas.util.ISingletonService;
 
 public interface IUserMenuFavoritesDAO extends ISingletonService
 {
-	void add(int adUserId, int adMenuId);
+	void add(UserId adUserId, int adMenuId);
 
-	boolean remove(int adUserId, int adMenuId);
+	boolean remove(UserId adUserId, int adMenuId);
 
-	List<Integer> retrieveMenuIdsForUser(int adUserId);
+	List<Integer> retrieveMenuIdsForUser(UserId adUserId);
 }

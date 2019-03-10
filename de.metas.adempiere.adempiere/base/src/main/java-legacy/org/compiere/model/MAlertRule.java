@@ -28,6 +28,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 
@@ -117,10 +118,10 @@ public class MAlertRule extends X_AD_AlertRule
 			if (alert.isEnforceRoleSecurity()
 					|| alert.isEnforceClientSecurity())
 			{
-				int AD_Role_ID = alert.getFirstAD_Role_ID();
-				if (AD_Role_ID == -1)
-					AD_Role_ID = alert.getFirstUserAD_Role_ID();
-				if (AD_Role_ID != -1)
+				RoleId roleId = alert.getFirstRoleId();
+				if (roleId == null)
+					roleId = alert.getFirstUserRoleId();
+				if (roleId != null)
 				{
 					final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
 					finalSQL = role.addAccessSQL(finalSQL, null, true, false);

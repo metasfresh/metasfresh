@@ -29,6 +29,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -175,7 +176,7 @@ public class UserBL implements IUserBL
 	@Override
 	public void changePassword(
 			final Properties ctx,
-			final int adUserId,
+			final UserId adUserId,
 			final HashableString oldPassword,
 			final String newPassword,
 			final String newPasswordRetype)
@@ -189,7 +190,7 @@ public class UserBL implements IUserBL
 
 		//
 		// Load the user
-		final I_AD_User user = InterfaceWrapperHelper.load(adUserId, I_AD_User.class);
+		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId);
 
 		//
 		// Make sure the old password is matching (if required)
@@ -222,13 +223,13 @@ public class UserBL implements IUserBL
 		InterfaceWrapperHelper.save(user);
 	}
 
-	private boolean isOldPasswordRequired(final Properties ctx, final int adUserId)
+	private boolean isOldPasswordRequired(final Properties ctx, final UserId adUserId)
 	{
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.of(ctx));
 
 		// Changing your own password always requires entering the old password
-		if (loggedInPermissions.getAD_User_ID() == adUserId)
+		if (UserId.equals(loggedInPermissions.getUserId(), adUserId))
 		{
 			return true;
 		}

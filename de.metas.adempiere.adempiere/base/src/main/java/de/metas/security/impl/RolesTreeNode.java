@@ -13,24 +13,18 @@ package de.metas.security.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_Role_Included;
-import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -38,17 +32,21 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
+import de.metas.security.RoleId;
+import de.metas.security.RoleInclude;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 class RolesTreeNode implements IRolesTreeNode
 {
-	public static RolesTreeNode of(final int adRoleId, final int substitute_ForUserId, final Date substituteDate)
+	public static RolesTreeNode of(final RoleId adRoleId, final UserId substitute_ForUserId, final Date substituteDate)
 	{
 		final int seqNo = 0;
 		final RolesTreeNode node = new RolesTreeNode(adRoleId, seqNo);
 
-		if (substitute_ForUserId > 0)
+		if (substitute_ForUserId != null)
 		{
 			node.substitute_ForUserId = substitute_ForUserId;
 
@@ -59,9 +57,9 @@ class RolesTreeNode implements IRolesTreeNode
 		return node;
 	}
 
-	private final int adRoleId;
+	private final RoleId roleId;
 	private final int seqNo;
-	private int substitute_ForUserId = -1;
+	private UserId substitute_ForUserId;
 	private Date substitute_Date = null;
 	private final Supplier<ImmutableList<IRolesTreeNode>> childrenSupplier = Suppliers.memoize(new Supplier<ImmutableList<IRolesTreeNode>>()
 	{
@@ -72,10 +70,9 @@ class RolesTreeNode implements IRolesTreeNode
 			final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 
 			ImmutableList.Builder<IRolesTreeNode> childrenBuilder = ImmutableList.builder();
-			final Properties ctx = Env.getCtx();
-			for (final I_AD_Role_Included roleIncludeLink : roleDAO.retrieveRoleIncludes(ctx, getAD_Role_ID()))
+			for (final RoleInclude roleIncludeLink : roleDAO.retrieveRoleIncludes(getRoleId()))
 			{
-				final int childRoleId = roleIncludeLink.getIncluded_Role_ID();
+				final RoleId childRoleId = roleIncludeLink.getChildRoleId();
 				final int childSeqNo = roleIncludeLink.getSeqNo();
 				final RolesTreeNode child = new RolesTreeNode(childRoleId, childSeqNo);
 				childrenBuilder.add(child);
@@ -83,11 +80,10 @@ class RolesTreeNode implements IRolesTreeNode
 
 			//
 			// Load roles which are temporary assigned to given user
-			if (substitute_ForUserId > 0)
+			if (substitute_ForUserId != null)
 			{
-				for (final I_AD_Role role : roleDAO.retrieveSubstituteRoles(ctx, substitute_ForUserId, substitute_Date))
+				for (final RoleId childRoleId : roleDAO.getSubstituteRoleIds(substitute_ForUserId, substitute_Date))
 				{
-					final int childRoleId = role.getAD_Role_ID();
 					final int childSeqNo = -1; // no particular sequence number
 					final RolesTreeNode child = new RolesTreeNode(childRoleId, childSeqNo);
 					childrenBuilder.add(child);
@@ -99,18 +95,16 @@ class RolesTreeNode implements IRolesTreeNode
 
 	});
 
-	private RolesTreeNode(final int adRoleId, final int seqNo)
+	private RolesTreeNode(@NonNull final RoleId adRoleId, final int seqNo)
 	{
-		super();
-
-		this.adRoleId = adRoleId;
+		this.roleId = adRoleId;
 		this.seqNo = seqNo;
 	}
 
 	@Override
-	public int getAD_Role_ID()
+	public RoleId getRoleId()
 	{
-		return adRoleId;
+		return roleId;
 	}
 
 	@Override
@@ -132,11 +126,10 @@ class RolesTreeNode implements IRolesTreeNode
 		return aggregateBottomUp(aggregator, trace);
 	}
 
-	private <ValueType, AggregatedValueType> ValueType aggregateBottomUp(final BottomUpAggregator<ValueType, AggregatedValueType> aggregator
-			, final LinkedHashMap<Object, RolesTreeNode> trace)
+	private <ValueType, AggregatedValueType> ValueType aggregateBottomUp(final BottomUpAggregator<ValueType, AggregatedValueType> aggregator, final LinkedHashMap<Object, RolesTreeNode> trace)
 	{
 		// Skip already evaluated notes
-		final Object nodeId = getAD_Role_ID();
+		final Object nodeId = getRoleId();
 		if (trace.containsKey(nodeId))
 		{
 			return null;

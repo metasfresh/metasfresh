@@ -64,6 +64,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -245,7 +246,7 @@ public final class Env
 
 	public static final String CTXNAME_AD_Role_ID = "#AD_Role_ID";
 	public static final int CTXVALUE_AD_Role_ID_NONE = -1;
-	public static final int CTXVALUE_AD_Role_ID_System = IUserRolePermissions.SYSTEM_ROLE_ID;
+	public static final int CTXVALUE_AD_Role_ID_System = RoleId.SYSTEM.getRepoId();
 	public static final String CTXNAME_AD_Role_Name = "#AD_Role_Name";
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
 
@@ -1235,9 +1236,14 @@ public final class Env
 	 * @param ctx context
 	 * @return {@code #AD_Role_ID}
 	 */
-	public static int getAD_Role_ID(Properties ctx)
+	public static int getAD_Role_ID(final Properties ctx)
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
+	}
+	
+	public static RoleId getLoggedRoleId(final Properties ctx)
+	{
+		return RoleId.ofRepoId(getAD_Role_ID(ctx));
 	}
 
 	public static IUserRolePermissions getUserRolePermissions()

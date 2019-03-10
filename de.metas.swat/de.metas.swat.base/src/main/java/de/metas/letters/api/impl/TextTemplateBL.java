@@ -32,6 +32,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -269,8 +271,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(textTemplate);
-		final int adClientId = textTemplate.getAD_Client_ID();
-		final int adOrgId = textTemplate.getAD_Org_ID();
+		final ClientId adClientId = ClientId.ofRepoId(textTemplate.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(textTemplate.getAD_Org_ID());
 		final int tableId = InterfaceWrapperHelper.getTableId(I_AD_BoilerPlate.class);
 		final int recordId = textTemplate.getAD_BoilerPlate_ID();
 		final boolean createError = false;

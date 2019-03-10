@@ -30,8 +30,10 @@ import org.compiere.model.I_AD_User;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
+import lombok.NonNull;
 
 public interface IUserBL extends ISingletonService
 {
@@ -54,7 +56,7 @@ public interface IUserBL extends ISingletonService
 	 * @param newPassword new password
 	 * @param newPasswordRetype new password again
 	 */
-	void changePassword(final Properties ctx, final int adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype);
+	void changePassword(final Properties ctx, final UserId adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype);
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 
@@ -76,9 +78,9 @@ public interface IUserBL extends ISingletonService
 
 	ITranslatableString checkCanSendEMail(int adUserId);
 
-	default void assertCanSendEMail(final int adUserId)
+	default void assertCanSendEMail(@NonNull final UserId adUserId)
 	{
-		final ITranslatableString errmsg = checkCanSendEMail(adUserId);
+		final ITranslatableString errmsg = checkCanSendEMail(adUserId.getRepoId());
 		if (errmsg != null)
 		{
 			throw new AdempiereException(TranslatableStringBuilder.newInstance()

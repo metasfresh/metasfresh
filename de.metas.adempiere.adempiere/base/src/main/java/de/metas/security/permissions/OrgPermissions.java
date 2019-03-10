@@ -29,16 +29,18 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.MTree_Base;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
@@ -53,8 +55,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		return new Builder();
 	}
 
-	private final ImmutableSet<Integer> adClientIds;
-	private final ImmutableSet<Integer> adOrgIds;
+	private final ImmutableSet<ClientId> adClientIds;
+	private final ImmutableSet<OrgId> adOrgIds;
 	private final int orgTreeId;
 
 	private OrgPermissions(final Builder builder)
@@ -81,7 +83,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	/**
 	 * @return all AD_Client_IDs on which we have at least read permissions
 	 */
-	public Set<Integer> getAD_Client_IDs()
+	public Set<ClientId> getAD_Client_IDs()
 	{
 		return adClientIds;
 	}
@@ -96,12 +98,12 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			final String tableName,
 			final String tableAlias,
 			final boolean rw,
-			final Set<Integer> adClientIds)
+			final Set<ClientId> adClientIds)
 	{
-		final HashSet<Integer> adClientIdsEffective = new HashSet<>(adClientIds);
+		final HashSet<ClientId> adClientIdsEffective = new HashSet<>(adClientIds);
 		if (!rw)
 		{
-			adClientIdsEffective.add(OrgPermission.AD_Client_ID_System);
+			adClientIdsEffective.add(ClientId.SYSTEM);
 		}
 
 		final String tablePrefix = tableAlias != null ? tableAlias + "." : "";
@@ -117,8 +119,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		if (rw && "AD_Org".equals(tableName))
 		{
 			whereClause.append(" OR (")
-					.append(tablePrefix).append("AD_Client_ID=").append(OrgPermission.AD_Client_ID_System)
-					.append(" AND ").append(tablePrefix).append("AD_Org_ID=").append(OrgPermission.AD_Org_ID_System)
+					.append(tablePrefix).append("AD_Client_ID=").append(ClientId.SYSTEM.getRepoId())
+					.append(" AND ").append(tablePrefix).append("AD_Org_ID=").append(OrgId.ANY.getRepoId())
 					.append(")");
 
 			whereClause.insert(0, "(").append(")");
@@ -128,16 +130,16 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	}
 
 	/**
-	 * @param AD_Client_ID
+	 * @param clientiD
 	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @return true if there is access to given AD_Client_ID
 	 */
-	public boolean isClientAccess(final int AD_Client_ID, final boolean rw)
+	public boolean isClientAccess(final ClientId clientId, final boolean rw)
 	{
 		// Positive List
 		for (final OrgPermission perm : getPermissionsList())
 		{
-			if (perm.getAD_Client_ID() == AD_Client_ID)
+			if (ClientId.equals(perm.getClientId(), clientId))
 			{
 				if (!rw)
 				{
@@ -154,13 +156,14 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 
 	public String getAD_Org_IDs_AsString()
 	{
-		return Joiner.on(',')
-				.skipNulls()
-				.join(adOrgIds);
+		return adOrgIds.stream()
+				.map(OrgId::getRepoId)
+				.map(String::valueOf)
+				.collect(Collectors.joining(","));
 	}
 
 	// FRESH-560: Retrieve the org IDs as set
-	public Set<Integer> getAD_Org_IDs_AsSet()
+	public Set<OrgId> getAD_Org_IDs_AsSet()
 	{
 		return adOrgIds;
 	}
@@ -169,12 +172,12 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @return list of AD_Org_IDs on which we have access
 	 */
-	public Set<Integer> getOrgAccess(final boolean rw)
+	public Set<OrgId> getOrgAccess(final boolean rw)
 	{
-		final Set<Integer> adOrgIds = new HashSet<>();
+		final Set<OrgId> adOrgIds = new HashSet<>();
 		if (!rw)
 		{
-			adOrgIds.add(Env.CTXVALUE_AD_Org_ID_System);
+			adOrgIds.add(OrgId.ANY);
 		}
 
 		final Access access = rw ? Access.WRITE : Access.READ;
@@ -184,7 +187,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		{
 			if (perm.hasAccess(access))
 			{
-				adOrgIds.add(perm.getAD_Org_ID());
+				adOrgIds.add(perm.getOrgId());
 			}
 		}
 
@@ -229,8 +232,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 
 	public static class Builder extends PermissionsBuilder<OrgPermission, OrgPermissions>
 	{
-		private final ImmutableSet.Builder<Integer> adClientIds = ImmutableSet.builder();
-		private final ImmutableSet.Builder<Integer> adOrgIds = ImmutableSet.builder();
+		private final ImmutableSet.Builder<ClientId> adClientIds = ImmutableSet.builder();
+		private final ImmutableSet.Builder<OrgId> adOrgIds = ImmutableSet.builder();
 		private Integer _orgTreeId;
 
 		Builder()
@@ -243,8 +246,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		{
 			for (final OrgPermission perm : getPermissionsInternalMap().values())
 			{
-				adClientIds.add(perm.getAD_Client_ID());
-				adOrgIds.add(perm.getAD_Org_ID());
+				adClientIds.add(perm.getClientId());
+				adOrgIds.add(perm.getOrgId());
 			}
 		}
 
@@ -300,7 +303,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			final String sql = "SELECT AD_Client_ID, AD_Org_ID FROM AD_Org "
 					+ "WHERE IsActive='Y' AND AD_Org_ID IN (SELECT Node_ID FROM " + tree.getNodeTableName()
 					+ " WHERE AD_Tree_ID=? AND Parent_ID=? AND IsActive='Y')";
-			final Object[] sqlParams = new Object[] { tree.getAD_Tree_ID(), orgResource.getAD_Org_ID() };
+			final Object[] sqlParams = new Object[] { tree.getAD_Tree_ID(), orgResource.getOrgId() };
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
@@ -310,9 +313,9 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 				rs = pstmt.executeQuery();
 				while (rs.next())
 				{
-					final int AD_Client_ID = rs.getInt(1);
-					final int AD_Org_ID = rs.getInt(2);
-					final OrgResource resource = OrgResource.of(AD_Client_ID, AD_Org_ID);
+					final ClientId clientId = ClientId.ofRepoId(rs.getInt(1));
+					final OrgId orgId = OrgId.ofRepoId(rs.getInt(2));
+					final OrgResource resource = OrgResource.of(clientId, orgId);
 					final OrgPermission childOrgPermission = oa.copyWithResource(resource);
 					addPermissionRecursivelly(childOrgPermission);
 				}

@@ -10,18 +10,17 @@ package de.metas.security.permissions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,11 +30,11 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Base class for implementing {@link Permissions} builders.
- * 
+ *
  * @author tsa
  *
  * @param <PermissionType>
@@ -43,8 +42,6 @@ import de.metas.util.Check;
  */
 public abstract class PermissionsBuilder<PermissionType extends Permission, PermissionsType extends Permissions<PermissionType>>
 {
-	private final Map<Resource, PermissionType> _permissions = new LinkedHashMap<>();
-
 	/** What shall happen when you are adding a permission which already exists but maybe with different permissions */
 	public static enum CollisionPolicy
 	{
@@ -58,9 +55,16 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 		Skip,
 	}
 
+	private final Map<Resource, PermissionType> _permissions;
+
 	public PermissionsBuilder()
 	{
-		super();
+		this(ImmutableMap.of());
+	}
+
+	public PermissionsBuilder(@NonNull final Map<Resource, PermissionType> permissions)
+	{
+		_permissions = new LinkedHashMap<>(permissions);
 	}
 
 	public final PermissionsType build()
@@ -91,12 +95,9 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 		return addPermission(permission, CollisionPolicy.Fail);
 	}
 
-	public final PermissionsBuilder<PermissionType, PermissionsType> addPermission(final PermissionType permission, final CollisionPolicy collisionPolicy)
+	public final PermissionsBuilder<PermissionType, PermissionsType> addPermission(@NonNull final PermissionType permission, @NonNull final CollisionPolicy collisionPolicy)
 	{
-		Check.assumeNotNull(permission, "permission not null");
 		assertValidPermissionToAdd(permission);
-
-		Check.assumeNotNull(collisionPolicy, "collisionPolicy not null");
 
 		final Map<Resource, PermissionType> permissions = getPermissionsInternalMap();
 
@@ -144,7 +145,7 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 		return this;
 	}
 
-	protected void assertValidPermissionToAdd(PermissionType permission)
+	protected void assertValidPermissionToAdd(final PermissionType permission)
 	{
 		// nothing at this level
 	}
@@ -165,10 +166,8 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 		return this;
 	}
 
-	public boolean hasPermission(final PermissionType permission)
+	public boolean hasPermission(@NonNull final PermissionType permission)
 	{
-		Check.assumeNotNull(permission, "permission not null");
-
 		final Map<Resource, PermissionType> permissions = getPermissionsInternalMap();
 
 		final Resource resource = permission.getResource();
@@ -179,5 +178,11 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 		}
 
 		return Objects.equals(permission, permissionExisting);
+	}
+
+	public final PermissionsBuilder<PermissionType, PermissionsType> removePermission(@NonNull final PermissionType permission)
+	{
+		_permissions.remove(permission.getResource(), permission);
+		return this;
 	}
 }

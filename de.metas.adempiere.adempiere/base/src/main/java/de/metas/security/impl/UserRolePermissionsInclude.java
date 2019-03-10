@@ -32,6 +32,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
 import de.metas.util.Check;
 
 /**
@@ -110,9 +111,9 @@ final class UserRolePermissionsInclude
 		return seqNo;
 	}
 
-	void collectRoleIds(final Set<Integer> adRoleIds)
+	void collectRoleIds(final Set<RoleId> adRoleIds)
 	{
-		adRoleIds.add(userRolePermissions.getAD_Role_ID());
-		adRoleIds.addAll(userRolePermissions.getAll_AD_Role_IDs());
+		adRoleIds.add(userRolePermissions.getRoleId());
+		adRoleIds.addAll(userRolePermissions.getAllRoleIds());
 	}
 }

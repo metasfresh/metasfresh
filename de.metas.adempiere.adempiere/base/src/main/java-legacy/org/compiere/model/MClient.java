@@ -40,6 +40,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.i18n.Language;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
@@ -442,6 +443,12 @@ public class MClient extends X_AD_Client
 	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
+	@Deprecated
+	public boolean sendEMail (UserId userId, String subject, String message, File attachment)
+	{
+		return sendEMail(UserId.toRepoId(userId), subject, message, attachment);
+	}
+	
 	@Deprecated
 	public boolean sendEMail (int AD_User_ID, String subject, String message, File attachment)
 	{

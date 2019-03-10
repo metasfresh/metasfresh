@@ -13,17 +13,19 @@ package de.metas.security;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -37,13 +39,9 @@ import com.google.common.collect.ImmutableMap;
 public enum TableAccessLevel
 {
 	None(0, "AccessNone"), // NOTE: mainly introduced to avoid using null
-	Organization(1, "AccessOrg"),
-	ClientOnly(2, "AccessClient"),
-	ClientPlusOrganization(3, "AccessClientOrg"),
-	SystemOnly(4, "AccessSystem"),
+	Organization(1, "AccessOrg"), ClientOnly(2, "AccessClient"), ClientPlusOrganization(3, "AccessClientOrg"), SystemOnly(4, "AccessSystem"),
 	// SystemPlusOrganization(5), // NOTE: not a valid permission
-	SystemPlusClient(6, "AccessSystemClient"),
-	All(7, "AccessShared");
+	SystemPlusClient(6, "AccessSystemClient"), All(7, "AccessShared");
 
 	// ----------------------------------------------------------------------------
 
@@ -77,28 +75,33 @@ public enum TableAccessLevel
 	/**
 	 * @return minimum required access level to access a record with given AD_Client_ID/AD_Org_ID.
 	 */
-	public static final TableAccessLevel forClientOrg(final int AD_Client_ID, final int AD_Org_ID)
+	public static final TableAccessLevel forClientOrg(final ClientId clientId, final OrgId orgId)
 	{
-		// System == Client=0 & Org=0
-		if (AD_Client_ID == 0 && AD_Org_ID == 0)
+		if (clientId.isSystem())
 		{
-			return TableAccessLevel.SystemOnly;
-		}
-		// Client == Client>0 & Org=0
-		else if (AD_Client_ID > 0 && AD_Org_ID == 0)
-		{
-			return TableAccessLevel.ClientOnly;
-		}
-		// Organization == Client>0 & Org>0
-		else if (AD_Client_ID > 0 && AD_Org_ID > 0)
-		{
-			return TableAccessLevel.Organization;
+			if (orgId.isAny())
+			{
+				// System == Client=0 & Org=0
+				return TableAccessLevel.SystemOnly;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Invalid AD_Client_ID=" + clientId + " / AD_Org_ID=" + orgId);
+			}
 		}
 		else
 		{
-			throw new IllegalArgumentException("Invalid AD_Client_ID=" + AD_Client_ID + " / AD_Org_ID=" + AD_Org_ID);
+			if (orgId.isAny())
+			{
+				// Client == Client>0 & Org=0
+				return TableAccessLevel.ClientOnly;
+			}
+			else
+			{
+				// Organization == Client>0 & Org>0
+				return TableAccessLevel.Organization;
+			}
 		}
-
 	}
 
 	/**
@@ -146,9 +149,7 @@ public enum TableAccessLevel
 	public String getUserLevelString()
 	{
 		return String.valueOf(new char[] {
-				(isSystem() ? 'S' : '_')
-				, (isClient() ? 'C' : '_')
-				, (isOrganization() ? 'O' : '_')
+				(isSystem() ? 'S' : '_'), (isClient() ? 'C' : '_'), (isOrganization() ? 'O' : '_')
 		});
 	}
 

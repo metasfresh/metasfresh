@@ -13,19 +13,20 @@ package de.metas.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,13 +35,6 @@ import org.junit.Test;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.security.permissions.ElementResource;
-import de.metas.security.permissions.OrgResource;
-import de.metas.security.permissions.Resource;
-import de.metas.security.permissions.TableColumnResource;
-import de.metas.security.permissions.TableRecordResource;
-import de.metas.security.permissions.TableResource;
 
 public class ResourcesTest
 {
@@ -76,9 +70,8 @@ public class ResourcesTest
 			@Override
 			public Resource get()
 			{
-				final int adClientId = 0;
-				final int adOrgId = nextId++;
-				return OrgResource.of(adClientId, adOrgId);
+				final OrgId adOrgId = OrgId.ofRepoId(nextId++);
+				return OrgResource.of(ClientId.SYSTEM, adOrgId);
 			}
 		});
 	}

@@ -40,6 +40,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 
 /**
@@ -182,7 +183,7 @@ public class BPartnerOrgLink extends JavaProcess
 		{
 			boolean found = false;
 			// delete all accesses except the specific
-			for (final I_AD_Role_OrgAccess orgAccess : permissionsDAO.retrieveRoleOrgAccessRecordsForOrg(p_AD_Org_ID.getRepoId()))
+			for (final I_AD_Role_OrgAccess orgAccess : permissionsDAO.retrieveRoleOrgAccessRecordsForOrg(p_AD_Org_ID))
 			{
 				if (orgAccess.getAD_Role_ID() == p_AD_Role_ID)
 				{
@@ -196,7 +197,7 @@ public class BPartnerOrgLink extends JavaProcess
 			// create access
 			if (!found)
 			{
-				permissionsDAO.createOrgAccess(p_AD_Role_ID, org.getAD_Org_ID());
+				permissionsDAO.createOrgAccess(RoleId.ofRepoId(p_AD_Role_ID), OrgId.ofRepoId(org.getAD_Org_ID()));
 			}
 		}
 

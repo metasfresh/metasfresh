@@ -257,7 +257,7 @@ public class GridWindowVO implements Serializable
 			if (windowAccess == null)
 			{
 				final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, adWindowId);
-				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), adWindowId, null, ex.getLocalizedMessage());
+				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getRoleId(), adWindowId, null, ex.getLocalizedMessage());
 				throw ex;
 			}
 			// read-only access

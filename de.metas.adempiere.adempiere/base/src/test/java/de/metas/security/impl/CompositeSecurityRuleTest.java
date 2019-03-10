@@ -13,29 +13,27 @@ package de.metas.security.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import mockit.Mocked;
-
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.security.IUserRolePermissions;
-import de.metas.security.impl.CompositeSecurityRule;
+import mockit.Mocked;
 
 public class CompositeSecurityRuleTest
 {
@@ -77,35 +75,35 @@ public class CompositeSecurityRuleTest
 		final boolean rw = false; // does not matter
 
 		{
-			final Set<Integer> expected = asHashSet();
-			final Set<Integer> actual = asHashSet();
+			final Set<OrgId> expected = asOrgIdsSet();
+			final Set<OrgId> actual = asOrgIdsSet();
 			rule.filterOrgs(role, tableName, rw, actual);
 			Assert.assertEquals("Org IDs shall not be modified", expected, actual);
 		}
 		{
-			final Set<Integer> expected = asHashSet(1);
-			final Set<Integer> actual = asHashSet(1);
+			final Set<OrgId> expected = asOrgIdsSet(1);
+			final Set<OrgId> actual = asOrgIdsSet(1);
 			rule.filterOrgs(role, tableName, rw, actual);
 			Assert.assertEquals("Org IDs shall not be modified", expected, actual);
 		}
 		{
-			final Set<Integer> expected = asHashSet(1, 2, 3);
-			final Set<Integer> actual = asHashSet(1, 2, 3);
+			final Set<OrgId> expected = asOrgIdsSet(1, 2, 3);
+			final Set<OrgId> actual = asOrgIdsSet(1, 2, 3);
 			rule.filterOrgs(role, tableName, rw, actual);
 			Assert.assertEquals("Org IDs shall not be modified", expected, actual);
 		}
 	}
 
-	private static final Set<Integer> asHashSet(Integer... ids)
+	private static final Set<OrgId> asOrgIdsSet(Integer... ids)
 	{
-		final HashSet<Integer> set = new HashSet<Integer>();
+		final HashSet<OrgId> set = new HashSet<>();
 		if (ids == null || ids.length == 0)
 		{
 			return set;
 		}
 		for (Integer id : ids)
 		{
-			set.add(id);
+			set.add(OrgId.ofRepoId(id));
 		}
 		return set;
 	}

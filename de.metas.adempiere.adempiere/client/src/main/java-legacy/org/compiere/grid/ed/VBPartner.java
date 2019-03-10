@@ -41,9 +41,9 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -90,8 +90,11 @@ public final class VBPartner extends CDialog implements ActionListener
 		super(frame, Msg.translate(Env.getCtx(), "C_BPartner_ID"), true);
 		m_WindowNo = WindowNo;
 		m_readOnly = !Env.getUserRolePermissions().canUpdate(
-				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-				Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name), 0, false);
+				Env.getClientId(Env.getCtx()),
+				Env.getOrgId(Env.getCtx()),
+				Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name),
+				0,
+				false);
 		log.info("R/O=" + m_readOnly);
 		try
 		{
@@ -208,7 +211,8 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (!ro)
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
+					Env.getClientId(Env.getCtx()),
+					Env.getOrgId(Env.getCtx()),
 					InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class),
 					0,
 					false);
@@ -216,8 +220,11 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (!ro)
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-					MLocation.Table_ID, 0, false);
+					Env.getClientId(Env.getCtx()),
+					Env.getOrgId(Env.getCtx()),
+					InterfaceWrapperHelper.getTableId(I_C_Location.class),
+					0,
+					false);
 		}
 		fAddress = new VLocation("C_Location_ID", false, ro, true, new MLocationLookup(Env.getCtx(), m_WindowNo));
 		fAddress.setValue(null);

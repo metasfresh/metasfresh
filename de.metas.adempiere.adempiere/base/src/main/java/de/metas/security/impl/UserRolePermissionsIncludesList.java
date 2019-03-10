@@ -33,6 +33,8 @@ import javax.annotation.concurrent.Immutable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.security.RoleId;
+
 /**
  * List of {@link UserRolePermissionsInclude}s.
  *
@@ -72,9 +74,9 @@ final class UserRolePermissionsIncludesList implements Iterable<UserRolePermissi
 		return includes.isEmpty();
 	}
 
-	public Set<Integer> getAllRoleIdsIncluding(final int adRoleId)
+	public Set<RoleId> getAllRoleIdsIncluding(final RoleId adRoleId)
 	{
-		final Set<Integer> adRoleIds = new LinkedHashSet<>();
+		final Set<RoleId> adRoleIds = new LinkedHashSet<>();
 		adRoleIds.add(adRoleId);
 
 		for (final UserRolePermissionsInclude include : includes)

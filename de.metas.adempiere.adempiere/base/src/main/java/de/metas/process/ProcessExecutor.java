@@ -22,6 +22,7 @@ import org.compiere.print.ReportCtl;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.wf.MWFProcess;
 import org.compiere.wf.MWorkflow;
@@ -37,6 +38,7 @@ import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.session.jaxrs.IServerService;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -98,7 +100,7 @@ public final class ProcessExecutor
 		pi = builder.getProcessInfo();
 
 		// gh #2092 verify that we have an AD_Role_ID; otherwise, the assertPermissions() call we are going to do will fail
-		Check.errorIf(pi.getAD_Role_ID() < 0, "Process info has AD_Role_ID={}; builder={}", pi.getAD_Role_ID(), builder);
+		Check.errorIf(pi.getRoleId() == null, "Process info has AD_Role_ID={}; builder={}", pi.getRoleId(), builder);
 
 		listener = builder.getListener();
 		switchContextWhenRunning = builder.switchContextWhenRunning;
@@ -329,13 +331,12 @@ public final class ProcessExecutor
 	private final void assertPermissions()
 	{
 		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(
-				pi.getAD_Role_ID() //
-				, pi.getAD_User_ID() //
-				, pi.getAD_Client_ID() //
-				, Env.getDate(pi.getCtx()) //
-		);
+				pi.getRoleId(),
+				pi.getUserId(),
+				pi.getClientId(),
+				TimeUtil.asInstant(Env.getDate(pi.getCtx())));
 
-		if (permissions.getAD_Role_ID() > 0)
+		if (!permissions.getRoleId().isSystem())
 		{
 			final AdProcessId adProcessId = pi.getAdProcessId();
 			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
@@ -488,7 +489,7 @@ public final class ProcessExecutor
 				.putArgument("AD_Client_ID", pi.getAD_Client_ID())
 				.putArgument("AD_Org_ID", pi.getAD_Org_ID())
 				.putArgument("AD_User_ID", pi.getAD_User_ID())
-				.putArgument("AD_Role_ID", pi.getAD_Role_ID())
+				.putArgument("AD_Role_ID", RoleId.toRepoId(pi.getRoleId()))
 				.putArgument("AD_PInstance_ID", PInstanceId.toRepoId(pi.getPinstanceId()));
 
 		final List<ProcessInfoParameter> parameters = pi.getParameter();

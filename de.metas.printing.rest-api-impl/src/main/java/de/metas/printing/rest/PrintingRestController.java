@@ -12,6 +12,8 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -258,8 +260,8 @@ public class PrintingRestController
 	{
 		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
 		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final OrgId adOrgId = Env.getOrgId(ctx);
 		final int adTableId = InterfaceWrapperHelper.getTableId(I_AD_PrinterHW.class);
 		final int recordId = -1; // NEW
 		final String errmsg = userPermissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);

@@ -8,8 +8,10 @@ import org.compiere.model.I_AD_TreeBar;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserMenuFavoritesDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,7 +40,7 @@ public class UserMenuFavoritesDAO implements IUserMenuFavoritesDAO
 	private static final Logger logger = LogManager.getLogger(UserMenuFavoritesDAO.class);
 
 	@Override
-	public void add(final int adUserId, final int adMenuId)
+	public void add(@NonNull final UserId adUserId, final int adMenuId)
 	{
 		final boolean exists = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_TreeBar.class)
@@ -51,15 +53,15 @@ public class UserMenuFavoritesDAO implements IUserMenuFavoritesDAO
 			logger.warn("Not creating a favorite record for adUserId={}, adMenuId={} because another one already exists", adUserId, adMenuId);
 			return;
 		}
-		
+
 		final I_AD_TreeBar favorite = InterfaceWrapperHelper.newInstance(I_AD_TreeBar.class);
-		favorite.setAD_User_ID(adUserId);
+		favorite.setAD_User_ID(adUserId.getRepoId());
 		favorite.setNode_ID(adMenuId);
 		InterfaceWrapperHelper.save(favorite);
 	}
 
 	@Override
-	public boolean remove(final int adUserId, final int adMenuId)
+	public boolean remove(@NonNull final UserId adUserId, final int adMenuId)
 	{
 		final int deleted = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_TreeBar.class)
@@ -71,7 +73,7 @@ public class UserMenuFavoritesDAO implements IUserMenuFavoritesDAO
 	}
 
 	@Override
-	public List<Integer> retrieveMenuIdsForUser(final int adUserId)
+	public List<Integer> retrieveMenuIdsForUser(@NonNull final UserId adUserId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_TreeBar.class)

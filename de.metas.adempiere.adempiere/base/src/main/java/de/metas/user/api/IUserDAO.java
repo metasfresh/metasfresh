@@ -25,6 +25,7 @@ package de.metas.user.api;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.service.ClientId;
 
@@ -51,9 +52,19 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
 
-	I_AD_User getById(int adUserId);
+	default I_AD_User getById(final int adUserRepoId)
+	{
+		return getById(UserId.ofRepoId(adUserRepoId));
+	}
+
+	I_AD_User getById(UserId adUserId);
 
 	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
+
+	default org.compiere.model.I_AD_User getByIdInTrx(final UserId userId)
+	{
+		return getByIdInTrx(userId, org.compiere.model.I_AD_User.class);
+	}
 
 	I_AD_User getByIdInTrx(int adUserId);
 
@@ -65,12 +76,9 @@ public interface IUserDAO extends ISingletonService
 	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
 
 	/**
-	 * Fetch all system(login) user IDs
-	 *
-	 * @param ctx
-	 * @return AD_User_IDs
+	 * @return all system(login) user IDs
 	 */
-	List<Integer> retrieveSystemUserIds();
+	Set<UserId> retrieveSystemUserIds();
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
 }

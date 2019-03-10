@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -219,13 +220,13 @@ public class MTree extends MTree_Base
 	 *
 	 * @param AD_User_ID user for tree bar
 	 */
-	private void loadNodes(final int AD_User_ID)
+	private void loadNodes(final UserId userId)
 	{
 		// SQL for TreeNodes
 		final StringBuilder sql = new StringBuilder("SELECT "
 				+ "tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive "
 				+ "FROM ").append(getNodeTableName()).append(" tn"
-						+ " LEFT OUTER JOIN " + I_AD_TreeBar.Table_Name + " tb ON (tn.Node_ID=tb.Node_ID " + (AD_User_ID != -1 ? " AND tb.AD_User_ID=? " : "") + ") " // #1 (conditional)
+						+ " LEFT OUTER JOIN " + I_AD_TreeBar.Table_Name + " tb ON (tn.Node_ID=tb.Node_ID " + (userId != null ? " AND tb.AD_User_ID=? " : "") + ") " // #1 (conditional)
 						+ "WHERE tn.AD_Tree_ID=?");								// #2
 
 		if (!m_editable)
@@ -245,9 +246,9 @@ public class MTree extends MTree_Base
 			//
 			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
 			int idx = 1;
-			if (AD_User_ID != -1)
+			if (userId != null)
 			{
-				pstmt.setInt(idx++, AD_User_ID);
+				pstmt.setInt(idx++, userId.getRepoId());
 			}
 			pstmt.setInt(idx++, getAD_Tree_ID());
 			// Get Tree & Bar
@@ -710,17 +711,17 @@ public class MTree extends MTree_Base
 
 	private void reload()
 	{
-		final int AD_User_ID;
+		final UserId userId;
 		if (m_allNodes)
 		{
-			AD_User_ID = -1;
+			userId = null;
 		}
 		else
 		{
-			AD_User_ID = getUserRolePermissions().getAD_User_ID();
+			userId = getUserRolePermissions().getUserId();
 		}
-		log.trace("Reloaded tree for AD_User_ID={}", AD_User_ID);
-		loadNodes(AD_User_ID);
+		log.trace("Reloaded tree for AD_User_ID={}", userId);
+		loadNodes(userId);
 	}
 
 	public final IUserRolePermissions getUserRolePermissions()

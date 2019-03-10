@@ -13,24 +13,24 @@ package de.metas.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.Serializable;
 import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -68,12 +68,6 @@ public final class OrgPermission extends AbstractPermission implements Serializa
 	 * 
 	 */
 	private static final long serialVersionUID = 6649713070452921967L;
-	public static final int AD_Client_ID_System = Env.CTXVALUE_AD_Client_ID_System;
-	/**
-	 * System AD_Org_ID.
-	 * i.e. the AD_Org_ID used to store records which don't belong to a particular organization.
-	 */
-	public static final int AD_Org_ID_System = Env.CTXVALUE_AD_Org_ID_System;
 
 	private final OrgResource resource;
 	private final Set<Access> accesses;
@@ -139,14 +133,14 @@ public final class OrgPermission extends AbstractPermission implements Serializa
 		return hasAccess(Access.WRITE);
 	}
 
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
-		return resource.getAD_Client_ID();
+		return resource.getClientId();
 	}
 
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
-		return resource.getAD_Org_ID();
+		return resource.getOrgId();
 	}
 
 	@Override
