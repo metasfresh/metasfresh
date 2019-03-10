@@ -582,9 +582,13 @@ public class MMeasure extends X_PA_Measure
 		}
 		else if (goalUserId != null)
 		{
-			final OrgId orgId = OrgId.ofRepoId(getAD_Org_ID());
 			final List<IUserRolePermissions> roles = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveUserRolesPermissionsForUserWithOrgAccess(getCtx(), goalUserId, orgId);
+					.retrieveUserRolesPermissionsForUserWithOrgAccess(
+							Env.getClientId(), 
+							OrgId.ofRepoId(getAD_Org_ID()),
+							goalUserId,
+							Env.getLocalDate()
+							);
 			if (!roles.isEmpty())
 			{
 				role = roles.get(0);

@@ -2,7 +2,6 @@ package de.metas.security;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -84,26 +83,20 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	/**
 	 * Retrieves {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
-	 *
-	 * @param ctx
-	 * @param adUserId user
-	 * @param adOrgId organization
+	 * 
 	 * @return permissions with organization access.
 	 */
-	List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(Properties ctx, UserId adUserId, OrgId adOrgId);
+	List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(ClientId clientId, OrgId orgId, UserId adUserId, LocalDate localDate);
 
 	/**
 	 * Retrieves first {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
-	 *
-	 * @param ctx
-	 * @param adUserId user
-	 * @param adOrgId organization
+	 * 
 	 * @return permissions with organization access.
-	 * @see #retrieveUserRolesPermissionsForUserWithOrgAccess(Properties, int, int)
+	 * @see #retrieveUserRolesPermissionsForUserWithOrgAccess(ClientId, OrgId, UserId, LocalDate)
 	 */
-	Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(Properties ctx, UserId adUserId, OrgId adOrgId);
+	Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(ClientId clientId, OrgId orgId, UserId adUserId, LocalDate localDate);
 
-	boolean matchUserRolesPermissionsForUser(Properties ctx, UserId adUserId, Predicate<IUserRolePermissions> matcher);
+	boolean matchUserRolesPermissionsForUser(ClientId clientId, UserId adUserId, LocalDate date, Predicate<IUserRolePermissions> matcher);
 
 	OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId);
 
@@ -200,5 +193,5 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	/**
 	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}
 	 */
-	boolean isAdministrator(Properties ctx, UserId adUserId);
+	boolean isAdministrator(ClientId clientId, UserId adUserId, LocalDate date);
 }

@@ -1,29 +1,5 @@
 package de.metas.user.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 
@@ -49,14 +25,8 @@ public interface IUserBL extends ISingletonService
 
 	/**
 	 * Change given user's password.
-	 *
-	 * @param ctx context, IMPORTANT because will be used to fetch current logged in user credentials
-	 * @param adUserId the AD_User_ID of which the password shall be changed
-	 * @param oldPassword old/current password
-	 * @param newPassword new password
-	 * @param newPasswordRetype new password again
 	 */
-	void changePassword(final Properties ctx, final UserId adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype);
+	void changePassword(ChangeUserPasswordRequest request);
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 

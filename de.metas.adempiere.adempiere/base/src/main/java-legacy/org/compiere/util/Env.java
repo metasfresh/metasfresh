@@ -22,6 +22,7 @@ import java.awt.Window;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -157,7 +158,7 @@ public final class Env
 		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
 		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
 		{
-		SpringApplication.exit(springApplicationContext, () -> 0);
+			SpringApplication.exit(springApplicationContext, () -> 0);
 		}
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
@@ -1145,7 +1146,7 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID);
 	}	// getAD_Client_ID
-	
+
 	public static ClientId getClientId(Properties ctx)
 	{
 		return ClientId.ofRepoId(getAD_Client_ID(ctx));
@@ -1160,7 +1161,7 @@ public final class Env
 	{
 		return ClientId.ofRepoId(getAD_Client_ID());
 	}
-	
+
 	public static void setClientId(@NonNull final Properties ctx, @NonNull final ClientId clientId)
 	{
 		setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
@@ -1176,7 +1177,7 @@ public final class Env
 	{
 		return getContextAsInt(ctx, CTXNAME_AD_Org_ID);
 	}	// getAD_Client_ID
-	
+
 	public static OrgId getOrgId(final Properties ctx)
 	{
 		return OrgId.ofRepoIdOrAny(getAD_Org_ID(ctx));
@@ -1217,18 +1218,16 @@ public final class Env
 	{
 		return UserId.ofRepoId(getAD_User_ID(ctx));
 	}
-	
+
 	public static void setLoggedUserId(final Properties ctx, @NonNull final UserId userId)
 	{
 		setContext(ctx, CTXNAME_AD_User_ID, userId.getRepoId());
 	}
-	
+
 	public static void setSalesRepId(final Properties ctx, @NonNull final UserId userId)
 	{
 		setContext(ctx, CTXNAME_SalesRep_ID, userId.getRepoId());
 	}
-
-
 
 	/**
 	 * Get Login AD_Role_ID
@@ -1240,7 +1239,7 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
 	}
-	
+
 	public static RoleId getLoggedRoleId(final Properties ctx)
 	{
 		return RoleId.ofRepoId(getAD_Role_ID(ctx));
@@ -1782,7 +1781,6 @@ public final class Env
 		startBrowser(file.toURI().toString());
 	}
 
-
 	/**
 	 * Do we run on Apple
 	 *
@@ -2197,9 +2195,8 @@ public final class Env
 			return null;
 		}
 
-
 		Timestamp timestamp = parseTimestampUsingJDBCFormatOrNull(timestampStr);
-		if(timestamp != null)
+		if (timestamp != null)
 		{
 			return timestamp;
 		}
@@ -2211,7 +2208,7 @@ public final class Env
 		}
 		catch (final DateTimeParseException ex)
 		{
-			 // ignore exception
+			// ignore exception
 		}
 
 		throw new AdempiereException("Failed converting '" + timestampStr + "' to " + Timestamp.class);
@@ -2383,6 +2380,16 @@ public final class Env
 	public static Timestamp getDate(final Properties ctx)
 	{
 		return getContextAsDate(ctx, WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	public static LocalDate getLocalDate(final Properties ctx)
+	{
+		return TimeUtil.asLocalDate(getDate(ctx));
+	}
+
+	public static LocalDate getLocalDate()
+	{
+		return getLocalDate(getCtx());
 	}
 
 	/**

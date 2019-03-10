@@ -330,7 +330,11 @@ public class Scheduler extends AdempiereServer
 		{
 			// Use the first user role, which has access to our organization.
 			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(schedulerCtx, adUserId, orgId)
+					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(
+							clientId,
+							orgId,
+							adUserId,
+							Env.getLocalDate(schedulerCtx))
 					.orNull();
 
 			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.

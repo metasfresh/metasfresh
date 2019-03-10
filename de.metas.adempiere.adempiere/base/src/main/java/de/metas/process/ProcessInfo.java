@@ -855,7 +855,11 @@ public final class ProcessInfo implements Serializable
 			{
 				// Use the first user role, which has access to our organization.
 				final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId, adOrgId)
+						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(
+								adClientId,
+								adOrgId,
+								adUserId,
+								Env.getLocalDate(processCtx))
 						.orNull();
 				adRoleId = role == null ? null : role.getRoleId();
 			}

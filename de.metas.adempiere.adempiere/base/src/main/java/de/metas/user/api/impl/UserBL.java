@@ -2,7 +2,6 @@ package de.metas.user.api.impl;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.UUID;
 
 import javax.mail.internet.AddressException;
@@ -25,11 +24,10 @@ import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.user.UserId;
+import de.metas.user.api.ChangeUserPasswordRequest;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -174,28 +172,24 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public void changePassword(
-			final Properties ctx,
-			final UserId adUserId,
-			final HashableString oldPassword,
-			final String newPassword,
-			final String newPasswordRetype)
+	public void changePassword(@NonNull final ChangeUserPasswordRequest request)
 	{
 		//
 		// Make sure the new password and new password retype are matching
-		if (!Objects.equals(newPassword, newPasswordRetype))
+		if (!Objects.equals(request.getNewPassword(), request.getNewPasswordRetype()))
 		{
 			throw new AdempiereException("@NewPasswordNoMatch@");
 		}
 
 		//
 		// Load the user
-		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId);
+		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(request.getUserId());
 
 		//
 		// Make sure the old password is matching (if required)
-		if (isOldPasswordRequired(ctx, adUserId))
+		if (isOldPasswordRequired(request))
 		{
+			final HashableString oldPassword = request.getOldPassword();
 			final HashableString userPassword = getUserPassword(user);
 			if (HashableString.isEmpty(userPassword) && !HashableString.isEmpty(oldPassword))
 			{
@@ -209,7 +203,7 @@ public class UserBL implements IUserBL
 			}
 		}
 
-		changePasswordAndSave(user, newPassword);
+		changePasswordAndSave(user, request.getNewPassword());
 	}
 
 	@Override
@@ -223,19 +217,17 @@ public class UserBL implements IUserBL
 		InterfaceWrapperHelper.save(user);
 	}
 
-	private boolean isOldPasswordRequired(final Properties ctx, final UserId adUserId)
+	private boolean isOldPasswordRequired(final ChangeUserPasswordRequest request)
 	{
-		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.getUserRolePermissions(UserRolePermissionsKey.of(ctx));
-
 		// Changing your own password always requires entering the old password
-		if (UserId.equals(loggedInPermissions.getUserId(), adUserId))
+		if (UserId.equals(request.getContextUserId(), request.getUserId()))
 		{
 			return true;
 		}
 
 		// If logged in as Administrator, there is no need to enter the old password
-		if (userRolePermissionsDAO.isAdministrator(ctx, adUserId))
+		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		if (userRolePermissionsDAO.isAdministrator(request.getContextClientId(), request.getContextUserId(), request.getContextDate()))
 		{
 			return false;
 		}

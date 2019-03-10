@@ -13,6 +13,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.user.UserId;
+import de.metas.user.api.ChangeUserPasswordRequest;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -50,6 +51,8 @@ import de.metas.util.hash.HashableString;
  */
 public class AD_User_ChangePassword extends JavaProcess implements IProcessPrecondition
 {
+	private final IUserBL usersService = Services.get(IUserBL.class);
+
 	@Param(parameterName = "OldPassword", mandatory = false)
 	private String oldPassword;
 	@Param(parameterName = "NewPassword", mandatory = true)
@@ -100,14 +103,25 @@ public class AD_User_ChangePassword extends JavaProcess implements IProcessPreco
 		//
 		// Get the AD_User_ID and make sure it's NOT the currently logged on.
 		final UserId adUserId = UserId.ofRepoId(getRecord_ID());
-		if (UserId.equals(adUserId, Env.getLoggedUserId(ctx)))
+		final UserId loggedUserId = Env.getLoggedUserId(ctx);
+		if (UserId.equals(adUserId, loggedUserId))
 		{
 			throw new AdempiereException("Changing password for currently logged on user is not allowed by this process");
 		}
 
 		//
 		// Actually change it's password
-		Services.get(IUserBL.class).changePassword(ctx, adUserId, HashableString.ofPlainValue(oldPassword), newPassword, newPasswordRetype);
+		usersService.changePassword(ChangeUserPasswordRequest.builder()
+				.userId(adUserId)
+				.oldPassword(HashableString.ofPlainValue(oldPassword))
+				.newPassword(newPassword)
+				.newPasswordRetype(newPasswordRetype)
+				//
+				.contextClientId(Env.getClientId(ctx))
+				.contextUserId(loggedUserId)
+				.contextDate(Env.getLocalDate(ctx))
+				//
+				.build());
 
 		return MSG_OK;
 	}

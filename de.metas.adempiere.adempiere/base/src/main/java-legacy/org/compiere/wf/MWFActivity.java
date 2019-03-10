@@ -751,9 +751,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			log.debug("User=" + user.getName());
 			// Get Roles of User
 			final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
-					getCtx(), 
+					Env.getClientId(),
+					OrgId.ofRepoIdOrAny(AD_Org_ID),
 					UserId.ofRepoId(AD_User_ID),
-					OrgId.ofRepoIdOrAny(AD_Org_ID));
+					Env.getLocalDate());
 			for (final IUserRolePermissions role : roles)
 			{
 				final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)

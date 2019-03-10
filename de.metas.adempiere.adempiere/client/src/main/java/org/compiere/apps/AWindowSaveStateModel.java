@@ -1,5 +1,7 @@
 package org.compiere.apps;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -13,21 +15,20 @@ package org.compiere.apps;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
@@ -67,53 +68,42 @@ public class AWindowSaveStateModel
 	{
 		final Properties ctx = Env.getCtx();
 		final UserId loggedUserId = Env.getLoggedUserId(ctx);
+		return userId2enabled.getOrLoad(loggedUserId, this::retrieveEnabledNoFail);
+	}
 
-		synchronized (userId2enabled)
+	private boolean retrieveEnabledNoFail(final UserId loggedUserId)
+	{
+
+		try
 		{
-			Boolean enabled = userId2enabled.get(loggedUserId);
-			if (enabled == null)
-			{
-				try
-				{
-					enabled = retrieveEnabled(ctx, loggedUserId);
-					userId2enabled.put(loggedUserId, enabled);
-				}
-				catch (Exception e)
-				{
-					logger.error(e.getLocalizedMessage(), e);
-					enabled = false;
-				}
-			}
-			return enabled;
+			return retrieveEnabled(loggedUserId);
+		}
+		catch (Exception ex)
+		{
+			logger.error(ex.getLocalizedMessage(), ex);
+			return false;
 		}
 	}
 
-	private boolean retrieveEnabled(final Properties ctx, final UserId loggedUserId)
+	private boolean retrieveEnabled(final UserId loggedUserId)
 	{
-		if (loggedUserId == null)
-		{
-			// shall not happen
-			return false;
-		}
-
-		final int windowId = MTable.get(ctx, I_AD_Field.Table_Name).getAD_Window_ID();
+		final int windowId = MTable.get(Env.getCtx(), I_AD_Field.Table_Name).getAD_Window_ID();
 		if (windowId <= 0)
 		{
 			return false;
 		}
 
+		final ClientId clientId = Env.getClientId();
+		final LocalDate date = Env.getLocalDate();
+
 		//
 		// Makes sure the logged in user has at least one role assigned which has read-write access to our window
 		return Services.get(IUserRolePermissionsDAO.class)
-				.matchUserRolesPermissionsForUser(ctx, loggedUserId, new Predicate<IUserRolePermissions>()
-				{
-					@Override
-					public boolean test(final IUserRolePermissions rolePermissions)
-					{
-						final Boolean accessRW = rolePermissions.checkWindowAccess(windowId);
-						return accessRW != null && accessRW.booleanValue();
-					}
-				});
+				.matchUserRolesPermissionsForUser(
+						clientId,
+						loggedUserId,
+						date,
+						rolePermissions -> IUserRolePermissions.isReadWriteAccess(rolePermissions.checkWindowAccess(windowId)));
 	}
 
 	public void save(final GridTab gridTab)

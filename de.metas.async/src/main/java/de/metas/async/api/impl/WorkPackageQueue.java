@@ -313,7 +313,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		else
 		{
 			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(workPackageCtx, userId, orgId)
+					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(
+							clientId,
+							orgId,
+							userId,
+							Env.getLocalDate(workPackageCtx))
 					.orNull();
 			roleId = role == null ? null : role.getRoleId();
 		}

@@ -53,7 +53,6 @@ import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
@@ -228,18 +227,17 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	@Override
 	public List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(
-			@NonNull final Properties ctx,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId adOrgId,
 			@NonNull final UserId adUserId,
-			@NonNull final OrgId adOrgId)
+			@NonNull final LocalDate date)
 	{
 		final boolean rw = false; // readonly access is fine for us
-		final ClientId adClientId = Env.getClientId(ctx);
-		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 
 		final ImmutableList.Builder<IUserRolePermissions> permissionsWithOrgAccess = ImmutableList.builder();
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
-			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, adClientId, date);
+			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
 			if (permissions.isOrgAccess(adOrgId, rw))
 			{
 				permissionsWithOrgAccess.add(permissions);
@@ -251,17 +249,16 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	@Override
 	public Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(
-			final Properties ctx,
+			final ClientId clientId,
+			final OrgId adOrgId,
 			final UserId adUserId,
-			final OrgId adOrgId)
+			final LocalDate date)
 	{
 		final boolean rw = false; // readonly access is fine for us
-		final ClientId adClientId = Env.getClientId(ctx);
-		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
-			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, adClientId, date);
+			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
 			if (permissions.isOrgAccess(adOrgId, rw))
 			{
 				return Optional.of(permissions);
@@ -272,22 +269,21 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Override
-	public boolean isAdministrator(final Properties ctx, final UserId adUserId)
+	public boolean isAdministrator(final ClientId clientId, final UserId adUserId, final LocalDate date)
 	{
-		return matchUserRolesPermissionsForUser(ctx, adUserId, IUserRolePermissions::isSystemAdministrator);
+		return matchUserRolesPermissionsForUser(clientId, adUserId, date, IUserRolePermissions::isSystemAdministrator);
 	}
 
 	@Override
 	public boolean matchUserRolesPermissionsForUser(
-			final Properties ctx,
+			final ClientId clientId,
 			final UserId adUserId,
+			final LocalDate date,
 			final Predicate<IUserRolePermissions> matcher)
 	{
-		final ClientId adClientId = Env.getClientId(ctx);
-		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
-			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, adClientId, date);
+			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
 
 			if (matcher.test(permissions))
 			{
