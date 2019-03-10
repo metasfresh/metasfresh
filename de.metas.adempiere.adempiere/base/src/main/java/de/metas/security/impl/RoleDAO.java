@@ -200,7 +200,10 @@ public class RoleDAO implements IRoleDAO
 
 	private static final LoginOrgConstraint extractLoginOrgConstraint(final I_AD_Role record)
 	{
-		return LoginOrgConstraint.of(OrgId.ofRepoIdOrNull(record.getLogin_Org_ID()), record.isOrgLoginMandatory());
+		final OrgId loginOrgId = record.getLogin_Org_ID() > 0
+				? OrgId.ofRepoIdOrNull(record.getLogin_Org_ID())
+				: null;
+		return LoginOrgConstraint.of(loginOrgId, record.isOrgLoginMandatory());
 	}
 
 	@Override
