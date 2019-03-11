@@ -119,14 +119,16 @@ class RolesTreeNode implements IRolesTreeNode
 	@Override
 	public <ValueType, AggregatedValueType> ValueType aggregateBottomUp(final BottomUpAggregator<ValueType, AggregatedValueType> aggregator)
 	{
-		final LinkedHashMap<Object, RolesTreeNode> trace = new LinkedHashMap<Object, RolesTreeNode>();
+		final LinkedHashMap<RoleId, RolesTreeNode> trace = new LinkedHashMap<>();
 		return aggregateBottomUp(aggregator, trace);
 	}
 
-	private <ValueType, AggregatedValueType> ValueType aggregateBottomUp(final BottomUpAggregator<ValueType, AggregatedValueType> aggregator, final LinkedHashMap<Object, RolesTreeNode> trace)
+	private <ValueType, AggregatedValueType> ValueType aggregateBottomUp(
+			final BottomUpAggregator<ValueType, AggregatedValueType> aggregator,
+			final LinkedHashMap<RoleId, RolesTreeNode> trace)
 	{
 		// Skip already evaluated notes
-		final Object nodeId = getRoleId();
+		final RoleId nodeId = getRoleId();
 		if (trace.containsKey(nodeId))
 		{
 			return null;
