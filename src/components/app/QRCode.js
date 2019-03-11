@@ -8,7 +8,6 @@ class QRCode extends Component {
     super(props);
 
     let val = 400;
-
     if (currentDevice.type === 'mobile') {
       val = 300;
     }
