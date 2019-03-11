@@ -19,13 +19,13 @@ export function createAndCompleteTransition(transitionName, extensionType, nextC
         if (nextConditionsName) {
             cy.selectInListField('C_Flatrate_Conditions_Next_ID', nextConditionsName);
         }
-        cy.pressAddNewButton(1000);
+        cy.pressAddNewButton();
         cy.writeIntoStringField('DeadLine', '0');
         cy.selectInListField('DeadLineUnit', 'Tag');
         cy.selectInListField('Action', 'Statuswechsel');
         cy.selectInListField('ContractStatus', 'Gekündigt');
 
-        cy.pressDoneButton(1000);
+        cy.pressDoneButton();
 
         cy.wait(500);
         cy.processDocument('Complete', 'Completed');
@@ -55,7 +55,7 @@ export function createAndCompleteRefundPercentConditions(conditionsName, transit
 
 function createPercentConfig(refundMode, minQty, percent) 
 {
-    cy.pressAddNewButton(1000)
+    cy.pressAddNewButton()
     cy.selectInListField('RefundMode', refundMode)
     cy.selectInListField('RefundBase', 'P'/*percent*/);
 
@@ -89,7 +89,7 @@ export function createAndCompleteRefundAmountConditions(conditionsName, transiti
 
 function createAmountConfig(refundMode, minQty, amount) 
 {
-    cy.pressAddNewButton(1000);
+    cy.pressAddNewButton();
     
     cy.writeIntoStringField('MinQty', `{selectall}{backspace}${minQty}`);
     cy.wait(500);

@@ -939,8 +939,8 @@ export class DocumentList extends Component {
               cols={layout.elements}
               collapsible={layout.collapsible}
               expandedDepth={layout.expandedDepth}
-              tabid={1}
-              type={windowType}
+              tabId={1}
+              windowId={windowType}
               emptyText={layout.emptyResultText}
               emptyHint={layout.emptyResultHint}
               readonly={true}

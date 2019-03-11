@@ -43,6 +43,7 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
@@ -308,6 +309,17 @@ export default function windowHandler(state = initialState, action) {
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
+        },
+      };
+    case UPDATE_MASTER_DATA:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          data: {
+            ...state.master.data,
+            ...action.payload,
+          },
         },
       };
     case CLEAR_MASTER_DATA:

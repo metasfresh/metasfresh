@@ -555,10 +555,14 @@ export class RawWidget extends Component {
       case 'Text':
         return (
           <div
-            className={
-              this.getClassNames({ icon: true }) +
-              (isEdited ? 'input-focused ' : '')
-            }
+            className={classnames(
+              this.getClassNames({
+                icon: true,
+              }),
+              {
+                'input-focused': isEdited,
+              }
+            )}
           >
             <input {...widgetProperties} type="text" />
             {icon && <i className="meta-icon-edit input-icon-right" />}
@@ -567,12 +571,15 @@ export class RawWidget extends Component {
       case 'LongText':
         return (
           <div
-            className={
+            className={classnames(
               this.getClassNames({
                 icon: false,
                 forcedPrimary: true,
-              }) + (isEdited ? 'input-focused ' : '')
-            }
+              }),
+              {
+                'input-focused': isEdited,
+              }
+            )}
           >
             <textarea {...widgetProperties} />
           </div>
@@ -581,10 +588,14 @@ export class RawWidget extends Component {
         return (
           <div className="input-inner-container">
             <div
-              className={
-                this.getClassNames({ icon: true }) +
-                (isEdited ? 'input-focused ' : '')
-              }
+              className={classnames(
+                this.getClassNames({
+                  icon: true,
+                }),
+                {
+                  'input-focused': isEdited,
+                }
+              )}
             >
               <input
                 {...widgetProperties}
@@ -613,9 +624,9 @@ export class RawWidget extends Component {
       case 'Quantity':
         return (
           <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
+            className={classnames(this.getClassNames(), {
+              'input-focused': isEdited,
+            })}
           >
             {subentity === 'quickInput' ? (
               <NumericInput
@@ -633,9 +644,9 @@ export class RawWidget extends Component {
       case 'CostPrice':
         return (
           <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
+            className={classnames(this.getClassNames(), {
+              'input-focused': isEdited,
+            })}
           >
             <input {...widgetProperties} type="number" />
           </div>
@@ -856,7 +867,12 @@ export class RawWidget extends Component {
       widgetType,
       handleZoomInto,
     } = this.props;
-    const { errorPopup, clearedFieldWarning, tooltipToggled } = this.state;
+    const {
+      errorPopup,
+      clearedFieldWarning,
+      tooltipToggled,
+      isEdited,
+    } = this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
 
@@ -957,7 +973,12 @@ export class RawWidget extends Component {
             </div>
           )}
 
-          <div className="input-body-container" title={valueDescription}>
+          <div
+            className={classnames('input-body-container', {
+              focused: isEdited,
+            })}
+            title={valueDescription}
+          >
             <ReactCSSTransitionGroup
               transitionName="fade"
               transitionEnterTimeout={200}

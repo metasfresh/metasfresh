@@ -1,5 +1,5 @@
 module.exports = {
-  "__version": "3.1.4",
+  "__version": "3.1.5",
   "purchase - vendor spec": {
     "Create a vendor with two contacts": {
       "1": [
@@ -250,77 +250,77 @@ module.exports = {
             "reason": "just loaded"
           },
           "includedTabsInfo": {
-            "222": {
-              "tabid": "222",
+            "AD_Tab-222": {
+              "tabid": "AD_Tab-222",
               "allowCreateNew": true,
               "allowDelete": true
             },
-            "223": {
-              "tabid": "223",
+            "AD_Tab-223": {
+              "tabid": "AD_Tab-223",
               "allowCreateNew": false,
               "allowDelete": true
             },
-            "224": {
-              "tabid": "224",
+            "AD_Tab-224": {
+              "tabid": "AD_Tab-224",
               "allowCreateNew": false,
               "allowDelete": true
             },
-            "226": {
-              "tabid": "226",
+            "AD_Tab-226": {
+              "tabid": "AD_Tab-226",
               "allowCreateNew": true,
               "allowDelete": true
             },
-            "496": {
-              "tabid": "496",
+            "AD_Tab-496": {
+              "tabid": "AD_Tab-496",
               "allowCreateNew": true,
               "allowDelete": true
             },
-            "540653": {
-              "tabid": "540653",
+            "AD_Tab-540653": {
+              "tabid": "AD_Tab-540653",
               "allowCreateNew": true,
               "allowDelete": true
             },
-            "540737": {
-              "tabid": "540737",
-              "allowCreateNew": false,
-              "allowCreateNewReason": "Tab is readonly",
-              "allowDelete": false,
-              "allowDeleteReason": "Tab is readonly"
-            },
-            "540739": {
-              "tabid": "540739",
-              "allowCreateNew": false,
-              "allowDelete": true
-            },
-            "540829": {
-              "tabid": "540829",
+            "AD_Tab-540737": {
+              "tabid": "AD_Tab-540737",
               "allowCreateNew": false,
               "allowCreateNewReason": "Tab is readonly",
               "allowDelete": false,
               "allowDeleteReason": "Tab is readonly"
             },
-            "540994": {
-              "tabid": "540994",
-              "allowCreateNew": true,
-              "allowDelete": true
-            },
-            "541077": {
-              "tabid": "541077",
-              "allowCreateNew": true,
-              "allowDelete": true
-            },
-            "541096": {
-              "tabid": "541096",
-              "allowCreateNew": true,
-              "allowDelete": true
-            },
-            "541154": {
-              "tabid": "541154",
+            "AD_Tab-540739": {
+              "tabid": "AD_Tab-540739",
               "allowCreateNew": false,
               "allowDelete": true
             },
-            "541155": {
-              "tabid": "541155",
+            "AD_Tab-540829": {
+              "tabid": "AD_Tab-540829",
+              "allowCreateNew": false,
+              "allowCreateNewReason": "Tab is readonly",
+              "allowDelete": false,
+              "allowDeleteReason": "Tab is readonly"
+            },
+            "AD_Tab-540994": {
+              "tabid": "AD_Tab-540994",
+              "allowCreateNew": true,
+              "allowDelete": true
+            },
+            "AD_Tab-541077": {
+              "tabid": "AD_Tab-541077",
+              "allowCreateNew": true,
+              "allowDelete": true
+            },
+            "AD_Tab-541096": {
+              "tabid": "AD_Tab-541096",
+              "allowCreateNew": true,
+              "allowDelete": true
+            },
+            "AD_Tab-541154": {
+              "tabid": "AD_Tab-541154",
+              "allowCreateNew": false,
+              "allowDelete": true
+            },
+            "AD_Tab-541155": {
+              "tabid": "AD_Tab-541155",
               "allowCreateNew": true,
               "allowDelete": true
             }

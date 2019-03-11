@@ -221,7 +221,7 @@ class TableItem extends PureComponent {
     const {
       cols,
       fieldsByName,
-      type,
+      windowId,
       docId,
       rowId,
       tabId,
@@ -295,7 +295,7 @@ class TableItem extends PureComponent {
                 {...{
                   getSizeClass,
                   entity,
-                  type,
+                  windowId,
                   docId,
                   rowId,
                   tabId,
