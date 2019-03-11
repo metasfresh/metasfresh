@@ -313,6 +313,29 @@ public interface I_I_User
     public static final String COLUMNNAME_Firstname = "Firstname";
 
 	/**
+	 * Set Global ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGlobalID (java.lang.String GlobalID);
+
+	/**
+	 * Get Global ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGlobalID();
+
+    /** Column definition for GlobalID */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_GlobalID = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "GlobalID", null);
+    /** Column name GlobalID */
+    public static final String COLUMNNAME_GlobalID = "GlobalID";
+
+	/**
 	 * Set Import-Fehlermeldung.
 	 * Meldungen, die durch den Importprozess generiert wurden
 	 *
@@ -631,27 +654,25 @@ public interface I_I_User
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set UserValue.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	public void setUserValue (java.lang.String UserValue);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get UserValue.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	public java.lang.String getUserValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+    /** Column definition for UserValue */
+    public static final org.adempiere.model.ModelColumn<I_I_User, Object> COLUMN_UserValue = new org.adempiere.model.ModelColumn<I_I_User, Object>(I_I_User.class, "UserValue", null);
+    /** Column name UserValue */
+    public static final String COLUMNNAME_UserValue = "UserValue";
 }

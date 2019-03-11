@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1467149051L;
+	private static final long serialVersionUID = -1094111719L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -266,6 +266,22 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
 	}
 
+	/** Set Global ID.
+		@param GlobalID Global ID	  */
+	@Override
+	public void setGlobalID (java.lang.String GlobalID)
+	{
+		set_Value (COLUMNNAME_GlobalID, GlobalID);
+	}
+
+	/** Get Global ID.
+		@return Global ID	  */
+	@Override
+	public java.lang.String getGlobalID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
+	}
+
 	/** Set Import-Fehlermeldung.
 		@param I_ErrorMsg 
 		Meldungen, die durch den Importprozess generiert wurden
@@ -496,22 +512,19 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return (java.lang.String)get_Value(COLUMNNAME_RoleName);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
+	/** Set UserValue.
+		@param UserValue UserValue	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setUserValue (java.lang.String UserValue)
 	{
-		set_Value (COLUMNNAME_Value, Value);
+		set_Value (COLUMNNAME_UserValue, UserValue);
 	}
 
-	/** Get Suchschlüssel.
-		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
+	/** Get UserValue.
+		@return UserValue	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getUserValue () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_UserValue);
 	}
 }

@@ -101,7 +101,8 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " from " + I_C_BPartner.Table_Name + " bp "
-				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
+				+ " where ( bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
+				+ " OR " + I_C_BPartner.COLUMNNAME_globalid+ "=i." + I_I_User.COLUMNNAME_GlobalID + ")"
 				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
@@ -195,7 +196,7 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 		// set value after we set first name and last name
-		user.setValue(importRecord.getValue());
+		user.setValue(importRecord.getUserValue());
 		user.setEMail(importRecord.getEMail());
 
 		user.setIsNewsletter(importRecord.isNewsletter());
