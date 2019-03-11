@@ -2,6 +2,7 @@ package de.metas.ui.web.menu;
 
 import java.util.Enumeration;
 
+import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MTree;
@@ -232,7 +233,7 @@ final class MenuTreeLoader
 	private MTreeNode retrieveRootNodeModel()
 	{
 		final UserMenuInfo userMenuInfo = getUserMenuInfo();
-		final int adTreeId = userMenuInfo.getAD_Tree_ID();
+		final int adTreeId = userMenuInfo.getAdTreeId();
 		if (adTreeId < 0)
 		{
 			throw new AdempiereException("Menu tree not found");
@@ -248,10 +249,10 @@ final class MenuTreeLoader
 				.build();
 
 		final MTreeNode rootNodeModel = mTree.getRoot();
-		int rootMenuIdEffective = userMenuInfo.getRoot_Menu_ID();
-		if (rootMenuIdEffective > 0)
+		AdMenuId rootMenuIdEffective = userMenuInfo.getRootMenuId();
+		if (rootMenuIdEffective != null)
 		{
-			final MTreeNode rootNodeModelEffective = rootNodeModel.findNode(rootMenuIdEffective);
+			final MTreeNode rootNodeModelEffective = rootNodeModel.findNode(rootMenuIdEffective.getRepoId());
 			if (rootNodeModelEffective != null)
 			{
 				return rootNodeModelEffective;
