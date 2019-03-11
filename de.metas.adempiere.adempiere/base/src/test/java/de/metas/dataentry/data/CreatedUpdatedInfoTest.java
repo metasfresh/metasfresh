@@ -6,6 +6,8 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -41,9 +43,13 @@ import de.metas.util.JSONObjectMapper;
 
 class CreatedUpdatedInfoTest
 {
-	private static final ZonedDateTime CREATED = ZonedDateTime.of(2019/* year */, 3/* month */, 8/* dayOfMonth */, 13/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
+	private static final ZonedDateTime CREATED = LocalDate.of(2019, Month.MARCH, 8)
+			.atTime(13, 20, 42, 2)
+			.atZone(ZoneId.of("+01:00"));
 
-	private static final ZonedDateTime UPDATED = ZonedDateTime.of(2019/* year */, 3/* month */, 8/* dayOfMonth */, 14/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
+	private static final ZonedDateTime UPDATED = LocalDate.of(2019, Month.MARCH, 8)
+			.atTime(14, 20, 42, 2)
+			.atZone(ZoneId.of("+01:00"));
 
 	@BeforeAll
 	static void init()
