@@ -344,7 +344,7 @@ public class UserSession
 	public UserRolePermissionsKey getUserRolePermissionsKey()
 	{
 		// TODO: cache the permissions key
-		return UserRolePermissionsKey.of(getData().getCtx());
+		return UserRolePermissionsKey.fromContext(getData().getCtx());
 	}
 
 	public IUserRolePermissions getUserRolePermissions()

@@ -48,7 +48,7 @@ public final class ViewEvaluationCtx
 		return ViewEvaluationCtx.builder()
 				.loggedUserId(Env.getAD_User_ID(ctx))
 				.adLanguage(Env.getAD_Language(ctx))
-				.permissionsKey(UserRolePermissionsKey.of(ctx))
+				.permissionsKey(UserRolePermissionsKey.fromContext(ctx))
 				.build();
 	}
 
