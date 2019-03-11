@@ -75,11 +75,13 @@ class TableFilter extends Component {
   getActions = () => {
     const { tabId, docType, docId } = this.props;
 
-    topActionsRequest(docType, docId, tabId).then(({ data }) => {
-      this.setState({
-        actions: data.actions,
+    if (tabId && docType && docId) {
+      topActionsRequest(docType, docId, tabId).then(({ data }) => {
+        this.setState({
+          actions: data.actions,
+        });
       });
-    });
+    }
   };
 
   showTooltip = () => {
