@@ -1,4 +1,4 @@
-package org.adempiere.user;
+package de.metas.dataentry.data;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
 
 /*
