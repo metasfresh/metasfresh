@@ -448,6 +448,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_BPContactGreeting = "BPContactGreeting";
 
 	/**
+	 * Set Nr..
+	 * Sponsor-Nr.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBPValue (java.lang.String BPValue);
+
+	/**
+	 * Get Nr..
+	 * Sponsor-Nr.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBPValue();
+
+    /** Column definition for BPValue */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_BPValue = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "BPValue", null);
+    /** Column name BPValue */
+    public static final String COLUMNNAME_BPValue = "BPValue";
+
+	/**
 	 * Set Aggregation Definition.
 	 *
 	 * <br>Type: TableDir
@@ -2037,7 +2062,7 @@ public interface I_I_BPartner
 	 * Set Memo_Invoicing.
 	 * Memo Abrechnung
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2047,7 +2072,7 @@ public interface I_I_BPartner
 	 * Get Memo_Invoicing.
 	 * Memo Abrechnung
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2085,7 +2110,6 @@ public interface I_I_BPartner
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2095,7 +2119,6 @@ public interface I_I_BPartner
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2877,31 +2900,6 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_URL = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "URL", null);
     /** Column name URL */
     public static final String COLUMNNAME_URL = "URL";
-
-	/**
-	 * Set Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValue (java.lang.String Value);
-
-	/**
-	 * Get Suchschlüssel.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValue();
-
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
 
 	/**
 	 * Set Lieferanten Kategorie.

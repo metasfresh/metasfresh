@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1400142272L;
+	private static final long serialVersionUID = 937420894L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -365,6 +365,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getBPContactGreeting () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPContactGreeting);
+	}
+
+	/** Set Nr..
+		@param BPValue 
+		Sponsor-Nr.
+	  */
+	@Override
+	public void setBPValue (java.lang.String BPValue)
+	{
+		set_Value (COLUMNNAME_BPValue, BPValue);
+	}
+
+	/** Get Nr..
+		@return Sponsor-Nr.
+	  */
+	@Override
+	public java.lang.String getBPValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BPValue);
 	}
 
 	/** Set Aggregation Definition.
@@ -1860,9 +1879,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -1870,8 +1887,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -2524,25 +2540,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_URL);
-	}
-
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
-	@Override
-	public void setValue (java.lang.String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
-	  */
-	@Override
-	public java.lang.String getValue () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
 	/** Set Lieferanten Kategorie.

@@ -159,8 +159,8 @@ import de.metas.util.Check;
 
 	private static final String extractBPValue(final I_I_BPartner importRecord)
 	{
-		String value = importRecord.getValue();
-		return Check.isEmpty(value, true) ? importRecord.getEMail() : value;
+		String bpValue = importRecord.getBPValue();
+		return Check.isEmpty(bpValue, true) ? importRecord.getEMail() : bpValue;
 	}
 
 	private I_C_BPartner updateExistingBPartner(final I_I_BPartner importRecord)

@@ -107,7 +107,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		public String getPreviousBPValue()
 		{
-			return previousImportRecord == null ? null : previousImportRecord.getValue();
+			return previousImportRecord == null ? null : previousImportRecord.getBPValue();
 		}
 
 		public List<I_I_BPartner> getPreviousImportRecordsForSameBP()
@@ -146,7 +146,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getValue(), previousBPValue);
+		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getBPValue(), previousBPValue);
 		if (firstImportRecordOrNewBPartner)
 		{
 			// create a new list because we are passing to a new partner
@@ -317,7 +317,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	protected String getImportOrderBySql()
 	{
 		// gody: 20070113 - Order so the same values are consecutive.
-		return I_I_BPartner.COLUMNNAME_Value
+		return I_I_BPartner.COLUMNNAME_BPValue
 				+ ", " + I_I_BPartner.COLUMNNAME_I_BPartner_ID;
 	}
 
