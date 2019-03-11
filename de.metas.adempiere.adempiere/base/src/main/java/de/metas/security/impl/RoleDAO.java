@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -25,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache;
+import de.metas.menu.AdMenuId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;

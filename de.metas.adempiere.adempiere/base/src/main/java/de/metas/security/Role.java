@@ -1,9 +1,9 @@
 package de.metas.security;
 
-import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
+import de.metas.menu.AdMenuId;
 import de.metas.security.permissions.Constraints;
 import de.metas.security.permissions.GenericPermissions;
 import de.metas.user.UserId;

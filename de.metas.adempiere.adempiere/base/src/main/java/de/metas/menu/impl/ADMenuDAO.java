@@ -1,11 +1,15 @@
-package org.adempiere.ad.element.api;
+package de.metas.menu.impl;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import java.util.Set;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_AD_Menu;
+
+import de.metas.menu.AdMenuId;
+import de.metas.menu.IADMenuDAO;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -28,36 +32,24 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-public class AdMenuId implements RepoIdAware
+
+public class ADMenuDAO implements IADMenuDAO
 {
-	@JsonCreator
-	public static AdMenuId ofRepoId(final int repoId)
-	{
-		return new AdMenuId(repoId);
-	}
 
-	public static AdMenuId ofRepoIdOrNull(final int repoId)
+	@Override
+	public Set<AdMenuId> retrieveMenuIdsWithMissingADElements()
 	{
-		return repoId > 0 ? new AdMenuId(repoId) : null;
-	}
-
-	public static int toRepoId(final AdMenuId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
-
-	int repoId;
-
-	private AdMenuId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Menu_ID");
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Menu.class)
+				.addEqualsFilter(I_AD_Menu.COLUMN_AD_Element_ID, null)
+				.create()
+				.listIds(AdMenuId::ofRepoId);
 	}
 
 	@Override
-	@JsonValue
-	public int getRepoId()
+	public I_AD_Menu getById(final AdMenuId menuId)
 	{
-		return repoId;
+		return load(menuId, I_AD_Menu.class);
 	}
+
 }

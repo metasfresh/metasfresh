@@ -1,7 +1,6 @@
 package de.metas.security.permissions;
 
-import org.adempiere.ad.element.api.AdMenuId;
-
+import de.metas.menu.AdMenuId;
 import de.metas.util.Check;
 import lombok.Value;
 

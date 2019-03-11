@@ -5,14 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.Set;
 
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.element.api.IADElementDAO;
-import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -27,6 +25,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
+import de.metas.menu.AdMenuId;
+import de.metas.menu.IADMenuDAO;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;

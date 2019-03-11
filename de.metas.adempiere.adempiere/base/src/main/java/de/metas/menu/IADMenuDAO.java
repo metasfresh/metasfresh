@@ -1,8 +1,7 @@
-package org.adempiere.ad.menu.api;
+package de.metas.menu;
 
 import java.util.Set;
 
-import org.adempiere.ad.element.api.AdMenuId;
 import org.compiere.model.I_AD_Menu;
 
 import de.metas.util.ISingletonService;
