@@ -143,6 +143,7 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 		lexiographicallyOrderedScriptsSupplier.get().remove();
 	}
 
+	@SuppressWarnings("unused")
 	private void dumpTofile(SortedSet<IScript> lexiagraphicallySortedScripts)
 	{
 		FileWriter writer;

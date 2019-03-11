@@ -13,11 +13,11 @@ package de.metas.migration.executor.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,32 +31,48 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.migration.IDatabase;
 import de.metas.migration.IScript;
 import de.metas.migration.exception.ScriptExecutionException;
 import de.metas.migration.executor.IScriptExecutor;
+import de.metas.migration.impl.AnonymousScript;
+import de.metas.migration.impl.SQLDatabase;
+import de.metas.migration.impl.SQLHelper;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public class PostgresqlNativeExecutor implements IScriptExecutor
 {
-	public static final String ENV_PG_HOME = "PG_HOME";
-	public static final String ENV_PGPASSWORD = "PGPASSWORD";
+	private static final transient Logger logger = LoggerFactory.getLogger(PostgresqlNativeExecutor.class);
 
-	public static final String PARAM_DBHOST = "db.host";
-	public static final String PARAM_DBPORT = "db.port";
-	public static final String PARAM_DBNAME = "db.dbname";
-	public static final String PARAM_DBUSER = "db.user";
-	public static final String PARAM_DBPASSWORD = "db.password";
+	private static final String ENV_PG_HOME = "PG_HOME";
+	private static final String ENV_PGPASSWORD = "PGPASSWORD";
+
+	private static final String AFTER_MIGRATION_FUNC_PATTERN = "after_migration%";
 
 	private final IDatabase database;
+	private final SQLHelper sqlHelper;
 
 	private final String command;
 	private final List<String> args;
 	private final Map<String, String> environment;
 
-	public PostgresqlNativeExecutor(final IDatabase database)
+	public PostgresqlNativeExecutor(@NonNull final IDatabase database)
 	{
 		this.database = database;
+		this.sqlHelper = new SQLHelper(SQLDatabase.cast(database));
 
 		//
 		// Configure: psql command
@@ -135,9 +151,14 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 	@Override
 	public void execute(final IScript script)
 	{
+		executeAndReturnResult(script, 100);
+	}
+
+	private ScriptExecutionResult executeAndReturnResult(final IScript script, final int logTailSize)
+	{
 		final Process proc = startProcess(script);
 
-		final List<String> logTail = readOutput(proc.getInputStream(), 100);
+		final ImmutableList<String> logTail = readOutput(proc.getInputStream(), logTailSize);
 		final int exitValue;
 		try
 		{
@@ -161,6 +182,10 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 					.addParameter("ProcessExitCode", exitValue)
 					.setLog(logTail);
 		}
+
+		return ScriptExecutionResult.builder()
+				.logTail(logTail)
+				.build();
 	}
 
 	private Process startProcess(final IScript script)
@@ -185,32 +210,40 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		{
 			throw new ScriptExecutionException("Error creating executor process."
 					+ "If 'psql' command was not found, try setting " + ENV_PG_HOME + " environment variable.", e)
-					.setDatabase(database)
-					.setScript(script)
-					.setExecutor(this);
+							.setDatabase(database)
+							.setScript(script)
+							.setExecutor(this);
 		}
 
 		return proc;
 	}
 
-	private List<String> readOutput(final InputStream is, final int tailSize)
+	private ImmutableList<String> readOutput(final InputStream is, final int tailSize)
 	{
-		final List<String> tail = new ArrayList<String>(tailSize);
 
 		final BufferedReader in = new BufferedReader(new InputStreamReader(is), 10240);
 		try
 		{
+			final List<String> tail = tailSize > 0 ? new ArrayList<>(tailSize + 1) : new ArrayList<>();
+			int truncatedLines = 0;
+
 			String line;
 			while ((line = in.readLine()) != null)
 			{
-				if (tail.size() >= tailSize)
+				if (tailSize > 0 && tail.size() >= tailSize)
 				{
 					tail.remove(0);
+					truncatedLines++;
 				}
 				tail.add(line);
-
-				// System.out.println("\t" + line);
 			}
+
+			if (truncatedLines > 0)
+			{
+				tail.add(0, "(Truncated " + truncatedLines + " lines. Preserved last " + tail.size() + " lines)");
+			}
+
+			return ImmutableList.copyOf(tail);
 		}
 		catch (final IOException e)
 		{
@@ -219,6 +252,45 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 					.setExecutor(this);
 		}
 
-		return tail;
+	}
+
+	@Override
+	public void executeAfterScripts()
+	{
+		final Set<String> functionNames = sqlHelper.getDBFunctionsMatchingPattern(AFTER_MIGRATION_FUNC_PATTERN)
+				.stream()
+				.sorted()
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (functionNames.isEmpty())
+		{
+			logger.warn("Skip executing after migration scripts because no function matching pattern '{}' was found in {}", AFTER_MIGRATION_FUNC_PATTERN, database);
+			return;
+		}
+
+		final AnonymousScript script = AnonymousScript.builder()
+				.fileName("after_migration.sql")
+				.scriptContent(functionNames.stream()
+						.map(functionName -> "select " + functionName + "();\n")
+						.collect(Collectors.joining()))
+				.build();
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final int logTailSize = -1; // full log
+		final ScriptExecutionResult result = executeAndReturnResult(script, logTailSize);
+		stopwatch.stop();
+
+		logger.info("Executed {} in {}ms and got following result:\n{}",
+				functionNames,
+				stopwatch,
+				Joiner.on("\n").join(result.getLogTail()));
+	}
+
+	@Builder
+	@Value
+	private static class ScriptExecutionResult
+	{
+		@NonNull
+		final ImmutableList<String> logTail;
 	}
 }

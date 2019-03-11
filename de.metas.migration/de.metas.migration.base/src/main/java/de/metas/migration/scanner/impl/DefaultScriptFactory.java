@@ -36,7 +36,6 @@ public class DefaultScriptFactory extends AbstractScriptFactory
 
 	public DefaultScriptFactory(final String projectName)
 	{
-		super();
 		this.projectName = projectName;
 	}
 
