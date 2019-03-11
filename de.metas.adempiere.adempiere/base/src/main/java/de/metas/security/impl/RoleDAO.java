@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
@@ -100,10 +101,10 @@ public class RoleDAO implements IRoleDAO
 				.manualMaintainance(record.isManual())
 				//
 				// Menu:
-				.AD_Tree_Menu_ID(record.getAD_Tree_Menu_ID())
-				.Root_Menu_ID(AdMenuId.ofRepoIdOrNull(record.getRoot_Menu_ID()))
+				.menuTreeId(AdTreeId.ofRepoIdOrNull(record.getAD_Tree_Menu_ID()))
+				.rootMenuId(AdMenuId.ofRepoIdOrNull(record.getRoot_Menu_ID()))
 				//
-				.AD_Tree_Org_ID(record.getAD_Tree_Org_ID())
+				.orgTreeId(AdTreeId.ofRepoIdOrNull(record.getAD_Tree_Org_ID()))
 				//
 				.webuiRole(record.isWEBUI_Role())
 				//

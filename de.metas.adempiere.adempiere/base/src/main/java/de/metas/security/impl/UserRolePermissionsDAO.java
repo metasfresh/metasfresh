@@ -23,6 +23,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
@@ -378,7 +379,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId)
 	{
-		final int adTreeOrgId = role.getAD_Tree_Org_ID();
+		final AdTreeId adTreeOrgId = role.getOrgTreeId();
 		if (role.isUseUserOrgAccess())
 		{
 			return retrieveUserOrgPermissions(adUserId, adTreeOrgId);
@@ -393,7 +394,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				//
 				// if role has acces all org, then behave as would be * access
 				final OrgPermissions.Builder builder = OrgPermissions.builder()
-						.setOrg_Tree_ID(adTreeOrgId);
+						.setOrgTreeId(adTreeOrgId);
 
 				// org *
 				{
@@ -430,7 +431,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	@Override
 	@Cached(cacheName = I_AD_User_OrgAccess.Table_Name + "#by#AD_User_ID")
-	public OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final int adTreeOrgId)
+	public OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -448,7 +449,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.list();
 
 		final OrgPermissions.Builder builder = OrgPermissions.builder()
-				.setOrg_Tree_ID(adTreeOrgId);
+				.setOrgTreeId(adTreeOrgId);
 		for (final I_AD_User_OrgAccess oa : orgAccessesList)
 		{
 			// NOTE: we are fetching the AD_Client_ID from OrgAccess and not from AD_Org (very important for Org=0 like) !
@@ -464,7 +465,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Role_OrgAccess.Table_Name + "#by#AD_User_ID")
-	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final int adTreeOrgId)
+	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -482,7 +483,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.list();
 
 		final OrgPermissions.Builder builder = OrgPermissions.builder()
-				.setOrg_Tree_ID(adTreeOrgId);
+				.setOrgTreeId(adTreeOrgId);
 		for (final I_AD_Role_OrgAccess oa : orgAccessesList)
 		{
 			// NOTE: we are fetching the AD_Client_ID from OrgAccess and not from AD_Org (very important for Org=0 like) !

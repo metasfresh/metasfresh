@@ -1,7 +1,9 @@
 package de.metas.security.permissions;
 
+import org.adempiere.model.tree.AdTreeId;
+
 import de.metas.menu.AdMenuId;
-import de.metas.util.Check;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,30 +31,44 @@ import lombok.Value;
 @Value
 public final class UserMenuInfo
 {
-	public static final UserMenuInfo of(final int adTreeId, final AdMenuId rootMenuId)
+	public static final UserMenuInfo of(final AdTreeId adTreeId, final AdMenuId rootMenuId)
 	{
-		if (adTreeId <= 0)
+		if (adTreeId == null)
 		{
 			return NONE;
 		}
-		return new UserMenuInfo(adTreeId, rootMenuId);
+		else if (rootMenuId == null)
+		{
+			return ofAdTreeId(adTreeId);
+		}
+		else
+		{
+			return new UserMenuInfo(adTreeId, rootMenuId);
+		}
 	}
 
-	public static final UserMenuInfo ofAdTreeId(final int adTreeId)
+	public static final UserMenuInfo ofAdTreeId(@NonNull final AdTreeId adTreeId)
 	{
-		Check.assumeGreaterThanZero(adTreeId, "adTreeId");
-		final AdMenuId rootMenuId = null;
-		return new UserMenuInfo(adTreeId, rootMenuId);
+		if (adTreeId.equals(DEFAULT_MENU.adTreeId))
+		{
+			return DEFAULT_MENU;
+		}
+		else
+		{
+			final AdMenuId rootMenuId = null;
+			return new UserMenuInfo(adTreeId, rootMenuId);
+		}
 	}
 
-	public static final UserMenuInfo NONE = new UserMenuInfo(-1, (AdMenuId)null);
+	public static final UserMenuInfo DEFAULT_MENU = new UserMenuInfo(AdTreeId.DEFAULT_MENU_TREE_ID, (AdMenuId)null);
+	public static final UserMenuInfo NONE = new UserMenuInfo((AdTreeId)null, (AdMenuId)null);
 
-	int adTreeId;
+	AdTreeId adTreeId;
 	AdMenuId rootMenuId;
 
-	private UserMenuInfo(final int adTreeId, final AdMenuId rootMenuId)
+	private UserMenuInfo(final AdTreeId adTreeId, final AdMenuId rootMenuId)
 	{
-		this.adTreeId = adTreeId > 0 ? adTreeId : -1;
+		this.adTreeId = adTreeId;
 		this.rootMenuId = rootMenuId;
 	}
 

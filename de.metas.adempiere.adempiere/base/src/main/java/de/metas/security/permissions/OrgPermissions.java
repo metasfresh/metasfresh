@@ -35,11 +35,11 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.MTree_Base;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -57,25 +57,25 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 
 	private final ImmutableSet<ClientId> adClientIds;
 	private final ImmutableSet<OrgId> adOrgIds;
-	private final int orgTreeId;
+	private final AdTreeId orgTreeId;
 
 	private OrgPermissions(final Builder builder)
 	{
 		super(builder);
 		this.adClientIds = builder.adClientIds.build();
 		this.adOrgIds = builder.adOrgIds.build();
-		this.orgTreeId = builder.getOrg_Tree_ID();
+		this.orgTreeId = builder.getOrgTreeId();
 	}
 
 	public Builder asNewBuilder()
 	{
 		final Builder builder = builder();
-		builder.setOrg_Tree_ID(orgTreeId);
+		builder.setOrgTreeId(orgTreeId);
 		builder.addPermissions(this, CollisionPolicy.Override);
 		return builder;
 	}
 
-	public final int getOrg_Tree_ID()
+	public final AdTreeId getOrgTreeId()
 	{
 		return orgTreeId;
 	}
@@ -234,11 +234,10 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	{
 		private final ImmutableSet.Builder<ClientId> adClientIds = ImmutableSet.builder();
 		private final ImmutableSet.Builder<OrgId> adOrgIds = ImmutableSet.builder();
-		private Integer _orgTreeId;
+		private AdTreeId _orgTreeId;
 
-		Builder()
+		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -257,13 +256,13 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			return new OrgPermissions(this);
 		}
 
-		public Builder setOrg_Tree_ID(final int orgTreeId)
+		public Builder setOrgTreeId(final AdTreeId orgTreeId)
 		{
 			this._orgTreeId = orgTreeId;
 			return this;
 		}
 
-		private final int getOrg_Tree_ID()
+		private final AdTreeId getOrgTreeId()
 		{
 			Check.assumeNotNull(_orgTreeId, "Org's AD_Tree_ID shall be configured");
 			return _orgTreeId;
@@ -286,8 +285,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			addPermission(oa, CollisionPolicy.Override);
 
 			// Do we look for trees?
-			final int adTreeOrgId = getOrg_Tree_ID();
-			if (adTreeOrgId <= 0)
+			final AdTreeId adTreeOrgId = getOrgTreeId();
+			if (adTreeOrgId == null)
 			{
 				return this;
 			}
@@ -299,7 +298,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			}
 
 			// Summary Org - Get Dependents
-			final MTree_Base tree = MTree_Base.get(Env.getCtx(), adTreeOrgId, ITrx.TRXNAME_None);
+			final MTree_Base tree = MTree_Base.getById(adTreeOrgId);
 			final String sql = "SELECT AD_Client_ID, AD_Org_ID FROM AD_Org "
 					+ "WHERE IsActive='Y' AND AD_Org_ID IN (SELECT Node_ID FROM " + tree.getNodeTableName()
 					+ " WHERE AD_Tree_ID=? AND Parent_ID=? AND IsActive='Y')";

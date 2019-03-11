@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Record_Access;
@@ -100,9 +101,9 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId);
 
-	OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final int adTreeOrgId);
+	OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId);
 
-	OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final int adTreeOrgId);
+	OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId);
 
 	ElementPermissions retrieveWorkflowPermissions(final RoleId adRoleId, final ClientId adClientId);
 

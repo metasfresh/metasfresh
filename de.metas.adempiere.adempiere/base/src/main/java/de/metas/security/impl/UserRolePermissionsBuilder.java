@@ -25,6 +25,7 @@ package de.metas.security.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
@@ -518,20 +519,20 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	private UserMenuInfo findMenuInfo()
 	{
 		final Role adRole = getRole();
-		final int roleMenuTreeId = adRole.getAD_Tree_Menu_ID();
-		if (roleMenuTreeId > 0)
+		final AdTreeId roleMenuTreeId = adRole.getMenuTreeId();
+		if (roleMenuTreeId != null)
 		{
-			return UserMenuInfo.of(roleMenuTreeId, adRole.getRoot_Menu_ID());
+			return UserMenuInfo.of(roleMenuTreeId, adRole.getRootMenuId());
 		}
 
 		final I_AD_ClientInfo adClientInfo = getAD_ClientInfo();
-		final int adClientMenuTreeId = adClientInfo.getAD_Tree_Menu_ID();
-		if (adClientMenuTreeId > 0)
+		final AdTreeId adClientMenuTreeId = AdTreeId.ofRepoIdOrNull(adClientInfo.getAD_Tree_Menu_ID());
+		if (adClientMenuTreeId != null)
 		{
-			return UserMenuInfo.of(adClientMenuTreeId, adRole.getRoot_Menu_ID());
+			return UserMenuInfo.of(adClientMenuTreeId, adRole.getRootMenuId());
 		}
 
 		// Fallback: when role has NO menu and there is no menu defined on AD_ClientInfo level - shall not happen
-		return UserMenuInfo.ofAdTreeId(10); // Menu // FIXME: hardcoded
+		return UserMenuInfo.DEFAULT_MENU;
 	}
 }

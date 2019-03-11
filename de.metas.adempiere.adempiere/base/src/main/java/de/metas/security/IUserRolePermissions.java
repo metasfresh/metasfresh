@@ -3,6 +3,7 @@ package de.metas.security;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
@@ -234,7 +235,7 @@ public interface IUserRolePermissions
 
 	Set<OrgResource> getLoginOrgs();
 
-	int getOrg_Tree_ID();
+	AdTreeId getOrgTreeId();
 
 	UserMenuInfo getMenuInfo();
 

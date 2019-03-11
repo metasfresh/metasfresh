@@ -53,6 +53,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
@@ -115,7 +116,7 @@ public final class AMenu extends CFrame
 		//
 		m_WindowNo = Env.WINDOW_MAIN;
 		Env.addWindow(m_WindowNo, this);
-		
+
 		// Login
 		initSystem(splash);        // login
 		splash.setText(msgBL.getMsg(m_ctx, "Loading"));
@@ -146,8 +147,8 @@ public final class AMenu extends CFrame
 		m_AD_Role_ID = Env.getAD_Role_ID(m_ctx);
 
 		// initialize & load tree
-		final int AD_Tree_ID = retrieveMenuTreeId(m_ctx);
-		treePanel.initTree(AD_Tree_ID);
+		final AdTreeId menuTreeId = retrieveMenuTreeId(m_ctx);
+		treePanel.initTree(AdTreeId.toRepoId(menuTreeId));
 
 		// Translate
 		Env.setContext(m_ctx, m_WindowNo, "WindowName", msgBL.getMsg(m_ctx, "Menu"));
@@ -781,12 +782,12 @@ public final class AMenu extends CFrame
 		}
 	}
 
-	private static int retrieveMenuTreeId(final Properties ctx)
+	private static AdTreeId retrieveMenuTreeId(final Properties ctx)
 	{
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
 		if (!userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_MenuAvailable))
 		{
-			return -1;
+			return null;
 		}
 
 		return userRolePermissions.getMenuInfo().getAdTreeId();
