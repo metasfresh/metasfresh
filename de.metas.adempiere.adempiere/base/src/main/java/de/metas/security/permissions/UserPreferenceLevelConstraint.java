@@ -1,9 +1,5 @@
 package de.metas.security.permissions;
 
-import lombok.NonNull;
-
-import javax.annotation.concurrent.Immutable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -17,23 +13,25 @@ import javax.annotation.concurrent.Immutable;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Map;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.compiere.model.X_AD_Role;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * User's preference level.
@@ -76,7 +74,6 @@ public final class UserPreferenceLevelConstraint extends Constraint
 
 	private UserPreferenceLevelConstraint(final String preferenceType)
 	{
-		super();
 		Check.assumeNotEmpty(preferenceType, "preferenceType not empty");
 		this.preferenceType = preferenceType;
 	}

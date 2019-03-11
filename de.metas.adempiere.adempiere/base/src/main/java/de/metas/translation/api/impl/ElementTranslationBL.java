@@ -2,7 +2,6 @@ package de.metas.translation.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.element.api.AdElementId;
@@ -242,9 +241,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 		final IADMenuDAO adMenuDAO = Services.get(IADMenuDAO.class);
 		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
 
-		final List<Integer> menuIdsWithMissingADElements = adMenuDAO.retrieveMenuIdsWithMissingADElements();
+		final Set<AdMenuId> menuIdsWithMissingADElements = adMenuDAO.retrieveMenuIdsWithMissingADElements();
 
-		for (final int menuId : menuIdsWithMissingADElements)
+		for (final AdMenuId menuId : menuIdsWithMissingADElements)
 		{
 			final I_AD_Menu menu = adMenuDAO.getById(menuId);
 
@@ -256,7 +255,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.webuiNameNew(menu.getWEBUI_NameNew())
 					.webuiNameNewBreadcrumb(menu.getWEBUI_NameNewBreadcrumb()).build());
 
-			updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
+			updateElementTranslationsFromMenu(elementId, menuId);
 
 			DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 

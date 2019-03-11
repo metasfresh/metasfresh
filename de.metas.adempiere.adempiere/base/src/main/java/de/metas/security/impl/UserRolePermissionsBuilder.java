@@ -532,6 +532,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		}
 
 		// Fallback: when role has NO menu and there is no menu defined on AD_ClientInfo level - shall not happen
-		return UserMenuInfo.of(10, -1); // Menu // FIXME: hardcoded
+		return UserMenuInfo.ofAdTreeId(10); // Menu // FIXME: hardcoded
 	}
 }

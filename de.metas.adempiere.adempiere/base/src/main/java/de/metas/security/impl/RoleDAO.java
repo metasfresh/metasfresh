@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -100,7 +101,7 @@ public class RoleDAO implements IRoleDAO
 				//
 				// Menu:
 				.AD_Tree_Menu_ID(record.getAD_Tree_Menu_ID())
-				.Root_Menu_ID(record.getRoot_Menu_ID())
+				.Root_Menu_ID(AdMenuId.ofRepoIdOrNull(record.getRoot_Menu_ID()))
 				//
 				.AD_Tree_Org_ID(record.getAD_Tree_Org_ID())
 				//

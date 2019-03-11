@@ -1,7 +1,8 @@
 package org.adempiere.ad.menu.api;
 
-import java.util.List;
+import java.util.Set;
 
+import org.adempiere.ad.element.api.AdMenuId;
 import org.compiere.model.I_AD_Menu;
 
 import de.metas.util.ISingletonService;
@@ -30,7 +31,7 @@ import de.metas.util.ISingletonService;
 
 public interface IADMenuDAO extends ISingletonService
 {
-	List<Integer> retrieveMenuIdsWithMissingADElements();
+	Set<AdMenuId> retrieveMenuIdsWithMissingADElements();
 
-	I_AD_Menu getById(int menuId);
+	I_AD_Menu getById(AdMenuId menuId);
 }

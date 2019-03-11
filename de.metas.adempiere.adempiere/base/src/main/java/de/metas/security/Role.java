@@ -1,5 +1,6 @@
 package de.metas.security;
 
+import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
@@ -67,7 +68,7 @@ public class Role
 	//
 	// Menu
 	int AD_Tree_Menu_ID;
-	int Root_Menu_ID;
+	AdMenuId Root_Menu_ID;
 
 	int AD_Tree_Org_ID;
 

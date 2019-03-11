@@ -1,8 +1,9 @@
 package de.metas.security.permissions;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import org.adempiere.ad.element.api.AdMenuId;
+
+import de.metas.util.Check;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,11 +27,10 @@ import lombok.EqualsAndHashCode;
  * #L%
  */
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode(callSuper = false)
-public class UserMenuInfo
+@Value
+public final class UserMenuInfo
 {
-	public static final UserMenuInfo of(final int adTreeId, final int rootMenuId)
+	public static final UserMenuInfo of(final int adTreeId, final AdMenuId rootMenuId)
 	{
 		if (adTreeId <= 0)
 		{
@@ -39,18 +39,22 @@ public class UserMenuInfo
 		return new UserMenuInfo(adTreeId, rootMenuId);
 	}
 
-	public static final UserMenuInfo NONE = new UserMenuInfo(-1, -1);
-
-	private final int adTreeId;
-	private final int rootMenuId;
-
-	public int getAD_Tree_ID()
+	public static final UserMenuInfo ofAdTreeId(final int adTreeId)
 	{
-		return adTreeId;
+		Check.assumeGreaterThanZero(adTreeId, "adTreeId");
+		final AdMenuId rootMenuId = null;
+		return new UserMenuInfo(adTreeId, rootMenuId);
 	}
 
-	public int getRoot_Menu_ID()
+	public static final UserMenuInfo NONE = new UserMenuInfo(-1, (AdMenuId)null);
+
+	int adTreeId;
+	AdMenuId rootMenuId;
+
+	private UserMenuInfo(final int adTreeId, final AdMenuId rootMenuId)
 	{
-		return rootMenuId;
+		this.adTreeId = adTreeId > 0 ? adTreeId : -1;
+		this.rootMenuId = rootMenuId;
 	}
+
 }
