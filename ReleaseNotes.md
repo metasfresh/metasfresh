@@ -10,6 +10,23 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.95
+# Features
+* metasfresh
+  * [#5012](https://github.com/metasfresh/metasfresh/issues/5012) Add Cable Batchentry also to Purchase Order
+  * [#5014](https://github.com/metasfresh/metasfresh/issues/5014) Make SQL Statement column larger in Report and Process
+  * [#5021](https://github.com/metasfresh/metasfresh/issues/5021) Allow deleting AD_Tabs
+  * [#5026](https://github.com/metasfresh/metasfresh/issues/5026) XJC timeout on reading XSDs
+  * [#5030](https://github.com/metasfresh/metasfresh/issues/5030) Migration scripts applier: run after scripts executed database function
+
+# Fixes
+* metasfresh
+  * [#4999](https://github.com/metasfresh/metasfresh/issues/4999) Packed HUs not displayed as Picked in HU Editor
+  * [#5000](https://github.com/metasfresh/metasfresh/issues/5000) Not all invoice candidates are invoiced with Process action in Picking Terminal v2
+
+* metasfresh-webui-frontend
+  * [#2199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2199) Fix sending tab data when creating process modal
+
 # metasfresh 5.94
 # Features
 * metasfresh

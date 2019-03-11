@@ -114,12 +114,12 @@ public class AD_Tab
 		adWindowDAO.deleteFieldsByTabId(adTabId);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void onAfterTabDeleted(final I_AD_Tab tab)
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final AdTabId adTabId = AdTabId.ofRepoId(tab.getAD_Tab_ID());
-		adWindowDAO.deleteExistingADElementLinkForTabId(adTabId);
+		adWindowDAO.deleteUISectionsByTabId(adTabId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
