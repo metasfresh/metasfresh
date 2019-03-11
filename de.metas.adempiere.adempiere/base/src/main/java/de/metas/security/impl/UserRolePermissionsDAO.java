@@ -135,8 +135,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private final AtomicLong version = new AtomicLong(1);
 
+	/** Aggregated permissions per key */
 	private CCache<UserRolePermissionsKey, IUserRolePermissions> //
 	permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions> builder()
+			.tableName(I_AD_Role.Table_Name)
+			.build();
+
+	/** Individual (not-aggregated) permissions per key */
+	private CCache<UserRolePermissionsKey, IUserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions> builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
 
@@ -327,7 +333,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public IUserRolePermissionsBuilder initialValue(final IRolesTreeNode node)
 				{
-					return retrieveIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId)
+					return getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId)
 							.asNewBuilder();
 				}
 
@@ -346,7 +352,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				@Override
 				public IUserRolePermissions leafValue(final IRolesTreeNode node)
 				{
-					return retrieveIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
+					return getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
 				}
 			});
 		}
@@ -359,14 +365,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 	}
 
-	@Cached(cacheName = I_AD_Role.Table_Name + "#UserRolePermissions")
-	IUserRolePermissions retrieveIndividialUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
+	final IUserRolePermissions getIndividialUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
 	{
-		return new UserRolePermissionsBuilder(isAccountingModuleActive())
+		final UserRolePermissionsKey key = UserRolePermissionsKey.of(adRoleId, adUserId, adClientId, LocalDate.MIN);
+		return individialPermissionsByKey.getOrLoad(key, () -> new UserRolePermissionsBuilder(isAccountingModuleActive())
 				.setRoleId(adRoleId)
 				.setUserId(adUserId)
 				.setClientId(adClientId)
-				.build();
+				.build());
 	}
 
 	@Override
