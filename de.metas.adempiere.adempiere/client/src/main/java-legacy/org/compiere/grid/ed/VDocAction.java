@@ -239,7 +239,7 @@ public class VDocAction extends CDialog
 		{
 			final Properties ctx = Env.getCtx();
 			final DocActionOptionsContext optionsCtx = DocActionOptionsContext.builder()
-					.userRolePermissionsKey(UserRolePermissionsKey.of(ctx))
+					.userRolePermissionsKey(UserRolePermissionsKey.fromContext(ctx))
 					.tableName(m_mTab.getTableName())
 					.docStatus(DocStatus)
 					.docTypeId(getDocTypeId())

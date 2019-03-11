@@ -48,25 +48,16 @@ import lombok.ToString;
 @ToString(exclude = "_permissionsKeyStr")
 public final class UserRolePermissionsKey implements Serializable
 {
-	@Deprecated
-	public static final UserRolePermissionsKey of(final int adRoleId, final int adUserId, final int adClientId, final Date date)
-	{
-		return of(RoleId.ofRepoId(adRoleId),
-				UserId.ofRepoId(adUserId),
-				ClientId.ofRepoId(adClientId),
-				TimeUtil.asLocalDate(date));
-	}
-
 	public static final UserRolePermissionsKey of(
-			@NonNull final RoleId adRoleId,
-			@NonNull final UserId adUserId,
-			@NonNull final ClientId adClientId,
-			@NonNull final LocalDate date)
+			final RoleId adRoleId,
+			final UserId adUserId,
+			final ClientId adClientId,
+			final LocalDate date)
 	{
 		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, date);
 	}
 
-	public static final UserRolePermissionsKey of(@NonNull final Properties ctx)
+	public static final UserRolePermissionsKey fromContext(@NonNull final Properties ctx)
 	{
 		final RoleId roleId = Env.getLoggedRoleId(ctx);
 		final UserId userId = Env.getLoggedUserId(ctx);
@@ -140,10 +131,10 @@ public final class UserRolePermissionsKey implements Serializable
 	}
 
 	private UserRolePermissionsKey(
-			final RoleId roleId,
-			final UserId userId,
+			@NonNull final RoleId roleId,
+			@NonNull final UserId userId,
 			final ClientId clientId,
-			final LocalDate date)
+			@NonNull final LocalDate date)
 	{
 		this.roleId = roleId;
 		this.userId = userId;

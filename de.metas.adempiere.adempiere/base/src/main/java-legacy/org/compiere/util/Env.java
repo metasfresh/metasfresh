@@ -1253,7 +1253,7 @@ public final class Env
 
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
-		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctx);
 		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 

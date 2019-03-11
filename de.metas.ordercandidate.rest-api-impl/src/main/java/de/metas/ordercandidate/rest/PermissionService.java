@@ -60,7 +60,7 @@ public class PermissionService
 	private PermissionService(@Nullable final Properties ctx)
 	{
 		final Properties ctxToUse = Util.coalesceSuppliers(() -> ctx, () -> Env.getCtx());
-		this.userRolePermissionsKey = UserRolePermissionsKey.of(ctxToUse);
+		this.userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctxToUse);
 	}
 
 	public void assertCanCreateOrUpdate(final Object record)
