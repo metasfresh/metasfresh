@@ -4,6 +4,7 @@ import java.util.Enumeration;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.tree.AdTreeId;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
@@ -233,8 +234,8 @@ final class MenuTreeLoader
 	private MTreeNode retrieveRootNodeModel()
 	{
 		final UserMenuInfo userMenuInfo = getUserMenuInfo();
-		final int adTreeId = userMenuInfo.getAdTreeId();
-		if (adTreeId < 0)
+		final AdTreeId adTreeId = userMenuInfo.getAdTreeId();
+		if (adTreeId == null)
 		{
 			throw new AdempiereException("Menu tree not found");
 		}
@@ -242,7 +243,7 @@ final class MenuTreeLoader
 		final MTree mTree = MTree.builder()
 				.setCtx(Env.getCtx())
 				.setTrxName(ITrx.TRXNAME_None)
-				.setAD_Tree_ID(adTreeId)
+				.setAD_Tree_ID(adTreeId.getRepoId())
 				.setEditable(false)
 				.setClientTree(true)
 				.setLanguage(getAD_Language())
@@ -265,7 +266,7 @@ final class MenuTreeLoader
 
 		return rootNodeModel;
 	}
-	
+
 	private UserMenuInfo getUserMenuInfo()
 	{
 		final IUserRolePermissions userRolePermissions = getUserRolePermissions();
@@ -282,7 +283,7 @@ final class MenuTreeLoader
 		this._adLanguage = adLanguage;
 		return this;
 	}
-	
+
 	@NonNull
 	private String getAD_Language()
 	{
