@@ -565,6 +565,8 @@ export default function windowHandler(state = initialState, action) {
         return state;
       }
 
+      const checkedIds = ids.length && ids[0] === undefined ? null : ids;
+
       return {
         ...state,
         selectionsHash: uuid(),
@@ -572,7 +574,7 @@ export default function windowHandler(state = initialState, action) {
           ...state.selections,
           [windowType]: {
             ...state.selections[windowType],
-            [viewId]: ids,
+            [viewId]: checkedIds,
           },
         },
       };
