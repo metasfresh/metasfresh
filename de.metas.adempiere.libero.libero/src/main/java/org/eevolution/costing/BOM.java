@@ -1,5 +1,6 @@
 package org.eevolution.costing;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -60,12 +61,18 @@ public final class BOM
 	final AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 
 	@NonNull
+	@Default
+	final BigDecimal qty = BigDecimal.ONE;
+
+	@NonNull
 	@Singular
 	ImmutableList<BOMLine> lines;
 
 	@NonNull
 	@Getter(AccessLevel.PACKAGE)
 	final BOMCostPrice costPrice;
+
+	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(4); // FIXME: hardcoded precision
 
 	public void rollupCosts()
 	{
@@ -93,12 +100,14 @@ public final class BOM
 
 	private Optional<CostAmount> computeComponentsCostPrice(@NonNull final CostElementId costElementId)
 	{
-		return getLines()
+		final Optional<CostAmount> componentsTotalAmt = getLines()
 				.stream()
 				.filter(BOMLine::isInboundBOMCosts)
 				.map(bomLine -> bomLine.getCostAmountOrNull(costElementId))
 				.filter(Predicates.notNull())
 				.reduce(CostAmount::add);
+
+		return componentsTotalAmt.map(amt -> amt.divide(qty, precision));
 	}
 
 	private CostAmount distributeToCoProductBOMLines(@Nullable CostAmount bomCostPrice, @NonNull final CostElementId costElementId)
@@ -115,7 +124,7 @@ public final class BOM
 			if (bomCostPrice != null && !bomCostPrice.isZero())
 			{
 				final Percent costAllocationPerc = bomLine.getCoProductCostDistributionPercent();
-				final CostAmount coProductCostPrice = bomCostPrice.multiply(costAllocationPerc, CurrencyPrecision.ofInt(4)); // FIXME: hardcoded precision
+				final CostAmount coProductCostPrice = bomCostPrice.multiply(costAllocationPerc, precision);
 
 				bomLine.setComponentsCostPrice(coProductCostPrice, costElementId);
 
