@@ -5,7 +5,7 @@ import Moment from 'moment';
 import { DateTime } from 'luxon';
 // import { isLuxonObject } from './index';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
-import { getSelection } from '../reducers/windowHandler';
+import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
 
 const DLpropTypes = {
   // from parent
@@ -29,11 +29,11 @@ const DLcontextTypes = {
 
 const DLmapStateToProps = (state, props) => ({
   selections: state.windowHandler.selections,
-  selected: getSelection({
+  selected: getSelectionInstant(
     state,
-    windowType: props.windowType,
-    viewId: props.defaultViewId,
-  }),
+    { ...props, windowType: props.parentType },
+    state.windowHandler.selectionsHash
+  ),
   childSelected:
     props.includedView && props.includedView.windowType
       ? getSelection({
