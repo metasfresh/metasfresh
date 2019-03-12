@@ -1349,7 +1349,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		catch (final Exception e)
 		{
-			log.error("{} - row={}", this, m_currentRow, e);
+			log.error("dataSave: {} - row={}", this, m_currentRow, e);
 		}
 		return false;
 	}   // dataSave
@@ -3173,8 +3173,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return "";
 		}
-
-		log.debug(field.getColumnName() + "=" + value + " - Row=" + m_currentRow);
 
 		//
 		// Convert the given value to internal value
