@@ -11,7 +11,6 @@ import org.compiere.util.KeyNamePair;
 import com.google.common.base.Optional;
 
 import de.metas.document.engine.DocActionOptionsContext;
-import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.InfoWindowPermission;
@@ -118,10 +117,8 @@ public interface IUserRolePermissions
 	 */
 	String addAccessSQL(String SQL, String TableNameIn, boolean fullyQualified, boolean rw);
 
-	Boolean checkWindowAccess(int AD_Window_ID);
 	/** @return window permissions; never return null */
 	ElementPermission checkWindowPermission(int AD_Window_ID);
-	boolean checkWindowPermission(int AD_Window_ID, Access access);
 	Boolean getWindowAccess(int AD_Window_ID);
 
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);

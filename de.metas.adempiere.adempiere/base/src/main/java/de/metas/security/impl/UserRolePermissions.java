@@ -626,30 +626,15 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Boolean getWindowAccess(final int AD_Window_ID)
 	{
-		final Boolean access = checkWindowAccess(AD_Window_ID);
+		final Boolean access = checkWindowPermission(AD_Window_ID).getReadWriteBoolean();
 		Services.get(IRolePermLoggingBL.class).logWindowAccess(getRoleId(), AD_Window_ID, access);
 		return access;
-	}
-
-	@Override
-	public Boolean checkWindowAccess(final int AD_Window_ID)
-	{
-		final Boolean retValue = windowPermissions.getReadWritePermission(AD_Window_ID);
-		return retValue;
 	}
 
 	@Override
 	public ElementPermission checkWindowPermission(final int AD_Window_ID)
 	{
 		return windowPermissions.getPermission(AD_Window_ID);
-	}
-
-	@Override
-	public boolean checkWindowPermission(final int AD_Window_ID, @NonNull final Access access)
-	{
-		return windowPermissions
-				.getPermission(AD_Window_ID)
-				.hasAccess(access);
 	}
 
 	/**

@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -103,7 +102,7 @@ public class AWindowSaveStateModel
 						clientId,
 						loggedUserId,
 						date,
-						rolePermissions -> IUserRolePermissions.isReadWriteAccess(rolePermissions.checkWindowAccess(windowId)));
+						rolePermissions -> rolePermissions.checkWindowPermission(windowId).hasWriteAccess());
 	}
 
 	public void save(final GridTab gridTab)
