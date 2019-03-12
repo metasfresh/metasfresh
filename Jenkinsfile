@@ -136,7 +136,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 		def misc = new de.metas.jenkins.Misc();
 		final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
 
-		build job: jobName,
+		final def metasfreshDownStreamBuildResult = build job: jobName,
 			parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
@@ -145,6 +145,10 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
 			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 			], wait: false
+
+		currentBuild.description="""${currentBuild.description}<p/>
+This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshDownStreamBuildResult.absoluteUrl}">${metasfreshDownStreamBuildResult.displayName}</a>
+				"""
 	}
 }
 else
