@@ -8,7 +8,6 @@ class QRCode extends Component {
     super(props);
 
     let val = 400;
-
     if (currentDevice.type === 'mobile') {
       val = 300;
     }
@@ -20,9 +19,9 @@ class QRCode extends Component {
     const { data } = this.props;
 
     if (data) {
-      const codeWriter = new BrowserQRCodeSvgWriter('qr-code');
+      const codeWriter = new BrowserQRCodeSvgWriter();
 
-      codeWriter.write(data.data, this.width, this.height);
+      codeWriter.writeToDom('#qr-code', data.data, this.width, this.height);
     }
   }
 
