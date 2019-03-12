@@ -1,5 +1,8 @@
 package de.metas.security.permissions;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,6 +31,7 @@ import java.util.LinkedHashMap;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Client;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,11 +42,19 @@ import com.google.common.collect.ImmutableSet;
 
 public class ResourcesTest
 {
+	private ClientId clientId;
+
 	@Before
 	public void init()
 	{
-		// needed for OrgResource.toString()
 		AdempiereTestHelper.get().init();
+
+		// needed for OrgResource.toString()
+		I_AD_Client adClientRecord = newInstanceOutOfTrx(I_AD_Client.class);
+		adClientRecord.setValue("test");
+		adClientRecord.setName("test");
+		saveRecord(adClientRecord);
+		clientId = ClientId.ofRepoId(adClientRecord.getAD_Client_ID());
 	}
 
 	@Test
@@ -71,7 +83,7 @@ public class ResourcesTest
 			public Resource get()
 			{
 				final OrgId adOrgId = OrgId.ofRepoId(nextId++);
-				return OrgResource.of(ClientId.SYSTEM, adOrgId);
+				return OrgResource.of(clientId, adOrgId);
 			}
 		});
 	}

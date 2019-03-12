@@ -143,6 +143,11 @@ public final class OrgResource implements Resource
 	@Override
 	public String toString()
 	{
+		return toDisplayName();
+	}
+
+	private String toDisplayName()
+	{
 		final String clientName = getClientName();
 		final String orgName = getOrgName();
 		final StringBuilder sb = new StringBuilder();
