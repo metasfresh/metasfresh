@@ -173,7 +173,7 @@ public class RabbitMqListener implements MessageListener
 		if (userName != null && password != null)
 		{
 			connectionFactory.setUsername(userName);
-			connectionFactory.setUsername(password);
+			connectionFactory.setPassword(password);
 		}
 		RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 		Queue queue = new Queue(queueName, isDurableQueue);
