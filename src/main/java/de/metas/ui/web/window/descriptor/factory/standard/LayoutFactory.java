@@ -45,7 +45,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -444,17 +443,6 @@ public class LayoutFactory
 		{
 			logger.trace("Skip layout element for {} because it has no fields: {}", uiElement, layoutElementBuilder);
 			return null;
-		}
-
-		// NOTE: per jassy request, when dealing with composed lookup fields, first field shall be Lookup and not List.
-		if (layoutElementBuilder.getFieldsCount() > 1)
-		{
-			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementBuilder.getFirstField();
-			if (layoutElementFieldBuilder.isLookup())
-			{
-				layoutElementBuilder.setWidgetType(DocumentFieldWidgetType.Lookup);
-				layoutElementFieldBuilder.setLookupSource(LookupSource.lookup);
-			}
 		}
 
 		//
