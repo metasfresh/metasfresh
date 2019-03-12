@@ -111,9 +111,7 @@ class Table extends Component {
     ) {
       this.setState({
         selected:
-          defaultSelected && defaultSelected !== null
-            ? defaultSelected
-            : [],
+          defaultSelected && defaultSelected !== null ? defaultSelected : [],
       });
     } else if (!disconnectFromState && !selectedEqual && selected.length) {
       dispatch(
