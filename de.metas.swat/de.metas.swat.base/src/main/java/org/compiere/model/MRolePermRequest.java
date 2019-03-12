@@ -115,7 +115,14 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		logAccess(roleId, COLUMNNAME_C_DocType_ID, docTypeId.getRepoId(), COLUMNNAME_DocAction, docAction, access, null);
 	}
 
-	private static void logAccess(@NonNull final RoleId roleId, final String type, final Object value, final String type2, final Object value2, final Boolean access, final String description)
+	private static void logAccess(
+			@NonNull final RoleId roleId,
+			final String type,
+			final Object value,
+			final String type2,
+			final Object value2,
+			final Boolean access,
+			final String description)
 	{
 		final String permLogLevel = getPermLogLevel();
 

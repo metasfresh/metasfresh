@@ -7,10 +7,6 @@ import java.util.Arrays;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.Test;
 
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.ElementPermission;
-import de.metas.security.permissions.ElementPermissions;
-import de.metas.security.permissions.ElementResource;
 import de.metas.security.permissions.ElementPermissions.Builder;
 
 public class ElementPermissionsTest
@@ -25,7 +21,7 @@ public class ElementPermissionsTest
 		{
 			final ElementResource resource = ElementResource.of("AD_Window", windowId);
 			final boolean readWrite = windowId % 2 == 0;
-			builder.addPermission(ElementPermission.of(resource, readWrite));
+			builder.addPermission(ElementPermission.ofReadWriteFlag(resource, readWrite));
 		}
 
 		final ElementPermissions permissions0 = builder.build();
@@ -57,7 +53,7 @@ public class ElementPermissionsTest
 				.setElementTableName("AD_Window");
 
 		// shall fail because the resource shall have the same tablename as the permissions.
-		builder.addPermission(ElementPermission.of(ElementResource.of("AD_Window_Different", 127), false));
+		builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window_Different", 127), false));
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -67,10 +63,10 @@ public class ElementPermissionsTest
 				.setElementTableName("AD_Window");
 
 		final boolean readWrite = false;
-		builder.addPermission(ElementPermission.of(ElementResource.of("AD_Window", 1), readWrite));
+		builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window", 1), readWrite));
 
 		// adding permission for an already existing resource shall fail
-		builder.addPermission(ElementPermission.of(ElementResource.of("AD_Window", 1), !readWrite));
+		builder.addPermission(ElementPermission.ofReadWriteFlag(ElementResource.of("AD_Window", 1), !readWrite));
 	}
 
 }

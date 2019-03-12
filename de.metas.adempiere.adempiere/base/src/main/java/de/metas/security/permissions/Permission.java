@@ -39,14 +39,6 @@ public interface Permission
 	Resource getResource();
 
 	/**
-	 * Check if this access is about the same resource as the given access.
-	 * 
-	 * @param access
-	 * @return
-	 */
-	boolean sameResource(Permission access);
-
-	/**
 	 * Creates a new {@link Permission} by merging given access into this access.
 	 * 
 	 * @param accessFrom

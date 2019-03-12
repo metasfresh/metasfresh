@@ -12,6 +12,7 @@ import org.compiere.util.KeyNamePair;
 import com.google.common.base.Optional;
 
 import de.metas.document.engine.DocActionOptionsContext;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.InfoWindowPermission;
@@ -119,22 +120,21 @@ public interface IUserRolePermissions
 	String addAccessSQL(String SQL, String TableNameIn, boolean fullyQualified, boolean rw);
 
 	Boolean checkWindowAccess(int AD_Window_ID);
-
 	/** @return window permissions; never return null */
 	ElementPermission checkWindowPermission(int AD_Window_ID);
-
+	boolean checkWindowPermission(int AD_Window_ID, Access access);
 	Boolean getWindowAccess(int AD_Window_ID);
 
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);
-
+	ElementPermission checkWorkflowPermission(int AD_Workflow_ID);
 	Boolean getWorkflowAccess(int AD_Workflow_ID);
 
 	Boolean checkFormAccess(int AD_Form_ID);
-
+	ElementPermission checkFormPermission(int AD_Form_ID);
 	Boolean getFormAccess(int AD_Form_ID);
 
 	Boolean checkTaskAccess(int AD_Task_ID);
-
+	ElementPermission checkTaskPermission(int AD_Task_ID);
 	Boolean getTaskAccess(int AD_Task_ID);
 
 	//
@@ -142,6 +142,7 @@ public interface IUserRolePermissions
 	// @formatter:off
 	Boolean checkProcessAccess(int AD_Process_ID);
 	default boolean checkProcessAccessRW(final int AD_Process_ID) { return isReadWriteAccess(checkProcessAccess(AD_Process_ID)); }
+	ElementPermission checkProcessPermission(int AD_Process_ID);
 	Boolean getProcessAccess(int AD_Process_ID);
 	// @formatter:on
 

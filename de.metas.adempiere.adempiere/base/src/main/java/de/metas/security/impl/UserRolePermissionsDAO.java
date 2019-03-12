@@ -577,7 +577,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final int elementId = (int)accessItem.get(elementColumnName);
 			final ElementResource resource = ElementResource.of(elementTableName, elementId);
 			final boolean readWrite = DisplayType.toBoolean(accessItem.get(COLUMNNAME_IsReadWrite), false);
-			final ElementPermission access = ElementPermission.of(resource, readWrite);
+			final ElementPermission access = ElementPermission.ofReadWriteFlag(resource, readWrite);
 			elementAccessesBuilder.addPermission(access);
 		}
 

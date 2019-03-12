@@ -1,10 +1,12 @@
 package de.metas.security.permissions;
 
+import org.adempiere.exceptions.AdempiereException;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +24,36 @@ package de.metas.security.permissions;
  * #L%
  */
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ObjectUtils;
-
-public abstract class AbstractPermission implements Permission
+final class PermissionInternalUtils
 {
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
 	/**
 	 * Checks if given permission is compatible with our permission and returns the given permission casted to our type.
 	 * 
-	 * @param permission
+	 * @param from
 	 * @return permission, casted to our type; never returns null
 	 * @throws AdempiereException if the permision is not compatible
 	 */
-	protected final <PermissionType extends Permission> PermissionType checkCompatibleAndCast(final Permission permission)
+	public static final <PermissionType extends Permission> PermissionType checkCompatibleAndCastToTarget(final Permission target, final Permission from)
 	{
-		return PermissionInternalUtils.checkCompatibleAndCastToTarget(this, permission);
+		if (!sameResource(target, from))
+		{
+			throw new AdempiereException("Incompatible permission to be merged: " + target + ", " + from);
+		}
+
+		if (target.getClass() != from.getClass())
+		{
+			throw new AdempiereException("Incompatible permission to be merged: " + target + ", " + from
+					+ " Required class: " + target.getClass()
+					+ " Actual class: " + from.getClass());
+		}
+
+		@SuppressWarnings("unchecked")
+		final PermissionType permissionCasted = (PermissionType)from;
+		return permissionCasted;
+	}
+
+	private static final boolean sameResource(final Permission permission1, final Permission permission2)
+	{
+		return permission1.getResource().equals(permission2.getResource());
 	}
 }

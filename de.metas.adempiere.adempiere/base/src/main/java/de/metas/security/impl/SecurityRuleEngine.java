@@ -52,11 +52,4 @@ public class SecurityRuleEngine implements ISecurityRuleEngine
 	{
 		return "SecurityEngine[" + compositeRule + "]";
 	}
-
-	@Override
-	public Boolean checkFormAccess(final IUserRolePermissions rolePermissions, final Boolean retValue, final int AD_Form_ID)
-	{
-		return compositeRule.hasFormAccess(rolePermissions, retValue, AD_Form_ID);
-	}
-
 }

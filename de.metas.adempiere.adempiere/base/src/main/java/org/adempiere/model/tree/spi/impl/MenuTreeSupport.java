@@ -44,6 +44,9 @@ import org.compiere.util.DisplayType;
 
 import de.metas.i18n.Language;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.security.permissions.ElementPermission;
+import de.metas.security.permissions.ElementResource;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -237,10 +240,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		//
 		// Check role access
 		final IUserRolePermissions role = tree.getUserRolePermissions();
-		Boolean access = null;
+		final ElementPermission access;
 		if (X_AD_Menu.ACTION_Window.equals(action))
 		{
-			access = role.checkWindowAccess(AD_Window_ID);
+			access = role.checkWindowPermission(AD_Window_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -252,7 +255,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
 		{
-			access = role.checkProcessAccess(AD_Process_ID);
+			access = role.checkProcessPermission(AD_Process_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -265,7 +268,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_Report.equals(action))
 		{
-			access = role.checkProcessAccess(AD_Process_ID);
+			access = role.checkProcessPermission(AD_Process_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -278,7 +281,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_Form.equals(action))
 		{
-			access = role.checkFormAccess(AD_Form_ID);
+			access = role.checkFormPermission(AD_Form_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -291,19 +294,25 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
 		{
-			access = role.checkWorkflowAccess(AD_Workflow_ID);
+			access = role.checkWorkflowPermission(AD_Workflow_ID);
 		}
 		else if (X_AD_Menu.ACTION_Task.equals(action))
 		{
-			access = role.checkTaskAccess(AD_Task_ID);
+			access = role.checkTaskPermission(AD_Task_ID);
 		}
 		else if (X_AD_Menu.ACTION_Board.equals(action))
 		{
-			access = true;
+			final ElementResource resource = ElementResource.of("WEBUI_Board", WEBUI_Board_ID);
+			access = ElementPermission.ofReadWriteFlag(resource, true);
 		}
+		else
+		{
+			access = null;
+		}
+
 		//
-		if (access == null // rw or ro for Role
-				&& !tree.isEditable())
+		if (!tree.isEditable()
+				&& (access == null || !access.hasAccess(Access.READ))) // rw or ro for Role
 		{
 			return null;
 		}

@@ -13,15 +13,14 @@ package de.metas.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import javax.annotation.concurrent.Immutable;
 
@@ -51,13 +50,11 @@ public final class ElementResource implements Resource
 
 	private ElementResource(final String tableName, final int elementId)
 	{
-		super();
-
 		Check.assumeNotEmpty(tableName, "tableName not empty");
+		Check.assume(elementId > 0, "elementId > 0");
+
 		this.tableName = tableName.trim();
 		this.tableNameUC = this.tableName.toUpperCase();
-
-		Check.assume(elementId > 0, "elementId > 0");
 		this.elementId = elementId;
 	}
 

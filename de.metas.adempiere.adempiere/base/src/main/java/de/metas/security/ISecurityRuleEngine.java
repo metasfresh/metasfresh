@@ -54,14 +54,4 @@ public interface ISecurityRuleEngine extends ISingletonService
 	 * @param orgIds
 	 */
 	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean rw, Set<OrgId> orgIds);
-
-	/**
-	 * Check if the form is accessible from the given role
-	 * 
-	 * @param rolePermissions
-	 * @param retValue
-	 * @param AD_Form_ID
-	 * @return
-	 */
-	Boolean checkFormAccess(IUserRolePermissions rolePermissions, Boolean retValue, int AD_Form_ID);
 }

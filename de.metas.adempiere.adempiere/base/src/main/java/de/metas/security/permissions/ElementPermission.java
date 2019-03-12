@@ -1,35 +1,11 @@
 package de.metas.security.permissions;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Set;
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-
 import com.google.common.collect.ImmutableSet;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Application Dictionary element permission (e.g. Window, Process etc).
@@ -37,9 +13,10 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-public final class ElementPermission extends AbstractPermission
+@Value
+public final class ElementPermission implements Permission
 {
-	public static ElementPermission of(final ElementResource resource, final boolean readWrite)
+	public static ElementPermission ofReadWriteFlag(final ElementResource resource, final boolean readWrite)
 	{
 		final ImmutableSet.Builder<Access> accesses = ImmutableSet.builder();
 
@@ -61,47 +38,15 @@ public final class ElementPermission extends AbstractPermission
 	}
 
 	private final ElementResource resource;
+	@Getter(AccessLevel.PRIVATE)
 	private final ImmutableSet<Access> accesses;
 
-	private ElementPermission(@NonNull final ElementResource resource, final Set<Access> accesses)
+	private ElementPermission(
+			@NonNull final ElementResource resource,
+			@NonNull final ImmutableSet<Access> accesses)
 	{
 		this.resource = resource;
-		this.accesses = ImmutableSet.copyOf(accesses);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(resource)
-				.append(accesses)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final ElementPermission other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(resource, other.resource)
-				.append(accesses, other.accesses)
-				.isEqual();
-	}
-
-	@Override
-	public ElementResource getResource()
-	{
-		return resource;
+		this.accesses = accesses;
 	}
 
 	public int getElementId()
@@ -125,10 +70,26 @@ public final class ElementPermission extends AbstractPermission
 		return accesses.contains(Access.WRITE);
 	}
 
+	public Boolean getReadWriteBoolean()
+	{
+		if (hasAccess(Access.WRITE))
+		{
+			return Boolean.TRUE;
+		}
+		else if (hasAccess(Access.READ))
+		{
+			return Boolean.FALSE;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	@Override
 	public Permission mergeWith(final Permission permissionFrom)
 	{
-		final ElementPermission elementPermissionFrom = checkCompatibleAndCast(permissionFrom);
+		final ElementPermission elementPermissionFrom = PermissionInternalUtils.checkCompatibleAndCastToTarget(this, permissionFrom);
 
 		final ImmutableSet<Access> accesses = ImmutableSet.<Access> builder()
 				.addAll(this.accesses)

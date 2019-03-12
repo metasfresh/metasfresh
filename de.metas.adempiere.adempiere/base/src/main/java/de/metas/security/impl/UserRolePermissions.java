@@ -651,6 +651,14 @@ class UserRolePermissions implements IUserRolePermissions
 		return windowPermissions.getPermission(AD_Window_ID);
 	}
 
+	@Override
+	public boolean checkWindowPermission(final int AD_Window_ID, @NonNull final Access access)
+	{
+		return windowPermissions
+				.getPermission(AD_Window_ID)
+				.hasAccess(access);
+	}
+
 	/**
 	 * Get Process Access
 	 *
@@ -668,8 +676,13 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Boolean checkProcessAccess(final int AD_Process_ID)
 	{
-		final Boolean retValue = processPermissions.getReadWritePermission(AD_Process_ID);
-		return retValue;
+		return checkProcessPermission(AD_Process_ID).getReadWriteBoolean();
+	}
+
+	@Override
+	public ElementPermission checkProcessPermission(int AD_Process_ID)
+	{
+		return processPermissions.getPermission(AD_Process_ID);
 	}
 
 	/**
@@ -689,8 +702,13 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Boolean checkTaskAccess(final int AD_Task_ID)
 	{
-		final Boolean retValue = taskPermissions.getReadWritePermission(AD_Task_ID);
-		return retValue;
+		return checkTaskPermission(AD_Task_ID).getReadWriteBoolean();
+	}
+
+	@Override
+	public ElementPermission checkTaskPermission(int AD_Task_ID)
+	{
+		return taskPermissions.getPermission(AD_Task_ID);
 	}
 
 	/**
@@ -710,11 +728,13 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Boolean checkFormAccess(final int AD_Form_ID)
 	{
-		Boolean retValue = formPermissions.getReadWritePermission(AD_Form_ID);
-		retValue = Services.get(ISecurityRuleEngine.class).checkFormAccess(this, retValue, AD_Form_ID);
+		return checkFormPermission(AD_Form_ID).getReadWriteBoolean();
+	}
 
-		//
-		return retValue;
+	@Override
+	public ElementPermission checkFormPermission(final int AD_Form_ID)
+	{
+		return formPermissions.getPermission(AD_Form_ID);
 	}
 
 	/**
@@ -734,8 +754,13 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Boolean checkWorkflowAccess(final int AD_Workflow_ID)
 	{
-		final Boolean retValue = workflowPermissions.getReadWritePermission(AD_Workflow_ID);
-		return retValue;
+		return checkWorkflowPermission(AD_Workflow_ID).getReadWriteBoolean();
+	}
+
+	@Override
+	public ElementPermission checkWorkflowPermission(int AD_Workflow_ID)
+	{
+		return workflowPermissions.getPermission(AD_Workflow_ID);
 	}
 
 	@Override

@@ -53,14 +53,4 @@ public interface ISecurityRule
 	 * @param orgIds
 	 */
 	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean readWrite, Set<OrgId> orgIds);
-
-	/**
-	 * Check if the form is accessible from the given role
-	 * 
-	 * @param rolePermissions
-	 * @param roleAccess
-	 * @param AD_Form_ID
-	 * @return
-	 */
-	Boolean hasFormAccess(IUserRolePermissions rolePermissions, Boolean roleAccess, int AD_Form_ID);
 }

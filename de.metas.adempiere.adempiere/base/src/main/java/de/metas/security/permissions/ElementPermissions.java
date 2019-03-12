@@ -15,15 +15,14 @@ import java.util.Objects;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import javax.annotation.concurrent.Immutable;
 
@@ -53,7 +52,7 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 		builder.addPermissions(this, CollisionPolicy.Override);
 		return builder;
 	}
-	
+
 	/** @return element permissions; never return null */
 	public ElementPermission getPermission(final int elementId)
 	{
@@ -66,33 +65,17 @@ public final class ElementPermissions extends AbstractPermissions<ElementPermiss
 	 * Gets {@link Access#READ}/{@link Access#WRITE} access of a given element, as Boolean.
 	 * 
 	 * @param elementId
-	 * @return <ul>
-	 *         <li> <code>true</code> if read-write permission
-	 *         <li> <code>false</code> if read-only permission
-	 *         <li> <code>null</code> if there is no such permission at all
+	 * @return
+	 *         <ul>
+	 *         <li><code>true</code> if read-write permission
+	 *         <li><code>false</code> if read-only permission
+	 *         <li><code>null</code> if there is no such permission at all
 	 *         </ul>
 	 */
 	public Boolean getReadWritePermission(final int elementId)
 	{
-		final ElementResource resource = ElementResource.of(elementTableName, elementId);
-		final ElementPermission permission = getPermissionOrDefault(resource);
-		if (permission == null)
-		{
-			return null;
-		}
-
-		if (permission.hasAccess(Access.WRITE))
-		{
-			return true;
-		}
-		else if (permission.hasAccess(Access.READ))
-		{
-			return false;
-		}
-		else
-		{
-			return null;
-		}
+		return getPermission(elementId)
+				.getReadWriteBoolean();
 	}
 
 	public static class Builder extends PermissionsBuilder<ElementPermission, ElementPermissions>

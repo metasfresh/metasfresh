@@ -47,22 +47,6 @@ public class CompositeSecurityRuleTest
 	}
 
 	/**
-	 * Make sure that an empty composite security rule, method {@link CompositeSecurityRule#hasFormAccess(org.compiere.model.I_AD_Role, Boolean, int)} is not influencing the result
-	 * 
-	 * @task http://dewiki908/mediawiki/index.php/04983_Permissions_are_ignored
-	 */
-	@Test
-	public void hasFormAccess_EmptyRuleShallNotInfuenceTheResult()
-	{
-		final CompositeSecurityRule rule = new CompositeSecurityRule();
-		final int adFormId = 12345;
-
-		Assert.assertEquals("Invalid returned access for given access", Boolean.FALSE, rule.hasFormAccess(role, Boolean.FALSE, adFormId));
-		Assert.assertEquals("Invalid returned access for given access", Boolean.TRUE, rule.hasFormAccess(role, Boolean.TRUE, adFormId));
-		Assert.assertEquals("Invalid returned access for given access", null, rule.hasFormAccess(role, null, adFormId));
-	}
-
-	/**
 	 * Make sure that an empty composite security rule, method {@link CompositeSecurityRule#filterOrgs(Properties, org.compiere.model.I_AD_Role, String, boolean, Set)} is not influencing the result
 	 * 
 	 * @task http://dewiki908/mediawiki/index.php/04983_Permissions_are_ignored

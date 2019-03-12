@@ -100,26 +100,4 @@ final class CompositeSecurityRule implements ISecurityRule
 	{
 		return "CompositeSecurityRule[" + rulesActive.toString() + "]";
 	}
-
-	@Override
-	public Boolean hasFormAccess(final IUserRolePermissions rolePermissions, final Boolean roleAccess, final int AD_Form_ID)
-	{
-		// No rules were added to this composite rule => we are returing given parameter
-		if (rulesActive.isEmpty())
-		{
-			return roleAccess;
-		}
-
-		Boolean result = Boolean.TRUE;
-		for (final ISecurityRule rule : rulesActive)
-		{
-			final Boolean ruleAccess = rule.hasFormAccess(rolePermissions, roleAccess, AD_Form_ID);
-			if (null == ruleAccess)
-			{
-				return null;
-			}
-			result = result && ruleAccess;
-		}
-		return result;
-	}
 }

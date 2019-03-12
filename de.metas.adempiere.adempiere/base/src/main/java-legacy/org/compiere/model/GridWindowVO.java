@@ -251,7 +251,8 @@ public class GridWindowVO implements Serializable
 		if (vo != null && applyRolePermissions)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-			final Boolean windowAccess = role.checkWindowAccess(vo.getAD_Window_ID());
+			final Boolean windowAccess = role.checkWindowPermission(vo.getAD_Window_ID())
+					.getReadWriteBoolean();
 			
 			// no access 
 			if (windowAccess == null)
@@ -614,11 +615,6 @@ public class GridWindowVO implements Serializable
 			loadErrorMessages.append("\n");
 		}
 		loadErrorMessages.append(message);
-	}
-	
-	private String getLoadErrorMessage()
-	{
-		return loadErrorMessages == null || loadErrorMessages.length() == 0 ? null : loadErrorMessages.toString();
 	}
 	
 	public int getAD_Window_ID()
