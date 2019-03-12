@@ -62,6 +62,8 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	boolean isSomethingProcessed(I_PP_Order ppOrder);
 
+	Quantity getQtyOrdered(I_PP_Order ppOrder);
+
 	/**
 	 * Gets Open Qty (i.e. how much we still need to receive).
 	 *
@@ -120,5 +122,4 @@ public interface IPPOrderBL extends ISingletonService
 	void closeAllActivities(PPOrderId orderId);
 
 	void voidOrderRouting(PPOrderId orderId);
-
 }
