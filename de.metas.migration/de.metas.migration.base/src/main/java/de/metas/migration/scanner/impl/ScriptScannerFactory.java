@@ -28,6 +28,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.metas.migration.ScriptType;
 import de.metas.migration.exception.ScriptException;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.scanner.IFileRef;
@@ -131,9 +132,9 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 	@Override
 	public void registerScriptScannerClassesFor(final IScriptExecutorFactory scriptExecutorFactory)
 	{
-		for (final String scriptType : scriptExecutorFactory.getSupportedScriptTypes())
+		for (final ScriptType scriptType : scriptExecutorFactory.getSupportedScriptTypes())
 		{
-			registerScriptScannerClass(scriptType, SingletonScriptScanner.class);
+			registerScriptScannerClass(scriptType.getFileExtension(), SingletonScriptScanner.class);
 		}
 	}
 
