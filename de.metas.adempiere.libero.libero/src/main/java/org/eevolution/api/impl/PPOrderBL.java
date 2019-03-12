@@ -356,7 +356,8 @@ public class PPOrderBL implements IPPOrderBL
 		orderRoutingsRepo.save(orderRouting);
 	}
 
-	private Quantity getQtyOrdered(final I_PP_Order ppOrderRecord)
+	@Override
+	public Quantity getQtyOrdered(final I_PP_Order ppOrderRecord)
 	{
 		final I_C_UOM mainProductUOM = getMainProductStockingUOM(ppOrderRecord);
 		return Quantity.of(ppOrderRecord.getQtyOrdered(), mainProductUOM);
