@@ -448,7 +448,9 @@ public class WorkflowProcessor extends AdempiereServer
 
 		int counter = 0;
 		if (responsible.isInvoker())
-			;
+		{
+			// nothing
+		}
 		// Human
 		else if (MWFResponsible.RESPONSIBLETYPE_Human.equals(responsible.getResponsibleType())
 				&& responsibleUserId != null
@@ -476,7 +478,7 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 		// Role
 		else if (MWFResponsible.RESPONSIBLETYPE_Role.equals(responsible.getResponsibleType())
-				&& responsible.getAD_Role_ID() > 0)
+				&& responsibleRoleId != null)
 		{
 			final RoleId roleId = RoleId.ofRepoId(responsible.getAD_Role_ID());
 			final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
