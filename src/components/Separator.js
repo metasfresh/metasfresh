@@ -11,7 +11,7 @@ const Separator = props => {
         className={classnames('separator-title', {
           collapsible,
         })}
-        onClick={() => onClick(idx)}
+        onClick={() => onClick(idx, tabId)}
       >
         {title} - {sectionCollapsed}
       </span>
