@@ -144,7 +144,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 			string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
 			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-			], wait: false
+			], wait: true
 
 		currentBuild.description="""${currentBuild.description}<p/>
 This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshDownStreamBuildResult.absoluteUrl}">${metasfreshDownStreamBuildResult.displayName}</a>
