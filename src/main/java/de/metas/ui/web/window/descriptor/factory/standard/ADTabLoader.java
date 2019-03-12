@@ -66,13 +66,14 @@ public class ADTabLoader
 			final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
 
 			final LayoutFactory detailLayoutFactory = LayoutFactory.ofIncludedTab(gridWindowVO, mainTabVO, detailTabVO);
-			final DocumentLayoutDetailDescriptor layoutDetail = detailLayoutFactory.layoutDetail().build();
 
-			layoutBuilder.addDetail(layoutDetail);
+			detailLayoutFactory
+					.layoutDetail() // might be empty
+					.map(DocumentLayoutDetailDescriptor.Builder::build)
+					.ifPresent(layoutBuilder::addDetail);
 
 			final DocumentEntityDescriptor.Builder detailEntityBuilder = detailLayoutFactory.documentEntity();
 			rootLayoutFactory.documentEntity().addIncludedEntity(detailEntityBuilder.build());
 		}
 	}
-
 }
