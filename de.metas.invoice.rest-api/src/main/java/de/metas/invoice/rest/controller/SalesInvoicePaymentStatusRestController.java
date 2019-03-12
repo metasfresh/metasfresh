@@ -56,7 +56,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class SalesInvoicePaymentStatusRestController
 {
-	private static final String TIME_ZONE_PARIS = "Europe/Paris";
+	private static final String TIME_ZONE_ZURICH = "Europe/Zurich";
 
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/invoice/paymentstatus";
 
@@ -101,7 +101,7 @@ public class SalesInvoicePaymentStatusRestController
 			@ApiParam(required = true, example = "2019-03-01", value = "Return the status for invoices that have `C_Invoice.DateInvoiced` less than the given date at 00:00") //
 			@RequestParam("endDateExcl") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate,
 
-			@ApiParam(required = false, defaultValue = TIME_ZONE_PARIS, value = "Time zone of the date parameters. See the javadoc for `ZoneId.of(String)` or the IANA Time Zone Database (TZDB) for allowed values") //
+			@ApiParam(required = false, defaultValue = TIME_ZONE_ZURICH, value = "Time zone of the date parameters. See the javadoc for `ZoneId.of(String)` or the IANA Time Zone Database (TZDB) for allowed values") //
 			@RequestParam("timeZoneId") final String timeZoneId)
 	{
 		if (Check.isEmpty(orgCode, true) || startDate == null || endDate == null)
@@ -109,7 +109,7 @@ public class SalesInvoicePaymentStatusRestController
 			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 		}
 
-		final ZoneId zoneId = ZoneId.of(coalesce(timeZoneId, TIME_ZONE_PARIS));
+		final ZoneId zoneId = ZoneId.of(coalesce(timeZoneId, TIME_ZONE_ZURICH));
 
 		final PaymentStatusQuery query = PaymentStatusQuery
 				.builder()
