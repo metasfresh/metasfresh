@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -625,7 +626,7 @@ public class LayoutFactory
 	}
 
 	/** @return included entity grid layout */
-	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
+	public Optional<DocumentLayoutDetailDescriptor.Builder> layoutDetail()
 	{
 		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
 		logger.trace("Generating layout detail for {}", entityDescriptor);
@@ -635,12 +636,12 @@ public class LayoutFactory
 		if (tabDisplayLogic.isConstantFalse())
 		{
 			logger.trace("Skip adding detail tab to layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
-			return null;
+			return Optional.empty();
 		}
 
 		final Builder layoutSingleRow = layoutSingleRow();
 
-		return DocumentLayoutDetailDescriptor
+		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
 				.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
 				.caption(entityDescriptor.getCaption())
 				.description(entityDescriptor.getDescription())
@@ -649,6 +650,7 @@ public class LayoutFactory
 				.singleRowLayout(layoutSingleRow)
 				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate())
 				.supportQuickInput(isSupportQuickInput(entityDescriptor));
+		return Optional.of(builder);
 	}
 
 	private boolean isSupportQuickInput(final DocumentEntityDescriptor.Builder entityDescriptor)
