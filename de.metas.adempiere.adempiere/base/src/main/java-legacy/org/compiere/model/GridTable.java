@@ -2496,9 +2496,23 @@ public class GridTable extends AbstractTableModel
 		final ImmutablePair<ClientId, OrgId> co = getClientOrg(row);
 		final ClientId clientId = co.getLeft();
 		final OrgId orgId = co.getRight();
+		if(clientId == null || orgId == null)
+		{
+			// usually that's the case of a row for which the underlying record was deleted by some outside BL or process.
+			return false;
+		}
+		
 		final int Record_ID = getKeyID(row);
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-		return role.canUpdate(clientId, orgId, m_AD_Table_ID, Record_ID, false);
+		try
+		{
+			return role.canUpdate(clientId, orgId, m_AD_Table_ID, Record_ID, false);
+		}
+		catch (Exception ex)
+		{
+			log.warn("Failed checking role access. Considering row not editable.", ex);
+			return false;
+		}
 	}	// isRowEditable
 
 	/**
