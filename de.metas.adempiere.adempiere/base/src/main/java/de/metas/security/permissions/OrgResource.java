@@ -161,47 +161,67 @@ public final class OrgResource implements Resource
 	{
 		if (clientName == null)
 		{
-			final ClientId adClientId = getClientId();
-			if (adClientId != null)
-			{
-				final I_AD_Client client = Services.get(IClientDAO.class).getById(adClientId);
-				clientName = client == null ? String.valueOf(adClientId) : client.getName();
-			}
-			else
-			{
-				clientName = "System";
-			}
+			clientName = computeClientName();
 		}
 		return clientName;
 
+	}
+
+	private String computeClientName()
+	{
+		final ClientId adClientId = getClientId();
+		if (adClientId != null)
+		{
+			final I_AD_Client client = Services.get(IClientDAO.class).getById(adClientId);
+			return client == null ? String.valueOf(adClientId.getRepoId()) : client.getName();
+		}
+		else
+		{
+			return "System";
+		}
 	}
 
 	public final String getOrgName()
 	{
 		if (orgName == null)
 		{
-			final OrgId adOrgId = getOrgId();
-			if (adOrgId != null)
-			{
-				final I_AD_Org org = Services.get(IOrgDAO.class).getById(adOrgId);
-				orgName = org == null ? String.valueOf(adOrgId) : org.getName();
-			}
-			else
-			{
-				orgName = "*";
-			}
+			orgName = computeOrgName();
 		}
 		return orgName;
+	}
+
+	private String computeOrgName()
+	{
+		final OrgId adOrgId = getOrgId();
+		if (adOrgId != null)
+		{
+			return Services.get(IOrgDAO.class).retrieveOrgName(adOrgId);
+		}
+		else
+		{
+			return "*";
+		}
 	}
 
 	public final boolean isSummaryOrganization()
 	{
 		if (summaryOrg == null)
 		{
-			final I_AD_Org org = Services.get(IOrgDAO.class).getById(getOrgId());
-			summaryOrg = org == null ? false : org.isSummary();
+			summaryOrg = computeIsSummaryOrganization();
 		}
 		return summaryOrg;
+	}
+
+	private boolean computeIsSummaryOrganization()
+	{
+		final OrgId adOrgId = getOrgId();
+		if (adOrgId == null)
+		{
+			return false;
+		}
+
+		final I_AD_Org org = Services.get(IOrgDAO.class).getById(adOrgId);
+		return org == null ? false : org.isSummary();
 	}
 
 	public boolean isRegularOrg()
