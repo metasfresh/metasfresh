@@ -179,9 +179,6 @@ stage('Invoke downstream jobs')
 		{
 			MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_ARTIFACT_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui-frontend=${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}"
-
-			MF_ARTIFACT_VERSIONS['metasfresh-e2e'] = params.MF_METASFRESH_E2E_ARTIFACT_VERSION
-			MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE
 		}
 
 		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-procurement-webui')
@@ -189,6 +186,12 @@ stage('Invoke downstream jobs')
 			MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=params.MF_UPSTREAM_ARTIFACT_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-procurement-webui=${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}"
 		}
+
+		// Anyways, if we don't invoke metasfresh-e2e ourselves (in this if's else block!), then take whatever we were invoked with.
+		// Might well be '', but we need to make sure not to invoke the downstream metasfresh-dist job with MF_METASFRESH_E2E_DOCKER_IMAGE = null,
+		// because that would fail the job with "java.lang.IllegalArgumentException: Null value not allowed as an environment variable: MF_METASFRESH_E2E_DOCKER_IMAGE"
+		MF_ARTIFACT_VERSIONS['metasfresh-e2e'] = params.MF_METASFRESH_E2E_ARTIFACT_VERSION
+		MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE
 	}
 	else
 	{
