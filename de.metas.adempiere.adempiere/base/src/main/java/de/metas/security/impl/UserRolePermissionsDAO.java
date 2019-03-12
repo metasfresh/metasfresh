@@ -214,6 +214,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		{
 			version.incrementAndGet();
 
+			individialPermissionsByKey.reset();
 			permissionsByKey.reset();
 
 			final CacheMgt cacheManager = CacheMgt.get();
