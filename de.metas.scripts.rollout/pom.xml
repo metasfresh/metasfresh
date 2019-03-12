@@ -24,6 +24,28 @@
 
 	<build>
 		<plugins>
+		<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<dependencies>
+								<dependency>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+							</dependencies>
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+					<fail>true</fail>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 604335101L;
+	private static final long serialVersionUID = 271891149L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
       /** if (C_BPartner_ID == 0)
         {
 			setAllowConsolidateInOut (true); // Y
-			setC_BPartner_ID (0);
 			setC_BP_Group_ID (0);
+			setC_BPartner_ID (0);
 			setIsAggregatePO (false); // N
 			setIsCreateDefaultPOReference (false); // N
 			setIsCustomer (false);
@@ -81,24 +81,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Straße und Nr..
-		@param Address1 
-		Adresszeile 1 für diesen Standort
-	  */
-	@Override
-	public void setAddress1 (java.lang.String Address1)
-	{
-		throw new IllegalArgumentException ("Address1 is virtual column");	}
-
-	/** Get Straße und Nr..
-		@return Adresszeile 1 für diesen Standort
-	  */
-	@Override
-	public java.lang.String getAddress1 () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Address1);
 	}
 
 	/** 
@@ -163,6 +145,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
+	/** Set Straße und Nr..
+		@param Address1 
+		Adresszeile 1 für diesen Standort
+	  */
+	@Override
+	public void setAddress1 (java.lang.String Address1)
+	{
+		throw new IllegalArgumentException ("Address1 is virtual column");	}
+
+	/** Get Straße und Nr..
+		@return Adresszeile 1 für diesen Standort
+	  */
+	@Override
+	public java.lang.String getAddress1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Address1);
+	}
+
 	/** Set Sammel-Lieferscheine erlaubt.
 		@param AllowConsolidateInOut Sammel-Lieferscheine erlaubt	  */
 	@Override
@@ -211,31 +211,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
 	{
@@ -273,6 +248,31 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_Dunning getC_Dunning() throws RuntimeException
 	{
@@ -305,6 +305,151 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getC_Dunning_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
+	}
+
+	@Override
+	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
+	}
+
+	/** Set Anrede (ID).
+		@param C_Greeting_ID 
+		Anrede zum Druck auf Korrespondenz
+	  */
+	@Override
+	public void setC_Greeting_ID (int C_Greeting_ID)
+	{
+		if (C_Greeting_ID < 1) 
+			set_Value (COLUMNNAME_C_Greeting_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
+	}
+
+	/** Get Anrede (ID).
+		@return Anrede zum Druck auf Korrespondenz
+	  */
+	@Override
+	public int getC_Greeting_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class);
+	}
+
+	@Override
+	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule)
+	{
+		set_ValueFromPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class, C_InvoiceSchedule);
+	}
+
+	/** Set Terminplan Rechnung.
+		@param C_InvoiceSchedule_ID 
+		Schedule for generating Invoices
+	  */
+	@Override
+	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID)
+	{
+		if (C_InvoiceSchedule_ID < 1) 
+			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, Integer.valueOf(C_InvoiceSchedule_ID));
+	}
+
+	/** Get Terminplan Rechnung.
+		@return Schedule for generating Invoices
+	  */
+	@Override
+	public int getC_InvoiceSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
+	}
+
+	/** Set Zahlungsbedingung.
+		@param C_PaymentTerm_ID 
+		Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+	}
+
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public int getC_PaymentTerm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class);
+	}
+
+	@Override
+	public void setC_TaxGroup(org.eevolution.model.I_C_TaxGroup C_TaxGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class, C_TaxGroup);
+	}
+
+	/** Set Tax Group.
+		@param C_TaxGroup_ID Tax Group	  */
+	@Override
+	public void setC_TaxGroup_ID (int C_TaxGroup_ID)
+	{
+		if (C_TaxGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, Integer.valueOf(C_TaxGroup_ID));
+	}
+
+	/** Get Tax Group.
+		@return Tax Group	  */
+	@Override
+	public int getC_TaxGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -354,80 +499,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
-	}
-
-	/** Set Anrede.
-		@param C_Greeting_ID 
-		Greeting to print on correspondence
-	  */
-	@Override
-	public void setC_Greeting_ID (int C_Greeting_ID)
-	{
-		if (C_Greeting_ID < 1) 
-			set_Value (COLUMNNAME_C_Greeting_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
-	}
-
-	/** Get Anrede.
-		@return Greeting to print on correspondence
-	  */
-	@Override
-	public int getC_Greeting_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class);
-	}
-
-	@Override
-	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class, C_InvoiceSchedule);
-	}
-
-	/** Set Terminplan Rechnung.
-		@param C_InvoiceSchedule_ID 
-		Schedule for generating Invoices
-	  */
-	@Override
-	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID)
-	{
-		if (C_InvoiceSchedule_ID < 1) 
-			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, Integer.valueOf(C_InvoiceSchedule_ID));
-	}
-
-	/** Get Terminplan Rechnung.
-		@return Schedule for generating Invoices
-	  */
-	@Override
-	public int getC_InvoiceSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Ort.
@@ -510,43 +581,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
-	}
-
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
-		Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
-	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
-	}
-
-	/** Get Zahlungsbedingung.
-		@return Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public int getC_PaymentTerm_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Auftrag anlegen.
 		@param CreateSO Auftrag anlegen	  */
 	@Override
@@ -595,40 +629,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getCreditorId () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class);
-	}
-
-	@Override
-	public void setC_TaxGroup(org.eevolution.model.I_C_TaxGroup C_TaxGroup)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class, C_TaxGroup);
-	}
-
-	/** Set Tax Group.
-		@param C_TaxGroup_ID Tax Group	  */
-	@Override
-	public void setC_TaxGroup_ID (int C_TaxGroup_ID)
-	{
-		if (C_TaxGroup_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxGroup_ID, Integer.valueOf(C_TaxGroup_ID));
-	}
-
-	/** Get Tax Group.
-		@return Tax Group	  */
-	@Override
-	public int getC_TaxGroup_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -830,6 +830,22 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_EMail);
 	}
 
+	/** Set Externer Kunde Nr..
+		@param ExternalCustomerNo Externer Kunde Nr.	  */
+	@Override
+	public void setExternalCustomerNo (java.lang.String ExternalCustomerNo)
+	{
+		set_Value (COLUMNNAME_ExternalCustomerNo, ExternalCustomerNo);
+	}
+
+	/** Get Externer Kunde Nr..
+		@return Externer Kunde Nr.	  */
+	@Override
+	public java.lang.String getExternalCustomerNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalCustomerNo);
+	}
+
 	/** Set External ID.
 		@param ExternalId External ID	  */
 	@Override
@@ -987,6 +1003,22 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
+	/** Set Global ID.
+		@param globalid Global ID	  */
+	@Override
+	public void setglobalid (java.lang.String globalid)
+	{
+		set_Value (COLUMNNAME_globalid, globalid);
+	}
+
+	/** Get Global ID.
+		@return Global ID	  */
+	@Override
+	public java.lang.String getglobalid () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_globalid);
+	}
+
 	@Override
 	public org.compiere.model.I_AD_PrintFormat getInvoice_PrintFormat() throws RuntimeException
 	{
@@ -1029,14 +1061,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	 * Reference name: C_Order InvoiceRule
 	 */
 	public static final int INVOICERULE_AD_Reference_ID=150;
-	/** Nach Lieferung Auftrag = O */
-	public static final String INVOICERULE_NachLieferungAuftrag = "O";
-	/** Nach Lieferung = D */
-	public static final String INVOICERULE_NachLieferung = "D";
-	/** Kundenintervall (nach Lieferung) = S */
-	public static final String INVOICERULE_KundenintervallNachLieferung = "S";
-	/** Sofort = I */
-	public static final String INVOICERULE_Sofort = "I";
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
 	/** Set Rechnungsstellung.
 		@param InvoiceRule 
 		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
@@ -1590,25 +1622,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Memo.
-		@param Memo 
-		Memo Text
-	  */
-	@Override
-	public void setMemo (java.lang.String Memo)
-	{
-		set_Value (COLUMNNAME_Memo, Memo);
-	}
-
-	/** Get Memo.
-		@return Memo Text
-	  */
-	@Override
-	public java.lang.String getMemo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo);
-	}
-
 	/** Set Frachtkostenpauschale.
 		@param M_FreightCost_ID Frachtkostenpauschale	  */
 	@Override
@@ -1705,32 +1718,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** 
-	 * MRP_Exclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String MRP_EXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String MRP_EXCLUDE_No = "N";
-	/** Set MRP ausschliessen.
-		@param MRP_Exclude MRP ausschliessen	  */
-	@Override
-	public void setMRP_Exclude (java.lang.String MRP_Exclude)
-	{
-
-		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
-	}
-
-	/** Get MRP ausschliessen.
-		@return MRP ausschliessen	  */
-	@Override
-	public java.lang.String getMRP_Exclude () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
-	}
-
 	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
 	{
@@ -1803,6 +1790,51 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Memo.
+		@param Memo 
+		Memo Text
+	  */
+	@Override
+	public void setMemo (java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	/** Get Memo.
+		@return Memo Text
+	  */
+	@Override
+	public java.lang.String getMemo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
+	/** 
+	 * MRP_Exclude AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MRP_EXCLUDE_Yes = "Y";
+	/** No = N */
+	public static final String MRP_EXCLUDE_No = "N";
+	/** Set MRP ausschliessen.
+		@param MRP_Exclude MRP ausschliessen	  */
+	@Override
+	public void setMRP_Exclude (java.lang.String MRP_Exclude)
+	{
+
+		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
+	}
+
+	/** Get MRP ausschliessen.
+		@return MRP ausschliessen	  */
+	@Override
+	public java.lang.String getMRP_Exclude () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
 	}
 
 	/** Set NAICS/SIC.
@@ -2730,6 +2762,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_URL);
 	}
 
+	/** Set URL3.
+		@param URL3 
+		Full URL address - e.g. http://www.adempiere.org
+	  */
+	@Override
+	public void setURL3 (java.lang.String URL3)
+	{
+		set_Value (COLUMNNAME_URL3, URL3);
+	}
+
+	/** Get URL3.
+		@return Full URL address - e.g. http://www.adempiere.org
+	  */
+	@Override
+	public java.lang.String getURL3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_URL3);
+	}
+
 	/** Set Suchschlüssel.
 		@param Value 
 		Search key for the record in the format required - must be unique
@@ -2749,25 +2800,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
-	/** Set Umsatzsteuer-ID.
-		@param VATaxID Umsatzsteuer-ID	  */
+	/** Set Umsatzsteuer ID.
+		@param VATaxID Umsatzsteuer ID	  */
 	@Override
 	public void setVATaxID (java.lang.String VATaxID)
 	{
 		set_Value (COLUMNNAME_VATaxID, VATaxID);
 	}
 
-	/** Get Umsatzsteuer-ID.
-		@return Umsatzsteuer-ID	  */
+	/** Get Umsatzsteuer ID.
+		@return Umsatzsteuer ID	  */
 	@Override
 	public java.lang.String getVATaxID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_VATaxID);
 	}
 
-	/** Set Produkt-Kategorie Geschäftspartner.
+	/** Set Lieferanten Kategorie.
 		@param VendorCategory 
-		Produkt-Kategorie des Geschäftspartner
+		Lieferanten Kategorie
 	  */
 	@Override
 	public void setVendorCategory (java.lang.String VendorCategory)
@@ -2775,8 +2826,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
 	}
 
-	/** Get Produkt-Kategorie Geschäftspartner.
-		@return Produkt-Kategorie des Geschäftspartner
+	/** Get Lieferanten Kategorie.
+		@return Lieferanten Kategorie
 	  */
 	@Override
 	public java.lang.String getVendorCategory () 

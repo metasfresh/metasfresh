@@ -22,7 +22,7 @@ import de.metas.util.Check;
 
 /**
  * Checks all {@link Interceptor} or {@link Validator} annotated classes if they are correctly defined.
- * 
+ *
  * @author tsa
  *
  */
@@ -39,7 +39,6 @@ public class ClasspathAnnotatedModelInterceptorTester
 
 	public ClasspathAnnotatedModelInterceptorTester()
 	{
-		super();
 	}
 
 	public void test()
@@ -59,7 +58,7 @@ public class ClasspathAnnotatedModelInterceptorTester
 				.addAll(classes_withInterceptor)
 				.build();
 		System.out.println("=> " + classes.size() + " classes to test");
-		
+
 		if(classes.isEmpty())
 		{
 			throw new AdempiereException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
