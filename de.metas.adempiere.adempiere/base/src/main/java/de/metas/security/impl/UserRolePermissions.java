@@ -40,7 +40,6 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.OrgId;
@@ -384,12 +383,6 @@ class UserRolePermissions implements IUserRolePermissions
 	public UserMenuInfo getMenuInfo()
 	{
 		return menuInfo;
-	}
-
-	@Override
-	public final AdTreeId getOrgTreeId()
-	{
-		return orgPermissions.getOrgTreeId();
 	}
 
 	private Set<OrgId> getOrgAccess(final String tableName, final boolean rw)

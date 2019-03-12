@@ -393,8 +393,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 				//
 				// if role has acces all org, then behave as would be * access
-				final OrgPermissions.Builder builder = OrgPermissions.builder()
-						.setOrgTreeId(adTreeOrgId);
+				final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
 
 				// org *
 				{
@@ -433,23 +432,20 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Cached(cacheName = I_AD_User_OrgAccess.Table_Name + "#by#AD_User_ID")
 	public OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId)
 	{
-		final Properties ctx = Env.getCtx();
-
 		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
 		final List<I_AD_User_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_OrgAccess.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_User_OrgAccess.class)
 				.addEqualsFilter(I_AD_User_OrgAccess.COLUMNNAME_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_AD_User_OrgAccess.COLUMN_AD_Org_ID, I_AD_Org.COLUMN_AD_Org_ID, activeOrgsQuery)
 				.create()
 				.list();
 
-		final OrgPermissions.Builder builder = OrgPermissions.builder()
-				.setOrgTreeId(adTreeOrgId);
+		final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
 		for (final I_AD_User_OrgAccess oa : orgAccessesList)
 		{
 			// NOTE: we are fetching the AD_Client_ID from OrgAccess and not from AD_Org (very important for Org=0 like) !
@@ -467,23 +463,20 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Cached(cacheName = I_AD_Role_OrgAccess.Table_Name + "#by#AD_User_ID")
 	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
 	{
-		final Properties ctx = Env.getCtx();
-
 		final IQuery<I_AD_Org> activeOrgsQuery = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
 		final List<I_AD_Role_OrgAccess> orgAccessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role_OrgAccess.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Role_OrgAccess.class)
 				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_AD_Role_OrgAccess.COLUMN_AD_Org_ID, I_AD_Org.COLUMN_AD_Org_ID, activeOrgsQuery)
 				.create()
 				.list();
 
-		final OrgPermissions.Builder builder = OrgPermissions.builder()
-				.setOrgTreeId(adTreeOrgId);
+		final OrgPermissions.Builder builder = OrgPermissions.builder(adTreeOrgId);
 		for (final I_AD_Role_OrgAccess oa : orgAccessesList)
 		{
 			// NOTE: we are fetching the AD_Client_ID from OrgAccess and not from AD_Org (very important for Org=0 like) !

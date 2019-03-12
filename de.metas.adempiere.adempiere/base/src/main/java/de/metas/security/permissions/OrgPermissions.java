@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,40 +45,33 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
-import de.metas.util.Check;
 import de.metas.util.collections.NullPredicate;
 
 @Immutable
 public class OrgPermissions extends AbstractPermissions<OrgPermission>
 {
-	public static final Builder builder()
+	public static final Builder builder(@Nullable final AdTreeId orgTreeId)
 	{
-		return new Builder();
+		return new Builder(orgTreeId);
 	}
 
+	private final AdTreeId orgTreeId;
 	private final ImmutableSet<ClientId> adClientIds;
 	private final ImmutableSet<OrgId> adOrgIds;
-	private final AdTreeId orgTreeId;
 
 	private OrgPermissions(final Builder builder)
 	{
 		super(builder);
+		this.orgTreeId = builder.getOrgTreeId();
 		this.adClientIds = builder.adClientIds.build();
 		this.adOrgIds = builder.adOrgIds.build();
-		this.orgTreeId = builder.getOrgTreeId();
 	}
 
 	public Builder asNewBuilder()
 	{
-		final Builder builder = builder();
-		builder.setOrgTreeId(orgTreeId);
+		final Builder builder = builder(orgTreeId);
 		builder.addPermissions(this, CollisionPolicy.Override);
 		return builder;
-	}
-
-	public final AdTreeId getOrgTreeId()
-	{
-		return orgTreeId;
 	}
 
 	/**
@@ -232,12 +226,13 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 
 	public static class Builder extends PermissionsBuilder<OrgPermission, OrgPermissions>
 	{
+		private final AdTreeId orgTreeId;
 		private final ImmutableSet.Builder<ClientId> adClientIds = ImmutableSet.builder();
 		private final ImmutableSet.Builder<OrgId> adOrgIds = ImmutableSet.builder();
-		private AdTreeId _orgTreeId;
 
-		private Builder()
+		private Builder(@Nullable final AdTreeId orgTreeId)
 		{
+			this.orgTreeId = orgTreeId;
 		}
 
 		@Override
@@ -256,16 +251,9 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			return new OrgPermissions(this);
 		}
 
-		public Builder setOrgTreeId(final AdTreeId orgTreeId)
-		{
-			this._orgTreeId = orgTreeId;
-			return this;
-		}
-
 		private final AdTreeId getOrgTreeId()
 		{
-			Check.assumeNotNull(_orgTreeId, "Org's AD_Tree_ID shall be configured");
-			return _orgTreeId;
+			return orgTreeId;
 		}
 
 		/**
