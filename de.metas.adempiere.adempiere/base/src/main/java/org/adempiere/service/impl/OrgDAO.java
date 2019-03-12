@@ -35,10 +35,7 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_AD_TreeNode;
 import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
@@ -51,6 +48,7 @@ public class OrgDAO implements IOrgDAO
 	{
 		InterfaceWrapperHelper.saveRecord(orgRecord);
 	}
+
 	@Override
 	public void save(@NonNull final I_AD_OrgInfo orgInfoRecord)
 	{
@@ -161,29 +159,5 @@ public class OrgDAO implements IOrgDAO
 				.create()
 				.setClient_ID()
 				.firstOnly(I_AD_Org.class);
-	}
-
-	@Override
-	public List<I_AD_Org> retrieveChildOrgs(final Properties ctx, final int parentOrgId, final int adTreeOrgId)
-	{
-		if (parentOrgId <= 0)
-		{
-			return ImmutableList.of();
-		}
-
-		// Do we look for trees?
-		if (adTreeOrgId <= 0)
-		{
-			return ImmutableList.of();
-		}
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_TreeNode.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, adTreeOrgId)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Parent_ID, parentOrgId)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_AD_TreeNode.COLUMN_Node_ID, I_AD_Org.class)
-				.create()
-				.list();
 	}
 }
