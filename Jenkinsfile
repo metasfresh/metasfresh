@@ -158,6 +158,8 @@ node('agent && linux')
 final MF_ARTIFACT_VERSIONS = [:];
 final MF_DOCKER_IMAGES = [:];
 
+currentBuild.description = currentBuild.description ?: '';
+
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
 stage('Invoke downstream jobs')
