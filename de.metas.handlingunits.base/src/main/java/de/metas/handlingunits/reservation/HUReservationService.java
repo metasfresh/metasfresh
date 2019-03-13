@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -34,7 +35,6 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
@@ -85,9 +85,9 @@ public class HUReservationService
 	/**
 	 * Creates an HU reservation record and creates dedicated reserved VHUs with HU status "reserved".
 	 */
-	public HUReservation makeReservation(@NonNull final ReserveHUsRequest reservationRequest)
+	public Optional<HUReservation> makeReservation(@NonNull final ReserveHUsRequest reservationRequest)
 	{
-		final List<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
+		final Set<HuId> huIds = Check.assumeNotEmpty(reservationRequest.getHuIds(),
 				"the given request needs to have huIds; request={}", reservationRequest);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -106,36 +106,36 @@ public class HUReservationService
 		final List<I_M_HU> newCUs = huTransformServiceSupplier
 				.get()
 				.husToNewCUs(husToNewCUsRequest);
+		if (newCUs.isEmpty())
+		{
+			return Optional.empty();
+		}
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 
-		final HUReservationBuilder huReservationBuilder = HUReservation
-				.builder()
-				.salesOrderLineId(reservationRequest.getSalesOrderLineId());
-
-		Quantity reservedQtySum = Quantity.zero(uomRecord);
+		final Map<HuId, Quantity> reservedQtyByVhuId = new HashMap<>();
 		for (final I_M_HU newCU : newCUs)
 		{
 			final Quantity qty = storageFactory
 					.getStorage(newCU)
 					.getQuantity(reservationRequest.getProductId(), uomRecord);
 
-			reservedQtySum = reservedQtySum.add(qty);
-			huReservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
+			reservedQtyByVhuId.put(HuId.ofRepoId(newCU.getM_HU_ID()), qty);
 
 			// note: M_HU.IsReserved is also updated via model interceptor if M_HU_Reservation changes, but for clarify and unit test purposes, we explicitly do it here as well
 			newCU.setIsReserved(true);
 			handlingUnitsDAO.saveHU(newCU);
 		}
 
-		final HUReservation huReservation = huReservationBuilder
-				.reservedQtySum(Optional.of(reservedQtySum))
+		final HUReservation huReservation = HUReservation.builder()
+				.salesOrderLineId(reservationRequest.getSalesOrderLineId())
+				.reservedQtyByVhuIds(reservedQtyByVhuId)
 				.build();
 
 		huReservationRepository.save(huReservation);
 
-		return huReservation;
+		return Optional.of(huReservation);
 	}
 
 	/**
@@ -310,7 +310,8 @@ public class HUReservationService
 
 	public Optional<Quantity> retrieveReservedQty(@NonNull final OrderLineId orderLineId)
 	{
-		final HUReservation reservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
-		return reservation.getReservedQtySum();
+		return huReservationRepository
+				.getBySalesOrderLineId(orderLineId)
+				.map(HUReservation::getReservedQtySum);
 	}
 }

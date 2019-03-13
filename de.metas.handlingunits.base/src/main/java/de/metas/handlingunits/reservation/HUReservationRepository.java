@@ -3,11 +3,10 @@ package de.metas.handlingunits.reservation;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.IQuery;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -46,8 +44,7 @@ import lombok.NonNull;
 @Repository
 public class HUReservationRepository
 {
-
-	public HUReservation getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
+	public Optional<HUReservation> getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Reservation.class)
@@ -56,42 +53,44 @@ public class HUReservationRepository
 				.create()
 				.list();
 
-		return ofRecords(huReservationRecords).salesOrderLineId(orderLineId).build();
+		if (huReservationRecords.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final HUReservation huReservation = toHUReservation(orderLineId, huReservationRecords);
+		return Optional.of(huReservation);
 	}
 
-	private HUReservationBuilder ofRecords(@NonNull final List<I_M_HU_Reservation> huReservationRecords)
+	private static HUReservation toHUReservation(
+			@NonNull final OrderLineId orderLineId,
+			@NonNull final List<I_M_HU_Reservation> huReservationRecords)
 	{
-		Quantity sum = huReservationRecords.isEmpty()
-				? null
-				: Quantity.zero(huReservationRecords.get(0).getC_UOM());
-
-		final HUReservationBuilder builder = HUReservation.builder();
-
+		final Map<HuId, Quantity> reservedQtyByVhuId = new HashMap<>(); 
 		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
 		{
 			final HuId vhuId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
 			final Quantity reservedQty = Quantity.of(huReservationRecord.getQtyReserved(), huReservationRecord.getC_UOM());
-
-			builder.vhuId2reservedQty(vhuId, reservedQty);
-
-			sum = sum.add(reservedQty);
+			
+			reservedQtyByVhuId.put(vhuId, reservedQty);
 		}
-
-		return builder.reservedQtySum(Optional.ofNullable(sum));
+		
+		return HUReservation.builder()
+				.salesOrderLineId(orderLineId)
+				.reservedQtyByVhuIds(reservedQtyByVhuId)
+				.build();
 	}
 
 	public void save(@NonNull final HUReservation huReservation)
 	{
-		final Map<HuId, Quantity> vhuId2reservedQtys = huReservation.getVhuId2reservedQtys();
-		final Set<Entry<HuId, Quantity>> entrySet = vhuId2reservedQtys.entrySet();
-		for (final Entry<HuId, Quantity> entry : entrySet)
+		for (final HuId vhuId : huReservation.getVhuIds())
 		{
-			final I_M_HU_Reservation huReservationRecord = createOrLoadRecordFor(entry.getKey());
+			final Quantity qtyReserved = huReservation.getReservedQtyByVhuId(vhuId);
+
+			final I_M_HU_Reservation huReservationRecord = createOrLoadRecordFor(vhuId);
 			huReservationRecord.setC_OrderLineSO_ID(huReservation.getSalesOrderLineId().getRepoId());
-
-			huReservationRecord.setQtyReserved(entry.getValue().getAsBigDecimal());
-			huReservationRecord.setC_UOM_ID(entry.getValue().getUOMId());
-
+			huReservationRecord.setQtyReserved(qtyReserved.getAsBigDecimal());
+			huReservationRecord.setC_UOM_ID(qtyReserved.getUOMId());
 			saveRecord(huReservationRecord);
 		}
 	}
