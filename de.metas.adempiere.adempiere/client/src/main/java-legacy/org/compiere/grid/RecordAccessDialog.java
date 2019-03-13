@@ -33,12 +33,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.model.I_AD_Record_Access;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
@@ -56,6 +56,8 @@ import de.metas.i18n.Msg;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
+import de.metas.security.permissions.TableRecordPermission;
+import de.metas.security.requests.CreateRecordAccessRequest;
 import de.metas.util.Services;
 
 /**
@@ -64,14 +66,14 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @version $Id: RecordAccessDialog.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
  */
+@SuppressWarnings("serial")
 public class RecordAccessDialog extends CDialog
 {
 	private final int m_AD_Table_ID;
 	private final int m_Record_ID;
-	private final List<I_AD_Record_Access> _recordAccesses = new ArrayList<>();
-	//
+	private final List<TableRecordPermission> recordPermissions = new ArrayList<>();
+	private TableRecordPermission _currentRecordPermission = null;
 	private int _currentRowIndex = 0;
-	private I_AD_Record_Access _currentRecordAccess = null;
 
 	//
 	// UI
@@ -119,8 +121,8 @@ public class RecordAccessDialog extends CDialog
 		{
 			final ClientId adClientId = Env.getClientId(ctx);
 			final IUserRolePermissionsDAO permissionsRepo = Services.get(IUserRolePermissionsDAO.class);
-			final List<I_AD_Record_Access> recordAccesses = permissionsRepo.retrieveRecordAccesses(m_AD_Table_ID, m_Record_ID, adClientId);
-			setRecordAccesses(recordAccesses);
+			final Collection<TableRecordPermission> recordPermissions = permissionsRepo.retrieveRecordAccesses(m_AD_Table_ID, m_Record_ID, adClientId).getPermissionsList();
+			setRecordAccesses(recordPermissions);
 		}
 
 		setLine(0, false);
@@ -201,8 +203,8 @@ public class RecordAccessDialog extends CDialog
 				rowIndex = maxIndex;
 			}
 			//
-			final I_AD_Record_Access ra = getRecordAccessByIndex(rowIndex);
-			setLine(ra, rowIndex);
+			final TableRecordPermission permission = getRecordAccessByIndex(rowIndex);
+			setLine(permission, rowIndex);
 		}
 
 		//
@@ -226,96 +228,93 @@ public class RecordAccessDialog extends CDialog
 	/**
 	 * Set Selection
 	 *
-	 * @param ra record access
+	 * @param permission record access
 	 */
-	private void setLine(final I_AD_Record_Access ra, final int rowIndex)
+	private void setLine(final TableRecordPermission permission, final int rowIndex)
 	{
-		int AD_Role_ID = 0;
+		RoleId roleId = null;
 		boolean exclude = true;
 		boolean readonly = false;
 		boolean dependent = false;
-		if (ra != null)
+		if (permission != null)
 		{
-			AD_Role_ID = ra.getAD_Role_ID();
-			exclude = ra.isExclude();
-			readonly = ra.isReadOnly();
-			dependent = ra.isDependentEntities();
+			roleId = permission.getRoleId();
+			exclude = permission.isExclude();
+			readonly = permission.isReadOnly();
+			dependent = permission.isDependentEntities();
 		}
 
 		cbExclude.setSelected(exclude);
 		cbReadOnly.setSelected(readonly);
 		cbDependent.setSelected(dependent);
-		bDelete.setEnabled(ra != null);
+		bDelete.setEnabled(permission != null);
 
 		//
 		KeyNamePair roleToSelect = null;
 		for (int i = 0; i < roleField.getItemCount(); i++)
 		{
 			final KeyNamePair pp = roleField.getItemAt(i);
-			if (pp.getKey() == AD_Role_ID)
+			if (roleId != null && pp.getKey() == roleId.getRepoId())
 			{
 				roleToSelect = pp;
 			}
 		}
 
-		if (roleToSelect != null && ra != null)
+		if (roleToSelect != null && permission != null)
 		{
 			roleField.setSelectedItem(roleToSelect);
-			_currentRecordAccess = ra;
+			_currentRecordPermission = permission;
 			_currentRowIndex = rowIndex;
 
 		}
 		else
 		{
-			_currentRecordAccess = null;
+			_currentRecordPermission = null;
 			_currentRowIndex = rowIndex;
 		}
 	}	// setLine
 
-	private void setRecordAccesses(final Collection<I_AD_Record_Access> recordAccesses)
+	private void setRecordAccesses(final Collection<TableRecordPermission> recordPermissionsToSet)
 	{
-		_recordAccesses.clear();
-		_recordAccesses.addAll(recordAccesses);
+		recordPermissions.clear();
+		recordPermissions.addAll(recordPermissionsToSet);
 	}
 
 	private int getRecordAccessesCount()
 	{
-		return _recordAccesses.size();
+		return recordPermissions.size();
 	}
 
-	private I_AD_Record_Access getRecordAccessByIndex(final int index)
+	private TableRecordPermission getRecordAccessByIndex(final int index)
 	{
-		return _recordAccesses.get(index);
+		return recordPermissions.get(index);
 	}
 
 	/**
 	 * @param ra
 	 * @return row index
 	 */
-	private int addRecordAccess(final I_AD_Record_Access ra)
+	private int addRecordAccess(final TableRecordPermission ra)
 	{
-		_recordAccesses.add(ra);
-		return _recordAccesses.size() - 1;
+		recordPermissions.add(ra);
+		return recordPermissions.size() - 1;
 	}
 
-	private void removeRecordAccess(final I_AD_Record_Access recordAccessToDelete)
+	private void removeRecordAccess(final TableRecordPermission recordAccessToDelete)
 	{
 		final ArrayKey key = mkKey(recordAccessToDelete);
-		_recordAccesses.removeIf(ra -> Objects.equals(key, mkKey(ra)));
+		recordPermissions.removeIf(ra -> Objects.equals(key, mkKey(ra)));
 	}
 
-	private static final ArrayKey mkKey(final I_AD_Record_Access ra)
+	private static final ArrayKey mkKey(final TableRecordPermission permission)
 	{
-		final int adRoleId = ra.getAD_Role_ID();
-		final int adTableId = ra.getAD_Table_ID();
-		final int recordId = ra.getRecord_ID();
-		return ArrayKey.of(adRoleId, adTableId, recordId);
+		return ArrayKey.of(permission.getRoleId(), permission.getResource());
 
 	}
 
-	private I_AD_Record_Access getCurrentRecordAccess()
+	private TableRecordPermission getCurrentRecordPermission()
 	{
-		return _currentRecordAccess;
+		return _currentRecordPermission;
 	}
 
 	public int getCurrentRowIndex()
@@ -384,22 +383,23 @@ public class RecordAccessDialog extends CDialog
 		final boolean isReadOnly = cbReadOnly.isSelected();
 		final boolean isDependentEntities = cbDependent.isSelected();
 
-		final I_AD_Record_Access currentRecordAccess = getCurrentRecordAccess();
-		final boolean isNew = currentRecordAccess == null;
+		final TableRecordPermission currentRecordPermission = getCurrentRecordPermission();
+		final boolean isNew = currentRecordPermission == null;
 
 		final IUserRolePermissionsDAO permissionsRepo = Services.get(IUserRolePermissionsDAO.class);
-		permissionsRepo.changeRecordAccess(roleId, m_AD_Table_ID, m_Record_ID, recordAccess -> {
-			recordAccess.setIsActive(true);
-			recordAccess.setIsExclude(isExclude);
-			recordAccess.setIsReadOnly(isReadOnly);
-			recordAccess.setIsDependentEntities(isDependentEntities);
-		});
+		permissionsRepo.createRecordAccess(CreateRecordAccessRequest.builder()
+				.roleId(roleId)
+				.recordRef(TableRecordReference.of(m_AD_Table_ID, m_Record_ID))
+				.exclude(isExclude)
+				.readOnly(isReadOnly)
+				.considerDependentEntriesToo(isDependentEntities)
+				.build());
 
 		//
 		if (isNew)
 		{
-			final int rowIndex = addRecordAccess(currentRecordAccess);
-			setLine(currentRecordAccess, rowIndex);
+			final int rowIndex = addRecordAccess(currentRecordPermission);
+			setLine(currentRecordPermission, rowIndex);
 		}
 	}	// cmd_save
 
@@ -408,15 +408,15 @@ public class RecordAccessDialog extends CDialog
 	 */
 	private void cmd_delete()
 	{
-		final I_AD_Record_Access currentRecordAccess = getCurrentRecordAccess();
-		if (currentRecordAccess == null)
+		final TableRecordPermission currentRecordPermission = getCurrentRecordPermission();
+		if (currentRecordPermission == null)
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 		else
 		{
-			InterfaceWrapperHelper.delete(currentRecordAccess);
-			removeRecordAccess(currentRecordAccess);
+			InterfaceWrapperHelper.delete(currentRecordPermission);
+			removeRecordAccess(currentRecordPermission);
 			setLine(null, 0);
 		}
 	}	// cmd_delete

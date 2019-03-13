@@ -3,13 +3,11 @@ package de.metas.security;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_Record_Access;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_OrgAccess;
 
@@ -24,9 +22,11 @@ import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateRecordAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
+import de.metas.security.requests.DeleteRecordAccessRequest;
 import de.metas.security.requests.RemoveDocActionAccessRequest;
 import de.metas.security.requests.RemoveFormAccessRequest;
 import de.metas.security.requests.RemoveProcessAccessRequest;
@@ -181,9 +181,11 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	void deleteDocumentActionAccess(RemoveDocActionAccessRequest request);
 
-	I_AD_Record_Access changeRecordAccess(RoleId roleId, int adTableId, int recordId, Consumer<I_AD_Record_Access> updater);
+	void createRecordAccess(CreateRecordAccessRequest request);
 
-	List<I_AD_Record_Access> retrieveRecordAccesses(int adTableId, int recordId, ClientId adClientId);
+	void deleteRecordAccess(DeleteRecordAccessRequest request);
+
+	TableRecordPermissions retrieveRecordAccesses(int adTableId, int recordId, ClientId adClientId);
 
 	void createPrivateAccess(UserId adUserId, int adTableId, int recordId);
 

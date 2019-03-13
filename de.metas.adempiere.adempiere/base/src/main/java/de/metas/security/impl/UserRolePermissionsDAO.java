@@ -27,6 +27,7 @@ import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
@@ -92,13 +93,16 @@ import de.metas.security.permissions.TablePermission.Builder;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermission;
 import de.metas.security.permissions.TableRecordPermissions;
+import de.metas.security.permissions.TableRecordResource;
 import de.metas.security.permissions.TableResource;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateRecordAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
+import de.metas.security.requests.DeleteRecordAccessRequest;
 import de.metas.security.requests.RemoveDocActionAccessRequest;
 import de.metas.security.requests.RemoveFormAccessRequest;
 import de.metas.security.requests.RemoveProcessAccessRequest;
@@ -752,23 +756,13 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.create()
 				.list();
 
-		final TableRecordPermissions.Builder recordAccessesBuilder = TableRecordPermissions.builder();
-
-		for (final I_AD_Record_Access a : accessesList)
-		{
-			final TableRecordPermission access = TableRecordPermission.builder()
-					.setFrom(a)
-					.build();
-			recordAccessesBuilder.addPermission(access);
-		}
-
-		return recordAccessesBuilder.build();
+		return toTableRecordPermissions(accessesList);
 	}	// loadRecordAccess
 
 	@Override
-	public List<I_AD_Record_Access> retrieveRecordAccesses(final int adTableId, final int recordId, final ClientId adClientId)
+	public TableRecordPermissions retrieveRecordAccesses(final int adTableId, final int recordId, final ClientId adClientId)
 	{
-		return Services.get(IQueryBL.class)
+		final List<I_AD_Record_Access> records = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Record_Access.class)
 				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
@@ -776,6 +770,30 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_AD_Record_Access.class);
+
+		return toTableRecordPermissions(records);
+	}
+
+	private TableRecordPermissions toTableRecordPermissions(final List<I_AD_Record_Access> records)
+	{
+		final ImmutableList<TableRecordPermission> permissionsList = records.stream()
+				.map(record -> toTableRecordPermission(record))
+				.collect(ImmutableList.toImmutableList());
+
+		return TableRecordPermissions.builder()
+				.addPermissions(permissionsList, CollisionPolicy.Fail)
+				.build();
+	}
+
+	private TableRecordPermission toTableRecordPermission(final I_AD_Record_Access record)
+	{
+		return TableRecordPermission.builder()
+				.roleId(RoleId.ofRepoId(record.getAD_Role_ID()))
+				.resource(TableRecordResource.of(record.getAD_Table_ID(), record.getRecord_ID()))
+				.readOnly(record.isReadOnly())
+				.exclude(record.isExclude())
+				.dependentEntities(record.isDependentEntities())
+				.build();
 	}
 
 	@Override
@@ -1300,23 +1318,11 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Override
-	public I_AD_Record_Access changeRecordAccess(
-			@NonNull final RoleId roleId,
-			final int adTableId,
-			final int recordId,
-			@NonNull final Consumer<I_AD_Record_Access> updater)
+	public void createRecordAccess(@NonNull final CreateRecordAccessRequest request)
 	{
-		Preconditions.checkArgument(adTableId > 0, "adTableId > 0");
-		Preconditions.checkArgument(recordId >= 0, "recordId >= 0");
-
-		I_AD_Record_Access recordAccess = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Record_Access.class)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Role_ID, roleId)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
-				.create()
-				.firstOnly(I_AD_Record_Access.class);
-
+		final RoleId roleId = request.getRoleId();
+		final TableRecordReference recordRef = request.getRecordRef();
+		I_AD_Record_Access recordAccess = getRecordAccessOrNull(roleId, recordRef);
 		if (recordAccess == null)
 		{
 			final Role role = Services.get(IRoleDAO.class).getById(roleId);
@@ -1324,32 +1330,47 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			InterfaceWrapperHelper.setValue(recordAccess, I_AD_Record_Access.COLUMNNAME_AD_Client_ID, role.getClientId().getRepoId());
 			recordAccess.setAD_Org_ID(role.getOrgId().getRepoId());
 			recordAccess.setAD_Role_ID(roleId.getRepoId());
-			recordAccess.setAD_Table_ID(adTableId);
-			recordAccess.setRecord_ID(recordId);
+			recordAccess.setAD_Table_ID(recordRef.getAD_Table_ID());
+			recordAccess.setRecord_ID(recordRef.getRecord_ID());
 
-			recordAccess.setIsExclude(true);
-			recordAccess.setIsReadOnly(false);
-			recordAccess.setIsDependentEntities(false);
 		}
 
-		updater.accept(recordAccess);
+		recordAccess.setIsActive(true);
+		recordAccess.setIsExclude(request.isExclude());
+		recordAccess.setIsReadOnly(request.isReadOnly());
+		recordAccess.setIsDependentEntities(request.isConsiderDependentEntriesToo());
 
-		if (recordAccess.isActive())
-		{
-			InterfaceWrapperHelper.save(recordAccess);
-		}
-		else
-		{
-			if (!InterfaceWrapperHelper.isNew(recordAccess))
-			{
-				InterfaceWrapperHelper.delete(recordAccess);
-			}
-		}
+		InterfaceWrapperHelper.save(recordAccess);
 
 		//
 		resetCacheAfterTrxCommit();
+	}
 
-		return recordAccess;
+	@Override
+	public void deleteRecordAccess(@NonNull final DeleteRecordAccessRequest request)
+	{
+		final RoleId roleId = request.getRoleId();
+		final TableRecordReference recordRef = request.getRecordRef();
+		I_AD_Record_Access record = getRecordAccessOrNull(roleId, recordRef);
+		if (record != null)
+		{
+			InterfaceWrapperHelper.delete(record);
+		}
+	}
+
+	private I_AD_Record_Access getRecordAccessOrNull(final RoleId roleId, final TableRecordReference recordRef)
+	{
+		final int adTableId = recordRef.getAD_Table_ID();
+		final int recordId = recordRef.getRecord_ID();
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Record_Access.class)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Role_ID, roleId)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.firstOnly(I_AD_Record_Access.class);
+
 	}
 
 	@Override
@@ -1368,7 +1389,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		});
 	}
 
-	public void changePrivateAccess(
+	private void changePrivateAccess(
 			@NonNull final UserId userId,
 			final int adTableId,
 			final int recordId,

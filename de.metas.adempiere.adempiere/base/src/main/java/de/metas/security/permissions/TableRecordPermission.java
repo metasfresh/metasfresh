@@ -1,23 +1,26 @@
 package de.metas.security.permissions;
 
 import org.compiere.model.AccessSqlParser;
-import org.compiere.model.I_AD_Record_Access;
 import org.compiere.model.POInfo;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
-import de.metas.util.Check;
+import de.metas.security.RoleId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public class TableRecordPermission extends AbstractPermission
+@Builder(toBuilder = true)
+@Value
+public class TableRecordPermission implements Permission
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
+	@NonNull
+	private final RoleId roleId;
+	@NonNull
 	private final TableRecordResource resource;
+
 	private final boolean readOnly;
 	private final boolean exclude;
 	private final boolean dependentEntities;
@@ -38,15 +41,6 @@ public class TableRecordPermission extends AbstractPermission
 		}
 	});
 
-	private TableRecordPermission(final Builder builder)
-	{
-		super();
-		resource = builder.getResource();
-		readOnly = builder.readOnly;
-		exclude = builder.exclude;
-		dependentEntities = builder.dependentEntities;
-	}
-
 	@Override
 	public TableRecordResource getResource()
 	{
@@ -63,23 +57,22 @@ public class TableRecordPermission extends AbstractPermission
 	@Override
 	public Permission mergeWith(final Permission permissionFrom)
 	{
-		final TableRecordPermission recordPermissionFrom = checkCompatibleAndCast(permissionFrom);
+		final TableRecordPermission recordPermissionFrom = PermissionInternalUtils.checkCompatibleAndCastToTarget(this, permissionFrom);
 
-		final Builder builder = builder()
-				.setFrom(this);
+		final TableRecordPermissionBuilder builder = toBuilder();
 
 		// stronger permissions first
 		if (!recordPermissionFrom.isReadOnly())
 		{
-			builder.setReadOnly(false);
+			builder.readOnly(false);
 		}
 		if (!recordPermissionFrom.isDependentEntities())
 		{
-			builder.setDependentEntities(false);
+			builder.dependentEntities(false);
 		}
 		if (!recordPermissionFrom.isExclude())
 		{
-			builder.setExclude(false);
+			builder.exclude(false);
 		}
 
 		return builder.build();
@@ -93,21 +86,6 @@ public class TableRecordPermission extends AbstractPermission
 	public int getRecord_ID()
 	{
 		return resource.getRecord_ID();
-	}
-
-	public boolean isReadOnly()
-	{
-		return readOnly;
-	}
-
-	public boolean isExclude()
-	{
-		return exclude;
-	}
-
-	public boolean isDependentEntities()
-	{
-		return dependentEntities;
 	}
 
 	/**
@@ -180,66 +158,4 @@ public class TableRecordPermission extends AbstractPermission
 		}	// tables to be ignored
 		return columnSyn;
 	}	// getKeyColumnInfo
-
-	public static class Builder
-	{
-		private TableRecordResource resource;
-		private Boolean readOnly;
-		private Boolean exclude;
-		private Boolean dependentEntities;
-
-		public TableRecordPermission build()
-		{
-			return new TableRecordPermission(this);
-		}
-
-		public Builder setFrom(final TableRecordPermission recordPermission)
-		{
-			setResource(recordPermission.getResource());
-			setReadOnly(recordPermission.isReadOnly());
-			setExclude(recordPermission.isExclude());
-			setDependentEntities(recordPermission.isDependentEntities());
-			return this;
-		}
-
-		public Builder setFrom(final I_AD_Record_Access recordAccess)
-		{
-			setResource(TableRecordResource.of(recordAccess.getAD_Table_ID(), recordAccess.getRecord_ID()));
-			setReadOnly(recordAccess.isReadOnly());
-			setExclude(recordAccess.isExclude());
-			setDependentEntities(recordAccess.isDependentEntities());
-			return this;
-		}
-
-		public TableRecordResource getResource()
-		{
-			Check.assumeNotNull(resource, "resource not null");
-			return resource;
-		}
-
-		public Builder setResource(TableRecordResource resource)
-		{
-			this.resource = resource;
-			return this;
-		}
-
-		private Builder setReadOnly(final boolean readOnly)
-		{
-			this.readOnly = readOnly;
-			return this;
-		}
-
-		private Builder setExclude(final boolean exclude)
-		{
-			this.exclude = exclude;
-			return this;
-		}
-
-		private Builder setDependentEntities(final boolean dependentEntities)
-		{
-			this.dependentEntities = dependentEntities;
-			return this;
-		}
-	}
-
 }
