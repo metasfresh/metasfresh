@@ -524,7 +524,7 @@ public class Doc_AllocationHdr extends Doc
 	 */
 	private Fact createPaymentFacts(final MAcctSchema as, final DocLine_Allocation line)
 	{
-		final BigDecimal paymentAllocatedAmt = line.getAllocatedAmt_CMAdjusted();
+		final BigDecimal paymentAllocatedAmt = line.getAllocatedAmt();
 		if (paymentAllocatedAmt.signum() == 0)
 		{
 			// no amount to be allocated on payment
@@ -546,13 +546,28 @@ public class Doc_AllocationHdr extends Doc
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.setAD_Org_ID(line.getPaymentOrg_ID())
 				.setC_BPartner_ID(line.getPaymentBPartner_ID());
-		if (line.isRevenue())
+
+		if (line.isSOTrxInvoice())
 		{
-			factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
+			}
+			else
+			{
+				factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
+			}
 		}
 		else
 		{
-			factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
+			}
+			else
+			{
+				factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
+			}
 		}
 		factLineBuilder.buildAndAdd();
 
@@ -801,19 +816,35 @@ public class Doc_AllocationHdr extends Doc
 				.setC_BPartner_ID(line.getInvoiceBPartner_ID());
 
 		final AmountSourceAndAcct allocatedAmt;
-		if (line.isRevenue())
+		if (line.isSOTrxInvoice())
 		{
-			allocatedAmt = fact.getAmtSourceAndAcctOnDebit();
-
 			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_C_Receivable, as));
-			factLineBuilder.setAmtSource(null, allocatedAmt.getAmtSource());
+
+			if (line.isCreditMemoInvoice())
+			{
+				allocatedAmt = fact.getAmtSourceAndAcctOnCredit();
+				factLineBuilder.setAmtSource(allocatedAmt.getAmtSource(), null);
+			}
+			else
+			{
+				allocatedAmt = fact.getAmtSourceAndAcctOnDebit();
+				factLineBuilder.setAmtSource(null, allocatedAmt.getAmtSource());
+			}
 		}
 		else
 		{
-			allocatedAmt = fact.getAmtSourceAndAcctOnCredit();
-
 			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_V_Liability, as));
-			factLineBuilder.setAmtSource(allocatedAmt.getAmtSource(), null);
+
+			if (line.isCreditMemoInvoice())
+			{
+				allocatedAmt = fact.getAmtSourceAndAcctOnDebit();
+				factLineBuilder.setAmtSource(null, allocatedAmt.getAmtSource());
+			}
+			else
+			{
+				allocatedAmt = fact.getAmtSourceAndAcctOnCredit();
+				factLineBuilder.setAmtSource(allocatedAmt.getAmtSource(), null);
+			}
 		}
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
