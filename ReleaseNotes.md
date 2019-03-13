@@ -10,6 +10,70 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.95
+# Features
+* metasfresh
+  * [#5012](https://github.com/metasfresh/metasfresh/issues/5012) Add Cable Batchentry also to Purchase Order
+  * [#5014](https://github.com/metasfresh/metasfresh/issues/5014) Make SQL Statement column larger in Report and Process
+  * [#5021](https://github.com/metasfresh/metasfresh/issues/5021) Allow deleting AD_Tabs
+  * [#5026](https://github.com/metasfresh/metasfresh/issues/5026) XJC timeout on reading XSDs
+  * [#5030](https://github.com/metasfresh/metasfresh/issues/5030) Migration scripts applier: run after scripts executed database function
+
+# Fixes
+* metasfresh
+  * [#4999](https://github.com/metasfresh/metasfresh/issues/4999) Packed HUs not displayed as Picked in HU Editor
+  * [#5000](https://github.com/metasfresh/metasfresh/issues/5000) Not all invoice candidates are invoiced with Process action in Picking Terminal v2
+
+* metasfresh-webui-frontend
+  * [#2199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2199) Fix sending tab data when creating process modal
+
+# metasfresh 5.94
+# Features
+* metasfresh
+  * [#4913](https://github.com/metasfresh/metasfresh/issues/4913) Add payment discount when importing discount schema
+  * [#4961](https://github.com/metasfresh/metasfresh/issues/4961) Chart of Accounts Import
+  * [#4982](https://github.com/metasfresh/metasfresh/issues/4982) AD_Element_Trl customization
+  * [#4988](https://github.com/metasfresh/metasfresh/issues/4988) Improve async workpackage logging for shipment schedule and invoice candidate updating
+  * [#4991](https://github.com/metasfresh/metasfresh/issues/4991) URL csv Importer for BPartner
+  * [#4997](https://github.com/metasfresh/metasfresh/issues/4997) Handle M_DiscountSchemaBreak with PriceBase=P(ricingSystem) & missing Base_PricingSystem_ID
+  * [#5001](https://github.com/metasfresh/metasfresh/issues/5001) Create a table for storing product certificate informations
+
+* metasfresh-webui
+  * [#1945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1945) "About" action in webui
+
+* metasfresh-webui-frontend
+  * [#2197](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2197) Don't show input field for QR reader on mobile
+
+# Fixes
+* metasfresh
+  * [#4966](https://github.com/metasfresh/metasfresh/issues/4966) Prolonging contract does not working anymore
+  * [#4975](https://github.com/metasfresh/metasfresh/issues/4975) LastShipmentDate not displayed anymore in Products Proposal
+  * [#4985](https://github.com/metasfresh/metasfresh/issues/4985) MemorizingSupplier.get returns null while it actually couldn't
+  * [#4987](https://github.com/metasfresh/metasfresh/issues/4987) M_Attribute_Value is not saved correctly
+  * [#4989](https://github.com/metasfresh/metasfresh/issues/4989) Problem posting documents with zero-amounts
+
+# metasfresh 5.93
+# Features
+* metasfresh
+  * [#4967](https://github.com/metasfresh/metasfresh/issues/4967) Warehouse Customization: Picking
+
+* metasfresh-webui-api
+  * [#1154](https://github.com/metasfresh/metasfresh-webui-api/issues/1154) Take out "Back" action from quick actions in "More products..." modal
+  * [#1155](https://github.com/metasfresh/metasfresh-webui-api/issues/1155) Support providing shortcuts for processes
+
+* metasfresh-webui-frontend 
+  * [#2182](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2182) Back button for modals
+  * [#2183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2183) frontend: Scan using camera shall be translatable
+  * [#2193](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2193) View quick actions: provide viewProfileId when calling /quickActions endpoint
+
+# Fixes
+* metasfresh
+  * [#4964](https://github.com/metasfresh/metasfresh/issues/4964) Services.get(IDocumentNoBuilderFactory.class) calls the wrong constructor
+  * [#4976](https://github.com/metasfresh/metasfresh/issues/4976) M_DiscountSchemaBreak.PriceBase shall be nullable
+
+* metasfresh-dist
+  * [#57](https://github.com/metasfresh/metasfresh-dist/issues/57) PostgreSQL applying our migration scripts not working anymore
+
 # metasfresh 5.92
 # Features
 * metasfresh

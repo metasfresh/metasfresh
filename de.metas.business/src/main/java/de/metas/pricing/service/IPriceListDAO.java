@@ -62,7 +62,7 @@ public interface IPriceListDAO extends ISingletonService
 	I_M_PriceList getById(int priceListId);
 
 	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
-	
+
 	I_M_PriceList_Version getPriceListVersionByIdInTrx(PriceListVersionId priceListVersionId);
 
 	PriceListsCollection retrievePriceListsCollectionByPricingSystemId(PricingSystemId pricingSystemId);
@@ -174,7 +174,11 @@ public interface IPriceListDAO extends ISingletonService
 
 	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId);
 
+	ProductPriceId addProductPrice(AddProductPriceRequest request);
+
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);
 
 	void updateProductPrice(UpdateProductPriceRequest request);
+
+	void deleteProductPricesByIds(Set<ProductPriceId> productPriceIds);
 }

@@ -62,7 +62,6 @@ import lombok.EqualsAndHashCode;
 
 	private ConstantTranslatableString(final String value, final boolean anyLanguage)
 	{
-		super();
 		this.value = value;
 		this.anyLanguage = anyLanguage;
 	}

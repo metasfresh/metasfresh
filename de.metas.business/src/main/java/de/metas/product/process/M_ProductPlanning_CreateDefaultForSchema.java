@@ -1,9 +1,11 @@
 package de.metas.product.process;
 
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.model.I_M_Product_PlanningSchema;
-import de.metas.util.Check;
+import de.metas.product.ProductPlanningSchemaId;
 import de.metas.util.Services;
 
 /*
@@ -28,20 +30,27 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
+public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess implements IProcessPrecondition
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
-	protected String doIt() throws Exception
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_M_Product_PlanningSchema productPlanningSchema = getRecord(I_M_Product_PlanningSchema.class);
-		Check.assumeNotNull(productPlanningSchema, "@NoSelection@");
+		final ProductPlanningSchemaId schemaId = ProductPlanningSchemaId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
+		if (schemaId == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no schema selected");
+		}
 
-		productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchema(productPlanningSchema);
-
-
-		return MSG_OK;
+		return ProcessPreconditionsResolution.accept();
 	}
 
+	@Override
+	protected String doIt()
+	{
+		final ProductPlanningSchemaId schemaId = ProductPlanningSchemaId.ofRepoId(getRecord_ID());
+		productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schemaId);
+		return MSG_OK;
+	}
 }

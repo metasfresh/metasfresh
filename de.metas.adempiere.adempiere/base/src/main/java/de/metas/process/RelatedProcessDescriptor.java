@@ -69,6 +69,8 @@ public final class RelatedProcessDescriptor
 
 	private final boolean webuiDefaultQuickAction;
 
+	private final String webuiShortcut;
+
 	private RelatedProcessDescriptor(final Builder builder)
 	{
 		processId = builder.processId;
@@ -80,6 +82,8 @@ public final class RelatedProcessDescriptor
 
 		displayPlaces = builder.getDisplayPlaces();
 		webuiDefaultQuickAction = builder.webuiDefaultQuickAction && displayPlaces.contains(DisplayPlace.ViewQuickActions);
+
+		webuiShortcut = builder.webuiShortcut;
 	}
 
 	public boolean isDisplayedOn(@NonNull final DisplayPlace displayPlace)
@@ -107,6 +111,8 @@ public final class RelatedProcessDescriptor
 		private final ImmutableSet<DisplayPlace> DEFAULT_displayPlaces = ImmutableSet.of(DisplayPlace.SingleDocumentActionsMenu);
 
 		private boolean webuiDefaultQuickAction;
+
+		private String webuiShortcut;
 
 		private Builder()
 		{
@@ -182,6 +188,12 @@ public final class RelatedProcessDescriptor
 		public Builder webuiDefaultQuickAction()
 		{
 			return webuiDefaultQuickAction(true);
+		}
+
+		public Builder webuiShortcut(final String webuiShortcut)
+		{
+			this.webuiShortcut = webuiShortcut;
+			return this;
 		}
 	}
 }

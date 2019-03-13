@@ -54,6 +54,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.service.AddProductPriceRequest;
 import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
@@ -125,7 +126,8 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		return load(priceListVersionId, I_M_PriceList_Version.class);
 	}
-	
+
+	@Override
 	public Stream<I_M_ProductPrice> retrieveProductPrices(
 			@NonNull final PriceListVersionId priceListVersionId,
 			final Set<ProductId> productIdsToExclude)
@@ -478,18 +480,19 @@ public class PriceListDAO implements IPriceListDAO
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	@Override
 	public I_M_PriceList_Version getCreatePriceListVersion(@NonNull final ProductPriceCreateRequest request)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoId(request.getPriceListId());
-		@NonNull final LocalDate validDate = request.getValidDate();
+		@NonNull
+		final LocalDate validDate = request.getValidDate();
 		final I_M_PriceList_Version plv;
 		if (request.isUseNewestPriceListversion())
 		{
 			plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
 		}
-		else 
+		else
 		{
 			plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
 		}
@@ -556,6 +559,26 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public ProductPriceId addProductPrice(@NonNull final AddProductPriceRequest request)
+	{
+		final I_M_ProductPrice record = newInstance(I_M_ProductPrice.class);
+
+		record.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setC_UOM_ID(request.getUomId().getRepoId());
+
+		record.setPriceStd(request.getPriceStd());
+		record.setPriceList(request.getPriceList());
+		record.setPriceLimit(request.getPriceLimit());
+
+		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+
+		saveRecord(record);
+
+		return ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
+	}
+
+	@Override
 	public ProductPriceId copyProductPrice(@NonNull final CopyProductPriceRequest request)
 	{
 		final I_M_ProductPrice record = load(request.getCopyFromProductPriceId(), I_M_ProductPrice.class);
@@ -588,5 +611,20 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		saveRecord(record);
+	}
+
+	@Override
+	public void deleteProductPricesByIds(@NonNull final Set<ProductPriceId> productPriceIds)
+	{
+		if (productPriceIds.isEmpty())
+		{
+			return;
+		}
+
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ProductPrice.class)
+				.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
+				.create()
+				.delete();
 	}
 }

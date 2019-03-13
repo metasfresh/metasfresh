@@ -119,4 +119,6 @@ public interface IProductDAO extends ISingletonService
 	void updateProductsByResourceIds(Set<ResourceId> resourceIds, BiConsumer<ResourceId, I_M_Product> productUpdater);
 
 	void deleteProductByResourceId(ResourceId resourceId);
+
+	I_M_Product createProduct(CreateProductRequest request);
 }

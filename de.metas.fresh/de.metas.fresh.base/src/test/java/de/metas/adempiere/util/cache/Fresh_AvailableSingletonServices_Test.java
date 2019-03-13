@@ -34,6 +34,8 @@ public class Fresh_AvailableSingletonServices_Test
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+
 	}
 
 	@Test
@@ -46,9 +48,10 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(de.metas.letters.api.ITextTemplateBL.class) // is registered programmatically
 				.skipServiceInterface(de.metas.product.IProductActivityProvider.class) // is registered programatically
 				.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class) // JAX-RS
-				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl it's coming from spring context
-				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl it's coming from spring context
-				.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class) // skip for now because the impl it's coming from spring context
+				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl is coming from spring context
+				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl is coming from spring context
+				.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class) // skip for now because the impl is coming from spring context
+				.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class) // skip for now because the impl is coming from spring context
 				//
 				.skipServiceInterface(org.adempiere.util.testservice.ITestServiceWithFailingConstructor.class) // because it's supposed to fail
 				.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class) // because it's supposed to fail

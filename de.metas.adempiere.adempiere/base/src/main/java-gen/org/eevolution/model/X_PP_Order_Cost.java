@@ -15,7 +15,7 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -502781915L;
+	private static final long serialVersionUID = 181610332L;
 
     /** Standard Constructor */
     public X_PP_Order_Cost (Properties ctx, int PP_Order_Cost_ID, String trxName)
@@ -125,25 +125,6 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 		return bd;
 	}
 
-	/** Set Cumulated Amt Post.
-		@param CumulatedAmtPost Cumulated Amt Post	  */
-	@Override
-	public void setCumulatedAmtPost (java.math.BigDecimal CumulatedAmtPost)
-	{
-		set_ValueNoCheck (COLUMNNAME_CumulatedAmtPost, CumulatedAmtPost);
-	}
-
-	/** Get Cumulated Amt Post.
-		@return Cumulated Amt Post	  */
-	@Override
-	public java.math.BigDecimal getCumulatedAmtPost () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedAmtPost);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Menge Kumuliert.
 		@param CumulatedQty 
 		Menge Kumuliert
@@ -161,25 +142,6 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	public java.math.BigDecimal getCumulatedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Cumulated Qty Post.
-		@param CumulatedQtyPost Cumulated Qty Post	  */
-	@Override
-	public void setCumulatedQtyPost (java.math.BigDecimal CumulatedQtyPost)
-	{
-		set_ValueNoCheck (COLUMNNAME_CumulatedQtyPost, CumulatedQtyPost);
-	}
-
-	/** Get Cumulated Qty Post.
-		@return Cumulated Qty Post	  */
-	@Override
-	public java.math.BigDecimal getCumulatedQtyPost () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQtyPost);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -224,28 +186,6 @@ public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order
 	public java.math.BigDecimal getCurrentCostPriceLL () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPriceLL);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Menge aktuell.
-		@param CurrentQty 
-		Menge aktuell
-	  */
-	@Override
-	public void setCurrentQty (java.math.BigDecimal CurrentQty)
-	{
-		set_Value (COLUMNNAME_CurrentQty, CurrentQty);
-	}
-
-	/** Get Menge aktuell.
-		@return Menge aktuell
-	  */
-	@Override
-	public java.math.BigDecimal getCurrentQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentQty);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -3,9 +3,6 @@ package de.metas.translation.api;
 import java.sql.SQLException;
 
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.AdMenuId;
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_AD_Menu;
@@ -38,7 +35,6 @@ import de.metas.util.ISingletonService;
 
 public interface IElementTranslationBL extends ISingletonService
 {
-
 	ModelDynAttributeAccessor<I_AD_Menu, Boolean> DYNATTR_AD_Menu_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Menu_UpdateTranslations", Boolean.class);
 	ModelDynAttributeAccessor<I_AD_Tab, Boolean> DYNATTR_AD_Tab_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Tab_UpdateTranslations", Boolean.class);
 	ModelDynAttributeAccessor<I_AD_Window, Boolean> DYNATTR_AD_Window_UpdateTranslations = new ModelDynAttributeAccessor<>("AD_Window_UpdateTranslations", Boolean.class);
@@ -73,16 +69,7 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateMenuTranslationsFromElement(AdElementId adElementId);
 
-	void updateElementTranslationsFromMenu(AdElementId adElementId, AdMenuId adMenuId);
-
-	void updateElementTranslationsFromWindow(AdElementId adElementId, AdWindowId adWindowId);
-
-	void updateElementTranslationsFromTab(AdElementId adElementId, AdTabId adTabId);
-
-	void updateElementFromElementTrl(AdElementId adElementId, String adLanguage);
-
 	void updateDependentADEntries(ElementChangedEvent event);
 
 	void createAndAssignElementsToApplicationDictionaryEntries();
-
 }

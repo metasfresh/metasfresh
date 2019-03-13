@@ -39,7 +39,13 @@ import de.metas.util.ISingletonService;
 
 public interface IProductBOMDAO extends ISingletonService
 {
-	I_PP_Product_BOM getById(int productBomId);
+	I_PP_Product_BOM getById(ProductBOMId bomId);
+
+	@Deprecated
+	default I_PP_Product_BOM getById(final int productBomId)
+	{
+		return productBomId > 0 ? getById(ProductBOMId.ofRepoId(productBomId)) : null;
+	}
 
 	I_PP_Product_BOMLine getBOMLineById(int productBOMLineId);
 
@@ -67,4 +73,8 @@ public interface IProductBOMDAO extends ISingletonService
 	}
 
 	void save(I_PP_Product_BOMLine bomLine);
+
+	ProductBOMId createBOM(BOMCreateRequest request);
+
+	ProductId getBOMProductId(ProductBOMId bomId);
 }

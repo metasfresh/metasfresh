@@ -133,8 +133,18 @@ public class AD_Field
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeFieldDelete(final I_AD_Field field)
+	{
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+
+		final AdFieldId adFieldId = AdFieldId.ofRepoId(field.getAD_Field_ID());
+
+		adWindowDAO.deleteUIElementsByFieldId(adFieldId);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
-	public void onFieldDelete(final I_AD_Field field) throws SQLException
+	public void afterFieldDelete(final I_AD_Field field)
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 

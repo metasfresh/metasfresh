@@ -29,7 +29,8 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Workflow;
+import org.adempiere.user.UserId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Util;
@@ -45,8 +46,13 @@ import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.PPRouting;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderDAO;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
 /**
@@ -106,23 +112,29 @@ public class OrderCheckupBL implements IOrderCheckupBL
 				continue;
 			}
 
-			final I_S_Resource plant = mfgProductPlanning.getS_Resource();
-			final I_AD_Workflow workflow = mfgProductPlanning.getAD_Workflow();
+			final ResourceId plantId = ResourceId.ofRepoId(mfgProductPlanning.getS_Resource_ID());
+			
+			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(mfgProductPlanning.getAD_Workflow_ID());
+			final PPRouting routing = routingId != null
+					? Services.get(IPPRoutingRepository.class).getById(routingId)
+					: null;
 
 			//
 			// Add order line to per Manufacturing warehouse report
 			{
 				final String documentType = X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse;
-				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, workflow.getAD_User_InCharge_ID());
+				final UserId responsibleUserId = routing != null ? routing.getUserInChargeId() : null;
+				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, responsibleUserId);
 				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportBuilderKey);
 				if (reportBuilder == null)
 				{
+					final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(mfgProductPlanning.getM_Warehouse_ID());
 					reportBuilder = OrderCheckupBuilder.newBuilder()
 							.setC_Order(order)
 							.setDocumentType(documentType)
-							.setM_Warehouse(mfgProductPlanning.getM_Warehouse())
-							.setPP_Plant(plant)
-							.setReponsibleUser(workflow.getAD_User_InCharge());
+							.setWarehouseId(warehouseId)
+							.setPlantId(plantId)
+							.setReponsibleUserId(responsibleUserId);
 					reportBuilders.put(reportBuilderKey, reportBuilder);
 				}
 				reportBuilder.addOrderLine(orderLine);
@@ -141,9 +153,9 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		{
 			// make sure the user knows if the master data is not OK, but also give them a chance to disable the error-exception in urgent cases.
 			final org.compiere.model.I_M_Warehouse warehouse = order.getM_Warehouse();
-			final I_S_Resource plant = warehouse.getPP_Plant();
+			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 
-			if (plant == null || plant.getS_Resource_ID() <= 0)
+			if (plantId == null)
 			{
 				final IMsgBL msgBL = Services.get(IMsgBL.class);
 				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -161,12 +173,15 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 			else
 			{
+				final I_S_Resource plant = Services.get(IResourceDAO.class).getById(plantId);
+				final UserId responsibleUserId = UserId.ofRepoIdOrNull(plant.getAD_User_ID());
+
 				final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
 						.setC_Order(order)
 						.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
-						.setM_Warehouse(null) // no warehouse because we are aggregating on plant level
-						.setPP_Plant(plant)
-						.setReponsibleUser(plant.getAD_User());
+						.setWarehouseId(null) // no warehouse because we are aggregating on plant level
+						.setPlantId(plantId)
+						.setReponsibleUserId(responsibleUserId);
 				for (final I_C_OrderLine orderLine : orderLines)
 				{
 					// Don't add the packing materials

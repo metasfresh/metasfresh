@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -84,7 +86,7 @@ public final class Msg
 	 * @param adLanguage Language Key
 	 * @return messages map or null of messages map could not be loaded.
 	 */
-	private CCache<String, Message> getMessagesForLanguage(final String adLanguage)
+	private CCache<String, Message> getMessagesForLanguage(@Nullable final String adLanguage)
 	{
 		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
 
@@ -92,9 +94,9 @@ public final class Msg
 	}
 
 	/** @return given adLanguage if not null or base language */
-	private static final String notNullOrBaseLanguage(final String adLanguage)
+	private static final String notNullOrBaseLanguage(@Nullable final String adLanguage)
 	{
-		return Check.isEmpty(adLanguage) ? Language.getBaseAD_Language() : adLanguage;
+		return Check.isEmpty(adLanguage, true) ? Language.getBaseAD_Language() : adLanguage;
 	}
 
 	/**
@@ -577,7 +579,7 @@ public final class Msg
 				+ ", t.PO_Description as TRL_PO_Description"
 				//
 				+ " FROM AD_Element e"
-				+ " LEFT OUTER JOIN AD_Element_Trl t ON (t.AD_Element_ID=e.AD_Element_ID)"
+				+ " LEFT OUTER JOIN AD_Element_Trl_Effective_v t ON (t.AD_Element_ID=e.AD_Element_ID)"
 				+ " WHERE UPPER(e.ColumnName)=UPPER(?)";
 		final Object[] sqlParams = new Object[] { elementName };
 
