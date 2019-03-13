@@ -1,33 +1,32 @@
 {
     "env": {
         "browser": true,
-        "node": true,
         "es6": true,
-        "jest/globals": true
+        "cypress/globals": true
     },
     "parser": "babel-eslint",
     "extends": [
         "eslint:recommended",
-        "plugin:react/recommended",
+        "plugin:cypress/recommended",
+        "prettier"
     ],
     "rules": {
-        "react/prop-types": "warn",
-        "react/jsx-filename-extension": "off",
-        "react/prefer-stateless-function": "off",
-        "react/display-name": "warn"
+        "prettier/prettier": ["error", {
+          "singleQuote": true,
+          "trailingComma": "es5",
+          "tabWidth": 2,
+          "printWidth": 120,
+        }],
+        "no-unused-expressions": 0,
+        "chai-friendly/no-unused-expressions": 2,
+        "cypress/no-unnecessary-waiting": "warn"
     },
-    "plugins": ["react", "jest"],
+    "plugins": ["prettier", "cypress", "chai-friendly"],
     "globals": {
         "localStorage": true,
         "Promise": true,
         "config": true,
-        "PLUGINS": true,
-        "cy": true,
-        "context": true,
-        "Cypress": true,
-        "before": true,
-        "after": true,
-        "document": true
+        "PLUGINS": true
     },
     "root": true
 }
