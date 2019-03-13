@@ -92,10 +92,9 @@ module.exports = {
   username: 'dev',
   password: '<your-pw>',
 };
+```
 
 ...and start cypress like this:
-
-```
 
 > CYPRESS_baseUrl=https://dev133.metasfresh.com:443 npm run cypress:open
 
