@@ -176,29 +176,6 @@ public interface I_PP_Order_Cost
     public static final String COLUMNNAME_CumulatedAmt = "CumulatedAmt";
 
 	/**
-	 * Set Cumulated Amt Post.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCumulatedAmtPost (java.math.BigDecimal CumulatedAmtPost);
-
-	/**
-	 * Get Cumulated Amt Post.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getCumulatedAmtPost();
-
-    /** Column definition for CumulatedAmtPost */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_CumulatedAmtPost = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "CumulatedAmtPost", null);
-    /** Column name CumulatedAmtPost */
-    public static final String COLUMNNAME_CumulatedAmtPost = "CumulatedAmtPost";
-
-	/**
 	 * Set Menge Kumuliert.
 	 * Menge Kumuliert
 	 *
@@ -222,29 +199,6 @@ public interface I_PP_Order_Cost
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_CumulatedQty = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "CumulatedQty", null);
     /** Column name CumulatedQty */
     public static final String COLUMNNAME_CumulatedQty = "CumulatedQty";
-
-	/**
-	 * Set Cumulated Qty Post.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCumulatedQtyPost (java.math.BigDecimal CumulatedQtyPost);
-
-	/**
-	 * Get Cumulated Qty Post.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getCumulatedQtyPost();
-
-    /** Column definition for CumulatedQtyPost */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_CumulatedQtyPost = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "CumulatedQtyPost", null);
-    /** Column name CumulatedQtyPost */
-    public static final String COLUMNNAME_CumulatedQtyPost = "CumulatedQtyPost";
 
 	/**
 	 * Set Kostenpreis aktuell.
@@ -295,31 +249,6 @@ public interface I_PP_Order_Cost
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_CurrentCostPriceLL = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "CurrentCostPriceLL", null);
     /** Column name CurrentCostPriceLL */
     public static final String COLUMNNAME_CurrentCostPriceLL = "CurrentCostPriceLL";
-
-	/**
-	 * Set Menge aktuell.
-	 * Menge aktuell
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCurrentQty (java.math.BigDecimal CurrentQty);
-
-	/**
-	 * Get Menge aktuell.
-	 * Menge aktuell
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getCurrentQty();
-
-    /** Column definition for CurrentQty */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object> COLUMN_CurrentQty = new org.adempiere.model.ModelColumn<I_PP_Order_Cost, Object>(I_PP_Order_Cost.class, "CurrentQty", null);
-    /** Column name CurrentQty */
-    public static final String COLUMNNAME_CurrentQty = "CurrentQty";
 
 	/**
 	 * Set Aktiv.
