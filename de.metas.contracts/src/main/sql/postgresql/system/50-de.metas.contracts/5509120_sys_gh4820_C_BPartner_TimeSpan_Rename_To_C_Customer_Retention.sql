@@ -73,6 +73,9 @@ UPDATE AD_Column SET AD_Element_ID=575933, ColumnName='CustomerRetention', Descr
 UPDATE AD_Field SET Name='Customer Retention', Description=NULL, Help=NULL WHERE AD_Column_ID=563683
 ;
 
+
+DELETE FROM AD_Element_Link WHERE AD_Tab_ID = 541397;
+
 -- 2019-01-08T14:44:21.506
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Tab_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,575900,625054,0,541397,123,TO_TIMESTAMP('2019-01-08 14:44:21','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-01-08 14:44:21','YYYY-MM-DD HH24:MI:SS'),100)
