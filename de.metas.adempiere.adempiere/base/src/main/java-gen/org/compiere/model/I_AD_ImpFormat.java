@@ -224,16 +224,16 @@ public interface I_AD_ImpFormat
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set isManualImport.
+	 * Set IsManualImport.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setisManualImport (boolean isManualImport);
+	public void setIsManualImport (boolean IsManualImport);
 
 	/**
-	 * Get isManualImport.
+	 * Get IsManualImport.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -241,10 +241,10 @@ public interface I_AD_ImpFormat
 	 */
 	public boolean isManualImport();
 
-    /** Column definition for isManualImport */
-    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat, Object> COLUMN_isManualImport = new org.adempiere.model.ModelColumn<I_AD_ImpFormat, Object>(I_AD_ImpFormat.class, "isManualImport", null);
-    /** Column name isManualImport */
-    public static final String COLUMNNAME_isManualImport = "isManualImport";
+    /** Column definition for IsManualImport */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat, Object> COLUMN_IsManualImport = new org.adempiere.model.ModelColumn<I_AD_ImpFormat, Object>(I_AD_ImpFormat.class, "IsManualImport", null);
+    /** Column name IsManualImport */
+    public static final String COLUMNNAME_IsManualImport = "IsManualImport";
 
 	/**
 	 * Set Multi Line.
@@ -271,7 +271,6 @@ public interface I_AD_ImpFormat
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -281,7 +280,6 @@ public interface I_AD_ImpFormat
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
