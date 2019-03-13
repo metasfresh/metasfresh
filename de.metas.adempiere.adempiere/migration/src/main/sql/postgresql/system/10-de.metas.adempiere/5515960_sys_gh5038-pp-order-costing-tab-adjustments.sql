@@ -343,3 +343,38 @@ UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2019-03-13 10:39:3
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2019-03-13 10:39:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548821
 ;
 
+-- 2019-03-13T13:51:40.495
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET Help='Manufacturing Schedule is a document group of documents or schedule identity conveying authority for the manufacture of specified parts or products in specified quantities.',Updated=TO_TIMESTAMP('2019-03-13 13:51:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=53027
+;
+
+-- 2019-03-13T13:52:48.044
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=1.000000000000,Updated=TO_TIMESTAMP('2019-03-13 13:52:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53737
+;
+
+-- 2019-03-13T13:52:51.511
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=2.000000000000,Updated=TO_TIMESTAMP('2019-03-13 13:52:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53736
+;
+
+-- 2019-03-13T14:03:40.335
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=37,Updated=TO_TIMESTAMP('2019-03-13 14:03:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53543
+;
+
+-- 2019-03-13T14:04:00.118
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=37,Updated=TO_TIMESTAMP('2019-03-13 14:04:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=563711
+;
+
+-- 2019-03-13T14:04:26.158
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=37,Updated=TO_TIMESTAMP('2019-03-13 14:04:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53542
+;
+
+-- 2019-03-13T14:04:36.778
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=37,Updated=TO_TIMESTAMP('2019-03-13 14:04:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53538
+;
+
