@@ -153,10 +153,13 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		return InterfaceWrapperHelper.create(po, I_I_User.class);
 	}
 
+	/*
+	 * @param isInsertOnly ignored. This import is only for updates.
+	 */
 	@Override
 	protected ImportRecordResult importRecord(final IMutable<Object> state,
 			final I_I_User importRecord,
-			final boolean isInsertOnly /* not used, this importer always inserts */ ) throws Exception
+			final boolean isInsertOnly ) throws Exception
 	{
 		//
 		// Create a new user

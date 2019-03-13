@@ -75,10 +75,13 @@ public class BPartnerGlobalIDImportProcess extends AbstractImportProcess<I_I_BPa
 		return new X_I_BPartner_GlobalID(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	/*
+	 * @param isInsertOnly ignored. This import is only for updates.
+	 */
 	@Override
 	protected ImportRecordResult importRecord(IMutable<Object> state,
 			I_I_BPartner_GlobalID importRecord,
-			final boolean isInsertOnly /* not used. This import is only for updates */ )
+			final boolean isInsertOnly)
 	{
 		if (importRecord.getC_BPartner_ID() > 0 && !Check.isEmpty(importRecord.getURL3(), true))
 		{
