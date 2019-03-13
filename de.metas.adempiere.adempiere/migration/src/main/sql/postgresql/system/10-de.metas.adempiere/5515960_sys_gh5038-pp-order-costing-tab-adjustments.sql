@@ -88,3 +88,183 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2019-03-12 18:52:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548821
 ;
 
+-- 2019-03-13T07:05:27.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-03-13 07:05:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2822 AND AD_Language='de_DE'
+;
+
+-- 2019-03-13T07:05:27.493
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2822,'de_DE') 
+;
+
+-- 2019-03-13T07:05:27.520
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2822,'de_DE') 
+;
+
+-- 2019-03-13T07:06:42.837
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Gesamt Menge', IsTranslated='Y', Name='Gesamt Menge', PrintName='Gesamt Menge',Updated=TO_TIMESTAMP('2019-03-13 07:06:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2823 AND AD_Language='de_DE'
+;
+
+-- 2019-03-13T07:06:42.843
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2823,'de_DE') 
+;
+
+-- 2019-03-13T07:06:42.877
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2823,'de_DE') 
+;
+
+-- 2019-03-13T07:06:42.881
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='CumulatedQty', Name='Gesamt Menge', Description='Gesamt Menge', Help='' WHERE AD_Element_ID=2823
+;
+
+-- 2019-03-13T07:06:42.882
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CumulatedQty', Name='Gesamt Menge', Description='Gesamt Menge', Help='', AD_Element_ID=2823 WHERE UPPER(ColumnName)='CUMULATEDQTY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-13T07:06:42.883
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CumulatedQty', Name='Gesamt Menge', Description='Gesamt Menge', Help='' WHERE AD_Element_ID=2823 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-13T07:06:42.883
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Gesamt Menge', Description='Gesamt Menge', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2823) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 2823)
+;
+
+-- 2019-03-13T07:06:42.895
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Gesamt Menge', Name='Gesamt Menge' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2823)
+;
+
+-- 2019-03-13T07:06:42.896
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Gesamt Menge', Description='Gesamt Menge', Help='', CommitWarning = NULL WHERE AD_Element_ID = 2823
+;
+
+-- 2019-03-13T07:06:42.897
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Gesamt Menge', Description='Gesamt Menge', Help='' WHERE AD_Element_ID = 2823
+;
+
+-- 2019-03-13T07:06:42.898
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Gesamt Menge', Description = 'Gesamt Menge', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 2823
+;
+
+-- 2019-03-13T07:07:10.433
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Gesamt Betrag', Name='Gesamt Betrag', PrintName='Gesamt Betrag',Updated=TO_TIMESTAMP('2019-03-13 07:07:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2822 AND AD_Language='de_DE'
+;
+
+-- 2019-03-13T07:07:10.434
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2822,'de_DE') 
+;
+
+-- 2019-03-13T07:07:10.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2822,'de_DE') 
+;
+
+-- 2019-03-13T07:07:10.454
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='CumulatedAmt', Name='Gesamt Betrag', Description='Gesamt Betrag', Help='' WHERE AD_Element_ID=2822
+;
+
+-- 2019-03-13T07:07:10.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CumulatedAmt', Name='Gesamt Betrag', Description='Gesamt Betrag', Help='', AD_Element_ID=2822 WHERE UPPER(ColumnName)='CUMULATEDAMT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-13T07:07:10.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CumulatedAmt', Name='Gesamt Betrag', Description='Gesamt Betrag', Help='' WHERE AD_Element_ID=2822 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-13T07:07:10.457
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Gesamt Betrag', Description='Gesamt Betrag', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2822) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 2822)
+;
+
+-- 2019-03-13T07:07:10.471
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Gesamt Betrag', Name='Gesamt Betrag' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2822)
+;
+
+-- 2019-03-13T07:07:10.472
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Gesamt Betrag', Description='Gesamt Betrag', Help='', CommitWarning = NULL WHERE AD_Element_ID = 2822
+;
+
+-- 2019-03-13T07:07:10.473
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Gesamt Betrag', Description='Gesamt Betrag', Help='' WHERE AD_Element_ID = 2822
+;
+
+-- 2019-03-13T07:07:10.473
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Gesamt Betrag', Description = 'Gesamt Betrag', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 2822
+;
+
+-- 2019-03-13T07:08:34.133
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Nachberechnung Betrag', PrintName='Nachberechnung Betrag',Updated=TO_TIMESTAMP('2019-03-13 07:08:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575923 AND AD_Language='de_DE'
+;
+
+-- 2019-03-13T07:08:34.143
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575923,'de_DE') 
+;
+
+-- 2019-03-13T07:08:34.160
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575923,'de_DE') 
+;
+
+-- 2019-03-13T07:08:34.165
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='PostCalculationAmt', Name='Nachberechnung Betrag', Description=NULL, Help=NULL WHERE AD_Element_ID=575923
+;
+
+-- 2019-03-13T07:08:34.166
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='PostCalculationAmt', Name='Nachberechnung Betrag', Description=NULL, Help=NULL, AD_Element_ID=575923 WHERE UPPER(ColumnName)='POSTCALCULATIONAMT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-13T07:08:34.167
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='PostCalculationAmt', Name='Nachberechnung Betrag', Description=NULL, Help=NULL WHERE AD_Element_ID=575923 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-13T07:08:34.168
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nachberechnung Betrag', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=575923) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 575923)
+;
+
+-- 2019-03-13T07:08:34.181
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Nachberechnung Betrag', Name='Nachberechnung Betrag' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=575923)
+;
+
+-- 2019-03-13T07:08:34.182
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Nachberechnung Betrag', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 575923
+;
+
+-- 2019-03-13T07:08:34.183
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Nachberechnung Betrag', Description=NULL, Help=NULL WHERE AD_Element_ID = 575923
+;
+
+-- 2019-03-13T07:08:34.184
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Nachberechnung Betrag', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 575923
+;
+
