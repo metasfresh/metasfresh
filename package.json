@@ -4,6 +4,8 @@
     "cypress:open": "cypress open"
   },
   "devDependencies": {
+    "@cypress/snapshot": "^2.0.1",
+    "@cypress/webpack-preprocessor": "^4.0.3",
     "babel-eslint": "10.0.1",
     "cypress": "^3.1.5",
     "eslint": "5.9.0",
@@ -11,7 +13,19 @@
     "eslint-plugin-chai-friendly": "^0.4.1",
     "eslint-plugin-cypress": "^2.2.1",
     "eslint-plugin-prettier": "3.0.1",
-    "prettier": "1.16.4"
+    "html-webpack-plugin": "^3.2.0",
+    "prettier": "1.16.4",
+    "webpack": "^4.29.6",
+    "webpack-git-hash": "^1.0.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "axios": "^0.18.0",
+    "immutable": "^4.0.0-rc.12",
+    "luxon": "^1.11.4",
+    "moment": "^2.24.0",
+    "numeral": "^2.0.6",
+    "react-router-redux": "^4.0.8",
+    "sockjs-client": "^1.3.0",
+    "stompjs": "^2.3.3"
+  }
 }
