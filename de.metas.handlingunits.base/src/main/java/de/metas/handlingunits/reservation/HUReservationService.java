@@ -174,15 +174,15 @@ public class HUReservationService
 				IDocument.STATUS_Completed);
 	}
 
-	private static final CCache<HuId, Optional<OrderLineId>> HU_ID_2_ORDERLINE_ID = CCache.newLRUCache(
+	private final CCache<HuId, Optional<OrderLineId>> salesOrderLinesByVhuId = CCache.newLRUCache(
 			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
 
 	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId huId)
 	{
-		return HU_ID_2_ORDERLINE_ID.getOrLoad(huId, this::getReservedForOrderLineId0);
+		return salesOrderLinesByVhuId.getOrLoad(huId, this::retrieveReservedForOrderLineId);
 	}
 
-	public Optional<OrderLineId> getReservedForOrderLineId0(@NonNull final HuId huId)
+	private Optional<OrderLineId> retrieveReservedForOrderLineId(@NonNull final HuId huId)
 	{
 		final I_M_HU_Reservation huReservationRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Reservation.class)
@@ -199,12 +199,12 @@ public class HUReservationService
 
 	public void warmup(@NonNull final Collection<HuId> huIds)
 	{
-		HU_ID_2_ORDERLINE_ID.getAllOrLoad(huIds, this::getReservedForOrderLineId0);
+		salesOrderLinesByVhuId.getAllOrLoad(huIds, this::retrieveReservedForOrderLineId);
 	}
 
-	public Map<HuId, Optional<OrderLineId>> getReservedForOrderLineId0(@NonNull final Collection<HuId> huIds)
+	private Map<HuId, Optional<OrderLineId>> retrieveReservedForOrderLineId(@NonNull final Collection<HuId> huIds)
 	{
-		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>();
+		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>(huIds.size());
 		for (final HuId huId : huIds)
 		{
 			map.put(huId, Optional.empty());
