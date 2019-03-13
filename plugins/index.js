@@ -13,7 +13,6 @@
 
 const webpackPre = require('@cypress/webpack-preprocessor');
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const config = require('../config');
 
 module.exports = on => {
