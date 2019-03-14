@@ -2,12 +2,15 @@ package org.adempiere.location;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
 
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -41,6 +44,10 @@ public class LocationRepository
 		return Location.builder()
 				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
 				.address(address)
+				.city(locationRecord.getCity())
+				.postal(locationRecord.getPostal())
+				.streetAddress1(locationRecord.getAddress1())
+				.countryCode(Optional.of(locationRecord.getC_Country()).map(I_C_Country::getCountryCode).get())
 				.build();
 	}
 
