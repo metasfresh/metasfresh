@@ -40,6 +40,7 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.ITranslatableString;
@@ -193,9 +194,15 @@ class ProductsToPickRowsDataFactory
 			return ImmutableList.of();
 		}
 
-		final Set<HuId> huIds = getHuIdsAvailableToAllocate(packageable);
+		final Set<HuId> reservedHuIds = getHuIdsReservedForSalesOrderLine(packageable);
+		final Set<HuId> availableHuIds = getHuIdsAvailableToAllocate(packageable);
 
-		final List<ProductsToPickRow> rows = huIds.stream()
+		final ImmutableSet<HuId> allHuIds = ImmutableSet.<HuId> builder()
+				.addAll(reservedHuIds)
+				.addAll(availableHuIds)
+				.build();
+
+		final List<ProductsToPickRow> rows = allHuIds.stream()
 				.map(huId -> createZeroQtyRowFromHU(packageable, huId))
 				.collect(ImmutableList.toImmutableList());
 
@@ -208,20 +215,43 @@ class ProductsToPickRowsDataFactory
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private Set<HuId> getHuIdsReservedForSalesOrderLine(final AllocablePackageable packageable)
+	{
+		if (packageable.getSalesOrderLineIdOrNull() == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		final HUReservation huReservation = huReservationService.getBySalesOrderLineId(packageable.getSalesOrderLineIdOrNull()).orElse(null);
+		if (huReservation == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return huReservation.getVhuIds();
+	}
+
 	private Set<HuId> getHuIdsAvailableToAllocate(final AllocablePackageable packageable)
 	{
+		final OrderLineId salesOrderLine = packageable.getSalesOrderLineIdOrNull();
+
 		final Set<HuId> huIds = huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(null)
-				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine)
 				.build()
 				.listIds();
 
-		getHUs(huIds); // pre-load all HUs
-		huReservationService.warmup(huIds);
+		warmUpCacheForHuIds(huIds);
 
 		return huIds;
+	}
+
+	private void warmUpCacheForHuIds(final Collection<HuId> huIds)
+	{
+		getHUs(huIds); // pre-load all HUs
+		huReservationService.warmup(huIds);
 	}
 
 	private ProductsToPickRow allocateRowFromHU(final ProductsToPickRow row, final AllocablePackageable packageable)
