@@ -246,13 +246,13 @@ This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStr
 			},
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
-				final def procurementebuiDownStreamBuildResult = invokeDownStreamJobs(
-						env.BUILD_NUMBER,
-						MF_UPSTREAM_BRANCH,
-						MF_ARTIFACT_VERSIONS['metasfresh-parent'],
-						MF_VERSION,
-						true, // wait=true
-						'metasfresh-procurement-webui');
+				final def procurementWebuiDownStreamBuildResult = invokeDownStreamJobs(
+          env.BUILD_NUMBER,
+          MF_UPSTREAM_BRANCH,
+          MF_ARTIFACT_VERSIONS['metasfresh-parent'],
+          MF_VERSION,
+          true, // wait=true
+          'metasfresh-procurement-webui');
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamBuildResult.buildVariables.MF_VERSION;
 
 				// note that as of now, metasfresh-procurement-webui does not publish a docker image
