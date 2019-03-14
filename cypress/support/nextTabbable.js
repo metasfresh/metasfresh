@@ -39,7 +39,7 @@ export default function nextTabbable($referenceElement, direction = 'forward') {
     if (direction === 'forward') {
       children = children.reverse();
     }
-    children.forEach((child) => {
+    children.forEach(child => {
       stack.push(child);
     });
   }
