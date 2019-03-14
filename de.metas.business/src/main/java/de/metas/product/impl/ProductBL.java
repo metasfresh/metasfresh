@@ -109,7 +109,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getStockingUOM(@NonNull final I_M_Product product)
 	{
-		return product.getC_UOM();
+		return Services.get(IUOMDAO.class).getById(product.getC_UOM_ID());
 	}
 
 	@Override
