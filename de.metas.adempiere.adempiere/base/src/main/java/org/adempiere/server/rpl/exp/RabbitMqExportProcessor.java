@@ -151,7 +151,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		if (userName != null && password != null)
 		{
 			connectionFactory.setUsername(userName);
-			connectionFactory.setUsername(password);
+			connectionFactory.setPassword(password);
 		}
 		RabbitTemplate template = new RabbitTemplate(connectionFactory);
 		template.setRoutingKey(routingKey);
