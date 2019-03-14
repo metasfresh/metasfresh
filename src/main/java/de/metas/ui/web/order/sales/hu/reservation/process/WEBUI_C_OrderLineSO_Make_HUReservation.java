@@ -79,6 +79,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		if (reservableQty.signum() <= 0)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservalbe quantity for productId=" + productId);
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservable quantity for productId=" + productId);
 		}
 
 		return ProcessPreconditionsResolution.accept();
