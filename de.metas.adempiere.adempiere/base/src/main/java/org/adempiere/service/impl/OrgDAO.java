@@ -185,15 +185,16 @@ public class OrgDAO implements IOrgDAO
 		final int orgId = queryBuilder
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgQuery.getOrgValue())
 				.create()
+				.setApplyAccessFilter(true)
 				.firstIdOnly();
 
 		if (orgId < 0 && orgQuery.isFailIfNotExists())
 		{
-			final String msg = StringUtils.formatMessage("Found no existing Org; Searched via the value property");
+			final String msg = StringUtils.formatMessage("Found no existing Org; Searched via value='{}'", orgQuery.getOrgValue());
 			throw new OrgIdNotFoundException(msg);
 		}
 
-		return Optional.of(OrgId.ofRepoIdOrAny(orgId));
+		return Optional.ofNullable(OrgId.ofRepoIdOrNull(orgId));
 	}
 
 	private IQueryBuilder<I_AD_Org> createQueryBuilder(final boolean outOfTrx)

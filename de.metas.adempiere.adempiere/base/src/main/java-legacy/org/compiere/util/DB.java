@@ -31,6 +31,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -794,6 +795,8 @@ public final class DB
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDateTime)param));
 		else if (param instanceof LocalDate)
 			pstmt.setTimestamp(index, TimeUtil.asTimestamp((LocalDate)param));
+		else if (param instanceof ZonedDateTime)
+			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
 		//
 		else if (param instanceof Boolean)
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
@@ -2329,7 +2332,7 @@ public final class DB
 	{
 		return buildSqlList(paramsIn, paramsOut::addAll);
 	}
-	
+
 	public static String buildSqlList(final Collection<? extends Object> paramsIn, @NonNull final Consumer<Collection<? extends Object>> paramsOutCollector)
 	{
 		if (paramsIn == null || paramsIn.isEmpty())

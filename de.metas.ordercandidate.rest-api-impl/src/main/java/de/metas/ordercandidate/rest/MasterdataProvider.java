@@ -16,13 +16,14 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -115,8 +116,9 @@ public final class MasterdataProvider
 		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgId(json, existingOrgId));
 	}
 
-	private OrgId createOrUpdateOrgId(
-			final JsonOrganization json,
+	@VisibleForTesting
+	OrgId createOrUpdateOrgId(
+			@NonNull final JsonOrganization json,
 			@Nullable OrgId existingOrgId)
 	{
 		final SyncAdvise orgSyncAdvise = json.getSyncAdvise();
@@ -126,13 +128,13 @@ public final class MasterdataProvider
 			final String code = json.getCode();
 			if (Check.isEmpty(code, true))
 			{
-				throw new MissingPropertyException("Missing property Code; JsonOrganization={}", json);
+				throw new MissingPropertyException("Missing 'code' property; JsonOrganization={}", json);
 			}
 
 			final OrgQuery query = OrgQuery.builder()
 					.orgValue(code)
 					.failIfNotExists(orgSyncAdvise.isFailIfNotExists())
-					.outOfTrx(false)
+					.outOfTrx(orgSyncAdvise.isLoadReadOnly())
 					.build();
 
 			existingOrgId = orgsRepo
@@ -150,10 +152,10 @@ public final class MasterdataProvider
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
-		if (IfExists.UPDATE.equals(orgSyncAdvise.getIfExists()))
+		if (!orgSyncAdvise.isLoadReadOnly())
 		{
-			updateOrgRecord(orgRecord, json);
 			permissionService.assertCanCreateOrUpdate(orgRecord);
+			updateOrgRecord(orgRecord, json);
 			orgsRepo.save(orgRecord);
 		}
 

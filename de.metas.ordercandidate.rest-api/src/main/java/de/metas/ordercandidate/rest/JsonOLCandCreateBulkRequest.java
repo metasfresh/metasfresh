@@ -60,6 +60,21 @@ public class JsonOLCandCreateBulkRequest
 		this.requests = requests;
 	}
 
+	public JsonOLCandCreateBulkRequest withOrgSyncAdvise(@Nullable final SyncAdvise syncAdvise)
+	{
+		if (syncAdvise == null || requests.isEmpty())
+		{
+			return this;
+		}
+
+		final JsonOLCandCreateBulkRequestBuilder builder = toBuilder().clearRequests();
+		for (final JsonOLCandCreateRequest request : requests)
+		{
+			builder.request(request.withOrgSyncAdvise(syncAdvise));
+		}
+		return builder.build();
+	}
+
 	public JsonOLCandCreateBulkRequest withBPartnersSyncAdvise(@Nullable final SyncAdvise syncAdvise)
 	{
 		if (syncAdvise == null || requests.isEmpty())

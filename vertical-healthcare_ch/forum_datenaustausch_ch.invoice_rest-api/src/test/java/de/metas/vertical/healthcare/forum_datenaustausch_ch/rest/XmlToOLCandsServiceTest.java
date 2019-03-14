@@ -21,6 +21,7 @@ import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
 import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
@@ -66,7 +67,7 @@ class XmlToOLCandsServiceTest
 	@BeforeAll
 	static void beforeAll()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
 	}
 
 	@AfterAll
@@ -83,7 +84,7 @@ class XmlToOLCandsServiceTest
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 
-		final List<JsonOLCandCreateRequest> result = performTest(xmlInvoice);
+		final JsonOLCandCreateBulkRequest result = performTest(xmlInvoice);
 		expect(result).toMatchSnapshot();
 	}
 
@@ -96,11 +97,11 @@ class XmlToOLCandsServiceTest
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001"); // the XML invoice'S ID might have a prepended "KV_" which we return
 
-		final List<JsonOLCandCreateRequest> result = performTest(xmlInvoice);
+		final JsonOLCandCreateBulkRequest result = performTest(xmlInvoice);
 		expect(result).toMatchSnapshot();
 	}
 
-	private List<JsonOLCandCreateRequest> performTest(@NonNull final RequestType xmlInvoice)
+	private JsonOLCandCreateBulkRequest performTest(@NonNull final RequestType xmlInvoice)
 	{
 		final SyncAdvise orgSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.READ_ONLY;
@@ -133,6 +134,6 @@ class XmlToOLCandsServiceTest
 			assertThat(request.getExternalLineId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000_" + i);
 		}
 
-		return requests;
+		return result;
 	}
 }

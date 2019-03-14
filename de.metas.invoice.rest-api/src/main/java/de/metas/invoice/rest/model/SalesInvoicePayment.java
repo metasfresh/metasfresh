@@ -1,15 +1,11 @@
 package de.metas.invoice.rest.model;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -25,31 +21,23 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
 @Builder
-public class SalesInvoicePaymentStatus
+public class SalesInvoicePayment
 {
+	@NonNull
+	String paymentDocumentNumber;
 
 	@NonNull
-	String invoiceDocumentNumber;
-
-	@NonNull
-	BigDecimal openAmt;
-
-	@ApiModelProperty("3-letter ISO-code of the open amount's currency, like EUR or CHF")
-	@NonNull
-	String currency;
-
-	@Singular
-	@JsonInclude(Include.NON_EMPTY)
-	ImmutableList<SalesInvoicePayment> payments;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate paymentDate;
 }

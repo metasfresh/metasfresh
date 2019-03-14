@@ -179,10 +179,10 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveAllocatedAmt(I_C_Invoice invoice)
+	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final int invoiceId = invoice.getC_Invoice_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		final int invoiceId = invoiceRecord.getC_Invoice_ID();
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceRecord);
 
 		return retrieveAllocatedAmt(invoiceId, trxName);
 	}

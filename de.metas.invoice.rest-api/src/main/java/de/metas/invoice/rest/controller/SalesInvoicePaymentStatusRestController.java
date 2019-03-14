@@ -1,11 +1,6 @@
 package de.metas.invoice.rest.controller;
 
-import static org.compiere.util.TimeUtil.asZonedDateTime;
-import static org.compiere.util.Util.coalesce;
-
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
 
 import org.adempiere.service.OrgIdNotFoundException;
 import org.springframework.context.annotation.Profile;
@@ -24,8 +19,10 @@ import de.metas.Profiles;
 import de.metas.invoice.rest.model.SalesInvoicePaymentStatus;
 import de.metas.invoice.rest.model.SalesInvoicePaymentStatusRepository;
 import de.metas.invoice.rest.model.SalesInvoicePaymentStatusRepository.PaymentStatusQuery;
+import de.metas.invoice.rest.model.SalesInvoicePaymentStatusResponse;
 import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
@@ -56,8 +53,6 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class SalesInvoicePaymentStatusRestController
 {
-	private static final String TIME_ZONE_ZURICH = "Europe/Zurich";
-
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/invoice/paymentstatus";
 
 	private SalesInvoicePaymentStatusRepository salesInvoicePaymentStatusRepository;
@@ -67,9 +62,10 @@ public class SalesInvoicePaymentStatusRestController
 		this.salesInvoicePaymentStatusRepository = salesInvoicePaymentStatusRepository;
 	}
 
+	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and document number, together with their payment status.", notes = "Does *not* get ales credit memos and all kinds of purchase invoices.")
 	@GetMapping("{orgCode}/{invoiceDocumentNo}")
-	public ResponseEntity<List<SalesInvoicePaymentStatus>> retrievePaymentStatus(
-			@ApiParam(required = true, value = "AD_Org.Value of the organisation for which we retrieve the payment status") //
+	public ResponseEntity<SalesInvoicePaymentStatusResponse> retrievePaymentStatus(
+			@ApiParam(required = true, value = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
 			@PathVariable("orgCode") final String orgCode,
 
 			@ApiParam(required = true, value = "Invoice document number of the invoice(s) for which we retrieve the payment status") //
@@ -86,41 +82,44 @@ public class SalesInvoicePaymentStatusRestController
 				.invoiceDocumentNo(invoiceDocumentNo)
 				.build();
 
-		final ImmutableList<SalesInvoicePaymentStatus> result = salesInvoicePaymentStatusRepository.getBy(query);
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		try
+		{
+			final ImmutableList<SalesInvoicePaymentStatus> result = salesInvoicePaymentStatusRepository.getBy(query);
+			return new ResponseEntity<>(new SalesInvoicePaymentStatusResponse(result), HttpStatus.OK);
+		}
+		catch (final OrgIdNotFoundException e)
+		{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 	}
 
+	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and invoice date range, together with their payment status.",  notes = "Does *not* get sales credit memos and all kinds of purchase invoices.")
 	@GetMapping("{orgCode}")
-	public ResponseEntity<List<SalesInvoicePaymentStatus>> retrievePaymentStatus(
-			@ApiParam(required = true, value = "`AD_Org.Value` of the organisation for which we retrieve the payment status") //
+	public ResponseEntity<SalesInvoicePaymentStatusResponse> retrievePaymentStatus(
+			@ApiParam(required = true, value = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
 			@PathVariable("orgCode") final String orgCode,
 
 			@ApiParam(required = true, example = "2019-02-01", value = "Return the status for invoices that have `C_Invoice.DateInvoiced` greater </b>or equal</b> to the given date at 00:00") //
 			@RequestParam("startDateIncl") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
 
 			@ApiParam(required = true, example = "2019-03-01", value = "Return the status for invoices that have `C_Invoice.DateInvoiced` less than the given date at 00:00") //
-			@RequestParam("endDateExcl") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate,
-
-			@ApiParam(required = false, defaultValue = TIME_ZONE_ZURICH, value = "Time zone of the date parameters. See the javadoc for `ZoneId.of(String)` or the IANA Time Zone Database (TZDB) for allowed values") //
-			@RequestParam("timeZoneId") final String timeZoneId)
+			@RequestParam("endDateExcl") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate)
 	{
 		if (Check.isEmpty(orgCode, true) || startDate == null || endDate == null)
 		{
 			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 		}
 
-		final ZoneId zoneId = ZoneId.of(coalesce(timeZoneId, TIME_ZONE_ZURICH));
-
 		final PaymentStatusQuery query = PaymentStatusQuery
 				.builder()
 				.orgValue(orgCode)
-				.dateInvoicedFrom(asZonedDateTime(startDate, zoneId))
-				.dateInvoicedTo(asZonedDateTime(endDate, zoneId))
+				.dateInvoicedFrom(startDate)
+				.dateInvoicedTo(endDate)
 				.build();
 		try
 		{
 			final ImmutableList<SalesInvoicePaymentStatus> result = salesInvoicePaymentStatusRepository.getBy(query);
-			return new ResponseEntity<>(result, HttpStatus.OK);
+			return new ResponseEntity<>(new SalesInvoicePaymentStatusResponse(result), HttpStatus.OK);
 		}
 		catch (final OrgIdNotFoundException e)
 		{

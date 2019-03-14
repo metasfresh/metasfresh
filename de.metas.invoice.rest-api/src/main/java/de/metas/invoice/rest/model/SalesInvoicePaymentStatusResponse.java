@@ -1,15 +1,7 @@
 package de.metas.invoice.rest.model;
 
-import java.math.BigDecimal;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.ImmutableList;
 
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,21 +27,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class SalesInvoicePaymentStatus
+public class SalesInvoicePaymentStatusResponse
 {
-
-	@NonNull
-	String invoiceDocumentNumber;
-
-	@NonNull
-	BigDecimal openAmt;
-
-	@ApiModelProperty("3-letter ISO-code of the open amount's currency, like EUR or CHF")
-	@NonNull
-	String currency;
-
-	@Singular
-	@JsonInclude(Include.NON_EMPTY)
-	ImmutableList<SalesInvoicePayment> payments;
+	ImmutableList<SalesInvoicePaymentStatus> response;
 }
