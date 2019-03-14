@@ -3,6 +3,7 @@ package de.metas.handlingunits.reservation;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.order.OrderLineId;
@@ -44,6 +48,9 @@ import lombok.NonNull;
 @Repository
 public class HUReservationRepository
 {
+	private final CCache<HuId, Optional<OrderLineId>> salesOrderLinesByVhuId = CCache.newLRUCache(
+			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
+
 	public Optional<HUReservation> getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
@@ -66,15 +73,15 @@ public class HUReservationRepository
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final List<I_M_HU_Reservation> huReservationRecords)
 	{
-		final Map<HuId, Quantity> reservedQtyByVhuId = new HashMap<>(); 
+		final Map<HuId, Quantity> reservedQtyByVhuId = new HashMap<>();
 		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
 		{
 			final HuId vhuId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
 			final Quantity reservedQty = Quantity.of(huReservationRecord.getQtyReserved(), huReservationRecord.getC_UOM());
-			
+
 			reservedQtyByVhuId.put(vhuId, reservedQty);
 		}
-		
+
 		return HUReservation.builder()
 				.salesOrderLineId(orderLineId)
 				.reservedQtyByVhuIds(reservedQtyByVhuId)
@@ -121,4 +128,65 @@ public class HUReservationRepository
 				.addNotEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_OrderLineSO_ID, orderLineId)
 				.create();
 	}
+
+	public void deleteReservationsByVhuIds(@NonNull final Collection<HuId> vhuIds)
+	{
+		if (vhuIds.isEmpty())
+		{
+			return;
+		}
+
+		Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, vhuIds)
+				.create()
+				.delete();
+	}
+
+	public void warmup(@NonNull final Collection<HuId> huIds)
+	{
+		salesOrderLinesByVhuId.getAllOrLoad(huIds, this::retrieveReservedForOrderLineId);
+	}
+
+	private Map<HuId, Optional<OrderLineId>> retrieveReservedForOrderLineId(@NonNull final Collection<HuId> huIds)
+	{
+		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>(huIds.size());
+
+		huIds.forEach(huId -> map.put(huId, Optional.empty()));
+
+		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huIds)
+				.create()
+				.list();
+		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
+		{
+			final HuId huId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID());
+			map.put(huId, Optional.of(orderLineId));
+		}
+		return ImmutableMap.copyOf(map);
+	}
+
+	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId vhuId)
+	{
+		return salesOrderLinesByVhuId.getOrLoad(vhuId, this::retrieveReservedForOrderLineId);
+	}
+
+	private Optional<OrderLineId> retrieveReservedForOrderLineId(@NonNull final HuId huId)
+	{
+		final I_M_HU_Reservation huReservationRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huId) // we have a UC constraint on VHU_ID
+				.create()
+				.firstOnly(I_M_HU_Reservation.class);
+		if (huReservationRecord == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID()));
+	}
+
 }

@@ -1,7 +1,5 @@
 package de.metas.handlingunits.reservation;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +13,6 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -29,10 +26,8 @@ import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.cache.CCache;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -44,7 +39,6 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -90,14 +84,16 @@ public class HUReservationService
 
 	private final HUReservationRepository huReservationRepository;
 
-	private final CCache<HuId, Optional<OrderLineId>> salesOrderLinesByVhuId = CCache.newLRUCache(
-			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
-
 	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
 
 	public HUReservationService(@NonNull final HUReservationRepository huReservationRepository)
 	{
 		this.huReservationRepository = huReservationRepository;
+	}
+
+	public void warmup(@NonNull final Collection<HuId> huIds)
+	{
+		huReservationRepository.warmup(huIds);
 	}
 
 	/**
@@ -163,24 +159,15 @@ public class HUReservationService
 	 */
 	public void deleteReservations(@NonNull final Collection<HuId> vhuIds)
 	{
-		Services.get(ITrxManager.class).run(() -> deleteReservation0(vhuIds));
+		Services.get(ITrxManager.class).run(() -> deleteReservationInTrx(vhuIds));
 	}
 
-	private void deleteReservation0(@NonNull final Collection<HuId> vhuIds)
+	private void deleteReservationInTrx(@NonNull final Collection<HuId> vhuIds)
 	{
-		for (final HuId vhuId : vhuIds)
-		{
-			// note: M_HU.IsReserved is also updated via model interceptor if M_HU_Reservation changes, but for clarify and unit test purposes, we explicitly do it here as well
-			final I_M_HU vhu = load(vhuId, I_M_HU.class);
-			vhu.setIsReserved(false);
-			Services.get(IHandlingUnitsDAO.class).saveHU(vhu);
-		}
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		handlingUnitsRepo.setReservedByHUIds(vhuIds, false);
 
-		Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Reservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, vhuIds)
-				.create()
-				.delete();
+		huReservationRepository.deleteReservationsByVhuIds(vhuIds);
 	}
 
 	public ImmutableSet<String> getDocstatusesThatAllowReservation()
@@ -200,48 +187,7 @@ public class HUReservationService
 
 	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId vhuId)
 	{
-		return salesOrderLinesByVhuId.getOrLoad(vhuId, this::retrieveReservedForOrderLineId);
-	}
-
-	private Optional<OrderLineId> retrieveReservedForOrderLineId(@NonNull final HuId huId)
-	{
-		final I_M_HU_Reservation huReservationRecord = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Reservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huId) // we have a UC constraint on VHU_ID
-				.create()
-				.firstOnly(I_M_HU_Reservation.class);
-		if (huReservationRecord == null)
-		{
-			return Optional.empty();
-		}
-		return Optional.of(OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID()));
-	}
-
-	public void warmup(@NonNull final Collection<HuId> huIds)
-	{
-		salesOrderLinesByVhuId.getAllOrLoad(huIds, this::retrieveReservedForOrderLineId);
-	}
-
-	private Map<HuId, Optional<OrderLineId>> retrieveReservedForOrderLineId(@NonNull final Collection<HuId> huIds)
-	{
-		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>(huIds.size());
-
-		huIds.forEach(huId -> map.put(huId, Optional.empty()));
-
-		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Reservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huIds)
-				.create()
-				.list();
-		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
-		{
-			final HuId huId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID());
-			map.put(huId, Optional.of(orderLineId));
-		}
-		return ImmutableMap.copyOf(map);
+		return huReservationRepository.getReservedForOrderLineId(vhuId);
 	}
 
 	public Quantity retrieveReservableQty(@NonNull final RetrieveHUsQtyRequest request)
