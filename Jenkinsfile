@@ -59,8 +59,8 @@ For docker we currently don not have such an arrangement.''',
 			name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION'),
 
 		string(defaultValue: '',
-			description: 'Version of the metasfresh-esb (camel) bundles to include in the distribution. Leave empty and this build will use the latest.',
-			name: 'MF_METASFRESH_ESB_CAMEL_VERSION'),
+			description: 'metasfresh-edi (camel) docker image. Leave empty and this build will <code>&gt;effective-branch-name&lt;_LATEST</code>',
+			name: 'MF_METASFRESH_EDI_DOCKER_IMAGE'),
 
 		string(defaultValue: '',
 			description: 'e2e docker image. Leave empty and this build will <code>&gt;effective-branch-name&lt;_LATEST</code>',
@@ -87,10 +87,10 @@ timestamps
 	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = params.MF_METASFRESH_PROCUREMENT_WEBUI_VERSION ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSION ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
-	MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = params.MF_METASFRESH_ESB_CAMEL_VERSION ?: "LATEST";
 
 	final MF_DOCKER_IMAGES = [:];
 	MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE ?: "${MF_UPSTREAM_BRANCH}_LATEST"
+	MF_DOCKER_IMAGES['metasfresh-edi'] = params.MF_METASFRESH_EDI_DOCKER_IMAGE ?: "${MF_UPSTREAM_BRANCH}_LATEST"
 
 	final MF_ARTIFACT_URLS = [:];
 	String dbInitDockerImageName; // will be set if and when the docker image is created
@@ -149,7 +149,6 @@ node('agent && linux')
 				final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])}"
 				final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui'])}"
 				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}"
-				final String metasfreshEsbCamelUpdatePropertyParam = "-Dproperty=metasfresh-esb-camel.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'])}"
 				final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh'])}"
 
 
@@ -160,7 +159,6 @@ node('agent && linux')
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshEsbCamelUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below the parent ${mvnConf.pomFile}
