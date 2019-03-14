@@ -886,29 +886,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set Externer Kunde Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setExternalCustomerNo (java.lang.String ExternalCustomerNo);
-
-	/**
-	 * Get Externer Kunde Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getExternalCustomerNo();
-
-    /** Column definition for ExternalCustomerNo */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ExternalCustomerNo = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ExternalCustomerNo", null);
-    /** Column name ExternalCustomerNo */
-    public static final String COLUMNNAME_ExternalCustomerNo = "ExternalCustomerNo";
-
-	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1878,6 +1855,56 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo", null);
     /** Column name Memo */
     public static final String COLUMNNAME_Memo = "Memo";
+
+	/**
+	 * Set Memo_Delivery.
+	 * Memo Lieferung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo_Delivery (java.lang.String Memo_Delivery);
+
+	/**
+	 * Get Memo_Delivery.
+	 * Memo Lieferung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo_Delivery();
+
+    /** Column definition for Memo_Delivery */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo_Delivery = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo_Delivery", null);
+    /** Column name Memo_Delivery */
+    public static final String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
+
+	/**
+	 * Set Memo_Invoicing.
+	 * Memo Abrechnung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo_Invoicing (java.lang.String Memo_Invoicing);
+
+	/**
+	 * Get Memo_Invoicing.
+	 * Memo Abrechnung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo_Invoicing();
+
+    /** Column definition for Memo_Invoicing */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo_Invoicing = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo_Invoicing", null);
+    /** Column name Memo_Invoicing */
+    public static final String COLUMNNAME_Memo_Invoicing = "Memo_Invoicing";
 
 	/**
 	 * Set MRP ausschliessen.

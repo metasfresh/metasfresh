@@ -54,7 +54,7 @@ import lombok.experimental.UtilityClass;
 		assertThat(bpartner).isNotNull();
 		assertThat(bpartner.getValue()).isNotNull();
 		assertThat(bpartner.getName()).isNotNull();
-		assertThat(bpartner.getValue()).isEqualTo(ibpartner.getValue());
+		assertThat(bpartner.getValue()).isEqualTo(ibpartner.getBPValue());
 		assertThat(bpartner.getAD_Language()).isEqualTo(ibpartner.getAD_Language());
 	}
 
