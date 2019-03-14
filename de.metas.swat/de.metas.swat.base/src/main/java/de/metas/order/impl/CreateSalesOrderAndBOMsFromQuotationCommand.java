@@ -159,7 +159,6 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		final ListMultimap<GroupId, I_C_OrderLine> orderLinesByGroupId = allOrderLines
 				.stream()
 				.filter(OrderGroupCompensationUtils::isInGroup)
-				.filter(orderLine -> !orderLine.isGroupCompensationLine()) // skip compensation lines when creating BOM Lines
 				.collect(ImmutableListMultimap.toImmutableListMultimap(OrderGroupRepository::extractGroupId, Function.identity()));
 
 		final ImmutableList<I_C_OrderLine> notGroupedOrderLines = allOrderLines
@@ -195,6 +194,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		final I_C_OrderLine mainQuotationLine = findMainQuotationLine(fromQuotationLines);
 		final ImmutableList<I_C_OrderLine> additionalQuotationLines = fromQuotationLines.stream()
 				.filter(line -> line.getC_OrderLine_ID() != mainQuotationLine.getC_OrderLine_ID())
+				.filter(line -> !line.isGroupCompensationLine()) // skip compensation lines when creating BOM Lines
 				.collect(ImmutableList.toImmutableList());
 
 		final GroupId groupId = OrderGroupRepository.extractSingleGroupId(fromQuotationLines);
