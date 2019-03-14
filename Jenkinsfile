@@ -137,7 +137,7 @@ docker run --rm\\
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-				env.BUILD_DOCKER_IMAGE = publishedDockerImageName
+				env.MF_METASFRESH_EDI_DOCKER_IMAGE = publishedDockerImageName
 				env.MF_VERSION="${MF_VERSION}"
                 env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
 
@@ -152,11 +152,11 @@ docker run --rm\\
                                         string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
                                         string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
                                         string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-edi'),
-                                        string(name: 'MF_METASFRESH_EDI_DOCKER_IMAGE', value: env.MF_METASFRESH_E2E_DOCKER_IMAGE),
+                                        string(name: 'MF_METASFRESH_EDI_DOCKER_IMAGE', value: env.MF_METASFRESH_EDI_DOCKER_IMAGE),
                                         booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
                                         booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
                                 ],
-                                wait: false
+                                wait: true
                     }
 		} // withMaven
 	} // configFileProvider
