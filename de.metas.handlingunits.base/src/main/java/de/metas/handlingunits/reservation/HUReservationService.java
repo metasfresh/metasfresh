@@ -181,11 +181,11 @@ public class HUReservationService
 
 	public boolean isVhuIdReservedToSalesOrderLineId(@NonNull final HuId vhuId, @NonNull final OrderLineId salesOrderLineId)
 	{
-		final OrderLineId reservedForSalesOrderLineId = getReservedForOrderLineId(vhuId).orElse(null);
+		final OrderLineId reservedForSalesOrderLineId = getOrderLineIdByReservedVhuId(vhuId).orElse(null);
 		return Objects.equals(salesOrderLineId, reservedForSalesOrderLineId);
 	}
 
-	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId vhuId)
+	public Optional<OrderLineId> getOrderLineIdByReservedVhuId(@NonNull final HuId vhuId)
 	{
 		return huReservationRepository.getOrderLineIdByReservedVhuId(vhuId);
 	}
