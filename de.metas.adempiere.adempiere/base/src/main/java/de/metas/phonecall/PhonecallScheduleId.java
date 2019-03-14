@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -32,6 +33,7 @@ import de.metas.util.lang.RepoIdAware;
  * #L%
  */
 
+@Value
 public class PhonecallScheduleId implements RepoIdAware
 {
 

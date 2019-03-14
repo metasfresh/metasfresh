@@ -36,6 +36,11 @@ import lombok.Value;
 public class PhonecallSchemaVersion
 {
 	@NonNull
+	PhonecallSchema phonecallSchema;
+
+	PhonecallSchemaVersionId id;
+
+	@NonNull
 	String name;
 
 	@NonNull
@@ -44,5 +49,5 @@ public class PhonecallSchemaVersion
 	Frequency frequency;
 	// TODO
 
-	ImmutableList<PhonecallSchemaLine> lines;
+	ImmutableList<PhonecallSchemaVersionLine> lines;
 }

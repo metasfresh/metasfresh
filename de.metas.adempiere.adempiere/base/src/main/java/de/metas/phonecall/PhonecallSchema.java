@@ -58,11 +58,18 @@ public class PhonecallSchema
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public PhonecallSchemaVersion getVersion(@NonNull final LocalDate date)
+	public List<PhonecallSchemaVersion> getPhonecallSchemaVersions(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)
 	{
-		return versions.stream()
-				.filter(version -> version.getValidFrom().compareTo(date) >= 0)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No version found for " + id + " valid at " + date));
+		ImmutableList<PhonecallSchemaVersion> phonecallVersionsForDateRange = versions.stream()
+				.filter(version -> version.getValidFrom().compareTo(startDate) >= 0 && version.getValidFrom().compareTo(endDate) <= 0)
+				.collect(ImmutableList.toImmutableList());
+
+		if(phonecallVersionsForDateRange.isEmpty())
+		{
+			throw new AdempiereException("No version found for " + id + " in the timerange " + startDate + " - " + endDate);
+		}
+
+
+		return phonecallVersionsForDateRange;
 	}
 }

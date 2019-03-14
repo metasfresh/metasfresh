@@ -1,7 +1,5 @@
 package de.metas.phonecall;
 
-import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -47,10 +45,6 @@ public class PhonecallSchemaId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new PhonecallSchemaId(repoId) : null;
 	}
 
-	public static boolean equals(final PhonecallSchemaId o1, final PhonecallSchemaId o2)
-	{
-		return Objects.equals(o1, o2);
-	}
 
 	int repoId;
 

@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.compiere.model.I_C_Phonecall_Schedule;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.phonecall.PhonecallSchedule;
@@ -52,11 +53,14 @@ public class PhonecallScheduleRepository
 		phonecallScheduleRecord.setC_BPartner_Location_ID(schedule.getBpartnerAndLocationId().getRepoId());
 		phonecallScheduleRecord.setAD_User_ID(schedule.getContactId().getRepoId());
 
-		phonecallScheduleRecord.setC_Phonecall_Schema_ID(schedule.getSchemaVersionLineId().getPhonecallSchemaId().getRepoId());
-		phonecallScheduleRecord.setC_Phonecall_Schema_Version_ID(schedule.getSchemaVersionLineId().getPhonecallSchemaVersionId().getRepoId());
+		phonecallScheduleRecord.setC_Phonecall_Schema_ID(schedule.getPhonecallSchemaId().getRepoId());
+		phonecallScheduleRecord.setC_Phonecall_Schema_Version_ID(schedule.getPhonecallSchemaVersionId().getRepoId());
 		phonecallScheduleRecord.setC_Phonecall_Schema_Version_Line_ID(schedule.getSchemaVersionLineId().getRepoId());
 
-		saveRecord(phonecallScheduleRecord);
+		phonecallScheduleRecord.setPhonecallDate(TimeUtil.asTimestamp(schedule.getDate()));
+		phonecallScheduleRecord.setPhonecallTimeMin(TimeUtil.asTimestamp(schedule.getStartTime()));
+		phonecallScheduleRecord.setPhonecallTimeMax(TimeUtil.asTimestamp(schedule.getEndTime()));
 
+		saveRecord(phonecallScheduleRecord);
 	}
 }
