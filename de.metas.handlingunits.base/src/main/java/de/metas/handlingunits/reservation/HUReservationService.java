@@ -7,15 +7,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +36,7 @@ import de.metas.cache.CCache;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -35,14 +45,17 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
 
@@ -76,6 +89,11 @@ public class HUReservationService
 	private Supplier<HUTransformService> huTransformServiceSupplier = () -> HUTransformService.newInstance();
 
 	private final HUReservationRepository huReservationRepository;
+
+	private final CCache<HuId, Optional<OrderLineId>> salesOrderLinesByVhuId = CCache.newLRUCache(
+			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
+
+	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
 
 	public HUReservationService(@NonNull final HUReservationRepository huReservationRepository)
 	{
@@ -174,12 +192,15 @@ public class HUReservationService
 				IDocument.STATUS_Completed);
 	}
 
-	private final CCache<HuId, Optional<OrderLineId>> salesOrderLinesByVhuId = CCache.newLRUCache(
-			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
-
-	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId huId)
+	public boolean isVhuIdReservedToSalesOrderLineId(@NonNull final HuId vhuId, @NonNull final OrderLineId salesOrderLineId)
 	{
-		return salesOrderLinesByVhuId.getOrLoad(huId, this::retrieveReservedForOrderLineId);
+		final OrderLineId reservedForSalesOrderLineId = getReservedForOrderLineId(vhuId).orElse(null);
+		return Objects.equals(salesOrderLineId, reservedForSalesOrderLineId);
+	}
+
+	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId vhuId)
+	{
+		return salesOrderLinesByVhuId.getOrLoad(vhuId, this::retrieveReservedForOrderLineId);
 	}
 
 	private Optional<OrderLineId> retrieveReservedForOrderLineId(@NonNull final HuId huId)
@@ -205,10 +226,8 @@ public class HUReservationService
 	private Map<HuId, Optional<OrderLineId>> retrieveReservedForOrderLineId(@NonNull final Collection<HuId> huIds)
 	{
 		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>(huIds.size());
-		for (final HuId huId : huIds)
-		{
-			map.put(huId, Optional.empty());
-		}
+
+		huIds.forEach(huId -> map.put(huId, Optional.empty()));
 
 		final List<I_M_HU_Reservation> huReservationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Reservation.class)
@@ -313,5 +332,50 @@ public class HUReservationService
 		return huReservationRepository
 				.getBySalesOrderLineId(orderLineId)
 				.map(HUReservation::getReservedQtySum);
+	}
+
+	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "ReservationHUQueryBuilder")
+	private IHUQueryBuilder createHUQuery(
+			@NonNull final WarehouseId warehouseId,
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId asiId,
+			@Nullable final OrderLineId reservedToSalesOrderLineIdOrNotReservedAtAll)
+	{
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+
+		final Set<WarehouseId> pickingWarehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(warehouseId);
+
+		final IHUQueryBuilder huQuery = handlingUnitsRepo
+				.createHUQueryBuilder()
+				.addOnlyInWarehouseIds(pickingWarehouseIds)
+				.addOnlyWithProductId(productId)
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
+
+		// ASI
+		if (asiId != null)
+		{
+			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
+			huQuery.addOnlyWithAttributes(attributeSet);
+			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
+		}
+
+		// Reservation
+		if (reservedToSalesOrderLineIdOrNotReservedAtAll == null)
+		{
+			huQuery.setExcludeReserved();
+		}
+		else
+		{
+			huQuery.setExcludeReservedToOtherThan(reservedToSalesOrderLineIdOrNotReservedAtAll);
+		}
+
+		return huQuery;
+	}
+
+	private boolean isAllowSqlWhenFilteringHUAttributes()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AllowSqlWhenFilteringHUAttributes, true);
 	}
 }
