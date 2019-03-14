@@ -1,9 +1,10 @@
 export class DiscountSchema {
-  // constructor(builder) {
-  //   this.name = builder.name;
-  //   this.validFrom = builder.validFrom;
-  //   this.discountBreaks = builder.discountBreaks;
-  // }
+  constructor(name) {
+    cy.log(`DiscountSchemaBuilder - set name = ${name}`);
+    this.name = name;
+    this.validFrom = '01/01/2019';
+    this.discountBreaks = [];
+  }
 
   apply() {
     cy.log(`DiscountSchema - apply - START (name=${this.name})`);
@@ -12,33 +13,17 @@ export class DiscountSchema {
     return this;
   }
 
-  // static get builder() {
-  //   class Builder {
-      constructor(name) {
-        cy.log(`DiscountSchemaBuilder - set name = ${name}`);
-        this.name = name;
-        this.validFrom = '01/01/2019';
-        this.discountBreaks = [];
-      }
+  setValidFrom(validFrom) {
+    cy.log(`DiscountSchemaBuilder - set validFrom = ${validFrom}`);
+    this.validFrom = validFrom;
+    return this;
+  }
 
-      setValidFrom(validFrom) {
-        cy.log(`DiscountSchemaBuilder - set validFrom = ${validFrom}`);
-        this.validFrom = validFrom;
-        return this;
-      }
-
-      addDiscountBreak(discountBreak) {
-        cy.log(`DiscountSchemaBuilder - add discountBreak = ${discountBreak}`);
-        this.discountBreaks.push(discountBreak);
-        return this;
-      }
-
-    //   build() {
-    //     return new DiscountSchema(this);
-    //   }
-    // }
-    // return Builder;
-  // }
+  addDiscountBreak(discountBreak) {
+    cy.log(`DiscountSchemaBuilder - add discountBreak = ${discountBreak}`);
+    this.discountBreaks.push(discountBreak);
+    return this;
+  }
 }
 
 export class DiscountBreak {
