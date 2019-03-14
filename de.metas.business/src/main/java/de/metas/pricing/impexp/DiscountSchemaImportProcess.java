@@ -65,7 +65,9 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_DiscountSchema importRecord) throws Exception
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+			@NonNull final I_I_DiscountSchema importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 		//
 		// Get previous values
@@ -84,6 +86,12 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 		final boolean firstImportRecordOrNewDiscountSchema = previousImportRecord == null
 				|| !Objects.equals(importRecord.getC_BPartner_ID(), previousBPartnerId);
+
+		if (!firstImportRecordOrNewDiscountSchema && isInsertOnly)
+		{
+			// #4994 do not update existing records
+			return ImportRecordResult.Nothing;
+		}
 
 		if (firstImportRecordOrNewDiscountSchema)
 		{

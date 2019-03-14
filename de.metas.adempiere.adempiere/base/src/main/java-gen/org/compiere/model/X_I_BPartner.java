@@ -15,7 +15,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1826012770L;
+	private static final long serialVersionUID = 937420894L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -365,6 +365,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getBPContactGreeting () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPContactGreeting);
+	}
+
+	/** Set Nr..
+		@param BPValue 
+		Sponsor-Nr.
+	  */
+	@Override
+	public void setBPValue (java.lang.String BPValue)
+	{
+		set_Value (COLUMNNAME_BPValue, BPValue);
+	}
+
+	/** Get Nr..
+		@return Sponsor-Nr.
+	  */
+	@Override
+	public java.lang.String getBPValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BPValue);
 	}
 
 	/** Set Aggregation Definition.
@@ -952,6 +971,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_CountryCode);
 	}
 
+	/** Set Land.
+		@param CountryName 
+		Land
+	  */
+	@Override
+	public void setCountryName (java.lang.String CountryName)
+	{
+		set_Value (COLUMNNAME_CountryName, CountryName);
+	}
+
+	/** Get Land.
+		@return Land
+	  */
+	@Override
+	public java.lang.String getCountryName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CountryName);
+	}
+
 	/** Set Credit limit.
 		@param CreditLimit 
 		Amount of Credit allowed
@@ -1206,6 +1244,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getGLN () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GLN);
+	}
+
+	/** Set Global ID.
+		@param GlobalID Global ID	  */
+	@Override
+	public void setGlobalID (java.lang.String GlobalID)
+	{
+		set_Value (COLUMNNAME_GlobalID, GlobalID);
+	}
+
+	/** Get Global ID.
+		@return Global ID	  */
+	@Override
+	public java.lang.String getGlobalID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
 	}
 
 	/** Set Gruppen-Schlüssel.
@@ -1767,6 +1821,44 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return ii.intValue();
 	}
 
+	/** Set Memo_Delivery.
+		@param Memo_Delivery 
+		Memo Lieferung
+	  */
+	@Override
+	public void setMemo_Delivery (java.lang.String Memo_Delivery)
+	{
+		set_Value (COLUMNNAME_Memo_Delivery, Memo_Delivery);
+	}
+
+	/** Get Memo_Delivery.
+		@return Memo Lieferung
+	  */
+	@Override
+	public java.lang.String getMemo_Delivery () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo_Delivery);
+	}
+
+	/** Set Memo_Invoicing.
+		@param Memo_Invoicing 
+		Memo Abrechnung
+	  */
+	@Override
+	public void setMemo_Invoicing (java.lang.String Memo_Invoicing)
+	{
+		set_Value (COLUMNNAME_Memo_Invoicing, Memo_Invoicing);
+	}
+
+	/** Get Memo_Invoicing.
+		@return Memo Abrechnung
+	  */
+	@Override
+	public java.lang.String getMemo_Invoicing () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Memo_Invoicing);
+	}
+
 	/** Set NAICS/SIC.
 		@param NAICS 
 		Standard Industry Code or its successor NAIC - http://www.osha.gov/oshstats/sicser.html
@@ -1787,9 +1879,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -1797,8 +1887,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -2098,6 +2187,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPO_PricingSystem_Value () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PO_PricingSystem_Value);
+	}
+
+	/** Set Postfach.
+		@param POBox Postfach	  */
+	@Override
+	public void setPOBox (java.lang.String POBox)
+	{
+		set_Value (COLUMNNAME_POBox, POBox);
+	}
+
+	/** Get Postfach.
+		@return Postfach	  */
+	@Override
+	public java.lang.String getPOBox () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POBox);
 	}
 
 	/** Set PLZ.
@@ -2435,25 +2540,6 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_URL);
-	}
-
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
-	@Override
-	public void setValue (java.lang.String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
-	  */
-	@Override
-	public java.lang.String getValue () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
 	/** Set Lieferanten Kategorie.

@@ -203,6 +203,16 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.map(bomsRepo::getBOMProductId)
 				.orElse(null);
 
+		final BigDecimal price;
+		if (mainQuotationLine.isGroupCompensationLine())
+		{
+			price = mainQuotationLine.getGroupCompensationBaseAmt();
+		}
+		else
+		{
+			price = mainQuotationLine.getPriceEntered();
+		}
+
 		return SalesOrderLineCandidate.builder()
 				.quotationGroupId(groupInfo.getGroupId())
 				.quotationGroupName(groupInfo.getName())
@@ -210,7 +220,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				//
 				.orgId(OrgId.ofRepoId(mainQuotationLine.getAD_Org_ID()))
 				.quotationTemplateProductId(ProductId.ofRepoId(mainQuotationLine.getM_Product_ID()))
-				.price(mainQuotationLine.getPriceEntered())
+				.price(price)
 				.qty(mainQuotationLine.getQtyEntered())
 				.uomId(UomId.ofRepoId(mainQuotationLine.getC_UOM_ID()))
 				.taxCategoryId(TaxCategoryId.ofRepoId(mainQuotationLine.getC_TaxCategory_ID()))

@@ -34,7 +34,7 @@ import lombok.NonNull;
 
 public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_Product>
 {
-//	AbstractImportJavaProcess
+	// AbstractImportJavaProcess
 	private final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -82,7 +82,9 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Pharma_Product importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_Pharma_Product importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 
@@ -96,6 +98,12 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 		{
 			final I_M_Product product;
 			final boolean newProduct = existentProduct == null || importRecord.getM_Product_ID() <= 0;
+
+			if (!newProduct && isInsertOnly)
+			{
+				// #4994 do not update entries
+				return ImportRecordResult.Nothing;
+			}
 			if (newProduct)
 			{
 				product = createProduct(importRecord);
@@ -393,7 +401,6 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
-
 		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
@@ -413,7 +420,8 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 			return VATType.RegularVAT;
 		}
 	}
-	
+
+	@Override
 	protected void afterImport()
 	{
 		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCreated + " = 'N' ";

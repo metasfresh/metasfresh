@@ -50,7 +50,7 @@ public class BPartnerImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
 
-	public void updateBPartnerImtortTable(@NonNull final String whereClause)
+	public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateOrgs(whereClause);
 
@@ -87,12 +87,11 @@ public class BPartnerImportTableSqlUpdater
 		dbUpdateM_Shippers(whereClause);
 
 		dbUpdateAD_PrintFormats(whereClause);
-		
+
 		dbUpdateM_PricingSystems(whereClause);
-		
+
 		dbUpdatePO_PricingSystems(whereClause);
 
-		dbUpdateErrorMessages(whereClause);
 	}
 
 
@@ -148,7 +147,11 @@ public class BPartnerImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
-				+ " WHERE i.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ " WHERE ("
+				+ " (i.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
+				+ " OR "
+				+ " (i.CountryName=c.Name AND c.AD_Client_ID IN (0, i.AD_Client_ID))"
+				+ " )) "
 				+ "WHERE C_Country_ID IS NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -255,11 +258,13 @@ public class BPartnerImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
 				+ " WHERE i."
-				+ I_I_BPartner.COLUMNNAME_Value
+				+ I_I_BPartner.COLUMNNAME_BPValue
 				+ "=p."
 				+ I_C_BPartner.COLUMNNAME_Value
 				+ " AND p.AD_Client_ID=i.AD_Client_ID) "
-				+ "WHERE C_BPartner_ID IS NULL AND Value IS NOT NULL"
+				+ "WHERE C_BPartner_ID IS NULL AND "
+				+ I_I_BPartner.COLUMNNAME_BPValue
+				+ " IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Found BPartner={}", no);
@@ -632,8 +637,8 @@ public class BPartnerImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid AD_PrintFormat_ID={}", no);
 	}
-	
-	
+
+
 	private void dbUpdateM_PricingSystems(final String whereClause)
 	{
 		StringBuilder sql;
@@ -672,19 +677,5 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid M_PricingSystem={}", no);
-	}
-	
-
-	private void dbUpdateErrorMessages(final String whereClause)
-	{
-
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_BPartner "
-				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value is mandatory, ' "
-				+ "WHERE Value IS NULL "
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Value is mandatory={}", no);
 	}
 }
