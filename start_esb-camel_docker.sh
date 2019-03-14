@@ -9,7 +9,6 @@ rabbitmq_password=${RABBITMQ_PASSWORD:-$(echo $secret_rabbitmq_password)}
 debug_port=${DEBUG_PORT:-8792}
 debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
-debug_jpa_show_sql=${DEBUG_JPA_SHOW_SQL:-false}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 server_port=${SERVER_PORT:-8184}
 

@@ -33,6 +33,7 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 ])
 
 final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
+String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
 
 timestamps
 {
@@ -48,7 +49,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	stage('Preparation') // for display purposes
 	{
 		// checkout our code
-		checkout scm // i hope this to do all the magic we need
+        final def scmVars = checkout scm
+        BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
 		sh 'git clean -d --force -x' // clean the workspace
 	}
 
@@ -101,11 +103,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// maven.test.failure.ignore=true: see metasfresh stage
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-				currentBuild.description="""artifacts (if not yet cleaned up)
-				<ul>
-					<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/edi/esb/de-metas-edi-esb-camel/${MF_VERSION}/de-metas-edi-esb-camel-${MF_VERSION}.jar\">de-metas-edi-esb-camel-${MF_VERSION}.jar</a></li>
-				</ul>"""
-
 				junit '**/target/surefire-reports/*.xml'
 
 				jacoco()
@@ -117,14 +114,50 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 						'./') // workDir
 				final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
 
+            currentBuild.description="""This build's main artifact (if not yet cleaned up) is
+<ul>
+<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
+</ul>
+You can run the docker image like this:<br>
+<pre>
+docker run --rm\\
+ -e "DEBUG_PORT=8792"\\
+ -e "DEBUG_SUSPEND=n"\\
+ -e "DEBUG_PRINT_BASH_CMDS=n"\\
+ -e "SERVER_PORT=8184"\\
+ -e "RABBITMQ_HOST=your.rabbitmq.host"\\
+ -e "RABBITMQ_PORT=your.rabbitmq.port"\\
+ -e "RABBITMQ_USER=your.rabbitmq.user"\\
+ -e "RABBITMQ_PASSWORD=your.rabbitmq.password"\\
+ ${publishedDockerImageName}
+</pre>
+<p/>
+"""
+
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 				env.BUILD_DOCKER_IMAGE = publishedDockerImageName
 				env.MF_VERSION="${MF_VERSION}"
-
+                env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
 
       } // stage
+            stage('Invoke downstream jobs')
+                    {
+                        final def misc = new de.metas.jenkins.Misc()
+                        final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
+                        build job: metasfreshJobName,
+                                parameters: [
+                                        string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+                                        string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+                                        string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
+                                        string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-edi'),
+                                        string(name: 'MF_METASFRESH_EDI_DOCKER_IMAGE', value: env.MF_METASFRESH_E2E_DOCKER_IMAGE),
+                                        booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+                                        booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+                                ],
+                                wait: false
+                    }
 		} // withMaven
 	} // configFileProvider
  } // node
