@@ -169,12 +169,12 @@ public class HUReservationRepository
 		return ImmutableMap.copyOf(map);
 	}
 
-	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId vhuId)
+	public Optional<OrderLineId> getOrderLineIdByReservedVhuId(@NonNull final HuId vhuId)
 	{
-		return salesOrderLinesByVhuId.getOrLoad(vhuId, this::retrieveReservedForOrderLineId);
+		return salesOrderLinesByVhuId.getOrLoad(vhuId, this::retrieveOrderLineIdByReservedVhuId);
 	}
 
-	private Optional<OrderLineId> retrieveReservedForOrderLineId(@NonNull final HuId huId)
+	private Optional<OrderLineId> retrieveOrderLineIdByReservedVhuId(@NonNull final HuId huId)
 	{
 		final I_M_HU_Reservation huReservationRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Reservation.class)

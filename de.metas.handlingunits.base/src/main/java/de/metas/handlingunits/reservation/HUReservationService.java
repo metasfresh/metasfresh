@@ -187,7 +187,7 @@ public class HUReservationService
 
 	public Optional<OrderLineId> getReservedForOrderLineId(@NonNull final HuId vhuId)
 	{
-		return huReservationRepository.getReservedForOrderLineId(vhuId);
+		return huReservationRepository.getOrderLineIdByReservedVhuId(vhuId);
 	}
 
 	public Quantity retrieveReservableQty(@NonNull final RetrieveHUsQtyRequest request)
