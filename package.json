@@ -4,6 +4,15 @@
     "cypress:open": "cypress open"
   },
   "devDependencies": {
+    "@babel/core": "7.2.2",
+    "@babel/plugin-proposal-class-properties": "7.3.0",
+    "@babel/plugin-proposal-object-rest-spread": "7.3.1",
+    "@babel/plugin-transform-async-to-generator": "7.2.0",
+    "@babel/polyfill": "7.2.5",
+    "@babel/preset-env": "7.3.1",
+    "@babel/preset-react": "7.0.0",
+    "@babel/register": "7.0.0",
+    "babel-loader": "8.0.5",
     "@cypress/snapshot": "^2.0.1",
     "@cypress/webpack-preprocessor": "^4.0.3",
     "babel-eslint": "10.0.1",
@@ -15,6 +24,7 @@
     "eslint-plugin-prettier": "3.0.1",
     "html-webpack-plugin": "^3.2.0",
     "prettier": "1.16.4",
+    "react-hot-loader": "4.6.3",
     "webpack": "^4.29.6",
     "webpack-git-hash": "^1.0.2"
   },
@@ -26,6 +36,8 @@
     "numeral": "^2.0.6",
     "react-router-redux": "^4.0.8",
     "sockjs-client": "^1.3.0",
-    "stompjs": "^2.3.3"
+    "stompjs": "^2.3.3",
+    "react": "16.5.0",
+    "react-dom": "16.5.0"
   }
 }
