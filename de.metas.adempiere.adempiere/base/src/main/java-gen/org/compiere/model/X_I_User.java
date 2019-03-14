@@ -14,7 +14,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -295942236L;
+	private static final long serialVersionUID = -1094111719L;
 
     /** Standard Constructor */
     public X_I_User (Properties ctx, int I_User_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
         {
 			setI_IsImported (null); // N
 			setI_User_ID (0);
+			setIsNewsletter (false); // N
 			setIsSystemUser (false); // N
 			setProcessed (false); // N
         } */
@@ -118,9 +119,9 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
-	/** Set Nr..
+	/** Set BPValue.
 		@param BPValue 
-		Sponsor-Nr.
+		BP Value
 	  */
 	@Override
 	public void setBPValue (java.lang.String BPValue)
@@ -128,8 +129,8 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		set_Value (COLUMNNAME_BPValue, BPValue);
 	}
 
-	/** Get Nr..
-		@return Sponsor-Nr.
+	/** Get BPValue.
+		@return BP Value
 	  */
 	@Override
 	public java.lang.String getBPValue () 
@@ -174,6 +175,40 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
+	}
+
+	@Override
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Data import.
+		@param C_DataImport_ID Data import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_Value (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Data import.
+		@return Data import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set eMail.
 		@param EMail 
 		EMail-Adresse
@@ -193,6 +228,25 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return (java.lang.String)get_Value(COLUMNNAME_EMail);
 	}
 
+	/** Set Fax.
+		@param Fax 
+		Faxnummer
+	  */
+	@Override
+	public void setFax (java.lang.String Fax)
+	{
+		set_Value (COLUMNNAME_Fax, Fax);
+	}
+
+	/** Get Fax.
+		@return Faxnummer
+	  */
+	@Override
+	public java.lang.String getFax () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Fax);
+	}
+
 	/** Set Vorname.
 		@param Firstname 
 		Vorname
@@ -210,6 +264,22 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 	public java.lang.String getFirstname () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
+	}
+
+	/** Set Global ID.
+		@param GlobalID Global ID	  */
+	@Override
+	public void setGlobalID (java.lang.String GlobalID)
+	{
+		set_Value (COLUMNNAME_GlobalID, GlobalID);
+	}
+
+	/** Get Global ID.
+		@return Global ID	  */
+	@Override
+	public java.lang.String getGlobalID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GlobalID);
 	}
 
 	/** Set Import-Fehlermeldung.
@@ -284,6 +354,29 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return ii.intValue();
 	}
 
+	/** Set Newsletter.
+		@param IsNewsletter Newsletter	  */
+	@Override
+	public void setIsNewsletter (boolean IsNewsletter)
+	{
+		set_Value (COLUMNNAME_IsNewsletter, Boolean.valueOf(IsNewsletter));
+	}
+
+	/** Get Newsletter.
+		@return Newsletter	  */
+	@Override
+	public boolean isNewsletter () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNewsletter);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Systembenutzer.
 		@param IsSystemUser Systembenutzer	  */
 	@Override
@@ -342,6 +435,41 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return (java.lang.String)get_Value(COLUMNNAME_Login);
 	}
 
+	/** Set Handynummer.
+		@param MobilePhone Handynummer	  */
+	@Override
+	public void setMobilePhone (java.lang.String MobilePhone)
+	{
+		set_Value (COLUMNNAME_MobilePhone, MobilePhone);
+	}
+
+	/** Get Handynummer.
+		@return Handynummer	  */
+	@Override
+	public java.lang.String getMobilePhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MobilePhone);
+	}
+
+	/** Set Telefon.
+		@param Phone 
+		Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public void setPhone (java.lang.String Phone)
+	{
+		set_Value (COLUMNNAME_Phone, Phone);
+	}
+
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public java.lang.String getPhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Phone);
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -384,22 +512,19 @@ public class X_I_User extends org.compiere.model.PO implements I_I_User, org.com
 		return (java.lang.String)get_Value(COLUMNNAME_RoleName);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
+	/** Set UserValue.
+		@param UserValue UserValue	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setUserValue (java.lang.String UserValue)
 	{
-		set_Value (COLUMNNAME_Value, Value);
+		set_Value (COLUMNNAME_UserValue, UserValue);
 	}
 
-	/** Get Suchschlüssel.
-		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
+	/** Get UserValue.
+		@return UserValue	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getUserValue () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_UserValue);
 	}
 }

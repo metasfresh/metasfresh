@@ -194,6 +194,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		final I_C_OrderLine mainQuotationLine = findMainQuotationLine(fromQuotationLines);
 		final ImmutableList<I_C_OrderLine> additionalQuotationLines = fromQuotationLines.stream()
 				.filter(line -> line.getC_OrderLine_ID() != mainQuotationLine.getC_OrderLine_ID())
+				.filter(line -> !line.isGroupCompensationLine()) // skip compensation lines when creating BOM Lines
 				.collect(ImmutableList.toImmutableList());
 
 		final GroupId groupId = OrderGroupRepository.extractSingleGroupId(fromQuotationLines);
@@ -202,6 +203,16 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.map(bomsRepo::getBOMProductId)
 				.orElse(null);
 
+		final BigDecimal price;
+		if (mainQuotationLine.isGroupCompensationLine())
+		{
+			price = mainQuotationLine.getGroupCompensationBaseAmt();
+		}
+		else
+		{
+			price = mainQuotationLine.getPriceEntered();
+		}
+
 		return SalesOrderLineCandidate.builder()
 				.quotationGroupId(groupInfo.getGroupId())
 				.quotationGroupName(groupInfo.getName())
@@ -209,7 +220,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				//
 				.orgId(OrgId.ofRepoId(mainQuotationLine.getAD_Org_ID()))
 				.quotationTemplateProductId(ProductId.ofRepoId(mainQuotationLine.getM_Product_ID()))
-				.price(mainQuotationLine.getPriceEntered())
+				.price(price)
 				.qty(mainQuotationLine.getQtyEntered())
 				.uomId(UomId.ofRepoId(mainQuotationLine.getC_UOM_ID()))
 				.taxCategoryId(TaxCategoryId.ofRepoId(mainQuotationLine.getC_TaxCategory_ID()))
@@ -467,7 +478,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.setFrom(fromQuotationLine)
 				.setSkipCalculatedColumns(true)
 				.copyToNew(I_C_OrderLine.class);
-		
+
 		salesOrderLine.setC_Order_ID(newOrder.getC_Order_ID());
 		orderLineBL.setOrder(salesOrderLine, newOrder);
 

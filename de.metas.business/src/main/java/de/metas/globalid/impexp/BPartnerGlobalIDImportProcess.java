@@ -24,14 +24,14 @@ import de.metas.util.Check;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -75,8 +75,13 @@ public class BPartnerGlobalIDImportProcess extends AbstractImportProcess<I_I_BPa
 		return new X_I_BPartner_GlobalID(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	/*
+	 * @param isInsertOnly ignored. This import is only for updates.
+	 */
 	@Override
-	protected ImportRecordResult importRecord(IMutable<Object> state, I_I_BPartner_GlobalID importRecord)
+	protected ImportRecordResult importRecord(IMutable<Object> state,
+			I_I_BPartner_GlobalID importRecord,
+			final boolean isInsertOnly)
 	{
 		if (importRecord.getC_BPartner_ID() > 0 && !Check.isEmpty(importRecord.getURL3(), true))
 		{

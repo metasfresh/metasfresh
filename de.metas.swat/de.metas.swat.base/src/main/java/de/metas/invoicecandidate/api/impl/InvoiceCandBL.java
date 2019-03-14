@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -161,14 +162,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
 	// task 08927
-	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(
-			Boolean.class);
+	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(Boolean.class);
 
-	/**
-	 *
-	 * @task 08451
-	 */
-	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = TimeUtil.getDay(9999, 12, 31);
+	/** @task 08451 */
+	private static final LocalDate DATE_TO_INVOICE_MAX_DATE = LocalDate.of(9999, Month.DECEMBER, 31); // NOTE: not using LocalDate.MAX because we want to convert it to Timestamp
 
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 
@@ -194,47 +191,50 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void set_DateToInvoice_DefaultImpl(final I_C_Invoice_Candidate ic)
 	{
-		final Timestamp dateToInvoice;
+		final LocalDate dateToInvoice = computeDateToInvoice(ic);
+		ic.setDateToInvoice(TimeUtil.asTimestamp(dateToInvoice));
+	}
 
+	private LocalDate computeDateToInvoice(final I_C_Invoice_Candidate ic)
+	{
 		final String invoiceRule = getInvoiceRule(ic);
 		if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))
 		{
-			dateToInvoice = ic.getDateOrdered();
+			return TimeUtil.asLocalDate(ic.getDateOrdered());
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferung.equals(invoiceRule) || X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
 		{
 			// if there is no delivery yet, then we set the date to the far future
-			dateToInvoice = ic.getDeliveryDate() != null ? ic.getDeliveryDate() : DATE_TO_INVOICE_MAX_DATE;
+			final LocalDate deliveryDate = TimeUtil.asLocalDate(ic.getDeliveryDate());
+			return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
 		{
 			if (ic.getC_InvoiceSchedule_ID() <= 0)        // that's a paddlin'
 			{
-				dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
+				return DATE_TO_INVOICE_MAX_DATE;
 			}
 			else
 			{
 
-				final Timestamp deliveryDate = ic.getDeliveryDate(); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
+				final LocalDate deliveryDate = TimeUtil.asLocalDate(ic.getDeliveryDate()); // task 08451: when it comes to invoicing, the important date is not when it was ordered but when the delivery was made
 				if (deliveryDate == null)
 				{
 					// task 08451: we have an invoice schedule, but no delivery yet. Set the date to the far future
-					dateToInvoice = DATE_TO_INVOICE_MAX_DATE;
+					return DATE_TO_INVOICE_MAX_DATE;
 				}
 				else
 				{
 					final InvoiceScheduleRepository invoiceScheduleRepository = Adempiere.getBean(InvoiceScheduleRepository.class);
 					final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(ic.getC_InvoiceSchedule());
-
-					dateToInvoice = TimeUtil.asTimestamp(invoiceSchedule.calculateNextDateToInvoice(TimeUtil.asLocalDate(deliveryDate)));
+					return invoiceSchedule.calculateNextDateToInvoice(deliveryDate);
 				}
 			}
 		}
 		else
 		{
-			dateToInvoice = TimeUtil.getDay(ic.getCreated()); // shouldn't happen
+			return TimeUtil.asLocalDate(ic.getCreated()); // shouldn't happen
 		}
-		ic.setDateToInvoice(dateToInvoice);
 	}
 
 	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)

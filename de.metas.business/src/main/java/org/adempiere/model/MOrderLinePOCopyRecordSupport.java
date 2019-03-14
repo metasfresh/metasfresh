@@ -107,6 +107,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		final I_C_Order_CompensationGroup orderCompensationGroupNew = newInstance(I_C_Order_CompensationGroup.class);
 		InterfaceWrapperHelper.copyValues(orderCompensationGroup, orderCompensationGroupNew);
 		orderCompensationGroupNew.setC_Order_ID(toOrderId);
+		orderCompensationGroupNew.setPP_Product_BOM_ID(-1); // don't copy the Quotation BOM; another one has to be created
 		InterfaceWrapperHelper.save(orderCompensationGroupNew);
 		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
 	}

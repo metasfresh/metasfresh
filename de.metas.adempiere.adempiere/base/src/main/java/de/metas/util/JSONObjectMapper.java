@@ -1,6 +1,7 @@
 package de.metas.util;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -34,6 +35,11 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Wraps an {@link ObjectMapper} that is configured with special tweaks for {@link ZonedDateTime}.
+ *
+ * @param <T> the class to serialize/deserialize
+ */
 public class JSONObjectMapper<T>
 {
 	@SuppressWarnings({ "rawtypes", "unchecked" })

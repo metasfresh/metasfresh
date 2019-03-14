@@ -142,7 +142,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /*isInsertOnly*/);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
@@ -211,7 +211,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /*isInsertOnly*/);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
@@ -276,7 +276,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /*isInsertOnly*/);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
