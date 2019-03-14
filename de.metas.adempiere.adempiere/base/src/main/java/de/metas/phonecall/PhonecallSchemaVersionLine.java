@@ -1,9 +1,13 @@
 package de.metas.phonecall;
 
+import java.time.ZonedDateTime;
+
 import org.adempiere.user.UserId;
 
 import de.metas.bpartner.BPartnerLocationId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,11 +31,24 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PhonecallSchemaLine
+@Value
+@Builder
+public class PhonecallSchemaVersionLine
 {
+	@NonNull
+	PhonecallSchemaVersion phonecallSchemaVersion;
+
+	PhonecallSchemaVersionLineId id;
+
 	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;
 
 	@NonNull
 	UserId contactId;
+
+	@NonNull
+	ZonedDateTime startTime;
+
+	@NonNull
+	ZonedDateTime endTime;
 }
