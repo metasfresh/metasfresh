@@ -101,7 +101,8 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
 				+ " from " + I_C_BPartner.Table_Name + " bp "
-				+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
+				+ " where ( bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_User.COLUMNNAME_BPValue
+				+ " OR " + I_C_BPartner.COLUMNNAME_globalid+ "=i." + I_I_User.COLUMNNAME_GlobalID + ")"
 				+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_User.COLUMNNAME_AD_Client_ID;
 
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
@@ -133,10 +134,6 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		final int no = DB.executeUpdateEx(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
-		//
-		// Flag missing AD_Role_ID
-		markAsError("Role not found", I_I_User.COLUMNNAME_AD_Role_ID + " IS NULL"
-				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
@@ -156,8 +153,13 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		return InterfaceWrapperHelper.create(po, I_I_User.class);
 	}
 
+	/*
+	 * @param isInsertOnly ignored. This import is only for updates.
+	 */
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_User importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_User importRecord,
+			final boolean isInsertOnly ) throws Exception
 	{
 		//
 		// Create a new user
@@ -174,17 +176,14 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 			user.setC_BPartner_ID(bpartnerId);
 		}
 		//
-		// check role
-		int roleId = importRecord.getAD_Role_ID();
-		if (roleId <= 0)
-		{
-			throw new AdempiereException("Role not found");
-		}
-		//
 		// set data from the other fields
 		setUserFieldsAndSave(user, importRecord);
+
 		//
 		// Assign Role
+		int roleId = importRecord.getAD_Role_ID();
+
+		if (roleId > 0)
 		{
 			Services.get(IRoleDAO.class).createUserRoleAssignmentIfMissing(user.getAD_User_ID(), roleId);
 		}
@@ -194,19 +193,25 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 		//
 		return ImportRecordResult.Inserted;
 	}
-	
+
 	private void setUserFieldsAndSave(@NonNull final I_AD_User user, @NonNull final I_I_User importRecord)
 	{
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 		// set value after we set first name and last name
-		user.setValue(importRecord.getValue());
+		user.setValue(importRecord.getUserValue());
 		user.setEMail(importRecord.getEMail());
-		
+
+		user.setIsNewsletter(importRecord.isNewsletter());
+		user.setPhone(importRecord.getPhone());
+		user.setFax(importRecord.getFax());
+		user.setMobilePhone(importRecord.getMobilePhone());
+		//user.gen
+
 		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
 		loginUser.setLogin(importRecord.getLogin());
 		loginUser.setIsSystemUser(importRecord.isSystemUser());
-		
+
 		final IUserBL userBL = Services.get(IUserBL.class);
 		userBL.changePasswordAndSave(loginUser, RandomStringUtils.randomAlphanumeric(8));
 	}

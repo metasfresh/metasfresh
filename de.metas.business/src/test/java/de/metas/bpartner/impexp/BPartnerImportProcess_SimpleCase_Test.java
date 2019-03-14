@@ -56,7 +56,7 @@ public class BPartnerImportProcess_SimpleCase_Test
 
 		final BPartnerImportProcess importProcess = new BPartnerImportProcess();
 		importProcess.setCtx(ctx);
-		importProcess.importRecord(new Mutable<>(), ibpartner);
+		importProcess.importRecord(new Mutable<>(), ibpartner, false /*isInsertOnly*/);
 
 		BPartnerImportTestHelper.assertImported(ibpartner);
 	}

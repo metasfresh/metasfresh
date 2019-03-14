@@ -14,7 +14,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1422151824L;
+	private static final long serialVersionUID = 2005384924L;
 
     /** Standard Constructor */
     public X_AD_ImpFormat (Properties ctx, int AD_ImpFormat_ID, String trxName)
@@ -25,9 +25,10 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 			setAD_ImpFormat_ID (0);
 			setAD_Table_ID (0);
 			setFormatType (null);
+			setIsManualImport (false); // N
 			setIsMultiLine (false); // N
 			setName (null);
-			setProcessing (false);
+			setProcessing (false); // N
         } */
     }
 
@@ -156,6 +157,29 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 		return (java.lang.String)get_Value(COLUMNNAME_FormatType);
 	}
 
+	/** Set IsManualImport.
+		@param IsManualImport IsManualImport	  */
+	@Override
+	public void setIsManualImport (boolean IsManualImport)
+	{
+		set_Value (COLUMNNAME_IsManualImport, Boolean.valueOf(IsManualImport));
+	}
+
+	/** Get IsManualImport.
+		@return IsManualImport	  */
+	@Override
+	public boolean isManualImport () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsManualImport);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Multi Line.
 		@param IsMultiLine Multi Line	  */
 	@Override
@@ -180,9 +204,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -190,8 +212,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
