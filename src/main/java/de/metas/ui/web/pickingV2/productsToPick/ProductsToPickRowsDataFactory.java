@@ -131,6 +131,7 @@ class ProductsToPickRowsDataFactory
 	{
 		final ImmutableList<ProductsToPickRow> rows = packageableRow.getPackageables()
 				.stream()
+				.map(AllocablePackageable::of)
 				.flatMap(this::createRowsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
@@ -141,17 +142,15 @@ class ProductsToPickRowsDataFactory
 				.build();
 	}
 
-	private Stream<ProductsToPickRow> createRowsAndStream(final Packageable packageable)
+	private Stream<ProductsToPickRow> createRowsAndStream(final AllocablePackageable packageable)
 	{
-		final AllocablePackageable allocablePackageable = AllocablePackageable.of(packageable);
-
 		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
-		rows.addAll(createRowsFromExistingPickingCandidates(allocablePackageable));
-		rows.addAll(createRowsFromHUs(allocablePackageable));
+		rows.addAll(createRowsFromExistingPickingCandidates(packageable));
+		rows.addAll(createRowsFromHUs(packageable));
 
-		if (!allocablePackageable.isAllocated())
+		if (!packageable.isAllocated())
 		{
-			rows.add(createQtyNotAvailableRow(allocablePackageable));
+			rows.add(createQtyNotAvailableRowForRemainingQtyToAllocate(packageable));
 		}
 
 		return rows.stream();
@@ -245,7 +244,7 @@ class ProductsToPickRowsDataFactory
 		return createRow(packageable, qtyZero, huId, NULL_PickingCandidate);
 	}
 
-	private ProductsToPickRow createQtyNotAvailableRow(final AllocablePackageable packageable)
+	private ProductsToPickRow createQtyNotAvailableRowForRemainingQtyToAllocate(final AllocablePackageable packageable)
 	{
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
@@ -409,15 +408,26 @@ class ProductsToPickRowsDataFactory
 			return new AllocablePackageable(packageable);
 		}
 
-		private final Packageable packageable;
-		private final Quantity qtyToAllocateTarget;
+		@Getter
+		private final ProductId productId;
+		@Getter
+		private final ShipmentScheduleId shipmentScheduleId;
+		@Getter
+		private final WarehouseId warehouseId;
+		@Getter
+		private final OrderLineId salesOrderLineIdOrNull;
 
+		private final Quantity qtyToAllocateTarget;
 		@Getter
 		private Quantity qtyToAllocate;
 
 		private AllocablePackageable(@NonNull final Packageable packageable)
 		{
-			this.packageable = packageable;
+			this.productId = packageable.getProductId();
+			this.shipmentScheduleId = packageable.getShipmentScheduleId();
+			this.warehouseId = packageable.getWarehouseId();
+			this.salesOrderLineIdOrNull = packageable.getSalesOrderLineIdOrNull();
+
 			qtyToAllocateTarget = packageable.getQtyOrdered()
 					.subtract(packageable.getQtyPickedOrDelivered())
 					.toZeroIfNegative();
@@ -433,26 +443,6 @@ class ProductsToPickRowsDataFactory
 		public boolean isAllocated()
 		{
 			return getQtyToAllocate().signum() <= 0;
-		}
-
-		public ProductId getProductId()
-		{
-			return packageable.getProductId();
-		}
-
-		public ShipmentScheduleId getShipmentScheduleId()
-		{
-			return packageable.getShipmentScheduleId();
-		}
-
-		public WarehouseId getWarehouseId()
-		{
-			return packageable.getWarehouseId();
-		}
-
-		public OrderLineId getSalesOrderLineIdOrNull()
-		{
-			return packageable.getSalesOrderLineIdOrNull();
 		}
 	}
 
