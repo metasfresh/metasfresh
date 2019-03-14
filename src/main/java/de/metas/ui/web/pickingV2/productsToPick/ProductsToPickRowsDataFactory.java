@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -302,7 +303,7 @@ class ProductsToPickRowsDataFactory
 				.locator(locator)
 				//
 				// Attributes:
-				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElse(null))
+				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElseGet(() -> buildLotNumberFromHuId(pickFromHUId)))
 				.expiringDate(attributes.getValueAsLocalDateIfExists(ATTR_BestBeforeDate).orElse(null))
 				.repackNumber(attributes.getValueAsStringIfExists(ATTR_RepackNumber).orElse(null))
 				//
@@ -312,6 +313,21 @@ class ProductsToPickRowsDataFactory
 				//
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
+	}
+
+	private String buildLotNumberFromHuId(final HuId huId)
+	{
+		if (huId == null)
+		{
+			return null;
+		}
+
+		if (!Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return null;
+		}
+
+		return "<" + huId.getRepoId() + ">";
 	}
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)
