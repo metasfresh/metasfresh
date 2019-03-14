@@ -275,9 +275,13 @@ public class HUReservationService
 
 	public Optional<Quantity> retrieveReservedQty(@NonNull final OrderLineId orderLineId)
 	{
-		return huReservationRepository
-				.getBySalesOrderLineId(orderLineId)
+		return getBySalesOrderLineId(orderLineId)
 				.map(HUReservation::getReservedQtySum);
+	}
+
+	public Optional<HUReservation> getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return huReservationRepository.getBySalesOrderLineId(orderLineId);
 	}
 
 	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "ReservationHUQueryBuilder")
