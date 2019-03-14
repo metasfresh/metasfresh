@@ -42,17 +42,6 @@ then
     export DEBUG=cypress:*
 fi
 
-cd /e2e
-
-# write the config file used by cypress to acces the rest-API etc
-echo "module.exports = {" > cypress/config.js
-echo "  API_URL: '${api_url}'," >> cypress/config.js
-echo "  PLUGIN_API_URL: '${plugin_api_url}'," >> cypress/config.js
-echo "  WS_URL: '${ws_url}'," >> cypress/config.js
-echo "  username: '${username}'," >> cypress/config.js
-echo "  password: '${password}'," >> cypress/config.js
-echo "};" >> cypress/config.js
-
 # start printing all bash commands from here onwards, if activated
 if [ "$debug_print_bash_cmds" != "n" ];
 then
@@ -60,6 +49,17 @@ then
 	echo ""
     set -x
 fi
+
+# write the config file used by cypress to acces the rest-API etc
+echo "module.exports = {" > /e2e/cypress/config.js
+echo "  API_URL: '${api_url}'," >> /e2e/cypress/config.js
+echo "  PLUGIN_API_URL: '${plugin_api_url}'," >> /e2e/cypress/config.js
+echo "  WS_URL: '${ws_url}'," >> /e2e/cypress/config.js
+echo "  username: '${username}'," >> /e2e/cypress/config.js
+echo "  password: '${password}'," >> /e2e/cypress/config.js
+echo "};" >> /e2e/cypress/config.js
+
+cd /e2e
 
 export CYPRESS_baseUrl=$frontend_url  
 

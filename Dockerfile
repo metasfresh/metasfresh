@@ -15,14 +15,26 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
 WORKDIR /e2e
 
+COPY .babelrc .
+
+# I think this is needed so the npm intall will get all needed dependencies
+COPY package.json .
+
 RUN npm install --save-dev cypress@3.1.5
 RUN npm install --save-dev @cypress/snapshot@2.0.1
 RUN npm install --save-dev @cypress/webpack-preprocessor@4.0.2
 
-COPY reporter-config.json /e2e
+COPY reporter-config.json .
 
 # note: if we had a recent git version in here, we could follow https://stackoverflow.com/a/3489576 to check out the revision we need
-COPY cypress-git-repo /e2e
+#COPY cypress-git-repo /e2e
+COPY cypress.json .
+COPY src ./src
+COPY cypress ./cypress
+
+# TODO see if we really need the webpack stuff
+COPY webpack.config.js .
+#RUN npm install --save-dev webpack@4.2.0 webpack-git-hash
 
 # The following npm install is needed; without it, running cypress would fail as follows
 # --------------
@@ -36,6 +48,7 @@ COPY cypress-git-repo /e2e
 #     at Function.Module._resolveFilename (module.js:485:15)
 # --------------
 RUN npm install
+
 
 # thx to https://docs.cypress.io/guides/tooling/reporters.html#Multiple-Reporters
 # mocha 6.0.0 and 6.0.1 don't work, thx to https://github.com/cypress-io/cypress/issues/3537
