@@ -69,15 +69,40 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_User_ID();
+
+	public org.compiere.model.I_AD_User getAD_User();
+
+	public void setAD_User(org.compiere.model.I_AD_User AD_User);
+
+    /** Column definition for AD_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version_Line, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version_Line, org.compiere.model.I_AD_User>(I_C_Phonecall_Schema_Version_Line.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
@@ -87,11 +112,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
@@ -110,11 +131,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
@@ -124,11 +141,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
@@ -146,11 +159,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Set Anrufliste.
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID);
@@ -159,11 +168,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Get Anrufliste.
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Phonecall_Schema_ID();
@@ -181,11 +186,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Set Anruflistenversion.
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public void setC_Phonecall_Schema_Version_ID (int C_Phonecall_Schema_Version_ID);
@@ -194,11 +195,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Get Anruflistenversion.
 	 *
 	 * <br>Type: Search
-<<<<<<< HEAD
 	 * <br>Mandatory: true
-=======
-	 * <br>Mandatory: false
->>>>>>> gh4951
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Phonecall_Schema_Version_ID();
@@ -291,7 +288,6 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-<<<<<<< HEAD
 	 * Set PhonecallTimeMax.
 	 *
 	 * <br>Type: Time
@@ -338,8 +334,6 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_PhonecallTimeMin = "PhonecallTimeMin";
 
 	/**
-=======
->>>>>>> gh4951
 	 * Set Reihenfolge.
 	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
