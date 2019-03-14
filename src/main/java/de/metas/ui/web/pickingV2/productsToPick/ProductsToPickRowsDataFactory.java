@@ -39,6 +39,7 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.Packageable;
@@ -48,7 +49,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -90,6 +90,7 @@ class ProductsToPickRowsDataFactory
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final HUReservationDocumentFilterService huReservationService;
+	private final HUReservationService huReservationService;
 	private final PickingCandidateRepository pickingCandidateRepo;
 	private final PickingCandidateService pickingCandidateService;
 
@@ -112,7 +113,7 @@ class ProductsToPickRowsDataFactory
 
 	@Builder
 	private ProductsToPickRowsDataFactory(
-			@NonNull final HUReservationDocumentFilterService huReservationService,
+			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateRepository pickingCandidateRepo,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
