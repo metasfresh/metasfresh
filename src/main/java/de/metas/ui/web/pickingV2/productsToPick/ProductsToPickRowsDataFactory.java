@@ -89,7 +89,6 @@ class ProductsToPickRowsDataFactory
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final HUReservationDocumentFilterService huReservationService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateRepository pickingCandidateRepo;
 	private final PickingCandidateService pickingCandidateService;
@@ -200,7 +199,9 @@ class ProductsToPickRowsDataFactory
 				.collect(ImmutableList.toImmutableList());
 
 		return rows.stream()
-				.sorted(Comparator.comparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX)))
+				.sorted(Comparator
+						.<ProductsToPickRow> comparingInt((row -> row.isHuReservedForThisRow() ? 0 : 1)) // consider reserved HU first
+						.thenComparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX))) // then first expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
@@ -215,7 +216,10 @@ class ProductsToPickRowsDataFactory
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
 				.build()
 				.listIds();
+
 		getHUs(huIds); // pre-load all HUs
+		huReservationService.warmup(huIds);
+
 		return huIds;
 	}
 
@@ -273,6 +277,11 @@ class ProductsToPickRowsDataFactory
 	{
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
+		final OrderLineId salesOrderLineId = packageable.getSalesOrderLineIdOrNull();
+		final boolean huReservedForThisRow = pickFromHUId != null
+				&& salesOrderLineId != null
+				&& huReservationService.isVhuIdReservedToSalesOrderLineId(pickFromHUId, salesOrderLineId);
+
 		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
 		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
@@ -288,6 +297,7 @@ class ProductsToPickRowsDataFactory
 				.rowId(rowId)
 				//
 				.productInfo(productInfo)
+				.huReservedForThisRow(huReservedForThisRow)
 				//
 				.locator(locator)
 				//
@@ -299,6 +309,7 @@ class ProductsToPickRowsDataFactory
 				.qty(qty)
 				//
 				.shipmentScheduleId(shipmentScheduleId)
+				//
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
 	}
