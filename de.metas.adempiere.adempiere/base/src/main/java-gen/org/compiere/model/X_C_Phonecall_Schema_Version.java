@@ -14,7 +14,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1231626038L;
+	private static final long serialVersionUID = 20631584L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schema_Version (Properties ctx, int C_Phonecall_Schema_Version_ID, String trxName)
@@ -24,7 +24,9 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
         {
 			setC_Phonecall_Schema_ID (0);
 			setC_Phonecall_Schema_Version_ID (0);
+			setIsCancelPhonecallDay (false); // N
 			setIsMonthly (false); // N
+			setIsMovePhonecallDay (false); // N
 			setIsWeekly (false); // N
 			setName (null);
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
@@ -146,6 +148,29 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
+	/** Set IsCancelPhonecallDay.
+		@param IsCancelPhonecallDay IsCancelPhonecallDay	  */
+	@Override
+	public void setIsCancelPhonecallDay (boolean IsCancelPhonecallDay)
+	{
+		set_Value (COLUMNNAME_IsCancelPhonecallDay, Boolean.valueOf(IsCancelPhonecallDay));
+	}
+
+	/** Get IsCancelPhonecallDay.
+		@return IsCancelPhonecallDay	  */
+	@Override
+	public boolean isCancelPhonecallDay () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCancelPhonecallDay);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Monthly.
 		@param IsMonthly Monthly	  */
 	@Override
@@ -160,6 +185,29 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	public boolean isMonthly () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsMonthly);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsMovePhonecallDay.
+		@param IsMovePhonecallDay IsMovePhonecallDay	  */
+	@Override
+	public void setIsMovePhonecallDay (boolean IsMovePhonecallDay)
+	{
+		set_Value (COLUMNNAME_IsMovePhonecallDay, Boolean.valueOf(IsMovePhonecallDay));
+	}
+
+	/** Get IsMovePhonecallDay.
+		@return IsMovePhonecallDay	  */
+	@Override
+	public boolean isMovePhonecallDay () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsMovePhonecallDay);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

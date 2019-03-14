@@ -224,6 +224,29 @@ public interface I_C_Phonecall_Schema_Version
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set IsCancelPhonecallDay.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCancelPhonecallDay (boolean IsCancelPhonecallDay);
+
+	/**
+	 * Get IsCancelPhonecallDay.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCancelPhonecallDay();
+
+    /** Column definition for IsCancelPhonecallDay */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version, Object> COLUMN_IsCancelPhonecallDay = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version, Object>(I_C_Phonecall_Schema_Version.class, "IsCancelPhonecallDay", null);
+    /** Column name IsCancelPhonecallDay */
+    public static final String COLUMNNAME_IsCancelPhonecallDay = "IsCancelPhonecallDay";
+
+	/**
 	 * Set Monthly.
 	 *
 	 * <br>Type: YesNo
@@ -245,6 +268,29 @@ public interface I_C_Phonecall_Schema_Version
     public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version, Object> COLUMN_IsMonthly = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version, Object>(I_C_Phonecall_Schema_Version.class, "IsMonthly", null);
     /** Column name IsMonthly */
     public static final String COLUMNNAME_IsMonthly = "IsMonthly";
+
+	/**
+	 * Set IsMovePhonecallDay.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsMovePhonecallDay (boolean IsMovePhonecallDay);
+
+	/**
+	 * Get IsMovePhonecallDay.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isMovePhonecallDay();
+
+    /** Column definition for IsMovePhonecallDay */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version, Object> COLUMN_IsMovePhonecallDay = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version, Object>(I_C_Phonecall_Schema_Version.class, "IsMovePhonecallDay", null);
+    /** Column name IsMovePhonecallDay */
+    public static final String COLUMNNAME_IsMovePhonecallDay = "IsMovePhonecallDay";
 
 	/**
 	 * Set Weekly.
