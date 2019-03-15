@@ -15,12 +15,14 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
 WORKDIR /e2e
 
-COPY .babelrc .
-
 # I think this is needed so the npm intall will get all needed dependencies
 COPY package.json .
 
-RUN npm install --save-dev cypress@3.1.5
+#TODO: verify that with our package.json file, only the npm install down there is needed
+#RUN npm install --save-dev cypress@3.1.5
+RUN npm install
+
+COPY .babelrc .
 
 COPY reporter-config.json .
 
@@ -28,27 +30,8 @@ COPY cypress.json .
 COPY src ./src
 COPY cypress ./cypress
 
-# TODO see if we really need the webpack stuff
 COPY webpack.config.js .
-#RUN npm install --save-dev webpack@4.2.0 webpack-git-hash
 
-# The following npm install is needed; without it, running cypress would fail as follows
-# --------------
-# Your pluginsFile is set to '/e2e/cypress/plugins/index.js', but either the file is missing, it contains a syntax error, or threw an error when required. The pluginsFile must be a .js or .coffee file.
-
-# Please fix this, or set 'pluginsFile' to 'false' if a plugins file is not necessary for your project.
-
-# The following error was thrown:
-
-# Error: Cannot find module 'webpack'
-#     at Function.Module._resolveFilename (module.js:485:15)
-# --------------
-RUN npm install
-
-# TODO: we have this mocha stuff in the package.json; remove here or remove there
-# thx to https://docs.cypress.io/guides/tooling/reporters.html#Multiple-Reporters
-# mocha 6.0.0 and 6.0.1 don't work, thx to https://github.com/cypress-io/cypress/issues/3537
-#RUN npm install --save-dev mocha@5.2.0 mocha-multi-reporters@1.1.7 mocha-junit-reporter@1.18.0
 
 RUN $(npm bin)/cypress verify
 

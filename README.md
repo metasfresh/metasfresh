@@ -7,7 +7,7 @@ Right now, the actual cypress tests reside in the [metasfresh-webui-frontend](ht
 To build the docker image locally, you can do
 
 ```
-# build the docker image; the CACHEBUST build-arg merely makes sure that apt upgrade etc is performed at least once a day
+# build the docker image; the CACHEBUST build-arg is optional and merely makes sure that apt upgrade etc is performed at least once a day
 docker build --tag metasfresh-e2e --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
 ```
 
