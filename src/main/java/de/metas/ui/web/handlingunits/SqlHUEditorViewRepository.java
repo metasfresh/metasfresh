@@ -226,7 +226,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		{
 			huRecordType = HUEditorRowType.ofHU_UnitType(huUnitTypeCode);
 		}
-		final Optional<OrderLineId> orderLineIdWithReservation = huReservationService.getReservedForOrderLineId(HuId.ofRepoId(hu.getM_HU_ID()));
+		final Optional<OrderLineId> orderLineIdWithReservation = huReservationService.getOrderLineIdByReservedVhuId(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		final String huUnitTypeDisplayName = huRecordType.getName();
 		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
@@ -377,7 +377,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final ProductId productId = huStorage.getProductId();
 		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
-		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getReservedForOrderLineId(huId);
+		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getOrderLineIdByReservedVhuId(huId);
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, productId))

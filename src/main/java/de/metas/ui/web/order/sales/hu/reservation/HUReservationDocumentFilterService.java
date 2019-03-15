@@ -1,29 +1,15 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
-import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
-import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -52,12 +38,14 @@ import lombok.NonNull;
 public class HUReservationDocumentFilterService
 {
 	private final OrderLineRepository orderLineRepository;
+	private final HUReservationService huReservationService;
 
-	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
-
-	public HUReservationDocumentFilterService(@NonNull final OrderLineRepository orderLineRepository)
+	public HUReservationDocumentFilterService(
+			@NonNull final OrderLineRepository orderLineRepository,
+			@NonNull final HUReservationService huReservationService)
 	{
 		this.orderLineRepository = orderLineRepository;
+		this.huReservationService = huReservationService;
 	}
 
 	public DocumentFilter createOrderLineDocumentFilter(@NonNull final OrderLineId orderLineId)
@@ -74,7 +62,7 @@ public class HUReservationDocumentFilterService
 
 	private IHUQueryBuilder createHUQuery(@NonNull final OrderLine salesOrderLine)
 	{
-		return prepareHUQuery()
+		return huReservationService.prepareHUQuery()
 				.warehouseId(salesOrderLine.getWarehouseId())
 				.productId(salesOrderLine.getProductId())
 				.asiId(salesOrderLine.getAsiId())
@@ -91,56 +79,11 @@ public class HUReservationDocumentFilterService
 
 	private IHUQueryBuilder createHUQueryIgnoreAttributes(final Packageable packageable)
 	{
-		return prepareHUQuery()
+		return huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(null) // ignore attributes
 				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
 				.build();
-	}
-
-	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "ReservationHUQueryBuilder")
-	private IHUQueryBuilder createHUQuery(
-			@NonNull final WarehouseId warehouseId,
-			@NonNull final ProductId productId,
-			@Nullable final AttributeSetInstanceId asiId,
-			@Nullable final OrderLineId reservedToSalesOrderLineIdOrNotReservedAtAll)
-	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-
-		final Set<WarehouseId> pickingWarehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(warehouseId);
-
-		final IHUQueryBuilder huQuery = handlingUnitsRepo
-				.createHUQueryBuilder()
-				.addOnlyInWarehouseIds(pickingWarehouseIds)
-				.addOnlyWithProductId(productId)
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
-
-		// ASI
-		if (asiId != null)
-		{
-			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
-			huQuery.addOnlyWithAttributes(attributeSet);
-			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
-		}
-
-		// Reservation
-		if (reservedToSalesOrderLineIdOrNotReservedAtAll == null)
-		{
-			huQuery.setExcludeReserved();
-		}
-		else
-		{
-			huQuery.setExcludeReservedToOtherThan(reservedToSalesOrderLineIdOrNotReservedAtAll);
-		}
-
-		return huQuery;
-	}
-
-	private boolean isAllowSqlWhenFilteringHUAttributes()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AllowSqlWhenFilteringHUAttributes, true);
 	}
 }

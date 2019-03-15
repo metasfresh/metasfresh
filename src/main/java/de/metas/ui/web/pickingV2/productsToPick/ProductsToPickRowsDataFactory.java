@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -39,6 +40,8 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.reservation.HUReservation;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.Packageable;
@@ -48,7 +51,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -89,7 +91,7 @@ class ProductsToPickRowsDataFactory
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final HUReservationDocumentFilterService huReservationService;
+	private final HUReservationService huReservationService;
 	private final PickingCandidateRepository pickingCandidateRepo;
 	private final PickingCandidateService pickingCandidateService;
 
@@ -112,7 +114,7 @@ class ProductsToPickRowsDataFactory
 
 	@Builder
 	private ProductsToPickRowsDataFactory(
-			@NonNull final HUReservationDocumentFilterService huReservationService,
+			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateRepository pickingCandidateRepo,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
@@ -130,6 +132,7 @@ class ProductsToPickRowsDataFactory
 	{
 		final ImmutableList<ProductsToPickRow> rows = packageableRow.getPackageables()
 				.stream()
+				.map(AllocablePackageable::of)
 				.flatMap(this::createRowsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
@@ -140,17 +143,15 @@ class ProductsToPickRowsDataFactory
 				.build();
 	}
 
-	private Stream<ProductsToPickRow> createRowsAndStream(final Packageable packageable)
+	private Stream<ProductsToPickRow> createRowsAndStream(final AllocablePackageable packageable)
 	{
-		final AllocablePackageable allocablePackageable = AllocablePackageable.of(packageable);
-
 		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
-		rows.addAll(createRowsFromExistingPickingCandidates(allocablePackageable));
-		rows.addAll(createRowsFromHUs(allocablePackageable));
+		rows.addAll(createRowsFromExistingPickingCandidates(packageable));
+		rows.addAll(createRowsFromHUs(packageable));
 
-		if (!allocablePackageable.isAllocated())
+		if (!packageable.isAllocated())
 		{
-			rows.add(createQtyNotAvailableRow(allocablePackageable));
+			rows.add(createQtyNotAvailableRowForRemainingQtyToAllocate(packageable));
 		}
 
 		return rows.stream();
@@ -193,30 +194,64 @@ class ProductsToPickRowsDataFactory
 			return ImmutableList.of();
 		}
 
-		final Set<HuId> huIds = getHuIdsAvailableToAllocate(packageable);
+		final Set<HuId> reservedHuIds = getHuIdsReservedForSalesOrderLine(packageable);
+		final Set<HuId> availableHuIds = getHuIdsAvailableToAllocate(packageable);
 
-		final List<ProductsToPickRow> rows = huIds.stream()
+		final ImmutableSet<HuId> allHuIds = ImmutableSet.<HuId> builder()
+				.addAll(reservedHuIds)
+				.addAll(availableHuIds)
+				.build();
+
+		final List<ProductsToPickRow> rows = allHuIds.stream()
 				.map(huId -> createZeroQtyRowFromHU(packageable, huId))
 				.collect(ImmutableList.toImmutableList());
 
 		return rows.stream()
-				.sorted(Comparator.comparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX)))
+				.sorted(Comparator
+						.<ProductsToPickRow> comparingInt((row -> row.isHuReservedForThisRow() ? 0 : 1)) // consider reserved HU first
+						.thenComparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX))) // then first expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private Set<HuId> getHuIdsReservedForSalesOrderLine(final AllocablePackageable packageable)
+	{
+		if (packageable.getSalesOrderLineIdOrNull() == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		final HUReservation huReservation = huReservationService.getBySalesOrderLineId(packageable.getSalesOrderLineIdOrNull()).orElse(null);
+		if (huReservation == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return huReservation.getVhuIds();
+	}
+
 	private Set<HuId> getHuIdsAvailableToAllocate(final AllocablePackageable packageable)
 	{
+		final OrderLineId salesOrderLine = packageable.getSalesOrderLineIdOrNull();
+
 		final Set<HuId> huIds = huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(null)
-				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine)
 				.build()
 				.listIds();
-		getHUs(huIds); // pre-load all HUs
+
+		warmUpCacheForHuIds(huIds);
+
 		return huIds;
+	}
+
+	private void warmUpCacheForHuIds(final Collection<HuId> huIds)
+	{
+		getHUs(huIds); // pre-load all HUs
+		huReservationService.warmup(huIds);
 	}
 
 	private ProductsToPickRow allocateRowFromHU(final ProductsToPickRow row, final AllocablePackageable packageable)
@@ -244,7 +279,7 @@ class ProductsToPickRowsDataFactory
 		return createRow(packageable, qtyZero, huId, NULL_PickingCandidate);
 	}
 
-	private ProductsToPickRow createQtyNotAvailableRow(final AllocablePackageable packageable)
+	private ProductsToPickRow createQtyNotAvailableRowForRemainingQtyToAllocate(final AllocablePackageable packageable)
 	{
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
@@ -273,6 +308,11 @@ class ProductsToPickRowsDataFactory
 	{
 		final ShipmentScheduleId shipmentScheduleId = packageable.getShipmentScheduleId();
 
+		final OrderLineId salesOrderLineId = packageable.getSalesOrderLineIdOrNull();
+		final boolean huReservedForThisRow = pickFromHUId != null
+				&& salesOrderLineId != null
+				&& huReservationService.isVhuIdReservedToSalesOrderLineId(pickFromHUId, salesOrderLineId);
+
 		final ProductInfo productInfo = getProductInfo(packageable.getProductId());
 
 		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
@@ -288,19 +328,36 @@ class ProductsToPickRowsDataFactory
 				.rowId(rowId)
 				//
 				.productInfo(productInfo)
+				.huReservedForThisRow(huReservedForThisRow)
 				//
 				.locator(locator)
 				//
 				// Attributes:
-				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElse(null))
+				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElseGet(() -> buildLotNumberFromHuId(pickFromHUId)))
 				.expiringDate(attributes.getValueAsLocalDateIfExists(ATTR_BestBeforeDate).orElse(null))
 				.repackNumber(attributes.getValueAsStringIfExists(ATTR_RepackNumber).orElse(null))
 				//
 				.qty(qty)
 				//
 				.shipmentScheduleId(shipmentScheduleId)
+				//
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
+	}
+
+	private String buildLotNumberFromHuId(final HuId huId)
+	{
+		if (huId == null)
+		{
+			return null;
+		}
+
+		if (!Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return null;
+		}
+
+		return "<" + huId.getRepoId() + ">";
 	}
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)
@@ -408,15 +465,26 @@ class ProductsToPickRowsDataFactory
 			return new AllocablePackageable(packageable);
 		}
 
-		private final Packageable packageable;
-		private final Quantity qtyToAllocateTarget;
+		@Getter
+		private final ProductId productId;
+		@Getter
+		private final ShipmentScheduleId shipmentScheduleId;
+		@Getter
+		private final WarehouseId warehouseId;
+		@Getter
+		private final OrderLineId salesOrderLineIdOrNull;
 
+		private final Quantity qtyToAllocateTarget;
 		@Getter
 		private Quantity qtyToAllocate;
 
 		private AllocablePackageable(@NonNull final Packageable packageable)
 		{
-			this.packageable = packageable;
+			this.productId = packageable.getProductId();
+			this.shipmentScheduleId = packageable.getShipmentScheduleId();
+			this.warehouseId = packageable.getWarehouseId();
+			this.salesOrderLineIdOrNull = packageable.getSalesOrderLineIdOrNull();
+
 			qtyToAllocateTarget = packageable.getQtyOrdered()
 					.subtract(packageable.getQtyPickedOrDelivered())
 					.toZeroIfNegative();
@@ -432,26 +500,6 @@ class ProductsToPickRowsDataFactory
 		public boolean isAllocated()
 		{
 			return getQtyToAllocate().signum() <= 0;
-		}
-
-		public ProductId getProductId()
-		{
-			return packageable.getProductId();
-		}
-
-		public ShipmentScheduleId getShipmentScheduleId()
-		{
-			return packageable.getShipmentScheduleId();
-		}
-
-		public WarehouseId getWarehouseId()
-		{
-			return packageable.getWarehouseId();
-		}
-
-		public OrderLineId getSalesOrderLineIdOrNull()
-		{
-			return packageable.getSalesOrderLineIdOrNull();
 		}
 	}
 
