@@ -127,7 +127,9 @@ run_metasfresh()
 
  # thx to 
  # https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
- MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+# MaxRAMFraction=1 doesn't any emory for anything else and might cause the OS to kill the java process
+# local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+local MEMORY_PARAMS="-Xmx512M"
 
  cd /opt/metasfresh/metasfresh-report/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${ext_lib_param}\
