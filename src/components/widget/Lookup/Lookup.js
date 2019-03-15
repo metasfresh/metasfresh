@@ -522,6 +522,7 @@ class Lookup extends Component {
                         this.linkedList.push(c.getWrappedInstance());
                       }
                     }}
+                    field={item.field}
                     clearable={false}
                     readonly={disabled || widgetData[index].readonly}
                     lookupList={true}
@@ -537,8 +538,8 @@ class Lookup extends Component {
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
-                    onFocus={() => this.handleListFocus(item.field)}
-                    onBlur={() => this.handleListBlur(item.field)}
+                    onFocus={this.handleListFocus}
+                    onBlur={this.handleListBlur}
                     {...{
                       dataId,
                       entity,
