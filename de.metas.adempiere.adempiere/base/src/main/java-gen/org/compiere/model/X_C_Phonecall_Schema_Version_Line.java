@@ -14,7 +14,7 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1862143036L;
+	private static final long serialVersionUID = -926255592L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schema_Version_Line (Properties ctx, int C_Phonecall_Schema_Version_Line_ID, String trxName)
@@ -27,6 +27,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 			setC_Phonecall_Schema_ID (0);
 			setC_Phonecall_Schema_Version_ID (0);
 			setC_Phonecall_Schema_Version_Line_ID (0);
+			setPhonecallTimeMax (new Timestamp( System.currentTimeMillis() ));
+			setPhonecallTimeMin (new Timestamp( System.currentTimeMillis() ));
 			setSeqNo (0); // 0
         } */
     }

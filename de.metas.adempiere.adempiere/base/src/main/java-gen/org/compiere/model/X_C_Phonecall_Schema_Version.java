@@ -14,7 +14,7 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20631584L;
+	private static final long serialVersionUID = -884590705L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schema_Version (Properties ctx, int C_Phonecall_Schema_Version_ID, String trxName)
@@ -461,139 +461,6 @@ public class X_C_Phonecall_Schema_Version extends org.compiere.model.PO implemen
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	/** Set Bereitstellungszeit Mo.
-		@param PreparationTime_1 
-		Preparation time for monday
-	  */
-	@Override
-	public void setPreparationTime_1 (java.sql.Timestamp PreparationTime_1)
-	{
-		set_Value (COLUMNNAME_PreparationTime_1, PreparationTime_1);
-	}
-
-	/** Get Bereitstellungszeit Mo.
-		@return Preparation time for monday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_1 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_1);
-	}
-
-	/** Set Bereitstellungszeit Di.
-		@param PreparationTime_2 
-		Preparation time for tuesday
-	  */
-	@Override
-	public void setPreparationTime_2 (java.sql.Timestamp PreparationTime_2)
-	{
-		set_Value (COLUMNNAME_PreparationTime_2, PreparationTime_2);
-	}
-
-	/** Get Bereitstellungszeit Di.
-		@return Preparation time for tuesday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_2 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_2);
-	}
-
-	/** Set Bereitstellungszeit Mi.
-		@param PreparationTime_3 
-		Preparation time for wednesday
-	  */
-	@Override
-	public void setPreparationTime_3 (java.sql.Timestamp PreparationTime_3)
-	{
-		set_Value (COLUMNNAME_PreparationTime_3, PreparationTime_3);
-	}
-
-	/** Get Bereitstellungszeit Mi.
-		@return Preparation time for wednesday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_3 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_3);
-	}
-
-	/** Set Bereitstellungszeit Do.
-		@param PreparationTime_4 
-		Preparation time for thursday
-	  */
-	@Override
-	public void setPreparationTime_4 (java.sql.Timestamp PreparationTime_4)
-	{
-		set_Value (COLUMNNAME_PreparationTime_4, PreparationTime_4);
-	}
-
-	/** Get Bereitstellungszeit Do.
-		@return Preparation time for thursday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_4 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_4);
-	}
-
-	/** Set Bereitstellungszeit Fr.
-		@param PreparationTime_5 
-		Preparation time for Friday
-	  */
-	@Override
-	public void setPreparationTime_5 (java.sql.Timestamp PreparationTime_5)
-	{
-		set_Value (COLUMNNAME_PreparationTime_5, PreparationTime_5);
-	}
-
-	/** Get Bereitstellungszeit Fr.
-		@return Preparation time for Friday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_5 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_5);
-	}
-
-	/** Set Bereitstellungszeit Sa.
-		@param PreparationTime_6 
-		Preparation time for Saturday
-	  */
-	@Override
-	public void setPreparationTime_6 (java.sql.Timestamp PreparationTime_6)
-	{
-		set_Value (COLUMNNAME_PreparationTime_6, PreparationTime_6);
-	}
-
-	/** Get Bereitstellungszeit Sa.
-		@return Preparation time for Saturday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_6 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_6);
-	}
-
-	/** Set Bereitstellungszeit So.
-		@param PreparationTime_7 
-		Preparation time for Sunday
-	  */
-	@Override
-	public void setPreparationTime_7 (java.sql.Timestamp PreparationTime_7)
-	{
-		set_Value (COLUMNNAME_PreparationTime_7, PreparationTime_7);
-	}
-
-	/** Get Bereitstellungszeit So.
-		@return Preparation time for Sunday
-	  */
-	@Override
-	public java.sql.Timestamp getPreparationTime_7 () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_7);
 	}
 
 	/** Set Gültig ab.

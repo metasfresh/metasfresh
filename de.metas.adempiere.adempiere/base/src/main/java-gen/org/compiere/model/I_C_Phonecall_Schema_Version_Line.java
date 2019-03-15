@@ -72,7 +72,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Set Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -82,7 +82,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Get Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -130,7 +130,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Set Standort.
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -140,7 +140,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Get Standort.
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -291,7 +291,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Set PhonecallTimeMax.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPhonecallTimeMax (java.sql.Timestamp PhonecallTimeMax);
@@ -300,7 +300,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Get PhonecallTimeMax.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getPhonecallTimeMax();
@@ -314,7 +314,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Set PhonecallTimeMin.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPhonecallTimeMin (java.sql.Timestamp PhonecallTimeMin);
@@ -323,7 +323,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	 * Get PhonecallTimeMin.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getPhonecallTimeMin();
