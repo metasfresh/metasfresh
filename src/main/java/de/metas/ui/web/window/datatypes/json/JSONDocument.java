@@ -62,7 +62,6 @@ import lombok.ToString;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-// @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE) // cannot use it because of "otherProperties"
 @ToString(callSuper = true)
 public final class JSONDocument extends JSONDocumentBase
 {
@@ -70,7 +69,7 @@ public final class JSONDocument extends JSONDocumentBase
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
-		//
+		//fieldsBy
 		// Fields
 		{
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
@@ -112,11 +111,11 @@ public final class JSONDocument extends JSONDocumentBase
 				.map(JSONDocument::createIncludedTabInfo)
 				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
-		
+
 		//
 		// Available standard actions
 		jsonDocument.setStandardActions(document.getStandardActions());
-		
+
 
 		//
 		// Set debugging info
@@ -129,7 +128,7 @@ public final class JSONDocument extends JSONDocumentBase
 
 		return jsonDocument;
 	}
-	
+
 	private static JSONIncludedTabInfo createIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
 	{
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDocumentsCollection.getDetailId());
@@ -149,7 +148,7 @@ public final class JSONDocument extends JSONDocumentBase
 		{
 			tabInfo.setAllowDelete(allowDelete.booleanValue(), allowDelete.getName());
 		}
-		
+
 		return tabInfo;
 	}
 
@@ -273,7 +272,7 @@ public final class JSONDocument extends JSONDocumentBase
 		{
 			tabInfo.setAllowDelete(allowDelete.booleanValue(), allowDelete.getName());
 		}
-		
+
 		return tabInfo;
 	}
 
@@ -303,7 +302,7 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonProperty("timestamp")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String timestamp;
-	
+
 	private JSONDocument(final DocumentPath documentPath)
 	{
 		super(documentPath);
@@ -368,7 +367,7 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 		return includedTabsInfo.values();
 	}
-	
+
 	private void setStandardActions(final Set<DocumentStandardAction> standardActions)
 	{
 		this.standardActions = standardActions;

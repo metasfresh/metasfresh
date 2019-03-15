@@ -5,14 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,15 +47,24 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	}
 
 	/** Element group type (primary aka bordered, transparent etc) */
+	@Getter
 	private final LayoutType layoutType;
 
+	@Getter
 	private final List<DocumentLayoutElementLineDescriptor> elementLines;
+
+	@Getter
+	private final Integer columnCount;
+
+	@Getter
+	private final String internalName;
 
 	private DocumentLayoutElementGroupDescriptor(final Builder builder)
 	{
-		super();
 		layoutType = builder.layoutType;
 		elementLines = ImmutableList.copyOf(builder.buildElementLines());
+		columnCount = builder.columnCount;
+		internalName = builder.internalName;
 	}
 
 	@Override
@@ -62,18 +73,10 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("type", layoutType)
+				.add("columnCount", columnCount)
+				.add("internalName", internalName)
 				.add("elements", elementLines.isEmpty() ? null : elementLines)
 				.toString();
-	}
-
-	public LayoutType getLayoutType()
-	{
-		return layoutType;
-	}
-
-	public List<DocumentLayoutElementLineDescriptor> getElementLines()
-	{
-		return elementLines;
 	}
 
 	public boolean hasElementLines()
@@ -87,11 +90,12 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 		private String internalName;
 		private LayoutType layoutType;
+		public Integer columnCount = null;
+
 		private final List<DocumentLayoutElementLineDescriptor.Builder> elementLinesBuilders = new ArrayList<>();
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -118,19 +122,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return elementLinesBuilders
 					.stream()
 					.map(elementLinesBuilder -> elementLinesBuilder.build())
-					.filter(elementLine -> checkValid(elementLine))
 					.collect(GuavaCollectors.toImmutableList());
-		}
-
-		private final boolean checkValid(final DocumentLayoutElementLineDescriptor elementLine)
-		{
-			if (!elementLine.hasElements())
-			{
-				logger.trace("Skip adding {} to {} because it's empty", elementLine, this);
-				return false;
-			}
-
-			return true;
 		}
 
 		public Builder setInternalName(final String internalName)
@@ -151,15 +143,21 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return this;
 		}
 
-		public LayoutType getLayoutType()
+		public Builder setColumnCount(final int columnCount)
 		{
-			return layoutType;
+			this.columnCount = Util.firstGreaterThanZero(columnCount, 1);
+			return this;
 		}
 
-		public Builder addElementLine(final DocumentLayoutElementLineDescriptor.Builder elementLineBuilder)
+		public Builder addElementLine(@NonNull final DocumentLayoutElementLineDescriptor.Builder elementLineBuilder)
 		{
-			Check.assumeNotNull(elementLineBuilder, "Parameter elementLineBuilder is not null");
 			elementLinesBuilders.add(elementLineBuilder);
+			return this;
+		}
+
+		public Builder addElementLines(@NonNull final List<DocumentLayoutElementLineDescriptor.Builder> elementLineBuilders)
+		{
+			elementLinesBuilders.addAll(elementLineBuilders);
 			return this;
 		}
 

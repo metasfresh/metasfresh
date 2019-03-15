@@ -61,7 +61,6 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -120,18 +119,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	private int getLoadLimitMax()
 	{
 		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_LoadLimitMax, DEFAULT_LoadLimitMax);
-	}
-
-	private final void assertThisRepository(final DocumentEntityDescriptor entityDescriptor)
-	{
-		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		if (documentsRepository != this)
-		{
-			// shall not happen
-			throw new IllegalArgumentException("Entity descriptor's repository is invalid: " + entityDescriptor
-					+ "\n Expected: " + this
-					+ "\n But it was: " + documentsRepository);
-		}
 	}
 
 	private static DocumentId retrieveNextDocumentId(final DocumentEntityDescriptor entityDescriptor)
@@ -330,11 +317,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		private String version;
 
-		public ResultSetDocumentValuesSupplier(final DocumentEntityDescriptor entityDescriptor, final String adLanguage, final ResultSet rs)
+		public ResultSetDocumentValuesSupplier(@NonNull final DocumentEntityDescriptor entityDescriptor, final String adLanguage, @NonNull final ResultSet rs)
 		{
-			super();
-			Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
-			Check.assumeNotNull(rs, "Parameter rs is not null");
 			this.entityDescriptor = entityDescriptor;
 			this.adLanguage = adLanguage;
 			this.rs = rs;
@@ -804,7 +788,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				}
 			}
 
-			// TODO: handle not updateable columns... i think we shall set them only if the PO is new
+			// TODO: handle not updatable columns... i think we shall set them only if the PO is new
 
 			// NOTE: at this point we shall not do any other validations like "mandatory but null", value min/max range check,
 			// because we shall rely completely on Document level validations and not duplicate the logic here.

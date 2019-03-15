@@ -59,7 +59,7 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 	private final Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
 	private final Optional<String> lookupTableName;
 
-	private ListLookupDescriptor(final Builder builder)
+	private ListLookupDescriptor(@NonNull final Builder builder)
 	{
 		Check.assumeNotNull(builder.lookupValues, "Parameter builder.lookupValues is not null");
 

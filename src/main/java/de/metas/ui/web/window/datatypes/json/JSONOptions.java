@@ -27,6 +27,7 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -87,7 +88,7 @@ public final class JSONOptions
 
 	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
 
-	private JSONOptions(final Builder builder)
+	private JSONOptions(@NonNull final Builder builder)
 	{
 		adLanguage = builder.getAD_Language();
 		showAdvancedFields = builder.isShowAdvancedFields();
@@ -363,7 +364,6 @@ public final class JSONOptions
 
 		private Builder(final UserSession userSession)
 		{
-			super();
 			_userSession = userSession;
 			sessionADLanguage = userSession != null ? userSession.getAD_Language() : null;
 		}

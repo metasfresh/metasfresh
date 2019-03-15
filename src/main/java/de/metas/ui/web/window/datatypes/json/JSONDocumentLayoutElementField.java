@@ -84,7 +84,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		ActionButton,
 
 		/**
-		 * Used to tell the frontend that a field with is part of a composition shall be shown as tooltip,
+		 * Used to tell the frontend that a field which is part of a composition shall be shown as tooltip,
 		 * when the respective tooltip icon/button is pressed
 		 */
 		Tooltip;

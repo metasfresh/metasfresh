@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.DocumentChanges.IncludedDetailInfo;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -189,7 +190,7 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 	}
 
 	@Override
-	public Set<String> collectFrom(final Document document, final ReasonSupplier reason)
+	public Set<String> collectFrom(@NonNull final Document document, final ReasonSupplier reason)
 	{
 		final DocumentPath documentPath = document.getDocumentPath();
 		return documentChanges(documentPath)

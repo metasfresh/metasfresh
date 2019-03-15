@@ -58,7 +58,6 @@ import de.metas.util.lang.RepoIdAware;
 
 	private ADProcessParametersRepository()
 	{
-		super();
 	}
 
 	@Override

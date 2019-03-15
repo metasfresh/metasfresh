@@ -3,6 +3,8 @@ package de.metas.ui.web.window.datatypes.json;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -17,12 +19,14 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSON
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
-import de.metas.util.GuavaCollectors;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -52,7 +56,9 @@ import lombok.ToString;
 @ToString
 public final class JSONDocumentLayoutElement
 {
-	public static List<JSONDocumentLayoutElement> ofList(final List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
+	public static List<JSONDocumentLayoutElement> ofList(
+			@NonNull final List<DocumentLayoutElementDescriptor> elements,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		return elements.stream()
 				.filter(jsonOpts.documentLayoutElementFilter())
@@ -61,7 +67,9 @@ public final class JSONDocumentLayoutElement
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	static JSONDocumentLayoutElement fromNullable(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
+	static JSONDocumentLayoutElement fromNullable(
+			@Nullable final DocumentLayoutElementDescriptor element,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		if (element == null)
 		{
@@ -102,7 +110,7 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
 
-	/** Type: primary, secondary */
+	@ApiModelProperty(allowEmptyValue = true)
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
@@ -131,7 +139,9 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
 
-	private JSONDocumentLayoutElement(final DocumentLayoutElementDescriptor element, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutElement(
+			@NonNull final DocumentLayoutElementDescriptor element,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 

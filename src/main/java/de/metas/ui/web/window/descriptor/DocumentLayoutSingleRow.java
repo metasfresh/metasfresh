@@ -11,6 +11,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ import de.metas.util.Check;
 
 /**
  * Single row layout (applies for header document but also for included document, when editing in advanced mode).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -170,7 +171,13 @@ public class DocumentLayoutSingleRow
 			return this;
 		}
 
-		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionBuildersToAdd)
+		public Builder addSection(@NonNull final DocumentLayoutSectionDescriptor.Builder sectionBuilderToAdd)
+		{
+			sectionBuilders.add(sectionBuilderToAdd);
+			return this;
+		}
+
+		public Builder addSections(@NonNull final Collection<DocumentLayoutSectionDescriptor.Builder> sectionBuildersToAdd)
 		{
 			sectionBuildersToAdd.forEach(sectionBuilders::add);
 			return this;

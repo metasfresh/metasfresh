@@ -3,7 +3,10 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -12,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -26,11 +30,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,15 +43,18 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public class JSONDocumentLayoutElementLine implements Serializable
 {
-	static List<JSONDocumentLayoutElementLine> ofList(final List<DocumentLayoutElementLineDescriptor> elementsLines, final JSONOptions jsonOpts)
+	static List<JSONDocumentLayoutElementLine> ofList(
+			@NonNull final List<DocumentLayoutElementLineDescriptor> elementsLines,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		return elementsLines.stream()
 				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonOpts))
-				.filter(jsonElementsLine -> jsonElementsLine.hasElements())
 				.collect(GuavaCollectors.toImmutableList());
 	}
-	
-	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
+
+	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(
+			@NonNull final DocumentLayoutElementLineDescriptor elementLine,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementLine(elementLine, jsonOpts);
 	}
@@ -56,24 +63,22 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONDocumentLayoutElementLine(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutElementLine(
+			@NonNull final DocumentLayoutElementLineDescriptor elementLine,
+			@NonNull final JSONOptions jsonOpts)
 	{
-		super();
-
 		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonOpts);
 		this.elements = ImmutableList.copyOf(elements);
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutElementLine(@JsonProperty("elements") final List<JSONDocumentLayoutElement> elements)
+	private JSONDocumentLayoutElementLine(@Nullable @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements)
 	{
-		super();
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 	}
 
 	private JSONDocumentLayoutElementLine(final JSONDocumentLayoutElement element)
 	{
-		super();
 		elements = ImmutableList.of(element);
 	}
 
@@ -90,8 +95,9 @@ public class JSONDocumentLayoutElementLine implements Serializable
 		return elements;
 	}
 
-	public boolean hasElements()
+	@JsonIgnore
+	public boolean isEmpty()
 	{
-		return !elements.isEmpty();
+		return elements.isEmpty();
 	}
 }

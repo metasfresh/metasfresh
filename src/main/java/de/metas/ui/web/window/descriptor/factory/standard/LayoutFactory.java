@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -44,11 +45,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow.Builder;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
@@ -124,7 +125,10 @@ public class LayoutFactory
 	private final IWindowUIElementsProvider _uiProvider;
 	private final List<I_AD_UI_Section> _uiSections;
 
-	private LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
+	private LayoutFactory(
+			@NonNull final GridWindowVO gridWindowVO,
+			@NonNull final GridTabVO gridTabVO,
+			@Nullable final GridTabVO parentTab)
 	{
 		Adempiere.autowire(this);
 
@@ -441,17 +445,6 @@ public class LayoutFactory
 			return null;
 		}
 
-		// NOTE: per jassy request, when dealing with composed lookup fields, first field shall be Lookup and not List.
-		if (layoutElementBuilder.getFieldsCount() > 1)
-		{
-			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementBuilder.getFirstField();
-			if (layoutElementFieldBuilder.isLookup())
-			{
-				layoutElementBuilder.setWidgetType(DocumentFieldWidgetType.Lookup);
-				layoutElementFieldBuilder.setLookupSource(LookupSource.lookup);
-			}
-		}
-
 		//
 		// Collect advanced fields
 		if (layoutElementBuilder.isAdvancedField())
@@ -621,7 +614,7 @@ public class LayoutFactory
 	}
 
 	/** @return included entity grid layout */
-	public DocumentLayoutDetailDescriptor.Builder layoutDetail()
+	public Optional<DocumentLayoutDetailDescriptor.Builder> layoutDetail()
 	{
 		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
 		logger.trace("Generating layout detail for {}", entityDescriptor);
@@ -631,31 +624,37 @@ public class LayoutFactory
 		if (tabDisplayLogic.isConstantFalse())
 		{
 			logger.trace("Skip adding detail tab to layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
-			return null;
+			return Optional.empty();
 		}
 
-		return DocumentLayoutDetailDescriptor.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
+		final Builder layoutSingleRow = layoutSingleRow();
+
+		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
+				.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
+				.caption(entityDescriptor.getCaption())
+				.description(entityDescriptor.getDescription())
 				.internalName(entityDescriptor.getInternalName())
 				.gridLayout(layoutGridView())
-				.singleRowLayout(layoutSingleRow())
+				.singleRowLayout(layoutSingleRow)
 				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate())
 				.supportQuickInput(isSupportQuickInput(entityDescriptor));
+		return Optional.of(builder);
 	}
 
 	private boolean isSupportQuickInput(final DocumentEntityDescriptor.Builder entityDescriptor)
-	{
+		{
 		if (!entityDescriptor.isAllowQuickInput())
 		{
 			return false;
 		}
 
 		return quickInputDescriptors.hasQuickInputEntityDescriptor(
-				entityDescriptor.getDocumentType(),
-				entityDescriptor.getDocumentTypeId(),
+					entityDescriptor.getDocumentType(),
+					entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),
-				entityDescriptor.getDetailId(),
-				entityDescriptor.getSOTrx());
-	}
+					entityDescriptor.getDetailId(),
+					entityDescriptor.getSOTrx());
+		}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final DocumentFieldDescriptor.Builder field)
 	{

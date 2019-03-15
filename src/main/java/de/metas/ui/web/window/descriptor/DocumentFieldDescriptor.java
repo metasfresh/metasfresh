@@ -651,9 +651,8 @@ public final class DocumentFieldDescriptor
 			return _allowShowPassword;
 		}
 
-		public Builder setLookupDescriptorProvider(final LookupDescriptorProvider lookupDescriptorProvider)
+		public Builder setLookupDescriptorProvider(@NonNull final LookupDescriptorProvider lookupDescriptorProvider)
 		{
-			Check.assumeNotNull(lookupDescriptorProvider, "Parameter lookupDescriptorProvider is not null");
 			this.lookupDescriptorProvider = lookupDescriptorProvider;
 			return this;
 		}

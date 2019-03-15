@@ -59,6 +59,7 @@ import lombok.NonNull;
 /* package */ class CableSalesOrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	private static final int WINDOW_ID_SalesOrder = 143; // FIXME: hardcoded sales order window id = 143
+	private static final int WINDOW_ID_PurchaseOrder = 181; // FIXME: hardcoded purchase order window id = 181
 
 	private ProductLookupDescriptor productLookupDescriptor;
 
@@ -75,14 +76,16 @@ import lombok.NonNull;
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
-		return ImmutableSet.of(MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_SalesOrder, org.compiere.model.I_C_OrderLine.Table_Name));
+		return ImmutableSet.of(
+				MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_SalesOrder, org.compiere.model.I_C_OrderLine.Table_Name),
+				MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_PurchaseOrder, org.compiere.model.I_C_OrderLine.Table_Name));
 	}
 
 	@Override
 	public QuickInputDescriptor createQuickInputDescriptor(
-			final DocumentType documentType, 
-			final DocumentId documentTypeId, 
-			final DetailId detailId, 
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
 			final Optional<SOTrx> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createDescriptorBuilder(documentTypeId, detailId, soTrx)

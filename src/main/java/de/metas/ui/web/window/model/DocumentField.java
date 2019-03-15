@@ -28,7 +28,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.util.NumberUtils;
-
 import lombok.NonNull;
 
 /*
@@ -463,7 +462,7 @@ import lombok.NonNull;
 	/**
 	 * Computes field's validStatus.
 	 *
-	 * IMPORTANT: this method is not updating the status, it's not computing it.
+	 * IMPORTANT: this method is not updating the status, it's only computing it.
 	 */
 	private final DocumentValidStatus computeValidStatus()
 	{
