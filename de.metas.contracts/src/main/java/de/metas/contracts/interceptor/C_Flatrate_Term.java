@@ -106,7 +106,7 @@ public class C_Flatrate_Term
 	@Init
 	public void initialize(final IModelValidationEngine engine)
 	{
-		if (Ini.isClient() == false) // 03429: we only need to check this on server startup
+		if (Ini.isSwingClient() == false) // 03429: we only need to check this on server startup
 		{
 			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);

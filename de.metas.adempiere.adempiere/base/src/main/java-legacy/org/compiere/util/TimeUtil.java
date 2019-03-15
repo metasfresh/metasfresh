@@ -1664,6 +1664,11 @@ public class TimeUtil
 
 	public static ZonedDateTime asZonedDateTime(final Object obj)
 	{
+		return asZonedDateTime(obj, ZoneId.systemDefault());
+	}
+
+	public static ZonedDateTime asZonedDateTime(final Object obj, @NonNull final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1674,7 +1679,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(ZoneId.systemDefault());
+			return asInstant(obj, zoneId).atZone(zoneId);
 		}
 	}
 
@@ -1707,6 +1712,12 @@ public class TimeUtil
 
 	public static Instant asInstant(@Nullable final Object obj)
 	{
+		return asInstant(obj, ZoneId.systemDefault());
+	}
+
+	public static Instant asInstant(
+			@Nullable final Object obj, @NonNull final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1722,17 +1733,17 @@ public class TimeUtil
 		else if (obj instanceof LocalDateTime)
 		{
 			final LocalDateTime localDateTime = (LocalDateTime)obj;
-			return localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+			return localDateTime.atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof LocalDate)
 		{
 			final LocalDate localDate = (LocalDate)obj;
-			return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+			return localDate.atStartOfDay(zoneId).toInstant();
 		}
 		else if (obj instanceof LocalTime)
 		{
 			final LocalTime localTime = (LocalTime)obj;
-			return localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
+			return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof XMLGregorianCalendar)
 		{

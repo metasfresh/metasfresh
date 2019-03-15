@@ -9,11 +9,14 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.IOrgDAO.OrgQuery;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -113,19 +116,30 @@ public final class MasterdataProvider
 		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgId(json, existingOrgId));
 	}
 
-	private OrgId createOrUpdateOrgId(
-			final JsonOrganization json,
+	@VisibleForTesting
+	OrgId createOrUpdateOrgId(
+			@NonNull final JsonOrganization json,
 			@Nullable OrgId existingOrgId)
 	{
+		final SyncAdvise orgSyncAdvise = json.getSyncAdvise();
+
 		if (existingOrgId == null)
 		{
 			final String code = json.getCode();
 			if (Check.isEmpty(code, true))
 			{
-				throw new MissingPropertyException("Missing property Code; JsonOrganization={}", json);
+				throw new MissingPropertyException("Missing 'code' property; JsonOrganization={}", json);
 			}
 
-			existingOrgId = orgsRepo.getOrgIdByValue(code).orElse(null);
+			final OrgQuery query = OrgQuery.builder()
+					.orgValue(code)
+					.failIfNotExists(orgSyncAdvise.isFailIfNotExists())
+					.outOfTrx(orgSyncAdvise.isLoadReadOnly())
+					.build();
+
+			existingOrgId = orgsRepo
+					.retrieveOrgIdBy(query)
+					.orElse(null);
 		}
 
 		final I_AD_Org orgRecord;
@@ -138,9 +152,12 @@ public final class MasterdataProvider
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
-		updateOrgRecord(orgRecord, json);
-		permissionService.assertCanCreateOrUpdate(orgRecord);
-		orgsRepo.save(orgRecord);
+		if (!orgSyncAdvise.isLoadReadOnly())
+		{
+			permissionService.assertCanCreateOrUpdate(orgRecord);
+			updateOrgRecord(orgRecord, json);
+			orgsRepo.save(orgRecord);
+		}
 
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 		if (json.getBpartner() != null)
@@ -150,7 +167,6 @@ public final class MasterdataProvider
 							json.getBpartner(),
 							orgId);
 		}
-
 		return orgId;
 	}
 

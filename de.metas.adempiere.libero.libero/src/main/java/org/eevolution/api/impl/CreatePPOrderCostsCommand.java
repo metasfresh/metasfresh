@@ -12,6 +12,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCost;
@@ -46,6 +47,7 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -94,6 +96,7 @@ final class CreatePPOrderCostsCommand
 	private final OrgId orgId;
 	private final ProductId mainProductId;
 	private final AttributeSetInstanceId mainProductAsiId;
+	private final Quantity mainProductQty;
 	private final AcctSchema acctSchema;
 
 	public CreatePPOrderCostsCommand(@NonNull final I_PP_Order ppOrder)
@@ -103,6 +106,9 @@ final class CreatePPOrderCostsCommand
 		orgId = OrgId.ofRepoId(ppOrder.getAD_Org_ID());
 		mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
+
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		mainProductQty = ppOrderBL.getQtyOrdered(ppOrder);
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		acctSchema = acctSchemasRepo.getByCliendAndOrg(clientId, orgId);
@@ -134,6 +140,7 @@ final class CreatePPOrderCostsCommand
 				.orderId(ppOrderId)
 				.mainProductId(mainProductId)
 				.mainProductAsiId(mainProductAsiId)
+				.mainProductQty(mainProductQty)
 				.clientId(clientId)
 				.orgId(orgId)
 				.acctSchema(acctSchema)
@@ -208,7 +215,7 @@ final class CreatePPOrderCostsCommand
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomComponentType);
 		final Percent coProductCostDistributionPercent = trxType.isCoProduct()
-				? Percent.of("0.01") //TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
+				? Percent.of("0.01") // TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
 				: null;
 
 		return PPOrderCostCandidate.builder()

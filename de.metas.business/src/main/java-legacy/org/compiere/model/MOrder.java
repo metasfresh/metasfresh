@@ -1276,7 +1276,7 @@ public class MOrder extends X_C_Order implements IDocument
 			else
 			// convert only if offer
 			{
-				if (Services.get(IDocTypeBL.class).isOffer(dt))
+				if (Services.get(IDocTypeBL.class).isSalesProposalOrQuotation(dt))
 				{
 					setC_DocType_ID(getC_DocTypeTarget_ID());
 				}
@@ -1450,7 +1450,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final I_C_DocType dt = docType == null ? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID()) : docType;
 
 		// Binding
-		boolean binding = dt != null && !Services.get(IDocTypeBL.class).isProposal(dt);
+		boolean binding = dt != null && !Services.get(IDocTypeBL.class).isSalesProposal(dt);
 		final String docSubType = dt == null ? null : dt.getDocSubType();
 
 		// Not binding - i.e. Target=0

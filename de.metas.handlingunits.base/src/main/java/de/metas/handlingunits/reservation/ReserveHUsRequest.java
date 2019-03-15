@@ -1,11 +1,12 @@
 package de.metas.handlingunits.reservation;
 
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -37,9 +38,11 @@ import lombok.Value;
 public class ReserveHUsRequest
 {
 	/** always mandatory */
+	@NonNull
 	Quantity qtyToReserve;
 
 	/** always mandatory */
+	@NonNull
 	OrderLineId salesOrderLineId;
 
 	/** mandatory, if the given HUs contain different products. */
@@ -49,15 +52,17 @@ public class ReserveHUsRequest
 	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
 	 * The actual reservation is done on VHU level.
 	 */
-	List<HuId> huIds;
+	ImmutableSet<HuId> huIds;
 
 	@Builder
 	private ReserveHUsRequest(
 			@NonNull final Quantity qtyToReserve,
 			@NonNull final OrderLineId salesOrderLineId,
 			@NonNull final ProductId productId,
-			@Singular final List<HuId> huIds)
+			@Singular final ImmutableSet<HuId> huIds)
 	{
+		Check.assumeNotEmpty(huIds, "huIds is not empty");
+
 		this.qtyToReserve = qtyToReserve;
 		this.salesOrderLineId = salesOrderLineId;
 		this.productId = productId;

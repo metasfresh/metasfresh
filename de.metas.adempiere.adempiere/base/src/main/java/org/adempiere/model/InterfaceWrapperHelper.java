@@ -105,6 +105,11 @@ public class InterfaceWrapperHelper
 	public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 	public static final String COLUMNNAME_Description = "Description";
 
+	public static final String COLUMNNAME_Created = "Created";
+	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	public static final String COLUMNNAME_Updated = "Updated";
+	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
 	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
 		return POJOLookupMap.getInMemoryDatabaseForModel(modelClass);
@@ -378,6 +383,11 @@ public class InterfaceWrapperHelper
 	public static <T> T load(final int id, final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass)
+	{
+		return id == null ? newInstance(modelClass) : load(id.getRepoId(), modelClass);
 	}
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
@@ -1456,9 +1466,8 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final IModelTranslationMap getModelTranslationMap(final Object model)
+	public static final IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.getModelTranslationMap(model);

@@ -44,6 +44,7 @@ import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -149,8 +150,10 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			createUpdateASIAndLink(orderLine, materialTracking);
 			addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @C_OrderLine_ID@ @Line@ " + p_Line));
 
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+			
 			final List<I_C_Invoice_Candidate> icsToDelete = InterfaceWrapperHelper.createList(
-					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
+					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId),
 					I_C_Invoice_Candidate.class);
 			deleteOrUpdate(icsToDelete, materialTracking);
 		}

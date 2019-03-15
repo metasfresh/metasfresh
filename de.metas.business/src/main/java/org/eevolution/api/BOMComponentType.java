@@ -1,13 +1,12 @@
 package org.eevolution.api;
 
-import java.util.Arrays;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.X_PP_Product_BOMLine;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -33,7 +32,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum BOMComponentType
+public enum BOMComponentType implements ReferenceListAwareEnum
 {
 	Component(X_PP_Product_BOMLine.COMPONENTTYPE_Component), //
 	CoProduct(X_PP_Product_BOMLine.COMPONENTTYPE_Co_Product), //
@@ -73,7 +72,7 @@ public enum BOMComponentType
 		return type;
 	}
 
-	private static final ImmutableMap<String, BOMComponentType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), BOMComponentType::getCode);
+	private static final ImmutableMap<String, BOMComponentType> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	public boolean isComponent()
 	{

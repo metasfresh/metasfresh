@@ -1,13 +1,7 @@
 package de.metas.event.remote;
 
-import java.io.IOException;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.event.Event;
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
@@ -35,41 +29,22 @@ public class JacksonJsonEventSerializer implements IEventSerializer
 {
 	public static final transient JacksonJsonEventSerializer instance = new JacksonJsonEventSerializer();
 
-	private final ObjectMapper jsonObjectMapper;
+	private final JSONObjectMapper<Event> delegate;
 
 	private JacksonJsonEventSerializer()
 	{
-		jsonObjectMapper = new ObjectMapper();
-
-		// important to register the jackson-datatype-jsr310 module which we have in our pom and
-		// which is needed to serialize/deserialize java.time.Instant
-		jsonObjectMapper.findAndRegisterModules();
+		delegate = JSONObjectMapper.forClass(Event.class);
 	}
 
 	@Override
 	public String toString(final Event event)
 	{
-		try
-		{
-			return jsonObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(event);
-		}
-		catch (final JsonProcessingException ex)
-		{
-			throw new AdempiereException("Failed converting event to json: " + event, ex);
-		}
+		return delegate.writeValueAsString(event);
 	}
 
 	@Override
 	public Event fromString(final String eventStr)
 	{
-		try
-		{
-			return jsonObjectMapper.readValue(eventStr, Event.class);
-		}
-		catch (IOException ex)
-		{
-			throw new AdempiereException("Failed converting json to Event: " + eventStr, ex);
-		}
+		return delegate.readValue(eventStr);
 	}
-
 }

@@ -216,7 +216,7 @@ public class Login
 		ctx.setUser(AD_User_ID, username);
 
 		//
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final ISystemBL systemBL = Services.get(ISystemBL.class);
 
@@ -551,7 +551,7 @@ public class Login
 
 		//
 		// Save Ini properties
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			Ini.saveProperties();
 		}

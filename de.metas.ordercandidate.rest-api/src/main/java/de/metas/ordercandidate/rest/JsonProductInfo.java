@@ -5,6 +5,8 @@ import static org.compiere.util.Util.coalesce;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -34,7 +36,6 @@ import lombok.Value;
  * #L%
  */
 
-// @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JsonProductInfo
 {
@@ -45,12 +46,14 @@ public class JsonProductInfo
 
 	/** This translates to {@code M_Product.Value}. */
 	@ApiModelProperty(value = "This translates to <code>M_Product.Value</code>.")
+	@JsonInclude(Include.NON_NULL)
 	private String code;
 
 	/**
 	 * This translates to {@code M_Product.Name}.
 	 * If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.
 	 */
+	@JsonInclude(Include.NON_NULL)
 	private String name;
 
 	private Type type;
@@ -60,8 +63,10 @@ public class JsonProductInfo
 	 * The respective UOM needs to exist in metasfresh and it's ID is set as <code>M_Product.C_UOM_ID</code>.
 	 * If this is empty, and a product with the given <code>code</code> does not yet exist, then the request will fail.
 	 */
+	@JsonInclude(Include.NON_NULL)
 	private String uomCode;
 
+	@JsonInclude(Include.NON_NULL)
 	private SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)

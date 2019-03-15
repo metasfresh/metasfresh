@@ -2,7 +2,7 @@
  * Annotations for model interceptor (aka model validator) classes.
  * <p>
  * Note that a model interceptor class using any of these annotations still has to be "explicitly" registered.<br>
- * Registering a model interceptor can be done in two ways:
+ * Registering a model interceptor can be done in three ways:
  * <ul>
  * <li>Adding a record to the {@value org.compiere.model.I_AD_ModelValidator#Table_Name} table.<br>
  * This is usually done with "module level" model interceptors which then register a number of "model level" interceptors.<br>
@@ -14,6 +14,8 @@
  * The model validation engine then uses reflection to find out which methods with which annotations the model interceptor has and makes sure that they will be called in the appropriate ways at runtime.
  * <p>
  * On a sidenote: Model interceptors are always considered to be singletons.
+ * </li>
+ * <li>Annotating a model interceptor as {@link org.springframework.stereotype.Component}. If you do this, it's a best practice to set the model interceptor's full qualified class name as component name.
  * </li>
  * </ul>
  *
