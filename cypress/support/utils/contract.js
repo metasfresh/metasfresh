@@ -25,6 +25,7 @@ export function createAndCompleteTransition(transitionName, extensionType, nextC
     cy.selectInListField('Action', 'Statuswechsel');
     cy.selectInListField('ContractStatus', 'Gekündigt');
 
+    cy.wait(500); // we need to wait a bit (unfortunately idk for what in articular), to avoid the "do you really want to leave" error
     cy.pressDoneButton();
 
     cy.wait(500);
