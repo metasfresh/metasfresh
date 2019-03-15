@@ -135,6 +135,11 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return getParameters().getParameterAsBool(PARAM_IsValidateOnly);
 	}
 
+	protected final boolean isInsertOnly()
+	{
+		return getParameters().getParameterAsBool(PARAM_IsInsertOnly);
+	}
+
 	private final boolean isDeleteOldImported()
 	{
 		return getParameters().getParameterAsBool(PARAM_DeleteOldImported);
@@ -164,7 +169,6 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 		return whereClause.toString();
 	}
-
 
 	@Override
 	public final ImportProcessResult run()
@@ -312,7 +316,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					@Override
 					public void run(final String localTrxName) throws Exception
 					{
-						this.recordImportResult = importRecord(state, importRecord);
+						this.recordImportResult = importRecord(state, importRecord, isInsertOnly());
 
 						markImported(importRecord);
 					}
@@ -365,7 +369,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	protected abstract ImportRecordType retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException;
 
-	protected abstract ImportRecordResult importRecord(final IMutable<Object> state, final ImportRecordType importRecord) throws Exception;
+	protected abstract ImportRecordResult importRecord(final IMutable<Object> state, final ImportRecordType importRecord, final boolean isInsertOnly) throws Exception;
 
 	protected final void reportError(final ImportRecordType importRecord, final String errorMsg)
 	{

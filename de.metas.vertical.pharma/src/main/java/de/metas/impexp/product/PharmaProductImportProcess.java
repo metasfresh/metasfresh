@@ -96,7 +96,9 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Pharma_Product importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_Pharma_Product importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 
@@ -110,6 +112,12 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			final I_M_Product product;
 			final boolean newProduct = existentProduct == null || importRecord.getM_Product_ID() <= 0;
+
+			if (!newProduct && isInsertOnly)
+			{
+				// #4994 do not update entry
+				return ImportRecordResult.Nothing;
+			}
 			if (newProduct)
 			{
 				product = createProduct(importRecord);
@@ -189,7 +197,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		final IQuery<I_I_Pharma_Product> pharmaPriceListQuery = queryBL.createQueryBuilder(I_I_Pharma_Product.class, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_I_Pharma_Product.COLUMNNAME_IsPriceCreated, false)
-					.create();
+				.create();
 
 		return queryBL.createQueryBuilder(I_M_PriceList.class, trxName)
 				.setJoinOr()

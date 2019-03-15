@@ -53,7 +53,7 @@ public class AccountImportProcess_Test
 		final AccountImportProcess importProcess = new AccountImportProcess();
 		importProcess.setCtx(ctx);
 
-		ievs.forEach(iElelemntValue -> importProcess.importRecord(new Mutable<>(), iElelemntValue));
+		ievs.forEach(iElelemntValue -> importProcess.importRecord(new Mutable<>(), iElelemntValue, false /*isInsertOnly*/));
 
 		ievs.forEach(iElelemntValue ->AccountImportTestHelper.assertImported(iElelemntValue));
 	}
