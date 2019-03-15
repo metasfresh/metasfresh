@@ -1,12 +1,43 @@
 export class DataEntrySection {
-  constructor(builder) {
-    this.name = builder.name;
-    this.dataEntrySubGroup = builder.dataEntrySubGroup;
-    this.sectionName = builder.sectionName;
-    this.seqNo = builder.seqNo;
-    this.description = builder.description;
-    this.isActive = builder.isActive;
-    this.dataEntryLines = builder.dataEntryLines;
+  constructor(name, dataEntrySubGroup) {
+    cy.log(`DataEntrySection - set name = ${name}; dataEntrySubGroup= ${dataEntrySubGroup}`);
+    this.name = name;
+    this.dataEntrySubGroup = dataEntrySubGroup;
+    this.sectionName = name;
+    this.seqNo = undefined;
+    this.description = undefined;
+    this.isActive = true;
+    this.dataEntryLines = [];
+  }
+
+  setSectionName(sectionName) {
+    cy.log(`DataEntrySection - set sectionName = ${sectionName}`);
+    this.sectionName = sectionName;
+    return this;
+  }
+
+  setSeqNo(seqNo) {
+    cy.log(`DataEntrySection - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
+
+  setDescription(description) {
+    cy.log(`DataEntrySection - set description = ${description}`);
+    this.description = description;
+    return this;
+  }
+
+  setActive(isActive) {
+    cy.log(`DataEntrySection - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
+  }
+
+  addDataEntryLine(dataEntryLine) {
+    cy.log(`DataEntrySection - add dataEntryLine = ${JSON.stringify(dataEntryLine)}`);
+    this.dataEntryLines.push(dataEntryLine);
+    return this;
   }
 
   apply() {
@@ -15,89 +46,25 @@ export class DataEntrySection {
     cy.log(`DataEntrySection - apply - END (name=${this.name})`);
     return this;
   }
-
-  static get builder() {
-    class Builder {
-      constructor(name, dataEntrySubGroup) {
-        cy.log(`DataEntrySectionBuilder - set name = ${name}; dataEntrySubGroup= ${dataEntrySubGroup}`);
-        this.name = name;
-        this.dataEntrySubGroup = dataEntrySubGroup;
-        this.sectionName = name;
-        this.seqNo = undefined;
-        this.description = undefined;
-        this.isActive = true;
-        this.dataEntryLines = [];
-      }
-
-      setSectionName(sectionName) {
-        cy.log(`DataEntrySectionBuilder - set sectionName = ${sectionName}`);
-        this.sectionName = sectionName;
-        return this;
-      }
-
-      setSeqNo(seqNo) {
-        cy.log(`DataEntrySectionBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
-
-      setDescription(description) {
-        cy.log(`DataEntrySectionBuilder - set description = ${description}`);
-        this.description = description;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntrySectionBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      addDataEntryLine(dataEntryLine) {
-        cy.log(`DataEntrySectionBuilder - add dataEntryLine = ${JSON.stringify(dataEntryLine)}`);
-        this.dataEntryLines.push(dataEntryLine);
-        return this;
-      }
-
-      build() {
-        return new DataEntrySection(this);
-      }
-    }
-    return Builder;
-  }
 }
 
 export class DataEntryLine {
-  constructor(builder) {
-    this.seqNo = builder.seqNo;
-    this.isActive = builder.isActive;
+  constructor() {
+    cy.log('DataEntryLine');
+    this.seqNo = undefined;
+    this.isActive = true;
   }
 
-  static get builder() {
-    class Builder {
-      constructor() {
-        cy.log('DataEntryLineBuilder');
-        this.seqNo = undefined;
-        this.isActive = true;
-      }
+  setSeqNo(seqNo) {
+    cy.log(`DataEntryLine - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
 
-      setSeqNo(seqNo) {
-        cy.log(`DataEntryLineBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntryLineBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      build() {
-        return new DataEntryLine(this);
-      }
-    }
-    return Builder;
+  setActive(isActive) {
+    cy.log(`DataEntryLine - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
   }
 }
 
