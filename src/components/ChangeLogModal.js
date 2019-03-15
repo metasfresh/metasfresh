@@ -1,3 +1,4 @@
+import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
@@ -32,18 +33,24 @@ export default class ChangeLogModal extends Component {
     if (data.rowsData) {
       return (
         <div className="panel panel-spaced changelog-rows">
-          <h5>Row:</h5>
+          <h5>{counterpart.translate('view.about.row')}:</h5>
           <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
-            {this.renderField('Created By:', data.rowsData.createdByUsername)}
-            {this.renderField('Created On:', data.rowsData.createdTimestamp)}
+            {this.renderField(
+              `${counterpart.translate('view.about.createdBy')}:`,
+              data.rowsData.createdByUsername
+            )}
+            {this.renderField(
+              `${counterpart.translate('view.about.created')}:`,
+              data.rowsData.createdTimestamp
+            )}
           </div>
           <div className="panel panel-spaced panel-distance panel-bordered panel-secondary">
             {this.renderField(
-              'Updated By:',
+              `${counterpart.translate('view.about.updatedBy')}:`,
               data.rowsData.lastChangedByUsername
             )}
             {this.renderField(
-              'Updated At:',
+              `${counterpart.translate('view.about.updated')}:`,
               data.rowsData.lastChangedTimestamp
             )}
           </div>
@@ -57,15 +64,31 @@ export default class ChangeLogModal extends Component {
   render() {
     const { data } = this.props;
 
+    if (!data || !data.createdByUsername) {
+      return null;
+    }
+
     return (
       <div className="col-12">
         <div className="panel panel-spaced panel-distance panel-bordered panel-primary">
-          {this.renderField('Created By:', data.createdByUsername)}
-          {this.renderField('Created On:', data.createdTimestamp)}
+          {this.renderField(
+            `${counterpart.translate('view.about.createdBy')}:`,
+            data.createdByUsername
+          )}
+          {this.renderField(
+            `${counterpart.translate('view.about.created')}:`,
+            data.createdTimestamp
+          )}
         </div>
         <div className="panel panel-spaced panel-distance panel-bordered panel-secondary">
-          {this.renderField('Updated By:', data.lastChangedByUsername)}
-          {this.renderField('Updated At:', data.lastChangedTimestamp)}
+          {this.renderField(
+            `${counterpart.translate('view.about.updatedBy')}:`,
+            data.lastChangedByUsername
+          )}
+          {this.renderField(
+            `${counterpart.translate('view.about.updated')}:`,
+            data.lastChangedTimestamp
+          )}
         </div>
         {this.renderRowsData()}
       </div>

@@ -111,9 +111,7 @@ class Table extends Component {
     ) {
       this.setState({
         selected:
-          defaultSelected && defaultSelected !== null
-            ? defaultSelected
-            : [undefined],
+          defaultSelected && defaultSelected !== null ? defaultSelected : [],
       });
     } else if (!disconnectFromState && !selectedEqual && selected.length) {
       dispatch(
@@ -127,7 +125,7 @@ class Table extends Component {
 
     if (prevProps.viewId !== viewId && rowData.get(`${tabId}`)) {
       if (defaultSelected && defaultSelected.length === 0) {
-        this.setState({ selected: defaultSelected });
+        this.setState({ selected: [] });
       }
 
       const firstLoad =

@@ -147,11 +147,6 @@
             }
 
             .form-group {
-                > div {
-                    /*flex: 1 0 100%;*/
-                    max-width: fit-content;
-                }
-
                 .input-primary, .input-secondary {
                     padding-bottom: 0;
                 }

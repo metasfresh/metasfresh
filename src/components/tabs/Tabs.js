@@ -148,7 +148,7 @@ class Tabs extends Component {
   };
 
   renderTabs = tabs => {
-    const { toggleTableFullScreen, windowId } = this.props;
+    const { toggleTableFullScreen, windowId, onChange } = this.props;
     const { selected } = this.state;
 
     return tabs.map(item => {
@@ -179,6 +179,7 @@ class Tabs extends Component {
                 windowId,
                 orderBy,
                 singleRowView,
+                onChange,
               }}
             >
               {itemWithProps}
