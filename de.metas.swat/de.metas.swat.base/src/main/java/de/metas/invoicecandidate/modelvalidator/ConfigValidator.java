@@ -88,7 +88,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	{
 		//super.onInit(engine, client);
 
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			ensureDataDestExists();
 		}

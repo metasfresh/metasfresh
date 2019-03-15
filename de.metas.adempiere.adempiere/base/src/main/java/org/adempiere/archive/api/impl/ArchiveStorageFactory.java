@@ -122,7 +122,7 @@ public class ArchiveStorageFactory implements IArchiveStorageFactory
 
 	private AccessMode getAccessMode(final Properties ctx)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			return AccessMode.CLIENT;
 		}

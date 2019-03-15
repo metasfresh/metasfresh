@@ -83,7 +83,7 @@ public class IniDefaultsValidator implements ModelValidator
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 			return null;
 		//
 		// UI

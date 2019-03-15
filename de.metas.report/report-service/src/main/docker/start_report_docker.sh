@@ -9,13 +9,13 @@ db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
 db_wait_for_dbms=${DB_WAIT_FOR_DBMS:-y}
+db_connection_pool_max_size=${DB_CONNECTION_POOL_MAX_SIZE:-UNSET}
 app_host=${APP_HOST:-app}
 skip_run_db_update=${SKIP_DB_UPDATE:-false}
 debug_port=${DEBUG_PORT:-8791}
 debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
-java_max_heap=${JAVA_MAX_HEAP:-256M}
 server_port=${SERVER_PORT:-8183}
 
 echo_variable_values()
@@ -31,13 +31,13 @@ echo_variable_values()
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
  echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}"
+ echo "DB_CONNECTION_POOL_MAX_SIZE=${db_connection_pool_max_size}"
  echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
  echo "DEBUG_PORT=${debug_port}"
  echo "DEBUG_SUSPEND=${debug_suspend}"
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
- echo "JAVA_MAX_HEAP=${java_max_heap}"
  echo "SERVER_PORT=${server_port}"
 }
 
@@ -104,6 +104,13 @@ run_db_update()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
+ if [ "$db_connection_pool_max_size" != "UNSET" ];
+ then
+ 	metasfresh_db_connectionpool_params="-Dc3p0.maxPoolSize=${db_connection_pool_max_size}"
+ else 
+	metasfresh_db_connectionpool_params=""
+ fi
+
  if [ "$admin_url" != "NONE" ]; 
  then
 	# see https://codecentric.github.io/spring-boot-admin/1.5.0/#spring-boot-admin-client
@@ -118,15 +125,22 @@ run_metasfresh()
  # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
  ext_lib_param="-Dloader.path=/opt/metasfresh/metasfresh-report/external-lib"
 
+ # thx to 
+ # https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
+# MaxRAMFraction=1 doesn't any emory for anything else and might cause the OS to kill the java process
+# local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+local MEMORY_PARAMS="-Xmx${java_max_heap}"
+
  cd /opt/metasfresh/metasfresh-report/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${ext_lib_param}\
- -Xmx${java_max_heap}\
+ ${MEMORY_PARAMS}\
  -XX:+HeapDumpOnOutOfMemoryError ${metasfresh_admin_params}\
+ ${metasfresh_db_connectionpool_params}\
  -DPropertyFile=/opt/metasfresh/metasfresh-report/metasfresh.properties\
  -Djava.security.egd=file:/dev/./urandom\
  -Dserver.port=${server_port}\
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- -jar metasfresh-report.jar
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo_variable_values

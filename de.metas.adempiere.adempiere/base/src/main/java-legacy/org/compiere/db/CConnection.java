@@ -346,7 +346,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public boolean isAppsServerOK(boolean tryContactAgain)
 	{
-		if (Ini.isClient() && !tryContactAgain && m_appServerWasQueried)
+		if (Ini.isSwingClient() && !tryContactAgain && m_appServerWasQueried)
 		{
 			return m_okApps; // return the info that we already have
 		}
@@ -1012,7 +1012,7 @@ public final class CConnection implements Serializable, Cloneable
 			System.err.println("Environment Error - Check Adempiere.properties - " + ee);
 			ee.printStackTrace();
 
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 			{
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "There is a configuration error:\n" + ee
 						+ "\nDo you want to reset the saved configuration?",

@@ -230,7 +230,7 @@ public class ProcessPreconditionChecker
 		}
 		catch (final ClassNotFoundException ex)
 		{
-			if (isServerProcess && Ini.isClient())
+			if (isServerProcess && Ini.isSwingClient())
 			{
 				// it might be that the class is available only on server
 				// so, for now, we consider the preconditions are applicable.
