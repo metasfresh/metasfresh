@@ -21,7 +21,10 @@
  */
 package org.adempiere.server.rpl.exp;
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.IExportProcessor;
@@ -59,7 +62,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 
 	@Override
 	public void process(final @NonNull Properties ctx, final @NonNull MEXPProcessor expProcessor,
-			final @NonNull Document document, final @NonNull Trx trx)
+			final @NonNull Document document, final Trx trx)
 			throws Exception
 	{
 		String host = expProcessor.getHost();
@@ -74,8 +77,9 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
 		for (I_EXP_ProcessorParameter processorParameter : processorParameters)
 		{
-			log.info("ProcesParameter          Value = " + processorParameter.getValue());
-			log.info("ProcesParameter ParameterValue = " + processorParameter.getParameterValue());
+			getLogger().addLog("ProcesParameter: Value = {} ; ParameterValue = {}",
+					processorParameter.getValue(),
+					processorParameter.getParameterValue());
 			if (processorParameter.getValue().equals(EXCHANGE_NAME_PARAMETER))
 			{
 				exchangeName = processorParameter.getParameterValue();
@@ -140,7 +144,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		// queue name and routing key are the same
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
 		template.convertAndSend(msg);
-		log.info("AMQP Message sent!");
+		getLogger().addLog("AMQP Message sent!");
 		connectionFactory.stop();
 
 	}
@@ -167,5 +171,10 @@ public class RabbitMqExportProcessor implements IExportProcessor
 				"AMQP Export Processor Parameter Help",
 				"true");
 
+	}
+
+	private ILoggable getLogger()
+	{
+		return Loggables.get().withLogger(log, Level.INFO);
 	}
 }

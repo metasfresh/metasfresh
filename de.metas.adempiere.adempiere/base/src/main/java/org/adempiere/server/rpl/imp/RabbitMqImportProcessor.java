@@ -22,7 +22,10 @@ package org.adempiere.server.rpl.imp;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,10 +58,9 @@ public class RabbitMqImportProcessor implements IImportProcessor
 	private RabbitMqListener rabbitMqListener = null;
 
 	@Override
-	public void start(final @NonNull Properties ctx, final @NonNull IReplicationProcessor replicationProcessor,
-			final @NonNull String trxName) throws Exception
+	public void start(final @NonNull Properties ctx, final @NonNull IReplicationProcessor replicationProcessor, final String trxName) throws Exception
 	{
-		log.info("Starting {} ({})", replicationProcessor, replicationProcessor.getMImportProcessor());
+		getLogger(Level.INFO).addLog("Starting {} ({})", replicationProcessor, replicationProcessor.getMImportProcessor());
 
 		final I_IMP_Processor impProcessor = replicationProcessor.getMImportProcessor();
 		final List<I_IMP_ProcessorParameter> processorParameters = Services.get(IIMPProcessorDAO.class).retrieveParameters(impProcessor, trxName);
@@ -77,7 +79,7 @@ public class RabbitMqImportProcessor implements IImportProcessor
 		for (final I_IMP_ProcessorParameter processorParameter : processorParameters)
 		{
 			final String parameterName = processorParameter.getValue();
-			log.debug("Parameters: {} = {}", parameterName, processorParameter.getParameterValue());
+			getLogger(Level.DEBUG).addLog("Parameters: {} = {}", parameterName, processorParameter.getParameterValue());
 
 			if (parameterName.equals(PARAM_QUEUE_NAME))
 			{
@@ -125,7 +127,7 @@ public class RabbitMqImportProcessor implements IImportProcessor
 				isDurableQueue);
 
 		rabbitMqListener.run();
-		log.info("Listener started: {}", rabbitMqListener);
+		getLogger(Level.INFO).addLog("Listener started: {}", rabbitMqListener);
 	}
 
 	@Override
@@ -135,7 +137,7 @@ public class RabbitMqImportProcessor implements IImportProcessor
 		if (rabbitMqListener != null)
 		{
 			rabbitMqListener.stop();
-			log.info("Listener stopped: {}", rabbitMqListener);
+			getLogger(Level.INFO).addLog("Listener stopped: {}", rabbitMqListener);
 		}
 		rabbitMqListener = null;
 	}
@@ -169,5 +171,10 @@ public class RabbitMqImportProcessor implements IImportProcessor
 				"Export Processor Parameter Description",
 				"AMQP Export Processor Parameter Help",
 				"true");
+	}
+
+	private ILoggable getLogger(@NonNull final Level level)
+	{
+		return Loggables.get().withLogger(log, level);
 	}
 }

@@ -22,7 +22,10 @@ package org.adempiere.server.rpl.imp;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -196,7 +199,7 @@ public class RabbitMqListener implements MessageListener
 		isStopping = true;
 		try
 		{
-			log.trace("Closing AMQP Connection!");
+			getLogger(Level.TRACE).addLog("Closing AMQP Connection!");
 			if (connectionFactory != null)
 			{
 				connectionFactory.destroy();
@@ -234,7 +237,7 @@ public class RabbitMqListener implements MessageListener
 		try
 		{
 			text = new String(message.getBody());
-			log.trace("Received message(text): \n{}", text);
+			getLogger(Level.TRACE).addLog("Received message(text): \n{}", text);
 
 			importXMLDocument(text);
 
@@ -249,9 +252,14 @@ public class RabbitMqListener implements MessageListener
 			// not sending reply
 			if (StringUtils.isNotEmpty(message.getMessageProperties().getReplyTo()))
 			{
-				log.warn("Sending reply currently not supported with rabbitmq");
+				getLogger(Level.WARN).addLog("Sending reply currently not supported with rabbitmq");
 			}
 		}
+	}
+
+	private ILoggable getLogger(@NonNull final Level level)
+	{
+		return Loggables.get().withLogger(log, level);
 	}
 }
 
