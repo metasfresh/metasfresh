@@ -31,8 +31,6 @@ de.metas.endcustomer.mf15/metasfresh.properties
 # Ignore JRebel files because those contains file paths from local system
 **/rebel.xml
 
-de.metas.shipper.gateway.go/src/main/resources/application.properties
-
 #Ignore IDEA files
 *.iml
 **/.idea

@@ -1,5 +1,8 @@
 FROM openjdk:8-jdk-alpine
 
+# to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
+# that way we should get the latest updates since the release of our base image
+# thx to https://github.com/moby/moby/issues/1996#issuecomment-185872769
 ARG CACHEBUST=1
 
 RUN apk update && apk upgrade && apk add bash && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted

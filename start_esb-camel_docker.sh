@@ -12,6 +12,8 @@ debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 server_port=${SERVER_PORT:-8184}
 
+java_max_heap=${JAVA_MAX_HEAP:-128M}
+
 
 echo_variable_values()
 {
@@ -25,6 +27,7 @@ echo_variable_values()
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "SERVER_PORT=${server_port}"
+ echo "JAVA_MAX_HEAP=${java_max_heap}"
  echo ""
  echo "RABBITMQ_HOST=${rabbitmq_host}"
  echo "RABBITMQ_PORT=${rabbitmq_port}"
@@ -45,15 +48,11 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
-# thx to 
-# https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
-MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
-
  cd /opt/metasfresh-esb-camel/\
  && java\
  -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/metasfresh-esb-camel/heapdump \
  ${metasfresh_admin_params}\
- ${MEMORY_PARAMS} \
+ -Xmx${java_max_heap}\
  -Dsun.misc.URLClassPath.disableJarChecking=true\
  -Djava.security.egd=file:/dev/./urandom\
  -Dserver.port=${server_port}\
