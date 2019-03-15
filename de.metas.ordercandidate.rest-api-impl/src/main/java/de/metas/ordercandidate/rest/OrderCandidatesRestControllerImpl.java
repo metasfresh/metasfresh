@@ -100,7 +100,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		// load/create/update the master data (according to SysncAdvice) in a dedicated trx.
+		// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
 		// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
 		trxManager.run(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
 		// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
