@@ -24,6 +24,8 @@ package org.adempiere.server.rpl.imp;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.server.rpl.IImportProcessor;
 import org.adempiere.server.rpl.IReplicationProcessor;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
@@ -36,7 +38,6 @@ import org.slf4j.Logger;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
-
 
 public class RabbitMqImportProcessor implements IImportProcessor
 {
@@ -54,7 +55,8 @@ public class RabbitMqImportProcessor implements IImportProcessor
 	private RabbitMqListener rabbitMqListener = null;
 
 	@Override
-	public void start(final Properties ctx, final IReplicationProcessor replicationProcessor, final String trxName) throws Exception
+	public void start(final @NonNull Properties ctx, final @NonNull IReplicationProcessor replicationProcessor,
+			final @NonNull String trxName) throws Exception
 	{
 		log.info("Starting {} ({})", replicationProcessor, replicationProcessor.getMImportProcessor());
 
@@ -95,19 +97,19 @@ public class RabbitMqImportProcessor implements IImportProcessor
 			}
 		}
 
-		if (queueName == null || queueName.length() == 0)
+		if (StringUtils.isEmpty(queueName))
 		{
-			throw new Exception(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_QUEUE_NAME));
+			throw new AdempiereException(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_QUEUE_NAME));
 		}
 
-		if (exchangeName == null || exchangeName.length() == 0)
+		if (StringUtils.isEmpty(exchangeName))
 		{
-			throw new Exception(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_EXCHANGE_NAME));
+			throw new AdempiereException(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_EXCHANGE_NAME));
 		}
 
-		if (consumerTag == null || consumerTag.length() == 0)
+		if (StringUtils.isEmpty(consumerTag))
 		{
-			throw new Exception(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_CONSUMER_TAG));
+			throw new AdempiereException(MessageFormat.format("Missing {0} with key '{1}'!", I_IMP_ProcessorParameter.Table_Name, PARAM_CONSUMER_TAG));
 		}
 
 		rabbitMqListener = new RabbitMqListener(ctx,
@@ -139,7 +141,7 @@ public class RabbitMqImportProcessor implements IImportProcessor
 	}
 
 	@Override
-	public void createInitialParameters(final I_IMP_Processor processor)
+	public void createInitialParameters(final @NonNull I_IMP_Processor processor)
 	{
 		final IIMPProcessorBL impProcessorBL = Services.get(IIMPProcessorBL.class);
 

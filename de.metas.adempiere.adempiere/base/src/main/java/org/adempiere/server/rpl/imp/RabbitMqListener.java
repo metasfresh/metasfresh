@@ -38,10 +38,8 @@ import org.slf4j.Logger;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.w3c.dom.Document;
 
-import javax.naming.Binding;
 import java.util.Properties;
 
 public class RabbitMqListener implements MessageListener
@@ -136,7 +134,6 @@ public class RabbitMqListener implements MessageListener
 		}
 		RabbitAdmin admin = new RabbitAdmin(connectionFactory);
 		Queue queue = new Queue(queueName, isDurableQueue);
-		exchangeName = "de.metas.esb.durable.exchange";
 		TopicExchange exchange = new TopicExchange(exchangeName, isDurableQueue, false);
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);

@@ -23,6 +23,7 @@ package org.adempiere.server.rpl.exp;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.IExportProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_EXP_ProcessorParameter;
@@ -89,14 +90,14 @@ public class RabbitMqExportProcessor implements IExportProcessor
 			}
 		}
 
-		if (exchangeName == null || exchangeName.length() == 0)
+		if (StringUtils.isEmpty(exchangeName))
 		{
-			throw new Exception("Missing " + X_EXP_ProcessorParameter.Table_Name + " with key 'exchangeName'!");
+			throw new AdempiereException("Missing " + X_EXP_ProcessorParameter.Table_Name + " with key 'exchangeName'!");
 		}
 
-		if (routingKey == null || routingKey.length() == 0)
+		if (StringUtils.isEmpty(routingKey))
 		{
-			throw new Exception("Missing " + X_EXP_ProcessorParameter.Table_Name + " with key 'routingKey'!");
+			throw new AdempiereException("Missing " + X_EXP_ProcessorParameter.Table_Name + " with key 'routingKey'!");
 		}
 
 		// Construct Transformer Factory and Transformer
@@ -118,20 +119,8 @@ public class RabbitMqExportProcessor implements IExportProcessor
 
 	}
 
-	/**
-	 * Send the message to an AMQP exchange
-	 *
-	 * @param host           the host of the AMQP server
-	 * @param port           the port
-	 * @param msg            the message to send
-	 * @param exchangeName   the exchange
-	 * @param routingKey     the routing key of the exchange
-	 * @param userName       the username
-	 * @param password       the password
-	 * @param isDurableQueue true if the queue is durable
-	 */
-	private void sendJMSMessage(String host, int port, String msg, String exchangeName, String routingKey
-			, String userName, String password, boolean isDurableQueue)
+	private void sendJMSMessage(final @NonNull String host, final int port, final @NonNull String msg, final @NonNull String exchangeName,
+			final @NonNull String routingKey, final @NonNull String userName, final @NonNull String password, final boolean isDurableQueue)
 	{
 
 		CachingConnectionFactory connectionFactory = new CachingConnectionFactory(host, port);
@@ -157,7 +146,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 	}
 
 	@Override
-	public void createInitialParameters(MEXPProcessor processor)
+	public void createInitialParameters(final @NonNull MEXPProcessor processor)
 	{
 		processor.createParameter(
 				EXCHANGE_NAME_PARAMETER,
