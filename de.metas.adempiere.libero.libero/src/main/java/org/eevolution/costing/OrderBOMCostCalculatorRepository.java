@@ -68,6 +68,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 	private final PPOrderId orderId;
 	private final ProductId mainProductId;
 	private final AttributeSetInstanceId mainProductAsiId;
+	private final Quantity mainProductQty;
 
 	private final ImmutableSet<CostElementId> costElementIds;
 
@@ -80,6 +81,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 			@NonNull final PPOrderId orderId,
 			@NonNull final ProductId mainProductId,
 			@NonNull final AttributeSetInstanceId mainProductAsiId,
+			@NonNull final Quantity mainProductQty,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final AcctSchema acctSchema,
@@ -90,10 +92,16 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		this.orderId = orderId;
 		this.mainProductId = mainProductId;
 		this.mainProductAsiId = mainProductAsiId;
+		this.mainProductQty = mainProductQty;
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.acctSchema = acctSchema;
 		this.costElementIds = ImmutableSet.copyOf(costElementIds);
+	}
+
+	private void assertExpectedOrderId(final PPOrderId orderId)
+	{
+		Check.assumeEquals(this.orderId, orderId, "orderId");
 	}
 
 	@Override
@@ -109,7 +117,8 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 
 	public BOM getBOM(final PPOrderCosts orderCosts)
 	{
-		Check.assumeEquals(orderCosts.getOrderId(), orderId, "orderId");
+		assertExpectedOrderId(orderCosts.getOrderId());
+
 		final ImmutableList<BOMLine> bomLines = orderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
 				.map(orderBOMLineRecord -> toCostingBOMLine(orderBOMLineRecord, orderCosts))
@@ -118,6 +127,7 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		return BOM.builder()
 				.productId(mainProductId)
 				.asiId(mainProductAsiId)
+				.qty(mainProductQty.getAsBigDecimal())
 				.lines(bomLines)
 				.costPrice(getProductCostPrice(mainProductId, orderCosts))
 				.build();

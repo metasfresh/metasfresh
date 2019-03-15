@@ -54,6 +54,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.service.AddProductPriceRequest;
 import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
@@ -555,6 +556,26 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList_Version priceListVersion = getPriceListVersionById(priceListVersionId);
 		return getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion);
+	}
+
+	@Override
+	public ProductPriceId addProductPrice(@NonNull final AddProductPriceRequest request)
+	{
+		final I_M_ProductPrice record = newInstance(I_M_ProductPrice.class);
+
+		record.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setC_UOM_ID(request.getUomId().getRepoId());
+
+		record.setPriceStd(request.getPriceStd());
+		record.setPriceList(request.getPriceList());
+		record.setPriceLimit(request.getPriceLimit());
+
+		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+
+		saveRecord(record);
+
+		return ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
 	}
 
 	@Override

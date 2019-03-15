@@ -18,6 +18,7 @@ import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImportStatus;
 import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.util.Env;
 
@@ -88,12 +89,26 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@Override
 	protected String doIt()
 	{
+
 		streamImpDataLines().forEach(this::importLine);
 		completeAsyncImportProcessBuilder();
 
 		deleteAttachmentEntry();
 
 		return "@IsImportScheduled@ #" + countImported + ", @IsError@ #" + countError;
+	}
+
+	private boolean isManualImport()
+	{
+		final I_C_DataImport dataImport = getDataImport();
+		if (dataImport == null)
+		{
+			return false;
+		}
+
+		final I_AD_ImpFormat impFormat = dataImport.getAD_ImpFormat();
+
+		return impFormat.isManualImport();
 	}
 
 	private int getDataImportId()
@@ -178,6 +193,12 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	private void importLine(final ImpDataLine line)
 	{
 		line.importToDB();
+
+		if(isManualImport())
+		{
+			// nothing to do
+			return;
+		}
 
 		final ImportStatus importStatus = line.getImportStatus();
 		if (ImportStatus.ImportPrepared == importStatus)

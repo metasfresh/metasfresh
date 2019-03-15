@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 856310155L;
+	private static final long serialVersionUID = 172095627L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -24,9 +24,11 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
         {
 			setAD_User_ID (0);
 			setIsBillToContact_Default (false); // N
+			setIsDataClarified (false); // N
 			setIsDefaultContact (false); // N
 			setIsFullBPAccess (true); // Y
 			setIsInPayroll (false); // N
+			setIsNews (false); // N
 			setIsNewsletter (false); // N
 			setIsPurchaseContact_Default (false); // N
 			setIsSalesContact_Default (false); // N
@@ -175,6 +177,24 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return ii.intValue();
 	}
 
+	/** Set Adresse.
+		@param Address 
+		Anschrift
+	  */
+	@Override
+	public void setAddress (java.lang.String Address)
+	{
+		throw new IllegalArgumentException ("Address is virtual column");	}
+
+	/** Get Adresse.
+		@return Anschrift
+	  */
+	@Override
+	public java.lang.String getAddress () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Address);
+	}
+
 	@Override
 	public org.compiere.model.I_AD_Image getAvatar() throws RuntimeException
 	{
@@ -226,6 +246,72 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.sql.Timestamp getBirthday () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_Birthday);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getBPartner_Parent() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_BPartner_Parent_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setBPartner_Parent(org.compiere.model.I_C_BPartner BPartner_Parent)
+	{
+		set_ValueFromPO(COLUMNNAME_BPartner_Parent_ID, org.compiere.model.I_C_BPartner.class, BPartner_Parent);
+	}
+
+	/** Set Partner Parent.
+		@param BPartner_Parent_ID 
+		Business Partner Parent
+	  */
+	@Override
+	public void setBPartner_Parent_ID (int BPartner_Parent_ID)
+	{
+		throw new IllegalArgumentException ("BPartner_Parent_ID is virtual column");	}
+
+	/** Get Partner Parent.
+		@return Business Partner Parent
+	  */
+	@Override
+	public int getBPartner_Parent_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_BPartner_Parent_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
+	}
+
+	/** Set Geschäftspartnergruppe.
+		@param C_BP_Group_ID 
+		Geschäftspartnergruppe
+	  */
+	@Override
+	public void setC_BP_Group_ID (int C_BP_Group_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Group_ID is virtual column");	}
+
+	/** Get Geschäftspartnergruppe.
+		@return Geschäftspartnergruppe
+	  */
+	@Override
+	public int getC_BP_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -303,6 +389,39 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Country(org.compiere.model.I_C_Country C_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
+	}
+
+	/** Set Land.
+		@param C_Country_ID 
+		Land
+	  */
+	@Override
+	public void setC_Country_ID (int C_Country_ID)
+	{
+		throw new IllegalArgumentException ("C_Country_ID is virtual column");	}
+
+	/** Get Land.
+		@return Land
+	  */
+	@Override
+	public int getC_Country_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
@@ -371,6 +490,39 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getC_Job_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Job_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Region getC_Region() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
+	}
+
+	@Override
+	public void setC_Region(org.compiere.model.I_C_Region C_Region)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
+	}
+
+	/** Set Region.
+		@param C_Region_ID 
+		Identifiziert eine geographische Region
+	  */
+	@Override
+	public void setC_Region_ID (int C_Region_ID)
+	{
+		throw new IllegalArgumentException ("C_Region_ID is virtual column");	}
+
+	/** Get Region.
+		@return Identifiziert eine geographische Region
+	  */
+	@Override
+	public int getC_Region_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Region_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -681,6 +833,24 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
+	/** Set Anrede.
+		@param Greeting 
+		Für Briefe - z.B. "Sehr geehrter {0}" oder "Sehr geehrter Herr {0}" - Zur Laufzeit wird  "{0}" durch den Namen ersetzt
+	  */
+	@Override
+	public void setGreeting (java.lang.String Greeting)
+	{
+		throw new IllegalArgumentException ("Greeting is virtual column");	}
+
+	/** Get Anrede.
+		@return Für Briefe - z.B. "Sehr geehrter {0}" oder "Sehr geehrter Herr {0}" - Zur Laufzeit wird  "{0}" durch den Namen ersetzt
+	  */
+	@Override
+	public java.lang.String getGreeting () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Greeting);
+	}
+
 	/** Set Included Tab.
 		@param Included_Tab_ID 
 		Included Tab in this Tab (Master Dateail)
@@ -714,6 +884,57 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isBillToContact_Default () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsBillToContact_Default);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Kunde.
+		@param IsCustomer 
+		Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	  */
+	@Override
+	public void setIsCustomer (boolean IsCustomer)
+	{
+		throw new IllegalArgumentException ("IsCustomer is virtual column");	}
+
+	/** Get Kunde.
+		@return Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	  */
+	@Override
+	public boolean isCustomer () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCustomer);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Bereinigt.
+		@param IsDataClarified 
+		Nur bereinigte Daten ausgeben
+	  */
+	@Override
+	public void setIsDataClarified (boolean IsDataClarified)
+	{
+		set_Value (COLUMNNAME_IsDataClarified, Boolean.valueOf(IsDataClarified));
+	}
+
+	/** Get Bereinigt.
+		@return Nur bereinigte Daten ausgeben
+	  */
+	@Override
+	public boolean isDataClarified () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDataClarified);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -763,6 +984,28 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isFullBPAccess () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsFullBPAccess);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set hat zentralen Partner.
+		@param IsHavingParentPartner hat zentralen Partner	  */
+	@Override
+	public void setIsHavingParentPartner (boolean IsHavingParentPartner)
+	{
+		throw new IllegalArgumentException ("IsHavingParentPartner is virtual column");	}
+
+	/** Get hat zentralen Partner.
+		@return hat zentralen Partner	  */
+	@Override
+	public boolean isHavingParentPartner () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsHavingParentPartner);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -822,6 +1065,32 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	/** Set Newsletter.
+		@param IsNews 
+		Template or container uses news channels
+	  */
+	@Override
+	public void setIsNews (boolean IsNews)
+	{
+		set_Value (COLUMNNAME_IsNews, Boolean.valueOf(IsNews));
+	}
+
+	/** Get Newsletter.
+		@return Template or container uses news channels
+	  */
+	@Override
+	public boolean isNews () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNews);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Newsletter.
 		@param IsNewsletter Newsletter	  */
 	@Override
 	public void setIsNewsletter (boolean IsNewsletter)
@@ -835,6 +1104,31 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isNewsletter () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsNewsletter);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Zielkunde.
+		@param IsProspect 
+		Kennzeichnet einen Interessenten oder Kunden
+	  */
+	@Override
+	public void setIsProspect (boolean IsProspect)
+	{
+		throw new IllegalArgumentException ("IsProspect is virtual column");	}
+
+	/** Get Zielkunde.
+		@return Kennzeichnet einen Interessenten oder Kunden
+	  */
+	@Override
+	public boolean isProspect () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsProspect);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -890,16 +1184,16 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
-	/** Set IsSalesContact.
-		@param IsSalesContact IsSalesContact	  */
+	/** Set Verkaufskontakt.
+		@param IsSalesContact Verkaufskontakt	  */
 	@Override
 	public void setIsSalesContact (boolean IsSalesContact)
 	{
 		set_Value (COLUMNNAME_IsSalesContact, Boolean.valueOf(IsSalesContact));
 	}
 
-	/** Get IsSalesContact.
-		@return IsSalesContact	  */
+	/** Get Verkaufskontakt.
+		@return Verkaufskontakt	  */
 	@Override
 	public boolean isSalesContact () 
 	{
@@ -927,6 +1221,31 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isSalesContact_Default () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSalesContact_Default);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Selbstregistrierung.
+		@param IsSelfService 
+		This is a Self-Service entry or this entry can be changed via Self-Service
+	  */
+	@Override
+	public void setIsSelfService (boolean IsSelfService)
+	{
+		throw new IllegalArgumentException ("IsSelfService is virtual column");	}
+
+	/** Get Selbstregistrierung.
+		@return This is a Self-Service entry or this entry can be changed via Self-Service
+	  */
+	@Override
+	public boolean isSelfService () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSelfService);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -982,6 +1301,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
+	/** Set Sprachregion.
+		@param Language Sprachregion	  */
+	@Override
+	public void setLanguage (java.lang.String Language)
+	{
+		throw new IllegalArgumentException ("Language is virtual column");	}
+
+	/** Get Sprachregion.
+		@return Sprachregion	  */
+	@Override
+	public java.lang.String getLanguage () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Language);
+	}
+
 	/** Set Nachname.
 		@param Lastname Nachname	  */
 	@Override
@@ -1015,6 +1349,22 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getMemo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+	}
+
+	/** Set Handynummer.
+		@param MobilePhone Handynummer	  */
+	@Override
+	public void setMobilePhone (java.lang.String MobilePhone)
+	{
+		set_Value (COLUMNNAME_MobilePhone, MobilePhone);
+	}
+
+	/** Get Handynummer.
+		@return Handynummer	  */
+	@Override
+	public java.lang.String getMobilePhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MobilePhone);
 	}
 
 	/** Set Name.
@@ -1197,6 +1547,36 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getRegistry () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Registry);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
+	{
+		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
+	}
+
+	/** Set Beratung.
+		@param SalesRep_ID Beratung	  */
+	@Override
+	public void setSalesRep_ID (int SalesRep_ID)
+	{
+		throw new IllegalArgumentException ("SalesRep_ID is virtual column");	}
+
+	/** Get Beratung.
+		@return Beratung	  */
+	@Override
+	public int getSalesRep_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

@@ -71,7 +71,7 @@ public abstract class AbstractDeliveryTest
 	protected final String trxName = ITrx.TRXNAME_None;
 
 	protected final C_OrderLine_Handler olHandler = new C_OrderLine_Handler();
-	protected final I_C_ILCandHandler handler = InterfaceWrapperHelper.create(ctx, I_C_ILCandHandler.class, trxName);
+	protected I_C_ILCandHandler handler;
 
 	// task 07442
 	private final ClientId clientId = ClientId.ofRepoId(2);
@@ -87,13 +87,13 @@ public abstract class AbstractDeliveryTest
 	protected ITaxBL taxBL;
 	// task 07442 end
 
-	protected final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
-	protected final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, trxName);
+	protected I_C_Order order;
+	protected I_C_OrderLine orderLine;
 
-	protected final I_M_InOut mInOut = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
-	protected final I_M_InOutLine mInOutLine = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);
+	protected I_M_InOut mInOut;
+	protected I_M_InOutLine mInOutLine;
 
-	protected final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
+	protected I_C_BPartner bPartner;
 
 	@Before
 	public void init()
@@ -153,12 +153,17 @@ public abstract class AbstractDeliveryTest
 
 	private void initC_BPartner()
 	{
+		bPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
+
 		// ...
+
 		InterfaceWrapperHelper.save(bPartner);
 	}
 
 	private void initHandlers()
 	{
+		handler = InterfaceWrapperHelper.create(ctx, I_C_ILCandHandler.class, trxName);
+
 		// current DB structure for OLHandler
 		handler.setC_ILCandHandler_ID(540001);
 		handler.setClassname(C_OrderLine_Handler.class.getName());
@@ -173,6 +178,7 @@ public abstract class AbstractDeliveryTest
 
 	private void initC_Order()
 	{
+		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
 		InterfaceWrapperHelper.save(order);
@@ -180,6 +186,8 @@ public abstract class AbstractDeliveryTest
 
 	private void initC_OrderLine()
 	{
+		orderLine = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, trxName);
+
 		orderLine.setAD_Org_ID(orgId.getRepoId());
 		orderLine.setM_Product_ID(productId.getRepoId());
 
@@ -199,6 +207,8 @@ public abstract class AbstractDeliveryTest
 
 	private void initM_InOut()
 	{
+		mInOut = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
+
 		mInOut.setC_Order_ID(order.getC_Order_ID());
 
 		mInOut.setDocStatus(IDocument.STATUS_Completed);
@@ -209,6 +219,8 @@ public abstract class AbstractDeliveryTest
 
 	private void initM_InOutLine()
 	{
+		mInOutLine = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);
+
 		mInOutLine.setM_InOut_ID(mInOut.getM_InOut_ID());
 
 		// link to C_OrderLine

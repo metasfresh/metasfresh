@@ -76,7 +76,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 		final IMutable<Object> state = new Mutable<>();
 
-		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord));
+		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord, false /*isInsertOnly*/));
 
 		assertMultipleBpartnerImported(ibpartners);
 

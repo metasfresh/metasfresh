@@ -113,7 +113,9 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Product importRecord) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_Product importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -122,6 +124,11 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		final boolean newProduct = M_Product_ID <= 0;
 		log.debug("I_Product_ID=" + I_Product_ID + ", M_Product_ID=" + M_Product_ID);
 
+		if (!newProduct && isInsertOnly)
+		{
+			// #4994 do not update
+			return ImportRecordResult.Nothing;
+		}
 		// Product
 		if (newProduct)			// Insert new Product
 		{
