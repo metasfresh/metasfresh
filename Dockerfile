@@ -21,8 +21,6 @@ COPY .babelrc .
 COPY package.json .
 
 RUN npm install --save-dev cypress@3.1.5
-RUN npm install --save-dev @cypress/snapshot@2.0.1
-RUN npm install --save-dev @cypress/webpack-preprocessor@4.0.2
 
 COPY reporter-config.json .
 
@@ -49,10 +47,10 @@ COPY webpack.config.js .
 # --------------
 RUN npm install
 
-
+# TODO: we have this mochas stuff in the package.json; re move here or remove there
 # thx to https://docs.cypress.io/guides/tooling/reporters.html#Multiple-Reporters
 # mocha 6.0.0 and 6.0.1 don't work, thx to https://github.com/cypress-io/cypress/issues/3537
-RUN npm install --save-dev mocha@5.2.0 mocha-multi-reporters@1.1.7 mocha-junit-reporter@1.18.0
+#RUN npm install --save-dev mocha@5.2.0 mocha-multi-reporters@1.1.7 mocha-junit-reporter@1.18.0
 
 RUN $(npm bin)/cypress verify
 
