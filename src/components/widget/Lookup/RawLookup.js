@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
+import _, { debounce } from 'lodash';
 
 import {
   autocompleteRequest,
@@ -12,6 +13,8 @@ import {
 import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
+
+const DEBOUNCE_TIME = 100;
 
 export class RawLookup extends Component {
   constructor(props) {
@@ -30,8 +33,11 @@ export class RawLookup extends Component {
       parentElement: undefined,
     };
 
+    this.handleChange = this.handleChange.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
     this.handleValueChanged = this.handleValueChanged.bind(this);
+    this.typeaheadRequest = this.typeaheadRequest.bind(this);
   }
 
   componentDidMount() {
@@ -234,7 +240,7 @@ export class RawLookup extends Component {
     );
   }
 
-  handleFocus(mouse) {
+  handleFocus(mouse = true) {
     const { mandatory } = this.props;
 
     if (mouse && this.state.isFocused) {
@@ -253,9 +259,8 @@ export class RawLookup extends Component {
     }
   }
 
-  handleChange = (handleChangeOnFocus, allowEmpty) => {
+  typeaheadRequest = () => {
     const {
-      recent,
       windowType,
       dataId,
       filterWidget,
@@ -267,12 +272,88 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
-      handleInputEmptyStatus,
-      enableAutofocus,
       isModal,
       newRecordCaption,
       mandatory,
       placeholder,
+    } = this.props;
+
+    console.log('request');
+    const inputValue = this.inputSearch.value;
+
+    let typeaheadRequest;
+    const typeaheadParams = {
+      docId: filterWidget ? viewId : dataId,
+      propertyName: filterWidget ? parameterName : mainProperty[0].field,
+      query: inputValue,
+      rowId,
+      tabId,
+    };
+
+    if (entity === 'documentView' && !filterWidget) {
+      typeaheadRequest = getViewAttributeTypeahead(
+        windowType,
+        viewId,
+        dataId,
+        mainProperty[0].field,
+        inputValue
+      );
+    } else if (viewId && !filterWidget) {
+      typeaheadRequest = autocompleteModalRequest({
+        ...typeaheadParams,
+        docType: windowType,
+        entity: 'documentView',
+        viewId,
+      });
+    } else {
+      typeaheadRequest = autocompleteRequest({
+        ...typeaheadParams,
+        docType: windowType,
+        entity,
+        subentity,
+        subentityId,
+      });
+    }
+
+    typeaheadRequest.then(response => {
+      let values = response.data.values || [];
+      let list = null;
+      const newState = {
+        loading: false,
+      };
+
+      if (values.length === 0 && !isModal) {
+        const optionNew = { key: 'NEW', caption: newRecordCaption };
+        list = [optionNew];
+
+        newState.forceEmpty = true;
+        newState.selected = optionNew;
+      } else {
+        list = values;
+
+        newState.forceEmpty = false;
+        newState.selected = values[0];
+      }
+
+      if (!mandatory) {
+        list.push({
+          caption: placeholder,
+          key: null,
+        });
+      }
+      newState.list = [...list];
+
+      this.setState({ ...newState });
+    });
+  };
+
+  handleChange = (handleChangeOnFocus, allowEmpty) => {
+    const {
+      recent,
+      handleInputEmptyStatus,
+      enableAutofocus,
+      isOpen,
+      onDropdownListToggle,
     } = this.props;
 
     enableAutofocus();
@@ -281,10 +362,16 @@ export class RawLookup extends Component {
       this.props.resetLocalClearing();
     }
 
+    console.log('handleChange');
+
     const inputValue = this.inputSearch.value;
 
     if (inputValue || allowEmpty) {
       !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
+
+      if (!isOpen) {
+        onDropdownListToggle(true);
+      }
 
       this.setState({
         isInputEmpty: false,
@@ -292,72 +379,12 @@ export class RawLookup extends Component {
         query: inputValue,
       });
 
-      this.props.onDropdownListToggle(true);
-
-      let typeaheadRequest;
-      const typeaheadParams = {
-        docId: filterWidget ? viewId : dataId,
-        propertyName: filterWidget ? parameterName : mainProperty[0].field,
-        query: inputValue,
-        rowId,
-        tabId,
-      };
-
-      if (entity === 'documentView' && !filterWidget) {
-        typeaheadRequest = getViewAttributeTypeahead(
-          windowType,
-          viewId,
-          dataId,
-          mainProperty[0].field,
-          inputValue
-        );
-      } else if (viewId && !filterWidget) {
-        typeaheadRequest = autocompleteModalRequest({
-          ...typeaheadParams,
-          docType: windowType,
-          entity: 'documentView',
-          viewId,
-        });
-      } else {
-        typeaheadRequest = autocompleteRequest({
-          ...typeaheadParams,
-          docType: windowType,
-          entity,
-          subentity,
-          subentityId,
-        });
-      }
-
-      typeaheadRequest.then(response => {
-        let values = response.data.values || [];
-        let list = null;
-        const newState = {
-          loading: false,
-        };
-
-        if (values.length === 0 && !isModal) {
-          const optionNew = { key: 'NEW', caption: newRecordCaption };
-          list = [optionNew];
-
-          newState.forceEmpty = true;
-          newState.selected = optionNew;
-        } else {
-          list = values;
-
-          newState.forceEmpty = false;
-          newState.selected = values[0];
-        }
-
-        if (!mandatory) {
-          list.push({
-            caption: placeholder,
-            key: null,
-          });
-        }
-        newState.list = [...list];
-
-        this.setState({ ...newState });
+      const debounced = debounce(this.typeaheadRequest, DEBOUNCE_TIME, {
+        leading: true,
+        trailing: false,
       });
+
+      debounced();
     } else {
       this.setState({
         isInputEmpty: true,
@@ -482,7 +509,7 @@ export class RawLookup extends Component {
                   tabIndex={tabIndex}
                   placeholder={placeholder}
                   onChange={this.handleChange}
-                  onClick={() => this.handleFocus(true)}
+                  onClick={this.handleFocus}
                 />
               </div>
             </div>
