@@ -109,6 +109,8 @@ public class PhonecallScheduleService
 	private void createPhonecallSchedule(PhonecallSchemaVersionLine phonecallSchemaVersionLine, LocalDate currentPhonecallDate)
 	{
 		final PhonecallSchedule phonecallSchedule = PhonecallSchedule.builder()
+				.bpartnerAndLocationId(phonecallSchemaVersionLine.getBpartnerAndLocationId())
+				.contactId(phonecallSchemaVersionLine.getContactId())
 				.schemaVersionLineId(phonecallSchemaVersionLine.getId())
 				.date(currentPhonecallDate)
 				.startTime(phonecallSchemaVersionLine.getStartTime())

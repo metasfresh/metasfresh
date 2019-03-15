@@ -36,7 +36,7 @@ import lombok.Value;
 public class PhonecallSchemaVersionLine
 {
 	@NonNull
-	PhonecallSchemaVersion phonecallSchemaVersion;
+	PhonecallSchemaVersionId phonecallSchemaVersionId;
 
 	PhonecallSchemaVersionLineId id;
 

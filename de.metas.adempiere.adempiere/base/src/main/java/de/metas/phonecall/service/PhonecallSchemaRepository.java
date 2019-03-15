@@ -86,12 +86,14 @@ public class PhonecallSchemaRepository
 	private PhonecallSchemaVersion retrievePhonecallSchemaVersionById(@NonNull PhonecallSchemaVersionId phonecallSchemaVersionId)
 	{
 
-		final I_C_Phonecall_Schema_Version phonecallSchemaVersion = loadOutOfTrx(phonecallSchemaVersionId, I_C_Phonecall_Schema_Version.class);
+		final I_C_Phonecall_Schema_Version phonecallSchemaVersionRecord = loadOutOfTrx(phonecallSchemaVersionId, I_C_Phonecall_Schema_Version.class);
 
 		return PhonecallSchemaVersion.builder()
 				.id(phonecallSchemaVersionId)
+				.phonecallSchemaId(phonecallSchemaVersionId.getPhonecallSchemaId())
 				.lines(retrievePhonecallSchemaVersionLines(phonecallSchemaVersionId))
-				.validFrom(TimeUtil.asLocalDate(phonecallSchemaVersion.getValidFrom()))
+				.validFrom(TimeUtil.asLocalDate(phonecallSchemaVersionRecord.getValidFrom()))
+				.name(phonecallSchemaVersionRecord.getName())
 				.build();
 	}
 
@@ -102,25 +104,30 @@ public class PhonecallSchemaRepository
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Phonecall_Schema_Version_Line.COLUMNNAME_C_Phonecall_Schema_Version_ID, phonecallSchemaVersionId.getRepoId())
 				.create()
-				.listIds()
+				.list(I_C_Phonecall_Schema_Version_Line.class)
 				.stream()
-				.map(id -> retrievePhonecallSchemaVersionLineById(PhonecallSchemaVersionLineId.ofRepoIdOrNull(
-						phonecallSchemaVersionId.getPhonecallSchemaId(),
-						phonecallSchemaVersionId,
-						id)))
+				.map(
+						line -> retrievePhonecallSchemaVersionLineById(
+								PhonecallSchemaVersionLineId.ofRepoId(
+										line.getC_Phonecall_Schema_ID(),
+										line.getC_Phonecall_Schema_Version_ID(),
+										line.getC_Phonecall_Schema_Version_Line_ID()))
+				)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	private PhonecallSchemaVersionLine retrievePhonecallSchemaVersionLineById(final PhonecallSchemaVersionLineId phonecallSchemaVersionLineId)
 	{
-		final PhonecallSchemaVersion phonecallSchemaVersion = retrievePhonecallSchemaVersionById(phonecallSchemaVersionLineId.getPhonecallSchemaVersionId());
 
 		final I_C_Phonecall_Schema_Version_Line phonecallSchemaVersionLineRecord = loadOutOfTrx(phonecallSchemaVersionLineId, I_C_Phonecall_Schema_Version_Line.class);
 
 		return PhonecallSchemaVersionLine.builder()
-				.phonecallSchemaVersion(phonecallSchemaVersion)
+				.id(phonecallSchemaVersionLineId)
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(phonecallSchemaVersionLineRecord.getC_BPartner_ID(), phonecallSchemaVersionLineRecord.getC_BPartner_Location_ID()))
 				.contactId(UserId.ofRepoId(phonecallSchemaVersionLineRecord.getAD_User_ID()))
+				.phonecallSchemaVersionId(phonecallSchemaVersionLineId.getPhonecallSchemaVersionId())
+				.startTime(TimeUtil.asZonedDateTime(phonecallSchemaVersionLineRecord.getPhonecallTimeMin()))
+				.endTime(TimeUtil.asZonedDateTime(phonecallSchemaVersionLineRecord.getPhonecallTimeMax()))
 				.build();
 	}
 
@@ -239,7 +246,7 @@ public class PhonecallSchemaRepository
 				.addCompareFilter(I_C_Phonecall_Schedule.COLUMN_PhonecallDate, Operator.GREATER_OR_EQUAL, phonecallSchemaVersionRange.getStartDate(), dateTruncModifier)
 				.addCompareFilter(I_C_Phonecall_Schedule.COLUMN_PhonecallDate, Operator.LESS_OR_EQUAL, phonecallSchemaVersionRange.getEndDate(), dateTruncModifier)
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_IsManualPhonecall, false) // not manual entries
-				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersion.getPhonecallSchema().getId().getRepoId());
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersion.getPhonecallSchemaId().getRepoId());
 
 		queryBuilder.orderBy(I_C_Phonecall_Schedule.COLUMN_PhonecallDate);
 
