@@ -23,7 +23,7 @@ describe('Create tiered percent-based (TP) refund conditions', function() {
 
         const discountSchemaName = `DiscountSchema (TP) ${timestamp}`;
         new DiscountSchema(discountSchemaName)
-            .addDiscountBreak(new DiscountBreak
+            .addDiscountBreak(new DiscountBreak()
                 .setBreakValue(0)
                 .setBreakDiscount(0))
             .apply()

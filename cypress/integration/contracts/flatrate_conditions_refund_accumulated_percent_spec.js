@@ -23,7 +23,7 @@ describe('Create accumulated percent-based (AP) refund conditions', function() {
 
         const discountSchemaName = `Discount schema (AP) ${timestamp}`;
         new DiscountSchema(discountSchemaName)
-            .addDiscountBreak(new DiscountBreak
+            .addDiscountBreak(new DiscountBreak()
                 .setBreakValue(0)
                 .setBreakDiscount(0))
             .apply()

@@ -22,7 +22,7 @@ describe('purchase order Test', function() {
         cy.log(`Create discount schema with name=${discountSchemaName}`)
         new DiscountSchema(discountSchemaName)
             .setValidFrom('01/01/2019{enter}')
-            .addDiscountBreak(new DiscountBreak
+            .addDiscountBreak(new DiscountBreak()
                  .setBreakValue('0')
                 .setBreakDiscount('0'))
             .apply();

@@ -24,7 +24,7 @@ describe('Create tiered amount-based (TA) refund conditions', function() {
 
         const discountSchemaName = `DiscountSchema (TA) ${timestamp}`;
         new DiscountSchema(discountSchemaName)
-            .addDiscountBreak(new DiscountBreak
+            .addDiscountBreak(new DiscountBreak()
                 .setBreakValue(0)
                 .setBreakDiscount(0))
             .apply()

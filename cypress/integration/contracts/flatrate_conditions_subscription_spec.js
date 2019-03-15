@@ -35,7 +35,7 @@ describe('Create subscription flatrate conditions for three 1-year-periods', fun
 
         const discountSchemaName = `DiscountSchema (S) ${timestamp}`;
         new DiscountSchema(discountSchemaName)
-            .addDiscountBreak(new DiscountBreak
+            .addDiscountBreak(new DiscountBreak()
                 .setBreakValue(0)
                 .setBreakDiscount(0))
             .apply()
