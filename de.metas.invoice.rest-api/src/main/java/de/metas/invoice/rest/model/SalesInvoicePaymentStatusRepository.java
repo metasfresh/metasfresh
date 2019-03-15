@@ -2,6 +2,8 @@ package de.metas.invoice.rest.model;
 
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
+import static java.math.BigDecimal.ZERO;
+import static org.compiere.util.Util.coalesce;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -141,7 +143,7 @@ public class SalesInvoicePaymentStatusRepository
 				continue;
 			}
 
-			final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceRecord);
+			final BigDecimal allocatedAmt = coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
 
 			final BigDecimal openAmt = invoiceRecord.getGrandTotal().subtract(allocatedAmt);
 
