@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 import { createAndCompleteTransition, createAndCompleteRefundAmountConditions } from '../../support/utils/contract';
 import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
@@ -22,14 +20,10 @@ describe('Create accumulated amount-based (AA) refund conditions', function() {
         cy.screenshot();
 
         const discountSchemaName = `DiscountSchema (AA) ${timestamp}`;
-        new DiscountSchema
-            .builder(discountSchemaName)
+        new DiscountSchema(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
-                .builder()
                 .setBreakValue(0)
-                .setBreakDiscount(0)
-                .build())
-            .build()
+                .setBreakDiscount(0))
             .apply()
         cy.screenshot();
 

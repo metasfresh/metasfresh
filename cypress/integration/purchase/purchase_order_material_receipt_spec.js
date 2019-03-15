@@ -20,15 +20,11 @@ describe('purchase order Test', function() {
     it('Create a vendor, then a purchase order', function() {
 
         cy.log(`Create discount schema with name=${discountSchemaName}`)
-        new DiscountSchema
-            .builder(discountSchemaName)
+        new DiscountSchema(discountSchemaName)
             .setValidFrom('01/01/2019{enter}')
             .addDiscountBreak(new DiscountBreak
-                .builder()
-                .setBreakValue('0')
-                .setBreakDiscount('0')
-                .build())
-            .build()
+                 .setBreakValue('0')
+                .setBreakDiscount('0'))
             .apply();
         cy.screenshot();
 

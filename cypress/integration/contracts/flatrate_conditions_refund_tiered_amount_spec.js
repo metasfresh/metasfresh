@@ -23,14 +23,10 @@ describe('Create tiered amount-based (TA) refund conditions', function() {
         cy.screenshot()
 
         const discountSchemaName = `DiscountSchema (TA) ${timestamp}`;
-        new DiscountSchema
-            .builder(discountSchemaName)
+        new DiscountSchema(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
-                .builder()
                 .setBreakValue(0)
-                .setBreakDiscount(0)
-                .build())
-            .build()
+                .setBreakDiscount(0))
             .apply()
         cy.screenshot()
 

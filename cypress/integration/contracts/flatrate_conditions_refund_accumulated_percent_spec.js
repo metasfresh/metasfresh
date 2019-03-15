@@ -22,14 +22,10 @@ describe('Create accumulated percent-based (AP) refund conditions', function() {
         cy.screenshot()
 
         const discountSchemaName = `Discount schema (AP) ${timestamp}`;
-        new DiscountSchema
-            .builder(discountSchemaName)
+        new DiscountSchema(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
-                .builder()
                 .setBreakValue(0)
-                .setBreakDiscount(0)
-                .build())
-            .build()
+                .setBreakDiscount(0))
             .apply()
         cy.screenshot()
 

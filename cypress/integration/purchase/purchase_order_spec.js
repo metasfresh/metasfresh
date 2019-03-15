@@ -19,10 +19,8 @@ describe('purchase order Test', function() {
 
     it('Create a vendor, then a purchase order', function() {
 
-        new DiscountSchema
-            .builder(discountSchemaName)
+        new DiscountSchema(discountSchemaName)
             .setValidFrom('01/01/2019{enter}')
-            .build()
             .apply();
 
         new BPartner

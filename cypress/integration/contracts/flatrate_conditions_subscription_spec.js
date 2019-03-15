@@ -34,14 +34,10 @@ describe('Create subscription flatrate conditions for three 1-year-periods', fun
         cy.screenshot()
 
         const discountSchemaName = `DiscountSchema (S) ${timestamp}`;
-        new DiscountSchema
-            .builder(discountSchemaName)
+        new DiscountSchema(discountSchemaName)
             .addDiscountBreak(new DiscountBreak
-                .builder()
                 .setBreakValue(0)
-                .setBreakDiscount(0)
-                .build())
-            .build()
+                .setBreakDiscount(0))
             .apply()
         cy.screenshot()
 
