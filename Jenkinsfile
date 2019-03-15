@@ -63,7 +63,7 @@ For docker we currently don not have such an arrangement.''',
 			name: 'MF_METASFRESH_ESB_CAMEL_VERSION'),
 
 		string(defaultValue: '',
-			description: 'e2e docker image. Leave empty and this build will <code>&gt;effective-branch-name&lt;_LATEST</code>',
+			description: 'e2e docker image. Leave empty and this build will <code>&lt;effective-branch-name&gt;_LATEST</code>',
 			name: 'MF_METASFRESH_E2E_DOCKER_IMAGE'),
 
 		string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
