@@ -120,6 +120,8 @@ public class ProductsToPickRow implements IViewRow
 	//
 	private final ProductsToPickRowId rowId;
 	private final ProductInfo productInfo;
+	@Getter
+	private final boolean huReservedForThisRow;
 	private boolean processed;
 	@Getter
 	private final ShipmentScheduleId shipmentScheduleId;
@@ -135,6 +137,7 @@ public class ProductsToPickRow implements IViewRow
 			@NonNull final ProductsToPickRowId rowId,
 			//
 			@NonNull final ProductInfo productInfo,
+			final boolean huReservedForThisRow,
 			//
 			final LookupValue locator,
 			//
@@ -157,9 +160,10 @@ public class ProductsToPickRow implements IViewRow
 		this.productInfo = productInfo;
 		this.productValue = productInfo.getCode();
 		this.productName = productInfo.getName();
-
 		this.productPackageSize = productInfo.getPackageSize();
 		this.productPackageSizeUOM = productInfo.getPackageSizeUOM();
+		
+		this.huReservedForThisRow = huReservedForThisRow;
 
 		this.locator = locator;
 		this.lotNumber = lotNumber;
