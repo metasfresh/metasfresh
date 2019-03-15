@@ -1034,4 +1034,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.listImmutable(I_M_HU.class);
 	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Collection<HuId> huIds, boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			hu.setIsReserved(reserved);
+			saveHU(hu);
+		}
+	}
 }
