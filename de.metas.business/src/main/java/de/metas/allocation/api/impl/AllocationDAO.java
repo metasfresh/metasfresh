@@ -43,13 +43,13 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.X_C_Payment;
 import org.compiere.util.DB;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -62,7 +62,7 @@ public class AllocationDAO implements IAllocationDAO
 
 	@Override
 	public final BigDecimal retrieveOpenAmt(
-			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final I_C_Invoice invoice,
 			final boolean creditMemoAdjusted)
 	{
 		if (invoice.isPaid())
@@ -90,7 +90,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public final List<I_C_AllocationLine> retrieveAllocationLines(final org.compiere.model.I_C_Invoice invoice)
+	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_AllocationLine.class, invoice)
@@ -179,10 +179,10 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveAllocatedAmt(org.compiere.model.I_C_Invoice invoice)
+	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final int invoiceId = invoice.getC_Invoice_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		final int invoiceId = invoiceRecord.getC_Invoice_ID();
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceRecord);
 
 		return retrieveAllocatedAmt(invoiceId, trxName);
 	}
@@ -227,7 +227,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice)
+	public BigDecimal retrieveWriteoffAmt(I_C_Invoice invoice)
 	{
 		final String sql = "select invoicewriteoff(?)";
 
@@ -239,9 +239,9 @@ public class AllocationDAO implements IAllocationDAO
 
 		return amt;
 	}
-	
+
 	@Override
-	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final org.compiere.model.I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
+	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
 	{
 		BigDecimal retValue = null;
 

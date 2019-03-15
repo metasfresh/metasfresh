@@ -89,14 +89,14 @@ public class JSONDataEntryRecordMapper
 			}
 		}
 
-		return delegate.toString(record.build());
+		return delegate.writeValueAsString(record.build());
 	}
 
 	public List<DataEntryRecordField<?>> deserialize(@NonNull final String recordString)
 	{
 		final ImmutableList.Builder<DataEntryRecordField<?>> result = ImmutableList.builder();
 
-		final JSONDataEntryRecord record = delegate.fromString(recordString);
+		final JSONDataEntryRecord record = delegate.readValue(recordString);
 		final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
 
 		for (final Entry<Integer, ZonedDateTime> data : record.getDates().entrySet())

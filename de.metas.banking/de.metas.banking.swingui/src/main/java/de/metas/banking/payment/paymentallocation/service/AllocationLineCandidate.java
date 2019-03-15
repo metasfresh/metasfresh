@@ -10,12 +10,12 @@ package de.metas.banking.payment.paymentallocation.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,6 +24,7 @@ package de.metas.banking.payment.paymentallocation.service;
 
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
@@ -72,7 +73,7 @@ final class AllocationLineCandidate
 
 		payableDocumentRef = builder.getPayableDocumentRef();
 		paymentDocumentRef = builder.getPaymentDocumentRef();
-		Check.errorIf(Check.equals(payableDocumentRef, paymentDocumentRef), "payable and payment shall not be the same but there are: {}", payableDocumentRef);
+		Check.errorIf(Objects.equals(payableDocumentRef, paymentDocumentRef), "payable and payment shall not be the same but there are: {}", payableDocumentRef);
 		if (amount.signum() != 0)
 		{
 			Check.assumeNotNull(paymentDocumentRef, "paymentDocumentRef not null when amount is not zero");
@@ -138,7 +139,7 @@ final class AllocationLineCandidate
 	{
 		return paymentDocumentRef;
 	}
-	
+
 	public int getC_BPartner_ID()
 	{
 		return C_BPartner_ID;
@@ -237,7 +238,7 @@ final class AllocationLineCandidate
 		{
 			return paymentDocumentRef;
 		}
-		
+
 		public Builder setC_BPartner_ID(final int bpartnerId)
 		{
 			C_BPartner_ID = bpartnerId;
