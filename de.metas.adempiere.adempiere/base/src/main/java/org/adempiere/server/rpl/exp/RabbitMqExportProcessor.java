@@ -22,6 +22,7 @@
 package org.adempiere.server.rpl.exp;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.process.rpl.IExportProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_EXP_ProcessorParameter;
@@ -44,31 +45,20 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Properties;
 
-/**
- * Send AMQP Messages
- */
 public class RabbitMqExportProcessor implements IExportProcessor
 {
 
-	/**
-	 * Name of the exchange name parameter
-	 */
 	private static final String EXCHANGE_NAME_PARAMETER = "exchangeName";
-	/**
-	 * Name of the routing key parameter
-	 */
+
 	private static final String ROUTING_KEY_PARAMETER = "routingKey";
-	/**
-	 * Name of the is durable queue parameter
-	 */
+
 	private static final String IS_DURABLE_QUEUE_PARAMETER = "isDurableQueue";
-	/**
-	 * Logger
-	 */
+
 	protected Logger log = LogManager.getLogger(getClass());
 
 	@Override
-	public void process(Properties ctx, MEXPProcessor expProcessor, Document document, Trx trx)
+	public void process(final @NonNull Properties ctx, final @NonNull MEXPProcessor expProcessor,
+			final @NonNull Document document, final @NonNull Trx trx)
 			throws Exception
 	{
 		String host = expProcessor.getHost();
@@ -81,24 +71,21 @@ public class RabbitMqExportProcessor implements IExportProcessor
 
 		// Read all processor parameters and set them!
 		I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
-		if (processorParameters != null && processorParameters.length > 0)
+		for (I_EXP_ProcessorParameter processorParameter : processorParameters)
 		{
-			for (I_EXP_ProcessorParameter processorParameter : processorParameters)
+			log.info("ProcesParameter          Value = " + processorParameter.getValue());
+			log.info("ProcesParameter ParameterValue = " + processorParameter.getParameterValue());
+			if (processorParameter.getValue().equals(EXCHANGE_NAME_PARAMETER))
 			{
-				log.info("ProcesParameter          Value = " + processorParameter.getValue());
-				log.info("ProcesParameter ParameterValue = " + processorParameter.getParameterValue());
-				if (processorParameter.getValue().equals(EXCHANGE_NAME_PARAMETER))
-				{
-					exchangeName = processorParameter.getParameterValue();
-				}
-				else if (processorParameter.getValue().equals(ROUTING_KEY_PARAMETER))
-				{
-					routingKey = processorParameter.getParameterValue();
-				}
-				else if (processorParameter.getValue().equals(IS_DURABLE_QUEUE_PARAMETER))
-				{
-					isDurableQueue = Boolean.parseBoolean(processorParameter.getParameterValue());
-				}
+				exchangeName = processorParameter.getParameterValue();
+			}
+			else if (processorParameter.getValue().equals(ROUTING_KEY_PARAMETER))
+			{
+				routingKey = processorParameter.getParameterValue();
+			}
+			else if (processorParameter.getValue().equals(IS_DURABLE_QUEUE_PARAMETER))
+			{
+				isDurableQueue = Boolean.parseBoolean(processorParameter.getParameterValue());
 			}
 		}
 
@@ -137,7 +124,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 	 * @param host           the host of the AMQP server
 	 * @param port           the port
 	 * @param msg            the message to send
-	 * @param exchangeName       the exchange
+	 * @param exchangeName   the exchange
 	 * @param routingKey     the routing key of the exchange
 	 * @param userName       the username
 	 * @param password       the password

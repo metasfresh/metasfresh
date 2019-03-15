@@ -29,7 +29,6 @@ import org.adempiere.server.rpl.IReplicationProcessor;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.xmlbeans.impl.tool.Extension;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_IMP_ProcessorParameter;
 import org.slf4j.Logger;
@@ -38,39 +37,20 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Aim of this class is to import records from AMQP Server.
- */
+
 public class RabbitMqImportProcessor implements IImportProcessor
 {
 
-	/**
-	 * Logger
-	 */
 	protected Logger log = LogManager.getLogger(RabbitMqImportProcessor.class);
 
-	/**
-	 * The queue name parameter name
-	 */
 	private static final String PARAM_QUEUE_NAME = "queueName";
-	/**
-	 * The consumer tag parameter name
-	 */
+
 	private static final String PARAM_CONSUMER_TAG = "consumerTag";
 
-	/**
-	 * Name of the exchange name parameter
-	 */
 	private static final String PARAM_EXCHANGE_NAME = "exchangeName";
 
-	/**
-	 * Name of the is durable queue parameter
-	 */
 	private static final String PARAM_IS_DURABLE_QUEUE = "isDurableQueue";
 
-	/**
-	 * rabbitmq Listener
-	 */
 	private RabbitMqListener rabbitMqListener = null;
 
 	@Override

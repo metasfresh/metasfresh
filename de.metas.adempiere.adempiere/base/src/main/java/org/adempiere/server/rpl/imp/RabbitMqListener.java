@@ -24,6 +24,7 @@ package org.adempiere.server.rpl.imp;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.XMLHelper;
@@ -43,75 +44,33 @@ import org.w3c.dom.Document;
 import javax.naming.Binding;
 import java.util.Properties;
 
-/**
- * Listen for AMQP Messages
- */
 public class RabbitMqListener implements MessageListener
 {
 
-	/**
-	 * connection factory to AMQP server
-	 */
 	private CachingConnectionFactory connectionFactory;
 
-	/**
-	 * host where AMQP server is running
-	 */
 	private String host = "localhost";
 
-	/**
-	 * port of JMS Server
-	 */
 	private int port = 5672;
 
-	/**
-	 * Context
-	 */
 	private Properties ctx;
 
-	/**
-	 * Transaction name
-	 */
 	private String trxName;
 
-	/**
-	 * Queue Name
-	 */
 	private String queueName;
 
-	/**
-	 * Is durable queue
-	 */
 	private boolean isDurableQueue;
 
-	/**
-	 * Exchange name
-	 */
 	private String exchangeName;
 
-	/**
-	 * Replication processor
-	 */
 	private IReplicationProcessor replicationProcessor;
 
-	/**
-	 * Logger
-	 */
-	protected Logger log = LogManager.getLogger(TopicListener.class);
+	protected Logger log = LogManager.getLogger(RabbitMqListener.class);
 
-	/**
-	 * consumer tag
-	 */
 	private String consumerTag;
 
-	/**
-	 * String User Name
-	 */
 	private String userName;
 
-	/**
-	 * Password
-	 */
 	private String password;
 
 	private boolean isStopping = false;
@@ -205,12 +164,7 @@ public class RabbitMqListener implements MessageListener
 				null); // exception
 	}
 
-	/**
-	 * Import xml document
-	 *
-	 * @param xml xml document (as string) to be imported
-	 */
-	private void importXMLDocument(final String xml)
+	private void importXMLDocument(final @NonNull String xml)
 	{
 		final Document documentToBeImported;
 
@@ -234,7 +188,7 @@ public class RabbitMqListener implements MessageListener
 			}
 			catch (final Exception e)
 			{
-				throw e instanceof AdempiereException ? (AdempiereException)e : new AdempiereException(e);
+				throw AdempiereException.wrapIfNeeded(e);
 			}
 		});
 
