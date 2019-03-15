@@ -46,7 +46,6 @@
 
 .section {
     .panel-size-button {
-        background: white;
         display: block;
         width: auto;
         height: auto;
@@ -62,6 +61,7 @@
             padding: .25rem .25rem;
             line-height: 1rem;
             border-radius: 2px;
+            background: white;
         }
 
         .icon {
@@ -164,7 +164,7 @@
                 }
             }
 
-            &.field-Number {
+            &.field-Number, &.field-Text {
                 .input-block {
                     padding: 0;
                 }
