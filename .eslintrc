@@ -1,0 +1,33 @@
+{
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true,
+        "cypress/globals": true
+    },
+    "parser": "babel-eslint",
+    "extends": [
+        "eslint:recommended",
+        "plugin:cypress/recommended",
+        "prettier"
+    ],
+    "rules": {
+        "prettier/prettier": ["error", {
+          "singleQuote": true,
+          "trailingComma": "es5",
+          "tabWidth": 2,
+          "printWidth": 120,
+        }],
+        "no-unused-expressions": 0,
+        "chai-friendly/no-unused-expressions": 2,
+        "cypress/no-unnecessary-waiting": "warn"
+    },
+    "plugins": ["prettier", "cypress", "chai-friendly"],
+    "globals": {
+        "localStorage": true,
+        "Promise": true,
+        "config": true,
+        "PLUGINS": true
+    },
+    "root": true
+}

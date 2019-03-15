@@ -9,26 +9,12 @@ import de.metas.jenkins.DockerConf
 // first things first
 chuckNorris()
 
-
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
-	parameters([
-		string(defaultValue: 'master',
-			description: '''Revison or branch name of the https://github.com/metasfresh/metasfresh-webui-frontend version to take the cypress tests from.<br>
-Examples:
-<ul>
-<li><code>master</code></li>
-<li><code>release</code></li>
-<li><code>98ad2dbbf35127564461b07c6fa55260bec17d77</code></li>
-</ul>''',
-			name: 'MF_WEBUI_FRONTEND_REVISION'),
-	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
 
-
-String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
 
 timestamps
 {
@@ -36,22 +22,17 @@ timestamps
 	final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
 	currentBuild.displayName = "artifact-version ${MF_VERSION}";
 
+stage('Build')
+{
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	final def scmVars = checkout scm
-	BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
 	sh 'git clean -d --force -x' // clean the workspace
 
 	final def WEBUI_FRONTEND_SHA1
-	// check out the metasfresh-webui-frontend version that whose cypress tests we are going to execute
-	dir('cypress-git-repo') {
-    	final def webuiFrontendScmVars = checkout([$class: 'GitSCM', branches: [[name: params.MF_WEBUI_FRONTEND_REVISION ]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CloneOption', noTags: false, reference: '', shallow: true]], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'metas-dev-ssh-key', url: 'git@github.com:metasfresh/metasfresh-webui-frontend.git']]])
-		WEBUI_FRONTEND_SHA1 = webuiFrontendScmVars.GIT_COMMIT
-	}
 
  	final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
-    final def date = new Date()
-    final String currentDate = dateFormat.format(date)
+    final String currentDate = dateFormat.format(new Date())
 
 	final String additionalBuildArgs = "--build-arg CACHEBUST=${currentDate}"
 	final DockerConf e2eDockerConf = new DockerConf(
@@ -74,8 +55,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <ul>
 <li>a docker image with name <code>${publishedE2eDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
 </ul>
-<p/>
-It contains the cypress tests from <a href='https://github.com/metasfresh/metasfresh-webui-frontend/commit/${WEBUI_FRONTEND_SHA1}'>https://github.com/metasfresh/metasfresh-webui-frontend/commit/${WEBUI_FRONTEND_SHA1}</a>
 <p/>
 You can run the docker image like this:<br>
 <pre>
@@ -100,10 +79,33 @@ Related jenkins jobs:
 <li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_REGISTRY=${e2eDockerConf.pushRegistry}&MF_DOCKER_IMAGE=${e2eDockerImageNameNoRegistry}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this job's docker image.</li>
 </ul>
 """
-
 	// gh #968: set version and docker image name to be available to a possible upstream job that might have called us
 	env.MF_VERSION=MF_VERSION
 	env.MF_DOCKER_IMAGE=publishedE2eDockerImageName
-	env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
+	env.BUILD_GIT_SHA1=scmVars.GIT_COMMIT
 } // node
+}
+
+stage('Invoke downstream job')
+{
+	final def misc = new de.metas.jenkins.Misc()
+	final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', env.BRANCH_NAME)
+	final def metasfreshBuildResult = build job: metasfreshJobName,
+		parameters: [
+			string(name: 'MF_UPSTREAM_BRANCH', value: env.BRANCH_NAME),
+			string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+			string(name: 'MF_UPSTREAM_VERSION', value: env.MF_VERSION),
+			string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-e2e'),
+			string(name: 'MF_METASFRESH_E2E_ARTIFACT_VERSION', value: env.MF_VERSION),
+			string(name: 'MF_METASFRESH_E2E_DOCKER_IMAGE', value: env.MF_DOCKER_IMAGE),
+			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+		],
+		wait: true
+
+	currentBuild.description="""${currentBuild.description}
+<p/>
+This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshBuildResult.absoluteUrl}">${metasfreshBuildResult.displayName}</a>
+"""
+}
 } // timestamps

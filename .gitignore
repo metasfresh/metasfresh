@@ -1,1 +1,8 @@
+screenshots
+videos
+/config.js*
+package-lock.json
+node_modules
+npm-debug.log*
+.DS_Store
 cypress-git-repo
