@@ -10,7 +10,6 @@
     "stylelint": "stylelint 'src/assets/**/*.css'",
     "test:watch": "jest --watch --verbose false",
     "test": "jest",
-    "cypress:open": "cypress open"
   },
   "jest": {
     "setupFiles": [
@@ -54,8 +53,6 @@
     "@babel/preset-env": "7.3.1",
     "@babel/preset-react": "7.0.0",
     "@babel/register": "7.0.0",
-    "@cypress/snapshot": "^2.0.1",
-    "@cypress/webpack-preprocessor": "^4.0.2",
     "@storybook/react": "3.2.13",
     "autoprefixer": "~8.3.0",
     "axios-mock-adapter": "1.14.0",
@@ -65,7 +62,6 @@
     "babel-plugin-dynamic-import-node": "2.2.0",
     "common-tags": "1.4.0",
     "css-loader": "1.0.1",
-    "cypress": "^3.1.5",
     "enzyme": "3.7.0",
     "enzyme-adapter-react-16": "1.6.0",
     "enzyme-wait": "1.0.9",
