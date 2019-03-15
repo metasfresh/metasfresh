@@ -46,6 +46,7 @@
 
 .section {
     .panel-size-button {
+        background: white;
         display: block;
         width: auto;
         height: auto;
@@ -55,10 +56,12 @@
         top: 0;
         right: 0;
         z-index: 100;
+        border-radius: 2px;
 
         .btn {
             padding: .25rem .25rem;
             line-height: 1rem;
+            border-radius: 2px;
         }
 
         .icon {
@@ -109,13 +112,25 @@
     display: flex;
     overflow: scroll;
 
+    .section {
+        background: $brand-bright-color;
+        border: 1px solid $brand-border-color;
+    }
+
     .separator {
-        padding-bottom: 20px;
+        background-color: $brand-color-secondary;
+        padding-bottom: 5px;
+        padding-top: 5px;
         margin-top: 0;
+
+        .separator-title {
+            color: white;
+        }
     }
 
     .panel {
         padding-bottom: 0 !important;
+        background: transparent;
     }
 
     .table {
@@ -138,6 +153,24 @@
             &.field-LongText {
                 .col-sm-9 {
                     max-width: 75%;
+                }
+
+                .input-block {
+                    padding: 0;
+                }
+
+                textarea {
+                    padding: 5px;
+                }
+            }
+
+            &.field-Number {
+                .input-block {
+                    padding: 0;
+                }
+
+                input {
+                    padding: 3px;
                 }
             }
 
