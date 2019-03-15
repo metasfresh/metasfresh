@@ -111,6 +111,14 @@
     flex-direction: column;
     display: flex;
     overflow: scroll;
+    position: relative;
+
+    .btn-fullscreen {
+        position: absolute;
+        top: 0px;
+        right: 20px;
+        background: white;
+    }
 
     .section {
         background: $brand-bright-color;

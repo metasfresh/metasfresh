@@ -49,6 +49,7 @@ class MasterWindow extends Component {
     me: PropTypes.object.isRequired,
     pluginModal: PropTypes.object,
     overlay: PropTypes.object,
+    allowShortcut: PropTypes.bool,
   };
 
   componentDidMount() {
@@ -326,6 +327,7 @@ class MasterWindow extends Component {
       rawModal,
       pluginModal,
       overlay,
+      allowShortcut,
       includedView,
       processStatus,
       enableTutorial,
@@ -410,6 +412,7 @@ class MasterWindow extends Component {
             dataId={dataId}
             isModal={false}
             newRow={newRow}
+            allowShortcut={allowShortcut}
             handleDragStart={this.handleDragStart}
             handleDropFile={this.handleDropFile}
             handleRejectDropped={this.handleRejectDropped}
@@ -441,6 +444,7 @@ const mapStateToProps = state => ({
   overlay: state.windowHandler.overlay,
   indicator: state.windowHandler.indicator,
   includedView: state.listHandler.includedView,
+  allowShortcut: state.windowHandler.allowShortcut,
   enableTutorial: state.appHandler.enableTutorial,
   processStatus: state.appHandler.processStatus,
   me: state.appHandler.me,
