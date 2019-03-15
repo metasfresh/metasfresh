@@ -47,6 +47,8 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
 
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
+		
+		<mockito.version>2.7.22</mockito.version>
 	</properties>
 
 	<modules>
@@ -137,20 +139,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-commons</artifactId>
-			<version>1.4.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-engine</artifactId>
-			<version>1.4.0</version>
-			<scope>test</scope>
-		</dependency>
-		-->
+
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -163,6 +152,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 			<version>5.4.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>5.4.0</version>
+			<scope>test</scope>
+		</dependency>
+		
 
 		<!--
 		we currently don't use this mockito version
