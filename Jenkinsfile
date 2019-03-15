@@ -161,23 +161,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	// gh #968: set docker image name to be available to a possible upstream job that might have called us
 	env.MF_DOCKER_IMAGE=publishedDockerImageName
 
-	final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
-
-	final def e2eBuildResult = build job: metasfreshE2eJobName,
-		parameters: [
-			string(name: 'MF_WEBUI_FRONTEND_REVISION', value: BUILD_GIT_SHA1)
-		], 
-		wait: true,
-		propagate: false
-
-	currentBuild.description="""${currentBuild.description}
-<p/>
-This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eBuildResult.absoluteUrl}">${e2eBuildResult.displayName}</a>
-				"""
-
-		env.MF_METASFRESH_E2E_ARTIFACT_VERSION = e2eBuildResult.buildVariables.MF_VERSION
-		env.MF_METASFRESH_E2E_DOCKER_IMAGE = e2eBuildResult.buildVariables.MF_DOCKER_IMAGE
-
  } // node
 
 
@@ -185,17 +168,20 @@ stage('Invoke downstream jobs')
 {
 		final def misc = new de.metas.jenkins.Misc()
 		final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
-		build job: metasfreshJobName,
+		final def metasfreshBuildResult = build job: metasfreshJobName,
 			parameters: [
 				string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 				string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
 				string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
 				string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
-				string(name: 'MF_METASFRESH_E2E_ARTIFACT_VERSION', value: env.MF_METASFRESH_E2E_ARTIFACT_VERSION),
-				string(name: 'MF_METASFRESH_E2E_DOCKER_IMAGE', value: env.MF_METASFRESH_E2E_DOCKER_IMAGE),
 				booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
 				booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 			],
-			wait: false
+			wait: true
+
+		currentBuild.description="""${currentBuild.description}
+<p/>
+This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshBuildResult.absoluteUrl}">${metasfreshBuildResult.displayName}</a>
+"""
 }
 } // timestamps
