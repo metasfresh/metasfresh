@@ -1,20 +1,30 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.util.List;
 
-import org.junit.Test;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
 import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -38,36 +48,68 @@ import mockit.Mocked;
  * #L%
  */
 
-public class XmlToOLCandsServiceTest
+class XmlToOLCandsServiceTest
 {
-	@Mocked
-	private OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
+	@Mock
+	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
-	@Test
-	public void createJsonOLCandCreateBulkRequest()
+	@InjectMocks
+	XmlToOLCandsService xmlToOLCandsService;
+
+	@BeforeEach
+	void before()
 	{
-		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
-		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
+		// then eclipse can't find my test methods anymore
+		MockitoAnnotations.initMocks(this);
+	}
 
-		performTest(xmlInvoice);
+	@BeforeAll
+	static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
-	public void createJsonOLCandCreateBulkRequest2()
+	void createJsonOLCandCreateBulkRequest()
 	{
+		// assertThat(orderCandidatesRestEndpoint).isNotNull();
+
+		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+
+		final JsonOLCandCreateBulkRequest result = performTest(xmlInvoice);
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void createJsonOLCandCreateBulkRequest2()
+	{
+		// assertThat(orderCandidatesRestEndpoint).isNotNull();
+
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001"); // the XML invoice'S ID might have a prepended "KV_" which we return
-		performTest(xmlInvoice);
+
+		final JsonOLCandCreateBulkRequest result = performTest(xmlInvoice);
+		expect(result).toMatchSnapshot();
 	}
 
-	private void performTest(@NonNull final RequestType xmlInvoice)
+	private JsonOLCandCreateBulkRequest performTest(@NonNull final RequestType xmlInvoice)
 	{
+		final SyncAdvise orgSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise productsSyncAdvise = SyncAdvise.READ_ONLY;
 
-		final JsonOLCandCreateBulkRequest result = new XmlToOLCandsService(orderCandidatesRestEndpoint)
-				.createJsonOLCandCreateBulkRequest(xmlInvoice, bPartnersSyncAdvise, productsSyncAdvise);
+		// final XmlToOLCandsService xmlToOLCandsService = new XmlToOLCandsService(orderCandidatesRestEndpoint);
+		final JsonOLCandCreateBulkRequest result = xmlToOLCandsService
+				.createJsonOLCandCreateBulkRequest(xmlInvoice, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
 
 		assertThat(result).isNotNull();
 		final List<JsonOLCandCreateRequest> requests = result.getRequests();
@@ -84,7 +126,6 @@ public class XmlToOLCandsServiceTest
 		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getExternalId()).isEqualTo("EAN-7634567890000"));
 		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getLocation().getGln()).isEqualTo("7634567890000"));
 
-
 		final List<Object> xmlServices = xmlInvoice.getPayload().getBody().getServices().getRecordTarmedOrRecordDrgOrRecordLab();
 		for (int i = 1; i <= xmlServices.size(); i++)
 		{
@@ -93,7 +134,6 @@ public class XmlToOLCandsServiceTest
 			assertThat(request.getExternalLineId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000_" + i);
 		}
 
-		// use this to create a JSON string that can be an input for other tests
-		// JsonOLCandUtil.printJsonString(result);
+		return result;
 	}
 }

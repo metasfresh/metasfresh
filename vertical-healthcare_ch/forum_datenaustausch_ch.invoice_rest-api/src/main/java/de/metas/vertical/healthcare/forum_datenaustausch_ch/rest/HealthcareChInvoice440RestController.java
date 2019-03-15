@@ -70,6 +70,7 @@ public class HealthcareChInvoice440RestController
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE") @RequestParam final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
+
 		final SyncAdvise bPartnerSyncAdvise = SyncAdvise.builder()
 				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
@@ -82,6 +83,7 @@ public class HealthcareChInvoice440RestController
 
 		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()
 				.xmlInvoiceFile(xmlInvoiceFile)
+				.orgSyncAdvise(bPartnerSyncAdvise) // wrt to the biller-bpartner's org, use the same advise as with the biller itself
 				.bPartnerSyncAdvise(bPartnerSyncAdvise)
 				.productSyncAdvise(productSyncAdvise)
 				.build();

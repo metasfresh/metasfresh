@@ -122,6 +122,7 @@ public class OrderCandidatesRestControllerImplTest
 		final SyncAdvise ifNotExistsCreateAdvise = SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).build();
 
 		final JsonOLCandCreateBulkRequest bulkRequest = bulkRequestFromFile
+				.withOrgSyncAdvise(ifNotExistsCreateAdvise)
 				.withBPartnersSyncAdvise(ifNotExistsCreateAdvise)
 				.withProductsSyncAdvise(ifNotExistsCreateAdvise);
 

@@ -37,7 +37,7 @@ public class DataEntryFieldIdTest
 		final JSONObjectMapper<DataEntryFieldId> objectMapper = JSONObjectMapper.forClass(DataEntryFieldId.class);
 		final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(30);
 
-		final String result = objectMapper.toString(dataEntryFieldId);
+		final String result = objectMapper.writeValueAsString(dataEntryFieldId);
 		assertThat(result).isEqualTo("30");
 	}
 
@@ -46,7 +46,7 @@ public class DataEntryFieldIdTest
 	{
 		final JSONObjectMapper<DataEntryFieldId> objectMapper = JSONObjectMapper.forClass(DataEntryFieldId.class);
 
-		final DataEntryFieldId result = objectMapper.fromString("30");
+		final DataEntryFieldId result = objectMapper.readValue("30");
 		assertThat(result).isEqualTo(DataEntryFieldId.ofRepoId(30));
 	}
 

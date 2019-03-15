@@ -27,10 +27,12 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
+import org.adempiere.service.OrgIdNotFoundException;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -42,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class OrgDAO implements IOrgDAO
@@ -51,24 +54,11 @@ public class OrgDAO implements IOrgDAO
 	{
 		InterfaceWrapperHelper.saveRecord(orgRecord);
 	}
+
 	@Override
 	public void save(@NonNull final I_AD_OrgInfo orgInfoRecord)
 	{
 		InterfaceWrapperHelper.saveRecord(orgInfoRecord);
-	}
-
-	@Override
-	public Optional<OrgId> getOrgIdByValue(@NonNull final String value)
-	{
-		final String valueFixed = value.trim();
-
-		final int orgIdInt = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_Org.class)
-				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, valueFixed)
-				.create()
-				.firstIdOnly();
-
-		return OrgId.optionalOfRepoId(orgIdInt);
 	}
 
 	@Override
@@ -185,5 +175,41 @@ public class OrgDAO implements IOrgDAO
 				.andCollect(I_AD_TreeNode.COLUMN_Node_ID, I_AD_Org.class)
 				.create()
 				.list();
+	}
+
+	@Override
+	public Optional<OrgId> retrieveOrgIdBy(@NonNull final OrgQuery orgQuery)
+	{
+		final IQueryBuilder<I_AD_Org> queryBuilder = createQueryBuilder(orgQuery.isOutOfTrx());
+
+		final int orgId = queryBuilder
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgQuery.getOrgValue())
+				.create()
+				.setApplyAccessFilter(true)
+				.firstIdOnly();
+
+		if (orgId < 0 && orgQuery.isFailIfNotExists())
+		{
+			final String msg = StringUtils.formatMessage("Found no existing Org; Searched via value='{}'", orgQuery.getOrgValue());
+			throw new OrgIdNotFoundException(msg);
+		}
+
+		return Optional.ofNullable(OrgId.ofRepoIdOrNull(orgId));
+	}
+
+	private IQueryBuilder<I_AD_Org> createQueryBuilder(final boolean outOfTrx)
+	{
+		final IQueryBuilder<I_AD_Org> queryBuilder;
+		if (outOfTrx)
+		{
+			queryBuilder = Services.get(IQueryBL.class)
+					.createQueryBuilderOutOfTrx(I_AD_Org.class);
+		}
+		else
+		{
+			queryBuilder = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_AD_Org.class);
+		}
+		return queryBuilder.addOnlyActiveRecordsFilter();
 	}
 }

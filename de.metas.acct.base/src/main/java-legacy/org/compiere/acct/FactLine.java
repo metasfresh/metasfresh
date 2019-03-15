@@ -354,7 +354,7 @@ public final class FactLine extends X_Fact_Acct
 	}
 
 	/**
-	 * Negate the DR and CR source and acounted amounts.
+	 * Negate the DR and CR source and accounted amounts.
 	 */
 	public final void negateDrAndCrAmounts()
 	{
@@ -1368,7 +1368,7 @@ public final class FactLine extends X_Fact_Acct
 
 	/**
 	 * Create Revenue recognition plan and return Unearned Revenue account to be used instead of Revenue Account. If not found, it returns the revenue account.
-	 * 
+	 *
 	 * @return Account_ID for Unearned Revenue or Revenue Account if not found
 	 */
 	private int createRevenueRecognition(
