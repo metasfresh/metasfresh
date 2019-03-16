@@ -31,6 +31,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -149,7 +150,6 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>uomDest</code> and if there is no conversion rate to use.
 	 */
 	BigDecimal convertFromProductUOM(Properties ctx, ProductId productId, I_C_UOM uomDest, BigDecimal qtyToConvert);
-	
 
 	/**
 	 * Derive Standard Conversions
@@ -208,4 +208,6 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @return multiplier
 	 */
 	BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo);
+
+	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId);
 }

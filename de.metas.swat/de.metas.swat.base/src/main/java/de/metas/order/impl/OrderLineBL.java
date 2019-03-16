@@ -80,6 +80,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
@@ -387,7 +388,7 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
-		
+
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		if (docTypeId != null && docTypeBL.isSalesProposal(docTypeId))
 		{
@@ -433,7 +434,7 @@ public class OrderLineBL implements IOrderLineBL
 			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
 			orderLine.setC_UOM_ID(uomId.getRepoId());
 		}
-		
+
 		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 	}	// setM_Product_ID
 
@@ -611,39 +612,68 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public Money getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
+	public ProductPrice getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 
 		final BigDecimal poCostPrice = orderLine.getPriceCost();
 		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
-			return Money.of(poCostPrice, currencyId);
+			final UomId productUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(productUomId)
+					.value(Money.of(poCostPrice, currencyId))
+					.build();
+		}
+
+		UomId priceUomId = UomId.ofRepoId(orderLine.getPrice_UOM_ID());
+		if (priceUomId == null)
+		{
+			priceUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		}
 
 		BigDecimal priceActual = orderLine.getPriceActual();
 		if (!isTaxIncluded(orderLine))
 		{
-			return Money.of(priceActual, currencyId);
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.value(Money.of(priceActual, currencyId))
+					.build();
 		}
 
 		final int taxId = orderLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
 			// shall not happen
-			return Money.of(priceActual, currencyId);
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.value(Money.of(priceActual, currencyId))
+					.build();
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
 		if (tax.isZeroTax())
 		{
-			return Money.of(priceActual, currencyId);
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.value(Money.of(priceActual, currencyId))
+					.build();
 		}
 
 		final int stdPrecision = getPrecision(orderLine);
 		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, stdPrecision);
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
-		return Money.of(priceActualWithoutTax, currencyId);
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(priceUomId)
+				.value(Money.of(priceActualWithoutTax, currencyId))
+				.build();
 	}
 
 	@Override

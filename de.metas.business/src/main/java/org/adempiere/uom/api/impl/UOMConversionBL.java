@@ -52,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
 import de.metas.util.Check;
@@ -156,11 +157,8 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal roundToUOMPrecisionIfPossible(final BigDecimal qty, final I_C_UOM uom)
+	public BigDecimal roundToUOMPrecisionIfPossible(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
-		Check.assumeNotNull(qty, "qty not null");
-		Check.assumeNotNull(uom, "uom not null");
-
 		final int precision = uom.getStdPrecision();
 		// NOTE: negative precision is not supported atm
 		Check.assume(precision >= 0, "UOM {} shall have positive precision", uom);
@@ -938,4 +936,24 @@ public class UOMConversionBL implements IUOMConversionBL
 		return null;
 	}	// deriveRate
 
+	@Override
+	public ProductPrice convertProductPriceToUom(@NonNull final ProductPrice price, @NonNull final UomId toUomId)
+	{
+		if (price.getUomId().equals(toUomId))
+		{
+			return price;
+		}
+
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
+		final BigDecimal factor = convertQty(
+				price.getProductId(),
+				BigDecimal.ONE,
+				uomsRepo.getById(price.getUomId()),
+				uomsRepo.getById(toUomId));
+
+		return price.withValueAndUomId(
+				price.getValue().multiply(factor),
+				toUomId);
+	}
 }

@@ -10,6 +10,7 @@ import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
@@ -59,6 +60,21 @@ public class CostAmount
 	public static final CostAmount zero(final CurrencyId currencyId)
 	{
 		return new CostAmount(BigDecimal.ZERO, currencyId);
+	}
+
+	public static final CostAmount ofProductPrice(@NonNull final ProductPrice price)
+	{
+		return ofMoney(price.getValue());
+	}
+
+	public static final CostAmount multiply(@NonNull final ProductPrice price, @NonNull final Quantity qty)
+	{
+		if (price.getUomId().getRepoId() != qty.getUOMId())
+		{
+			throw new AdempiereException("UOM does not match: " + price + ", " + qty);
+		}
+
+		return ofMoney(price.getValue().multiply(qty.getAsBigDecimal()));
 	}
 
 	BigDecimal value;

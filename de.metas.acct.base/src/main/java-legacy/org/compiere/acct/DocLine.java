@@ -29,6 +29,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
@@ -601,6 +602,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return productBL.getStockingUOM(getProductId());
 	}
+	
+	protected final UomId getProductStockingUOMId()
+	{
+		return productBL.getStockingUOMId(getProductId());
+	}
+
 
 	/**
 	 * Get Revenue Recognition
