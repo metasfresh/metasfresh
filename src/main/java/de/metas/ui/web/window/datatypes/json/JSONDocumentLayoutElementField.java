@@ -158,10 +158,6 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String tooltipIconName;
 
-	@JsonProperty("source")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JSONLookupSource source;
-
 	@JsonProperty("emptyText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
@@ -178,6 +174,22 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String newRecordCaption;
 
+	//
+	// Lookup
+	@JsonProperty("source")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONLookupSource source;
+	//
+	@JsonProperty("lookupSearchStringMinLength")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer lookupSearchStringMinLength;
+	//
+	@JsonProperty("lookupSearchStartDelayMillis")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer lookupSearchStartDelayMillis;
+
+	//
+	// Zoom
 	@JsonProperty("supportZoomInto")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean supportZoomInto;
@@ -189,7 +201,6 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		field = fieldDescriptor.getField();
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		tooltipIconName = fieldDescriptor.getTooltipIconName();
-		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
 		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
 		devices = fieldDescriptor.getDevices();
 
@@ -205,6 +216,22 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			newRecordCaption = null;
 		}
 
+		//
+		// Lookup
+		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
+		if (source != null)
+		{
+			lookupSearchStringMinLength = fieldDescriptor.getLookupSearchStringMinLength();
+			lookupSearchStartDelayMillis = (int)fieldDescriptor.getLookupSearchStartDelay()
+					.orElseGet(jsonOpts::getDefaultLookupSearchStartDelay)
+					.toMillis();
+		}
+		else
+		{
+			lookupSearchStringMinLength = null;
+			lookupSearchStartDelayMillis = null;
+		}
+
 		supportZoomInto = fieldDescriptor.isSupportZoomInto() ? Boolean.TRUE : null;
 	}
 
@@ -214,22 +241,31 @@ public final class JSONDocumentLayoutElementField implements Serializable
 			@JsonProperty("field") final String field,
 			@JsonProperty("type") final JSONFieldType type,
 			@JsonProperty("tooltipIconName") final String tooltipIconName,
-			@JsonProperty("source") final JSONLookupSource source,
 			@JsonProperty("emptyText") final String emptyText,
 			@JsonProperty("devices") final List<JSONDeviceDescriptor> devices,
 			@JsonProperty("newRecordWindowId") final String newRecordWindowId,
 			@JsonProperty("newRecordCaption") final String newRecordCaption,
+			//
+			@JsonProperty("source") final JSONLookupSource source,
+			@JsonProperty("lookupSearchStringMinLength") final Integer lookupSearchStringMinLength,
+			@JsonProperty("lookupSearchStartDelayMillis") final Integer lookupSearchStartDelayMillis,
+			//
 			@JsonProperty("supportZoomInto") final boolean supportZoomInto)
 	{
 		this.field = field;
 		this.type = type;
 		this.tooltipIconName = tooltipIconName;
-		this.source = source;
 		this.emptyText = emptyText;
 		this.devices = devices == null ? ImmutableList.of() : ImmutableList.copyOf(devices);
 
 		this.newRecordWindowId = newRecordWindowId;
 		this.newRecordCaption = newRecordCaption;
+
+		//
+		// Lookup
+		this.source = source;
+		this.lookupSearchStringMinLength = lookupSearchStringMinLength;
+		this.lookupSearchStartDelayMillis = lookupSearchStartDelayMillis;
 
 		this.supportZoomInto = supportZoomInto;
 	}

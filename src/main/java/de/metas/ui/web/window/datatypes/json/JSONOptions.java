@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.time.Duration;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -16,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ILanguageDAO;
@@ -88,6 +90,8 @@ public final class JSONOptions
 
 	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
 
+	private final Supplier<Duration> defaultLookupSearchStartDelaySupplier;
+
 	private JSONOptions(@NonNull final Builder builder)
 	{
 		adLanguage = builder.getAD_Language();
@@ -98,6 +102,8 @@ public final class JSONOptions
 		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
 
 		documentPermissionsSupplier = builder.getPermissionsSupplier();
+
+		defaultLookupSearchStartDelaySupplier = builder.getDefaultLookupSearchStartDelaySupplier();
 	}
 
 	@Override
@@ -197,6 +203,18 @@ public final class JSONOptions
 	{
 		return documentPermissionsSupplier.get();
 	}
+
+	public Duration getDefaultLookupSearchStartDelay()
+	{
+		final Duration duration = defaultLookupSearchStartDelaySupplier.get();
+		return duration != null ? duration : Duration.ZERO;
+	}
+
+	//
+	//
+	//
+	//
+	//
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
 	{
@@ -393,7 +411,7 @@ public final class JSONOptions
 
 			//
 			// Try fetching the AD_Language from "Accept-Language" HTTP header
-			if(_userSession != null && _userSession.isUseHttpAcceptLanguage())
+			if (_userSession != null && _userSession.isUseHttpAcceptLanguage())
 			{
 				HttpServletRequest httpServletRequest = getHttpServletRequest();
 				if (httpServletRequest != null)
@@ -491,6 +509,18 @@ public final class JSONOptions
 		{
 			this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
 			return this;
+		}
+
+		private Supplier<Duration> getDefaultLookupSearchStartDelaySupplier()
+		{
+			if (_userSession != null)
+			{
+				return ExtendedMemorizingSupplier.of(_userSession.getDefaultLookupSearchStartDelay());
+			}
+			else
+			{
+				return Suppliers.ofInstance(Duration.ZERO);
+			}
 		}
 	}
 }
