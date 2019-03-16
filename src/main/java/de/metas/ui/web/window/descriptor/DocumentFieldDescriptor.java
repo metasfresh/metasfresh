@@ -30,7 +30,6 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -268,39 +267,20 @@ public final class DocumentFieldDescriptor
 		return supportZoomInto;
 	}
 
-	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
+	public Optional<LookupDescriptor> getLookupDescriptor()
 	{
-		return lookupDescriptorProvider.provideForScope(scope);
+		return lookupDescriptorProvider.provide();
 	}
 
-	public LookupSource getLookupSourceType()
+	public Optional<LookupDescriptor> getLookupDescriptorForFiltering()
 	{
-		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
-		return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+		return lookupDescriptorProvider.provideForScope(LookupScope.DocumentFilter);
 	}
 
-	public Optional<String> getLookupTableName()
+	public Optional<LookupDataSource> createLookupDataSource()
 	{
-		return extractLookupTableName(lookupDescriptorProvider);
-	}
-
-	private static final Optional<String> extractLookupTableName(final LookupDescriptorProvider lookupDescriptorProvider)
-	{
-		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
-		return lookupDescriptor == null ? Optional.empty() : lookupDescriptor.getTableName();
-	}
-
-	@Nullable
-	public LookupDataSource createLookupDataSource(final LookupScope scope)
-	{
-		final LookupDescriptor lookupDescriptor = getLookupDescriptor(scope);
-		if (lookupDescriptor == null)
-		{
-			return null;
-		}
-
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
-
+		return getLookupDescriptor()
+				.map(LookupDataSourceFactory.instance::getLookupDataSource);
 	}
 
 	public Optional<IExpression<?>> getDefaultValueExpression()
@@ -412,7 +392,7 @@ public final class DocumentFieldDescriptor
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 
 		// Lookup
-		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
+		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProviders.NULL;
 
 		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
@@ -659,14 +639,13 @@ public final class DocumentFieldDescriptor
 
 		public Builder setLookupDescriptorProvider(@Nullable final LookupDescriptor lookupDescriptor)
 		{
-			final LookupDescriptorProvider provider = lookupDescriptor != null ? LookupDescriptorProvider.singleton(lookupDescriptor) : LookupDescriptorProvider.NULL;
-			setLookupDescriptorProvider(provider);
+			setLookupDescriptorProvider(LookupDescriptorProviders.ofNullableInstance(lookupDescriptor));
 			return this;
 		}
 
 		public Builder setLookupDescriptorProvider_None()
 		{
-			setLookupDescriptorProvider(LookupDescriptorProvider.NULL);
+			setLookupDescriptorProvider(LookupDescriptorProviders.NULL);
 			return this;
 		}
 
@@ -675,15 +654,14 @@ public final class DocumentFieldDescriptor
 			return lookupDescriptorProvider;
 		}
 
-		public LookupSource getLookupSourceType()
+		public Optional<LookupDescriptor> getLookupDescriptor()
 		{
-			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
-			return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
+			return getLookupDescriptorProvider().provide();
 		}
 
 		public Optional<String> getLookupTableName()
 		{
-			return extractLookupTableName(lookupDescriptorProvider);
+			return getLookupDescriptorProvider().getTableName();
 		}
 
 		public Builder setValueClass(final Class<?> valueClass)
@@ -1010,7 +988,7 @@ public final class DocumentFieldDescriptor
 					.add(fieldName, getDisplayLogic().getParameterNames(), DependencyType.DisplayLogic)
 					.add(fieldName, getMandatoryLogicEffective().getParameterNames(), DependencyType.MandatoryLogic);
 
-			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().provideForScope(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().provide().orElse(null);
 			if (lookupDescriptor != null)
 			{
 				dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues);

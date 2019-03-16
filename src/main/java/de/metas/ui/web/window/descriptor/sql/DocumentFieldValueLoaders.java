@@ -195,7 +195,7 @@ public final class DocumentFieldValueLoaders
 		private final String sqlColumnName;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final String value = rs.getString(sqlColumnName);
 			return value;
@@ -208,7 +208,7 @@ public final class DocumentFieldValueLoaders
 		private final String sqlColumnName;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final String value = rs.getString(sqlColumnName);
 			return decrypt(value);
@@ -221,7 +221,7 @@ public final class DocumentFieldValueLoaders
 		private final String sqlColumnName;
 
 		@Override
-		public Password retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Password retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final String value = rs.getString(sqlColumnName);
 			return Password.ofNullableString(value);
@@ -234,7 +234,7 @@ public final class DocumentFieldValueLoaders
 		private final String sqlColumnName;
 
 		@Override
-		public Password retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Password retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final String value = rs.getString(sqlColumnName);
 			final Object valueDecrypted = decrypt(value);
@@ -253,7 +253,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public byte[] retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public byte[] retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final Object valueObj = rs.getObject(sqlColumnName);
 			final byte[] valueBytes;
@@ -298,7 +298,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Boolean retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Boolean retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			String valueStr = rs.getString(sqlColumnName);
 			if (encrypted)
@@ -317,7 +317,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final Timestamp valueTS = rs.getTimestamp(sqlColumnName);
 			final java.util.Date value = valueTS == null ? null : new java.util.Date(valueTS.getTime());
@@ -332,7 +332,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final ZonedDateTime value = TimeUtil.asZonedDateTime(rs.getTimestamp(sqlColumnName));
 			return encrypted ? decrypt(value) : value;
@@ -346,7 +346,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final LocalDateTime value = TimeUtil.asLocalDateTime(rs.getTimestamp(sqlColumnName));
 			return encrypted ? decrypt(value) : value;
@@ -360,7 +360,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final LocalDate value = TimeUtil.asLocalDate(rs.getTimestamp(sqlColumnName));
 			return encrypted ? decrypt(value) : value;
@@ -374,7 +374,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final BigDecimal value = rs.getBigDecimal(sqlColumnName);
 			return encrypted ? decrypt(value) : value;
@@ -389,7 +389,7 @@ public final class DocumentFieldValueLoaders
 		private final int precision;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			BigDecimal value = rs.getBigDecimal(sqlColumnName);
 			value = value == null ? null : NumberUtils.setMinimumScale(value, precision);
@@ -404,7 +404,7 @@ public final class DocumentFieldValueLoaders
 		private final boolean encrypted;
 
 		@Override
-		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final int valueInt = rs.getInt(sqlColumnName);
 			final Integer value = rs.wasNull() ? null : valueInt;
@@ -426,7 +426,7 @@ public final class DocumentFieldValueLoaders
 				final ResultSet rs,
 				final boolean isDisplayColumnAvailable,
 				final String adLanguage,
-				final LookupDescriptor lookupDescriptor) throws SQLException
+				final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final int id = rs.getInt(sqlColumnName);
 			if (rs.wasNull())
@@ -468,7 +468,7 @@ public final class DocumentFieldValueLoaders
 				@NonNull final ResultSet rs,
 				final boolean isDisplayColumnAvailable,
 				final String adLanguage,
-				final LookupDescriptor lookupDescriptor) throws SQLException
+				final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final String key = rs.getString(sqlColumnName);
 			if (rs.wasNull())

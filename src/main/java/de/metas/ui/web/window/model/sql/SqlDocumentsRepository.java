@@ -48,7 +48,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -397,7 +396,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 			final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
 			final boolean isDisplayColumnAvailable = true;
-			final LookupDescriptor lookupDescriptor = fieldDescriptor.getLookupDescriptor(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = fieldDescriptor.getLookupDescriptor().orElse(null);
 
 			try
 			{
@@ -892,7 +891,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 	private static final void saveLabels(final Document document, final IDocumentFieldView documentField)
 	{
-		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor(LookupScope.DocumentField));
+		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor().orElse(null));
 
 		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
 		final Set<Object> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeys();

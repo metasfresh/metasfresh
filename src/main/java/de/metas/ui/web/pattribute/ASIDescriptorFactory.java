@@ -36,7 +36,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -247,7 +246,7 @@ public class ASIDescriptorFactory
 				.setCaption(fieldDescriptor.getCaption())
 				.setWidgetType(fieldDescriptor.getWidgetType())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
-						.setLookupSource(fieldDescriptor.getLookupSourceType())
+						.setLookupInfos(fieldDescriptor.getLookupDescriptor().orElse(null))
 						.setPublicField(true)
 						.setSupportZoomInto(fieldDescriptor.isSupportZoomInto()));
 	}
@@ -329,7 +328,8 @@ public class ASIDescriptorFactory
 		private static final void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
 		{
 			final StringLookupValue lookupValue = field.getValueAs(StringLookupValue.class);
-			final int attributeValueId = field.getDescriptor().getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentField)
+			final int attributeValueId = field.getDescriptor().getLookupDescriptor()
+					.get()
 					.cast(ASILookupDescriptor.class)
 					.getM_AttributeValue_ID(lookupValue);
 

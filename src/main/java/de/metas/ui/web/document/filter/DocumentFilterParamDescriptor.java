@@ -1,5 +1,9 @@
 package de.metas.ui.web.document.filter;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 
 import de.metas.i18n.ITranslatableString;
@@ -13,6 +17,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelp
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -60,7 +65,7 @@ public final class DocumentFilterParamDescriptor
 	private final Object defaultValueTo;
 
 	private final boolean mandatory;
-	private final LookupDescriptor lookupDescriptor;
+	private final Optional<LookupDescriptor> lookupDescriptor;
 
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
 	private final Object autoFilterInitialValue;
@@ -106,18 +111,9 @@ public final class DocumentFilterParamDescriptor
 		return operator != null && operator.isRangeOperator();
 	}
 
-	public LookupDataSource getLookupDataSource()
+	public Optional<LookupDataSource> getLookupDataSource()
 	{
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
-	}
-
-	private final LookupDataSource getLookupDataSourceOrNull()
-	{
-		if (lookupDescriptor == null)
-		{
-			return null;
-		}
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+		return lookupDescriptor.map(LookupDataSourceFactory.instance::getLookupDataSource);
 	}
 
 	public Object getDefaultValueConverted()
@@ -142,7 +138,7 @@ public final class DocumentFilterParamDescriptor
 				value,
 				getWidgetType(),
 				getValueClass(),
-				getLookupDataSourceOrNull());
+				getLookupDataSource().orElse(null));
 
 		// Convert empty string to null
 		// This is a workaround until task https://github.com/metasfresh/metasfresh-webui-frontend/issues/2040 is done.
@@ -175,7 +171,7 @@ public final class DocumentFilterParamDescriptor
 		private Operator operator = Operator.EQUAL;
 		private Object defaultValue;
 		private Object defaultValueTo;
-		private LookupDescriptor lookupDescriptor;
+		private Optional<LookupDescriptor> lookupDescriptor = Optional.empty();
 		private boolean mandatory = false;
 		private boolean showIncrementDecrementButtons;
 
@@ -260,10 +256,15 @@ public final class DocumentFilterParamDescriptor
 			return this;
 		}
 
-		public Builder setLookupDescriptor(final LookupDescriptor lookupDescriptor)
+		public Builder setLookupDescriptor(@NonNull final Optional<LookupDescriptor> lookupDescriptor)
 		{
 			this.lookupDescriptor = lookupDescriptor;
 			return this;
+		}
+
+		public Builder setLookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
+		{
+			return setLookupDescriptor(Optional.ofNullable(lookupDescriptor));
 		}
 
 		public Builder setMandatory(final boolean mandatory)

@@ -70,8 +70,7 @@ public final class DocumentLayoutElementDescriptor
 		{
 			elementBuilder.addField(DocumentLayoutElementFieldDescriptor.builder(field.getFieldName())
 					.setPublicField(true)
-					.setLookupSource(field.getLookupSourceType())
-					.setLookupTableName(field.getLookupTableName())
+					.setLookupInfos(field.getLookupDescriptor().orElse(null))
 					.setSupportZoomInto(field.isSupportZoomInto()));
 		}
 

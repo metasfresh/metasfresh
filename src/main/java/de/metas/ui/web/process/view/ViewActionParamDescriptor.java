@@ -13,6 +13,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.util.Check;
@@ -61,7 +62,7 @@ public final class ViewActionParamDescriptor
 	{
 		Preconditions.checkState(isUserParameter(), "parameter is internal");
 
-		LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
+		LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProviders.NULL;
 		if (parameterAnnotation.widgetType().isLookup())
 		{
 			if (Check.isEmpty(parameterAnnotation.sqlLookupTableName(), true))
@@ -85,7 +86,7 @@ public final class ViewActionParamDescriptor
 				//
 				.setValueClass(parameterValueClass)
 				.setWidgetType(parameterAnnotation.widgetType())
-				.setLookupDescriptorProvider(lookupDescriptorProvider != null ? lookupDescriptorProvider : LookupDescriptorProvider.NULL)
+				.setLookupDescriptorProvider(lookupDescriptorProvider != null ? lookupDescriptorProvider : LookupDescriptorProviders.NULL)
 				//
 				// .setDefaultValueExpression(defaultValueExpr)
 				.setReadonlyLogic(false)

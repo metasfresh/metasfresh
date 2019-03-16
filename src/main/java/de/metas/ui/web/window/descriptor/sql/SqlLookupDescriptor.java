@@ -21,6 +21,7 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.DBConstants;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
@@ -43,6 +44,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -358,14 +360,11 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return buildProvider(ctxTableName, ctxColumnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
 		}
 
-		public LookupDescriptor buildForScope(final LookupScope scope)
-		{
-			return buildProvider().provideForScope(scope);
-		}
-
 		public LookupDescriptor buildForDefaultScope()
 		{
-			return buildProvider().provideForScope(LookupScope.DocumentField);
+			return buildProvider()
+					.provide()
+					.orElseThrow(() -> new AdempiereException("No lookup for " + this));
 		}
 
 		private static LookupDescriptorProvider buildProvider(
@@ -378,13 +377,12 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		{
 			if (widgetType == DocumentFieldWidgetType.ProcessButton)
 			{
-				return LookupDescriptorProvider.NULL;
+				return LookupDescriptorProviders.NULL;
 			}
-
-			if (DisplayType.isAnyLookup(displayType)
+			else if (DisplayType.isAnyLookup(displayType)
 					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
 			{
-				return LookupDescriptorProvider.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
+				return LookupDescriptorProviders.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
 						.setCtxTableName(sqlTableName)
 						.setCtxColumnName(sqlColumnName)
 						.setDisplayType(displayType)
@@ -394,7 +392,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 						.addValidationRules(additionalValidationRules)
 						.build());
 			}
-			return LookupDescriptorProvider.NULL;
+			else
+			{
+				return LookupDescriptorProviders.NULL;
+			}
 		}
 
 		private SqlLookupDescriptor build()
