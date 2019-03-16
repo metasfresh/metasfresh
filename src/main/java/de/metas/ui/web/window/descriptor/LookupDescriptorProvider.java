@@ -1,10 +1,8 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.Optional;
-import java.util.function.Function;
 
-import de.metas.util.Functions;
-import lombok.NonNull;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 
 /*
  * #%L
@@ -37,22 +35,6 @@ import lombok.NonNull;
 @FunctionalInterface
 public interface LookupDescriptorProvider
 {
-	/** @return provider which returns given {@link LookupDescriptor} for any scope */
-	static LookupDescriptorProvider singleton(@NonNull final LookupDescriptor lookupDescriptor)
-	{
-		return (scope) -> lookupDescriptor;
-	}
-
-	/** @return provider which calls the given function (memoized) */
-	static LookupDescriptorProvider fromMemoizingFunction(final Function<LookupScope, LookupDescriptor> providerFunction)
-	{
-		final Function<LookupScope, LookupDescriptor> providerFunctionMemoized = Functions.memoizing(providerFunction);
-		return (scope) -> providerFunctionMemoized.apply(scope);
-	}
-
-	/** Provider which returns <code>null</code> for any scope) */
-	LookupDescriptorProvider NULL = (scope) -> null;
-
 	public static enum LookupScope
 	{
 		DocumentField, DocumentFilter
@@ -61,21 +43,30 @@ public interface LookupDescriptorProvider
 	/**
 	 * @return lookup descriptor or null
 	 */
-	LookupDescriptor provideForScope(LookupScope scope);
+	Optional<LookupDescriptor> provideForScope(LookupScope scope);
+
+	default Optional<LookupDescriptor> provide()
+	{
+		return provideForScope(LookupScope.DocumentField);
+	}
 
 	default boolean isNumericKey()
 	{
-		final LookupDescriptor descriptorForScope = provideForScope(LookupScope.DocumentField);
-		if (descriptorForScope == null)
-		{
-			return false;
-		}
-		return descriptorForScope.isNumericKey();
+		return provide()
+				.map(LookupDescriptor::isNumericKey)
+				.orElse(false);
 	}
 
 	default Optional<String> getTableName()
 	{
-		final LookupDescriptor lookupDescriptor = provideForScope(LookupScope.DocumentField);
-		return lookupDescriptor != null ? lookupDescriptor.getTableName() : Optional.empty();
+		return provide()
+				.flatMap(LookupDescriptor::getTableName);
 	}
+
+	default Optional<LookupSource> getLookupSourceType()
+	{
+		return provide()
+				.map(LookupDescriptor::getLookupSourceType);
+	}
+
 }

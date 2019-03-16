@@ -237,40 +237,43 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return fieldName;
 		}
 
-		public Builder setLookupSource(final LookupSource lookupSource)
+		public Builder setLookupInfos(final LookupDescriptor lookupDescriptor)
 		{
-			this.lookupSource = lookupSource;
+			if (lookupDescriptor != null)
+			{
+				this.lookupSource = lookupDescriptor.getLookupSourceType();
+				this.lookupTableName = lookupDescriptor.getTableName();
+			}
+			else
+			{
+				this.lookupSource = null;
+				this.lookupTableName = Optional.empty();
+			}
+
 			return this;
 		}
 
-		public LookupSource getLookupSource()
+		public Builder setLookupSourceAsText()
 		{
-			return lookupSource;
-		}
-
-		public boolean isLookup()
-		{
-			return lookupSource != null;
-		}
-
-		public Builder setLookupTableName(@NonNull final Optional<String> lookupTableName)
-		{
-			this.lookupTableName = lookupTableName;
+			this.lookupSource = LookupSource.text;
+			this.lookupTableName = Optional.empty();
 			return this;
 		}
 
-		public Optional<String> getLookupTableName()
+		private Optional<String> getLookupTableName()
 		{
 			if (lookupTableName != null)
 			{
 				return lookupTableName;
 			}
-			if (documentFieldBuilder != null)
+			else if (documentFieldBuilder != null)
 			{
 				return documentFieldBuilder.getLookupTableName();
 			}
-
-			return Optional.empty();
+			else
+			{
+				return Optional.empty();
+			}
 		}
 
 		public Builder setFieldType(final FieldType fieldType)

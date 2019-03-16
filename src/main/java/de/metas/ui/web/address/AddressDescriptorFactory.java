@@ -206,7 +206,7 @@ public class AddressDescriptorFactory
 				.setCaption(fieldDescriptor.getCaption())
 				.setWidgetType(fieldDescriptor.getWidgetType())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
-						.setLookupSource(fieldDescriptor.getLookupSourceType())
+						.setLookupInfos(fieldDescriptor.getLookupDescriptor().orElse(null))
 						.setPublicField(true)
 						.setSupportZoomInto(fieldDescriptor.isSupportZoomInto()));
 	}

@@ -433,7 +433,9 @@ import lombok.NonNull;
 
 		final String tableAlias = sqlOpts.getTableNameOrAlias();
 
-		final LabelsLookup lookup = LabelsLookup.cast(paramDescriptor.getLookupDescriptor());
+		final LabelsLookup lookup = paramDescriptor.getLookupDescriptor()
+				.map(LabelsLookup::cast)
+				.get();
 		final String labelsTableName = lookup.getLabelsTableName();
 		final String labelsLinkColumnName = lookup.getLabelsLinkColumnName();
 		final String linkColumnName = lookup.getLinkColumnName();

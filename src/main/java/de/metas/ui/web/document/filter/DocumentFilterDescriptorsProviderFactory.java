@@ -2,6 +2,7 @@ package de.metas.ui.web.document.filter;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -24,7 +25,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchFilterContext;
 import de.metas.ui.web.window.descriptor.FullTextSearchSqlDocumentFilterConverter;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.util.Services;
 
 /*
@@ -129,7 +129,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final DocumentFieldWidgetType widgetType = extractFilterWidgetType(field);
 		final DocumentFieldDefaultFilterDescriptor filteringInfo = field.getDefaultFilterInfo();
 
-		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
+		final Optional<LookupDescriptor> lookupDescriptor = field.getLookupDescriptorForFiltering();
 
 		final Operator operator;
 		if (widgetType.isText())

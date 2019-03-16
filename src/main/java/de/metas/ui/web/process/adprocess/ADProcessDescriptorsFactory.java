@@ -266,7 +266,7 @@ import lombok.NonNull;
 					.buildProvider();
 		}
 		//
-		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
+		final Optional<LookupDescriptor> lookupDescriptor = lookupDescriptorProvider.provide();
 
 		final DocumentFieldWidgetType widgetType = extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor, adProcessParam.isRange());
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
@@ -333,7 +333,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static DocumentFieldWidgetType extractWidgetType(final String parameterName, final int adReferenceId, final LookupDescriptor lookupDescriptor, final boolean isRange)
+	private static DocumentFieldWidgetType extractWidgetType(final String parameterName, final int adReferenceId, final Optional<LookupDescriptor> lookupDescriptor, final boolean isRange)
 	{
 		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adReferenceId, lookupDescriptor);
 

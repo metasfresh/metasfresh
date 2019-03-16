@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -25,7 +26,6 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -145,7 +145,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			{
 				final ITranslatableString displayName = searchField.getDisplayName();
 				final DocumentFieldWidgetType widgetType = searchField.getWidgetType();
-				final LookupDescriptor lookupDescriptor = searchField.getLookupDescriptor();
+				final Optional<LookupDescriptor> lookupDescriptor = searchField.getLookupDescriptor();
 
 				filter.addParameter(DocumentFilterParamDescriptor.builder()
 						.setJoinAnd(join == Join.AND)
@@ -188,16 +188,15 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		private final String fieldName;
 		private final ITranslatableString displayName;
 		private final DocumentFieldWidgetType widgetType;
-		private final LookupDescriptor lookupDescriptor;
+		private final Optional<LookupDescriptor> lookupDescriptor;
 
 		private UserQueryField(final DocumentFieldDescriptor field)
 		{
-			super();
 			// NOTE: don't store the reference to "field" because we want to make this class as light as possible
 			fieldName = field.getFieldName();
 			displayName = field.getCaption();
 			widgetType = field.getWidgetType();
-			lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
+			lookupDescriptor = field.getLookupDescriptor();
 		}
 
 		@Override
@@ -243,7 +242,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			return valueObj;
 		}
 
-		public LookupDescriptor getLookupDescriptor()
+		public Optional<LookupDescriptor> getLookupDescriptor()
 		{
 			return lookupDescriptor;
 		}

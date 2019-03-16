@@ -67,6 +67,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -131,6 +132,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private final boolean excludeBOMProducts;
 
+	@Getter
+	private final int searchStringMinLength;
+
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
@@ -148,6 +152,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		this.excludeBOMProducts = excludeBOMProducts;
 
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_AD_Org_ID);
+
+		this.searchStringMinLength = Services.get(IADTableDAO.class).getTypeaheadMinLength(I_M_Product.Table_Name);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
@@ -165,6 +171,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		this.excludeBOMProducts = excludeBOMProducts;
 
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+
+		this.searchStringMinLength = Services.get(IADTableDAO.class).getTypeaheadMinLength(I_M_Product.Table_Name);
 	}
 
 	@Override
@@ -244,7 +252,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private boolean isStartSearchForString(final String filter)
 	{
-		final int searchMinLength = getSearchMinLength();
+		final int searchMinLength = getSearchStringMinLength();
 		if (searchMinLength <= 0)
 		{
 			return true;
@@ -677,11 +685,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
 		return !disabled;
-	}
-
-	private int getSearchMinLength()
-	{
-		return Services.get(IADTableDAO.class).getTypeaheadMinLength(I_M_Product.Table_Name);
 	}
 
 	@Value

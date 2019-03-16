@@ -77,7 +77,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -306,7 +305,7 @@ public class BoardDescriptorRepository
 		{
 			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue());
 			final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
-			final LookupDescriptor lookupDescriptor = documentField.getLookupDescriptor(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = documentField.getLookupDescriptor().orElse(null);
 			fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, lookupDescriptor);
 		}
 
@@ -373,7 +372,7 @@ public class BoardDescriptorRepository
 			final String tableAlias = "r";
 			final String keyColumnNameFQ = tableAlias + "." + keyColumnName;
 			final String userIdColumnNameFQ = tableAlias + "." + userIdColumnName;
-			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
+			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getLookupDescriptor());
 
 			sqlExpr = IStringExpression.composer()
 					.append("SELECT ")
@@ -436,7 +435,7 @@ public class BoardDescriptorRepository
 			final String tableAlias = "r";
 			final String keyColumnNameFQ = tableAlias + "." + keyColumnName;
 			final String userIdColumnNameFQ = tableAlias + "." + userIdColumnName;
-			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
+			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getLookupDescriptor());
 
 			sqlExpr = IStringExpression.composer()
 					.append("SELECT ")

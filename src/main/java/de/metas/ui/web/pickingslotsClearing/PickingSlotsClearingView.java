@@ -206,6 +206,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
+				.get()
 				.findEntities(ctx);
 	}
 
@@ -215,6 +216,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
+				.get()
 				.findEntities(ctx, query);
 	}
 

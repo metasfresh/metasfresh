@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -16,6 +17,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,15 +59,15 @@ public final class DescriptorsFactoryHelper
 		super();
 	}
 
-	public static Class<?> getValueClass(final DocumentFieldWidgetType widgetType, final LookupDescriptor lookupDescriptor)
+	public static Class<?> getValueClass(@NonNull final DocumentFieldWidgetType widgetType, @NonNull final Optional<LookupDescriptor> lookupDescriptor)
 	{
 		final Class<?> widgetValueClass = widgetType.getValueClassOrNull();
 
 		//
 		// Try fetching the valueClass from lookup
-		if (lookupDescriptor != null)
+		if (lookupDescriptor.isPresent())
 		{
-			final Class<?> lookupValueClass = lookupDescriptor.getValueClass();
+			final Class<?> lookupValueClass = lookupDescriptor.get().getValueClass();
 			Check.assumeNotNull(lookupValueClass, "Parameter lookupValueClass is not null for {}", lookupDescriptor); // shall not happen
 
 			if (widgetValueClass == null)
@@ -235,13 +237,16 @@ public final class DescriptorsFactoryHelper
 		}
 	}
 
-	public static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType, final LookupDescriptor lookupDescriptor)
+	public static DocumentFieldWidgetType extractWidgetType(
+			final String columnName,
+			final int displayType,
+			@NonNull final Optional<LookupDescriptor> lookupDescriptor)
 	{
 		final DocumentFieldWidgetType widgetType = extractWidgetType(columnName, displayType);
-		if (lookupDescriptor != null
+		if (lookupDescriptor.isPresent()
 				&& (widgetType == DocumentFieldWidgetType.List || widgetType == DocumentFieldWidgetType.Lookup))
 		{
-			final LookupSource lookupSourceType = lookupDescriptor.getLookupSourceType();
+			final LookupSource lookupSourceType = lookupDescriptor.get().getLookupSourceType();
 			final DocumentFieldWidgetType lookupWidgetType = extractWidgetType(lookupSourceType);
 			if (lookupWidgetType != widgetType)
 			{

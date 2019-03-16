@@ -52,6 +52,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -305,8 +306,8 @@ import lombok.NonNull;
 		final Class<?> valueClass;
 		final Optional<IExpression<?>> defaultValueExpression;
 		final boolean alwaysUpdateable;
-		LookupDescriptorProvider lookupDescriptorProvider;
-		final LookupDescriptor lookupDescriptor;
+		final LookupDescriptorProvider lookupDescriptorProvider;
+		final Optional<LookupDescriptor> lookupDescriptor;
 		ILogicExpression readonlyLogic;
 
 		final boolean isParentLinkColumn = isCurrentlyUsedParentLinkField(gridFieldVO, entityDescriptorBuilder);
@@ -318,8 +319,8 @@ import lombok.NonNull;
 			valueClass = widgetType.getValueClass();
 			alwaysUpdateable = false;
 
-			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
-			lookupDescriptor = null;
+			lookupDescriptorProvider = LookupDescriptorProviders.NULL;
+			lookupDescriptor = Optional.empty();
 
 			defaultValueExpression = Optional.empty();
 			readonlyLogic = ConstantLogicExpression.TRUE;
@@ -330,8 +331,8 @@ import lombok.NonNull;
 			valueClass = widgetType.getValueClass();
 			alwaysUpdateable = false;
 
-			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
-			lookupDescriptor = null;
+			lookupDescriptorProvider = LookupDescriptorProviders.NULL;
+			lookupDescriptor = Optional.empty();
 
 			defaultValueExpression = Optional.empty();
 			readonlyLogic = ConstantLogicExpression.TRUE;
@@ -345,17 +346,16 @@ import lombok.NonNull;
 
 			final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
 
-			lookupDescriptorProvider = SqlLookupDescriptor.builder()
-					.setCtxTableName(ctxTableName)
-					.setCtxColumnName(sqlColumnName)
-					.setWidgetType(widgetType)
-					.setDisplayType(displayType)
-					.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-					.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
-					.buildProvider();
-			lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(lookupDescriptorProvider);
-
-			lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
+			lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
+					SqlLookupDescriptor.builder()
+							.setCtxTableName(ctxTableName)
+							.setCtxColumnName(sqlColumnName)
+							.setWidgetType(widgetType)
+							.setDisplayType(displayType)
+							.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
+							.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
+							.buildProvider());
+			lookupDescriptor = lookupDescriptorProvider.provide();
 			valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(
@@ -418,7 +418,7 @@ import lombok.NonNull;
 				.setWidgetType(widgetType)
 				.setValueClass(valueClass)
 				.setSqlValueClass(entityBindings.getPOInfo().getColumnClass(sqlColumnName))
-				.setLookupDescriptor(lookupDescriptor)
+				.setLookupDescriptor(lookupDescriptor.orElse(null))
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
 				.setDefaultOrderBy(orderBySortNo)

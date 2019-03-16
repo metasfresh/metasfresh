@@ -25,6 +25,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -208,7 +209,8 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	}
 
 	@JsonCreator
-	/* package */ JSONDocumentLayoutElementField(
+	@Builder
+	private JSONDocumentLayoutElementField(
 			@JsonProperty("field") final String field,
 			@JsonProperty("type") final JSONFieldType type,
 			@JsonProperty("tooltipIconName") final String tooltipIconName,

@@ -39,7 +39,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -47,6 +46,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.Caption
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
@@ -275,22 +275,6 @@ public class DataEntryTabLoader
 		return result.build();
 	}
 
-//	private DocumentLayoutElementGroupDescriptor.Builder createLayoutElemementGroup(@NonNull final DataEntryLine line)
-//	{
-//		final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
-//				.builder()
-//				.setColumnCount(line.getDataEntryFields().size());
-//
-//		final List<DataEntryField> fields = line.getDataEntryFields();
-//		for (final DataEntryField field : fields)
-//		{
-//			final DocumentLayoutElementLineDescriptor.Builder elementLine = createLayoutElemementLine(field);
-//			elementGroup.addElementLine(elementLine);
-//		}
-//
-//		return elementGroup;
-//	}
-
 	private DocumentLayoutElementLineDescriptor.Builder createLayoutElemementLine(@NonNull final DataEntryField field)
 	{
 		// note that each element builder can be used/"consumed" only ones
@@ -329,7 +313,7 @@ public class DataEntryTabLoader
 				.setEmptyText(ITranslatableString.empty())
 				.setFieldType(DocumentLayoutElementFieldDescriptor.FieldType.Tooltip)
 				.setTooltipIconName(X_AD_UI_ElementField.TOOLTIPICONNAME_Text)
-				.setLookupSource(LookupSource.text);
+				.setLookupSourceAsText();
 		element.addField(infoField);
 
 		return element;
@@ -498,11 +482,11 @@ public class DataEntryTabLoader
 		if (FieldType.LIST.equals(dataEntryField.getType()))
 		{
 			final DataEntryListValueLookupDescriptor lookupDescriptor = DataEntryListValueLookupDescriptor.of(dataEntryField.getListValues());
-			fieldLookupDescriptorProvider = LookupDescriptorProvider.singleton(lookupDescriptor);
+			fieldLookupDescriptorProvider = LookupDescriptorProviders.singleton(lookupDescriptor);
 		}
 		else
 		{
-			fieldLookupDescriptorProvider = LookupDescriptorProvider.NULL;
+			fieldLookupDescriptorProvider = LookupDescriptorProviders.NULL;
 		}
 
 		return DocumentFieldDescriptor.builder(fieldName)
@@ -532,7 +516,7 @@ public class DataEntryTabLoader
 				// .setCaption(dataEntryField.getCaption())
 				// .setDescription(dataEntryField.getDescription())
 				.setWidgetType(ofFieldType(FieldType.CREATED_UPDATED_INFO))
-				.setLookupDescriptorProvider(LookupDescriptorProvider.NULL)
+				.setLookupDescriptorProvider(LookupDescriptorProviders.NULL)
 				.addCharacteristic(Characteristic.PublicField)
 				.setMandatoryLogic(ConstantLogicExpression.of(mandatory))
 				.setDataBinding(dataBinding);
