@@ -7,7 +7,6 @@ import java.util.List;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserRepository;
 import org.compiere.Adempiere;
 import org.compiere.model.X_AD_UI_ElementField;
 
@@ -15,8 +14,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.FieldType;
-import de.metas.dataentry.data.DataEntryRecordRepository;
-import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
@@ -79,35 +76,9 @@ import lombok.Value;
 public class DataEntryTabLoader
 {
 	AdWindowId adWindowId;
-
 	WindowId windowId;
-
 	DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder;
-
 	DataEntryWebuiTools dataEntryWebuiTools;
-
-	@VisibleForTesting
-	public static DataEntryTabLoader createInstanceForUnitTesting()
-	{
-		final int windowIdInt = 5;
-
-		final DataEntryWebuiTools dataEntryWebuiTools = new DataEntryWebuiTools(new UserRepository());
-		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
-		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
-
-		final DataEntrySubGroupBindingDescriptorBuilder //
-		dataEntrySubGroupBindingDescriptorBuilder = new DataEntrySubGroupBindingDescriptorBuilder(
-				dataEntryRecordRepository,
-				dataEntryWebuiTools);
-
-		final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader
-				.builder()
-				.adWindowId(AdWindowId.ofRepoId(windowIdInt))
-				.windowId(WindowId.of(windowIdInt))
-				.dataEntrySubGroupBindingDescriptorBuilder(dataEntrySubGroupBindingDescriptorBuilder)
-				.build();
-		return dataEntryTabLoader;
-	}
 
 	@Builder
 	private DataEntryTabLoader(

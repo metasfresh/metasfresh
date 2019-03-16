@@ -8,6 +8,7 @@ import static java.lang.Integer.parseInt;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -22,6 +23,8 @@ import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.FieldType;
+import de.metas.dataentry.data.DataEntryRecordRepository;
+import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryGroup;
 import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
@@ -30,6 +33,7 @@ import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -70,7 +74,28 @@ public class DataEntryTabLoaderTest
 
 		jsonOptions = JSONOptions.builder(null/* userSession */).setAD_LanguageIfNotEmpty("en_US").build();
 
-		dataEntryTabLoader = DataEntryTabLoader.createInstanceForUnitTesting();
+		dataEntryTabLoader = createDataEntryTabLoader();
+	}
+
+	private static DataEntryTabLoader createDataEntryTabLoader()
+	{
+		final WindowId windowId = WindowId.of(5);
+
+		final DataEntryWebuiTools dataEntryWebuiTools = new DataEntryWebuiTools(new UserRepository());
+		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
+		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
+
+		final DataEntrySubGroupBindingDescriptorBuilder //
+		dataEntrySubGroupBindingDescriptorBuilder = new DataEntrySubGroupBindingDescriptorBuilder(
+				dataEntryRecordRepository,
+				dataEntryWebuiTools);
+
+		return DataEntryTabLoader
+				.builder()
+				.windowId(windowId)
+				.adWindowId(windowId.toAdWindowIdOrNull())
+				.dataEntrySubGroupBindingDescriptorBuilder(dataEntrySubGroupBindingDescriptorBuilder)
+				.build();
 	}
 
 	@BeforeClass
