@@ -149,8 +149,7 @@ public class DataEntryTabLoaderTest
 
 	public static DataEntryGroup createSimpleDataEntryGroup()
 	{
-		final DataEntryGroup dataEntryGroup = DataEntryGroup
-				.builder()
+		return DataEntryGroup.builder()
 				.id(DataEntryGroupId.ofRepoId(1))
 				.documentLinkColumnName(DocumentLinkColumnName.of("documentLinkColumnName"))
 				.internalName("dataEntryGroup_internalName")
@@ -161,7 +160,6 @@ public class DataEntryTabLoaderTest
 				.dataEntrySubGroup(createSubGroup(2/* subgroupNo */))
 
 				.build();
-		return dataEntryGroup;
 	}
 
 	private static DataEntrySubGroup createSubGroup(final int subgroupNo)
