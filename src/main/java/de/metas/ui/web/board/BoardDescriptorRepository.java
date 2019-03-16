@@ -51,6 +51,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.ui.web.base.model.I_WEBUI_Board;
 import de.metas.ui.web.base.model.I_WEBUI_Board_CardField;
 import de.metas.ui.web.base.model.I_WEBUI_Board_Lane;
@@ -284,8 +285,13 @@ public class BoardDescriptorRepository
 					return null;
 				}
 
-				final int currencyId = rs.getInt(WindowConstants.FIELDNAME_C_Currency_ID);
-				final String currencyCode = Services.get(ICurrencyDAO.class).getISO_Code(Env.getCtx(), currencyId);
+				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(rs.getInt(WindowConstants.FIELDNAME_C_Currency_ID));
+				if (currencyId == null)
+				{
+					return valueBD;
+				}
+
+				final String currencyCode = Services.get(ICurrencyDAO.class).getISOCodeById(currencyId);
 				if (currencyCode == null)
 				{
 					return valueBD;
