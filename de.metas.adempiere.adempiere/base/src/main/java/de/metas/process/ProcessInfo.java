@@ -306,7 +306,7 @@ public final class ProcessInfo implements Serializable
 		}
 		catch (final Throwable e)
 		{
-			if (isServerProcess() && Ini.isClient())
+			if (isServerProcess() && Ini.isSwingClient())
 			{
 				// NOTE: in case of server process, it might be that the class is not present, which could be fine
 				logger.debug("Failed instantiating class '{}'. Skipped.", classname, e);
@@ -1430,7 +1430,7 @@ public final class ProcessInfo implements Serializable
 				return this.printPreview;
 			}
 
-			if (Ini.isClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
+			if (Ini.isSwingClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
 			{
 				return true;
 			}

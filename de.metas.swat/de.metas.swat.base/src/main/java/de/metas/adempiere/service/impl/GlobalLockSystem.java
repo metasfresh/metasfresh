@@ -67,7 +67,7 @@ public class GlobalLockSystem implements IGlobalLockSystem
 	public boolean acquire(GlobalLock lock, long timeoutMillis) throws InterruptedException
 	{
 		// TODO: this functionality is supported only in server mode
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			throw new IllegalStateException("GlobalLockSystem is supported only in server mode");
 		}

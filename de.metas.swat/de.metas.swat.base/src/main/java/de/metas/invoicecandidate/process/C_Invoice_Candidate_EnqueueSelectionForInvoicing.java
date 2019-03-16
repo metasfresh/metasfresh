@@ -108,7 +108,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 			return;
 		}
 		final boolean performEnqueuing;
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			performEnqueuing = Services.get(IClientUI.class).ask()
 					.setParentWindowNo(getProcessInfo().getWindowNo())
@@ -180,7 +180,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	{
 		// Get the user selection filter (i.e. what user filtered in his window)
 		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter;
-		if(Ini.isClient())
+		if(Ini.isSwingClient())
 		{
 			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
 			userSelectionFilter = getProcessInfo().getQueryFilter();

@@ -62,7 +62,7 @@ public class ExportProductSpecifications extends JavaProcess
 				.setFontCharset(Font.ANSI_CHARSET)
 				.exportToTempFile();
 
-		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
+		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isSwingClient();
 
 		if (backEndOrSwing)
 		{

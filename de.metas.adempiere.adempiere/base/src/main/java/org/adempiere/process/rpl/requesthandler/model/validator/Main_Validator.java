@@ -56,7 +56,7 @@ public class Main_Validator implements ModelValidator
 
 		Check.assume(Services.isAutodetectServices(), "Service auto detection is enabled");
 
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			// make sure that the handlers defined in this module are registered
 			Services.get(IReplRequestHandlerBL.class).registerHandlerType("LoadPO", LoadPORequestHandler.class, RequestHandler_Constants.ENTITY_TYPE);

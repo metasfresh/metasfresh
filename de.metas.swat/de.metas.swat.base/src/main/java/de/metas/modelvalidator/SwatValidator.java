@@ -288,7 +288,7 @@ public class SwatValidator implements ModelValidator
 			}
 		}
 
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			ReportStarter.setSwingViewerProvider(new org.compiere.report.SwingJRViewerProvider());
 		}
@@ -325,7 +325,7 @@ public class SwatValidator implements ModelValidator
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			configDatabase(); // run it again here because ModelValidator.initialize is run only once
 		}
@@ -383,7 +383,7 @@ public class SwatValidator implements ModelValidator
 		final boolean debugUnreturnedConnectionStackTraces = sysConfigBL.getBooleanValue(SYSCONFIG_C3P0_DebugUnreturnedConnectionStackTraces, false);
 
 		final String maxStatementsSysConfig;
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			maxStatementsSysConfig = SYSCONFIG_C3P0_Client_MaxStatements;
 		}

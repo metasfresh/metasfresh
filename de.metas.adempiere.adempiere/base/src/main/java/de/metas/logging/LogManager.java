@@ -480,7 +480,7 @@ public final class LogManager
 		final Level level = asLogbackLevel(logLevelStr);
 		setLevel(level);
 
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final boolean fileLoggingEnabled = Ini.isPropertyBool(Ini.P_TRACEFILE_ENABLED);
 			MetasfreshFileLoggerHelper.get().setDisabled(!fileLoggingEnabled);

@@ -80,7 +80,7 @@ public class TaskExecutorService implements ITaskExecutorService
 	private final ScheduledThreadPoolExecutor createExecutor(final String threadNamePrefix)
 	{
 		final int corePoolSizeDefault = Runtime.getRuntime().availableProcessors();
-		final int corePoolSize = Services.get(ISysConfigBL.class).getIntValue(Ini.isClient() ? SYSCONFIG_Client_MaxThreadPoolSize : SYSCONFIG_Server_MaxThreadPoolSize, corePoolSizeDefault);
+		final int corePoolSize = Services.get(ISysConfigBL.class).getIntValue(Ini.isSwingClient() ? SYSCONFIG_Client_MaxThreadPoolSize : SYSCONFIG_Server_MaxThreadPoolSize, corePoolSizeDefault);
 
 		final CustomizableThreadFactory threadFactory = CustomizableThreadFactory.builder()
 				.setThreadNamePrefix(threadNamePrefix)
