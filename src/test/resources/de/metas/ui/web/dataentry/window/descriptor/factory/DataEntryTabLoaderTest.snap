@@ -580,41 +580,44 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "allowShowPassword" : false,
               "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue",
               "lookupDescriptorProvider" : {
-                "arg$1" : {
-                  "dataEntryListValueDataSourceFetcher" : {
-                    "dependsOnContextVariables" : [ ],
-                    "id2LookupValue" : {
-                      "11231" : {
-                        "id" : 11231,
-                        "displayName" : {
-                          "value" : "listValue11_name",
-                          "anyLanguage" : false
+                "lookupDescriptor" : {
+                  "value" : {
+                    "dataEntryListValueDataSourceFetcher" : {
+                      "dependsOnContextVariables" : [ ],
+                      "id2LookupValue" : {
+                        "11231" : {
+                          "id" : 11231,
+                          "displayName" : {
+                            "value" : "listValue11_name",
+                            "anyLanguage" : false
+                          },
+                          "description" : {
+                            "value" : "listValue11_description",
+                            "anyLanguage" : false
+                          },
+                          "active" : true
                         },
-                        "description" : {
-                          "value" : "listValue11_description",
-                          "anyLanguage" : false
-                        },
-                        "active" : true
+                        "11232" : {
+                          "id" : 11232,
+                          "displayName" : {
+                            "value" : "listValue12_name",
+                            "anyLanguage" : false
+                          },
+                          "description" : {
+                            "value" : "listValue12_description",
+                            "anyLanguage" : false
+                          },
+                          "active" : true
+                        }
                       },
-                      "11232" : {
-                        "id" : 11232,
-                        "displayName" : {
-                          "value" : "listValue12_name",
-                          "anyLanguage" : false
-                        },
-                        "description" : {
-                          "value" : "listValue12_description",
-                          "anyLanguage" : false
-                        },
-                        "active" : true
-                      }
+                      "dataEntryFieldId" : 1123,
+                      "cached" : true,
+                      "numericKey" : false
                     },
-                    "dataEntryFieldId" : 1123,
-                    "numericKey" : false,
-                    "cached" : true
+                    "highVolume" : false,
+                    "numericKey" : true
                   },
-                  "highVolume" : false,
-                  "numericKey" : true
+                  "present" : true
                 },
                 "numericKey" : true
               },
@@ -1496,41 +1499,44 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "allowShowPassword" : false,
               "valueClass" : "de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue",
               "lookupDescriptorProvider" : {
-                "arg$1" : {
-                  "dataEntryListValueDataSourceFetcher" : {
-                    "dependsOnContextVariables" : [ ],
-                    "id2LookupValue" : {
-                      "12231" : {
-                        "id" : 12231,
-                        "displayName" : {
-                          "value" : "listValue21_name",
-                          "anyLanguage" : false
+                "lookupDescriptor" : {
+                  "value" : {
+                    "dataEntryListValueDataSourceFetcher" : {
+                      "dependsOnContextVariables" : [ ],
+                      "id2LookupValue" : {
+                        "12231" : {
+                          "id" : 12231,
+                          "displayName" : {
+                            "value" : "listValue21_name",
+                            "anyLanguage" : false
+                          },
+                          "description" : {
+                            "value" : "listValue21_description",
+                            "anyLanguage" : false
+                          },
+                          "active" : true
                         },
-                        "description" : {
-                          "value" : "listValue21_description",
-                          "anyLanguage" : false
-                        },
-                        "active" : true
+                        "12232" : {
+                          "id" : 12232,
+                          "displayName" : {
+                            "value" : "listValue22_name",
+                            "anyLanguage" : false
+                          },
+                          "description" : {
+                            "value" : "listValue22_description",
+                            "anyLanguage" : false
+                          },
+                          "active" : true
+                        }
                       },
-                      "12232" : {
-                        "id" : 12232,
-                        "displayName" : {
-                          "value" : "listValue22_name",
-                          "anyLanguage" : false
-                        },
-                        "description" : {
-                          "value" : "listValue22_description",
-                          "anyLanguage" : false
-                        },
-                        "active" : true
-                      }
+                      "dataEntryFieldId" : 1223,
+                      "cached" : true,
+                      "numericKey" : false
                     },
-                    "dataEntryFieldId" : 1223,
-                    "numericKey" : false,
-                    "cached" : true
+                    "highVolume" : false,
+                    "numericKey" : true
                   },
-                  "highVolume" : false,
-                  "numericKey" : true
+                  "present" : true
                 },
                 "numericKey" : true
               },
@@ -1971,6 +1977,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -1985,6 +1995,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2034,6 +2048,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2048,6 +2066,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2089,6 +2111,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2103,6 +2129,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2168,6 +2198,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2182,6 +2216,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2223,6 +2261,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2237,6 +2279,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2278,6 +2324,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2292,6 +2342,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2389,6 +2443,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2403,6 +2461,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2452,6 +2514,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2466,6 +2532,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2507,6 +2577,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2521,6 +2595,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2586,6 +2664,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2600,6 +2682,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2641,6 +2727,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2655,6 +2745,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2696,6 +2790,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "lookupTableName" : {
                                       "present" : false
                                     },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
+                                      "present" : false
+                                    },
                                     "emptyText" : {
                                       "value" : "",
                                       "anyLanguage" : true
@@ -2710,6 +2808,10 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "present" : false
+                                    },
+                                    "lookupSearchStringMinLength" : -1,
+                                    "lookupSearchStartDelay" : {
                                       "present" : false
                                     },
                                     "emptyText" : {
@@ -2787,7 +2889,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1111_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -2817,7 +2921,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1112_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -2839,7 +2945,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1113_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -2877,7 +2985,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1121_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -2899,7 +3009,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1122_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -2921,7 +3033,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1123_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -2971,7 +3085,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1211_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -3001,7 +3117,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1212_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -3023,7 +3141,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1213_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -3061,7 +3181,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1221_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -3083,7 +3205,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1222_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
@@ -3105,7 +3229,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "field" : "1223_Info",
                                   "type" : "Tooltip",
                                   "tooltipIconName" : "text",
-                                  "source" : "text"
+                                  "source" : "text",
+                                  "lookupSearchStringMinLength" : -1,
+                                  "lookupSearchStartDelayMillis" : 0
                                 }
                               ]
                             }
