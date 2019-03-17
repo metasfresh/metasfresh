@@ -6,8 +6,6 @@ import java.util.Optional;
 
 import com.google.common.base.Strings;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.impl.NullModelTranslation;
 
 /*
@@ -40,6 +38,8 @@ import de.metas.i18n.impl.NullModelTranslation;
  */
 public interface IModelTranslationMap
 {
+	int getRecordId();
+	
 	/**
 	 * @return all {@link IModelTranslation}s for AD_Language; if no translation was found then {@link NullModelTranslation} will be returned
 	 */
