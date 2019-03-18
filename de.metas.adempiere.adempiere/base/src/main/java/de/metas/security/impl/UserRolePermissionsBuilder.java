@@ -34,8 +34,6 @@ import org.compiere.util.Env;
 
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsBuilder;
-import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
@@ -53,9 +51,37 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
+class UserRolePermissionsBuilder
 {
-	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	public static UserRolePermissionsBuilder of(final UserRolePermissionsDAO userRolePermissionsRepo, final UserRolePermissions permissions)
+	{
+		return new UserRolePermissionsBuilder(userRolePermissionsRepo)
+				.setRoleId(permissions.getRoleId())
+				.setAlreadyIncludedRolePermissions(permissions.getIncludes())
+				.setClientId(permissions.getClientId())
+				.setUserId(permissions.getUserId())
+				.setUserLevel(permissions.getUserLevel())
+				.setMenuInfo(permissions.getMenuInfo())
+				//
+				.setOrgPermissions(permissions.getOrgPermissions())
+				.setTablePermissions(permissions.getTablePermissions())
+				.setColumnPermissions(permissions.getColumnPermissions())
+				.setRecordPermissions(permissions.getRecordPermissions())
+				.setWindowPermissions(permissions.getWindowPermissions())
+				.setProcessPermissions(permissions.getProcessPermissions())
+				.setTaskPermissions(permissions.getTaskPermissions())
+				.setWorkflowPermissions(permissions.getWorkflowPermissions())
+				.setFormPermissions(permissions.getFormPermissions())
+				.setMiscPermissions(permissions.getMiscPermissions())
+				//
+				.setConstraints(permissions.getConstraints());
+	}
+
+	// services
+	private final UserRolePermissionsDAO userRolePermissionsRepo;
+	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+
 	//
 	// Parameters
 	private String name;
@@ -88,13 +114,13 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 
 	private final boolean accountingModuleActive;
 
-	UserRolePermissionsBuilder(final boolean accountingModuleActive)
+	UserRolePermissionsBuilder(@NonNull final UserRolePermissionsDAO userRolePermissionsRepo)
 	{
-		this.accountingModuleActive = accountingModuleActive;
+		this.userRolePermissionsRepo = userRolePermissionsRepo;
+		this.accountingModuleActive = userRolePermissionsRepo.isAccountingModuleActive();
 	}
 
-	@Override
-	public IUserRolePermissions build()
+	public UserRolePermissions build()
 	{
 		final RoleId adRoleId = getRoleId();
 		final UserId adUserId = getUserId();
@@ -103,39 +129,39 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		if (orgAccesses == null)
 		{
 			final Role role = getRole();
-			orgAccesses = userRolePermissionsDAO.retrieveOrgPermissions(role, adUserId);
+			orgAccesses = userRolePermissionsRepo.retrieveOrgPermissions(role, adUserId);
 		}
 		if (tableAccesses == null)
 		{
-			tableAccesses = userRolePermissionsDAO.retrieveTablePermissions(adRoleId);
+			tableAccesses = userRolePermissionsRepo.retrieveTablePermissions(adRoleId);
 		}
 		if (columnAccesses == null)
 		{
-			columnAccesses = userRolePermissionsDAO.retrieveTableColumnPermissions(adRoleId);
+			columnAccesses = userRolePermissionsRepo.retrieveTableColumnPermissions(adRoleId);
 		}
 		if (recordAccesses == null)
 		{
-			recordAccesses = userRolePermissionsDAO.retrieveRecordPermissions(adRoleId);
+			recordAccesses = userRolePermissionsRepo.retrieveRecordPermissions(adRoleId);
 		}
 		if (windowAccesses == null)
 		{
-			windowAccesses = userRolePermissionsDAO.retrieveWindowPermissions(adRoleId, adClientId);
+			windowAccesses = userRolePermissionsRepo.retrieveWindowPermissions(adRoleId, adClientId);
 		}
 		if (processAccesses == null)
 		{
-			processAccesses = userRolePermissionsDAO.retrieveProcessPermissions(adRoleId, adClientId);
+			processAccesses = userRolePermissionsRepo.retrieveProcessPermissions(adRoleId, adClientId);
 		}
 		if (taskAccesses == null)
 		{
-			taskAccesses = userRolePermissionsDAO.retrieveTaskPermissions(adRoleId, adClientId);
+			taskAccesses = userRolePermissionsRepo.retrieveTaskPermissions(adRoleId, adClientId);
 		}
 		if (workflowAccesses == null)
 		{
-			workflowAccesses = userRolePermissionsDAO.retrieveWorkflowPermissions(adRoleId, adClientId);
+			workflowAccesses = userRolePermissionsRepo.retrieveWorkflowPermissions(adRoleId, adClientId);
 		}
 		if (formAccesses == null)
 		{
-			formAccesses = userRolePermissionsDAO.retrieveFormPermissions(adRoleId, adClientId);
+			formAccesses = userRolePermissionsRepo.retrieveFormPermissions(adRoleId, adClientId);
 		}
 
 		if (miscPermissions == null)
@@ -171,7 +197,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 			UserRolePermissionsInclude lastIncludedPermissionsRef = null;
 			for (final UserRolePermissionsInclude includedPermissionsRef : userRolePermissionsToInclude)
 			{
-				final IUserRolePermissionsBuilder includedPermissions = includedPermissionsRef.getUserRolePermissions().asNewBuilder();
+				final UserRolePermissionsBuilder includedPermissions = of(userRolePermissionsRepo, includedPermissionsRef.getUserRolePermissions());
 
 				CollisionPolicy collisionPolicy = CollisionPolicy.Merge;
 				//
@@ -232,7 +258,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return rolePermissions.build();
 	}
 
-	@Override
 	public UserRolePermissionsBuilder setRoleId(@NonNull final RoleId adRoleId)
 	{
 		_adRoleId = adRoleId;
@@ -245,13 +270,12 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		if (_role == null)
 		{
 			final RoleId adRoleId = getRoleId();
-			_role = Services.get(IRoleDAO.class).getById(adRoleId);
+			_role = rolesRepo.getById(adRoleId);
 			Check.assumeNotNull(_role, "AD_Role shall exist for {}", adRoleId);
 		}
 		return _role;
 	}
 
-	@Override
 	public final RoleId getRoleId()
 	{
 		Check.assumeNotNull(_adRoleId, "Role shall be set");
@@ -273,28 +297,24 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public UserRolePermissionsBuilder setUserId(final UserId adUserId)
 	{
 		_userId = adUserId;
 		return this;
 	}
 
-	@Override
 	public final UserId getUserId()
 	{
 		Check.assumeNotNull(_userId, "userId shall be set");
 		return _userId;
 	}
 
-	@Override
 	public UserRolePermissionsBuilder setClientId(final ClientId adClientId)
 	{
 		_adClientId = adClientId;
 		return this;
 	}
 
-	@Override
 	public final ClientId getClientId()
 	{
 		// Check if the AD_Client_ID was set and it was not set to something like "-1"
@@ -312,7 +332,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		if (_adClient == null)
 		{
 			final ClientId adClientId = getClientId();
-			_adClient = Services.get(IClientDAO.class).getById(adClientId);
+			_adClient = clientsRepo.getById(adClientId);
 		}
 		return _adClient;
 	}
@@ -322,19 +342,17 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		if (_adClientInfo == null)
 		{
 			final ClientId adClientId = getClientId();
-			_adClientInfo = Services.get(IClientDAO.class).retrieveClientInfo(Env.getCtx(), adClientId.getRepoId());
+			_adClientInfo = clientsRepo.retrieveClientInfo(Env.getCtx(), adClientId.getRepoId());
 		}
 		return _adClientInfo;
 	}
 
-	@Override
 	public UserRolePermissionsBuilder setUserLevel(final TableAccessLevel userLevel)
 	{
 		this.userLevel = userLevel;
 		return this;
 	}
 
-	@Override
 	public TableAccessLevel getUserLevel()
 	{
 		if (userLevel != null)
@@ -344,7 +362,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return getRole().getUserLevel();
 	}
 
-	@Override
 	public OrgPermissions getOrgPermissions()
 	{
 		return orgAccesses;
@@ -356,7 +373,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public TablePermissions getTablePermissions()
 	{
 		return tableAccesses;
@@ -368,7 +384,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public TableColumnPermissions getColumnPermissions()
 	{
 		return columnAccesses;
@@ -380,7 +395,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public TableRecordPermissions getRecordPermissions()
 	{
 		return recordAccesses;
@@ -392,7 +406,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public ElementPermissions getWindowPermissions()
 	{
 		return windowAccesses;
@@ -404,7 +417,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public ElementPermissions getProcessPermissions()
 	{
 		return processAccesses;
@@ -416,7 +428,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public ElementPermissions getTaskPermissions()
 	{
 		return taskAccesses;
@@ -428,7 +439,6 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public ElementPermissions getWorkflowPermissions()
 	{
 		return workflowAccesses;
@@ -440,13 +450,11 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return this;
 	}
 
-	@Override
 	public ElementPermissions getFormPermissions()
 	{
 		return formAccesses;
 	}
 
-	@Override
 	public UserRolePermissionsBuilder setFormPermissions(final ElementPermissions formAccesses)
 	{
 		this.formAccesses = formAccesses;
@@ -479,8 +487,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return constraints;
 	}
 
-	@Override
-	public IUserRolePermissionsBuilder includeUserRolePermissions(final IUserRolePermissions userRolePermissions, final int seqNo)
+	public UserRolePermissionsBuilder includeUserRolePermissions(final UserRolePermissions userRolePermissions, final int seqNo)
 	{
 		userRolePermissionsToInclude.add(UserRolePermissionsInclude.of(userRolePermissions, seqNo));
 		return this;

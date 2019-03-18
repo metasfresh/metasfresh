@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Role;
@@ -14,10 +13,6 @@ import org.compiere.model.I_AD_Role_OrgAccess;
 import com.google.common.base.Optional;
 
 import de.metas.security.impl.RolePermissionsNotFoundException;
-import de.metas.security.permissions.ElementPermissions;
-import de.metas.security.permissions.OrgPermissions;
-import de.metas.security.permissions.TableColumnPermissions;
-import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
@@ -98,26 +93,6 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	Optional<IUserRolePermissions> retrieveFirstUserRolesPermissionsForUserWithOrgAccess(ClientId clientId, OrgId orgId, UserId adUserId, LocalDate localDate);
 
 	boolean matchUserRolesPermissionsForUser(ClientId clientId, UserId adUserId, LocalDate date, Predicate<IUserRolePermissions> matcher);
-
-	OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId);
-
-	OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId);
-
-	ElementPermissions retrieveWorkflowPermissions(final RoleId adRoleId, final ClientId adClientId);
-
-	ElementPermissions retrieveFormPermissions(final RoleId adRoleId, final ClientId adClientId);
-
-	ElementPermissions retrieveTaskPermissions(final RoleId adRoleId, final ClientId adClientId);
-
-	ElementPermissions retrieveProcessPermissions(final RoleId adRoleId, final ClientId adClientId);
-
-	ElementPermissions retrieveWindowPermissions(final RoleId adRoleId, final ClientId adClientId);
-
-	TablePermissions retrieveTablePermissions(final RoleId adRoleId);
-
-	TableColumnPermissions retrieveTableColumnPermissions(final RoleId adRoleId);
-
-	TableRecordPermissions retrieveRecordPermissions(final RoleId adRoleId);
 
 	/**
 	 * Re-create Access Records for all automatic roles

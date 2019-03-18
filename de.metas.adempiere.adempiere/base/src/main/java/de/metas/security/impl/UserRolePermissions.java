@@ -66,8 +66,6 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsBuilder;
-import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -89,6 +87,8 @@ import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -103,6 +103,7 @@ class UserRolePermissions implements IUserRolePermissions
 	/** Permissions name (i.e. role name) */
 	private final String name;
 	private final RoleId roleId;
+	@Getter(AccessLevel.PACKAGE)
 	private final UserRolePermissionsIncludesList includes;
 	private final ImmutableSet<RoleId> addRoleIds;
 	/** User */
@@ -111,34 +112,45 @@ class UserRolePermissions implements IUserRolePermissions
 	private final TableAccessLevel userLevel;
 
 	/** Positive List of Organizational Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final OrgPermissions orgPermissions;
 
 	/** List of Table Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final TablePermissions tablePermissions;
 	/** List of Column Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final TableColumnPermissions columnPermissions;
 	/** List of Record Access (including dependent permissions) */
+	@Getter(AccessLevel.PACKAGE)
 	private final TableRecordPermissions recordPermissions;
 
 	/** Table Access Info */
 	private final TablesAccessInfo tablesAccessInfo = TablesAccessInfo.instance;
 
 	/** Window Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions windowPermissions;
 	/** Process Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions processPermissions;
 	/** Task Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions taskPermissions;
 	/** Workflow Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions workflowPermissions;
 	/** Form Access */
+	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions formPermissions;
 
+	@Getter(AccessLevel.PACKAGE)
 	private final GenericPermissions miscPermissions;
 
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
 	/** Permission constraints */
+	@Getter(AccessLevel.PACKAGE)
 	private final Constraints constraints;
 
 	private final UserMenuInfo menuInfo;
@@ -171,35 +183,6 @@ class UserRolePermissions implements IUserRolePermissions
 		constraints = builder.getConstraints();
 
 		menuInfo = builder.getMenuInfo();
-	}
-
-	@Override
-	public IUserRolePermissionsBuilder asNewBuilder()
-	{
-		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-
-		return new UserRolePermissionsBuilder(userRolePermissionsDAO.isAccountingModuleActive())
-				.setRoleId(getRoleId())
-				.setAlreadyIncludedRolePermissions(includes)
-				.setClientId(getClientId())
-				.setUserId(getUserId())
-				.setUserLevel(userLevel)
-				.setMenuInfo(getMenuInfo())
-				//
-				.setOrgPermissions(orgPermissions)
-				.setTablePermissions(tablePermissions)
-				.setColumnPermissions(columnPermissions)
-				.setRecordPermissions(recordPermissions)
-				.setWindowPermissions(windowPermissions)
-				.setProcessPermissions(processPermissions)
-				.setTaskPermissions(taskPermissions)
-				.setWorkflowPermissions(workflowPermissions)
-				.setFormPermissions(formPermissions)
-				.setMiscPermissions(miscPermissions)
-				//
-				.setConstraints(constraints)
-		//
-		;
 	}
 
 	@Override

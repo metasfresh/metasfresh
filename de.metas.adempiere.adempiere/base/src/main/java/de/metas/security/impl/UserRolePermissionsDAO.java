@@ -71,7 +71,6 @@ import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsBuilder;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
@@ -147,7 +146,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			.build();
 
 	/** Individual (not-aggregated) permissions per key */
-	private CCache<UserRolePermissionsKey, IUserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions> builder()
+	private CCache<UserRolePermissionsKey, UserRolePermissions> individialPermissionsByKey = CCache.<UserRolePermissionsKey, UserRolePermissions> builder()
 			.tableName(I_AD_Role.Table_Name)
 			.build();
 
@@ -330,29 +329,29 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		try
 		{
 			final IRolesTreeNode rootRole = Services.get(IRoleDAO.class).retrieveRolesTree(adRoleId, adUserId, date);
-			return rootRole.aggregateBottomUp(new IRolesTreeNode.BottomUpAggregator<IUserRolePermissions, IUserRolePermissionsBuilder>()
+			return rootRole.aggregateBottomUp(new IRolesTreeNode.BottomUpAggregator<UserRolePermissions, UserRolePermissionsBuilder>()
 			{
 				@Override
-				public IUserRolePermissionsBuilder initialValue(final IRolesTreeNode node)
+				public UserRolePermissionsBuilder initialValue(final IRolesTreeNode node)
 				{
-					return getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId)
-							.asNewBuilder();
+					final UserRolePermissions permissions = getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
+					return UserRolePermissionsBuilder.of(UserRolePermissionsDAO.this, permissions);
 				}
 
 				@Override
-				public void aggregateValue(final IUserRolePermissionsBuilder aggregatedValue, final IRolesTreeNode childNode, final IUserRolePermissions value)
+				public void aggregateValue(final UserRolePermissionsBuilder aggregatedValue, final IRolesTreeNode childNode, final UserRolePermissions value)
 				{
 					aggregatedValue.includeUserRolePermissions(value, childNode.getSeqNo());
 				}
 
 				@Override
-				public IUserRolePermissions finalValue(final IUserRolePermissionsBuilder aggregatedValue)
+				public UserRolePermissions finalValue(final UserRolePermissionsBuilder aggregatedValue)
 				{
 					return aggregatedValue.build();
 				}
 
 				@Override
-				public IUserRolePermissions leafValue(final IRolesTreeNode node)
+				public UserRolePermissions leafValue(final IRolesTreeNode node)
 				{
 					return getIndividialUserRolePermissions(node.getRoleId(), adUserId, adClientId);
 				}
@@ -367,17 +366,16 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 	}
 
-	final IUserRolePermissions getIndividialUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
+	final UserRolePermissions getIndividialUserRolePermissions(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId)
 	{
 		final UserRolePermissionsKey key = UserRolePermissionsKey.of(adRoleId, adUserId, adClientId, LocalDate.MIN);
-		return individialPermissionsByKey.getOrLoad(key, () -> new UserRolePermissionsBuilder(isAccountingModuleActive())
+		return individialPermissionsByKey.getOrLoad(key, () -> new UserRolePermissionsBuilder(this)
 				.setRoleId(adRoleId)
 				.setUserId(adUserId)
 				.setClientId(adClientId)
 				.build());
 	}
 
-	@Override
 	public OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId)
 	{
 		final AdTreeId adTreeOrgId = role.getOrgTreeId();
@@ -429,7 +427,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_User_OrgAccess.Table_Name + "#by#AD_User_ID")
 	public OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId)
 	{
@@ -490,7 +487,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Window_Access.Table_Name + "#Accesses")
 	public ElementPermissions retrieveWindowPermissions(final RoleId adRoleId, final ClientId adClientId)
 	{
@@ -500,7 +496,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Window_Access.COLUMNNAME_AD_Window_ID);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Process_Access.Table_Name + "#Accesses")
 	public ElementPermissions retrieveProcessPermissions(final RoleId adRoleId, final ClientId adClientId)
 	{
@@ -510,7 +505,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Process_Access.COLUMNNAME_AD_Process_ID);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Task_Access.Table_Name + "#Accesses")
 	public ElementPermissions retrieveTaskPermissions(final RoleId adRoleId, final ClientId adClientId)
 	{
@@ -520,7 +514,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Task_Access.COLUMNNAME_AD_Task_ID);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Form_Access.Table_Name + "#Accesses")
 	public ElementPermissions retrieveFormPermissions(final RoleId adRoleId, final ClientId adClientId)
 	{
@@ -530,7 +523,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Form_Access.COLUMNNAME_AD_Form_ID);
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Workflow_Access.Table_Name + "#Accesses")
 	public ElementPermissions retrieveWorkflowPermissions(final RoleId adRoleId, final ClientId adClientId)
 	{
@@ -577,7 +569,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return elementAccessesBuilder.build();
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Table_Access.Table_Name + "#Accesses")
 	public TablePermissions retrieveTablePermissions(final RoleId adRoleId)
 	{
@@ -674,7 +665,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}	// loadTableAccess
 
-	@Override
 	@Cached(cacheName = I_AD_Column_Access.Table_Name + "#Accesses")
 	public TableColumnPermissions retrieveTableColumnPermissions(final RoleId adRoleId)
 	{
@@ -736,7 +726,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}	// loadColumnAccess
 
-	@Override
 	@Cached(cacheName = I_AD_Record_Access.Table_Name + "#Accesses")
 	public TableRecordPermissions retrieveRecordPermissions(final RoleId adRoleId)
 	{
