@@ -142,8 +142,11 @@ docker run --rm\\
                 env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
 
       } // stage
+
+	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+	{
             stage('Invoke downstream jobs')
-                    {
+            {
                         final def misc = new de.metas.jenkins.Misc()
                         final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
                         build job: metasfreshJobName,
@@ -157,7 +160,12 @@ docker run --rm\\
                                         booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
                                 ],
                                 wait: true
-                    }
+            }
+	}
+	else
+	{
+		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
+	}
 		} // withMaven
 	} // configFileProvider
  } // node
