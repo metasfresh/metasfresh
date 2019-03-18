@@ -21,6 +21,8 @@ debug_port=${DEBUG_PORT:-8790}
 debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 
+java_max_heap=${JAVA_MAX_HEAP:-512M}
+
 echo_variable_values()
 {
  echo "Note: all these variables can be set using the -e parameter."
@@ -36,6 +38,7 @@ echo_variable_values()
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
+ echo "JAVA_MAX_HEAP=${java_max_heap}"
 }
 
 set_properties()
@@ -84,7 +87,7 @@ run_metasfresh()
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
 # MaxRAMFraction=1 doesn't any emory for anything else and might cause the OS to kill the java process
 # local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
-local MEMORY_PARAMS="-Xmx512M"
+local MEMORY_PARAMS="-Xmx${java_max_heap}"
 
  # note that we assume the spring-boot uber jar was exploded into the docker image
 
