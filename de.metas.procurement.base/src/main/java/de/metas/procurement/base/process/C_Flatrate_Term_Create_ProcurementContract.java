@@ -97,7 +97,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 
 		// TODO check out and cleanup those different methods
 		final int adWindowId = getProcessInfo().getAD_Window_ID();
-		if (adWindowId > 0 && !Ini.isClient())
+		if (adWindowId > 0 && !Ini.isSwingClient())
 		{
 			// this works for the webui
 			getResult().setRecordToOpen(TableRecordReference.of(term), adWindowId, OpenTarget.SingleDocument);

@@ -266,7 +266,7 @@ public final class EMail implements Serializable
 		//
 		// Send the email now
 		final Mailbox mailbox = getMailbox();
-		final boolean sendFromServer = mailbox.isSendFromServer() && Ini.isClient();
+		final boolean sendFromServer = mailbox.isSendFromServer() && Ini.isSwingClient();
 		if (sendFromServer)
 		{
 			final EMailSentStatus sentStatus = Services.get(IServerService.class).sendEMail(this);

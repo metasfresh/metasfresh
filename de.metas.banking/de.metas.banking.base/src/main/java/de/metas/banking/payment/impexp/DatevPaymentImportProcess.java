@@ -16,8 +16,8 @@ import org.compiere.model.X_C_DocType;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
-import de.metas.util.Services;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -64,17 +64,26 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 
 	@Override
 	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
-			@NonNull final I_I_Datev_Payment importRecord) throws Exception
+			@NonNull final I_I_Datev_Payment importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
-		return importDatevPayment(importRecord);
+		return importDatevPayment(importRecord, isInsertOnly);
 	}
 
-	private ImportRecordResult importDatevPayment(@NonNull final I_I_Datev_Payment importRecord)
+	private ImportRecordResult importDatevPayment(@NonNull final I_I_Datev_Payment importRecord, final boolean isInsertOnly)
 	{
 		final ImportRecordResult schemaImportResult;
 
+		final boolean paymentExists = importRecord.getC_Payment_ID() > 0;
+
+		if (paymentExists && isInsertOnly)
+		{
+			// do not update
+			return ImportRecordResult.Nothing;
+		}
+
 		final I_C_Payment payment;
-		if (importRecord.getC_Payment_ID() <= 0)
+		if (!paymentExists)
 		{
 			payment = createNewPayment(importRecord);
 			schemaImportResult = ImportRecordResult.Inserted;

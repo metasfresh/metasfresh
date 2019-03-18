@@ -47,6 +47,7 @@ public class OrgId implements RepoIdAware
 		return new OrgId(repoId);
 	}
 
+	/** @return {@link #ANY} if the given {@code repoId} is zero; {@code null} if it is less than zero. */
 	public static OrgId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == ANY.repoId)
@@ -63,6 +64,7 @@ public class OrgId implements RepoIdAware
 		}
 	}
 
+	/** @return {@link #ANY} even if the given {@code repoId} is less than zero. */
 	public static OrgId ofRepoIdOrAny(final int repoId)
 	{
 		if (repoId == ANY.repoId)

@@ -263,7 +263,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		// System.out.println(toString());
 
 		// metas: 02504: begin
-		if (!Ini.isClient() && hasInitErrors())
+		if (!Ini.isSwingClient() && hasInitErrors())
 		{
 			logModelInterceptorInitErrors();
 			if (isFailOnMissingModelInteceptors())
@@ -560,7 +560,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		// metas: 02504: begin: on login complete, log missingModelValidationMessage errors, but only in client mode.
 		// In server mode, those errors were already logged in init() method
 		final boolean hasInitErrors = hasInitErrors();
-		if (hasInitErrors && Ini.isClient())
+		if (hasInitErrors && Ini.isSwingClient())
 		{
 			logModelInterceptorInitErrors();
 		}

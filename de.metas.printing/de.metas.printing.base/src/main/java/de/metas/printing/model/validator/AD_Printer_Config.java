@@ -63,7 +63,7 @@ public class AD_Printer_Config
 		{
 			return; // 'printerConfig' does not belong the host which we run on
 		}
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			return; // task 08569: we only start the embedded client is we are inside the swing client (and *not* when running in the server)
 		}

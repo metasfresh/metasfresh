@@ -570,7 +570,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(IMutable<Object> state, I_I_GLJournal importRecord) throws Exception
+	protected ImportRecordResult importRecord(IMutable<Object> state,
+			I_I_GLJournal importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 
 		GLJournalImportContext context = (GLJournalImportContext)state.getValue();
@@ -578,6 +580,12 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 		{
 			context = new GLJournalImportContext();
 			state.setValue(context);
+		}
+
+		if(context.journal != null	&& !importRecord.isCreateNewJournal() && isInsertOnly)
+		{
+			// do not update
+			return ImportRecordResult.Nothing;
 		}
 
 		log.debug("I_GLJournal_ID=" + importRecord.getI_GLJournal_ID()

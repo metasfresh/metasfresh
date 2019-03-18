@@ -654,7 +654,7 @@ public class DataEngine
 			}
 			//	Access Restriction
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-			if (role.getRoleId().isSystem() && !Ini.isClient())
+			if (role.getRoleId().isSystem() && !Ini.isSwingClient())
 				;	//	System Access
 			else
 				finalSQL = new StringBuffer (role.addAccessSQL (finalSQL.toString (),

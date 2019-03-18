@@ -47,7 +47,7 @@ public class MockedArchiveEndpoint implements IArchiveEndpoint
 	public ArchiveGetDataResponse getArchiveData(final ArchiveGetDataRequest request)
 	{
 		final Properties ctx = Env.getCtx();
-		final boolean clientModeOld = Ini.isClient();
+		final boolean clientModeOld = Ini.isSwingClient();
 
 		// NOTE: here we just simulate what replication is doing
 
@@ -85,7 +85,7 @@ public class MockedArchiveEndpoint implements IArchiveEndpoint
 	public ArchiveSetDataResponse setArchiveData(final ArchiveSetDataRequest request)
 	{
 		final Properties ctx = Env.getCtx();
-		final boolean clientModeOld = Ini.isClient();
+		final boolean clientModeOld = Ini.isSwingClient();
 
 		// NOTE: here we just simulate what replication is doing
 

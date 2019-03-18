@@ -1,0 +1,3284 @@
+de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest=[ {
+  "requests" : [ {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0010",
+      "name" : "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0020",
+      "name" : "+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0030",
+      "name" : "+ Konsultation, letzte 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 7.90,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "24.2680",
+      "name" : "Arthroplastik Handgelenk mittels Revaskularisation eines Karpalknochens",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 2527.12,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "35.0010",
+      "name" : "Technische Grundleistung Praxis-OP anerkannt",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 95.93,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "35.0020",
+      "name" : "(-) %-Reduktion der TL, wenn Praxis-OP statt OP I",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : -306.99,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0010",
+      "name" : "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0020",
+      "name" : "+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0030",
+      "name" : "+ Konsultation, letzte 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 7.90,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0010",
+      "name" : "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0020",
+      "name" : "+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0030",
+      "name" : "+ Konsultation, letzte 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 7.90,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "1020.00",
+      "name" : "Alanin-Aminotransferase (ALAT)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 2.50,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "3094.00",
+      "name" : "HIV-1- und HIV-2-Antikörper und HIV-1-p24-Antigen, ql, Screening",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 20.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4707.00",
+      "name" : "Präsenztaxe für das ärztliche Praxislaboratorium, pro Patient mit Konsultation inkl. Laboranalysen und pro Tag",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 4.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4707.10",
+      "name" : "Zuschlag für jede Analyse, die das Suffix C aufweist",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 2.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4707.20",
+      "name" : "Zuschlag für jede Analyse, die kein Suffix C aufweist",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 1.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4708.00",
+      "name" : "Übergangszuschlag, pro Analyse",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 2,
+    "packingMaterialId" : 0,
+    "price" : 1.10,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "2734976",
+      "name" : "Aspégic Forte 20 Sach. 1000 mg",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 8.70,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "7680573380018",
+      "name" : "Co Amoxi Mepha, Disp Tabl 625 mg, 10 Stk",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 29.50,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "7320",
+      "name" : "Sitzungspauschale für Elektro- und Thermotherapie / Instruktion bei Gerätevermietung",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 10.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  } ]
+} ]
+
+
+de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest2=[ {
+  "requests" : [ {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0010",
+      "name" : "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0020",
+      "name" : "+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0030",
+      "name" : "+ Konsultation, letzte 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 7.90,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "24.2680",
+      "name" : "Arthroplastik Handgelenk mittels Revaskularisation eines Karpalknochens",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 2527.12,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "35.0010",
+      "name" : "Technische Grundleistung Praxis-OP anerkannt",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 95.93,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "35.0020",
+      "name" : "(-) %-Reduktion der TL, wenn Praxis-OP statt OP I",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : -306.99,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0010",
+      "name" : "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0020",
+      "name" : "+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0030",
+      "name" : "+ Konsultation, letzte 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 7.90,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0010",
+      "name" : "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0020",
+      "name" : "+ Konsultation, jede weiteren 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 15.81,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "00.0030",
+      "name" : "+ Konsultation, letzte 5 Min. (Konsultationszuschlag)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 7.90,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "1020.00",
+      "name" : "Alanin-Aminotransferase (ALAT)",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 2.50,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "3094.00",
+      "name" : "HIV-1- und HIV-2-Antikörper und HIV-1-p24-Antigen, ql, Screening",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 20.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4707.00",
+      "name" : "Präsenztaxe für das ärztliche Praxislaboratorium, pro Patient mit Konsultation inkl. Laboranalysen und pro Tag",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 4.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4707.10",
+      "name" : "Zuschlag für jede Analyse, die das Suffix C aufweist",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 2.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4707.20",
+      "name" : "Zuschlag für jede Analyse, die kein Suffix C aufweist",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 1.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "4708.00",
+      "name" : "Übergangszuschlag, pro Analyse",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 2,
+    "packingMaterialId" : 0,
+    "price" : 1.10,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "2734976",
+      "name" : "Aspégic Forte 20 Sach. 1000 mg",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 8.70,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "7680573380018",
+      "name" : "Co Amoxi Mepha, Disp Tabl 625 mg, 10 Stk",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 29.50,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  }, {
+    "org" : {
+      "code" : "EAN-2011234567890",
+      "name" : "Biller AG",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      },
+      "bpartner" : {
+        "bpartner" : {
+          "externalId" : "EAN-2011234567890",
+          "name" : "Biller AG",
+          "companyName" : "Biller AG"
+        },
+        "location" : {
+          "externalId" : "EAN-2011234567890_singleAddress",
+          "address1" : "Billerweg 128",
+          "postal" : null,
+          "city" : "Frenkendorf",
+          "countryCode" : "CH",
+          "gln" : "2011234567890"
+        },
+        "contact" : {
+          "externalId" : "EAN-2011234567890_singlePerson",
+          "name" : "Biller AG",
+          "email" : "info@biller.ch"
+        },
+        "syncAdvise" : {
+          "ifNotExists" : "FAIL",
+          "ifExists" : "DONT_UPDATE"
+        }
+      }
+    },
+    "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+    "externalHeaderId" : "2011234567890_2009_01:001",
+    "dataSourceInternalName" : "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController",
+    "dataDestInternalName" : "DEST.de.metas.invoicecandidate",
+    "bpartner" : {
+      "bpartner" : {
+        "externalId" : "EAN-7634567890000",
+        "name" : "Krankenkasse AG"
+      },
+      "location" : {
+        "externalId" : "EAN-7634567890000_singleAddress",
+        "address1" : "Kassengraben 222",
+        "postal" : null,
+        "city" : "Basel",
+        "countryCode" : "CH",
+        "gln" : "7634567890000"
+      },
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "dateRequired" : "2013-03-20",
+    "flatrateConditionsId" : 0,
+    "product" : {
+      "code" : "7320",
+      "name" : "Sitzungspauschale für Elektro- und Thermotherapie / Instruktion bei Gerätevermietung",
+      "type" : "SERVICE",
+      "uomCode" : "MJ",
+      "syncAdvise" : {
+        "ifNotExists" : "FAIL",
+        "ifExists" : "DONT_UPDATE"
+      }
+    },
+    "qty" : 1,
+    "packingMaterialId" : 0,
+    "price" : 10.0,
+    "currencyCode" : "CHF",
+    "discount" : 0,
+    "poReference" : "2009_01:001",
+    "dateInvoiced" : "2013-03-20",
+    "invoiceDocType" : {
+      "docBaseType" : "ARI",
+      "docSubType" : "KV"
+    }
+  } ]
+} ]
