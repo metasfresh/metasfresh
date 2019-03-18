@@ -55,10 +55,13 @@
         top: 0;
         right: 0;
         z-index: 100;
+        border-radius: 2px;
 
         .btn {
             padding: .25rem .25rem;
             line-height: 1rem;
+            border-radius: 2px;
+            background: white;
         }
 
         .icon {
@@ -107,15 +110,35 @@
     flex-grow: 1;
     flex-direction: column;
     display: flex;
-    overflow: scroll;
+    overflow: none;
+    position: relative;
+
+    .btn-fullscreen {
+        position: absolute;
+        top: 0px;
+        right: 20px;
+        background: white;
+    }
+
+    .section {
+        background: $brand-bright-color;
+        border: 1px solid $brand-border-color;
+    }
 
     .separator {
-        padding-bottom: 20px;
+        background-color: $brand-color-secondary;
+        padding-bottom: 5px;
+        padding-top: 5px;
         margin-top: 0;
+
+        .separator-title {
+            color: white;
+        }
     }
 
     .panel {
         padding-bottom: 0 !important;
+        background: transparent;
     }
 
     .table {
@@ -138,6 +161,24 @@
             &.field-LongText {
                 .col-sm-9 {
                     max-width: 75%;
+                }
+
+                .input-block {
+                    padding: 0;
+                }
+
+                textarea {
+                    padding: 5px;
+                }
+            }
+
+            &.field-Number, &.field-Text {
+                .input-block {
+                    padding: 0;
+                }
+
+                input {
+                    padding: 3px;
                 }
             }
 
