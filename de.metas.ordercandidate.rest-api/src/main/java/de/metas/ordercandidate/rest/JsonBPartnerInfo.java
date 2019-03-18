@@ -4,10 +4,13 @@ import static de.metas.util.Check.isEmpty;
 import static org.compiere.util.Util.coalesce;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -37,6 +40,8 @@ public final class JsonBPartnerInfo
 {
 	JsonBPartner bpartner;
 	JsonBPartnerLocation location;
+
+	@JsonInclude(Include.NON_NULL)
 	JsonBPartnerContact contact;
 
 	SyncAdvise syncAdvise;
@@ -44,7 +49,7 @@ public final class JsonBPartnerInfo
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerInfo(
-			@JsonProperty("bpartner") final JsonBPartner bpartner,
+			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
 			@JsonProperty("location") final JsonBPartnerLocation location,
 			@JsonProperty("contact") final JsonBPartnerContact contact,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)

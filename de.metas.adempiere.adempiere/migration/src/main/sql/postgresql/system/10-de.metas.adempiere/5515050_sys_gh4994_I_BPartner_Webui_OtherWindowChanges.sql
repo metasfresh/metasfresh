@@ -1,0 +1,11 @@
+-- 2019-03-05T17:57:22.807
+-- #298 changing anz. stellen
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541262, SeqNo=460,Updated=TO_TIMESTAMP('2019-03-05 17:57:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=556946
+;
+
+-- 2019-03-05T17:57:32.117
+-- #298 changing anz. stellen
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541262, SeqNo=470,Updated=TO_TIMESTAMP('2019-03-05 17:57:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=556947
+;
+
+

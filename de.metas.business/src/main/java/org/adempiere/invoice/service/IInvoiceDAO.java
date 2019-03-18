@@ -45,7 +45,6 @@ import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
 {
-
 	/**
 	 *
 	 * @param invoice

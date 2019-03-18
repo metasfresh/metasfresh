@@ -122,9 +122,9 @@ public class XmlToOLCandsService
 
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(
 				xmlInvoice,
+				createOLCandsRequest.getOrgSyncAdvise(),
 				createOLCandsRequest.getBPartnerSyncAdvise(),
-				createOLCandsRequest.getProductSyncAdvise()
-				);
+				createOLCandsRequest.getProductSyncAdvise());
 
 		final ResponseEntity<JsonOLCandCreateBulkResponse> orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
 
@@ -141,6 +141,8 @@ public class XmlToOLCandsService
 	public static class CreateOLCandsRequest
 	{
 		MultipartFile xmlInvoiceFile;
+
+		SyncAdvise orgSyncAdvise;
 		SyncAdvise bPartnerSyncAdvise;
 		SyncAdvise productSyncAdvise;
 	}
@@ -211,6 +213,7 @@ public class XmlToOLCandsService
 	@VisibleForTesting
 	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
+			@NonNull final SyncAdvise orgSyncAdvise,
 			@NonNull final SyncAdvise bPartnersSyncAdvise,
 			@NonNull final SyncAdvise productsSyncAdvise)
 	{
@@ -226,6 +229,7 @@ public class XmlToOLCandsService
 		final ImmutableList<JsonOLCandCreateRequest> requests = requestBuilders
 				.stream()
 				.map(JsonOLCandCreateRequestBuilder::build)
+				.map(r -> r.withOrgSyncAdvise(orgSyncAdvise))
 				.map(r -> r.withBPartnersSyncAdvise(bPartnersSyncAdvise))
 				.map(r -> r.withProductsSyncAdvise(productsSyncAdvise))
 				.collect(ImmutableList.toImmutableList());
@@ -641,7 +645,7 @@ public class XmlToOLCandsService
 					.price(price)
 					.currencyCode(CURRENCY_CODE)
 					// the UOM shall be taken from the product-masterdata, because we don't really know it from the XML file
-					//.uomCode(UOM_CODE)
+					// .uomCode(UOM_CODE)
 					.discount(ZERO)
 					.qty(quantity);
 

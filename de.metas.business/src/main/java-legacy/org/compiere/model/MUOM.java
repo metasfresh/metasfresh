@@ -53,7 +53,7 @@ public class MUOM extends X_C_UOM
 	 */
 	public static int getMinute_UOM_ID(Properties ctx)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final Iterator<MUOM> it = s_cache.values().iterator();
 			while (it.hasNext())

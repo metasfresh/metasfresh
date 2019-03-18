@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -48,7 +47,6 @@ import de.metas.quantity.Quantity;
 public class HUReservationRepositoryTests
 {
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
-	private static final BigDecimal THIRTEEN = new BigDecimal("13");
 
 	private I_C_UOM uomRecord;
 	private HUReservationRepository huReservationRepository;
@@ -73,23 +71,21 @@ public class HUReservationRepositoryTests
 		final I_M_HU vhu2 = createHuReservationRecord(orderLineId, ONE);
 
 		// invoke the method under test
-		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId).get();
 
 		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
 
-		final Quantity reservedQtySum = huReservation.getReservedQtySum().get();
+		final Quantity reservedQtySum = huReservation.getReservedQtySum();
 		assertThat(reservedQtySum.getAsBigDecimal()).isEqualByComparingTo(ELEVEN);
 		assertThat(reservedQtySum.getUOMId()).isEqualTo(uomRecord.getC_UOM_ID());
 
-		final Map<HuId, Quantity> vhuId2reservedQtys = huReservation.getVhuId2reservedQtys();
-
 		final HuId expectedVhu1Id = HuId.ofRepoId(vhu1.getM_HU_ID());
-		assertThat(vhuId2reservedQtys).containsKey(expectedVhu1Id);
-		assertThat(vhuId2reservedQtys.get(expectedVhu1Id).getAsBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(huReservation.getVhuIds()).contains(expectedVhu1Id);
+		assertThat(huReservation.getReservedQtyByVhuId(expectedVhu1Id).getAsBigDecimal()).isEqualByComparingTo(TEN);
 
 		final HuId expectedVhu2Id = HuId.ofRepoId(vhu2.getM_HU_ID());
-		assertThat(vhuId2reservedQtys).containsKey(expectedVhu2Id);
-		assertThat(vhuId2reservedQtys.get(expectedVhu2Id).getAsBigDecimal()).isEqualByComparingTo(ONE);
+		assertThat(huReservation.getVhuIds()).contains(expectedVhu2Id);
+		assertThat(huReservation.getReservedQtyByVhuId(expectedVhu2Id).getAsBigDecimal()).isEqualByComparingTo(ONE);
 	}
 
 	@Test
@@ -98,12 +94,8 @@ public class HUReservationRepositoryTests
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(20);
 
 		// invoke the method under test
-		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
-
-		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
-
-		assertThat(huReservation.getReservedQtySum()).isNotPresent();
-		assertThat(huReservation.getVhuId2reservedQtys()).isEmpty();
+		final Optional<HUReservation> huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		assertThat(huReservation).isNotPresent();
 	}
 
 	private I_M_HU createHuReservationRecord(final OrderLineId orderLineId, BigDecimal qtyReserved)
@@ -114,7 +106,7 @@ public class HUReservationRepositoryTests
 		final I_M_HU_Reservation huReservationRecord = newInstance(I_M_HU_Reservation.class);
 		huReservationRecord.setC_OrderLineSO_ID(orderLineId.getRepoId());
 		huReservationRecord.setC_UOM(uomRecord);
-		huReservationRecord.setVHU(vhu1);
+		huReservationRecord.setVHU_ID(vhu1.getM_HU_ID());
 		huReservationRecord.setQtyReserved(qtyReserved);
 		saveRecord(huReservationRecord);
 		return vhu1;
@@ -125,9 +117,8 @@ public class HUReservationRepositoryTests
 	{
 		final HUReservation huReservation = HUReservation.builder()
 				.salesOrderLineId(OrderLineId.ofRepoId(20))
-				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
-				.vhuId2reservedQty(HuId.ofRepoId(11), Quantity.of(ONE, uomRecord))
-				.reservedQtySum(Optional.of(Quantity.of(ELEVEN, uomRecord)))
+				.reservedQtyByVhuId(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
+				.reservedQtyByVhuId(HuId.ofRepoId(11), Quantity.of(ONE, uomRecord))
 				.build();
 
 		huReservationRepository.save(huReservation);
@@ -136,9 +127,8 @@ public class HUReservationRepositoryTests
 		assertThat(reservationRecords).allMatch(r -> r.getC_OrderLineSO_ID() == 20);
 
 		final HUReservation huReservation2 = huReservation.toBuilder()
-				.vhuId2reservedQty(HuId.ofRepoId(10), Quantity.of(TEN.add(ONE), uomRecord))
-				.vhuId2reservedQty(HuId.ofRepoId(11), Quantity.of(ONE.add(ONE), uomRecord))
-				.reservedQtySum(Optional.of(Quantity.of(THIRTEEN, uomRecord)))
+				.reservedQtyByVhuId(HuId.ofRepoId(10), Quantity.of(TEN.add(ONE), uomRecord))
+				.reservedQtyByVhuId(HuId.ofRepoId(11), Quantity.of(ONE.add(ONE), uomRecord))
 				.build();
 
 		huReservationRepository.save(huReservation2);

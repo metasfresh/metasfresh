@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.rest;
 
+import static org.compiere.util.Util.coalesce;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -36,15 +38,19 @@ public class JsonOrganization
 
 	JsonBPartnerInfo bpartner;
 
+	SyncAdvise syncAdvise;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOrganization(
 			@JsonProperty("code") final String code,
 			@JsonProperty("name") final String name,
+			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise,
 			@JsonProperty("bpartner") final JsonBPartnerInfo bpartner)
 	{
 		this.code = code;
 		this.name = name;
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 		this.bpartner = bpartner;
 	}
 

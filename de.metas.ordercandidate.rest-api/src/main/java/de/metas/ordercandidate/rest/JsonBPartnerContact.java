@@ -1,6 +1,8 @@
 package de.metas.ordercandidate.rest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -33,8 +35,13 @@ public class JsonBPartnerContact
 {
 	String externalId;
 
+	@JsonInclude(Include.NON_NULL)
 	String name;
+
+	@JsonInclude(Include.NON_NULL)
 	String email;
+
+	@JsonInclude(Include.NON_NULL)
 	String phone;
 
 	@Builder

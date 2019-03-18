@@ -66,7 +66,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		// after that (if there is any change).
 		Services.get(IModelAttributeSetInstanceListenerService.class).registerListener(new OLCandPricingASIListener());
 
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			ensureDataDestExists();
 		}

@@ -89,7 +89,7 @@ public class MImage extends X_AD_Image
 			return retValue;
 		}
 		retValue = new MImage(ctx, AD_Image_ID, null);
-		if (retValue.getAD_Image_ID() > 0 && Ini.isClient())
+		if (retValue.getAD_Image_ID() > 0 && Ini.isSwingClient())
 		{
 			s_cache.put(AD_Image_ID, retValue);
 		}

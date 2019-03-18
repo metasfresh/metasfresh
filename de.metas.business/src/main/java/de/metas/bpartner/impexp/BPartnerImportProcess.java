@@ -79,7 +79,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	protected void updateAndValidateImportRecords()
 	{
 		final String whereClause = getWhereClause();
-		BPartnerImportTableSqlUpdater.updateBPartnerImtortTable(whereClause);
+		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
 	}
 
 	private static final class BPartnerImportContext
@@ -107,7 +107,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		public String getPreviousBPValue()
 		{
-			return previousImportRecord == null ? null : previousImportRecord.getValue();
+			return previousImportRecord == null ? null : previousImportRecord.getBPValue();
 		}
 
 		public List<I_I_BPartner> getPreviousImportRecordsForSameBP()
@@ -127,7 +127,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord)
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BPartner importRecord, final boolean isInsertOnly)
 	{
 		//
 		// Get previous values
@@ -146,12 +146,12 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
-		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getValue(), previousBPValue);
+		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getBPValue(), previousBPValue);
 		if (firstImportRecordOrNewBPartner)
 		{
 			// create a new list because we are passing to a new partner
 			context.clearPreviousRecordsForSameBP();
-			bpartnerImportResult = importOrUpdateBPartner(importRecord);
+			bpartnerImportResult = importOrUpdateBPartner(importRecord, isInsertOnly);
 		}
 
 		// Same BPValue like previous line
@@ -159,7 +159,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			if (previousBPartnerId <= 0)
 			{
-				bpartnerImportResult = importOrUpdateBPartner(importRecord);
+				bpartnerImportResult = importOrUpdateBPartner(importRecord, isInsertOnly);
 			}
 			else if (importRecord.getC_BPartner_ID() <= 0 || importRecord.getC_BPartner_ID() == previousBPartnerId)
 			{
@@ -185,12 +185,22 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		return bpartnerImportResult;
 	}
 
-	private ImportRecordResult importOrUpdateBPartner(final I_I_BPartner importRecord)
+	private ImportRecordResult importOrUpdateBPartner(final I_I_BPartner importRecord, final boolean isInsertOnly)
 	{
 		final ImportRecordResult bpartnerImportResult;
 		// We don't have a previous C_BPartner_ID
 		// => create or update existing BPartner from this line
-		bpartnerImportResult = importRecord.getC_BPartner_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+
+		final boolean bpartnerExists = importRecord.getC_BPartner_ID() > 0;
+
+		if (isInsertOnly && bpartnerExists)
+		{
+			// #4994 do not update existing entries
+			return ImportRecordResult.Nothing;
+		}
+
+		bpartnerImportResult = bpartnerExists ? ImportRecordResult.Updated : ImportRecordResult.Inserted;
+
 		bpartnerImporter.importRecord(importRecord);
 		return bpartnerImportResult;
 	}
@@ -275,7 +285,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				.build();
 
 		BPPrintFormat bpPrintFormat = repo.getByQuery(bpPrintFormatQuery);
-		if (bpPrintFormat == null )
+		if (bpPrintFormat == null)
 		{
 			bpPrintFormat = BPPrintFormat.builder()
 					.adTableId(adTableId)
@@ -290,7 +300,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		importRecord.setC_BP_PrintFormat_ID(bpPrintFormat.getBpPrintFormatId());
 	}
-
 
 	@Override
 	public Class<I_I_BPartner> getImportModelClass()
@@ -308,7 +317,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	protected String getImportOrderBySql()
 	{
 		// gody: 20070113 - Order so the same values are consecutive.
-		return I_I_BPartner.COLUMNNAME_Value
+		return I_I_BPartner.COLUMNNAME_BPValue
 				+ ", " + I_I_BPartner.COLUMNNAME_I_BPartner_ID;
 	}
 
