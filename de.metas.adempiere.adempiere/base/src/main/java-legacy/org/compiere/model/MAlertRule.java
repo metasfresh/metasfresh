@@ -29,6 +29,7 @@ import org.compiere.util.Env;
 
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 
@@ -124,7 +125,7 @@ public class MAlertRule extends X_AD_AlertRule
 				if (roleId != null)
 				{
 					final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
-					finalSQL = role.addAccessSQL(finalSQL, null, true, false);
+					finalSQL = role.addAccessSQL(finalSQL, null, true, Access.READ);
 				}
 			}
 		}

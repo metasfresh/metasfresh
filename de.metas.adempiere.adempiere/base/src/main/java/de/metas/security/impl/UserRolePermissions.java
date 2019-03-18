@@ -328,7 +328,7 @@ class UserRolePermissions implements IUserRolePermissions
 		// System role:
 		getRoleId().isSystem()
 				// and Shall have at access to system organization:
-				&& isOrgAccess(OrgId.ANY, true);
+				&& isOrgAccess(OrgId.ANY, Access.WRITE);
 	}
 
 	/**************************************************************************
@@ -338,18 +338,18 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return "AD_Client_ID=0" or "AD_Client_ID IN(0,1)"
 	 */
 	@Override
-	public String getClientWhere(final String tableName, final String tableAlias, final boolean rw)
+	public String getClientWhere(final String tableName, final String tableAlias, final Access access)
 	{
 		// All Orgs - use Role's AD_Client_ID
 		if (isAccessAllOrgs())
 		{
 			final Set<ClientId> adClientIds = ImmutableSet.of(getClientId());
-			return OrgPermissions.buildClientWhere(tableName, tableAlias, rw, adClientIds);
+			return OrgPermissions.buildClientWhere(tableName, tableAlias, access, adClientIds);
 		}
 		// Get Client from Org List
 		else
 		{
-			return orgPermissions.getClientWhere(tableName, tableAlias, rw);
+			return orgPermissions.getClientWhere(tableName, tableAlias, access);
 		}
 	}
 
@@ -360,9 +360,9 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param rw read write access
 	 * @return true if access
 	 */
-	private boolean isClientAccess(@NonNull final ClientId clientId, final boolean rw)
+	private boolean isClientAccess(@NonNull final ClientId clientId, @NonNull final Access access)
 	{
-		if (clientId.isSystem() && !rw)
+		if (clientId.isSystem() && access.isReadOnly())
 		{
 			return true;
 		}
@@ -376,7 +376,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		//
-		return orgPermissions.isClientAccess(clientId, rw);
+		return orgPermissions.isClientAccess(clientId, access);
 	}
 
 	@Override
@@ -385,16 +385,16 @@ class UserRolePermissions implements IUserRolePermissions
 		return menuInfo;
 	}
 
-	private Set<OrgId> getOrgAccess(final String tableName, final boolean rw)
+	private Set<OrgId> getOrgAccess(final String tableName, final Access access)
 	{
 		if (isAccessAllOrgs())
 		{
 			return ORGACCESS_ALL;
 		}
 
-		final Set<OrgId> adOrgIds = orgPermissions.getOrgAccess(rw);
+		final Set<OrgId> adOrgIds = orgPermissions.getOrgAccess(access);
 
-		Services.get(ISecurityRuleEngine.class).filterOrgs(this, tableName, rw, adOrgIds);
+		Services.get(ISecurityRuleEngine.class).filterOrgs(this, tableName, access, adOrgIds);
 
 		return adOrgIds;
 	}
@@ -422,15 +422,15 @@ class UserRolePermissions implements IUserRolePermissions
 
 	@Deprecated
 	@Override
-	public String getOrgWhere(final boolean rw)
+	public String getOrgWhere(final Access access)
 	{
-		return getOrgWhere(null, rw);
+		return getOrgWhere(null, access);
 	}
 
 	@Override
-	public String getOrgWhere(final String tableName, final boolean rw)
+	public String getOrgWhere(final String tableName, final Access access)
 	{
-		final Set<OrgId> adOrgIds = getOrgAccess(tableName, rw);
+		final Set<OrgId> adOrgIds = getOrgAccess(tableName, access);
 		if (adOrgIds == ORGACCESS_ALL)
 		{
 			return "1=1"; // no org filter
@@ -477,15 +477,15 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return true if access
 	 */
 	@Override
-	public boolean isOrgAccess(@NonNull final OrgId orgId, final boolean rw)
+	public boolean isOrgAccess(@NonNull final OrgId orgId, final Access access)
 	{
 		// Readonly access to "*" organization is always granted
-		if (orgId.isAny() && !rw)
+		if (orgId.isAny() && access.isReadOnly())
 		{
 			return true;
 		}
 
-		final Set<OrgId> orgs = getOrgAccess(null, rw); // tableName=n/a
+		final Set<OrgId> orgs = getOrgAccess(null, access); // tableName=n/a
 		if (orgs == ORGACCESS_ALL)
 		{
 			return true;
@@ -519,7 +519,7 @@ class UserRolePermissions implements IUserRolePermissions
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, true))
+		if (!isTableAccess(AD_Table_ID, Access.READ))
 		{
 			return false;
 		}
@@ -541,7 +541,7 @@ class UserRolePermissions implements IUserRolePermissions
 			logger.warn("Role denied");
 			return false;
 		}
-		if (!isTableAccess(AD_Table_ID, true))    // ro=true
+		if (!isTableAccess(AD_Table_ID, Access.READ))
 		{
 			return false;
 		}
@@ -561,9 +561,9 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return has RO/RW access to table
 	 */
 	@Override
-	public boolean isTableAccess(final int AD_Table_ID, final boolean ro)
+	public boolean isTableAccess(final int AD_Table_ID, @NonNull final Access access)
 	{
-		if (!ro)
+		if (Access.WRITE.equals(access))
 		{
 			final TableAccessLevel roleAccessLevel = tablesAccessInfo.getTableAccessLevel(AD_Table_ID);
 			if (roleAccessLevel == null)
@@ -580,7 +580,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		//
-		return tablePermissions.isTableAccess(AD_Table_ID, ro);
+		return tablePermissions.hasAccess(AD_Table_ID, access);
 	}
 
 	/**
@@ -592,14 +592,14 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return true if access
 	 */
 	@Override
-	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final boolean ro)
+	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final Access access)
 	{
-		if (!isTableAccess(AD_Table_ID, ro))
+		if (!isTableAccess(AD_Table_ID, access))
 		{
 			return false;
 		}
 
-		return columnPermissions.isColumnAccess(AD_Table_ID, AD_Column_ID, ro);
+		return columnPermissions.isColumnAccess(AD_Table_ID, AD_Column_ID, access);
 	}
 
 	/**
@@ -610,11 +610,11 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param ro read only
 	 * @return boolean
 	 */
-	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final boolean ro)
+	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final Access access)
 	{
-		// if (!isTableAccess(AD_Table_ID, ro)) // No Access to Table
+		// if (!isTableAccess(AD_Table_ID, access)) // No Access to Table
 		// return false;
-		return recordPermissions.isRecordAccess(AD_Table_ID, Record_ID, ro);
+		return recordPermissions.isRecordAccess(AD_Table_ID, Record_ID, access);
 	}
 
 	/**
@@ -742,7 +742,7 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public String addAccessSQL(final String sql, final String TableNameIn, final boolean fullyQualified, final boolean rw)
+	public String addAccessSQL(final String sql, final String TableNameIn, final boolean fullyQualified, final Access access)
 	{
 		// Cut off last ORDER BY clause
 
@@ -762,7 +762,7 @@ class UserRolePermissions implements IUserRolePermissions
 			sqlOrderByAndOthers = null;
 		}
 
-		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, TableNameIn, fullyQualified, rw);
+		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, TableNameIn, fullyQualified, access);
 		if (Check.isEmpty(sqlAccessSqlWhereClause, true))
 		{
 			logger.trace("Final SQL (no access sql applied): {}", sql);
@@ -783,7 +783,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return sqlFinal;
 	}	// addAccessSQL
 
-	private final String buildAccessSQL(final String sqlSelectFromWhere, final String TableNameIn, final boolean fullyQualified, final boolean rw)
+	private final String buildAccessSQL(final String sqlSelectFromWhere, final String TableNameIn, final boolean fullyQualified, final Access access)
 	{
 		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
 
@@ -829,7 +829,7 @@ class UserRolePermissions implements IUserRolePermissions
 			// Client Access
 			final String tableAlias = fullyQualified ? tableName : null;
 			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
-			sqlAcessSqlWhereClause.append(getClientWhere(tableName, tableAlias, rw));
+			sqlAcessSqlWhereClause.append(getClientWhere(tableName, tableAlias, access));
 
 			// Org Access
 			if (!isAccessAllOrgs())
@@ -840,7 +840,7 @@ class UserRolePermissions implements IUserRolePermissions
 				{
 					sqlAcessSqlWhereClause.append(tableName).append(".");
 				}
-				sqlAcessSqlWhereClause.append(getOrgWhere(tableName, rw));
+				sqlAcessSqlWhereClause.append(getOrgWhere(tableName, access));
 			}
 		}
 		else
@@ -865,7 +865,7 @@ class UserRolePermissions implements IUserRolePermissions
 
 			final int AD_Table_ID = tablesAccessInfo.getAD_Table_ID(TableName);
 			// Data Table Access
-			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, !rw))
+			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, access))
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
 				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, sqlAcessSqlWhereClause);
@@ -894,7 +894,7 @@ class UserRolePermissions implements IUserRolePermissions
 			keyColumnNameFQ += keyColumnName;
 
 			// log.debug("addAccessSQL - " + TableName + "(" + AD_Table_ID + ") " + keyColumnName);
-			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, rw);
+			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, access);
 			if (recordWhere.length() > 0)
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-record */ AND ").append(recordWhere);
@@ -903,7 +903,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}   	// for all table info
 
 		// Dependent Records (only for main SQL)
-		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, asp, tableName, rw);
+		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, asp, tableName, access);
 
 		return sqlAcessSqlWhereClause.toString();
 	}
@@ -945,31 +945,27 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean canView(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
 	{
-		final boolean accessReadWrite = false;
-		final String errmsg = checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, accessReadWrite);
+		final String errmsg = checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.READ);
 		return errmsg == null;
 	}
 
 	@Override
 	public String checkCanView(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
 	{
-		final boolean accessReadWrite = false;
-		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, accessReadWrite);
+		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.READ);
 	}
 
 	@Override
 	public String checkCanCreateNewRecord(final ClientId clientId, final OrgId orgId, final int AD_Table_ID)
 	{
-		final boolean accessReadWrite = true;
 		final int Record_ID = -1;
-		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, accessReadWrite);
+		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.WRITE);
 	}
 
 	@Override
 	public String checkCanUpdate(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
 	{
-		final boolean accessReadWrite = true;
-		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, accessReadWrite);
+		return checkCanAccessRecord(clientId, orgId, AD_Table_ID, Record_ID, Access.WRITE);
 	}
 
 	@Override
@@ -997,7 +993,7 @@ class UserRolePermissions implements IUserRolePermissions
 			@NonNull final OrgId orgId,
 			final int AD_Table_ID,
 			final int Record_ID,
-			final boolean accessReadWrite)
+			@NonNull final Access access)
 	{
 		final TableAccessLevel userLevel = getUserLevel();
 
@@ -1011,7 +1007,7 @@ class UserRolePermissions implements IUserRolePermissions
 		final List<String> missingAccesses = new ArrayList<>();
 
 		// Check user level vs required level (based on AD_Client_ID/AD_Org_ID)
-		if (accessReadWrite)
+		if (access.isReadWrite())
 		{
 			final TableAccessLevel requiredLevel = TableAccessLevel.forClientOrg(clientId, orgId);
 			if (!requiredLevel.canBeAccessedBy(userLevel))
@@ -1022,32 +1018,44 @@ class UserRolePermissions implements IUserRolePermissions
 
 		//
 		// Client Access: Verify if the role has access to the given client - teo_sarca, BF [ 1982398 ]
-		if (missingAccesses.isEmpty() && !isClientAccess(clientId, accessReadWrite))
+		if (missingAccesses.isEmpty() && !isClientAccess(clientId, access))
 		{
 			missingAccesses.add("client access");
 		}
 
 		// Org Access: Verify if the role has access to the given organization - teo_sarca, patch [ 1628050 ]
-		if (missingAccesses.isEmpty() && !isOrgAccess(orgId, accessReadWrite))
+		if (missingAccesses.isEmpty() && !isOrgAccess(orgId, access))
 		{
 			missingAccesses.add("organization access");
 		}
 
 		// Table Access
-		if (missingAccesses.isEmpty() && !isTableAccess(AD_Table_ID, !accessReadWrite))
+		if (missingAccesses.isEmpty() && !isTableAccess(AD_Table_ID, access))
 		{
 			missingAccesses.add("table access");
 		}
 
 		// Record Access
-		if (Record_ID > 0 && missingAccesses.isEmpty() && !isRecordAccess(AD_Table_ID, Record_ID, !accessReadWrite))
+		if (Record_ID > 0 && missingAccesses.isEmpty() && !isRecordAccess(AD_Table_ID, Record_ID, access))
 		{
 			missingAccesses.add("record access");
 		}
 
 		if (!missingAccesses.isEmpty())
 		{
-			final String adMessage = accessReadWrite ? "AccessTableNoUpdate" : "AccessTableNoView";
+			final String adMessage;
+			if (access.isReadOnly())
+			{
+				adMessage = "AccessTableNoView";
+			}
+			else if (access.isReadWrite())
+			{
+				adMessage = "AccessTableNoUpdate";
+			}
+			else
+			{
+				adMessage = "AccessTableNo" + access.getName();
+			}
 			return "@" + adMessage + "@: " + Joiner.on(", ").join(missingAccesses);
 		}
 
@@ -1062,9 +1070,9 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param rw true if read write
 	 * @return where clause or ""
 	 */
-	private String getRecordWhere(final int AD_Table_ID, final String keyColumnName, final boolean rw)
+	private String getRecordWhere(final int AD_Table_ID, final String keyColumnName, final Access access)
 	{
-		final StringBuilder sb = recordPermissions.getRecordWhere(AD_Table_ID, keyColumnName, rw);
+		final StringBuilder sb = recordPermissions.getRecordWhere(AD_Table_ID, keyColumnName, access);
 
 		// Don't ignore Privacy Access
 		if (!isPersonalAccess())

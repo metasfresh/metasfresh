@@ -60,6 +60,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -301,7 +302,7 @@ public class WFPanel extends CPanel
 				"SELECT AD_Workflow_ID, Name FROM AD_Workflow "
 						+ (!Check.isEmpty(m_WF_whereClause, true) ? " WHERE " + m_WF_whereClause : "")
 						+ " ORDER BY 2",
-				"AD_Workflow", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);	// all
+				"AD_Workflow", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);	// all
 		KeyNamePair[] pp = DB.getKeyNamePairs(sql, true);
 		//
 		workflow = new CComboBox<>(pp);

@@ -60,6 +60,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -291,7 +292,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	private Object[] fillGreeting()
 	{
 		String sql = "SELECT C_Greeting_ID, Name FROM C_Greeting WHERE IsActive='Y' ORDER BY 2";
-		sql = Env.getUserRolePermissions().addAccessSQL(sql, "C_Greeting", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, "C_Greeting", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		return DB.getKeyNamePairs(sql, true);
 	}	// fillGreeting
 

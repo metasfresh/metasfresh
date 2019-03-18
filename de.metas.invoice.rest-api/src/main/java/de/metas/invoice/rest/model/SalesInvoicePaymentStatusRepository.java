@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.rest.model.SalesInvoicePaymentStatus.SalesInvoicePaymentStatusBuilder;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -120,7 +121,7 @@ public class SalesInvoicePaymentStatusRepository
 				.addCompareFilter(I_C_BPartner.COLUMN_AD_OrgBP_ID, Operator.GREATER, 0)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.firstOnlyOrNull(I_C_BPartner.class);
 		if (bpartnerRecord == null)
 		{

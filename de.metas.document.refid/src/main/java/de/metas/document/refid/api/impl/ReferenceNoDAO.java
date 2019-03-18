@@ -1,7 +1,5 @@
 package de.metas.document.refid.api.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.document.refid
@@ -42,6 +40,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
+import de.metas.security.permissions.Access;
+import lombok.NonNull;
 
 public class ReferenceNoDAO extends AbstractReferenceNoDAO
 {
@@ -90,7 +90,7 @@ public class ReferenceNoDAO extends AbstractReferenceNoDAO
 
 		I_C_ReferenceNo reference = new Query(ctx, I_C_ReferenceNo.Table_Name, whereClause, trxName)
 				.setParameters(type.getC_ReferenceNo_Type_ID(), referenceNo)
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.firstOnly(I_C_ReferenceNo.class); // there is a UC on C_ReferenceNo_Type_ID and ReferenceNo
 
 		if (reference == null)

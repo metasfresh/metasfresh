@@ -65,6 +65,7 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.misc.ImportBankstatementCtrl.MatchablePO;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.security.permissions.Access;
 import de.schaeffer.compiere.mt940.Bankstatement;
 import de.schaeffer.compiere.mt940.BankstatementLine;
 
@@ -268,7 +269,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 	 */
 	private List<I_C_BP_BankAccount> getAllBankaccounts() {
 
-		final String whereClause = Env.getUserRolePermissions().getOrgWhere(false);
+		final String whereClause = Env.getUserRolePermissions().getOrgWhere(Access.READ);
 
 		final List<I_C_BP_BankAccount> bankAccountList = new Query(Env.getCtx(),
 				I_C_BP_BankAccount.Table_Name, whereClause, null).setClient_ID()
@@ -282,7 +283,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 	 */
 	private List<MBankStatement> getOpenBankstatements() {
 
-		final String whereClause = Env.getUserRolePermissions().getOrgWhere(false)
+		final String whereClause = Env.getUserRolePermissions().getOrgWhere(Access.READ)
 				+ " AND docstatus = 'DR'";
 
 		final List<MBankStatement> bankStatementList = new Query(Env.getCtx(),

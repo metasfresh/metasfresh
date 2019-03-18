@@ -86,6 +86,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -685,7 +686,7 @@ public final class AMenu extends CFrame
 				"SELECT COUNT(1) FROM " + I_R_Request.Table_Name + " WHERE " + sqlWindowWhereClauseParsed //
 				, I_R_Request.Table_Name // TableNameIn
 				, false // fullyQualified
-				, true // rw
+				, Access.WRITE
 		);
 	}
 

@@ -19,8 +19,6 @@
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -59,9 +59,11 @@ import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 
 /**
  *
@@ -100,8 +102,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private IQueryOrderBy queryOrderBy = null;
 	private List<Object> parameters = null;
 	private IQueryFilter<T> postQueryFilter;
-	private boolean applyAccessFilter = false;
-	private boolean applyAccessFilterRW = false;
+	private Access requiredAccess;
 	private boolean onlyActiveRecords = false;
 	private boolean onlyClient_ID = false;
 	private PInstanceId onlySelectionId;
@@ -228,22 +229,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.queryOrderBy = orderBy;
 		return this;
 	}
-
+	
 	@Override
-	public TypedSqlQuery<T> setApplyAccessFilter(final boolean flag)
+	public TypedSqlQuery<T> setRequiredAccess(@Nullable final Access access)
 	{
-		this.applyAccessFilter = flag;
+		this.requiredAccess = access;
 		return this;
 	}
-
-	@Override
-	public TypedSqlQuery<T> setApplyAccessFilterRW(final boolean RW)
-	{
-		this.applyAccessFilter = true;
-		this.applyAccessFilterRW = RW;
-		return this;
-	}
-
+	
 	@Override
 	public TypedSqlQuery<T> setOnlyActiveRecords(final boolean onlyActiveRecords)
 	{
@@ -1233,11 +1226,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		String sql = sqlBuffer.toString();
-		if (applyAccessFilter)
+		if (requiredAccess != null)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 			final boolean applyAccessFilterFullyQualified = true; // metas: shall always be true
-			sql = role.addAccessSQL(sql, getTableName(), applyAccessFilterFullyQualified, applyAccessFilterRW);
+			sql = role.addAccessSQL(sql, getTableName(), applyAccessFilterFullyQualified, requiredAccess);
 		}
 
 		// metas: begin
@@ -1355,8 +1348,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				.add("limit", limit > 0 ? limit : null)
 				.add("offset", offset > 0 ? offset : null)
 				.add("trxName", trxName)
-				.add("applyAccessFilter", applyAccessFilter ? Boolean.TRUE : null)
-				.add("applyAccessFilterRW", applyAccessFilterRW ? Boolean.TRUE : null)
+				.add("requiredAccess", requiredAccess)
 				.add("onlyActiveRecords", onlyActiveRecords ? Boolean.TRUE : null)
 				.add("onlySelectionId", onlySelectionId)
 				.add("notInSelectionId", notInSelectionId)
@@ -1523,8 +1515,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		queryTo.postQueryFilter = postQueryFilter;
 		//
 		queryTo.queryOrderBy = queryOrderBy;
-		queryTo.applyAccessFilter = applyAccessFilter;
-		queryTo.applyAccessFilterRW = applyAccessFilterRW;
+		queryTo.requiredAccess = requiredAccess;
 		queryTo.onlyActiveRecords = onlyActiveRecords;
 		queryTo.onlyClient_ID = onlyClient_ID;
 		queryTo.onlySelectionId = onlySelectionId;

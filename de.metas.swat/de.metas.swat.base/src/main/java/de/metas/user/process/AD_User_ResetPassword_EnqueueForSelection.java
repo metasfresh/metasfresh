@@ -37,6 +37,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.process.JavaProcess;
+import de.metas.security.permissions.Access;
 import de.metas.user.async.PasswordResetWorkpackageProcessor;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -111,7 +112,7 @@ public class AD_User_ResetPassword_EnqueueForSelection extends JavaProcess
 
 		return new Query(getCtx(), I_AD_User.Table_Name, whereClause.toString(), ITrx.TRXNAME_None)
 				.setParameters(params)
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.setOnlyActiveRecords(true)
 				.setOrderBy(I_AD_User.COLUMNNAME_AD_User_ID)
 				.iterate(I_AD_User.class, false) // guaranteed=false

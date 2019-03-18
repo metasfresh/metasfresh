@@ -28,6 +28,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.cache.CCache;
+import de.metas.security.permissions.Access;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
 import de.metas.util.Services;
@@ -137,7 +138,7 @@ public class MUOM extends X_C_UOM
 	private static void loadUOMs(Properties ctx)
 	{
 		List<MUOM> list = new Query(ctx, Table_Name, "IsActive='Y'", null)
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.list(MUOM.class);
 		//
 		for (MUOM uom : list)

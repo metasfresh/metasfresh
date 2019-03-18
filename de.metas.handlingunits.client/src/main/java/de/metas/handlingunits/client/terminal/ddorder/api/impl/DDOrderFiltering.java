@@ -53,6 +53,7 @@ import de.metas.handlingunits.client.terminal.select.api.impl.AbstractFiltering;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class DDOrderFiltering extends AbstractFiltering
@@ -85,7 +86,7 @@ public class DDOrderFiltering extends AbstractFiltering
 				.addColumn(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID);
 
 		final List<I_DD_OrderLine> ddOrderLines = queryBuilder.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.list(I_DD_OrderLine.class);
 
 		return new DDOrderTableRowAggregator()

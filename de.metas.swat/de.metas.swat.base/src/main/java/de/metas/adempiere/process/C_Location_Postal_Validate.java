@@ -31,6 +31,7 @@ import org.compiere.model.Query;
 
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.process.JavaProcess;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class C_Location_Postal_Validate extends JavaProcess
@@ -50,7 +51,7 @@ public class C_Location_Postal_Validate extends JavaProcess
 		String whereClause = I_C_Location.COLUMNNAME_IsPostalValidated + "=?";
 		Iterator<I_C_Location> it = new Query(getCtx(), I_C_Location.Table_Name, whereClause, null)
 				.setParameters(false)
-				.setApplyAccessFilterRW(true) // rw=true
+				.setRequiredAccess(Access.WRITE)
 				.iterate(I_C_Location.class);
 
 		while (it.hasNext())

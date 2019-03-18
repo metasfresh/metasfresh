@@ -30,6 +30,7 @@ import org.adempiere.service.OrgId;
 import de.metas.security.ISecurityRule;
 import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 public class SecurityRuleEngine implements ISecurityRuleEngine
 {
@@ -42,9 +43,9 @@ public class SecurityRuleEngine implements ISecurityRuleEngine
 	}
 
 	@Override
-	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final boolean rw, final Set<OrgId> orgIds)
+	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final Access access, final Set<OrgId> orgIds)
 	{
-		compositeRule.filterOrgs(rolePermissions, tableName, rw, orgIds);
+		compositeRule.filterOrgs(rolePermissions, tableName, access, orgIds);
 	}
 
 	@Override

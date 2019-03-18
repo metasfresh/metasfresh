@@ -13,15 +13,14 @@ package de.metas.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +34,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.security.impl.TablesAccessInfo;
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
+import lombok.NonNull;
 
 public class TableRecordPermissions extends AbstractPermissions<TableRecordPermission>
 {
@@ -93,7 +93,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 	 * @param ro read only
 	 * @return boolean
 	 */
-	public boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final boolean ro)
+	public boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final Access access)
 	{
 		boolean negativeList = true;
 		for (final TableRecordPermission ra : getPermissionsList())
@@ -109,7 +109,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 			{
 				if (ra.getRecord_ID() == Record_ID)
 				{
-					if (ro)
+					if (access.isReadOnly())
 					{
 						return ra.isReadOnly();
 					}
@@ -127,7 +127,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 				negativeList = false;	// has to be defined
 				if (ra.getRecord_ID() == Record_ID)
 				{
-					if (!ro)
+					if (access.isReadWrite())
 					{
 						return !ra.isReadOnly();
 					}
@@ -142,14 +142,18 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 		return negativeList;
 	}	// isRecordAccess
 
-	public void addRecordDependentAccessSql(final StringBuilder retSQL, final AccessSqlParser asp, final String tableName, final boolean rw)
+	public void addRecordDependentAccessSql(
+			final StringBuilder retSQL,
+			final AccessSqlParser asp,
+			final String tableName,
+			@NonNull final Access access)
 	{
 		final Set<TableRecordPermission> dependentRecordPermissionsList = getDependentRecordPermissionsList();
-		if(dependentRecordPermissionsList.isEmpty())
+		if (dependentRecordPermissionsList.isEmpty())
 		{
 			return;
 		}
-		
+
 		final String mainSql = asp.getMainSql();
 
 		int AD_Table_ID = 0;
@@ -206,14 +210,14 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 				excludes.add(recordDependentAccess.getRecord_ID());
 				logger.debug("Exclude " + columnName + " - " + recordDependentAccess);
 			}
-			else if (!rw || !recordDependentAccess.isReadOnly())
+			else if (access.isReadOnly() || !recordDependentAccess.isReadOnly())
 			{
 				includes.add(recordDependentAccess.getRecord_ID());
 				logger.debug("Include " + columnName + " - " + recordDependentAccess);
 			}
 			whereColumnName = getDependentRecordWhereColumn(mainSql, columnName);
 		}	// for all dependent records
-		
+
 		retSQL.append(getDependentAccess(whereColumnName, includes, excludes));
 	}
 
@@ -314,10 +318,22 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 	 * @param rw true if read write
 	 * @return where clause or ""
 	 */
-	public StringBuilder getRecordWhere(final int AD_Table_ID, final String keyColumnName, final boolean rw)
+	public StringBuilder getRecordWhere(final int AD_Table_ID, final String keyColumnName, @NonNull final Access access)
 	{
-		// loadRecordAccess(false);
-		//
+		final boolean rw;
+		if (Access.READ.equals(access))
+		{
+			rw = false;
+		}
+		else if (Access.WRITE.equals(access))
+		{
+			rw = true;
+		}
+		else
+		{
+			return new StringBuilder();
+		}
+
 		final StringBuilder sbInclude = new StringBuilder();
 		final StringBuilder sbExclude = new StringBuilder();
 		// Role Access

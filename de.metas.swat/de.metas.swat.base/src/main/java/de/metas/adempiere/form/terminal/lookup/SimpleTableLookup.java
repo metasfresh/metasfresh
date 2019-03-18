@@ -52,6 +52,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.ITerminalLookup;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -270,7 +271,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create()
-				.setApplyAccessFilterRW(false) // only those on which current user has at least read access - task #09756
+				.setRequiredAccess(Access.READ) // only those on which current user has at least read access - task #09756
 		;
 
 		if (orderBy != null)

@@ -42,6 +42,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 /**
@@ -658,7 +659,7 @@ public class DataEngine
 				;	//	System Access
 			else
 				finalSQL = new StringBuffer (role.addAccessSQL (finalSQL.toString (),
-					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
+					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ));
 		}
 
 		//	Add GROUP BY clause

@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.security.ISecurityRule;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 final class CompositeSecurityRule implements ISecurityRule
@@ -87,11 +88,11 @@ final class CompositeSecurityRule implements ISecurityRule
 	}
 
 	@Override
-	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final boolean rw, final Set<OrgId> orgIds)
+	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final Access access, final Set<OrgId> orgIds)
 	{
 		for (final ISecurityRule rule : rulesActive)
 		{
-			rule.filterOrgs(rolePermissions, tableName, rw, orgIds);
+			rule.filterOrgs(rolePermissions, tableName, access, orgIds);
 		}
 	}
 

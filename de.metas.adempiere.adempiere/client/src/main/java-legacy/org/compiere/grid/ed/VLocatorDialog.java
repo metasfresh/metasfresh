@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -218,7 +219,7 @@ public class VLocatorDialog extends CDialog
 				sql,
 				I_M_Warehouse.Table_Name,
 				IUserRolePermissions.SQL_NOTQUALIFIED,
-				IUserRolePermissions.SQL_RO)
+				Access.READ)
 				+ " ORDER BY 2";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

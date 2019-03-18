@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  * Account Control - Displays ValidCombination and launches Dialog
@@ -385,7 +386,7 @@ public final class VAccount extends JComponent
 				+ "WHERE C_AcctSchema_ID=?"
 				+ " AND (UPPER(Alias) LIKE ? OR UPPER(Combination) LIKE ?)";
 		sql = Env.getUserRolePermissions().addAccessSQL(sql,
-				"C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+				"C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		int C_AcctSchema_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_AcctSchema_ID");
 		//
 		int C_ValidCombination_ID = 0;

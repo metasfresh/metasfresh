@@ -36,6 +36,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.ProcessInfo;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 
@@ -396,7 +397,7 @@ public class MWFProcess extends X_AD_WF_Process
 			"SELECT AD_WF_Responsible_ID FROM AD_WF_Responsible "
 			+ "WHERE ResponsibleType='H' AND COALESCE(AD_User_ID,0)=0 "
 			+ "ORDER BY AD_Client_ID DESC",
-			"AD_WF_Responsible", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO));
+			"AD_WF_Responsible", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ));
 		setAD_WF_Responsible_ID (AD_WF_Responsible_ID);
 	}	//	setAD_WF_Responsible_ID
 

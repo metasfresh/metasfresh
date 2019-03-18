@@ -53,6 +53,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
@@ -323,24 +324,7 @@ public interface IQuery<T>
 		return aggregate(columnName, Aggregate.MAX, Integer.class);
 	}
 
-	/**
-	 * Turn on/off the data access filter.
-	 *
-	 * i.e. accept only those records on which current role has access to. If you want to accept only those records on which current role has read-write access you might want to use
-	 * {@link #setApplyAccessFilterRW(boolean)}.
-	 *
-	 * @param flag <code>true</code> if it shall enforced
-	 */
-	IQuery<T> setApplyAccessFilter(boolean flag);
-
-	/**
-	 * Apply read-write access filter to all resulting records.
-	 *
-	 * Please note that this method will turn on security filter anyway. If you want to turn this off again, use {@link #setApplyAccessFilter(boolean)}.
-	 *
-	 * @param RW true if read-write access is required, false if read-only access is sufficient
-	 */
-	IQuery<T> setApplyAccessFilterRW(boolean RW);
+	IQuery<T> setRequiredAccess(@Nullable Access access);
 
 	/**
 	 * Filter by context AD_Client_ID

@@ -55,6 +55,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.OrgResource;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
@@ -671,7 +672,7 @@ public class Login
 		//
 		String sql = "SELECT " + ColumnName + " FROM " + TableName	// most specific first
 				+ " WHERE IsDefault='Y' AND IsActive='Y' ORDER BY AD_Client_ID DESC, AD_Org_ID DESC";
-		sql = Env.getUserRolePermissions(ctx.getSessionContext()).addAccessSQL(sql, TableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		sql = Env.getUserRolePermissions(ctx.getSessionContext()).addAccessSQL(sql, TableName, IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

@@ -106,6 +106,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.user.api.IUserSortPrefDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -780,7 +781,7 @@ public abstract class Info extends Component
 		final Evaluatee evalCtx = Evaluatees.ofCtx(getCtx(), getWindowNo(), false); // onlyWindow=false
 		String countSql = sqlExpression.evaluate(evalCtx, true); // ignoreUnparsable=true
 
-		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		log.trace(countSql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1733,7 +1734,7 @@ public abstract class Info extends Component
 			}
 			sql.append(m_sqlOrder);
 			String dataSql = msgBL.parseTranslation(ctx, sql.toString()); // Variables
-			dataSql = Env.getUserRolePermissions().addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			dataSql = Env.getUserRolePermissions().addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 			log.trace(dataSql);
 
 			//

@@ -61,6 +61,7 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.jasper.client.JRClient;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public final class TextTemplateBL implements ITextTemplateBL
@@ -97,7 +98,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 				.addOnlyContextClient()
 				.orderBy(I_AD_BoilerPlate.COLUMNNAME_Name)
 				.create()
-				.setApplyAccessFilterRW(false)
+				.setRequiredAccess(Access.READ)
 				.list(I_AD_BoilerPlate.class);
 	}
 

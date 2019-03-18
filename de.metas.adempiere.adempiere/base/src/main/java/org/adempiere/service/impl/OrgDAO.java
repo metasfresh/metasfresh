@@ -40,6 +40,7 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -158,7 +159,7 @@ public class OrgDAO implements IOrgDAO
 		final int orgId = queryBuilder
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgQuery.getOrgValue())
 				.create()
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.firstIdOnly();
 
 		if (orgId < 0 && orgQuery.isFailIfNotExists())

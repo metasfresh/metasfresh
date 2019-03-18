@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 /*
@@ -69,9 +70,9 @@ public final class AccessSqlStringExpression implements IStringExpression
 	 * @param rw
 	 * @return wrapper
 	 */
-	public static final IStringExpressionWrapper wrapper(final String tableNameIn, final boolean fullyQualified, final boolean rw)
+	public static final IStringExpressionWrapper wrapper(final String tableNameIn, final boolean fullyQualified, final Access access)
 	{
-		return new Wrapper(tableNameIn, fullyQualified, rw);
+		return new Wrapper(tableNameIn, fullyQualified, access);
 	}
 
 	/**
@@ -84,11 +85,11 @@ public final class AccessSqlStringExpression implements IStringExpression
 	private final IStringExpression sqlExpression;
 	private final String tableNameIn;
 	private final boolean fullyQualified;
-	private final boolean rw;
+	private final Access access;
 
 	private final Set<CtxName> parametersAsCtxNames;
 
-	private AccessSqlStringExpression(final IStringExpression sqlExpression, final String tableNameIn, final boolean fullyQualified, final boolean rw)
+	private AccessSqlStringExpression(final IStringExpression sqlExpression, final String tableNameIn, final boolean fullyQualified, final Access access)
 	{
 		Check.assume(sqlExpression != null && !sqlExpression.isNullExpression(), "Parameter sqlExpression shall not be unll but it was {}", sqlExpression);
 		this.sqlExpression = sqlExpression;
@@ -97,7 +98,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 		this.tableNameIn = tableNameIn;
 
 		this.fullyQualified = fullyQualified;
-		this.rw = rw;
+		this.access = access;
 
 		final LinkedHashSet<CtxName> parametersAsCtxNames = new LinkedHashSet<>();
 		parametersAsCtxNames.add(PARAM_UserRolePermissionsKey);
@@ -112,7 +113,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 				.omitNullValues()
 				.addValue(tableNameIn)
 				.addValue(fullyQualified ? "FQ" : null)
-				.addValue(rw ? "RW" : null)
+				.addValue(access)
 				.addValue(sqlExpression)
 				.toString();
 	}
@@ -120,7 +121,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(tableNameIn, fullyQualified, rw, sqlExpression);
+		return Objects.hash(tableNameIn, fullyQualified, access, sqlExpression);
 	}
 
 	@Override
@@ -142,7 +143,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 		final AccessSqlStringExpression other = (AccessSqlStringExpression)obj;
 		return tableNameIn.equals(other.tableNameIn)
 				&& fullyQualified == other.fullyQualified
-				&& rw == other.rw
+				&& access.equals(other.access)
 				&& sqlExpression.equals(other.sqlExpression);
 	}
 
@@ -189,7 +190,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 			}
 
 			final IUserRolePermissions permissions = Env.getUserRolePermissions(permissionsKey);
-			final String sqlFinal = permissions.addAccessSQL(sql, tableNameIn, fullyQualified, rw);
+			final String sqlFinal = permissions.addAccessSQL(sql, tableNameIn, fullyQualified, access);
 			return sqlFinal;
 		}
 		catch (final Exception e)
@@ -226,7 +227,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 				return this;
 			}
 
-			return new AccessSqlStringExpression(sqlExpressionNew, tableNameIn, fullyQualified, rw);
+			return new AccessSqlStringExpression(sqlExpressionNew, tableNameIn, fullyQualified, access);
 		}
 		catch (final Exception e)
 		{
@@ -239,16 +240,15 @@ public final class AccessSqlStringExpression implements IStringExpression
 	{
 		private final String tableNameIn;
 		private final boolean fullyQualified;
-		private final boolean rw;
+		private final Access access;
 
-		private Wrapper(final String TableNameIn, final boolean fullyQualified, final boolean rw)
+		private Wrapper(final String TableNameIn, final boolean fullyQualified, final Access access)
 		{
-			super();
 			Check.assumeNotEmpty(TableNameIn, "TableNameIn is not empty");
 			tableNameIn = TableNameIn;
 
 			this.fullyQualified = fullyQualified;
-			this.rw = rw;
+			this.access = access;
 		}
 
 		@Override
@@ -257,14 +257,14 @@ public final class AccessSqlStringExpression implements IStringExpression
 			return MoreObjects.toStringHelper(this)
 					.add("tableName", tableNameIn)
 					.add("FQ", fullyQualified)
-					.add("RW", rw)
+					.add("access", access)
 					.toString();
 		}
 
 		@Override
 		public IStringExpression wrap(final IStringExpression expression)
 		{
-			return new AccessSqlStringExpression(expression, tableNameIn, fullyQualified, rw);
+			return new AccessSqlStringExpression(expression, tableNameIn, fullyQualified, access);
 		}
 	}
 }

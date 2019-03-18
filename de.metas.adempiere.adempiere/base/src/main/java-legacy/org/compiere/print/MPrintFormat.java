@@ -46,6 +46,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.StringUtils;
 
 /**
@@ -227,7 +228,7 @@ public class MPrintFormat extends X_AD_PrintFormat
 		for(Iterator<MPrintFormatItem> it = list.iterator(); it.hasNext();)
 		{
 			final MPrintFormatItem pfi = it.next();
-			if (!role.isColumnAccess(getAD_Table_ID(), pfi.getAD_Column_ID(), true)) // ro=true
+			if (!role.isColumnAccess(getAD_Table_ID(), pfi.getAD_Column_ID(), Access.READ)) // ro=true
 			{
 				it.remove();
 			}
@@ -953,7 +954,8 @@ public class MPrintFormat extends X_AD_PrintFormat
 		sql = sql + "ORDER BY AD_Client_ID DESC, IsDefault DESC, Name"; //	Own First
 		//
 		sql = Env.getUserRolePermissions().addAccessSQL (
-			sql, "AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			sql, "AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED,
+			Access.READ);
 		CPreparedStatement pstmt = null;
 		try
 		{

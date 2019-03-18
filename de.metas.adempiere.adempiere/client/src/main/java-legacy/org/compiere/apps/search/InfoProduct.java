@@ -72,6 +72,7 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.StringUtils;
 
 /**
@@ -615,7 +616,7 @@ public final class InfoProduct extends Info implements ActionListener,
 					+ " AND pl.C_Currency_ID=xp.C_Currency_ID)";
 		// Add Access & Order
 		SQL = Env.getUserRolePermissions().addAccessSQL(SQL, "M_PriceList_Version", true,
-				false) // fully qualidfied - RO
+				Access.READ) // fully qualidfied - RO
 				+ " ORDER BY M_PriceList_Version.Name";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -635,7 +636,9 @@ public final class InfoProduct extends Info implements ActionListener,
 			SQL = Env.getUserRolePermissions().addAccessSQL(
 					"SELECT M_Warehouse_ID, Value || ' - ' || Name AS ValueName "
 							+ "FROM M_Warehouse " + "WHERE IsActive='Y'",
-					"M_Warehouse", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO)
+					"M_Warehouse",
+					IUserRolePermissions.SQL_NOTQUALIFIED,
+					Access.READ)
 					+ " ORDER BY Value";
 			pickWarehouse.addItem(new KeyNamePair(0, ""));
 			pstmt = DB.prepareStatement(SQL, null);
@@ -653,8 +656,9 @@ public final class InfoProduct extends Info implements ActionListener,
 					.getUserRolePermissions()
 					.addAccessSQL(
 							"SELECT M_Product_Category_ID, Value || ' - ' || Name FROM M_Product_Category WHERE IsActive='Y'",
-							"M_Product_Category", IUserRolePermissions.SQL_NOTQUALIFIED,
-							IUserRolePermissions.SQL_RO)
+							"M_Product_Category",
+							IUserRolePermissions.SQL_NOTQUALIFIED,
+							Access.READ)
 					+ " ORDER BY Value";
 			for (KeyNamePair kn : DB.getKeyNamePairs(SQL, true))
 			{

@@ -11,6 +11,7 @@ import org.compiere.util.KeyNamePair;
 import com.google.common.base.Optional;
 
 import de.metas.document.engine.DocActionOptionsContext;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.InfoWindowPermission;
@@ -112,25 +113,32 @@ public interface IUserRolePermissions
 	 * @param SQL existing SQL statement
 	 * @param TableNameIn Table Name or list of table names AAA, BBB or AAA a, BBB b
 	 * @param fullyQualified fullyQualified names
-	 * @param rw if false, includes System Data
+	 * @param access read/write; if read, includes System Data
 	 * @return updated SQL statement
 	 */
-	String addAccessSQL(String SQL, String TableNameIn, boolean fullyQualified, boolean rw);
+	String addAccessSQL(String sql, String tableNameIn, boolean fullyQualified, Access access);
 
 	/** @return window permissions; never return null */
 	ElementPermission checkWindowPermission(int AD_Window_ID);
+
 	Boolean getWindowAccess(int AD_Window_ID);
 
 	Boolean checkWorkflowAccess(int AD_Workflow_ID);
+
 	ElementPermission checkWorkflowPermission(int AD_Workflow_ID);
+
 	Boolean getWorkflowAccess(int AD_Workflow_ID);
 
 	Boolean checkFormAccess(int AD_Form_ID);
+
 	ElementPermission checkFormPermission(int AD_Form_ID);
+
 	Boolean getFormAccess(int AD_Form_ID);
 
 	Boolean checkTaskAccess(int AD_Task_ID);
+
 	ElementPermission checkTaskPermission(int AD_Task_ID);
+
 	Boolean getTaskAccess(int AD_Task_ID);
 
 	//
@@ -197,31 +205,29 @@ public interface IUserRolePermissions
 
 	String checkCanCreateNewRecord(ClientId clientId, OrgId orgId, int AD_Table_ID);
 
-	// boolean isRecordAccess(int AD_Table_ID, int Record_ID, boolean ro);
+	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
 
-	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, boolean ro);
-
-	boolean isTableAccess(int AD_Table_ID, boolean ro);
+	boolean isTableAccess(int AD_Table_ID, Access access);
 
 	boolean isCanExport(int AD_Table_ID);
 
 	boolean isCanReport(int AD_Table_ID);
 
-	boolean isOrgAccess(OrgId OrgId, boolean rw);
+	boolean isOrgAccess(OrgId OrgId, Access access);
 
-	String getClientWhere(String tableName, String tableAlias, boolean rw);
+	String getClientWhere(String tableName, String tableAlias, Access access);
 
 	/**
 	 * Get Org Where Clause Value
 	 *
-	 * @param rw read write
+	 * @param access
 	 * @return "AD_Org_ID=0" or "AD_Org_ID IN(0,1)" or null (if access all org)
 	 * @deprecated Please use {@link #getOrgWhere(String, boolean)}
 	 */
 	@Deprecated
-	String getOrgWhere(boolean rw);
+	String getOrgWhere(Access access);
 
-	String getOrgWhere(String tableName, boolean rw);
+	String getOrgWhere(String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 

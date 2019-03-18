@@ -82,6 +82,7 @@ import org.w3c.dom.Text;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -292,7 +293,7 @@ public class ExportHelper
 
 		final Collection<PO> records = new Query(exportFormat.getCtx(), table.getTableName(), whereClause.toString(), exportFormat.get_TrxName())
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilter(racCtx.isApplyAccessFilter())
+				.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 				.setLimit(racCtx.getLimit())
 				.list(PO.class);
 
@@ -487,7 +488,7 @@ public class ExportHelper
 				query.setOnlyActiveRecords(true);
 			}
 			final List<PO> instances = query
-					.setApplyAccessFilter(racCtx.isApplyAccessFilter())
+					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 					.setParameters(linkId)
 					.setLimit(racCtx.getLimit())
 					.list(PO.class);
@@ -598,7 +599,7 @@ public class ExportHelper
 			}
 
 			final List<PO> instances = query
-					.setApplyAccessFilter(racCtx.isApplyAccessFilter())
+					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 					.setParameters(value)
 					.list(PO.class);
 

@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
 
 /**
  * @author Trifon N. Trifonov
@@ -101,7 +102,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 		return new Query(ctx, I_AD_ReplicationTable.Table_Name, whereClause, null)
 //			.setClient_ID() // TODO: metas: tsa: debugging
 			.setOnlyActiveRecords(true)
-			.setApplyAccessFilter(false)
+			.setRequiredAccess(Access.READ)
 			.setParameters(AD_ReplicationStrategy_ID, AD_Table_ID)
 			.firstOnly()
 		;	
@@ -119,7 +120,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 		return new Query(ctx, I_AD_ReplicationDocument.Table_Name, whereClause, null)
 			.setClient_ID()
 			.setOnlyActiveRecords(true)
-			.setApplyAccessFilter(false)
+			.setRequiredAccess(Access.READ)
 			.setParameters(AD_ReplicationStrategy_ID, AD_Table_ID)
 			.first()
 		;
@@ -138,7 +139,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 		return new Query(ctx, X_AD_ReplicationDocument.Table_Name, whereClause, null)
 			.setClient_ID()
 			.setOnlyActiveRecords(true)
-			.setApplyAccessFilter(false)
+			.setRequiredAccess(Access.READ)
 			.setParameters(AD_ReplicationStrategy_ID, AD_Table_ID, C_DocType_ID)
 			.first();
 	}

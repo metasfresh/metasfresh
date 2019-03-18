@@ -30,11 +30,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
 
 import javax.swing.JButton;
 import javax.swing.WindowConstants;
@@ -49,13 +44,17 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  *	Resource Assignment Dialog
@@ -355,7 +354,7 @@ public class VAssignmentDialog extends CDialog
 				+ "uom.C_UOM_ID,uom.UOMSymbol "					//	4..5
 				+ "FROM S_Resource r, S_ResourceType rt, C_UOM uom "
 				+ "WHERE r.S_ResourceType_ID=rt.S_ResourceType_ID AND rt.C_UOM_ID=uom.C_UOM_ID",
-				"r", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+				"r", IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 			try
 			{
 				PreparedStatement pstmt = DB.prepareStatement(sql, null);

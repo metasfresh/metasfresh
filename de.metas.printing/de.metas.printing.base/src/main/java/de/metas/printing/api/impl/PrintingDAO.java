@@ -56,6 +56,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -184,7 +185,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 				.setParameters(params)
 				.setOrderBy(I_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID)
 				.setClient_ID()
-				.setApplyAccessFilterRW(true);
+				.setRequiredAccess(Access.WRITE);
 
 		return Services.get(ILockManager.class).retrieveAndLock(query, I_C_Print_Job_Instructions.class);
 	}
@@ -320,16 +321,16 @@ public class PrintingDAO extends AbstractPrintingDAO
 			query.setOnlySelection(queueQuery.getOnlyAD_PInstance_ID());
 		}
 
-		if (queueQuery.getApplyAccessFilterRW() != null)
+		if (queueQuery.getRequiredAccess() != null)
 		{
-			query.setApplyAccessFilterRW(queueQuery.getApplyAccessFilterRW());
+			query.setRequiredAccess(queueQuery.getRequiredAccess());
 		}
 
 		query.setOnlyActiveRecords(true);
 
 		if (guaranteedIteratorRequired)
 		{
-			query.setOption(Query.OPTION_GuaranteedIteratorRequired, true);
+			query.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
 		}
 
 		// IMPORTANT: we shall poll the queue respecting the FIFO order

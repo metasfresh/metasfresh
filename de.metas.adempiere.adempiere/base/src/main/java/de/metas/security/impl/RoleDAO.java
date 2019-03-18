@@ -34,6 +34,7 @@ import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.RoleInclude;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraints;
 import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.security.permissions.GenericPermissions;
@@ -283,7 +284,7 @@ public class RoleDAO implements IRoleDAO
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_IsManual, false)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.setApplyAccessFilterRW(IUserRolePermissions.SQL_RO)
+				.setRequiredAccess(Access.READ)
 				.listIds(RoleId::ofRepoId);
 
 		return getByIds(roleIds);

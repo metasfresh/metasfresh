@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.util.collections.NullPredicate;
+import lombok.NonNull;
 
 @Immutable
 public class OrgPermissions extends AbstractPermissions<OrgPermission>
@@ -83,19 +84,19 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	}
 
 	// TODO: cache it using memorized function
-	public String getClientWhere(final String tableName, final String tableAlias, final boolean rw)
+	public String getClientWhere(final String tableName, final String tableAlias, final Access access)
 	{
-		return buildClientWhere(tableName, tableAlias, rw, getAD_Client_IDs());
+		return buildClientWhere(tableName, tableAlias, access, getAD_Client_IDs());
 	}
 
 	public static String buildClientWhere(
 			final String tableName,
 			final String tableAlias,
-			final boolean rw,
-			final Set<ClientId> adClientIds)
+			@NonNull final Access access,
+			@NonNull final Set<ClientId> adClientIds)
 	{
 		final HashSet<ClientId> adClientIdsEffective = new HashSet<>(adClientIds);
-		if (!rw)
+		if (access.isReadOnly())
 		{
 			adClientIdsEffective.add(ClientId.SYSTEM);
 		}
@@ -110,7 +111,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		final StringBuilder whereClause = new StringBuilder();
 		whereClause.append(DB.buildSqlList(tablePrefix + "AD_Client_ID", adClientIdsEffective, /* paramsOut */null));
 
-		if (rw && "AD_Org".equals(tableName))
+		if (access.isReadWrite() && "AD_Org".equals(tableName))
 		{
 			whereClause.append(" OR (")
 					.append(tablePrefix).append("AD_Client_ID=").append(ClientId.SYSTEM.getRepoId())
@@ -128,14 +129,14 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @return true if there is access to given AD_Client_ID
 	 */
-	public boolean isClientAccess(final ClientId clientId, final boolean rw)
+	public boolean isClientAccess(final ClientId clientId, final Access access)
 	{
 		// Positive List
 		for (final OrgPermission perm : getPermissionsList())
 		{
 			if (ClientId.equals(perm.getClientId(), clientId))
 			{
-				if (!rw)
+				if (access.isReadOnly())
 				{
 					return true;
 				}
@@ -166,15 +167,13 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @return list of AD_Org_IDs on which we have access
 	 */
-	public Set<OrgId> getOrgAccess(final boolean rw)
+	public Set<OrgId> getOrgAccess(final Access access)
 	{
 		final Set<OrgId> adOrgIds = new HashSet<>();
-		if (!rw)
+		if (Access.READ.equals(access))
 		{
 			adOrgIds.add(OrgId.ANY);
 		}
-
-		final Access access = rw ? Access.WRITE : Access.READ;
 
 		// Positive List
 		for (final OrgPermission perm : getPermissionsList())

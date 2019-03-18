@@ -59,7 +59,7 @@ public final class TableColumnPermissions extends AbstractPermissions<TableColum
 		return TableColumnPermission.NONE;
 	}
 
-	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final boolean ro)
+	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final Access access)
 	{
 		// If we were asked for a AD_Column_ID <= 0 then return false automatically
 		// NOTE: this is the case of GridTable.addField which is checking for access to a generated field (not one that has AD_Column_ID binding).
@@ -69,7 +69,7 @@ public final class TableColumnPermissions extends AbstractPermissions<TableColum
 		}
 
 		final TableColumnResource resource = TableColumnResource.of(AD_Table_ID, AD_Column_ID);
-		return hasAccess(resource, ro ? Access.READ : Access.WRITE);
+		return hasAccess(resource, access);
 	}
 
 	public static class Builder extends PermissionsBuilder<TableColumnPermission, TableColumnPermissions>

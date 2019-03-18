@@ -43,6 +43,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -226,7 +227,7 @@ public class GridTabVO implements Evaluatee, Serializable
 					return false;
 				}	//	Used by MField.getDefault
 
-				if (!role.isTableAccess(vo.AD_Table_ID, true))
+				if (!role.isTableAccess(vo.AD_Table_ID, Access.READ))
 				{
 					vo.addLoadErrorMessage("No Table Access (AD_Table_ID="+vo.AD_Table_ID+")"); // 01934
 					logger.debug("No Table Access - AD_Tab_ID={} {}", vo.AD_Tab_ID, vo.name);

@@ -61,6 +61,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -659,8 +660,8 @@ public final class ProcessInfo implements Serializable
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, true));
+		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, Access.WRITE));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 

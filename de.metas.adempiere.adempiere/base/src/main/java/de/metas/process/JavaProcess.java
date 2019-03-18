@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -1127,7 +1128,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return queryBuilder
 				.create()
-				.setApplyAccessFilterRW(false)
+				.setRequiredAccess(Access.READ)
 				.createSelection(pinstanceId);
 	}
 	

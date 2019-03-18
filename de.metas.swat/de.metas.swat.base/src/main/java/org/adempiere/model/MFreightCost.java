@@ -43,6 +43,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.Msg;
 import de.metas.order.impl.OrderBL;
+import de.metas.security.permissions.Access;
 
 /**
  * 
@@ -206,7 +207,7 @@ public class MFreightCost extends X_M_FreightCost
 
 		return new Query(ctx, Table_Name, wc, trxName)
 				.setParameters(productId)
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.setOnlyActiveRecords(true)
 				.list(MFreightCost.class);
 	}

@@ -61,6 +61,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 /**
@@ -412,8 +413,8 @@ public class GridTable extends AbstractTableModel
 			// if (!m_readOnly)
 			// ro = MRole.SQL_RW;
 			final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
+			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
 
 		// ORDER BY
@@ -511,7 +512,7 @@ public class GridTable extends AbstractTableModel
 		}
 
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-		if (!role.isColumnAccess(m_AD_Table_ID, field.getAD_Column_ID(), true))
+		if (!role.isColumnAccess(m_AD_Table_ID, field.getAD_Column_ID(), Access.READ))
 		{
 			log.debug("No Column Access {}", field.getColumnName());
 			return;
@@ -3329,8 +3330,8 @@ public class GridTable extends AbstractTableModel
 			// if (!m_readOnly)
 			// ro = MRole.SQL_RW;
 			final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
+			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
 
 		// ORDER BY

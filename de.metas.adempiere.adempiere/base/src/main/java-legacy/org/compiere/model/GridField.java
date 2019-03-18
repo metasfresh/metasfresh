@@ -61,6 +61,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -506,7 +507,7 @@ public class GridField
 			{
 				return false;
 			}
-			if (!role.isColumnAccess(AD_Table_ID, m_vo.getAD_Column_ID(), false))
+			if (!role.isColumnAccess(AD_Table_ID, m_vo.getAD_Column_ID(), Access.WRITE))
 			{
 				return false;
 			}

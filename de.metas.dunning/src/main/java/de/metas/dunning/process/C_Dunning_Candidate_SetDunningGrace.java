@@ -32,9 +32,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
 
 import de.metas.dunning.model.I_C_Dunning_Candidate;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Check;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
 
 /**
  * Update {@link I_C_Dunning_Candidate#COLUMNNAME_DunningDate} field for selected records.
@@ -123,7 +124,7 @@ public class C_Dunning_Candidate_SetDunningGrace extends JavaProcess
 				.setParameters(params)
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.iterate(I_C_Dunning_Candidate.class, false); // guaranteed=false
 
 	}

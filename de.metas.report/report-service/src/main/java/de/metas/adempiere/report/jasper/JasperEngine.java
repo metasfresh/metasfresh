@@ -57,6 +57,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -145,7 +146,7 @@ public class JasperEngine extends AbstractReportEngine
 			{
 				final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
 				final String tableName = reportContext.getTableNameOrNull();
-				securityWhereClause = userRolePermissions.getOrgWhere(tableName, false);
+				securityWhereClause = userRolePermissions.getOrgWhere(tableName, Access.READ);
 			}
 			else
 			{

@@ -244,13 +244,11 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final UserId adUserId,
 			@NonNull final LocalDate date)
 	{
-		final boolean rw = false; // readonly access is fine for us
-
 		final ImmutableList.Builder<IUserRolePermissions> permissionsWithOrgAccess = ImmutableList.builder();
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
-			if (permissions.isOrgAccess(adOrgId, rw))
+			if (permissions.isOrgAccess(adOrgId, Access.READ)) // readonly access is fine for us
 			{
 				permissionsWithOrgAccess.add(permissions);
 			}
@@ -266,12 +264,10 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final UserId adUserId,
 			final LocalDate date)
 	{
-		final boolean rw = false; // readonly access is fine for us
-
 		for (final RoleId roleId : Services.get(IRoleDAO.class).getUserRoleIds(adUserId))
 		{
 			final IUserRolePermissions permissions = getUserRolePermissions(roleId, adUserId, clientId, date);
-			if (permissions.isOrgAccess(adOrgId, rw))
+			if (permissions.isOrgAccess(adOrgId, Access.READ)) // readonly access is fine for us
 			{
 				return Optional.of(permissions);
 			}

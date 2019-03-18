@@ -1,9 +1,10 @@
 package de.metas.security.permissions;
 
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Defines permission access
@@ -11,25 +12,33 @@ import de.metas.util.Check;
  * @author tsa
  *
  */
-public class Access
+@Value
+public final class Access
 {
-	public static final Access LOGIN = ofName("LOGIN");
-	public static final Access READ = ofName("READ");
-	public static final Access WRITE = ofName("WRITE");
-	public static final Access REPORT = ofName("REPORT");
-	public static final Access EXPORT = ofName("EXPORT");
+	public static final Access LOGIN = new Access("LOGIN");
+	public static final Access READ = new Access("READ");
+	public static final Access WRITE = new Access("WRITE");
+	public static final Access REPORT = new Access("REPORT");
+	public static final Access EXPORT = new Access("EXPORT");
 
-	public static Access ofName(final String accessName)
+	private static final ImmutableMap<String, Access> accessesByName = ImmutableMap.<String, Access> builder()
+			.put(LOGIN.getName(), LOGIN)
+			.put(READ.getName(), READ)
+			.put(WRITE.getName(), WRITE)
+			.put(REPORT.getName(), REPORT)
+			.put(EXPORT.getName(), EXPORT)
+			.build();
+
+	public static Access ofName(@NonNull final String accessName)
 	{
-		return new Access(accessName);
+		final Access access = accessesByName.get(accessName);
+		return access != null ? access : new Access(accessName);
 	}
 
-	private String name;
-	private int hashcode = 0;
+	private final String name;
 
-	private Access(final String name)
+	private Access(@NonNull final String name)
 	{
-		super();
 		Check.assumeNotEmpty(name, "name not empty");
 		this.name = name;
 	}
@@ -37,41 +46,17 @@ public class Access
 	@Override
 	public String toString()
 	{
-		return name;
+		return getName();
 	}
 
-	@Override
-	public int hashCode()
+	public boolean isReadOnly()
 	{
-		if (hashcode == 0)
-		{
-			hashcode = new HashcodeBuilder()
-					.append(31) // seed
-					.append(name)
-					.toHashcode();
-		}
-		return hashcode;
+		return READ.equals(this);
 	}
 
-	@Override
-	public boolean equals(final Object obj)
+	public boolean isReadWrite()
 	{
-		if (this == obj)
-		{
-			return true;
-		}
-		final Access other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-		return new EqualsBuilder()
-				.append(this.name, other.name)
-				.isEqual();
+		return WRITE.equals(this);
 	}
 
-	public String getName()
-	{
-		return name;
-	}
 }

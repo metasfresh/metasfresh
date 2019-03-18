@@ -13,20 +13,20 @@ package de.metas.security;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Set;
 
 import org.adempiere.service.OrgId;
 
+import de.metas.security.permissions.Access;
 import de.metas.util.ISingletonService;
 
 /**
@@ -50,8 +50,8 @@ public interface ISecurityRuleEngine extends ISingletonService
 	 * 
 	 * @param rolePermissions
 	 * @param tableName TableName on which the org filter shall be applied or null if the request is not specific to any table name
-	 * @param rw true if read-write access is required, false if read-only access is required
+	 * @param access
 	 * @param orgIds
 	 */
-	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, boolean rw, Set<OrgId> orgIds);
+	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, Access access, Set<OrgId> orgIds);
 }

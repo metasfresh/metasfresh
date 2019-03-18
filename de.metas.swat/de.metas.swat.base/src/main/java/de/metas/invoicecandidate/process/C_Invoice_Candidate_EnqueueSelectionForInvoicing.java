@@ -50,6 +50,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -161,7 +162,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		
 		final int selectionCount = queryBuilder
 				.create()
-				.setApplyAccessFilterRW(false) // 04471: enqueue only those records on which user has access to
+				.setRequiredAccess(Access.READ) // 04471: enqueue only those records on which user has access to
 				.createSelection(adPInstanceId);
 
 		return selectionCount;

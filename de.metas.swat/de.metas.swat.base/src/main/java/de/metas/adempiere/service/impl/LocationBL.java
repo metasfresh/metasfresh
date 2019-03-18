@@ -45,6 +45,7 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -141,7 +142,7 @@ public class LocationBL implements ILocationBL
 			final List<I_C_Postal> result = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostalOrCity, trxName)
 					.setParameters(params)
 					.setOnlyActiveRecords(true)
-					.setApplyAccessFilterRW(false)
+					.setRequiredAccess(Access.READ)
 					.setOrderBy(I_C_Postal.COLUMNNAME_City)
 					.list(I_C_Postal.class);
 			return (result.isEmpty() || result.size() > 1) ? null : result.get(0);
@@ -183,8 +184,7 @@ public class LocationBL implements ILocationBL
 
 			final List<I_C_Postal> result = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostalAndCity, trxName)
 					.setParameters(params)
-					.setOnlyActiveRecords(true)
-					.setApplyAccessFilterRW(false) // rw=false
+					.setRequiredAccess(Access.READ)
 					.setOrderBy(I_C_Postal.COLUMNNAME_City
 							+ ", " + I_C_Postal.COLUMNNAME_Postal)
 					.list(I_C_Postal.class);
@@ -206,7 +206,7 @@ public class LocationBL implements ILocationBL
 			final List<I_C_Postal> result = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostalOrCity, trxName)
 					.setParameters(params)
 					.setOnlyActiveRecords(true)
-					.setApplyAccessFilterRW(false) // rw=false
+					.setRequiredAccess(Access.READ)
 					.setOrderBy(I_C_Postal.COLUMNNAME_City
 							+ ", " + I_C_Postal.COLUMNNAME_Postal)
 					.list(I_C_Postal.class);
@@ -226,7 +226,7 @@ public class LocationBL implements ILocationBL
 		final boolean found = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostal, null)
 				.setParameters(country.getC_Country_ID(), postal)
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilterRW(false) // rw=false
+				.setRequiredAccess(Access.READ)
 				.match();
 		log.debug("Found: " + found);
 		return found;

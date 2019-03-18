@@ -69,6 +69,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  * Product Attribute Table.
@@ -208,7 +209,7 @@ public class VAttributeGrid extends CPanel
 				+ " AND pl.C_Currency_ID=c.C_Currency_ID"
 				+ " AND M_PriceList_Version.IsActive='Y' AND pl.IsActive='Y'";
 		// Add Access & Order
-		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_PriceList_Version", true, false)	// fully qualidfied - RO
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_PriceList_Version", true, Access.READ)	// fully qualidfied - RO
 				+ " ORDER BY M_PriceList_Version.Name";
 		try
 		{
@@ -228,7 +229,7 @@ public class VAttributeGrid extends CPanel
 					+ "FROM M_Warehouse "
 					+ "WHERE IsActive='Y'";
 			sql = Env.getUserRolePermissions().addAccessSQL(sql,
-					"M_Warehouse", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO)
+					"M_Warehouse", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ)
 					+ " ORDER BY Value";
 			pickWarehouse.addItem(new KeyNamePair(0, "", null/* help */));
 			pstmt = DB.prepareStatement(sql, null);
@@ -449,7 +450,7 @@ public class VAttributeGrid extends CPanel
 					+ "WHERE M_Attribute_ID=" + yValue.getM_Attribute_ID()
 					+ " AND M_AttributeValue_ID=" + yValue.getM_AttributeValue_ID() + ")";
 		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_Product",
-				IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+				IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		PreparedStatement pstmt = null;
 		int noProducts = 0;
 		try

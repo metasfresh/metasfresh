@@ -110,6 +110,7 @@ import de.metas.i18n.Language;
 import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import net.miginfocom.layout.AC;
@@ -460,7 +461,7 @@ public class Viewer extends CFrame
 				+ "AND IsActive='Y' "
 				//End of Added Lines
 				+ "ORDER BY Name",
-			"AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		final int AD_Table_ID = m_reportEngine.getPrintFormat().getAD_Table_ID();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

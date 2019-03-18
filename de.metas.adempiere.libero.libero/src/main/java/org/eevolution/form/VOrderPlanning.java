@@ -93,6 +93,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessExecutionListener;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -712,7 +713,8 @@ public class VOrderPlanning extends CPanel
 			sql.append(m_sqlAdd);
 			String xSql = Msg.parseTranslation(Env.getCtx(), sql.toString());	// Variables
 			xSql = Env.getUserRolePermissions().addAccessSQL(xSql, getTableName(),
-					IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+					IUserRolePermissions.SQL_FULLYQUALIFIED,
+					Access.READ);
 
 			try
 			{
