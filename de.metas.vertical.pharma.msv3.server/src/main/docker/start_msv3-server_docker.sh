@@ -22,6 +22,8 @@ debug_jpa_show_sql=${DEBUG_JPA_SHOW_SQL:-false}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 server_port=${SERVER_PORT:-8080}
 
+java_max_heap=${JAVA_MAX_HEAP:-512M}
+
 # Do not re-request all config and availability data on startup, because it will also truncate the stock availability data 
 request_all_data_on_startup=${SERVER_REQUEST_ALL_DATA_ON_STARTUP:-false}
 request_config_data_on_startup=${SERVER_REQUEST_CONFIG_DATA_ON_STARTUP:-true}
@@ -37,6 +39,7 @@ echo_variable_values()
  echo "DEBUG_PORT=${debug_port}"
  echo "DEBUG_SUSPEND=${debug_suspend}"
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
+ echo "JAVA_MAX_HEAP=${java_max_heap}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "SERVER_PORT=${server_port}"
  echo "SERVER_REQUEST_ALL_DATA_ON_STARTUP=${request_all_data_on_startup}"
