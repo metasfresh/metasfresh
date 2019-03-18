@@ -69,7 +69,7 @@ public class JSONObjectMapper<T>
 		this.clazz = clazz;
 	}
 
-	public String toString(final T object)
+	public String writeValueAsString(final T object)
 	{
 		try
 		{
@@ -81,7 +81,7 @@ public class JSONObjectMapper<T>
 		}
 	}
 
-	public T fromString(final String objectStr)
+	public T readValue(final String objectStr)
 	{
 		try
 		{

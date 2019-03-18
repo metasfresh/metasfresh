@@ -10,6 +10,27 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.96
+# Features
+* metasfresh
+  * [#4959](https://github.com/metasfresh/metasfresh/issues/4959) Data entry implementation
+
+* metasfresh-webui-api
+  * [#1165](https://github.com/metasfresh/metasfresh-webui-api/issues/1165) Window Layout: allow first field of a fields combo to be a dropdown
+  * [#1167](https://github.com/metasfresh/metasfresh-webui-api/issues/1167) Product lookup performance improvements (repsective frontend isue not yet doen)
+
+* metasfresh-webui-frontend
+  * [#2177](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2177) Support single entry view mode for Tabs
+
+# Fixes
+* metasfresh-webui-api
+  * [#1163](https://github.com/metasfresh/metasfresh-webui-api/issues/1163) Warehouse cannot be created / opening window causes error
+
+* metasfresh-webui-frontend
+  * [#2201](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2201) Attributes panel is not displayed in HU Editor
+  * [#2204](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2204) QR Code not displayed
+
+
 # metasfresh 5.95
 # Features
 * metasfresh

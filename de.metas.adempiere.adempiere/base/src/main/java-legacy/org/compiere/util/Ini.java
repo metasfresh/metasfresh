@@ -272,7 +272,7 @@ public final class Ini implements Serializable
 	 */
 	public static void saveProperties()
 	{
-		if (Ini.isClient() && DB.isConnected())
+		if (Ini.isSwingClient() && DB.isConnected())
 		{
 			// Call ModelValidators beforeSaveProperties
 			ModelValidationEngine.get().beforeSaveProperties();
@@ -425,7 +425,7 @@ public final class Ini implements Serializable
 		{
 			result = defaultValue;
 		}
-		else if (!isClient())
+		else if (!isSwingClient())
 		{
 			result = s_prop.getProperty(key, SecureInterface.CLEARVALUE_START + defaultValue + SecureInterface.CLEARVALUE_END);
 		}
@@ -487,7 +487,7 @@ public final class Ini implements Serializable
 	public static void setProperty(String key, String value)
 	{
 		// If it's a client property and we are in server mode, update the context instead of Ini file
-		if (!Ini.isClient() && PROPERTIES_CLIENT.contains(key))
+		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
 			Env.getCtx().setProperty(key, value);
 			return;
@@ -500,7 +500,7 @@ public final class Ini implements Serializable
 		{
 			s_prop.setProperty(key, value);
 		}
-		else if (!isClient())
+		else if (!isSwingClient())
 		{
 			s_prop.setProperty(key, SecureInterface.CLEARVALUE_START + value + SecureInterface.CLEARVALUE_END);
 		}
@@ -555,7 +555,7 @@ public final class Ini implements Serializable
 		}
 
 		// If it's a client property and we are in server mode, get value from context instead of Ini file
-		if (!Ini.isClient() && PROPERTIES_CLIENT.contains(key))
+		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
 			final String value = Env.getCtx().getProperty(key);
 			return value == null ? "" : value;
@@ -655,7 +655,7 @@ public final class Ini implements Serializable
 	 *
 	 * @return <code>true</code> if running in the swing client.
 	 */
-	public static boolean isClient()
+	public static boolean isSwingClient()
 	{
 		return getRunMode() == RunMode.SWING_CLIENT;
 	}   // isClient
@@ -787,7 +787,7 @@ public final class Ini implements Serializable
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
-		if (isClient())
+		if (isSwingClient())
 		{
 			final String userHomeDir = System.getProperty("user.home");
 			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";

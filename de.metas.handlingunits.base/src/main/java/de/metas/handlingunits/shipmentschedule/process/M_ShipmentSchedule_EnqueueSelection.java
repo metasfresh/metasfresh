@@ -112,7 +112,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 		//
 		// Filter only selected shipment schedules
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final IQueryFilter<I_M_ShipmentSchedule> selectionFilter = getProcessInfo().getQueryFilter();
 			filters.addFilter(selectionFilter);

@@ -100,16 +100,17 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final MasterdataProvider masterdataProvider = masterdataProviderFactory.createMasterDataProvider();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+		// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
+		// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
+		trxManager.run(() -> createOrUpdateMasterdata(bulkRequest, masterdataProvider));
+		// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
+
 		final JsonOLCandCreateBulkResponse //
-		jsonOLCandCreateBulkResponse = trxManager.call(() -> {
+		jsonOLCandCreateBulkResponse = trxManager.call(() ->
 
-			createOrUpdateMasterdata(bulkRequest, masterdataProvider);
-
-			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.;
-			// invoke creatOrdersInTrx with the same unchanged bulkRequest, because the requests bpartner and product instances are
-			// (at least currently) part of the respective caching keys.
-			return creatOrderLineCandidates(bulkRequest, masterdataProvider);
-		});
+		// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
+		// (at least currently) part of the respective caching keys.
+		creatOrderLineCandidates(bulkRequest, masterdataProvider));
 
 		return new ResponseEntity<>(jsonOLCandCreateBulkResponse, HttpStatus.CREATED);
 	}

@@ -1,25 +1,34 @@
 package de.metas.ordercandidate.rest;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -45,12 +54,9 @@ import mockit.Mocked;
 
 public class MasterdataProviderTest
 {
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private MasterdataProvider masterdataProvider;
 
-	@Mocked
+	@Mock
 	private PermissionService permissionService;
 
 	private JsonBPartner jsonBPartner;
@@ -61,12 +67,30 @@ public class MasterdataProviderTest
 
 	private JsonBPartnerLocation jsonBPartnerLocation;
 
-	@Before
-	public void init()
+	private I_C_Country countryRecord;
+
+	@BeforeAll
+	static void beforeAll()
 	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
+
+	@BeforeEach
+	void beforeEach()
+	{
+		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
+		// then eclipse can't find my test methods anymore
+		MockitoAnnotations.initMocks(this);
+
 		AdempiereTestHelper.get().init();
 
-		final I_C_Country countryRecord = newInstance(I_C_Country.class);
+		countryRecord = newInstance(I_C_Country.class);
 		countryRecord.setCountryCode("DE");
 		saveRecord(countryRecord);
 
@@ -76,8 +100,8 @@ public class MasterdataProviderTest
 				.build();
 
 		jsonBPartner = JsonBPartner.builder()
-				.name("jsonBPartner.Name")
-				.code("jsonBPartner.Code")
+				.name("jsonBPartner.name")
+				.code("jsonBPartner.code")
 				.build();
 
 		jsonBPartnerLocation = JsonBPartnerLocation.builder()
@@ -93,20 +117,33 @@ public class MasterdataProviderTest
 
 		jsonOrganization = JsonOrganization.builder()
 				.code("jsonOrganization.code")
+				.name("jsonOrganization.name")
 				.bpartner(jsonBPartnerInfo)
+				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).build())
 				.build();
 	}
 
 	@Test
-	public void getCreateOrgId()
+	void getCreateOrgId_createIfNotExists()
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(jsonOrganization);
 
+		// verify AD_Org
+		final I_AD_Org orgRecord = load(orgId, I_AD_Org.class);
+		assertThat(orgRecord.getValue()).isEqualTo("jsonOrganization.code");
+		assertThat(orgRecord.getName()).isEqualTo("jsonOrganization.name");
+
+		// verify AD_OrgInfo
 		final I_AD_OrgInfo orgInfoRecord = create(Services.get(IOrgDAO.class).retrieveOrgInfo(orgId.getRepoId()), I_AD_OrgInfo.class);
 		assertThat(orgInfoRecord.getOrgBP_Location_ID()).isGreaterThan(0);
 
 		final I_C_BPartner_Location orgBPLocation = orgInfoRecord.getOrgBP_Location();
-
 		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId());
+		assertThat(orgBPLocation.getC_Location().getC_Country_ID()).isEqualTo(countryRecord.getC_Country_ID());
+
+		// verify C_BPartner
+		final I_C_BPartner bpartnerRecord = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(Env.getCtx(), orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		assertThat(bpartnerRecord.getValue()).isEqualTo("jsonBPartner.code");
+		assertThat(bpartnerRecord.getName()).isEqualTo("jsonBPartner.name");
 	}
 }

@@ -133,7 +133,7 @@ public final class ProcessExecutor
 		//
 		// Case: the process requires to be executed on server, but we are not running on server
 		// => execute the process remotely
-		if (pi.isServerProcess() && Ini.isClient())
+		if (pi.isServerProcess() && Ini.isSwingClient())
 		{
 			executeSync_Remote();
 		}

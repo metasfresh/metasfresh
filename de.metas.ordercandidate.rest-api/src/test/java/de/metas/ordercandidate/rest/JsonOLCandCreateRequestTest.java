@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
 /*
@@ -35,15 +33,6 @@ import lombok.NonNull;
 
 public class JsonOLCandCreateRequestTest
 {
-	private ObjectMapper jsonObjectMapper;
-
-	@Before
-	public void init()
-	{
-		jsonObjectMapper = new ObjectMapper();
-		jsonObjectMapper.findAndRegisterModules();
-	}
-
 	@Test
 	public void test_JsonProduct() throws Exception
 	{
@@ -51,7 +40,7 @@ public class JsonOLCandCreateRequestTest
 				.code("code")
 				.type(JsonProductInfo.Type.ITEM)
 				.build();
-		testSerializeDeserialize(product);
+		testSerializeDeserialize(product, JSONObjectMapper.forClass(JsonProductInfo.class));
 	}
 
 	@Test
@@ -61,7 +50,7 @@ public class JsonOLCandCreateRequestTest
 				.code("bp1")
 				.name("bp1 name")
 				.build();
-		testSerializeDeserialize(pPartner);
+		testSerializeDeserialize(pPartner, JSONObjectMapper.forClass(JsonBPartner.class));
 	}
 
 	@Test
@@ -74,7 +63,7 @@ public class JsonOLCandCreateRequestTest
 				.city("city")
 				.countryCode("DE")
 				.build();
-		testSerializeDeserialize(bPartnerLocation);
+		testSerializeDeserialize(bPartnerLocation, JSONObjectMapper.forClass(JsonBPartnerLocation.class));
 	}
 
 	@Test
@@ -85,7 +74,7 @@ public class JsonOLCandCreateRequestTest
 				.email("john@doe.com")
 				.phone("+123456789")
 				.build();
-		testSerializeDeserialize(contact);
+		testSerializeDeserialize(contact, JSONObjectMapper.forClass(JsonBPartnerContact.class));
 	}
 
 	@Test
@@ -109,7 +98,8 @@ public class JsonOLCandCreateRequestTest
 						.phone("+123456789")
 						.build())
 				.build();
-		testSerializeDeserialize(bPartnerInfo);
+
+		testSerializeDeserialize(bPartnerInfo, JSONObjectMapper.forClass(JsonBPartnerInfo.class));
 	}
 
 	@Test
@@ -119,22 +109,32 @@ public class JsonOLCandCreateRequestTest
 				.docBaseType("docBaseType")
 				.docSubType("docSubType")
 				.build();
-		testSerializeDeserialize(docType);
+		testSerializeDeserialize(docType, JSONObjectMapper.forClass(JsonDocTypeInfo.class));
 	}
 
 	@Test
 	public void test_JsonOLCandCreateRequest() throws Exception
 	{
-		testSerializeDeserialize(createDummyJsonOLCandCreateRequest());
+		final JsonOLCandCreateRequest request = createDummyJsonOLCandCreateRequest();
+		testSerializeDeserialize(request, JSONObjectMapper.forClass(JsonOLCandCreateRequest.class));
 	}
 
 	@Test
 	public void test_JsonOLCandCreateBulkRequest() throws Exception
 	{
-		testSerializeDeserialize(JsonOLCandCreateBulkRequest.builder()
-				.request(createDummyJsonOLCandCreateRequest())
-				.request(createDummyJsonOLCandCreateRequest())
-				.build());
+		final JsonOLCandCreateRequest requestForOrderLine = createDummyJsonOLCandCreateRequest();
+
+		final JsonOLCandCreateRequest requestForInvoiceCandidate = requestForOrderLine
+				.toBuilder()
+				.dataDestInternalName("DEST.de.metas.invoicecandidate")
+				.dateInvoiced(LocalDate.of(2019, 03, 13))
+				.build();
+
+		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.builder()
+				.request(requestForOrderLine)
+				.request(requestForInvoiceCandidate)
+				.build();
+		testSerializeDeserialize(request, JSONObjectMapper.forClass(JsonOLCandCreateBulkRequest.class));
 	}
 
 	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()
@@ -168,17 +168,19 @@ public class JsonOLCandCreateRequestTest
 	public void test_realJson() throws IOException
 	{
 		final JsonOLCandCreateBulkRequest bulkRequest = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
-		testSerializeDeserialize(bulkRequest);
+		testSerializeDeserialize(bulkRequest, JSONObjectMapper.forClass(JsonOLCandCreateBulkRequest.class));
 	}
 
-	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException
+	private <T> void testSerializeDeserialize(
+			@NonNull final T obj,
+			@NonNull JSONObjectMapper<T> jsonObjectMapper) throws IOException
 	{
-		//System.out.println("object: " + obj);
+		// System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		//System.out.println("json: " + json);
+		// System.out.println("json: " + json);
 
-		final Object objDeserialized = jsonObjectMapper.readValue(json, obj.getClass());
-		//System.out.println("object deserialized: " + objDeserialized);
+		final Object objDeserialized = jsonObjectMapper.readValue(json);
+		// System.out.println("object deserialized: " + objDeserialized);
 
 		Assert.assertEquals(obj, objDeserialized);
 	}
