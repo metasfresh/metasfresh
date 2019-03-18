@@ -460,7 +460,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}
 
-	@Override
 	@Cached(cacheName = I_AD_Role_OrgAccess.Table_Name + "#by#AD_User_ID")
 	public OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId)
 	{

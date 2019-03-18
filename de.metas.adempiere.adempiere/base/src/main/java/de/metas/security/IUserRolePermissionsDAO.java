@@ -101,8 +101,6 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	OrgPermissions retrieveOrgPermissions(final Role role, final UserId adUserId);
 
-	OrgPermissions retrieveRoleOrgPermissions(final RoleId adRoleId, final AdTreeId adTreeOrgId);
-
 	OrgPermissions retrieveUserOrgPermissions(final UserId adUserId, final AdTreeId adTreeOrgId);
 
 	ElementPermissions retrieveWorkflowPermissions(final RoleId adRoleId, final ClientId adClientId);
