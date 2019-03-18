@@ -108,7 +108,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	public DocTypeId getDocTypeId(final DocTypeQuery query)
+	public DocTypeId getDocTypeId(@NonNull final DocTypeQuery query)
 	{
 		final int docTypeId = getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
 		if (docTypeId <= 0)

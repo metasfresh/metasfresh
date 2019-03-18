@@ -188,7 +188,7 @@ public abstract class ReportStarter extends JavaProcess
 		//
 		// Print preview (if swing client)
 		if (reportPrintingInfo.isPrintPreview()
-				&& Ini.isClient()
+				&& Ini.isSwingClient()
 				&& swingJRReportViewerProvider != null)
 		{
 			swingJRReportViewerProvider.openViewer(result.getReportData(), outputType, processInfo);
@@ -269,7 +269,7 @@ public abstract class ReportStarter extends JavaProcess
 	 */
 	private JRReportViewerProvider getJRReportViewerProviderOrNull()
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			return swingJRReportViewerProvider;
 		}

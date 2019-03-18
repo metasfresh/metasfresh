@@ -37,10 +37,11 @@ import springfox.documentation.spring.web.plugins.Docket;
 @UtilityClass
 public class MetasfreshRestAPIConstants
 {
+	/** Rest endpoints starting this this constant are required to provide a secret authorization token. */
 	public static final String ENDPOINT_API = "/api";
 
 	/**
-	 * If you create swagger documentation for an API that controlled by {@link UserAuthTokenFilter},
+	 * If you create swagger documentation for an API that is controlled by {@link UserAuthTokenFilter},
 	 * then you can add this parameter to the {@link Docket}'s globalOperationParameters
 	 */
 	public static final Parameter SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER = new ParameterBuilder()

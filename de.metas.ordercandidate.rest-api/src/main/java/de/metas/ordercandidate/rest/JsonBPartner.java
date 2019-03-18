@@ -3,6 +3,8 @@ package de.metas.ordercandidate.rest;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
@@ -42,6 +44,7 @@ public class JsonBPartner
 			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
+	@JsonInclude(Include.NON_NULL)
 	private String externalId;
 
 	@ApiModelProperty( //
@@ -49,18 +52,21 @@ public class JsonBPartner
 			value = "This translates to <code>C_BPartner.Value</code>. If set and <code>externalId<code> is empty, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
+	@JsonInclude(Include.NON_NULL)
 	private String code;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.Name</code>.\n"
 					+ "If this is empty, and a BPartner with the given <code>code</code> does not yet exist, then the request will fail.")
+	@JsonInclude(Include.NON_NULL)
 	private String name;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.CompanyName</code>.\n"
 					+ "If set, the the respective <code>C_BPartner</code> record will also have <code>IsCompany='Y'</code>")
+	@JsonInclude(Include.NON_NULL)
 	private String companyName;
 
 	@JsonCreator
