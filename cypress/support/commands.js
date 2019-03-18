@@ -180,7 +180,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => 
       .type(`${stringValue}{enter}`)
       .wait('@patchInputField', {
         requestTimeout: 20000,
-        responseTimeout: 20000
+        responseTimeout: 20000,
       });
   });
 });
@@ -506,6 +506,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   });
 });
 
+function executeHeaderAction(actionName) {
+  cy.get('.header-container .btn-square .meta-icon-more').click();
+  cy.get('.subheader-container').should('exist');
+  cy.get(`#headerAction_${actionName}`).click();
+}
+
 Cypress.Commands.add('executeHeaderAction', actionName => {
   describe('Fire header action with a certain name', function() {
     executeHeaderAction(actionName);
@@ -521,12 +527,6 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
       .should('exist');
   });
 });
-
-function executeHeaderAction(actionName) {
-  cy.get('.header-container .btn-square .meta-icon-more').click();
-  cy.get('.subheader-container').should('exist');
-  cy.get(`#headerAction_${actionName}`).click();
-}
 
 Cypress.Commands.add('clickHeaderNav', navName => {
   const name = navName.toLowerCase().replace(/\s/g, '');

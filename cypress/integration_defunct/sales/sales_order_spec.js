@@ -9,64 +9,65 @@ describe('New sales order test', function() {
   before(function() {
     cy.loginByForm();
 
-    cy.request('GET', config.API_URL+'/menu/elementPath?type=window&elementId='+windowId+'&inclusive=true')
-      .then((response) => {
+    cy.request('GET', `${config.API_URL}/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`).then(
+      response => {
         expect(response.body).to.have.property('captionBreadcrumb');
         expect(response.body).to.have.property('nodeId');
         caption = response.body.captionBreadcrumb;
         nodeId = response.body.nodeId;
 
-        cy.request('GET', config.API_URL+'/menu/node/'+nodeId+'/breadcrumbMenu')
-          .then((response) => {
-            const resp = response.body;
-            expect(resp.length).to.be.gt(0);
+        cy.request('GET', `${config.API_URL}/menu/node/${nodeId}/breadcrumbMenu`).then(response => {
+          const resp = response.body;
+          expect(resp.length).to.be.gt(0);
 
-            for (let i=0; i<resp.length; i+= 1) {
-              if (resp[i].nodeId.includes('-new')) {
-                menuOption = resp[i].caption;
+          for (let i = 0; i < resp.length; i += 1) {
+            if (resp[i].nodeId.includes('-new')) {
+              menuOption = resp[i].caption;
 
-                break;
-              }
+              break;
             }
+          }
         });
-    });
+      }
+    );
 
-    cy.visit('/window/'+windowId);
+    cy.visit(`/window/${windowId}`);
   });
 
   describe('List tests', function() {
     it('Test if rows get selected/deselected properly', function() {
       cy.get('.table-flex-wrapper-row')
-        .find('tbody tr').eq(0)
-        .should('exist')
+        .find('tbody tr')
+        .eq(0)
+        .should('exist');
 
       cy.get('.table-flex-wrapper-row')
-        .find('tbody tr').eq(1)
-        .find('td').eq(0)
+        .find('tbody tr')
+        .eq(1)
+        .find('td')
+        .eq(0)
         .type('{shift}', { release: false })
         .click();
 
       cy.get('.table-flex-wrapper-row')
-        .find('tbody tr').eq(2)
-        .find('td').eq(0)
+        .find('tbody tr')
+        .eq(2)
+        .find('td')
+        .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      cy.get('.row-selected')
-        .should('have.length', 2);
+      cy.get('.row-selected').should('have.length', 2);
 
-      cy.get('.document-list-header')
-        .click();
+      cy.get('.document-list-header').click();
 
-      cy.get('.row-selected')
-        .should('have.length', 0);
+      cy.get('.row-selected').should('have.length', 0);
     });
   });
 
   context('Create a new sales order', function() {
     before(function() {
-      cy.get('.header-breadcrumb')
-        .contains('.header-item', caption, { timeout: 10000 });
+      cy.get('.header-breadcrumb').contains('.header-item', caption, { timeout: 10000 });
 
       const option = ~~(Math.random() * (2 - 0)) + 0;
 
@@ -120,10 +121,8 @@ describe('New sales order test', function() {
         .type('C');
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'P002737_Convenience Salat 250g')
-        .click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header')
-        .should('not.exist');
+      cy.contains('.input-dropdown-list-option', 'P002737_Convenience Salat 250g').click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 
       cy.get('.form-field-QtyEntered', { timeout: 12000 })
         .find('input')
@@ -136,41 +135,39 @@ describe('New sales order test', function() {
 
     it('Change document status', function() {
       let completeActionCaption = '';
-      const draftedCaption = Cypress.reduxStore.getState()
-        .windowHandler.master.data.DocStatus.value.caption;
+      const draftedCaption = Cypress.reduxStore.getState().windowHandler.master.data.DocStatus.value.caption;
       const docId = Cypress.reduxStore.getState().windowHandler.master.docId;
 
-      cy.request('GET', config.API_URL+'/window/'+windowId+'/'+docId+'/field/DocAction/dropdown')
-        .then((response) => {
-          const resp = response.body;
+      cy.request('GET', `${config.API_URL}/window/${windowId}/${docId}/field/DocAction/dropdown`).then(response => {
+        const resp = response.body;
 
-          expect(resp).to.have.property('values');
-          expect(resp.values.length).to.be.gt(0);
+        expect(resp).to.have.property('values');
+        expect(resp.values.length).to.be.gt(0);
 
-          for (let i=0; i<resp.values.length; i+= 1) {
-            if (resp.values[i].key === 'CO') {
-              completeActionCaption = resp.values[i].caption;
+        for (let i = 0; i < resp.values.length; i += 1) {
+          if (resp.values[i].key === 'CO') {
+            completeActionCaption = resp.values[i].caption;
 
-              break;
-            }
+            break;
           }
+        }
 
-          cy.get('.form-field-DocAction')
-            .find('.meta-dropdown-toggle')
-            .click();
+        cy.get('.form-field-DocAction')
+          .find('.meta-dropdown-toggle')
+          .click();
 
-          cy.get('.form-field-DocAction')
-            .find('.dropdown-status-toggler')
-            .should('have.class', 'dropdown-status-open');
+        cy.get('.form-field-DocAction')
+          .find('.dropdown-status-toggler')
+          .should('have.class', 'dropdown-status-open');
 
-          cy.get('.form-field-DocAction .dropdown-status-list')
-            .find('.dropdown-status-item')
-            .contains(completeActionCaption)
-            .click();
+        cy.get('.form-field-DocAction .dropdown-status-list')
+          .find('.dropdown-status-item')
+          .contains(completeActionCaption)
+          .click();
 
-          cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-          cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
-        });
+        cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+        cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
+      });
     });
   });
 });
