@@ -67,12 +67,6 @@ public interface IUserRolePermissions
 	/** Access SQL Fully Qualified */
 	public static final boolean SQL_FULLYQUALIFIED = true;
 
-	/** Access SQL Read Only */
-	public static final boolean SQL_RO = false;
-
-	/** Access SQL Read Write */
-	public static final boolean SQL_RW = true;
-
 	IUserRolePermissionsBuilder asNewBuilder();
 
 	/**
