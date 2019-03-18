@@ -1,7 +1,5 @@
 package de.metas.ui.web.material.adapter;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +8,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -116,8 +113,7 @@ public class AvailableToPromiseAdapter
 
 	private I_C_UOM retrieveStockingUOM(final int productId)
 	{
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(load(productId, I_M_Product.class));
-		return uom;
+		return Services.get(IProductBL.class).getStockingUOM(productId);
 	}
 
 	@VisibleForTesting

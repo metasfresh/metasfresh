@@ -1,10 +1,13 @@
 package de.metas.ui.web.session;
 
+import java.time.Duration;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -30,6 +33,7 @@ import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -449,6 +453,16 @@ public class UserSession
 	public int getHttpCacheMaxAge()
 	{
 		return getData().getHttpCacheMaxAge();
+	}
+
+	private static final String SYSCONFIG_DefaultLookupSearchStartDelayMillis = "de.metas.ui.web.window.descriptor.LookupDescriptor.DefaultLookupSearchStartDelayMillis";
+
+	public Supplier<Duration> getDefaultLookupSearchStartDelay()
+	{
+		return () -> {
+			final int defaultLookupSearchStartDelayMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultLookupSearchStartDelayMillis, 0);
+			return defaultLookupSearchStartDelayMillis > 0 ? Duration.ofMillis(defaultLookupSearchStartDelayMillis) : Duration.ZERO;
+		};
 	}
 
 	/**

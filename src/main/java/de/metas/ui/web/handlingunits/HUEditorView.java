@@ -245,6 +245,7 @@ public class HUEditorView implements IView
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
+				.get()
 				.findEntities(ctx);
 	}
 
@@ -254,6 +255,7 @@ public class HUEditorView implements IView
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
+				.get()
 				.findEntities(ctx, query);
 	}
 

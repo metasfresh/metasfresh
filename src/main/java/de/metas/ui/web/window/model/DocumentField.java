@@ -22,7 +22,6 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
@@ -58,7 +57,7 @@ import lombok.NonNull;
 
 	private final DocumentFieldDescriptor descriptor;
 	private final Document _document;
-	private final LookupDataSource _lookupDataSource;
+	private final Optional<LookupDataSource> _lookupDataSource;
 	private boolean lookupValuesStaled = true;
 
 	private transient ICalloutField _calloutField; // lazy
@@ -83,7 +82,7 @@ import lombok.NonNull;
 		this.descriptor = descriptor;
 		_document = document;
 
-		_lookupDataSource = descriptor.createLookupDataSource(LookupDescriptorProvider.LookupScope.DocumentField);
+		_lookupDataSource = descriptor.createLookupDataSource();
 
 		_validStatus = DocumentValidStatus.fieldInitiallyInvalid();
 	}
@@ -149,16 +148,13 @@ import lombok.NonNull;
 
 	private LookupDataSource getLookupDataSourceOrNull()
 	{
-		return _lookupDataSource;
+		return _lookupDataSource.orElse(null);
 	}
 
 	private LookupDataSource getLookupDataSource()
 	{
-		if (_lookupDataSource == null)
-		{
-			throw new DocumentFieldNotLookupException(getFieldName());
-		}
-		return _lookupDataSource;
+		return _lookupDataSource
+				.orElseThrow(() -> new DocumentFieldNotLookupException(getFieldName()));
 	}
 
 	@Override

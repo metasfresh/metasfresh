@@ -159,6 +159,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
+				.get()
 				.findEntities(ctx);
 	}
 
@@ -171,6 +172,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
+				.get()
 				.findEntities(ctx, query);
 	}
 

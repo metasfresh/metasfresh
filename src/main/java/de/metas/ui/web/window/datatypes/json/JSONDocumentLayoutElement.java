@@ -12,11 +12,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.MediaType;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -214,17 +211,12 @@ public final class JSONDocumentLayoutElement
 
 		restrictToMediaTypes = null;
 
-		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
-				fieldName,
-				(JSONFieldType)null,
-				(String)null, // tooltipIconName
-				(JSONLookupSource)null,
-				"no " + fieldName, // emptyText
-				(List<JSONDeviceDescriptor>)null,
-				(String)null, // newRecordWindowId
-				(String)null, // newRecordCaption
-				widgetType.isSupportZoomInto()
-		));
+		fields = ImmutableSet.of(
+				JSONDocumentLayoutElementField.builder()
+						.field(fieldName)
+						.emptyText("no " + fieldName)
+						.supportZoomInto(widgetType.isSupportZoomInto())
+						.build());
 	}
 
 	private boolean hasFields()

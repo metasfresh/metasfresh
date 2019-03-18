@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import java.math.BigDecimal;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +79,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		final Quantity reservableQty = retrieveReservableQuantity(productId);
 		if (reservableQty.signum() <= 0)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservalbe quantity for productId=" + productId);
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservable quantity for productId=" + productId);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -135,6 +136,10 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());
+		if (selectedHuIds.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
 
 		final Quantity qtyToReserve = Quantity.of(qtyToReserveBD, salesOrderLine.getOrderedQty().getUOM());
 

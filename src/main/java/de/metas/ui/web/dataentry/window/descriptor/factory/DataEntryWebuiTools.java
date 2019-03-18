@@ -17,7 +17,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
@@ -89,7 +88,7 @@ public class DataEntryWebuiTools
 				return dataEntryRecord.getDataEntrySubGroupId().getRepoId();
 			case LIST:
 				final DataEntryListValueId dataEntryListValueId = (DataEntryListValueId)dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
-				final DataEntryListValueDataSourceFetcher fetcher = (DataEntryListValueDataSourceFetcher)fieldDescriptor.getLookupDescriptor(LookupScope.DocumentField).getLookupDataSourceFetcher();
+				final DataEntryListValueDataSourceFetcher fetcher = (DataEntryListValueDataSourceFetcher)fieldDescriptor.getLookupDescriptor().get().getLookupDataSourceFetcher();
 				return fetcher.getLookupForForListValueId(dataEntryListValueId);
 			default:
 				return dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
@@ -146,7 +145,7 @@ public class DataEntryWebuiTools
 				result = fieldType.getClazz().cast(value);
 				break;
 			case LIST:
-				final LookupDescriptor lookupDescriptor = descriptor.getLookupDescriptor(LookupScope.DocumentField);
+				final LookupDescriptor lookupDescriptor = descriptor.getLookupDescriptor().get();
 				final DataEntryListValueDataSourceFetcher fetcher = (DataEntryListValueDataSourceFetcher)lookupDescriptor.getLookupDataSourceFetcher();
 				result = fetcher.getListValueIdForLookup((IntegerLookupValue)value);
 				break;

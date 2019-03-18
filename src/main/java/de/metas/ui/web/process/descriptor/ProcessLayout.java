@@ -187,7 +187,7 @@ public class ProcessLayout
 					.setWidgetType(processParaDescriptor.getWidgetType())
 					.setAllowShowPassword(processParaDescriptor.isAllowShowPassword())
 					.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
-							.setLookupSource(processParaDescriptor.getLookupSourceType())
+							.setLookupInfos(processParaDescriptor.getLookupDescriptor().orElse(null))
 							.setPublicField(true)
 							.setSupportZoomInto(processParaDescriptor.isSupportZoomInto()))
 					.build();
