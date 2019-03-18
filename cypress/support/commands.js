@@ -178,7 +178,10 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => 
     cy.get(path)
       .find('input')
       .type(`${stringValue}{enter}`)
-      .wait('@patchInputField');
+      .wait('@patchInputField', {
+        requestTimeout: 20000,
+        responseTimeout: 20000
+      });
   });
 });
 

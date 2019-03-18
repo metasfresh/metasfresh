@@ -1,13 +1,48 @@
 export class DataEntryGroup {
-  constructor(builder) {
-    this.name = builder.name;
-    this.tabName = builder.tabName;
-    this.seqNo = builder.seqNo;
-    this.targetWindowName = builder.targetWindowName;
-    this.description = builder.description;
-    this.isActive = builder.isActive;
-    this.dataEntrySubGroups = builder.dataEntrySubGroups;
-    this.dataEntrySections = builder.dataEntrySections;
+  constructor(name, targetWindowName) {
+    cy.log(`DataEntryGroup - set name = ${name}; targetWindowName = ${targetWindowName}`);
+    this.name = name;
+    this.tabName = name;
+    this.targetWindowName = targetWindowName;
+    this.seqNo = undefined;
+    this.description = undefined;
+    this.isActive = true;
+    this.dataEntrySubGroups = [];
+    this.dataEntrySections = [];
+  }
+
+  setTabName(tabName) {
+    cy.log(`DataEntryGroup - set tabName = ${tabName}`);
+    this.tabName = tabName;
+    return this;
+  }
+  setSeqNo(seqNo) {
+    cy.log(`DataEntryGroup - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
+  setDescription(description) {
+    cy.log(`DataEntryGroup - set description = ${description}`);
+    this.description = description;
+    return this;
+  }
+
+  setActive(isActive) {
+    cy.log(`DataEntryGroup - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
+  }
+
+  addDataEntrySubGroup(dataEntrySubGroup) {
+    cy.log(`DataEntryGroup - add dataEntrySubGroup = ${JSON.stringify(dataEntrySubGroup)}`);
+    this.dataEntrySubGroups.push(dataEntrySubGroup);
+    return this;
+  }
+
+  addDataEntrySection(dataEntrySection) {
+    cy.log(`DataEntryGroup - add dataEntrySection = ${JSON.stringify(dataEntrySection)}`);
+    this.dataEntrySections.push(dataEntrySection);
+    return this;
   }
 
   apply() {
@@ -16,164 +51,40 @@ export class DataEntryGroup {
     cy.log(`DataEntryGroup - apply - END (name=${this.name}; result=${JSON.stringify(result)})`);
     return this;
   }
-
-  static get builder() {
-    class Builder {
-      constructor(name, targetWindowName) {
-        cy.log(`DataEntryGroupBuilder - set name = ${name}; targetWindowName = ${targetWindowName}`);
-        this.name = name;
-        this.tabName = name;
-        this.targetWindowName = targetWindowName;
-        this.seqNo = undefined;
-        this.description = undefined;
-        this.isActive = true;
-        this.dataEntrySubGroups = [];
-        this.dataEntrySections = [];
-      }
-
-      setTabName(tabName) {
-        cy.log(`DataEntryGroupBuilder - set tabName = ${tabName}`);
-        this.tabName = tabName;
-        return this;
-      }
-      setSeqNo(seqNo) {
-        cy.log(`DataEntryGroupBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
-      setDescription(description) {
-        cy.log(`DataEntryGroupBuilder - set description = ${description}`);
-        this.description = description;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntryGroupBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      addDataEntrySubGroup(dataEntrySubGroup) {
-        cy.log(`DataEntryGroupBuilder - add dataEntrySubGroup = ${JSON.stringify(dataEntrySubGroup)}`);
-        this.dataEntrySubGroups.push(dataEntrySubGroup);
-        return this;
-      }
-
-      addDataEntrySection(dataEntrySection) {
-        cy.log(`DataEntryGroupBuilder - add dataEntrySection = ${JSON.stringify(dataEntrySection)}`);
-        this.dataEntrySections.push(dataEntrySection);
-        return this;
-      }
-
-      build() {
-        return new DataEntryGroup(this);
-      }
-    }
-    return Builder;
-  }
 }
 
 export class DataEntrySubGroup {
-  constructor(builder) {
-    this.name = builder.name;
-    this.tabName = builder.tabName;
-    this.seqNo = builder.seqNo;
-    this.description = builder.description;
-    this.isActive = builder.isActive;
+  constructor(name) {
+    cy.log(`DataEntrySubGroup - set name = ${name}`);
+    this.name = name;
+    this.tabName = name;
+    this.seqNo = undefined;
+    this.description = undefined;
+    this.isActive = true;
   }
 
-  static get builder() {
-    class Builder {
-      constructor(name) {
-        cy.log(`DataEntrySubGroupBuilder - set name = ${name}`);
-        this.name = name;
-        this.tabName = name;
-        this.seqNo = undefined;
-        this.description = undefined;
-        this.isActive = true;
-      }
-
-      setTabName(tabName) {
-        cy.log(`DataEntrySubGroupBuilder - set tabName = ${tabName}`);
-        this.tabName = tabName;
-        return this;
-      }
-
-      setSeqNo(seqNo) {
-        cy.log(`DataEntrySubGroupBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
-
-      setDescription(description) {
-        cy.log(`DataEntrySubGroupBuilder - set description = ${description}`);
-        this.description = description;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntrySubGroupBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      build() {
-        return new DataEntrySubGroup(this);
-      }
-    }
-    return Builder;
-  }
-}
-
-export class DataEntrySection {
-  constructor(builder) {
-    this.name = builder.name;
-    this.sectionName = builder.sectionName;
-    this.seqNo = builder.seqNo;
-    this.description = builder.description;
-    this.isActive = builder.isActive;
+  setTabName(tabName) {
+    cy.log(`DataEntrySubGroup - set tabName = ${tabName}`);
+    this.tabName = tabName;
+    return this;
   }
 
-  static get builder() {
-    class Builder {
-      constructor(name) {
-        cy.log(`DataEntrySectionBuilder - set name = ${name}`);
-        this.name = name;
-        this.sectionName = name;
-        this.seqNo = undefined;
-        this.description = undefined;
-        this.isActive = true;
-      }
+  setSeqNo(seqNo) {
+    cy.log(`DataEntrySubGroup - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
 
-      setSectionName(sectionName) {
-        cy.log(`DataEntrySectionBuilder - set sectionName = ${sectionName}`);
-        this.sectionName = sectionName;
-        return this;
-      }
+  setDescription(description) {
+    cy.log(`DataEntrySubGroup - set description = ${description}`);
+    this.description = description;
+    return this;
+  }
 
-      setSeqNo(seqNo) {
-        cy.log(`DataEntrySectionBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
-
-      setDescription(description) {
-        cy.log(`DataEntrySectionBuilder - set description = ${description}`);
-        this.description = description;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntrySectionBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      build() {
-        return new DataEntrySection(this);
-      }
-    }
-    return Builder;
+  setActive(isActive) {
+    cy.log(`DataEntrySubGroup - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
   }
 }
 

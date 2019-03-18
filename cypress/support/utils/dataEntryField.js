@@ -1,14 +1,69 @@
 export class DataEntryField {
-  constructor(builder) {
-    this.name = builder.name;
-    this.seqNo = builder.seqNo;
-    this.description = builder.description;
-    this.isActive = builder.isActive;
-    this.dataEntryLine = builder.dataEntryLine;
-    this.dataEntryRecordType = builder.dataEntryRecordType;
-    this.isMandatory = builder.isMandatory;
-    this.personalDataCategory = builder.personalDataCategory;
-    this.dataEntryListValues = builder.dataEntryListValues;
+  constructor(name, dataEntryLine) {
+    cy.log(`DataEntryField - set name = ${name}; dataEntryLine = ${dataEntryLine}`);
+    this.name = name;
+    this.dataEntryLine = dataEntryLine;
+    this.seqNo = undefined;
+    this.description = undefined;
+    this.isActive = true;
+    this.dataEntryRecordType = undefined;
+    this.isMandatory = undefined;
+    this.personalDataCategory = undefined;
+    this.dataEntryListValues = [];
+  }
+
+  setName(name) {
+    cy.log(`DataEntryField - set name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
+  setDataEntryLine(dataEntryLine) {
+    cy.log(`DataEntryField - set dataEntryLine = ${dataEntryLine}`);
+    this.dataEntryLine = dataEntryLine;
+    return this;
+  }
+
+  setSeqNo(seqNo) {
+    cy.log(`DataEntryField - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
+
+  setDescription(description) {
+    cy.log(`DataEntryField - set description = ${description}`);
+    this.description = description;
+    return this;
+  }
+
+  setActive(isActive) {
+    cy.log(`DataEntryField - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
+  }
+
+  setDataEntryRecordType(dataEntryRecordType) {
+    cy.log(`DataEntryField - set dataEntryRecordType = ${dataEntryRecordType}`);
+    this.dataEntryRecordType = dataEntryRecordType;
+    return this;
+  }
+
+  setMandatory(isMandatory) {
+    cy.log(`DataEntryField - set isMandatory = ${isMandatory}`);
+    this.isMandatory = isMandatory;
+    return this;
+  }
+
+  setPersonalDataCategory(personalDataCategory) {
+    cy.log(`DataEntryField - set personalDataCategory = ${personalDataCategory}`);
+    this.personalDataCategory = personalDataCategory;
+    return this;
+  }
+
+  addDataEntryListValue(dataEntryListValue) {
+    cy.log(`DataEntryField - add dataEntryListValue = ${JSON.stringify(dataEntryListValue)}`);
+    this.dataEntryListValues.push(dataEntryListValue);
+    return this;
   }
 
   apply() {
@@ -17,125 +72,33 @@ export class DataEntryField {
     cy.log(`DataEntryField - apply - END (name=${this.name})`);
     return this;
   }
-
-  static get builder() {
-    class Builder {
-      constructor(name, dataEntryLine) {
-        cy.log(`DataEntryFieldBuilder - set name = ${name}; dataEntryLine = ${dataEntryLine}`);
-        this.name = name;
-        this.dataEntryLine = dataEntryLine;
-        this.seqNo = undefined;
-        this.description = undefined;
-        this.isActive = true;
-        this.dataEntryRecordType = undefined;
-        this.isMandatory = undefined;
-        this.personalDataCategory = undefined;
-        this.dataEntryListValues = [];
-      }
-
-      setName(name) {
-        cy.log(`DataEntryFieldBuilder - set name = ${name}`);
-        this.name = name;
-        return this;
-      }
-
-      setDataEntryLine(dataEntryLine) {
-        cy.log(`DataEntryFieldBuilder - set dataEntryLine = ${dataEntryLine}`);
-        this.dataEntryLine = dataEntryLine;
-        return this;
-      }
-
-      setSeqNo(seqNo) {
-        cy.log(`DataEntryFieldBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
-
-      setDescription(description) {
-        cy.log(`DataEntryFieldBuilder - set description = ${description}`);
-        this.description = description;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntryFieldBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      setDataEntryRecordType(dataEntryRecordType) {
-        cy.log(`DataEntryFieldBuilder - set dataEntryRecordType = ${dataEntryRecordType}`);
-        this.dataEntryRecordType = dataEntryRecordType;
-        return this;
-      }
-
-      setMandatory(isMandatory) {
-        cy.log(`DataEntryFieldBuilder - set isMandatory = ${isMandatory}`);
-        this.isMandatory = isMandatory;
-        return this;
-      }
-
-      setPersonalDataCategory(personalDataCategory) {
-        cy.log(`DataEntryFieldBuilder - set personalDataCategory = ${personalDataCategory}`);
-        this.personalDataCategory = personalDataCategory;
-        return this;
-      }
-
-      addDataEntryListValue(dataEntryListValue) {
-        cy.log(`DataEntryFieldBuilder - add dataEntryListValue = ${JSON.stringify(dataEntryListValue)}`);
-        this.dataEntryListValues.push(dataEntryListValue);
-        return this;
-      }
-
-      build() {
-        return new DataEntryField(this);
-      }
-    }
-    return Builder;
-  }
 }
 
 export class DataEntryListValue {
-  constructor(builder) {
-    this.name = builder.name;
-    this.description = builder.description;
-    this.seqNo = builder.seqNo;
-    this.isActive = builder.isActive;
+  constructor(name) {
+    cy.log(`DataEntryListValue - set name = ${name}`);
+    this.name = name;
+    this.seqNo = undefined;
+    this.description = undefined;
+    this.isActive = true;
   }
 
-  static get builder() {
-    class Builder {
-      constructor(name) {
-        cy.log(`DataEntryListValueBuilder - set name = ${name}`);
-        this.name = name;
-        this.seqNo = undefined;
-        this.description = undefined;
-        this.isActive = true;
-      }
+  setSeqNo(seqNo) {
+    cy.log(`DataEntryListValue - set seqNo = ${seqNo}`);
+    this.seqNo = seqNo;
+    return this;
+  }
 
-      setSeqNo(seqNo) {
-        cy.log(`DataEntryListValueBuilder - set seqNo = ${seqNo}`);
-        this.seqNo = seqNo;
-        return this;
-      }
+  setDescription(description) {
+    cy.log(`DataEntryListValue - set description = ${description}`);
+    this.description = description;
+    return this;
+  }
 
-      setDescription(description) {
-        cy.log(`DataEntryListValueBuilder - set description = ${description}`);
-        this.description = description;
-        return this;
-      }
-
-      setActive(isActive) {
-        cy.log(`DataEntryListValueBuilder - set isActive = ${isActive}`);
-        this.isActive = isActive;
-        return this;
-      }
-
-      build() {
-        return new DataEntryListValue(this);
-      }
-    }
-    return Builder;
+  setActive(isActive) {
+    cy.log(`DataEntryListValue - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
   }
 }
 
