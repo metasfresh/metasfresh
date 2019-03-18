@@ -58,7 +58,7 @@ public class PhonecallSchema
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PhonecallSchemaVersion> getPhonecallSchemaVersions(@NonNull final LocalDate startDate, @NonNull final LocalDate endDate)
+	public List<PhonecallSchemaVersion> getPhonecallSchemaVersions(@NonNull final LocalDate endDate)
 	{
 		ImmutableList<PhonecallSchemaVersion> phonecallVersionsForDateRange = versions.stream()
 				.filter(version -> version.getValidFrom().compareTo(endDate) <= 0)

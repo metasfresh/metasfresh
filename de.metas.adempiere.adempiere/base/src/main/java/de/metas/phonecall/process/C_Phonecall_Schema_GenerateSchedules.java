@@ -1,10 +1,8 @@
 package de.metas.phonecall.process;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 
 import org.compiere.Adempiere;
-import org.compiere.util.TimeUtil;
 
 import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaId;
@@ -41,20 +39,17 @@ public class C_Phonecall_Schema_GenerateSchedules extends JavaProcess
 	private final PhonecallSchemaRepository schemaRepo = Adempiere.getBean(PhonecallSchemaRepository.class);
 
 	@Param(parameterName = "DateFrom")
-	private Timestamp p_StartDate;
+	private LocalDate p_StartDate;
 
 	@Param(parameterName = "DateTo")
-	private Timestamp p_EndDate;
+	private LocalDate p_EndDate;
 
 	@Override
 	protected String doIt()
 	{
 		final PhonecallSchema phonecallSchema = schemaRepo.getById(PhonecallSchemaId.ofRepoId(getRecord_ID()));
 
-		final LocalDate startDate = TimeUtil.asLocalDate(p_StartDate);
-		final LocalDate endDate = TimeUtil.asLocalDate(p_EndDate);
-
-		phonecallScheduleService.generateForPhonecallSchema(phonecallSchema, startDate, endDate);
+		phonecallScheduleService.generateForPhonecallSchema(phonecallSchema, p_StartDate, p_EndDate);
 
 		return MSG_OK;
 	}

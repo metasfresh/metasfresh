@@ -132,7 +132,7 @@ public class PhonecallScheduleService
 		// Retrieve all phonecall schema versions in our scope
 		// NOTE: we assume they are already ordered by ValidFrom
 		// NOTE2: we are not restricting the dateFrom because we want to also get the tour version which is currently active at the beginning of our interval
-		final List<PhonecallSchemaVersion> phonecallSchemaVersions = phonecallSchema.getPhonecallSchemaVersions(startDate, endDate);
+		final List<PhonecallSchemaVersion> phonecallSchemaVersions = phonecallSchema.getPhonecallSchemaVersions(endDate);
 		if (phonecallSchemaVersions.isEmpty())
 		{
 			return Collections.emptyList();
