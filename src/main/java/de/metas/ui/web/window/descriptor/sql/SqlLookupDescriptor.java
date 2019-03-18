@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
+import de.metas.security.permissions.Access;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -332,7 +333,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private int AD_Reference_Value_ID = -1;
 		private int AD_Val_Rule_ID = -1;
 		private LookupScope scope = LookupScope.DocumentField;
-		private Boolean readWriteAccess = null;
+		private Access requiredAccess = null;
 
 		//
 		// Built/prepared values
@@ -529,7 +530,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
 					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset.toStringWithMarkers())
 					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit.toStringWithMarkers()) // LIMIT
-					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, isReadWriteAccessRequired(tableName))) // security
+					.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
 					.build();
 
 			final IStringExpression sqlForFetchingLookupById = IStringExpression
@@ -610,7 +611,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
 					.append("\n OFFSET ").append(LookupDataSourceContext.PARAM_Offset) // OFFSET
 					.append("\n LIMIT ").append(LookupDataSourceContext.PARAM_Limit) // LIMIT
-					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, isReadWriteAccessRequired(tableName))) // security
+					.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
 					.build();
 		}
 
@@ -732,31 +733,26 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		/** Advice the lookup to show all records on which current user has at least read only access */
 		public Builder setReadOnlyAccess()
 		{
-			this.readWriteAccess = Boolean.FALSE;
+			this.requiredAccess = Access.READ;
 			return this;
 		}
 
-		private final boolean isReadWriteAccessRequired(final String tableName)
+		private final Access getRequiredAccess(final String tableName)
 		{
-			if (readWriteAccess != null)
+			if (requiredAccess != null)
 			{
-				return readWriteAccess.booleanValue();
+				return requiredAccess;
 			}
 
-			return extractReadWriteAccessRequired(tableName);
-		}
-
-		private static final boolean extractReadWriteAccessRequired(final String tableName)
-		{
 			// AD_Client_ID/AD_Org_ID (security fields): shall display only those entries on which current user has read-write access
 			if (I_AD_Client.Table_Name.equals(tableName)
 					|| I_AD_Org.Table_Name.equals(tableName))
 			{
-				return IUserRolePermissions.SQL_RW;
+				return Access.WRITE;
 			}
 
 			// Default: all entries on which current user has at least readonly access
-			return IUserRolePermissions.SQL_RO;
+			return Access.READ;
 		}
 
 		public Builder addValidationRule(final IValidationRule validationRule)

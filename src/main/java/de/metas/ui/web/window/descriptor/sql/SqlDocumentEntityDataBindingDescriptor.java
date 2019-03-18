@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
+import de.metas.security.permissions.Access;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -324,7 +325,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 					.append("SELECT ")
 					.append("\n ").append(Joiner.on("\n, ").join(sqlSelectValuesList))
 					.append("\n FROM ").append(sqlTableName)
-					.wrap(AccessSqlStringExpression.wrapper(sqlTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)) // security
+					.wrap(AccessSqlStringExpression.wrapper(sqlTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ)) // security
 					.build();
 
 			final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer()
