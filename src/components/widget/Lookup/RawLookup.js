@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-import _, { debounce } from 'lodash';
+import { debounce } from 'throttle-debounce';
 
 import {
   autocompleteRequest,
@@ -13,8 +13,6 @@ import {
 import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
-
-const DEBOUNCE_TIME = 100;
 
 export class RawLookup extends Component {
   constructor(props) {
@@ -33,11 +31,22 @@ export class RawLookup extends Component {
       parentElement: undefined,
     };
 
-    this.handleChange = this.handleChange.bind(this);
+    const debounceTime = props.item
+      ? props.item.lookupSearchStartDelayMillis || 100
+      : 100;
+    this.minQueryLength = props.item
+      ? props.item.lookupSearchStringMinLength || 0
+      : 0;
+
     this.handleBlur = this.handleBlur.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
     this.handleValueChanged = this.handleValueChanged.bind(this);
     this.typeaheadRequest = this.typeaheadRequest.bind(this);
+
+    this.autocompleteSearchDebounced = debounce(
+      debounceTime,
+      this.typeaheadRequest
+    );
   }
 
   componentDidMount() {
@@ -277,8 +286,6 @@ export class RawLookup extends Component {
       mandatory,
       placeholder,
     } = this.props;
-
-    console.log('request');
     const inputValue = this.inputSearch.value;
 
     let typeaheadRequest;
@@ -362,8 +369,6 @@ export class RawLookup extends Component {
       this.props.resetLocalClearing();
     }
 
-    console.log('handleChange');
-
     const inputValue = this.inputSearch.value;
 
     if (inputValue || allowEmpty) {
@@ -373,18 +378,19 @@ export class RawLookup extends Component {
         onDropdownListToggle(true);
       }
 
-      this.setState({
-        isInputEmpty: false,
-        loading: true,
-        query: inputValue,
-      });
-
-      const debounced = debounce(this.typeaheadRequest, DEBOUNCE_TIME, {
-        leading: true,
-        trailing: false,
-      });
-
-      debounced();
+      this.setState(
+        {
+          isInputEmpty: false,
+          loading: true,
+          query: inputValue,
+        },
+        () => {
+          const q = this.state.query;
+          if (q.length > this.minQueryLength) {
+            this.autocompleteSearchDebounced();
+          }
+        }
+      );
     } else {
       this.setState({
         isInputEmpty: true,
