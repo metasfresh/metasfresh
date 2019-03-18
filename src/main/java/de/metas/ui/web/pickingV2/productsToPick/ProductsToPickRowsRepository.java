@@ -4,7 +4,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import lombok.NonNull;
 
@@ -33,12 +33,12 @@ import lombok.NonNull;
 @Repository
 public class ProductsToPickRowsRepository
 {
-	private final HUReservationDocumentFilterService huReservationService;
+	private final HUReservationService huReservationService;
 	private final PickingCandidateRepository pickingCandidateRepo;
 	private final PickingCandidateService pickingCandidateService;
 
 	public ProductsToPickRowsRepository(
-			@NonNull final HUReservationDocumentFilterService huReservationService,
+			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateRepository pickingCandidateRepo,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{

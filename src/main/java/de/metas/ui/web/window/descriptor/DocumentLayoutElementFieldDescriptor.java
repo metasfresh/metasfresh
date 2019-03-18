@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -94,9 +95,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	@Getter
 	private final LookupSource lookupSource;
-
 	@Getter
 	private final Optional<String> lookupTableName;
+	@Getter
+	private final int lookupSearchStringMinLength;
+	@Getter
+	private final Optional<Duration> lookupSearchStartDelay;
 
 	private final ITranslatableString emptyText;
 
@@ -127,6 +131,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		lookupSource = builder.lookupSource;
 		lookupTableName = builder.getLookupTableName();
+		lookupSearchStringMinLength = builder.lookupSearchStringMinLength;
+		lookupSearchStartDelay = builder.lookupSearchStartDelay;
 
 		supportZoomInto = builder.isSupportZoomInto();
 	}
@@ -191,6 +197,8 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		private LookupSource lookupSource;
 		private Optional<String> lookupTableName = null;
+		private int lookupSearchStringMinLength = -1;
+		private Optional<Duration> lookupSearchStartDelay = Optional.empty();
 
 		private boolean consumed = false;
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
@@ -237,40 +245,49 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return fieldName;
 		}
 
-		public Builder setLookupSource(final LookupSource lookupSource)
+		public Builder setLookupInfos(final LookupDescriptor lookupDescriptor)
 		{
-			this.lookupSource = lookupSource;
+			if (lookupDescriptor != null)
+			{
+				this.lookupSource = lookupDescriptor.getLookupSourceType();
+				this.lookupTableName = lookupDescriptor.getTableName();
+				this.lookupSearchStringMinLength = lookupDescriptor.getSearchStringMinLength();
+				this.lookupSearchStartDelay = lookupDescriptor.getSearchStartDelay();
+			}
+			else
+			{
+				this.lookupSource = null;
+				this.lookupTableName = Optional.empty();
+				this.lookupSearchStringMinLength = -1;
+				this.lookupSearchStartDelay = Optional.empty();
+			}
+
 			return this;
 		}
 
-		public LookupSource getLookupSource()
+		public Builder setLookupSourceAsText()
 		{
-			return lookupSource;
-		}
-
-		public boolean isLookup()
-		{
-			return lookupSource != null;
-		}
-
-		public Builder setLookupTableName(@NonNull final Optional<String> lookupTableName)
-		{
-			this.lookupTableName = lookupTableName;
+			this.lookupSource = LookupSource.text;
+			this.lookupTableName = Optional.empty();
+			this.lookupSearchStringMinLength = -1;
+			this.lookupSearchStartDelay = Optional.empty();
 			return this;
 		}
 
-		public Optional<String> getLookupTableName()
+		private Optional<String> getLookupTableName()
 		{
 			if (lookupTableName != null)
 			{
 				return lookupTableName;
 			}
-			if (documentFieldBuilder != null)
+			else if (documentFieldBuilder != null)
 			{
 				return documentFieldBuilder.getLookupTableName();
 			}
-
-			return Optional.empty();
+			else
+			{
+				return Optional.empty();
+			}
 		}
 
 		public Builder setFieldType(final FieldType fieldType)

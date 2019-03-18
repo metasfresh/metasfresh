@@ -118,7 +118,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <ul>
 <li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${MF_VERSION}.jar</a></li>
 <li>A docker image which you can run in docker via<br>
-<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${publishedDockerImageName}</code></li>
+<code>docker run --rm -d --memory=512m -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${misc.mkDockerTag(MF_VERSION)} ${publishedDockerImageName}</code></li>
 </ul>"""
 
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh-webui-api_repo')
@@ -136,7 +136,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 		def misc = new de.metas.jenkins.Misc();
 		final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
 
-		build job: jobName,
+		final def metasfreshDownStreamBuildResult = build job: jobName,
 			parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
@@ -144,7 +144,11 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 			string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
 			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-			], wait: false
+			], wait: true
+
+		currentBuild.description="""${currentBuild.description}<p/>
+This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshDownStreamBuildResult.absoluteUrl}">${metasfreshDownStreamBuildResult.displayName}</a>
+				"""
 	}
 }
 else

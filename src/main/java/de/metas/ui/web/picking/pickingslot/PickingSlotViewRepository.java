@@ -28,7 +28,6 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -96,8 +95,7 @@ public class PickingSlotViewRepository
 						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
 						.setDisplayType(DisplayType.Search)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.buildProvider()
-						.provideForScope(LookupScope.DocumentField)));
+						.buildForDefaultScope()));
 	}
 
 	private static Supplier<LookupDataSource> createBPartnerLookup()
@@ -108,8 +106,7 @@ public class PickingSlotViewRepository
 						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
 						.setDisplayType(DisplayType.Search)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.buildProvider()
-						.provideForScope(LookupScope.DocumentField)));
+						.buildForDefaultScope()));
 	}
 
 	private static Supplier<LookupDataSource> createBPartnerLocationLookup()
@@ -120,8 +117,7 @@ public class PickingSlotViewRepository
 						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
 						.setDisplayType(DisplayType.Search)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.buildProvider()
-						.provideForScope(LookupScope.DocumentField)));
+						.buildForDefaultScope()));
 	}
 
 	@VisibleForTesting

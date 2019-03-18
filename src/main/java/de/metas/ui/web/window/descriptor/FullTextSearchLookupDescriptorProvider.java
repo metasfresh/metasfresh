@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -50,7 +51,7 @@ public class FullTextSearchLookupDescriptorProvider implements LookupDescriptorP
 
 	private final LookupDescriptorProvider databaseLookupDescriptorProvider;
 
-	private final transient Function<LookupScope, LookupDescriptor> lookupDescriptorsByScope = Functions.memoizing(this::createLookupDescriptor);
+	private final transient Function<LookupScope, Optional<LookupDescriptor>> lookupDescriptorsByScope = Functions.memoizing(this::createLookupDescriptor);
 
 	@Builder
 	private FullTextSearchLookupDescriptorProvider(
@@ -68,17 +69,22 @@ public class FullTextSearchLookupDescriptorProvider implements LookupDescriptorP
 	}
 
 	@Override
-	public LookupDescriptor provideForScope(final LookupScope scope)
+	public Optional<LookupDescriptor> provideForScope(final LookupScope scope)
 	{
 		return lookupDescriptorsByScope.apply(scope);
 	}
 
-	private LookupDescriptor createLookupDescriptor(final LookupScope scope)
+	private Optional<LookupDescriptor> createLookupDescriptor(final LookupScope scope)
 	{
-		final LookupDescriptor databaseLookupDescriptor = databaseLookupDescriptorProvider.provideForScope(scope);
+		final LookupDescriptor databaseLookupDescriptor = databaseLookupDescriptorProvider.provideForScope(scope).orElse(null);
+		if (databaseLookupDescriptor == null)
+		{
+			return Optional.empty();
+		}
+
 		final LookupDataSource databaseLookup = lookupDataSourceFactory.createLookupDataSource(databaseLookupDescriptor);
 
-		return FullTextSearchLookupDescriptor.builder()
+		final FullTextSearchLookupDescriptor lookupDescriptor = FullTextSearchLookupDescriptor.builder()
 				.elasticsearchClient(elasticsearchClient)
 				.modelTableName(modelTableName)
 				.esIndexName(esIndexName)
@@ -86,6 +92,8 @@ public class FullTextSearchLookupDescriptorProvider implements LookupDescriptorP
 				.sqlLookupDescriptor(databaseLookupDescriptor.castOrNull(ISqlLookupDescriptor.class))
 				.databaseLookup(databaseLookup)
 				.build();
+
+		return Optional.of(lookupDescriptor);
 	}
 
 }

@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
@@ -71,6 +72,16 @@ public interface LookupDescriptor
 	default Class<?> getValueClass()
 	{
 		return isNumericKey() ? IntegerLookupValue.class : StringLookupValue.class;
+	}
+
+	default int getSearchStringMinLength()
+	{
+		return -1;
+	}
+
+	default Optional<Duration> getSearchStartDelay()
+	{
+		return Optional.empty();
 	}
 
 	default <T extends LookupDescriptor> T cast(final Class<T> lookupDescriptorClass)

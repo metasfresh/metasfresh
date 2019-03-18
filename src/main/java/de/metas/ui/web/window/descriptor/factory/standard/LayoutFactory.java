@@ -45,7 +45,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -446,17 +445,6 @@ public class LayoutFactory
 			return null;
 		}
 
-		// NOTE: per jassy request, when dealing with composed lookup fields, first field shall be Lookup and not List.
-		if (layoutElementBuilder.getFieldsCount() > 1)
-		{
-			final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = layoutElementBuilder.getFirstField();
-			if (layoutElementFieldBuilder.isLookup())
-			{
-				layoutElementBuilder.setWidgetType(DocumentFieldWidgetType.Lookup);
-				layoutElementFieldBuilder.setLookupSource(LookupSource.lookup);
-			}
-		}
-
 		//
 		// Collect advanced fields
 		if (layoutElementBuilder.isAdvancedField())
@@ -679,7 +667,7 @@ public class LayoutFactory
 		}
 
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
-				.setLookupSource(field.getLookupSourceType())
+				.setLookupInfos(field.getLookupDescriptor().orElse(null))
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
 				.setSupportZoomInto(field.isSupportZoomInto())
 				.trackField(field);

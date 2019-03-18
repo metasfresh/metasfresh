@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.ListLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -235,7 +236,7 @@ final class WebuiProcessClassInfo
 				.setLookupValues(ann.numericKey(), evalCtx -> retriveLookupValues(methodToInvoke, parameterValueProviders, evalCtx))
 				.build();
 
-		final LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.singleton(lookupDescriptor);
+		final LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProviders.singleton(lookupDescriptor);
 		return GuavaCollectors.entry(ann.parameterName(), lookupDescriptorProvider);
 	}
 

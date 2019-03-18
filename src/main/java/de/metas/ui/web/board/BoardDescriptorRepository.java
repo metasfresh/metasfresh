@@ -51,6 +51,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.ui.web.base.model.I_WEBUI_Board;
 import de.metas.ui.web.base.model.I_WEBUI_Board_CardField;
 import de.metas.ui.web.base.model.I_WEBUI_Board_Lane;
@@ -76,7 +77,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -284,8 +284,13 @@ public class BoardDescriptorRepository
 					return null;
 				}
 
-				final int currencyId = rs.getInt(WindowConstants.FIELDNAME_C_Currency_ID);
-				final String currencyCode = Services.get(ICurrencyDAO.class).getISO_Code(Env.getCtx(), currencyId);
+				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(rs.getInt(WindowConstants.FIELDNAME_C_Currency_ID));
+				if (currencyId == null)
+				{
+					return valueBD;
+				}
+
+				final String currencyCode = Services.get(ICurrencyDAO.class).getISOCodeById(currencyId);
 				if (currencyCode == null)
 				{
 					return valueBD;
@@ -300,7 +305,7 @@ public class BoardDescriptorRepository
 		{
 			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue());
 			final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
-			final LookupDescriptor lookupDescriptor = documentField.getLookupDescriptor(LookupScope.DocumentField);
+			final LookupDescriptor lookupDescriptor = documentField.getLookupDescriptor().orElse(null);
 			fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, lookupDescriptor);
 		}
 
@@ -367,7 +372,7 @@ public class BoardDescriptorRepository
 			final String tableAlias = "r";
 			final String keyColumnNameFQ = tableAlias + "." + keyColumnName;
 			final String userIdColumnNameFQ = tableAlias + "." + userIdColumnName;
-			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
+			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getLookupDescriptor());
 
 			sqlExpr = IStringExpression.composer()
 					.append("SELECT ")
@@ -430,7 +435,7 @@ public class BoardDescriptorRepository
 			final String tableAlias = "r";
 			final String keyColumnNameFQ = tableAlias + "." + keyColumnName;
 			final String userIdColumnNameFQ = tableAlias + "." + userIdColumnName;
-			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
+			final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getLookupDescriptor());
 
 			sqlExpr = IStringExpression.composer()
 					.append("SELECT ")
