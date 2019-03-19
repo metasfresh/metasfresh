@@ -90,7 +90,7 @@ run_metasfresh()
 # https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
 # MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
 # local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
-MEMORY_PARAMS="-Xmx512M"
+MEMORY_PARAMS="-Xmx${java_max_heap}"
 
  cd /opt/metasfresh-msv3-server/\
  && java\
