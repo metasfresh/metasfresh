@@ -1,4 +1,5 @@
 import { getBreadcrumbs } from '../../support/apiRequests';
+import { salesOrders } from '../../page_objects/sales_orders';
 
 describe('New sales order test', function() {
   const windowId = 143;
@@ -13,80 +14,74 @@ describe('New sales order test', function() {
       headerCaption = caption;
     });
 
-    cy.visit(`/window/${windowId}`);
+    salesOrders.visit();
+    salesOrders.verifyElements();
   });
 
   describe('List tests', function() {
     it('Test if rows get selected/deselected properly', function() {
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
-        .eq(0)
-        .should('exist');
+      const s = salesOrders;
 
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
+      s.getRows()
         .eq(1)
         .find('td')
         .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
+      s.getRows()
         .eq(2)
         .find('td')
         .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      cy.get('.row-selected').should('have.length', 2);
-
-      cy.get('.document-list-header').click();
-
-      cy.get('.row-selected').should('have.length', 0);
+      s.getSelectedRows().should('have.length', 2);
+      s.clickListHeader();
+      s.getSelectedRows().should('have.length', 0);
     });
   });
 
-  describe('Create a new sales order', function() {
-    before(function() {
-      cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
+  // describe('Create a new sales order', function() {
+  //   before(function() {
+  //     cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
 
-      const option = ~~(Math.random() * (2 - 0)) + 0;
+  //     const option = ~~(Math.random() * (2 - 0)) + 0;
 
-      if (option === 0) {
-        cy.get('.header-breadcrumb')
-          .contains('.header-item', headerCaption)
-          .click();
+  //     if (option === 0) {
+  //       cy.get('.header-breadcrumb')
+  //         .contains('.header-item', headerCaption)
+  //         .click();
 
-        cy.get('.header-breadcrumb')
-          .find('.menu-overlay')
-          .should('exist')
-          .find('.menu-overlay-link')
-          .contains(menuOption)
-          .click();
-      } else {
-        cy.clickHeaderNav('New');
-      }
+  //       cy.get('.header-breadcrumb')
+  //         .find('.menu-overlay')
+  //         .should('exist')
+  //         .find('.menu-overlay-link')
+  //         .contains(menuOption)
+  //         .click();
+  //     } else {
+  //       cy.clickHeaderNav('New');
+  //     }
 
-      cy.get('.header-breadcrumb-sitename').should('contain', '<');
-    });
+  //     cy.get('.header-breadcrumb-sitename').should('contain', '<');
+  //   });
 
-    it('Fill Business Partner', function() {
-      cy.writeIntoLookupListField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
-      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
-      cy.writeIntoLookupListField('AD_User_ID', 'Test', 'Test');
+  //   it('Fill Business Partner', function() {
+  //     cy.writeIntoLookupListField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
+  //     cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
+  //     cy.writeIntoLookupListField('AD_User_ID', 'Test', 'Test');
 
-      cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
-    });
+  //     cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
+  //   });
 
-    it('Fill order reference to differentiate cypress tests', function() {
-      cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
-      /*
-      cy.get('.indicator-pending').should('exist');
-      cy.wait(100);
-      cy.get('.indicator-pending').should('not.exist');
-      */
-    });
+  //   it('Fill order reference to differentiate cypress tests', function() {
+  //     cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
+  //     /*
+  //     cy.get('.indicator-pending').should('exist');
+  //     cy.wait(100);
+  //     cy.get('.indicator-pending').should('not.exist');
+  //     */
+  //   });
 
   //   it('Add new product', function() {
   //     const addNewText = Cypress.messages.window.addNew.caption;
@@ -151,5 +146,5 @@ describe('New sales order test', function() {
   //       cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
   //     });
   //   });
-  });
+  // });
 });
