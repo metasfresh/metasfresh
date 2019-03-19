@@ -23,31 +23,26 @@ package org.adempiere.uom.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionDAO;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.adempiere.util.proxy.Cached;
+import org.adempiere.uom.api.UOMConversionsMap;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.cache.annotation.CacheCtx;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -298,30 +293,24 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public BigDecimal convert(
 			final Properties ctx,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo,
+			final I_C_UOM fromUOM,
+			final I_C_UOM toUOM,
 			final BigDecimal qty,
 			final boolean useStdPrecision)
 	{
 		// Nothing to do
-		if (qty == null || qty.signum() == 0 || uomFrom == null || uomTo == null)
+		if (qty == null || qty.signum() == 0 || fromUOM == null || toUOM == null)
 		{
 			return qty;
 		}
 
-		final Map<ArrayKey, BigDecimal> conversions = getRates(ctx);
+		final UomId fromUomId = UomId.ofRepoId(fromUOM.getC_UOM_ID());
+		final UomId toUomId = UomId.ofRepoId(toUOM.getC_UOM_ID());
 
-		final int uomFromID = uomFrom.getC_UOM_ID();
-		final int uomToID = uomTo.getC_UOM_ID();
+		final UOMConversionsMap conversions = getGenericRates();
+		final BigDecimal multiplyRate = conversions.getRate(fromUomId, toUomId);
 
-		final ArrayKey key = mkGenericRatesKey(uomFromID, uomToID);
-		final BigDecimal multiplyRate = conversions.get(key);
-		if (multiplyRate == null)
-		{
-			throw new NoUOMConversionException(-1, uomFromID, uomToID);
-		}
-
-		final int precision = useStdPrecision ? uomTo.getStdPrecision() : uomTo.getCostingPrecision();
+		final int precision = useStdPrecision ? toUOM.getStdPrecision() : toUOM.getCostingPrecision();
 
 		// Calculate & Scale
 		BigDecimal qtyConv = multiplyRate.multiply(qty);
@@ -329,6 +318,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			qtyConv = qtyConv.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
+
 		return qtyConv;
 	}   // convert
 
@@ -369,100 +359,80 @@ public class UOMConversionBL implements IUOMConversionBL
 		return null;
 	}	// convertProductTo
 
-	@Override
-	public List<I_C_UOM_Conversion> getProductConversions(final ProductId productId)
+	private UOMConversionsMap getProductConversions(final ProductId productId)
 	{
 		if (productId == null)
 		{
-			return ImmutableList.of();
+			return UOMConversionsMap.EMPTY;
 		}
 
-		return Services.get(IUOMConversionDAO.class).retrieveProductConversions(productId);
+		return Services.get(IUOMConversionDAO.class).getProductConversions(productId);
 	}
 
-	@Override
-	public BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo)
+	private BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo)
 	{
-		final int uomFromId = uomFrom.getC_UOM_ID();
-
-		final int uomToId = uomTo.getC_UOM_ID();
-		// nothing to do
-		if (uomFromId == uomToId)
+		final UomId fromUomId = UomId.ofRepoId(uomFrom.getC_UOM_ID());
+		final UomId toUomId = UomId.ofRepoId(uomTo.getC_UOM_ID());
+		if (fromUomId.equals(toUomId))
 		{
 			return BigDecimal.ONE;
 		}
 
-		//
-		BigDecimal rate = null;
-
-		final Map<ArrayKey, BigDecimal> conversions = getRates(ctx);
-
-		final ArrayKey conversionKey = mkGenericRatesKey(uomFromId, uomToId);
-
-		rate = conversions.get(conversionKey);
-
-		if (rate != null)
+		final UOMConversionsMap conversions = getGenericRates();
+		final Optional<BigDecimal> rate = conversions.getRateIfExists(fromUomId, toUomId);
+		if (rate.isPresent())
 		{
-			return rate;
+			return rate.get();
 		}
 
 		// try to derive
-		return deriveRate(ctx, uomFrom, uomTo);
+		return deriveRate(uomFrom, uomTo);
 	}	// getConversion
 
-	private final ArrayKey mkGenericRatesKey(final int uomFromId, final int uomToId)
+	UOMConversionsMap getGenericRates()
 	{
-		return new ArrayKey(uomFromId, uomToId);
-	}
-
-	/**
-	 * Create Conversion Matrix (Client)
-	 *
-	 * @param ctx context
-	 */
-	@Cached(cacheName = I_C_UOM_Conversion.Table_Name + "#by#GenericConversions", expireMinutes = Cached.EXPIREMINUTES_Never)
-	Map<ArrayKey, BigDecimal> getRates(@CacheCtx final Properties ctx)
-	{
-		// Here the conversions will be mapped
-		final ImmutableMap.Builder<ArrayKey, BigDecimal> conversionsMap = ImmutableMap.builder();
-
-		final List<I_C_UOM_Conversion> conversions = Services.get(IUOMConversionDAO.class).retrieveGenericConversions(ctx);
-		for (final I_C_UOM_Conversion conversion : conversions)
-		{
-			final int fromUOMId = conversion.getC_UOM_ID();
-			final int toUOMId = conversion.getC_UOM_To_ID();
-
-			final ArrayKey directConversionKey = mkGenericRatesKey(fromUOMId, toUOMId);
-
-			//
-			// Add fromUOMId -> toUOMId conversion (using multiply rate)
-			final BigDecimal multiplyRate = conversion.getMultiplyRate();
-			if (multiplyRate.signum() != 0)
-			{
-				conversionsMap.put(directConversionKey, multiplyRate);
-			}
-
-			//
-			// Add toUOMId -> fromUOMId conversion (using divide rate)
-			BigDecimal divideRate = conversion.getDivideRate();
-			if (divideRate.signum() == 0 && multiplyRate.signum() != 0)
-			{
-				// In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
-				divideRate = BigDecimal.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
-			}
-
-			final ArrayKey reversedConversionKey = mkGenericRatesKey(toUOMId, fromUOMId);
-			if (divideRate != null && divideRate.signum() != 0)
-			{
-				conversionsMap.put(reversedConversionKey, divideRate);
-			}
-			else
-			{
-				logger.warn("Not considering product conversion rate {} because divide rate was not determined from {}", reversedConversionKey, conversion);
-			}
-		}
-
-		return conversionsMap.build();
+		return Services.get(IUOMConversionDAO.class).getGenericConversions();
+		//
+		// // Here the conversions will be mapped
+		// final ImmutableMap.Builder<ArrayKey, BigDecimal> conversionsMap = ImmutableMap.builder();
+		//
+		// final List<I_C_UOM_Conversion> conversions = Services.get(IUOMConversionDAO.class).getGenericConversions();
+		// for (final I_C_UOM_Conversion conversion : conversions)
+		// {
+		// final int fromUOMId = conversion.getC_UOM_ID();
+		// final int toUOMId = conversion.getC_UOM_To_ID();
+		//
+		// final ArrayKey directConversionKey = mkGenericRatesKey(fromUOMId, toUOMId);
+		//
+		// //
+		// // Add fromUOMId -> toUOMId conversion (using multiply rate)
+		// final BigDecimal multiplyRate = conversion.getMultiplyRate();
+		// if (multiplyRate.signum() != 0)
+		// {
+		// conversionsMap.put(directConversionKey, multiplyRate);
+		// }
+		//
+		// //
+		// // Add toUOMId -> fromUOMId conversion (using divide rate)
+		// BigDecimal divideRate = conversion.getDivideRate();
+		// if (divideRate.signum() == 0 && multiplyRate.signum() != 0)
+		// {
+		// // In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
+		// divideRate = BigDecimal.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
+		// }
+		//
+		// final ArrayKey reversedConversionKey = mkGenericRatesKey(toUOMId, fromUOMId);
+		// if (divideRate != null && divideRate.signum() != 0)
+		// {
+		// conversionsMap.put(reversedConversionKey, divideRate);
+		// }
+		// else
+		// {
+		// logger.warn("Not considering product conversion rate {} because divide rate was not determined from {}", reversedConversionKey, conversion);
+		// }
+		// }
+		//
+		// return conversionsMap.build();
 	}
 
 	/**
@@ -473,53 +443,35 @@ public class UOMConversionBL implements IUOMConversionBL
 	 * @param uomDest uom we want to convert to
 	 * @return multiplier or null
 	 */
-	/* package */BigDecimal getRateForConversionFromProductUOM(final ProductId productId, final I_C_UOM uomDest)
+	@VisibleForTesting
+	BigDecimal getRateForConversionFromProductUOM(final ProductId productId, final I_C_UOM uomDest)
 	{
 		if (productId == null)
 		{
 			return null;
 		}
 
-		final List<I_C_UOM_Conversion> rates = getProductConversions(productId);
+		final UOMConversionsMap rates = getProductConversions(productId);
 		if (rates.isEmpty())
 		{
 			logger.debug("None found");
 			return null;
 		}
 
-		final int uomSourceId = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
-		final int uomDestId = uomDest.getC_UOM_ID();
+		final UomId fromUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId toUomId = UomId.ofRepoId(uomDest.getC_UOM_ID());
 
-		//
-		// Iterate through rates and try finding the best match
-		I_C_UOM_Conversion rateReversed = null;
-		for (final I_C_UOM_Conversion rate : rates)
+		final Optional<BigDecimal> rate = rates.getRateIfExists(fromUomId, toUomId);
+		if (rate.isPresent())
 		{
-			final int rateUomSourceId = rate.getC_UOM_ID();
-			final int rateUomDestId = rate.getC_UOM_To_ID();
-
-			// Check if we have a direct conversion
-			if (rateUomSourceId == uomSourceId && rateUomDestId == uomDestId)
-			{
-				return rate.getMultiplyRate();
-			}
-
-			// Check if we have a reversed conversion
-			if (rateUomSourceId == uomDestId && rateUomDestId == uomSourceId)
-			{
-				rateReversed = rate;
-			}
-
+			return rate.get();
 		}
-
-		if (rateReversed != null)
+		else
 		{
-			return rateReversed.getDivideRate();
+			logger.debug("None applied");
+			return null;
 		}
-
-		logger.debug("None applied");
-		return null;
-	}	// getProductRateTo
+	}
 
 	/**
 	 * Get rate to convert a qty from the given <code>C_UOM_Source_ID</code> to the stocking UOM of the given <code>M_Product_ID</code>'s product.
@@ -530,47 +482,30 @@ public class UOMConversionBL implements IUOMConversionBL
 	 *
 	 * @return multiplier or null
 	 */
-	/* package */BigDecimal getRateForConversionToProductUOM(final ProductId productId, final I_C_UOM uomSource)
+	@VisibleForTesting
+	BigDecimal getRateForConversionToProductUOM(final ProductId productId, final I_C_UOM uomSource)
 	{
-		final List<I_C_UOM_Conversion> rates = getProductConversions(productId);
+		final UOMConversionsMap rates = getProductConversions(productId);
 		if (rates.isEmpty())
 		{
 			logger.debug("getProductRateFrom - none found");
 			return null;
 		}
 
-		final int uomSourceId = uomSource.getC_UOM_ID();
-		final int uomDestId = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
+		final UomId fromUomId = UomId.ofRepoId(uomSource.getC_UOM_ID());
+		final UomId toUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
 
-		//
-		// Iterate through rates and try finding the best match
-		I_C_UOM_Conversion rateReversed = null;
-		for (final I_C_UOM_Conversion rate : rates)
+		final Optional<BigDecimal> rate = rates.getRateIfExists(fromUomId, toUomId);
+		if (rate.isPresent())
 		{
-			final int rateUomSourceId = rate.getC_UOM_ID();
-			final int rateUomDestId = rate.getC_UOM_To_ID();
-
-			// Check if we have a direct conversion
-			if (rateUomSourceId == uomDestId && rateUomDestId == uomSourceId)
-			{
-				return rate.getDivideRate();
-			}
-
-			// Check if we have a reversed conversion
-			if (rateUomSourceId == uomSourceId && rateUomDestId == uomDestId)
-			{
-				rateReversed = rate;
-			}
+			return rate.get();
 		}
-
-		if (rateReversed != null)
+		else
 		{
-			return rateReversed.getMultiplyRate();
+			logger.debug("None applied");
+			return null;
 		}
-
-		logger.debug("None applied");
-		return null;
-	}	// getProductRateFrom
+	}
 
 	@Override
 	public BigDecimal convertToProductUOM(
@@ -645,13 +580,9 @@ public class UOMConversionBL implements IUOMConversionBL
 		return null;
 	}	// convert
 
-	@Override
-	public BigDecimal deriveRate(
-			final Properties ctx,
-			final I_C_UOM uomFrom,
-			final I_C_UOM uomTo)
+	@VisibleForTesting
+	BigDecimal deriveRate(final I_C_UOM uomFrom, final I_C_UOM uomTo)
 	{
-
 		final int uomFromID = uomFrom.getC_UOM_ID();
 		final int uomToID = uomTo.getC_UOM_ID();
 
@@ -937,7 +868,10 @@ public class UOMConversionBL implements IUOMConversionBL
 	}	// deriveRate
 
 	@Override
-	public ProductPrice convertProductPriceToUom(@NonNull final ProductPrice price, @NonNull final UomId toUomId)
+	public ProductPrice convertProductPriceToUom(
+			@NonNull final ProductPrice price,
+			@NonNull final UomId toUomId,
+			@NonNull final CurrencyPrecision pricePrecision)
 	{
 		if (price.getUomId().equals(toUomId))
 		{
@@ -953,7 +887,7 @@ public class UOMConversionBL implements IUOMConversionBL
 				uomsRepo.getById(toUomId));
 
 		return price.withValueAndUomId(
-				price.getValue().multiply(factor),
+				price.toMoney().multiply(factor),
 				toUomId);
 	}
 }

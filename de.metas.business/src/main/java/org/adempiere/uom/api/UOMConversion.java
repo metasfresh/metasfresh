@@ -1,12 +1,10 @@
-package de.metas.product;
+package org.adempiere.uom.api;
+
+import java.math.BigDecimal;
 
 import org.adempiere.uom.UomId;
 
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -32,36 +30,26 @@ import lombok.Value;
  * #L%
  */
 
-/** Product Price / UOM */
+@Builder
 @Value
-@Builder(toBuilder = true)
-public class ProductPrice
+public class UOMConversion
 {
 	@NonNull
-	ProductId productId;
-
+	UomId fromUomId;
 	@NonNull
-	UomId uomId;
-
+	UomId toUomId;
 	@NonNull
-	@Getter(AccessLevel.NONE)
-	Money value;
-	
-	public Money toMoney()
-	{
-		return value;
-	}
-	
-	public CurrencyId getCurrencyId()
-	{
-		return value.getCurrencyId();
-	}
+	BigDecimal multiplyRate;
+	@NonNull
+	BigDecimal divideRate;
 
-	public ProductPrice withValueAndUomId(@NonNull final Money value, @NonNull final UomId uomId)
+	public static UOMConversion one(@NonNull final UomId uomId)
 	{
-		return toBuilder()
-				.value(value)
-				.uomId(uomId)
+		return builder()
+				.fromUomId(uomId)
+				.toUomId(uomId)
+				.multiplyRate(BigDecimal.ONE)
+				.divideRate(BigDecimal.ONE)
 				.build();
 	}
 }

@@ -36,6 +36,7 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.product.IProductBL;
+import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -579,7 +580,7 @@ public class CalloutInOut extends CalloutEngine
 				inoutLine.setQtyEntered(QtyEntered);
 			}
 
-			BigDecimal MovementQty = MUOMConversion.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
+			BigDecimal MovementQty = LegacyUOMConversionUtils.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (MovementQty == null)
 			{
 				MovementQty = QtyEntered;
@@ -625,7 +626,7 @@ public class CalloutInOut extends CalloutEngine
 				inoutLine.setQtyEntered(QtyEntered);
 			}
 
-			BigDecimal MovementQty = MUOMConversion.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
+			BigDecimal MovementQty = LegacyUOMConversionUtils.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (MovementQty == null)
 			{
 				MovementQty = QtyEntered;
@@ -655,7 +656,7 @@ public class CalloutInOut extends CalloutEngine
 					inoutLine.setMovementQty(MovementQty);
 				}
 
-				QtyEntered = MUOMConversion.convertFromProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, MovementQty);
+				QtyEntered = LegacyUOMConversionUtils.convertFromProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, MovementQty);
 				if (QtyEntered == null)
 				{
 					QtyEntered = MovementQty;

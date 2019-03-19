@@ -64,7 +64,7 @@ public class CostAmount
 
 	public static final CostAmount ofProductPrice(@NonNull final ProductPrice price)
 	{
-		return ofMoney(price.getValue());
+		return ofMoney(price.toMoney());
 	}
 
 	public static final CostAmount multiply(@NonNull final ProductPrice price, @NonNull final Quantity qty)
@@ -74,7 +74,7 @@ public class CostAmount
 			throw new AdempiereException("UOM does not match: " + price + ", " + qty);
 		}
 
-		return ofMoney(price.getValue().multiply(qty.getAsBigDecimal()));
+		return ofMoney(price.toMoney().multiply(qty.getAsBigDecimal()));
 	}
 
 	BigDecimal value;

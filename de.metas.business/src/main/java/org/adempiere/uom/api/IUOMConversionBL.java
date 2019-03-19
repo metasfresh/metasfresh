@@ -23,13 +23,12 @@ package org.adempiere.uom.api;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -152,16 +151,6 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal convertFromProductUOM(Properties ctx, ProductId productId, I_C_UOM uomDest, BigDecimal qtyToConvert);
 
 	/**
-	 * Derive Standard Conversions
-	 *
-	 * @param ctx context
-	 * @param uomFrom from UOM
-	 * @param uomTo to UOM
-	 * @return Conversion or null
-	 */
-	BigDecimal deriveRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo);
-
-	/**
 	 * Convert qty to target UOM and round.
 	 *
 	 * @param ctx context
@@ -186,28 +175,5 @@ public interface IUOMConversionBL extends ISingletonService
 
 	Quantity convertToProductUOM(Quantity quantity, ProductId productId);
 
-	/**
-	 * Get Product Conversions (cached). More detailed: gets those <code>C_UOM_Conversion</code>s that
-	 * <ul>
-	 * <li>reference the given <code>product</code>
-	 * <li>have <code>C_UOM_ID</code> (i.e. the "from" UOM) being equal to the product's <code>C_UOM</code>
-	 * </ul>
-	 *
-	 * @param ctx context
-	 * @param product
-	 * @return array of conversions
-	 */
-	List<I_C_UOM_Conversion> getProductConversions(ProductId productId);
-
-	/**
-	 * Get Multiplier Rate to target UOM
-	 *
-	 * @param ctx context
-	 * @param uomFrom
-	 * @param uomTo
-	 * @return multiplier
-	 */
-	BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo);
-
-	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId);
+	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId, CurrencyPrecision pricePrecision);
 }

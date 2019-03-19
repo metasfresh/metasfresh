@@ -13,10 +13,12 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import org.compiere.model.MUOM;
-import org.compiere.util.Env;
+import org.adempiere.uom.UomId;
+import org.adempiere.uom.api.IUOMDAO;
+import org.compiere.model.I_C_UOM;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -32,24 +34,24 @@ public class NoUOMConversionException extends AdempiereException
 	 */
 	private static final long serialVersionUID = -4868882017576097089L;
 
-	public NoUOMConversionException(int M_Product_ID, int C_UOM_ID, int C_UOM_To_ID)
+	public NoUOMConversionException(ProductId productId, UomId fromUomId, UomId toUomId)
 	{
-		super(buildMessage(M_Product_ID, C_UOM_ID, C_UOM_To_ID));
+		super(buildMessage(productId, fromUomId, toUomId));
 	}
 
-	private static String buildMessage(int M_Product_ID, int C_UOM_ID, int C_UOM_To_ID)
+	private static String buildMessage(ProductId productId, UomId fromUomId, UomId toUomId)
 	{
 		final StringBuilder sb = new StringBuilder("@" + AD_Message + "@ - ");
 
 		//
-		final String productName = Services.get(IProductBL.class).getProductValueAndName(M_Product_ID);
+		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
 		sb.append("@M_Product_ID@:").append(productName);
 
 		//
-		if (C_UOM_ID > 0)
+		if (fromUomId != null)
 		{
 			sb.append("  @C_UOM_ID@:");
-			MUOM uom = MUOM.get(Env.getCtx(), C_UOM_ID);
+			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(fromUomId);
 			if (uom != null)
 			{
 				sb.append(uom.getUOMSymbol());
@@ -57,11 +59,14 @@ public class NoUOMConversionException extends AdempiereException
 		}
 
 		//
-		sb.append("  @C_UOM_To_ID@:");
-		final MUOM uomTo = MUOM.get(Env.getCtx(), C_UOM_To_ID);
-		if (uomTo != null)
+		if (toUomId != null)
 		{
-			sb.append(uomTo.getUOMSymbol());
+			sb.append("  @C_UOM_To_ID@:");
+			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(toUomId);
+			if (uom != null)
+			{
+				sb.append(uom.getUOMSymbol());
+			}
 		}
 
 		//

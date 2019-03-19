@@ -13,15 +13,14 @@ package de.metas.adempiere.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -30,6 +29,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.uom.UomId;
+import org.adempiere.uom.api.CreateUOMConversionRequest;
+import org.adempiere.uom.api.IUOMConversionDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -103,11 +105,12 @@ public class OrderLineBLTest
 		InterfaceWrapperHelper.save(priceUom);
 
 		// Define conversion: uom->priceUom
-		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.create(ctx, I_C_UOM_Conversion.class, ITrx.TRXNAME_None);
-		conversion.setC_UOM_ID(uom.getC_UOM_ID());
-		conversion.setC_UOM_To_ID(priceUom.getC_UOM_ID());
-		conversion.setMultiplyRate(BigDecimal.ONE);
-		InterfaceWrapperHelper.save(conversion);
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(priceUom.getC_UOM_ID()))
+				.multiplyRate(BigDecimal.ONE)
+				.divideRate(BigDecimal.ONE)
+				.build());
 
 		final I_M_ProductPrice productprice = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice.class, ITrx.TRXNAME_None);
 		productprice.setM_Product_ID(product.getM_Product_ID());
@@ -133,7 +136,6 @@ public class OrderLineBLTest
 
 		return orderline;
 	}
-
 
 	@Test
 	public void test_ManualPrice()

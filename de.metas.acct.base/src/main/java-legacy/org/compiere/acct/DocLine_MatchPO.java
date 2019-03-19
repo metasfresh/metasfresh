@@ -25,7 +25,9 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
@@ -171,11 +173,14 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	private ProductPrice getOrderLineCostPrice()
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
 
 		final I_C_OrderLine orderLine = getOrderLine();
 		final ProductPrice costPrice = orderLineBL.getCostPrice(orderLine);
-		
-		return Services.get(IUOMConversionBL.class).convertProductPriceToUom(costPrice, getProductStockingUOMId());
+
+		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
 	}
 
 	public int getReceipt_InOutLine_ID()

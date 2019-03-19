@@ -36,6 +36,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -323,47 +324,47 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal rate;
 
 		final BigDecimal minutesPerDay = new BigDecimal(60 * 24);
-		rate = conversionBL.deriveRate(ctx, day, minute);
+		rate = conversionBL.deriveRate(day, minute);
 		Assert.assertTrue(minutesPerDay.equals(rate));
 
 		final BigDecimal daysPerWeek = new BigDecimal(7);
-		rate = conversionBL.deriveRate(ctx, week, day);
+		rate = conversionBL.deriveRate(week, day);
 		Assert.assertTrue(daysPerWeek.equals(rate));
 
 		final BigDecimal hoursPerDay = new BigDecimal(24);
-		rate = conversionBL.deriveRate(ctx, day, hour);
+		rate = conversionBL.deriveRate(day, hour);
 		Assert.assertTrue(hoursPerDay.equals(rate));
 
 		final BigDecimal hoursPerWeek = daysPerWeek.multiply(hoursPerDay);
-		rate = conversionBL.deriveRate(ctx, week, hour);
+		rate = conversionBL.deriveRate(week, hour);
 		Assert.assertTrue(hoursPerWeek.equals(rate));
 
 		final BigDecimal weeksPerMonth = new BigDecimal(4);
-		rate = conversionBL.deriveRate(ctx, month, week);
+		rate = conversionBL.deriveRate(month, week);
 		Assert.assertTrue(weeksPerMonth.equals(rate));
 
 		final BigDecimal daysPerMinute = new BigDecimal(1.0 / 1440.0);
-		rate = conversionBL.deriveRate(ctx, minute, day);
+		rate = conversionBL.deriveRate(minute, day);
 		Assert.assertTrue(daysPerMinute.equals(rate));
 
 		final BigDecimal weeksPerDay = new BigDecimal(1.0 / 7.0);
-		rate = conversionBL.deriveRate(ctx, day, week);
+		rate = conversionBL.deriveRate(day, week);
 		Assert.assertTrue(weeksPerDay.equals(rate));
 
 		final BigDecimal daysPerHour = new BigDecimal(1.0 / 24.0);
-		rate = conversionBL.deriveRate(ctx, hour, day);
+		rate = conversionBL.deriveRate(hour, day);
 		Assert.assertTrue(daysPerHour.equals(rate));
 
 		final BigDecimal weeksPerHour = new BigDecimal(1.0 / 168.0);
-		rate = conversionBL.deriveRate(ctx, hour, week);
+		rate = conversionBL.deriveRate(hour, week);
 		Assert.assertTrue(weeksPerHour.equals(rate));
 
 		final BigDecimal monthsPerWeek = new BigDecimal(1.0 / 4.0);
-		rate = conversionBL.deriveRate(ctx, week, month);
+		rate = conversionBL.deriveRate(week, month);
 		Assert.assertTrue(monthsPerWeek.equals(rate));
 
 		final BigDecimal minutesPerYear = new BigDecimal(1.0 / 525600.0);
-		rate = conversionBL.deriveRate(ctx, minute, year);
+		rate = conversionBL.deriveRate(minute, year);
 		Assert.assertTrue(minutesPerYear.equals(rate));
 	}
 
@@ -590,8 +591,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final ProductId productId = createProduct("Sand", uomTonnes);
 
 		//
-		// Conversion: Tonnes -> Trip
-		// 1 Tonne = 27 Trips
+		// Conversion: 1 Trip = 27 Tonnes
 		uomConversionHelper.createUOMConversion(
 				productId,
 				uomTonnes,
@@ -606,7 +606,7 @@ public class UOMConversionBLTest extends UOMTestBase
 				.value(Money.of(950, currencyId))
 				.build();
 
-		final ProductPrice priceConv = conversionBL.convertProductPriceToUom(price, toUomId(uomTonnes));
+		final ProductPrice priceConv = conversionBL.convertProductPriceToUom(price, toUomId(uomTonnes), CurrencyPrecision.ofInt(10));
 
 		System.out.println("    Price: " + price);
 		System.out.println("Converted: " + priceConv);
