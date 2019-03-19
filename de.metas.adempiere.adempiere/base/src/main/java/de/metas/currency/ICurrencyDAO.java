@@ -96,6 +96,8 @@ public interface ICurrencyDAO extends ISingletonService
 		return CurrencyPrecision.ofInt(getStdPrecision(Env.getCtx(), currencyId.getRepoId()));
 	}
 
+	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
+
 	/**
 	 * @param ctx
 	 * @param adClientId
