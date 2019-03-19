@@ -1,14 +1,19 @@
 package de.metas.phonecall.service;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import org.adempiere.user.UserId;
 import org.compiere.model.I_C_Phonecall_Schedule;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.phonecall.PhonecallSchedule;
+import de.metas.phonecall.PhonecallScheduleId;
+import de.metas.phonecall.PhonecallSchemaVersionLineId;
 import lombok.NonNull;
 
 /*
@@ -62,5 +67,24 @@ public class PhonecallScheduleRepository
 		phonecallScheduleRecord.setPhonecallTimeMax(TimeUtil.asTimestamp(schedule.getEndTime()));
 
 		saveRecord(phonecallScheduleRecord);
+	}
+
+	public PhonecallSchedule retrieveById(PhonecallScheduleId phonecallScheduleId)
+	{
+		final I_C_Phonecall_Schedule phonecallSchedule = loadOutOfTrx(phonecallScheduleId, I_C_Phonecall_Schedule.class);
+
+		return PhonecallSchedule.builder()
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(phonecallSchedule.getC_BPartner_ID(), phonecallSchedule.getC_BPartner_Location_ID()))
+				.contactId(UserId.ofRepoId(phonecallSchedule.getAD_User_ID()))
+				.date(TimeUtil.asLocalDate(phonecallSchedule.getPhonecallDate()))
+				.startTime(TimeUtil.asZonedDateTime(phonecallSchedule.getPhonecallTimeMin()))
+				.endTime(TimeUtil.asZonedDateTime(phonecallSchedule.getPhonecallTimeMax()))
+				.id(phonecallScheduleId)
+				.schemaVersionLineId(PhonecallSchemaVersionLineId.ofRepoId(
+						phonecallSchedule.getC_Phonecall_Schema_ID(),
+						phonecallSchedule.getC_Phonecall_Schema_Version_ID(),
+						phonecallSchedule.getC_Phonecall_Schema_Version_Line_ID()))
+				.build();
+
 	}
 }

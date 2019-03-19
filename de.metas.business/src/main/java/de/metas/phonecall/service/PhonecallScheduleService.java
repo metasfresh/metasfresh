@@ -78,7 +78,6 @@ public class PhonecallScheduleService
 			final List<PhonecallSchemaVersionLine> phonecallSchemaVersionLines = phonecallSchemaVersion.getLines();
 			if (phonecallSchemaVersionLines.isEmpty())
 			{
-
 				continue;
 			}
 			for (final PhonecallSchemaVersionLine phonecallSchemaVersionLine : phonecallSchemaVersionLines)
@@ -169,11 +168,7 @@ public class PhonecallScheduleService
 				// Case: our current tour version is before given dateFrom
 				if (phonecallSchemaVersionValidFrom.compareTo(startDate) < 0)
 				{
-					if (phonecallSchemaVersionsIterator.hasNext())
-					{
-						// do nothing, let's see what we get next
-					}
-					else
+					if (!phonecallSchemaVersionsIterator.hasNext())
 					{
 						// there is no other next, so we need to consider this one
 						previousPhonecallSchemaVersion = phonecallSchemaVersion;
