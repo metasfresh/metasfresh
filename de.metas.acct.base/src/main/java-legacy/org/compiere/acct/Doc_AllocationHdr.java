@@ -495,7 +495,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	{
 		final AcctSchema as = fact.getAcctSchema();
 
-		final BigDecimal paymentAllocatedAmt = line.getAllocatedAmt_CMAdjusted();
+		final BigDecimal paymentAllocatedAmt = line.getAllocatedAmt();
 		if (paymentAllocatedAmt.signum() == 0)
 		{
 			// no amount to be allocated on payment
@@ -518,11 +518,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		if (line.isSOTrxInvoice())
 		{
-			factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
+			}
+			else
+			{
+				factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
+			}
 		}
 		else
 		{
-			factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
+			}
+			else
+			{
+				factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
+			}
 		}
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
