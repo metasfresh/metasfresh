@@ -17,6 +17,7 @@ debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 server_port=${SERVER_PORT:-8183}
+java_max_heap=${JAVA_MAX_HEAP:-128M}
 
 echo_variable_values()
 {
@@ -39,6 +40,7 @@ echo_variable_values()
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "SERVER_PORT=${server_port}"
+ echo "JAVA_MAX_HEAP=${java_max_heap}"
 }
 
 set_properties()

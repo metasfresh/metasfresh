@@ -263,7 +263,7 @@ This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
           true, // wait=true
-          'metasfresh-esb-camel');
+          'metasfresh-edi');
 
 				MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = esbCamelDownStreamBuildResult.buildVariables.MF_VERSION;
 				MF_DOCKER_IMAGES['metasfresh-esb-camel'] = esbCamelDownStreamBuildResult.buildVariables.MF_DOCKER_IMAGE
