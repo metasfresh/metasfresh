@@ -218,15 +218,17 @@ stage('Invoke downstream jobs')
 This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDownStreamBuildResult.absoluteUrl}">${webuiDownStreamBuildResult.displayName}</a>
 				"""
 			},
-			metasfresh_e2e: {
+			// So why did we invoke metasfresh-e2e anyways?
+			// It does not depend on metasfresh after all.
+			// TODO: see what negative impacts we have without triggering it and the probably remove this block
+			/* metasfresh_e2e: {
 				
 				final def misc = new de.metas.jenkins.Misc();
 				final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
-				final String webuiFrontEndBranchName = misc.retrieveEffectiveBranchName('metasfresh-webui-frontend', MF_UPSTREAM_BRANCH);
 
 				final def e2eDownStreamBuildResult = build job: metasfreshE2eJobName,
 					parameters: [
-						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: webuiFrontEndBranchName)
+						string(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false)
 					], 
 					wait: true,
 					propagate: false
@@ -237,8 +239,7 @@ This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDow
 				currentBuild.description="""${currentBuild.description}<p/>
 This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStreamBuildResult.absoluteUrl}">${e2eDownStreamBuildResult.displayName}</a>
 				"""
-
-			},
+			},*/
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final def procurementWebuiDownStreamBuildResult = invokeDownStreamJobs(
