@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
@@ -35,7 +36,10 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.UOMConstants;
@@ -574,4 +578,43 @@ public class UOMConversionBLTest extends UOMTestBase
 				.sourceUOM(uom)
 				.assertExpected("converted quantity", quantityConv);
 	}
+
+	@Test
+	public void test_convertFromTripToTones()
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(1);
+
+		final I_C_UOM uomTonnes = uomConversionHelper.createUOM("Metric Tonnes", 3, 0);
+		final I_C_UOM uomTripOfSand = uomConversionHelper.createUOM("Trip of Sand", 2, 0);
+
+		final ProductId productId = createProduct("Sand", uomTonnes);
+
+		//
+		// Conversion: Tonnes -> Trip
+		// 1 Tonne = 27 Trips
+		uomConversionHelper.createUOMConversion(
+				productId,
+				uomTonnes,
+				uomTripOfSand,
+				new BigDecimal("0.037037037037"), // multiply rate
+				new BigDecimal("27")  // divide rate
+		);
+
+		final ProductPrice price = ProductPrice.builder()
+				.productId(productId)
+				.uomId(toUomId(uomTripOfSand))
+				.value(Money.of(950, currencyId))
+				.build();
+
+		final ProductPrice priceConv = conversionBL.convertProductPriceToUom(price, toUomId(uomTonnes));
+
+		System.out.println("    Price: " + price);
+		System.out.println("Converted: " + priceConv);
+	}
+
+	private static final UomId toUomId(final I_C_UOM uom)
+	{
+		return UomId.ofRepoId(uom.getC_UOM_ID());
+	}
+
 }
