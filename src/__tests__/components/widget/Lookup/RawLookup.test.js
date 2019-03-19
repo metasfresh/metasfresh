@@ -75,11 +75,11 @@ describe('RawLookup component', () => {
         },
       );
 
+      const handleFocusSpy = jest.spyOn(RawLookup.prototype, 'handleFocus');
       const wrapper = mount(<RawLookup {...props} />);
       const instance = wrapper.instance();
       const html = wrapper.html();
 
-      const handleFocusSpy = jest.spyOn(instance, 'handleFocus');
       const handleBlurSpy = jest.spyOn(instance, 'handleBlur');
 
       wrapper.find('input').simulate('click');
