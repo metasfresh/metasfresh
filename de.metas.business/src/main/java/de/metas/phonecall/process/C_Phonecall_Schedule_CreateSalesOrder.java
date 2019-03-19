@@ -5,8 +5,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -15,6 +13,7 @@ import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.service.PhonecallScheduleRepository;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.util.Services;
 
 /*
@@ -67,7 +66,8 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess
 				.docType(docTypeId)
 				.createDraftOrderHeader();
 
-		getResult().setRecordsToOpen(ImmutableList.of(TableRecordReference.of(draftOrder)), 143);
+		final String adWindowId = null; // auto
+		getResult().setRecordToOpen(TableRecordReference.of(draftOrder), adWindowId, OpenTarget.SingleDocument);
 
 		return MSG_OK;
 	}
