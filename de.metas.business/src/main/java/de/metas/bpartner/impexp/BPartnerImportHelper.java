@@ -119,6 +119,7 @@ import de.metas.util.Check;
 		bpartner.setPaymentRule(importRecord.getPaymentRule());
 		bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
 		bpartner.setPO_PaymentTerm_ID(importRecord.getPO_PaymentTerm_ID());
+		bpartner.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		bpartner.setNAICS(importRecord.getNAICS());
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		bpartner.setAD_Language(importRecord.getAD_Language());
@@ -225,6 +226,12 @@ import de.metas.util.Check;
 		{
 			bpartner.setPO_PaymentTerm_ID(importRecord.getPO_PaymentTerm_ID());
 		}
+		
+		if (importRecord.getC_PaymentTerm_ID() > 0)
+		{
+			bpartner.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
+		}
+		
 		if (importRecord.getPaymentRulePO() != null)
 		{
 			bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
