@@ -785,9 +785,9 @@ public final class Ini
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
-		if (isSwingClient())
+		final String userHomeDir = System.getProperty("user.home");
+		if (!Check.isEmpty(userHomeDir) && new File(userHomeDir).exists())
 		{
-			final String userHomeDir = System.getProperty("user.home");
 			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";
 			// log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
 			return metasfreshHome;
