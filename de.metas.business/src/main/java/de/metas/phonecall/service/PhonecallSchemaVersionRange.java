@@ -25,11 +25,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,37 +37,33 @@ import lombok.Value;
 @Value
 public class PhonecallSchemaVersionRange
 {
+	public PhonecallSchemaVersion phonecallSchemaVersion;
+	private LocalDate startDate;
+	private LocalDate endDate;
+	private DateSequenceGenerator dateSequenceGenerator;
 
-		public PhonecallSchemaVersion phonecallSchemaVersion;
-		private LocalDate startDate;
-		private LocalDate endDate;
-		private DateSequenceGenerator dateSequenceGenerator;
+	@Builder
+	private PhonecallSchemaVersionRange(
+			@NonNull final PhonecallSchemaVersion phonecallSchemaVersion,
+			@NonNull final LocalDate startDate,
+			@NonNull final LocalDate endDate,
+			final DateSequenceGenerator dateSequenceGenerator)
+	{
+		Check.assume(startDate.compareTo(endDate) <= 0, "StartDate({}) <= EndDate({})", startDate, endDate);
 
-		@Builder
-		private PhonecallSchemaVersionRange(
-				@NonNull final PhonecallSchemaVersion phonecallSchemaVersion,
-				@NonNull final LocalDate startDate,
-				@NonNull final LocalDate endDate,
-				final DateSequenceGenerator dateSequenceGenerator)
-		{
-			Check.assume(startDate.compareTo(endDate) <= 0, "StartDate({}) <= EndDate({})", startDate, endDate);
-
-			this.phonecallSchemaVersion = phonecallSchemaVersion;
-			this.startDate = startDate;
-			this.endDate = endDate;
-			this.dateSequenceGenerator = dateSequenceGenerator;
-		}
-
-
-		public Set<LocalDate> generatePhonecallDates()
-		{
-			if (dateSequenceGenerator == null)
-			{
-				return ImmutableSet.of();
-			}
-
-			return dateSequenceGenerator.generate();
-		}
+		this.phonecallSchemaVersion = phonecallSchemaVersion;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.dateSequenceGenerator = dateSequenceGenerator;
 	}
 
+	public Set<LocalDate> generatePhonecallDates()
+	{
+		if (dateSequenceGenerator == null)
+		{
+			return ImmutableSet.of();
+		}
 
+		return dateSequenceGenerator.generate();
+	}
+}

@@ -2,6 +2,8 @@ package de.metas.phonecall;
 
 import java.time.ZonedDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.user.UserId;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -38,6 +40,7 @@ public class PhonecallSchemaVersionLine
 	@NonNull
 	PhonecallSchemaVersionId phonecallSchemaVersionId;
 
+	@Nullable
 	PhonecallSchemaVersionLineId id;
 
 	@NonNull

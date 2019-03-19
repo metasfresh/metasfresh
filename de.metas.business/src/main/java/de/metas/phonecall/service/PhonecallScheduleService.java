@@ -62,18 +62,15 @@ public class PhonecallScheduleService
 		this.schemaRepo = schemaRepo;
 	}
 
-	public void generateForPhonecallSchema(final PhonecallSchema phonecallSchema, final LocalDate startDate, final LocalDate endDate)
+	public void generatePhonecallSchedulesForSchema(final PhonecallSchema phonecallSchema, final LocalDate startDate, final LocalDate endDate)
 	{
 		final List<PhonecallSchemaVersionRange> phonecallSchemaVersionRanges = retrievePhonecallSchemaVersionRanges(phonecallSchema, startDate, endDate);
 
 		for (final PhonecallSchemaVersionRange phonecallSchemaVersionRange : phonecallSchemaVersionRanges)
 		{
-			//
-			// Deactivate/Delete all delivery days in our range
+
 			schemaRepo.inactivatePhonecallDaysInRange(phonecallSchemaVersionRange);
 
-			//
-			// Iterate tour version lines and create delivery days
 			final PhonecallSchemaVersion phonecallSchemaVersion = phonecallSchemaVersionRange.getPhonecallSchemaVersion();
 			final List<PhonecallSchemaVersionLine> phonecallSchemaVersionLines = phonecallSchemaVersion.getLines();
 			if (phonecallSchemaVersionLines.isEmpty())
@@ -96,8 +93,6 @@ public class PhonecallScheduleService
 			return;
 		}
 
-		//
-		// Iterates each period (e.g. each X months, each X weeks etc)
 		for (final LocalDate currentPhonecallDate : phonecallDates)
 		{
 			createPhonecallSchedule(phonecallSchemaVersionLine, currentPhonecallDate);
@@ -119,26 +114,31 @@ public class PhonecallScheduleService
 		schedulesRepo.save(phonecallSchedule);
 	}
 
+	/**
+	 * Issue https://github.com/metasfresh/metasfresh/issues/4951
+	 * I made this method similar with de.metas.tourplanning.api.impl.TourDAO.retrieveTourVersionRanges(I_M_Tour, LocalDate, LocalDate) and I kept the comments
+	 * Maybe in the future these shall be somehow brought together in a single structure so we don't have similar code in 2 places.
+	 *
+	 * @param phonecallSchema
+	 * @param dateFrom
+	 * @param dateTo
+	 * @return
+	 */
 	public List<PhonecallSchemaVersionRange> retrievePhonecallSchemaVersionRanges(
 			@NonNull final PhonecallSchema phonecallSchema,
-			@NonNull final LocalDate startDate,
-			@NonNull final LocalDate endDate)
+			@NonNull final LocalDate dateFrom,
+			@NonNull final LocalDate dateTo)
 	{
+		Check.assume(dateFrom.compareTo(dateTo) <= 0, "startDate({}) <= endDate({})", dateFrom, dateTo);
 
-		Check.assume(startDate.compareTo(endDate) <= 0, "startDate({}) <= endDate({})", startDate, endDate);
-
-		//
-		// Retrieve all phonecall schema versions in our scope
-		// NOTE: we assume they are already ordered by ValidFrom
-		// NOTE2: we are not restricting the dateFrom because we want to also get the tour version which is currently active at the beginning of our interval
-		final List<PhonecallSchemaVersion> phonecallSchemaVersions = phonecallSchema.getPhonecallSchemaVersions(endDate);
+		final List<PhonecallSchemaVersion> phonecallSchemaVersions = phonecallSchema.getChronologicallyOrderedPhonecallSchemaVersions(dateTo);
 		if (phonecallSchemaVersions.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
 		//
-		// Continue iterating the tour versions and create Tour Version Ranges
+		// Continue iterating the phonecall schema versions and create phonecall schema version ranges
 		List<PhonecallSchemaVersionRange> phonecallSchemaVersionRanges = new ArrayList<>();
 		boolean previousPhonecallVersionValid = false;
 		PhonecallSchemaVersion previousPhonecallSchemaVersion = null;
@@ -155,49 +155,49 @@ public class PhonecallScheduleService
 
 			//
 			// Guard: phonecall schema version's ValidFrom shall be before "dateTo"
-			if (phonecallSchemaVersionValidFrom.compareTo(endDate) > 0)
+			if (phonecallSchemaVersionValidFrom.compareTo(dateTo) > 0)
 			{
 				// shall not happen because we retrieved until dateTo, but just to make sure
 				break;
 			}
 
 			//
-			// Case: We are still searching for first tour version to consider
+			// Case: We are still searching for first phonecall schema version to consider
 			if (!previousPhonecallVersionValid)
 			{
-				// Case: our current tour version is before given dateFrom
-				if (phonecallSchemaVersionValidFrom.compareTo(startDate) < 0)
+				// Case: our current phonecall schema version is before given dateFrom
+				if (phonecallSchemaVersionValidFrom.compareTo(dateFrom) < 0)
 				{
 					if (!phonecallSchemaVersionsIterator.hasNext())
 					{
 						// there is no other next, so we need to consider this one
 						previousPhonecallSchemaVersion = phonecallSchemaVersion;
-						previousPhonecallSchemaVersionValidFrom = startDate;
+						previousPhonecallSchemaVersionValidFrom = dateFrom;
 						previousPhonecallVersionValid = true;
 						continue;
 					}
 				}
-				// Case: our current tour version starts exactly on our given dateFrom
-				else if (phonecallSchemaVersionValidFrom.compareTo(startDate) == 0)
+				// Case: our current phonecall schema version starts exactly on our given dateFrom
+				else if (phonecallSchemaVersionValidFrom.compareTo(dateFrom) == 0)
 				{
 					previousPhonecallSchemaVersion = phonecallSchemaVersion;
-					previousPhonecallSchemaVersionValidFrom = startDate;
+					previousPhonecallSchemaVersionValidFrom = dateFrom;
 					previousPhonecallVersionValid = true;
 					continue;
 				}
-				// Case: our current tour version start after our given dateFrom
+				// Case: our current phonecall schema version start after our given dateFrom
 				else
 				{
-					// Check if we have a previous tour version, because if we have, that shall be the first tour version to consider
+					// Check if we have a previous phonecall schema version, because if we have, that shall be the first phonecall schema version to consider
 					if (previousPhonecallSchemaVersion != null)
 					{
-						// NOTE: we consider dateFrom as first date because tour version's ValidFrom is before dateFrom
-						previousPhonecallSchemaVersionValidFrom = startDate;
+						// NOTE: we consider dateFrom as first date because phonecall schema version's ValidFrom is before dateFrom
+						previousPhonecallSchemaVersionValidFrom = dateFrom;
 						previousPhonecallVersionValid = true;
 						// don't continue: we got it right now
 						// continue;
 					}
-					// ... else it seems this is the first tour version which actually starts after our dateFrom
+					// ... else it seems this is the first phonecall schema version which actually starts after our dateFrom
 					else
 					{
 						previousPhonecallSchemaVersion = phonecallSchemaVersion;
@@ -209,7 +209,7 @@ public class PhonecallScheduleService
 			}
 
 			//
-			// Case: we do have a previous valid tour version to consider so we can generate tour ranges
+			// Case: we do have a previous valid phonecall schema version to consider so we can generate phonecall schema ranges
 			if (previousPhonecallVersionValid)
 			{
 				final LocalDate previousPhonecallSchemaVersionValidTo = phonecallSchemaVersionValidFrom.minusDays(1);
@@ -224,10 +224,10 @@ public class PhonecallScheduleService
 		}
 
 		//
-		// Create Tour Version Range for last version
+		// Create phonecall schema Version Range for last version
 		if (previousPhonecallVersionValid)
 		{
-			final PhonecallSchemaVersionRange lastPhonecallSchemaVersionRange = createPhonecallSchemaVersionRange(previousPhonecallSchemaVersion, previousPhonecallSchemaVersionValidFrom, endDate);
+			final PhonecallSchemaVersionRange lastPhonecallSchemaVersionRange = createPhonecallSchemaVersionRange(previousPhonecallSchemaVersion, previousPhonecallSchemaVersionValidFrom, dateTo);
 			phonecallSchemaVersionRanges.add(lastPhonecallSchemaVersionRange);
 		}
 

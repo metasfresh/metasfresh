@@ -85,7 +85,6 @@ public class PhonecallSchemaRepository
 
 	private PhonecallSchemaVersion retrievePhonecallSchemaVersionById(@NonNull PhonecallSchemaVersionId phonecallSchemaVersionId)
 	{
-
 		final I_C_Phonecall_Schema_Version phonecallSchemaVersionRecord = loadOutOfTrx(phonecallSchemaVersionId, I_C_Phonecall_Schema_Version.class);
 
 		return PhonecallSchemaVersion.builder()
@@ -111,14 +110,12 @@ public class PhonecallSchemaRepository
 								PhonecallSchemaVersionLineId.ofRepoId(
 										line.getC_Phonecall_Schema_ID(),
 										line.getC_Phonecall_Schema_Version_ID(),
-										line.getC_Phonecall_Schema_Version_Line_ID()))
-				)
+										line.getC_Phonecall_Schema_Version_Line_ID())))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	private PhonecallSchemaVersionLine retrievePhonecallSchemaVersionLineById(final PhonecallSchemaVersionLineId phonecallSchemaVersionLineId)
 	{
-
 		final I_C_Phonecall_Schema_Version_Line phonecallSchemaVersionLineRecord = loadOutOfTrx(phonecallSchemaVersionLineId, I_C_Phonecall_Schema_Version_Line.class);
 
 		return PhonecallSchemaVersionLine.builder()
@@ -150,9 +147,9 @@ public class PhonecallSchemaRepository
 
 		final I_C_Phonecall_Schema_Version phonecallSchemaVersionRecord = loadOutOfTrx(phonecallSchemaVersionId, I_C_Phonecall_Schema_Version.class);
 
-		// Get and adjust the parameters
 		boolean isWeekly = phonecallSchemaVersionRecord.isWeekly();
 		int everyWeek = phonecallSchemaVersionRecord.getEveryWeek();
+
 		if (isWeekly)
 		{
 			everyWeek = 1;
@@ -281,8 +278,7 @@ public class PhonecallSchemaRepository
 		}
 		else
 		{
-			return null; // N/A
+			return null;
 		}
 	}
-
 }

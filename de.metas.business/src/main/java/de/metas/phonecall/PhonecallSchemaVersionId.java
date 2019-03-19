@@ -20,11 +20,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,15 +48,6 @@ public class PhonecallSchemaVersionId implements RepoIdAware
 	}
 
 	public static PhonecallSchemaVersionId ofRepoIdOrNull(
-			@Nullable final Integer phonecallSchemaId,
-			@Nullable final Integer phonecallSchemaVersionId)
-	{
-		return phonecallSchemaId != null && phonecallSchemaId > 0 && phonecallSchemaVersionId != null && phonecallSchemaVersionId > 0
-				? ofRepoId(phonecallSchemaId, phonecallSchemaVersionId)
-				: null;
-	}
-
-	public static PhonecallSchemaVersionId ofRepoIdOrNull(
 			@Nullable final PhonecallSchemaId phonecallSchemaId,
 			final int phonecallSchemaVersionId)
 	{
@@ -67,15 +58,5 @@ public class PhonecallSchemaVersionId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(phonecallSchemaVersionId, "phonecallSchemaVersionId");
 		this.phonecallSchemaId = phonecallSchemaId;
-	}
-
-	public static int toRepoId(final PhonecallSchemaVersionId phonecallSchemaVersionId)
-	{
-		return toRepoIdOr(phonecallSchemaVersionId, -1);
-	}
-
-	public static int toRepoIdOr(final PhonecallSchemaVersionId phonecallSchemaVersionId, final int defaultValue)
-	{
-		return phonecallSchemaVersionId != null ? phonecallSchemaVersionId.getRepoId() : defaultValue;
 	}
 }

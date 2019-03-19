@@ -71,5 +71,4 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess
 
 		return MSG_OK;
 	}
-
 }

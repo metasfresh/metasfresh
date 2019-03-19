@@ -49,7 +49,7 @@ public class C_Phonecall_Schema_GenerateSchedules extends JavaProcess
 	{
 		final PhonecallSchema phonecallSchema = schemaRepo.getById(PhonecallSchemaId.ofRepoId(getRecord_ID()));
 
-		phonecallScheduleService.generateForPhonecallSchema(phonecallSchema, p_StartDate, p_EndDate);
+		phonecallScheduleService.generatePhonecallSchedulesForSchema(phonecallSchema, p_StartDate, p_EndDate);
 
 		return MSG_OK;
 	}

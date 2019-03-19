@@ -1,7 +1,5 @@
 package de.metas.phonecall;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -39,12 +37,6 @@ public class PhonecallSchemaId implements RepoIdAware
 	{
 		return new PhonecallSchemaId(repoId);
 	}
-
-	public static PhonecallSchemaId ofRepoIdOrNull(@Nullable final Integer repoId)
-	{
-		return repoId != null && repoId > 0 ? new PhonecallSchemaId(repoId) : null;
-	}
-
 
 	int repoId;
 

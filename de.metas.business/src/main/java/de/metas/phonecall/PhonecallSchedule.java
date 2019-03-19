@@ -53,7 +53,6 @@ public class PhonecallSchedule
 	@NonNull
 	LocalDate date;
 
-
 	@NonNull
 	ZonedDateTime startTime;
 	@NonNull

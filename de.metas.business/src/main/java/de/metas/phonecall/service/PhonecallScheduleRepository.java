@@ -85,6 +85,5 @@ public class PhonecallScheduleRepository
 						phonecallSchedule.getC_Phonecall_Schema_Version_ID(),
 						phonecallSchedule.getC_Phonecall_Schema_Version_Line_ID()))
 				.build();
-
 	}
 }

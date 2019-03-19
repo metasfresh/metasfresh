@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
@@ -39,7 +41,9 @@ import lombok.Value;
 @Value
 public class PhonecallSchema
 {
+	@Nullable
 	PhonecallSchemaId id;
+	@NonNull
 	String name;
 
 	@Getter(AccessLevel.PRIVATE)
@@ -58,7 +62,7 @@ public class PhonecallSchema
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PhonecallSchemaVersion> getPhonecallSchemaVersions(@NonNull final LocalDate endDate)
+	public List<PhonecallSchemaVersion> getChronologicallyOrderedPhonecallSchemaVersions(@NonNull final LocalDate endDate)
 	{
 		ImmutableList<PhonecallSchemaVersion> phonecallVersionsForDateRange = versions.stream()
 				.filter(version -> version.getValidFrom().compareTo(endDate) <= 0)

@@ -1,9 +1,5 @@
 package de.metas.phonecall;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -24,11 +20,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,21 +32,10 @@ import lombok.Value;
 @Value
 public class PhonecallScheduleId implements RepoIdAware
 {
-
 	@JsonCreator
 	public static PhonecallScheduleId ofRepoId(final int repoId)
 	{
 		return new PhonecallScheduleId(repoId);
-	}
-
-	public static PhonecallScheduleId ofRepoIdOrNull(@Nullable final Integer repoId)
-	{
-		return repoId != null && repoId > 0 ? new PhonecallScheduleId(repoId) : null;
-	}
-
-	public static boolean equals(final PhonecallScheduleId o1, final PhonecallScheduleId o2)
-	{
-		return Objects.equals(o1, o2);
 	}
 
 	int repoId;
@@ -66,5 +51,4 @@ public class PhonecallScheduleId implements RepoIdAware
 	{
 		return repoId;
 	}
-
 }

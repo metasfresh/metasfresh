@@ -1,7 +1,5 @@
 package de.metas.phonecall;
 
-import javax.annotation.Nullable;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -32,7 +30,6 @@ import lombok.Value;
 @Value
 public class PhonecallSchemaVersionLineId implements RepoIdAware
 {
-
 	int repoId;
 
 	@NonNull
@@ -40,14 +37,6 @@ public class PhonecallSchemaVersionLineId implements RepoIdAware
 
 	@NonNull
 	PhonecallSchemaVersionId phonecallSchemaVersionId;
-
-	public static PhonecallSchemaVersionLineId ofRepoId(
-			@NonNull final PhonecallSchemaId phonecallSchemaId,
-			@NonNull PhonecallSchemaVersionId phonecallSchemaVersionId,
-			final int phonecallSchemaVersionLineId)
-	{
-		return new PhonecallSchemaVersionLineId(phonecallSchemaId, phonecallSchemaVersionId, phonecallSchemaVersionLineId);
-	}
 
 	public static PhonecallSchemaVersionLineId ofRepoId(
 			final int phonecallSchemaId,
@@ -60,27 +49,6 @@ public class PhonecallSchemaVersionLineId implements RepoIdAware
 				phonecallSchemaVersionLineId);
 	}
 
-	public static PhonecallSchemaVersionLineId ofRepoIdOrNull(
-			@Nullable final Integer phonecallSchemaId,
-			@Nullable final Integer phonecallSchemaVersionId,
-			@Nullable final Integer phonecallSchemaVersionLineId)
-	{
-		return phonecallSchemaId != null && phonecallSchemaId > 0 &&
-				phonecallSchemaVersionId != null && phonecallSchemaVersionId > 0 &&
-				phonecallSchemaVersionLineId != null && phonecallSchemaVersionLineId > 0
-
-						? ofRepoId(phonecallSchemaId, phonecallSchemaVersionId, phonecallSchemaVersionLineId)
-						: null;
-	}
-
-	public static PhonecallSchemaVersionLineId ofRepoIdOrNull(
-			@Nullable final PhonecallSchemaId phonecallSchemaId,
-			@Nullable final PhonecallSchemaVersionId phonecallSchemaVersionId,
-			final int phonecallSchemaVersionLineId)
-	{
-		return phonecallSchemaId != null && phonecallSchemaVersionId != null && phonecallSchemaVersionLineId > 0 ? ofRepoId(phonecallSchemaId, phonecallSchemaVersionId, phonecallSchemaVersionLineId) : null;
-	}
-
 	private PhonecallSchemaVersionLineId(
 			@NonNull final PhonecallSchemaId phonecallSchemaId,
 			@NonNull PhonecallSchemaVersionId phonecallSchemaVersionId,
@@ -90,15 +58,4 @@ public class PhonecallSchemaVersionLineId implements RepoIdAware
 		this.phonecallSchemaId = phonecallSchemaId;
 		this.phonecallSchemaVersionId = phonecallSchemaVersionId;
 	}
-
-	public static int toRepoId(final PhonecallSchemaVersionLineId phonecallSchemaVersionLineId)
-	{
-		return toRepoIdOr(phonecallSchemaVersionLineId, -1);
-	}
-
-	public static int toRepoIdOr(final PhonecallSchemaVersionLineId phonecallSchemaVersionLineId, final int defaultValue)
-	{
-		return phonecallSchemaVersionLineId != null ? phonecallSchemaVersionLineId.getRepoId() : defaultValue;
-	}
-
 }
