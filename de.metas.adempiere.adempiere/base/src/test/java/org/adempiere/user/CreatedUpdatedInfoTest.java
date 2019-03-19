@@ -75,8 +75,8 @@ class CreatedUpdatedInfoTest
 
 		final JSONObjectMapper<CreatedUpdatedInfo> objectMapper = JSONObjectMapper.forClass(CreatedUpdatedInfo.class);
 
-		final String jsonString = objectMapper.toString(createdUpdatedInfo);
-		final CreatedUpdatedInfo deserializedObject = objectMapper.fromString(jsonString);
+		final String jsonString = objectMapper.writeValueAsString(createdUpdatedInfo);
+		final CreatedUpdatedInfo deserializedObject = objectMapper.readValue(jsonString);
 
 		assertThat(deserializedObject).isEqualTo(createdUpdatedInfo);
 	}

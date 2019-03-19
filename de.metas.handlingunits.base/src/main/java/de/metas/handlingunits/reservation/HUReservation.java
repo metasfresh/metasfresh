@@ -1,12 +1,19 @@
 package de.metas.handlingunits.reservation;
 
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -34,16 +41,41 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
 public class HUReservation
 {
-	/** This optional is empty if vhuId2reservedQtys is empty */
-	@NonNull
-	Optional<Quantity> reservedQtySum;
-
-	@Singular
-	Map<HuId, Quantity> vhuId2reservedQtys;
-
-	@NonNull
 	OrderLineId salesOrderLineId;
+	@Getter(AccessLevel.PRIVATE)
+	ImmutableMap<HuId, Quantity> reservedQtyByVhuIds;
+	Quantity reservedQtySum;
+
+	@Builder(toBuilder = true)
+	private HUReservation(
+			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull @Singular final Map<HuId, Quantity> reservedQtyByVhuIds)
+	{
+		Check.assumeNotEmpty(reservedQtyByVhuIds, "reservedQtyByVhuIds is not empty");
+
+		this.salesOrderLineId = salesOrderLineId;
+		this.reservedQtyByVhuIds = ImmutableMap.copyOf(reservedQtyByVhuIds);
+
+		this.reservedQtySum = reservedQtyByVhuIds.values()
+				.stream()
+				.reduce(Quantity::add)
+				.get();
+	}
+
+	public Set<HuId> getVhuIds()
+	{
+		return reservedQtyByVhuIds.keySet();
+	}
+
+	public Quantity getReservedQtyByVhuId(@NonNull final HuId vhuId)
+	{
+		final Quantity reservedQty = reservedQtyByVhuIds.get(vhuId);
+		if (reservedQty == null)
+		{
+			throw new AdempiereException("@NotFound@ @VHU_ID@");
+		}
+		return reservedQty;
+	}
 }

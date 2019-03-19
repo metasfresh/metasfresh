@@ -65,7 +65,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 {
 	private static final String CONFIG_UseNativeConverter = "org.compiere.db.DB_PostgreSQL.UseNativeConverter";
 	private static final String CONFIG_UseNativeConverter_DefaultValue = "true";
-	private static final String CONFIG_CheckoutTimeout = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
+	private static final String CONFIG_CheckoutTimeout_SwingClient = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -452,6 +452,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			final int numConnections = m_ds.getNumBusyConnections();
 			if (numConnections >= m_maxbusyconnectionsThreshold && m_maxbusyconnectionsThreshold > 0)
 			{
+				// metas-ts: i think running the finalizer won't be a big help, but anyways, exhausting the connection pool is usally an issue
+				// suggestions to consider:
+				// * allow it to be configured for certain scenarios
+				// * only log, but don't even try the finalizing
 				final String statusBefore = getStatus();
 
 				// hengsin: make a best effort to reclaim leak connection
@@ -567,11 +571,12 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			// cpds.setTestConnectionOnCheckout(true);
 			cpds.setAcquireRetryAttempts(2);
 
-			// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
-			cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout, 20 * 1000));
 
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 			{
+				// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
+				cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
+
 				cpds.setInitialPoolSize(1);
 				cpds.setMinPoolSize(1);
 				cpds.setMaxPoolSize(20);
@@ -581,9 +586,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			}
 			else
 			{
-				cpds.setInitialPoolSize(10);
-				cpds.setMinPoolSize(5);
-				cpds.setMaxPoolSize(150);
+				// these are set in c3p0.properties files
+				//cpds.setInitialPoolSize(10);
+				//cpds.setMinPoolSize(5);
+				//cpds.setMaxPoolSize(150);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(1200);
 				m_maxbusyconnectionsThreshold = 120;

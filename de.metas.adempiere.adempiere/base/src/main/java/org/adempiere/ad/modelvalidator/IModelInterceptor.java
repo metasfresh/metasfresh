@@ -54,7 +54,7 @@ public interface IModelInterceptor
 	 * NOTE:
 	 * <ul>
 	 * <li>called before preferences are set
-	 * <li>called only if we run in Client mode (see {@link Ini#isClient()})
+	 * <li>called only if we run in Client mode (see {@link Ini#isSwingClient()})
 	 * </ul>
 	 * 
 	 * @param AD_Org_ID org

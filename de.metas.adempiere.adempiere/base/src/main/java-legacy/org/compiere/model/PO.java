@@ -98,7 +98,6 @@ import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.i18n.po.POModelTranslationMap;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
@@ -4896,30 +4895,39 @@ public abstract class PO
 	 */
 	private IModelTranslation get_ModelTranslation(final String AD_Language)
 	{
-		final IModelTranslationMap modelTranslationMap = get_ModelTranslationMap();
-		if (modelTranslationMap instanceof POModelTranslationMap)
-		{
-			return ((POModelTranslationMap)modelTranslationMap).getTranslation(get_ID(), AD_Language);
-		}
-		else
-		{
-			return modelTranslationMap.getTranslation(AD_Language);
-		}
+		return get_ModelTranslationMap()
+				.getTranslation(AD_Language);
 	}
 
 	public IModelTranslationMap get_ModelTranslationMap()
 	{
+		if(is_new())
+		{
+			return NullModelTranslationMap.instance;
+		}
+		
 		final int id = get_ID();
 		if (id <= 0)
 		{
 			return NullModelTranslationMap.instance;
 		}
 
-		if (m_translations == null)
+		IModelTranslationMap translations = m_translations;
+		if(translations == NullModelTranslationMap.instance)
 		{
-			m_translations = POTrlRepository.instance.retrieveAll(p_info.getTrlInfo(), id);
+			return translations;
 		}
-		return m_translations;
+		
+		if(translations != null && translations.getRecordId() != id)
+		{
+			translations = null;
+		}
+		if (translations == null)
+		{
+			final POInfo poInfo = getPOInfo();
+			translations = m_translations = POTrlRepository.instance.retrieveAll(poInfo.getTrlInfo(), id);
+		}
+		return translations;
 	}
 
 	private IModelTranslationMap m_translations = null;
@@ -5185,7 +5193,7 @@ public abstract class PO
 		poCopy.m_lobInfo = null; // don't copy the LOB Info for now
 		poCopy.m_poCacheLocals = null; // don't copy the cache locals for now
 		poCopy.m_stale = this.m_stale;
-		// m_translations : Map<String, Map<String, String>> // TODO: copy the translations
+		poCopy.m_translations = m_translations;
 		poCopy.m_valueLoaded = this.m_valueLoaded == null ? null : Arrays.copyOf(this.m_valueLoaded, this.m_valueLoaded.length);
 		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<>(this.markedChangedColumns);
 		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<>(this.s_acctColumns);

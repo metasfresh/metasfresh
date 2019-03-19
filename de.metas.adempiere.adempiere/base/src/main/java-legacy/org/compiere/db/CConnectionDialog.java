@@ -232,7 +232,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		bCancel.addActionListener(this);
 
 		//	Server
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			appsHostLabel.setVisible(false);
 			appsHostField.setVisible(false);
@@ -382,7 +382,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 	private void updateCConnection()
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			//hengsin: avoid unnecessary requery of application server status
 			if (!appsHostField.getText().equals(m_cc.getAppsHost()))

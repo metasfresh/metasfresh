@@ -28,7 +28,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 		final int adWindowId = getProcessInfo().getAD_Window_ID();
 		final TableRecordReference ref = TableRecordReference.of(newOrder);
 
-		if (adWindowId > 0 && !Ini.isClient())
+		if (adWindowId > 0 && !Ini.isSwingClient())
 		{
 			getResult().setRecordToOpen(ref, adWindowId, OpenTarget.SingleDocument);
 		}

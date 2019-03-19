@@ -34,7 +34,7 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 
 	public QueueProcessorExecutorService()
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			// NOTE: later, here we can implement and add a ProxyQueueProcessorExecutorService which will contact the server
 			executor = NullQueueProcessorsExecutor.instance;

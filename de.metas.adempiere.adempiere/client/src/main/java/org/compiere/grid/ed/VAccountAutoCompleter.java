@@ -38,17 +38,15 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccountLookup;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.autocomplete.model.I_AD_Table;
 import de.metas.util.Services;
 
 public class VAccountAutoCompleter extends FieldAutoCompleter
@@ -76,7 +74,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 		// copied from VLookupAutocompleter..can't actually claim that i understand this..
 		//
 		// Set Popup Mininum Chars:
-		final int popupMinimumChars = InterfaceWrapperHelper.create(MTable.get(Env.getCtx(), I_C_ValidCombination.Table_Name), I_AD_Table.class).getACTriggerLength();
+		final int popupMinimumChars = Services.get(IADTableDAO.class).getTypeaheadMinLength(I_C_ValidCombination.Table_Name);
 		if (popupMinimumChars > 0)
 		{
 			setPopupMinimumChars(popupMinimumChars);
@@ -184,7 +182,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
 		final int id = rs.getInt(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID);
-		final KeyNamePair item = new KeyNamePair(id, accountLookup.getDisplay(null, id));
+		final KeyNamePair item = KeyNamePair.of(id, accountLookup.getDisplay(null, id));
 
 		return item;
 	}

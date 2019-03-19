@@ -47,7 +47,7 @@ public final class EventBusAdempiereInterceptor extends AbstractModuleIntercepto
 	@Override
 	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			Services.get(IEventBusFactory.class).initEventBussesWithGlobalListeners();
 		}
@@ -56,7 +56,7 @@ public final class EventBusAdempiereInterceptor extends AbstractModuleIntercepto
 	@Override
 	public void beforeLogout(final MFSession session)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			Services.get(IEventBusFactory.class).destroyAllEventBusses();
 		}

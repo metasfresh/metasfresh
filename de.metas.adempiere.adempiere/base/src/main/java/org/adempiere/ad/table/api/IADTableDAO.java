@@ -169,4 +169,6 @@ public interface IADTableDAO extends ISingletonService
 	boolean isStandardColumn(String columnName);
 
 	Set<String> getTableNamesWithRemoteCacheInvalidation();
+	
+	int getTypeaheadMinLength(String tableName);
 }

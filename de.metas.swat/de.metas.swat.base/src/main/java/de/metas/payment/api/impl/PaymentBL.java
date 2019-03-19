@@ -3,6 +3,8 @@
  */
 package de.metas.payment.api.impl;
 
+import static java.math.BigDecimal.ZERO;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -54,8 +56,8 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -105,13 +107,11 @@ public class PaymentBL implements IPaymentBL
 	/**
 	 * Get Open Amount invoice
 	 *
-	 * @param payment
-	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
-	 * @return
+	 * @param creditMemoAdjusted true if we want to get absolute values for Credit Memos
 	 */
 	private BigDecimal fetchOpenAmount(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
-		BigDecimal InvoiceOpenAmt = BigDecimal.ZERO;
+		BigDecimal InvoiceOpenAmt = ZERO;
 
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
 
@@ -139,7 +139,7 @@ public class PaymentBL implements IPaymentBL
 					+ C_ConversionType_ID);
 
 			CurrencyRate = Services.get(ICurrencyBL.class).getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
-			if (CurrencyRate == null || CurrencyRate.compareTo(BigDecimal.ZERO) == 0)
+			if (CurrencyRate == null || CurrencyRate.compareTo(ZERO) == 0)
 			{
 				if (C_Currency_Invoice_ID == 0)
 				{
@@ -182,15 +182,15 @@ public class PaymentBL implements IPaymentBL
 		{
 			if (payment.getDiscountAmt().signum() != 0)
 			{
-				payment.setDiscountAmt(BigDecimal.ZERO);
+				payment.setDiscountAmt(ZERO);
 			}
 			if (payment.getWriteOffAmt().signum() != 0)
 			{
-				payment.setWriteOffAmt(BigDecimal.ZERO);
+				payment.setWriteOffAmt(ZERO);
 			}
 			if (payment.getOverUnderAmt().signum() != 0)
 			{
-				payment.setOverUnderAmt(BigDecimal.ZERO);
+				payment.setOverUnderAmt(ZERO);
 			}
 		}
 		// Changed Column C_Currency_ID or C_ConversionType_ID
@@ -220,7 +220,7 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted)
 	{
-		payment.setOverUnderAmt(BigDecimal.ZERO);
+		payment.setOverUnderAmt(ZERO);
 
 		if (X_C_Payment.DOCSTATUS_Drafted.equals(payment.getDocStatus()))
 		{
@@ -231,14 +231,14 @@ public class PaymentBL implements IPaymentBL
 			if (payment.isOverUnderPayment())
 			{
 				final BigDecimal OverUnderAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
-				payment.setWriteOffAmt(BigDecimal.ZERO);
+				payment.setWriteOffAmt(ZERO);
 				payment.setOverUnderAmt(OverUnderAmt);
 			}
 			else
 			{
 				final BigDecimal WriteOffAmt = InvoiceOpenAmt.subtract(PayAmt).subtract(DiscountAmt);
 				payment.setWriteOffAmt(WriteOffAmt);
-				payment.setOverUnderAmt(BigDecimal.ZERO);
+				payment.setOverUnderAmt(ZERO);
 			}
 		}
 	}
@@ -266,10 +266,10 @@ public class PaymentBL implements IPaymentBL
 
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 			CurrencyRate = currencyBL.getRate(
-					C_Currency_Invoice_ID, 
-					C_Currency_ID, ConvDate, 
-					CurrencyConversionTypeId.toRepoId(conversionTypeId), 
-					AD_Client_ID, 
+					C_Currency_Invoice_ID,
+					C_Currency_ID, ConvDate,
+					CurrencyConversionTypeId.toRepoId(conversionTypeId),
+					AD_Client_ID,
 					AD_Org_ID);
 			if (Check.isEmpty(CurrencyRate))
 			{
@@ -304,18 +304,18 @@ public class PaymentBL implements IPaymentBL
 		// No Invoice or Order - Set Discount, Witeoff, Under/Over to 0
 		if (C_Invoice_ID <= 0 && C_Order_ID <= 0)
 		{
-			if (BigDecimal.ZERO.compareTo(DiscountAmt) != 0)
+			if (ZERO.compareTo(DiscountAmt) != 0)
 			{
-				payment.setDiscountAmt(BigDecimal.ZERO);
+				payment.setDiscountAmt(ZERO);
 			}
 
-			if (BigDecimal.ZERO.compareTo(WriteOffAmt) != 0)
+			if (ZERO.compareTo(WriteOffAmt) != 0)
 			{
-				payment.setWriteOffAmt(BigDecimal.ZERO);
+				payment.setWriteOffAmt(ZERO);
 			}
-			if (BigDecimal.ZERO.compareTo(OverUnderAmt) != 0)
+			if (ZERO.compareTo(OverUnderAmt) != 0)
 			{
-				payment.setOverUnderAmt(BigDecimal.ZERO);
+				payment.setOverUnderAmt(ZERO);
 			}
 		}
 
@@ -415,7 +415,7 @@ public class PaymentBL implements IPaymentBL
 		final boolean hasAllocations = alloc != null; // metas: tsa: 01955
 		if (alloc == null)
 		{
-			alloc = BigDecimal.ZERO;
+			alloc = ZERO;
 		}
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

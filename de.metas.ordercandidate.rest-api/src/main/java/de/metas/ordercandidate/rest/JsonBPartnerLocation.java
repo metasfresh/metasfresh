@@ -3,6 +3,8 @@ package de.metas.ordercandidate.rest;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -42,9 +44,15 @@ public class JsonBPartnerLocation
 	private String externalId;
 
 	private String address1;
+
+	@JsonInclude(Include.NON_NULL)
 	private String address2;
+
 	private String postal;
+
 	private String city;
+
+	@JsonInclude(Include.NON_NULL)
 	private String state;
 
 	private String countryCode;
