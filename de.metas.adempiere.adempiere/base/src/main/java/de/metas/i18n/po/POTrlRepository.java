@@ -29,6 +29,7 @@ import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.ModelTranslation;
 import de.metas.i18n.impl.NullModelTranslation;
+import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -148,7 +149,8 @@ public class POTrlRepository
 				.append(keyColumn).append("=").append(recordId)
 				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l."
 						+ I_AD_Language.COLUMNNAME_AD_Language
-						+ " AND tt.").append(keyColumn).append("=t.").append(keyColumn).append(")");
+						+ " AND tt.")
+				.append(keyColumn).append("=t.").append(keyColumn).append(")");
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Inserted {} translation records for {}", no, this);
 		return no > 0;
@@ -344,14 +346,24 @@ public class POTrlRepository
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
 		final StringBuilder sql = new StringBuilder("DELETE FROM  ").append(tableName).append("_Trl WHERE ").append(keyColumn).append("=").append(recordId);
-		final int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Deleted {} translation records for {}/{}", no, trlInfo, recordId);
 		return no >= 0;
 	}
 
-	public IModelTranslationMap retrieveAll(final POTrlInfo trlInfo, final int recordId)
+	public IModelTranslationMap retrieveAll(@NonNull final POTrlInfo trlInfo, final int recordId)
 	{
-		return POModelTranslationMap.of(trlInfo, recordId);
+		if (!trlInfo.isTranslated())
+		{
+			return NullModelTranslationMap.instance;
+		}
+
+		final ImmutableMap<String, IModelTranslation> trlsByLanguage = POTrlRepository.instance.retriveAllById(trlInfo, recordId);
+
+		return POModelTranslationMap.builder()
+				.recordId(recordId)
+				.trlsByLanguage(trlsByLanguage)
+				.build();
 	}
 
 	public IModelTranslation retriveByLanguage(final POTrlInfo trlInfo, final int recordId, final String AD_Language)
@@ -415,7 +427,7 @@ public class POTrlRepository
 		return ModelTranslation.of(adLanguage, trlMap);
 	}
 
-	public Map<String, IModelTranslation> retriveAllById(final POTrlInfo trlInfo, final int recordId)
+	public ImmutableMap<String, IModelTranslation> retriveAllById(final POTrlInfo trlInfo, final int recordId)
 	{
 		final String sql = trlInfo.getSqlSelectTrlById().get();
 		if (sql == null)

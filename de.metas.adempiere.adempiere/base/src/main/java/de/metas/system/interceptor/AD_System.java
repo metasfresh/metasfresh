@@ -48,7 +48,7 @@ public class AD_System
 	public void beforeSave(@NonNull final I_AD_System system)
 	{
 
-		boolean userChange = Ini.isClient() &&
+		boolean userChange = Ini.isSwingClient() &&
 				(isValueChanged(system, I_AD_System.COLUMNNAME_Name)
 						|| isValueChanged(system, I_AD_System.COLUMNNAME_UserName)
 						|| isValueChanged(system, I_AD_System.COLUMNNAME_Password)

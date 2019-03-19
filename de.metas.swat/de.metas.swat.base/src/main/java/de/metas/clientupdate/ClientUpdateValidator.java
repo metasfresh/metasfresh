@@ -104,7 +104,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	@Override
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_Enabled, false, Env.getAD_Client_ID(Env.getCtx()));

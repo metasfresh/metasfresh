@@ -78,7 +78,7 @@ public final class JRClient
 	private JRClient()
 	{
 		// If the instance is not a client, reset the Jasper servlet cache.
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			CacheMgt.get().addCacheResetListener(this::onCacheReset);
 			logger.info("Registered cache listener for JasperReports");

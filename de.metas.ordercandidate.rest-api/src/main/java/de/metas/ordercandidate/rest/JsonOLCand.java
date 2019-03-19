@@ -64,7 +64,9 @@ public class JsonOLCand
 	private int flatrateConditionsId;
 
 	private int productId;
+
 	private String productDescription;
+
 	private BigDecimal qty;
 	private int uomId;
 	private int huPIItemProductId;

@@ -8,8 +8,10 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,8 +85,7 @@ public class M_HU_Reservation
 			@NonNull final I_M_HU_Reservation huReservationRecord,
 			final boolean isReserved)
 	{
-		final I_M_HU vhu = huReservationRecord.getVHU();
-		vhu.setIsReserved(isReserved);
-		Services.get(IHandlingUnitsDAO.class).saveHU(vhu);
+		final HuId vhuId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
+		Services.get(IHandlingUnitsDAO.class).setReservedByHUIds(ImmutableSet.of(vhuId), isReserved);
 	}
 }

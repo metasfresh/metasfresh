@@ -64,7 +64,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	{
 		super.onInit(engine, client);
 
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			ensureDataDestExists();
 		}

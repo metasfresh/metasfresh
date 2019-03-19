@@ -199,7 +199,7 @@ public class HUQueryBuilderTest
 		hu.setIsReserved(true);
 		saveRecord(hu);
 		final I_M_HU_Reservation huReservationRecord = newInstance(I_M_HU_Reservation.class);
-		huReservationRecord.setVHU(hu);
+		huReservationRecord.setVHU_ID(hu.getM_HU_ID());
 		huReservationRecord.setC_OrderLineSO_ID(orderLineId.getRepoId());
 		saveRecord(huReservationRecord);
 	}

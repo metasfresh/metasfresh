@@ -956,7 +956,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		if (existingBPartnerId == null && query.isFailIfNotExists())
-
 		{
 			final String msg = StringUtils.formatMessage("Found no existing BPartner; Searched via the following properties (one-by-one, may be empty): {}", searchedByInfo.toString());
 			throw new BPartnerIdNotFoundException(msg);

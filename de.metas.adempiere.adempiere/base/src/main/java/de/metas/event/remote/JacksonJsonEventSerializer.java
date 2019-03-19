@@ -39,12 +39,12 @@ public class JacksonJsonEventSerializer implements IEventSerializer
 	@Override
 	public String toString(final Event event)
 	{
-		return delegate.toString(event);
+		return delegate.writeValueAsString(event);
 	}
 
 	@Override
 	public Event fromString(final String eventStr)
 	{
-		return delegate.fromString(eventStr);
+		return delegate.readValue(eventStr);
 	}
 }
