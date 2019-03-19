@@ -81,7 +81,7 @@ import lombok.NonNull;
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(
-				ctx, getProductId(), orderLine.getC_UOM(), qty);
+				getProductId(), orderLine.getC_UOM(), qty);
 
 		orderLine.setQtyEntered(qtyEntered);
 	}

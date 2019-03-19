@@ -961,7 +961,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		invoiceLine.setQtyInvoiced(qtyInvoiced);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		boolean fallback = false;
@@ -989,11 +988,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), qtyInvoiced);
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 

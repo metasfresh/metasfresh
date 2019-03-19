@@ -25,7 +25,6 @@ package de.metas.adempiere.gui.search.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -106,9 +105,8 @@ public class ForecastLineHUPackingAware implements IHUPackingAware
 	{
 		forecastLine.setQty(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(forecastLine);
 		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		final BigDecimal qtyCalculated = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
+		final BigDecimal qtyCalculated = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, getC_UOM(), qty);
 		forecastLine.setQtyCalculated(qtyCalculated);
 	}
 

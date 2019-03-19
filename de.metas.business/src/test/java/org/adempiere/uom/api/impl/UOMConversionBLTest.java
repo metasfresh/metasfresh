@@ -23,7 +23,6 @@ package org.adempiere.uom.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
@@ -50,7 +49,6 @@ public class UOMConversionBLTest extends UOMTestBase
 {
 	/** Service under test */
 	private UOMConversionBL conversionBL;
-	private Properties ctx;
 
 	@Override
 	protected void afterInit()
@@ -203,7 +201,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		BigDecimal qtyToConvert = new BigDecimal(2);
 		BigDecimal expectedQty = new BigDecimal(2000);
-		BigDecimal convertedQty = conversionBL.convert(ctx, meter, millimeter, qtyToConvert, true);
+		BigDecimal convertedQty = conversionBL.convert(meter, millimeter, qtyToConvert, true);
 
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 	}
@@ -253,7 +251,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		final BigDecimal qtyToConvert = new BigDecimal(2);
 		BigDecimal expectedQty = new BigDecimal("3000000.258");
-		BigDecimal convertedQty = conversionBL.convert(ctx, rolle, millimeter, qtyToConvert, true);
+		BigDecimal convertedQty = conversionBL.convert(rolle, millimeter, qtyToConvert, true);
 
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 	}
@@ -277,7 +275,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		final BigDecimal qtyToConvert = new BigDecimal(2);
 		BigDecimal expectedQty = new BigDecimal("3000000.26");
-		BigDecimal convertedQty = conversionBL.convert(ctx, rolle, millimeter, qtyToConvert, false);
+		BigDecimal convertedQty = conversionBL.convert(rolle, millimeter, qtyToConvert, false);
 
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 	}
@@ -396,7 +394,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
 		// NOTE: we particulary picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
 		final BigDecimal qtyConvertedExpected = new BigDecimal("0.0191");
-		final BigDecimal qtyConvertedActual = conversionBL.convertToProductUOM(ctx, productId, uomSource, qtyToConvert);
+		final BigDecimal qtyConvertedActual = conversionBL.convertToProductUOM(productId, uomSource, qtyToConvert);
 
 		// NOTE: we don't use compareTo because we also want to match the precision
 		Assert.assertEquals("Invalid converted qty", qtyConvertedExpected, qtyConvertedActual);
@@ -427,7 +425,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
 		// NOTE: we particularly picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
 		final BigDecimal qtyConvertedExpected = new BigDecimal("0.0191");
-		final BigDecimal qtyConvertedActual = conversionBL.convertFromProductUOM(ctx, productId, uomDest, qtyToConvert);
+		final BigDecimal qtyConvertedActual = conversionBL.convertFromProductUOM(productId, uomDest, qtyToConvert);
 
 		// NOTE: we don't use compareTo because we also want to match the precision
 		Assert.assertEquals("Invalid converted qty", qtyConvertedExpected, qtyConvertedActual);

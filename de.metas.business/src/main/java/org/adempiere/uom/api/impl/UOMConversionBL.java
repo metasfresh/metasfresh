@@ -24,7 +24,6 @@ package org.adempiere.uom.api.impl;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -37,7 +36,6 @@ import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.uom.api.UOMConversionsMap;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -181,10 +179,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	private BigDecimal convertQty0(final ProductId productId, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
 	{
-		// FIXME: this is actually a workaround. We shall refactor the MUOMConversion completely
-		// see http://dewiki908/mediawiki/index.php/05529_Fix_UOM_Conversion_%28109933191619%29
-
-		final Properties ctx = Env.getCtx();
 		final I_M_Product product = productId != null
 				? Services.get(IProductDAO.class).getById(productId)
 				: null;
@@ -193,7 +187,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		if (product == null)
 		{
-			result = convert(ctx, uomFrom, uomTo, qty);
+			result = convert(uomFrom, uomTo, qty);
 		}
 
 		//
@@ -201,14 +195,14 @@ public class UOMConversionBL implements IUOMConversionBL
 		else if (product.getC_UOM_ID() == uomFrom.getC_UOM_ID())
 		{
 			// convertProductFrom: converts Qty from stocking UOM to given UOM
-			result = convertFromProductUOM(ctx, productId, uomTo, qty);
+			result = convertFromProductUOM(productId, uomTo, qty);
 		}
 		//
 		// Case: uomTo is the stocking UOM
 		else if (product.getC_UOM_ID() == uomTo.getC_UOM_ID())
 		{
 			// convertProductTo: converts Qty from given UOM to stocking UOM
-			result = convertToProductUOM(ctx, productId, uomFrom, qty);
+			result = convertToProductUOM(productId, uomFrom, qty);
 		}
 		//
 		//
@@ -292,7 +286,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convert(
-			final Properties ctx,
 			final I_C_UOM fromUOM,
 			final I_C_UOM toUOM,
 			final BigDecimal qty,
@@ -324,7 +317,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convertFromProductUOM(
-			final Properties ctx,
 			final ProductId productId,
 			final I_C_UOM uomDest,
 			final BigDecimal qtyToConvert)
@@ -349,7 +341,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// metas: tsa: begin: 01428
 		// Fallback: check general conversion rates
 		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
-		final BigDecimal qtyConv = convert(ctx, productUOM, uomDest, qtyToConvert);
+		final BigDecimal qtyConv = convert(productUOM, uomDest, qtyToConvert);
 		if (qtyConv != null)
 		{
 			return qtyConv;
@@ -369,7 +361,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		return Services.get(IUOMConversionDAO.class).getProductConversions(productId);
 	}
 
-	private BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo)
+	private BigDecimal getRate(I_C_UOM uomFrom, I_C_UOM uomTo)
 	{
 		final UomId fromUomId = UomId.ofRepoId(uomFrom.getC_UOM_ID());
 		final UomId toUomId = UomId.ofRepoId(uomTo.getC_UOM_ID());
@@ -509,7 +501,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convertToProductUOM(
-			final Properties ctx,
 			final ProductId productId,
 			final I_C_UOM uomSource,
 			final BigDecimal qtyToConvert)
@@ -544,7 +535,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// Fallback: check general conversion rates
 
 		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
-		final BigDecimal conversion = convert(ctx, uomSource, productUOM, qtyToConvert);
+		final BigDecimal conversion = convert(uomSource, productUOM, qtyToConvert);
 		if (conversion != null)
 		{
 			return conversion;
@@ -557,7 +548,6 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convert(
-			final Properties ctx,
 			final I_C_UOM uomFrom, // int C_UOM_ID,
 			final I_C_UOM uomTo, // int C_UOM_To_ID,
 			final BigDecimal qty)
@@ -570,7 +560,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qty;
 		}
 
-		final BigDecimal rate = getRate(ctx, uomFrom, uomTo);
+		final BigDecimal rate = getRate(uomFrom, uomTo);
 		if (rate != null)
 		{
 			BigDecimal qtyConv = rate.multiply(qty);

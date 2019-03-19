@@ -188,11 +188,10 @@ public class DesadvBL implements IDesadvBL
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(desadvLine);
 		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 
 		desadvLine.setMovementQty(newMovementQty);
-		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, productId, desadvLine.getC_UOM(), newMovementQty));
+		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(productId, desadvLine.getC_UOM(), newMovementQty));
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)

@@ -63,7 +63,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -415,7 +414,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		// final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
 		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(
-				Env.getCtx(),
 				olAndSched.getProductId(),
 				olAndSched.getOrderPriceUOM(),
 				olAndSched.getOrderQtyReserved());

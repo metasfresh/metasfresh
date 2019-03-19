@@ -78,7 +78,7 @@ public class C_OrderLine
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final BigDecimal qtyEntered = ol.getQtyEntered();
 
-			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(Env.getCtx(), productId, ol.getC_UOM(), qtyEntered);
+			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, ol.getC_UOM(), qtyEntered);
 			ol.setQtyOrdered(qtyOrdered);
 
 			Services.get(IOrderLineBL.class).updatePrices(OrderLinePriceUpdateRequest.builder()

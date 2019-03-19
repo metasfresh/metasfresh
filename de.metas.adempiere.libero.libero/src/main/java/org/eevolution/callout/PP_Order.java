@@ -38,7 +38,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order;
@@ -161,7 +160,7 @@ public class PP_Order extends CalloutEngine
 		else
 		{
 			qtyOrdered = Services.get(IUOMConversionBL.class)
-					.convertToProductUOM(Env.getCtx(), productId, uomTo, qtyEntered);
+					.convertToProductUOM(productId, uomTo, qtyEntered);
 			if (qtyOrdered == null)
 			{
 				qtyOrdered = qtyEntered;

@@ -25,9 +25,7 @@ package de.metas.adempiere.gui.search.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -87,9 +85,8 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	{
 		ddOrderLine.setQtyEntered(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ddOrderLine);
 		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		final BigDecimal qtyOrdered = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
+		final BigDecimal qtyOrdered = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, getC_UOM(), qty);
 		ddOrderLine.setQtyOrdered(qtyOrdered);
 
 		values.setQty(qty);

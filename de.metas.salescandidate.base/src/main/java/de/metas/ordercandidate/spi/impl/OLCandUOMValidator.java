@@ -23,7 +23,6 @@ package de.metas.ordercandidate.spi.impl;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +47,7 @@ public class OLCandUOMValidator implements IOLCandValidator
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 			final ProductId productId = ProductId.ofRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
-			uomConversionBL.convertToProductUOM(InterfaceWrapperHelper.getCtx(olCand),
+			uomConversionBL.convertToProductUOM(
 					productId,
 					olCandEffectiveValuesBL.getC_UOM_Effective(olCand),
 					olCand.getQty());

@@ -87,7 +87,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
 		newSched.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
 
 		final String groupingOrderLineLabel = DB

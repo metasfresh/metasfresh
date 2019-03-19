@@ -704,7 +704,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, ic.getPrice_UOM(), qty);
+		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(productId, ic.getPrice_UOM(), qty);
 
 		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}", qty, productId, qtyInPriceUOM, ic);
 

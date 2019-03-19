@@ -502,7 +502,6 @@ public class OrderLineBL implements IOrderLineBL
 	public BigDecimal convertQtyEnteredToInternalUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 
 		final BigDecimal qtyEntered = orderLine.getQtyEntered();
 
@@ -513,7 +512,7 @@ public class OrderLineBL implements IOrderLineBL
 			return qtyEntered;
 		}
 
-		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(ctx, productId, uom, qtyEntered);
+		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
 		return qtyOrdered;
 	}
 

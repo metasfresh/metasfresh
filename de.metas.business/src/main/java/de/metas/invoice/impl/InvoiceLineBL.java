@@ -288,8 +288,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return qty;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
-		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertFromProductUOM(ctx, productId, priceUOM, qty);
+		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertFromProductUOM(productId, priceUOM, qty);
 
 		return qtyInPriceUOM;
 	}
