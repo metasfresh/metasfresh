@@ -70,7 +70,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder  extends JavaProcess
 		.docType(docTypeId)
 		.createDraftOrderHeader();
 
-		getResult().setRecordsToOpen(ImmutableList.of(TableRecordReference.of(draftOrder)));
+		getResult().setRecordsToOpen(ImmutableList.of(TableRecordReference.of(draftOrder)), 143);
 
 
 		return MSG_OK;
