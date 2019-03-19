@@ -11,6 +11,11 @@ chuckNorris()
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
+	parameters([
+		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger metasfresh builds.<br>
+Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''',
+			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
+	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
@@ -86,23 +91,29 @@ Related jenkins jobs:
 } // node
 }
 
-stage('Invoke downstream job')
-{
-	final def misc = new de.metas.jenkins.Misc()
-	final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', env.BRANCH_NAME)
-	final def metasfreshBuildResult = build job: metasfreshJobName,
-		parameters: [
-			string(name: 'MF_UPSTREAM_BRANCH', value: env.BRANCH_NAME),
-			string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
-			string(name: 'MF_UPSTREAM_VERSION', value: env.MF_VERSION),
-			string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-e2e'),
-			string(name: 'MF_METASFRESH_E2E_ARTIFACT_VERSION', value: env.MF_VERSION),
-			string(name: 'MF_METASFRESH_E2E_DOCKER_IMAGE', value: env.MF_DOCKER_IMAGE),
-			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
-			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-		],
-		wait: true
-
+	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+	{
+		stage('Invoke downstream job')
+		{
+			final def misc = new de.metas.jenkins.Misc()
+			final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', env.BRANCH_NAME)
+			final def metasfreshBuildResult = build job: metasfreshJobName,
+				parameters: [
+					string(name: 'MF_UPSTREAM_BRANCH', value: env.BRANCH_NAME),
+					string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+					string(name: 'MF_UPSTREAM_VERSION', value: env.MF_VERSION),
+					string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-e2e'),
+					string(name: 'MF_METASFRESH_E2E_ARTIFACT_VERSION', value: env.MF_VERSION),
+					string(name: 'MF_METASFRESH_E2E_DOCKER_IMAGE', value: env.MF_DOCKER_IMAGE),
+					booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+					booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+				],
+				wait: true
+		}
+	else
+	{
+		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger metasfresh as downstream build."
+	}
 	currentBuild.description="""${currentBuild.description}
 <p/>
 This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshBuildResult.absoluteUrl}">${metasfreshBuildResult.displayName}</a>
