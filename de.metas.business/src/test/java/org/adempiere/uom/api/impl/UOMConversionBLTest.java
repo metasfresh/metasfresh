@@ -1,5 +1,7 @@
 package org.adempiere.uom.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -226,10 +228,9 @@ public class UOMConversionBLTest extends UOMTestBase
 				divideRate);
 
 		final BigDecimal qtyToConvert = new BigDecimal(3000000);
-		BigDecimal expectedQty = new BigDecimal(2);
 		BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
 
-		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
+		assertThat(convertedQty).isEqualTo("2.00");
 	}
 
 	@Test
@@ -250,10 +251,10 @@ public class UOMConversionBLTest extends UOMTestBase
 				divideRate);
 
 		final BigDecimal qtyToConvert = new BigDecimal(2);
-		BigDecimal expectedQty = new BigDecimal("3000000.258");
-		BigDecimal convertedQty = conversionBL.convert(rolle, millimeter, qtyToConvert, true);
+		final boolean useStdPrecision = true;
+		BigDecimal convertedQty = conversionBL.convert(rolle, millimeter, qtyToConvert, useStdPrecision);
 
-		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
+		assertThat(convertedQty).isEqualTo("3000000.258");
 	}
 
 	@Test
@@ -274,10 +275,10 @@ public class UOMConversionBLTest extends UOMTestBase
 				divideRate);
 
 		final BigDecimal qtyToConvert = new BigDecimal(2);
-		BigDecimal expectedQty = new BigDecimal("3000000.26");
-		BigDecimal convertedQty = conversionBL.convert(rolle, millimeter, qtyToConvert, false);
+		final boolean useStdPrecision = false;
+		BigDecimal convertedQty = conversionBL.convert(rolle, millimeter, qtyToConvert, useStdPrecision);
 
-		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
+		assertThat(convertedQty).isEqualTo("3000000.26");
 	}
 
 	@Test
