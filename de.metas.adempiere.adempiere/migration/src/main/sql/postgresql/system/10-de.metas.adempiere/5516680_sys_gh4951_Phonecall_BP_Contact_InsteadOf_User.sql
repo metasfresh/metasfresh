@@ -28,3 +28,8 @@ UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-20 14:11:28','
 UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-20 14:11:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564132
 ;
 
+-- 2019-03-20T14:22:50.255
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select phone from ad_user where ad_user_ID = c_phonecall_schedule.c_bp_contact_id)',Updated=TO_TIMESTAMP('2019-03-20 14:22:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564553
+;
+
