@@ -351,14 +351,16 @@ public class UOMConversionBL implements IUOMConversionBL
 		return null;
 	}	// convertProductTo
 
-	private UOMConversionsMap getProductConversions(final ProductId productId)
+	private UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
-		if (productId == null)
-		{
-			return UOMConversionsMap.EMPTY;
-		}
+		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
+		return uomConversionsRepo.getProductConversions(productId);
+	}
 
-		return Services.get(IUOMConversionDAO.class).getProductConversions(productId);
+	private UOMConversionsMap getGenericRates()
+	{
+		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
+		return uomConversionsRepo.getGenericConversions();
 	}
 
 	private BigDecimal getRate(I_C_UOM uomFrom, I_C_UOM uomTo)
@@ -380,52 +382,6 @@ public class UOMConversionBL implements IUOMConversionBL
 		// try to derive
 		return deriveRate(uomFrom, uomTo);
 	}	// getConversion
-
-	UOMConversionsMap getGenericRates()
-	{
-		return Services.get(IUOMConversionDAO.class).getGenericConversions();
-		//
-		// // Here the conversions will be mapped
-		// final ImmutableMap.Builder<ArrayKey, BigDecimal> conversionsMap = ImmutableMap.builder();
-		//
-		// final List<I_C_UOM_Conversion> conversions = Services.get(IUOMConversionDAO.class).getGenericConversions();
-		// for (final I_C_UOM_Conversion conversion : conversions)
-		// {
-		// final int fromUOMId = conversion.getC_UOM_ID();
-		// final int toUOMId = conversion.getC_UOM_To_ID();
-		//
-		// final ArrayKey directConversionKey = mkGenericRatesKey(fromUOMId, toUOMId);
-		//
-		// //
-		// // Add fromUOMId -> toUOMId conversion (using multiply rate)
-		// final BigDecimal multiplyRate = conversion.getMultiplyRate();
-		// if (multiplyRate.signum() != 0)
-		// {
-		// conversionsMap.put(directConversionKey, multiplyRate);
-		// }
-		//
-		// //
-		// // Add toUOMId -> fromUOMId conversion (using divide rate)
-		// BigDecimal divideRate = conversion.getDivideRate();
-		// if (divideRate.signum() == 0 && multiplyRate.signum() != 0)
-		// {
-		// // In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
-		// divideRate = BigDecimal.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
-		// }
-		//
-		// final ArrayKey reversedConversionKey = mkGenericRatesKey(toUOMId, fromUOMId);
-		// if (divideRate != null && divideRate.signum() != 0)
-		// {
-		// conversionsMap.put(reversedConversionKey, divideRate);
-		// }
-		// else
-		// {
-		// logger.warn("Not considering product conversion rate {} because divide rate was not determined from {}", reversedConversionKey, conversion);
-		// }
-		// }
-		//
-		// return conversionsMap.build();
-	}
 
 	/**
 	 * Get rate to convert a qty from the stocking UOM of the given <code>M_Product_ID</code>'s product to the given <code>C_UOM_Dest_ID</code> to.
