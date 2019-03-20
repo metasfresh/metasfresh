@@ -81,7 +81,7 @@
 
     .collapsible-section {
         transition: height, padding .25s ease-in-out;
-        margin: 0;
+        /*margin: 0;*/
         margin-bottom: 20px;
 
         &.collapsed {
@@ -101,10 +101,6 @@
             transition: visibility .25s ease-in-out;
         }
     }
-
-    .panel {
-        overflow: visible;
-    }
 }
 
 .tab-sections {
@@ -123,12 +119,13 @@
     }
 
     .section {
-        background: $brand-bright-color;
-        border: 1px solid $brand-border-color;
+        background: white;
+        border: none;
     }
 
     .separator {
         background-color: $brand-color-secondary;
+        border-bottom: 1px solid $brand-border-color;;
         margin-top: 0;
         padding: .50rem .7rem;
         height: 42px;
@@ -143,7 +140,9 @@
 
     .panel {
         padding-bottom: 0 !important;
-        background: transparent;
+        overflow: visible;
+        background: $brand-bright-color;
+        border-top: none;
     }
 
     .table {
