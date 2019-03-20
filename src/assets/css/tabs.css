@@ -58,22 +58,23 @@
         border-radius: 2px;
 
         .btn {
-            padding: .25rem .25rem;
-            line-height: 1rem;
-            border-radius: 2px;
-            background: white;
+            border: none;
+            background: inherit;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            box-shadow: none;
         }
 
         .icon {
             display: block;
-            padding-right: 2px;
 
             &:before {
                 display: block;
             }
 
             &.meta-icon-flip-horizontally {
-                transform-origin: 6px center;
+                transform-origin: 10px center;
             }
         }
     }
@@ -128,12 +129,15 @@
 
     .separator {
         background-color: $brand-color-secondary;
-        padding-bottom: 5px;
-        padding-top: 5px;
         margin-top: 0;
+        padding: .50rem .7rem;
+        height: 42px;
 
         .separator-title {
             color: white;
+            line-height: 22px;
+            vertical-align: middle;
+            position: relative;
         }
     }
 
