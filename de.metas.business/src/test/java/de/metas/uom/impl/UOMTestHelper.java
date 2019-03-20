@@ -1,4 +1,4 @@
-package org.adempiere.uom.api.impl;
+package de.metas.uom.impl;
 
 /*
  * #%L
@@ -27,14 +27,14 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.CreateUOMConversionRequest;
-import org.adempiere.uom.api.IUOMConversionDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

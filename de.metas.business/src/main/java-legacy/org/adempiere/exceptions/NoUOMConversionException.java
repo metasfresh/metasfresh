@@ -13,12 +13,12 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**

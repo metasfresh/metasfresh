@@ -4,7 +4,6 @@ import static org.eevolution.costing.BOMAssertUtils.assertComponentsCostPrice;
 import static org.eevolution.costing.BOMAssertUtils.assertOwnCostPrice;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.junit.Before;
@@ -16,6 +15,7 @@ import de.metas.costing.CostPrice;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.impl.UOMTestHelper;
 import de.metas.util.lang.Percent;
 
 /*

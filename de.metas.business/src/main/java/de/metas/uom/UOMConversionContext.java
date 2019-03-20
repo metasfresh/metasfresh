@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 import javax.annotation.Nullable;
 

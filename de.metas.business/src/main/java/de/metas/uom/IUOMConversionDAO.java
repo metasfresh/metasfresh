@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;

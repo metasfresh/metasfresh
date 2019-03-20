@@ -1,4 +1,4 @@
-package org.adempiere.uom.form;
+package de.metas.uom.form;
 
 /*
  * #%L
@@ -34,8 +34,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.ConfirmPanelListener;
 import org.compiere.apps.form.FormFrame;
@@ -54,6 +52,8 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.ICacheResetListener;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.i18n.IMsgBL;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 

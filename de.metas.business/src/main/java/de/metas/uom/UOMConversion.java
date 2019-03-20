@@ -1,8 +1,6 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 import java.math.BigDecimal;
-
-import org.adempiere.uom.UomId;
 
 import lombok.Builder;
 import lombok.NonNull;

@@ -6,9 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.CreateUOMConversionRequest;
-import org.adempiere.uom.api.IUOMConversionDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
@@ -22,6 +19,9 @@ import org.compiere.model.X_C_UOM;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /*

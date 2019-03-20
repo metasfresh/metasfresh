@@ -1,4 +1,4 @@
-package org.adempiere.uom.api.impl;
+package de.metas.uom.impl;
 
 /*
  * #%L

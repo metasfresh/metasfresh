@@ -3,7 +3,6 @@ package de.metas.uom;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.MUOM;
 import org.compiere.util.Env;

@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
@@ -40,6 +39,7 @@ import org.junit.Test;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.impl.UOMTestHelper;
 
 /**
  * Test {@link PPOrderBOMBL#calculateQtyRequiredProjected(I_PP_Order_BOMLine)}.

@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 /*
  * #%L
@@ -24,7 +24,6 @@ package org.adempiere.uom.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.currency.CurrencyPrecision;

@@ -1,4 +1,4 @@
-package org.adempiere.uom.api.impl;
+package de.metas.uom.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -6,11 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.CreateUOMConversionRequest;
-import org.adempiere.uom.api.IUOMConversionDAO;
-import org.adempiere.uom.api.UOMConversion;
-import org.adempiere.uom.api.UOMConversionsMap;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.slf4j.Logger;
 
@@ -21,6 +16,11 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversion;
+import de.metas.uom.UOMConversionsMap;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

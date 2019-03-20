@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.uom.UomId;
 import org.slf4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;

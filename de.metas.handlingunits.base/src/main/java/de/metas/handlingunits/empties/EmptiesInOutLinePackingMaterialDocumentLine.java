@@ -24,11 +24,10 @@ package de.metas.handlingunits.empties;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.IUOMConversionBL;
-
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

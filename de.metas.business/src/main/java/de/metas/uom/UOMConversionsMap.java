@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -7,7 +7,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.NoUOMConversionException;
-import org.adempiere.uom.UomId;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;

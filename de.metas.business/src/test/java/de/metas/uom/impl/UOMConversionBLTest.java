@@ -1,4 +1,4 @@
-package org.adempiere.uom.api.impl;
+package de.metas.uom.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,9 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -44,7 +41,11 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConstants;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.uom.impl.UOMConversionBL;
 import de.metas.util.Services;
 
 public class UOMConversionBLTest extends UOMTestBase

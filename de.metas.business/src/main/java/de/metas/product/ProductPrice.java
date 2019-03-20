@@ -1,9 +1,8 @@
 package de.metas.product;
 
-import org.adempiere.uom.UomId;
-
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.uom.UomId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

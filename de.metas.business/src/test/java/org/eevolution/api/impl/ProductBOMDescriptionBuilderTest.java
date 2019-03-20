@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -18,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.product.ProductId;
+import de.metas.uom.impl.UOMTestHelper;
 
 /*
  * #%L
