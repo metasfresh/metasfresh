@@ -114,8 +114,8 @@ public class UOMTestHelper
 				.productId(product == null ? null : ProductId.ofRepoId(product.getM_Product_ID()))
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.multiplyRate(multiplyRate)
-				.divideRate(divideRate)
+				.fromToMultiplier(multiplyRate)
+				.toFromMultiplier(divideRate)
 				.build());
 	}
 
@@ -130,8 +130,8 @@ public class UOMTestHelper
 				.productId(productId)
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.multiplyRate(multiplyRate)
-				.divideRate(divideRate)
+				.fromToMultiplier(multiplyRate)
+				.toFromMultiplier(divideRate)
 				.build());
 	}
 }

@@ -425,15 +425,15 @@ public class MRPTestHelper
 			final int productId,
 			final I_C_UOM uomFrom,
 			final I_C_UOM uomTo,
-			final BigDecimal multiplyRate,
-			final BigDecimal divideRate)
+			final BigDecimal fromToMultipler,
+			final BigDecimal toFromMultiplier)
 	{
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(ProductId.ofRepoIdOrNull(productId))
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.multiplyRate(multiplyRate)
-				.divideRate(divideRate)
+				.fromToMultiplier(fromToMultipler)
+				.toFromMultiplier(toFromMultiplier)
 				.build());
 	}
 
@@ -441,19 +441,19 @@ public class MRPTestHelper
 			final I_M_Product product,
 			final I_C_UOM uomFrom,
 			final I_C_UOM uomTo,
-			final String multiplyRateStr,
-			final String divideRateStr)
+			final String fromToMultiplierStr,
+			final String toFromMultiplierStr)
 	{
 		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
-		final BigDecimal multiplyRate = new BigDecimal(multiplyRateStr);
-		final BigDecimal divideRate = new BigDecimal(divideRateStr);
+		final BigDecimal fromToMultiplier = new BigDecimal(fromToMultiplierStr);
+		final BigDecimal toFromMultiplier = new BigDecimal(toFromMultiplierStr);
 		
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(productId)
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.multiplyRate(multiplyRate)
-				.divideRate(divideRate)
+				.fromToMultiplier(fromToMultiplier)
+				.toFromMultiplier(toFromMultiplier)
 				.build());
 	}
 

@@ -1,13 +1,13 @@
-package de.metas.uom;
+package de.metas.uom.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import javax.annotation.Nullable;
+import org.junit.Test;
 
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.uom.UOMConversion;
+import de.metas.uom.UomId;
 
 /*
  * #%L
@@ -31,20 +31,22 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CreateUOMConversionRequest
+public class UOMConversionTest
 {
-	@Nullable
-	ProductId productId;
+	@Test
+	public void test_standardCase()
+	{
+		final UomId meterUomId = UomId.ofRepoId(1);
+		final UomId centimeterUomId = UomId.ofRepoId(2);
 
-	@NonNull
-	UomId fromUomId;
-	@NonNull
-	UomId toUomId;
-	
-	@NonNull
-	BigDecimal fromToMultiplier;
-	@NonNull
-	BigDecimal toFromMultiplier;
+		final UOMConversion conv = UOMConversion.builder()
+				.fromUomId(meterUomId)
+				.toUomId(centimeterUomId)
+				.fromToMultiplier(new BigDecimal("100"))
+				.toFromMultiplier(new BigDecimal("0.01"))
+				.build();
+
+		assertThat(conv.convert(new BigDecimal("1"), meterUomId, centimeterUomId)).isEqualTo("100");
+		assertThat(conv.convert(new BigDecimal("100"), centimeterUomId, meterUomId)).isEqualTo("1.00");
+	}
 }

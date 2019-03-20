@@ -120,15 +120,15 @@ public final class BusinessTestHelper
 			final I_M_Product product,
 			final I_C_UOM uomFrom,
 			final I_C_UOM uomTo,
-			final BigDecimal multiplyRate,
-			final BigDecimal divideRate)
+			final BigDecimal fromToMultiplier,
+			final BigDecimal toFromMultiplier)
 	{
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null)
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
-				.multiplyRate(multiplyRate)
-				.divideRate(divideRate)
+				.fromToMultiplier(fromToMultiplier)
+				.toFromMultiplier(toFromMultiplier)
 				.build());
 	}
 

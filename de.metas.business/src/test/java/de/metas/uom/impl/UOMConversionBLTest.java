@@ -43,6 +43,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConstants;
+import de.metas.uom.UOMConversion;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -323,47 +324,47 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal rate;
 
 		final BigDecimal minutesPerDay = new BigDecimal(60 * 24);
-		rate = conversionBL.getTimeConversionRate(day, minute);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(day, minute);
 		Assert.assertTrue(minutesPerDay.equals(rate));
 
 		final BigDecimal daysPerWeek = new BigDecimal(7);
-		rate = conversionBL.getTimeConversionRate(week, day);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(week, day);
 		Assert.assertTrue(daysPerWeek.equals(rate));
 
 		final BigDecimal hoursPerDay = new BigDecimal(24);
-		rate = conversionBL.getTimeConversionRate(day, hour);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(day, hour);
 		Assert.assertTrue(hoursPerDay.equals(rate));
 
 		final BigDecimal hoursPerWeek = daysPerWeek.multiply(hoursPerDay);
-		rate = conversionBL.getTimeConversionRate(week, hour);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(week, hour);
 		Assert.assertTrue(hoursPerWeek.equals(rate));
 
 		final BigDecimal weeksPerMonth = new BigDecimal(4);
-		rate = conversionBL.getTimeConversionRate(month, week);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(month, week);
 		Assert.assertTrue(weeksPerMonth.equals(rate));
 
 		final BigDecimal daysPerMinute = new BigDecimal(1.0 / 1440.0);
-		rate = conversionBL.getTimeConversionRate(minute, day);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(minute, day);
 		Assert.assertTrue(daysPerMinute.equals(rate));
 
 		final BigDecimal weeksPerDay = new BigDecimal(1.0 / 7.0);
-		rate = conversionBL.getTimeConversionRate(day, week);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(day, week);
 		Assert.assertTrue(weeksPerDay.equals(rate));
 
 		final BigDecimal daysPerHour = new BigDecimal(1.0 / 24.0);
-		rate = conversionBL.getTimeConversionRate(hour, day);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(hour, day);
 		Assert.assertTrue(daysPerHour.equals(rate));
 
 		final BigDecimal weeksPerHour = new BigDecimal(1.0 / 168.0);
-		rate = conversionBL.getTimeConversionRate(hour, week);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(hour, week);
 		Assert.assertTrue(weeksPerHour.equals(rate));
 
 		final BigDecimal monthsPerWeek = new BigDecimal(1.0 / 4.0);
-		rate = conversionBL.getTimeConversionRate(week, month);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(week, month);
 		Assert.assertTrue(monthsPerWeek.equals(rate));
 
 		final BigDecimal minutesPerYear = new BigDecimal(1.0 / 525600.0);
-		rate = conversionBL.getTimeConversionRate(minute, year);
+		rate = conversionBL.getTimeConversionRateAsBigDecimal(minute, year);
 		Assert.assertTrue(minutesPerYear.equals(rate));
 	}
 
@@ -389,13 +390,10 @@ public class UOMConversionBLTest extends UOMTestBase
 				new BigDecimal(0.000000666667)  // divide rate
 		);
 
-		final I_C_UOM uomSource = uomMillimeter;
-		final BigDecimal qtyToConvert = new BigDecimal("28600");
-
 		// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
 		// NOTE: we particulary picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
+		final BigDecimal qtyConvertedActual = conversionBL.convertToProductUOM(productId, uomMillimeter, new BigDecimal("28600"));
 		final BigDecimal qtyConvertedExpected = new BigDecimal("0.0191");
-		final BigDecimal qtyConvertedActual = conversionBL.convertToProductUOM(productId, uomSource, qtyToConvert);
 
 		// NOTE: we don't use compareTo because we also want to match the precision
 		Assert.assertEquals("Invalid converted qty", qtyConvertedExpected, qtyConvertedActual);
@@ -420,13 +418,10 @@ public class UOMConversionBLTest extends UOMTestBase
 				new BigDecimal(0.000000666667)  // divide rate
 		);
 
-		final I_C_UOM uomDest = uomRolle;
-		final BigDecimal qtyToConvert = new BigDecimal("28600");
-
 		// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
 		// NOTE: we particularly picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
+		final BigDecimal qtyConvertedActual = conversionBL.convertFromProductUOM(productId, uomRolle, new BigDecimal("28600"));
 		final BigDecimal qtyConvertedExpected = new BigDecimal("0.0191");
-		final BigDecimal qtyConvertedActual = conversionBL.convertFromProductUOM(productId, uomDest, qtyToConvert);
 
 		// NOTE: we don't use compareTo because we also want to match the precision
 		Assert.assertEquals("Invalid converted qty", qtyConvertedExpected, qtyConvertedActual);
@@ -468,8 +463,8 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		uomConversionHelper.createUOMConversion(productId, uom1, uom2, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionFromProductUOM(productId, uom2);
-		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate);
+		final UOMConversion rate = conversionBL.getRateForConversionFromProductUOM(productId, uom2);
+		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate.getFromToMultiplier());
 	}
 
 	@Test
@@ -481,8 +476,8 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		uomConversionHelper.createUOMConversion(productId, uom2, uom1, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionFromProductUOM(productId, uom2);
-		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("3"), rate);
+		final UOMConversion rate = conversionBL.getRateForConversionFromProductUOM(productId, uom2);
+		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("3"), rate.getFromToMultiplier());
 	}
 
 	@Test
@@ -494,8 +489,8 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		uomConversionHelper.createUOMConversion(productId, uom1, uom2, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(productId, uom2);
-		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("3"), rate);
+		final UOMConversion rate = conversionBL.getRateForConversionToProductUOM(productId, uom2);
+		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("3"), rate.getFromToMultiplier());
 	}
 
 	@Test
@@ -507,8 +502,8 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		uomConversionHelper.createUOMConversion(productId, uom2, uom1, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(productId, uom2);
-		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate);
+		final UOMConversion rate = conversionBL.getRateForConversionToProductUOM(productId, uom2);
+		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate.getFromToMultiplier());
 	}
 
 	@Test

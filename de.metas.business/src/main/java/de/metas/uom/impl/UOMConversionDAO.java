@@ -82,20 +82,20 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 	private static UOMConversion toUOMConversionOrNull(final I_C_UOM_Conversion record)
 	{
-		final BigDecimal multiplyRate = record.getMultiplyRate();
-		BigDecimal divideRate = record.getDivideRate();
-		if (divideRate.signum() == 0 && multiplyRate.signum() != 0)
+		final BigDecimal fromToMultiplier = record.getMultiplyRate();
+		BigDecimal toFromMultiplier = record.getDivideRate();
+		if (toFromMultiplier.signum() == 0 && fromToMultiplier.signum() != 0)
 		{
 			// In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
-			divideRate = BigDecimal.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
+			toFromMultiplier = BigDecimal.ONE.divide(fromToMultiplier, 12, BigDecimal.ROUND_HALF_UP);
 		}
 
-		if (multiplyRate.signum() == 0)
+		if (fromToMultiplier.signum() == 0)
 		{
 			logger.warn("Invalid conversion {}: multiplyRate is zero", record);
 			return null;
 		}
-		if (divideRate.signum() == 0)
+		if (toFromMultiplier.signum() == 0)
 		{
 			logger.warn("Invalid conversion {}: divideRate is zero", record);
 			return null;
@@ -104,8 +104,8 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		return UOMConversion.builder()
 				.fromUomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(record.getC_UOM_To_ID()))
-				.multiplyRate(multiplyRate)
-				.divideRate(divideRate)
+				.fromToMultiplier(fromToMultiplier)
+				.toFromMultiplier(toFromMultiplier)
 				.build();
 	}
 
@@ -117,8 +117,8 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		record.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 		record.setC_UOM_ID(request.getFromUomId().getRepoId());
 		record.setC_UOM_To_ID(request.getToUomId().getRepoId());
-		record.setMultiplyRate(request.getMultiplyRate());
-		record.setDivideRate(request.getDivideRate());
+		record.setMultiplyRate(request.getFromToMultiplier());
+		record.setDivideRate(request.getToFromMultiplier());
 
 		saveRecord(record);
 	}

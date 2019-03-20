@@ -1,6 +1,5 @@
 package de.metas.uom;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,9 +63,9 @@ public class UOMConversionsMap
 		conversions = ImmutableMap.of();
 	}
 
-	public BigDecimal getRate(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
+	public UOMConversion getRate(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
-		final BigDecimal rate = getRateOrNull(fromUomId, toUomId);
+		final UOMConversion rate = getRateOrNull(fromUomId, toUomId);
 		if (rate == null)
 		{
 			throw new NoUOMConversionException(productId, fromUomId, toUomId);
@@ -74,17 +73,16 @@ public class UOMConversionsMap
 		return rate;
 	}
 
-	public Optional<BigDecimal> getRateIfExists(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
+	public Optional<UOMConversion> getRateIfExists(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
-		final BigDecimal rate = getRateOrNull(fromUomId, toUomId);
-		return Optional.ofNullable(rate);
+		return Optional.ofNullable(getRateOrNull(fromUomId, toUomId));
 	}
 
-	private BigDecimal getRateOrNull(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
+	private UOMConversion getRateOrNull(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
 		if (fromUomId.equals(toUomId))
 		{
-			return BigDecimal.ONE;
+			return UOMConversion.one(fromUomId);
 		}
 
 		final FromAndToUomIds key = FromAndToUomIds.builder()
@@ -95,13 +93,13 @@ public class UOMConversionsMap
 		final UOMConversion directConversion = conversions.get(key);
 		if (directConversion != null)
 		{
-			return directConversion.getMultiplyRate();
+			return directConversion;
 		}
 
 		final UOMConversion invertedConversion = conversions.get(key.invert());
 		if (invertedConversion != null)
 		{
-			return invertedConversion.getDivideRate();
+			return invertedConversion.invert();
 		}
 
 		return null;
