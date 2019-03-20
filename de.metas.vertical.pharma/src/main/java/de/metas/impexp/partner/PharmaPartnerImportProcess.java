@@ -114,8 +114,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 				}
 			}
 
-			// LOCATION
-//			bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
+			PharmaBPartnerLocationImportHelper.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 
 			context.collectImportRecordForSameBP(importRecord);
 
