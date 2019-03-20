@@ -72,7 +72,7 @@ public class PhonecallSchemaRepository
 		return schemas.getOrLoad(id, this::retrieveById);
 	}
 
-	public PhonecallSchema retrieveById(@NonNull final PhonecallSchemaId id)
+	private PhonecallSchema retrieveById(@NonNull final PhonecallSchemaId id)
 	{
 		final I_C_Phonecall_Schema schemaRecord = loadOutOfTrx(id, I_C_Phonecall_Schema.class);
 
