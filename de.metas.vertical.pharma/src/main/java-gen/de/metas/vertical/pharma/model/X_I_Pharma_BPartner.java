@@ -14,7 +14,7 @@ public class X_I_Pharma_BPartner extends org.compiere.model.PO implements I_I_Ph
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -441408788L;
+	private static final long serialVersionUID = -2048494802L;
 
     /** Standard Constructor */
     public X_I_Pharma_BPartner (Properties ctx, int I_Pharma_BPartner_ID, String trxName)
@@ -616,6 +616,43 @@ public class X_I_Pharma_BPartner extends org.compiere.model.PO implements I_I_Ph
 	public int getC_BPartner_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Country(org.compiere.model.I_C_Country C_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
+	}
+
+	/** Set Land.
+		@param C_Country_ID 
+		Land
+	  */
+	@Override
+	public void setC_Country_ID (int C_Country_ID)
+	{
+		if (C_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Country_ID, Integer.valueOf(C_Country_ID));
+	}
+
+	/** Get Land.
+		@return Land
+	  */
+	@Override
+	public int getC_Country_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -817,6 +817,35 @@ public interface I_I_Pharma_BPartner
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Land.
+	 * Land
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Country_ID (int C_Country_ID);
+
+	/**
+	 * Get Land.
+	 * Land
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Country_ID();
+
+	public org.compiere.model.I_C_Country getC_Country();
+
+	public void setC_Country(org.compiere.model.I_C_Country C_Country);
+
+    /** Column definition for C_Country_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_BPartner, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_BPartner, org.compiere.model.I_C_Country>(I_I_Pharma_BPartner.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    /** Column name C_Country_ID */
+    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
+
+	/**
 	 * Set Data import.
 	 *
 	 * <br>Type: TableDir
