@@ -110,13 +110,14 @@
     flex-grow: 1;
     flex-direction: column;
     display: flex;
-    overflow: none;
+    overflow: visible;
     position: relative;
+    padding-top: 2.5rem;
 
     .btn-fullscreen {
         position: absolute;
         top: 0px;
-        right: 20px;
+        right: 0px;
         background: white;
     }
 
@@ -158,17 +159,30 @@
             position: relative;
             height: auto;
 
+            .input-table {
+                .input-field {
+                    background: transparent;
+                }
+            }
+
             &.field-LongText {
                 .col-sm-9 {
                     max-width: 75%;
                 }
 
-                .input-block {
-                    padding: 0;
+                .input-body-container {
+                    height: 6.8rem;
                 }
 
-                textarea {
+                .input-block {
+                    padding: 0;
+                    height: 100%;
+                }
+
+                .input-field {
                     padding: 5px;
+                    background: white;
+                    height: 100%;
                 }
             }
 
@@ -202,12 +216,6 @@
                     position: absolute;
                     top: 15px;
                     left: 10px;
-                }
-            }
-
-            .input-body-container {
-                textarea {
-                    height: 6.8rem;
                 }
             }
         }
