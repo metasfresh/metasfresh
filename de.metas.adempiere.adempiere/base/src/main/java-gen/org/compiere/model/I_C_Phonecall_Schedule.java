@@ -156,7 +156,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Anruf.
+	 * Set Anrufliste.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -165,7 +165,7 @@ public interface I_C_Phonecall_Schedule
 	public void setC_Phonecall_Schedule_ID (int C_Phonecall_Schedule_ID);
 
 	/**
-	 * Get Anruf.
+	 * Get Anrufliste.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -179,7 +179,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_C_Phonecall_Schedule_ID = "C_Phonecall_Schedule_ID";
 
 	/**
-	 * Set Anrufliste.
+	 * Set Anruf Planung.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -188,7 +188,7 @@ public interface I_C_Phonecall_Schedule
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID);
 
 	/**
-	 * Get Anrufliste.
+	 * Get Anruf Planung.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -206,7 +206,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_C_Phonecall_Schema_ID = "C_Phonecall_Schema_ID";
 
 	/**
-	 * Set Anruflistenversion.
+	 * Set Anruf Planung Version.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -215,7 +215,7 @@ public interface I_C_Phonecall_Schedule
 	public void setC_Phonecall_Schema_Version_ID (int C_Phonecall_Schema_Version_ID);
 
 	/**
-	 * Get Anruflistenversion.
+	 * Get Anruf Planung Version.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -233,7 +233,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_C_Phonecall_Schema_Version_ID = "C_Phonecall_Schema_Version_ID";
 
 	/**
-	 * Set Anrufliste Position.
+	 * Set Anruf Planung Version Position.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -242,7 +242,7 @@ public interface I_C_Phonecall_Schedule
 	public void setC_Phonecall_Schema_Version_Line_ID (int C_Phonecall_Schema_Version_Line_ID);
 
 	/**
-	 * Get Anrufliste Position.
+	 * Get Anruf Planung Version Position.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -315,27 +315,77 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Manuell.
+	 * Set IsCalled.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsManualPhonecall (boolean IsManualPhonecall);
+	public void setIsCalled (boolean IsCalled);
 
 	/**
-	 * Get Manuell.
+	 * Get IsCalled.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isManualPhonecall();
+	public boolean isCalled();
 
-    /** Column definition for IsManualPhonecall */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object> COLUMN_IsManualPhonecall = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object>(I_C_Phonecall_Schedule.class, "IsManualPhonecall", null);
-    /** Column name IsManualPhonecall */
-    public static final String COLUMNNAME_IsManualPhonecall = "IsManualPhonecall";
+    /** Column definition for IsCalled */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object> COLUMN_IsCalled = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object>(I_C_Phonecall_Schedule.class, "IsCalled", null);
+    /** Column name IsCalled */
+    public static final String COLUMNNAME_IsCalled = "IsCalled";
+
+	/**
+	 * Set Ordered.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsOrdered (boolean IsOrdered);
+
+	/**
+	 * Get Ordered.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isOrdered();
+
+    /** Column definition for IsOrdered */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object> COLUMN_IsOrdered = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object>(I_C_Phonecall_Schedule.class, "IsOrdered", null);
+    /** Column name IsOrdered */
+    public static final String COLUMNNAME_IsOrdered = "IsOrdered";
+
+	/**
+	 * Set Telefon.
+	 * Beschreibt eine Telefon Nummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setPhone (java.lang.String Phone);
+
+	/**
+	 * Get Telefon.
+	 * Beschreibt eine Telefon Nummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getPhone();
+
+    /** Column definition for Phone */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object> COLUMN_Phone = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object>(I_C_Phonecall_Schedule.class, "Phone", null);
+    /** Column name Phone */
+    public static final String COLUMNNAME_Phone = "Phone";
 
 	/**
 	 * Set Anrufdatum.
@@ -407,29 +457,31 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_PhonecallTimeMin = "PhonecallTimeMin";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Aussendienst.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Aussendienst.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	public int getSalesRep_ID();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, Object>(I_C_Phonecall_Schedule.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	public org.compiere.model.I_AD_User getSalesRep();
+
+	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
+
+    /** Column definition for SalesRep_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
+    /** Column name SalesRep_ID */
+    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Get Aktualisiert.

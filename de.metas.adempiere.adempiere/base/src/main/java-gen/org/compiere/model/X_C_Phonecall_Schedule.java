@@ -14,7 +14,7 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -402851475L;
+	private static final long serialVersionUID = 1524903558L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schedule (Properties ctx, int C_Phonecall_Schedule_ID, String trxName)
@@ -29,11 +29,11 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			setC_Phonecall_Schema_ID (0);
 			setC_Phonecall_Schema_Version_ID (0);
 			setC_Phonecall_Schema_Version_Line_ID (0);
-			setIsManualPhonecall (false); // N
+			setIsCalled (false); // N
+			setIsOrdered (false); // N
 			setPhonecallDate (new Timestamp( System.currentTimeMillis() ));
 			setPhonecallTimeMax (new Timestamp( System.currentTimeMillis() ));
 			setPhonecallTimeMin (new Timestamp( System.currentTimeMillis() ));
-			setProcessed (false); // N
         } */
     }
 
@@ -163,8 +163,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
-	/** Set Anruf.
-		@param C_Phonecall_Schedule_ID Anruf	  */
+	/** Set Anrufliste.
+		@param C_Phonecall_Schedule_ID Anrufliste	  */
 	@Override
 	public void setC_Phonecall_Schedule_ID (int C_Phonecall_Schedule_ID)
 	{
@@ -174,8 +174,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schedule_ID, Integer.valueOf(C_Phonecall_Schedule_ID));
 	}
 
-	/** Get Anruf.
-		@return Anruf	  */
+	/** Get Anrufliste.
+		@return Anrufliste	  */
 	@Override
 	public int getC_Phonecall_Schedule_ID () 
 	{
@@ -197,8 +197,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_ID, org.compiere.model.I_C_Phonecall_Schema.class, C_Phonecall_Schema);
 	}
 
-	/** Set Anrufliste.
-		@param C_Phonecall_Schema_ID Anrufliste	  */
+	/** Set Anruf Planung.
+		@param C_Phonecall_Schema_ID Anruf Planung	  */
 	@Override
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID)
 	{
@@ -208,8 +208,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			set_Value (COLUMNNAME_C_Phonecall_Schema_ID, Integer.valueOf(C_Phonecall_Schema_ID));
 	}
 
-	/** Get Anrufliste.
-		@return Anrufliste	  */
+	/** Get Anruf Planung.
+		@return Anruf Planung	  */
 	@Override
 	public int getC_Phonecall_Schema_ID () 
 	{
@@ -231,8 +231,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_Version_ID, org.compiere.model.I_C_Phonecall_Schema_Version.class, C_Phonecall_Schema_Version);
 	}
 
-	/** Set Anruflistenversion.
-		@param C_Phonecall_Schema_Version_ID Anruflistenversion	  */
+	/** Set Anruf Planung Version.
+		@param C_Phonecall_Schema_Version_ID Anruf Planung Version	  */
 	@Override
 	public void setC_Phonecall_Schema_Version_ID (int C_Phonecall_Schema_Version_ID)
 	{
@@ -242,8 +242,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			set_Value (COLUMNNAME_C_Phonecall_Schema_Version_ID, Integer.valueOf(C_Phonecall_Schema_Version_ID));
 	}
 
-	/** Get Anruflistenversion.
-		@return Anruflistenversion	  */
+	/** Get Anruf Planung Version.
+		@return Anruf Planung Version	  */
 	@Override
 	public int getC_Phonecall_Schema_Version_ID () 
 	{
@@ -265,8 +265,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, org.compiere.model.I_C_Phonecall_Schema_Version_Line.class, C_Phonecall_Schema_Version_Line);
 	}
 
-	/** Set Anrufliste Position.
-		@param C_Phonecall_Schema_Version_Line_ID Anrufliste Position	  */
+	/** Set Anruf Planung Version Position.
+		@param C_Phonecall_Schema_Version_Line_ID Anruf Planung Version Position	  */
 	@Override
 	public void setC_Phonecall_Schema_Version_Line_ID (int C_Phonecall_Schema_Version_Line_ID)
 	{
@@ -276,8 +276,8 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			set_Value (COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, Integer.valueOf(C_Phonecall_Schema_Version_Line_ID));
 	}
 
-	/** Get Anrufliste Position.
-		@return Anrufliste Position	  */
+	/** Get Anruf Planung Version Position.
+		@return Anruf Planung Version Position	  */
 	@Override
 	public int getC_Phonecall_Schema_Version_Line_ID () 
 	{
@@ -287,20 +287,20 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
-	/** Set Manuell.
-		@param IsManualPhonecall Manuell	  */
+	/** Set IsCalled.
+		@param IsCalled IsCalled	  */
 	@Override
-	public void setIsManualPhonecall (boolean IsManualPhonecall)
+	public void setIsCalled (boolean IsCalled)
 	{
-		set_Value (COLUMNNAME_IsManualPhonecall, Boolean.valueOf(IsManualPhonecall));
+		set_Value (COLUMNNAME_IsCalled, Boolean.valueOf(IsCalled));
 	}
 
-	/** Get Manuell.
-		@return Manuell	  */
+	/** Get IsCalled.
+		@return IsCalled	  */
 	@Override
-	public boolean isManualPhonecall () 
+	public boolean isCalled () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsManualPhonecall);
+		Object oo = get_Value(COLUMNNAME_IsCalled);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -308,6 +308,47 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Ordered.
+		@param IsOrdered Ordered	  */
+	@Override
+	public void setIsOrdered (boolean IsOrdered)
+	{
+		set_Value (COLUMNNAME_IsOrdered, Boolean.valueOf(IsOrdered));
+	}
+
+	/** Get Ordered.
+		@return Ordered	  */
+	@Override
+	public boolean isOrdered () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOrdered);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Telefon.
+		@param Phone 
+		Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public void setPhone (java.lang.String Phone)
+	{
+		throw new IllegalArgumentException ("Phone is virtual column");	}
+
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
+	  */
+	@Override
+	public java.lang.String getPhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
 	/** Set Anrufdatum.
@@ -358,29 +399,37 @@ public class X_C_Phonecall_Schedule extends org.compiere.model.PO implements I_C
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PhonecallTimeMin);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
+	}
+
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
+	@Override
+	public void setSalesRep_ID (int SalesRep_ID)
+	{
+		if (SalesRep_ID < 1) 
+			set_Value (COLUMNNAME_SalesRep_ID, null);
+		else 
+			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+	}
+
+	/** Get Aussendienst.
+		@return Aussendienst	  */
+	@Override
+	public int getSalesRep_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }
