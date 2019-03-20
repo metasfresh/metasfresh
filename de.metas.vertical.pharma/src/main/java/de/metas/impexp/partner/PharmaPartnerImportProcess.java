@@ -2,17 +2,17 @@ package de.metas.impexp.partner;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
-import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
@@ -55,12 +55,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 	protected void updateAndValidateImportRecords()
 	{
 		final String whereClause = getWhereClause();
-		MProductImportTableSqlUpdater.builder()
-				.whereClause(whereClause)
-				.ctx(getCtx())
-				.tableName(getImportTableName())
-				.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
-				.updateIPharmaProduct();
+		PharmaBPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
 	}
 
 	@Override
@@ -68,7 +63,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 			final I_I_Pharma_BPartner importRecord,
 			final boolean isInsertOnly) throws Exception
 	{
-		final I_C_BPartner existentBPartner = null; //productDAO.retrieveProductByValue(importRecord.getb00adrnr());
+		final I_C_BPartner existentBPartner = PharmaBPartnerImportHelper.fetchManufacturer(importRecord.getb00adrnr());
 
 		final String operationCode = importRecord.getb00ssatz();
 		if (DEACTIVATE_OPERATION_CODE.equals(operationCode) && existentBPartner != null)
@@ -78,41 +73,56 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 		}
 		else if (!DEACTIVATE_OPERATION_CODE.equals(operationCode))
 		{
-			final I_C_BPartner bpartner;
-			final boolean newBPartner = existentBPartner == null || importRecord.getC_BPartner_ID() <= 0;
+			//
+			// Get previous values
+			PharmaBPartnerContext context = (PharmaBPartnerContext)state.getValue();
+			if (context == null)
+			{
+				context = new PharmaBPartnerContext();
+				state.setValue(context);
+			}
+			final I_I_Pharma_BPartner previousImportRecord = context.getPreviousImportRecord();
+			final int previousBPartnerId = context.getPreviousC_BPartner_ID();
+			final String previousBPValue = context.getPreviousBPValue();
+			context.setPreviousImportRecord(importRecord); // set it early in case this method fails
 
-			if (!newBPartner && isInsertOnly)
+			final ImportRecordResult bpartnerImportResult;
+
+			//  create a new BPartner or update the existing one
+			final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getb00adrnr(), previousBPValue);
+			if (firstImportRecordOrNewBPartner)
 			{
-				// #4994 do not update entry
-				return ImportRecordResult.Nothing;
+				// create a new list because we are passing to a new partner
+				context.clearPreviousRecordsForSameBP();
+				bpartnerImportResult = importOrUpdateBPartner(importRecord, isInsertOnly);
 			}
-			if (newBPartner)
-			{
-				bpartner = createBPartner(importRecord);
-			}
+
+			// Same BPValue like previous line
 			else
 			{
-				bpartner = updateBPartner(importRecord, existentBPartner);
+				if (previousBPartnerId <= 0)
+				{
+					bpartnerImportResult = importOrUpdateBPartner(importRecord, isInsertOnly);
+				}
+				else if (importRecord.getC_BPartner_ID() <= 0 || importRecord.getC_BPartner_ID() == previousBPartnerId)
+				{
+					bpartnerImportResult = doNothingAndUsePreviousPartner(importRecord, previousImportRecord);
+				}
+				else
+				{
+					throw new AdempiereException("Same BPValue as previous line but not same BPartner linked");
+				}
 			}
 
-			importRecord.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			// LOCATION
+//			bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 
-			return newBPartner ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+			context.collectImportRecordForSameBP(importRecord);
+
+			return bpartnerImportResult;
 		}
 
 		return ImportRecordResult.Nothing;
-	}
-
-	private I_C_BPartner updateBPartner(I_I_Pharma_BPartner importRecord, I_C_BPartner existentBPartner)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private I_C_BPartner createBPartner(I_I_Pharma_BPartner importRecord)
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	private void deactivatePartner(@NonNull final I_C_BPartner partner)
@@ -120,7 +130,27 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 		partner.setIsActive(false);
 		InterfaceWrapperHelper.save(partner);
 	}
+	
+	private ImportRecordResult importOrUpdateBPartner(final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
+	{
+		final boolean bpartnerExists = importRecord.getC_BPartner_ID() > 0;
 
+		if (isInsertOnly && bpartnerExists)
+		{
+			return ImportRecordResult.Nothing;
+		}
+		
+		PharmaBPartnerImportHelper.importRecord(importRecord);
+		
+		return bpartnerExists ? ImportRecordResult.Updated : ImportRecordResult.Inserted;
+	}
+	
+	private ImportRecordResult doNothingAndUsePreviousPartner(final I_I_Pharma_BPartner importRecord, final I_I_Pharma_BPartner previousImportRecord)
+	{
+		importRecord.setC_BPartner(previousImportRecord.getC_BPartner());
+		return ImportRecordResult.Nothing;
+	}
+	
 	@Override
 	protected void markImported(final I_I_Pharma_BPartner importRecord)
 	{
