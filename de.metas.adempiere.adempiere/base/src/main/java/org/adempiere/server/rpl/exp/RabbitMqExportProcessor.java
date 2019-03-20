@@ -106,10 +106,6 @@ public class RabbitMqExportProcessor implements IExportProcessor
 
 		// Construct Transformer Factory and Transformer
 		TransformerFactory tranFactory = TransformerFactory.newInstance();
-		String jVersion = System.getProperty("java.version");
-		if (jVersion.startsWith("1.5.0"))
-			tranFactory.setAttribute("indent-number", 1);
-
 		Transformer aTransformer = tranFactory.newTransformer();
 		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		Source src = new DOMSource(document);
@@ -119,11 +115,11 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		Result dest2 = new StreamResult(writer);
 		aTransformer.transform(src, dest2);
 
-		sendJMSMessage(host, port, writer.toString(), exchangeName, routingKey, account, password, isDurableQueue);
+		sendAMQPMessage(host, port, writer.toString(), exchangeName, routingKey, account, password, isDurableQueue);
 
 	}
 
-	private void sendJMSMessage(final @NonNull String host, final int port, final @NonNull String msg, final @NonNull String exchangeName,
+	private void sendAMQPMessage(final @NonNull String host, final int port, final @NonNull String msg, final @NonNull String exchangeName,
 			final @NonNull String routingKey, final @NonNull String userName, final @NonNull String password, final boolean isDurableQueue)
 	{
 
