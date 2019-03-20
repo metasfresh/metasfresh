@@ -4384,3 +4384,232 @@ UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2019-03-20 16:34:11','Y
 
 
 
+
+
+-- 2019-03-20T16:56:44.396
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576287,0,'Fax2',TO_TIMESTAMP('2019-03-20 16:56:44','YYYY-MM-DD HH24:MI:SS'),100,'Faxnummer','de.metas.vertical.pharma','The Fax identifies a facsimile number for this Business Partner or  Location','Y','Fax2','Fax2',TO_TIMESTAMP('2019-03-20 16:56:44','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T16:56:44.399
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=576287 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2019-03-20T16:57:01.465
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,Updated,UpdatedBy,Version) VALUES (0,564612,576287,0,10,293,'Fax2',TO_TIMESTAMP('2019-03-20 16:57:01','YYYY-MM-DD HH24:MI:SS'),100,'N','Faxnummer','de.metas.vertical.pharma',40,'The Fax identifies a facsimile number for this Business Partner or  Location','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Y','N','Fax2',0,TO_TIMESTAMP('2019-03-20 16:57:01','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2019-03-20T16:57:01.469
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=564612 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2019-03-20T16:57:14.028
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-20 16:57:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576287
+;
+
+-- 2019-03-20T16:57:19.366
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2019-03-20 16:57:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564612
+;
+
+-- 2019-03-20T16:57:26.605
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('C_BPartner_Location','ALTER TABLE public.C_BPartner_Location ADD COLUMN Fax2 VARCHAR(40)')
+;
+
+-- 2019-03-20T17:15:12.842
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,562305,0,541016,558009,541435,'F',TO_TIMESTAMP('2019-03-20 17:15:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Telefon',131,0,0,TO_TIMESTAMP('2019-03-20 17:15:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:15:31.200
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,562306,0,541016,558010,541435,'F',TO_TIMESTAMP('2019-03-20 17:15:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Mobil',132,0,0,TO_TIMESTAMP('2019-03-20 17:15:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:15:41.777
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,562307,0,541016,558011,541435,'F',TO_TIMESTAMP('2019-03-20 17:15:41','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Fax',133,0,0,TO_TIMESTAMP('2019-03-20 17:15:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:16:28.644
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,564612,578034,0,541016,0,TO_TIMESTAMP('2019-03-20 17:16:28','YYYY-MM-DD HH24:MI:SS'),100,'Faxnummer',0,'','U','The Fax identifies a facsimile number for this Business Partner or  Location',0,'Y','Y','Y','N','N','N','N','N','Alternative Fax',170,150,0,1,1,TO_TIMESTAMP('2019-03-20 17:16:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:16:28.650
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Field_ID=578034 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2019-03-20T17:16:43.105
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET EntityType='de.metas.vertical.pharma',Updated=TO_TIMESTAMP('2019-03-20 17:16:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=578034
+;
+
+-- 2019-03-20T17:16:50.922
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,576287,628232,578034,0,540409,TO_TIMESTAMP('2019-03-20 17:16:50','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-03-20 17:16:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:16:51.925
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=576287, Name='Fax2',Updated=TO_TIMESTAMP('2019-03-20 17:16:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=578034
+;
+
+-- 2019-03-20T17:16:51.945
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=628232
+;
+
+-- 2019-03-20T17:16:52.009
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,576287,628233,578034,0,540409,TO_TIMESTAMP('2019-03-20 17:16:51','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-03-20 17:16:51','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:16:52.010
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(576287) 
+;
+
+-- 2019-03-20T17:17:01.443
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Alternative Fax', PrintName='Alternative Fax',Updated=TO_TIMESTAMP('2019-03-20 17:17:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576287
+;
+
+-- 2019-03-20T17:17:01.447
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Fax2', Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE AD_Element_ID=576287
+;
+
+-- 2019-03-20T17:17:01.448
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Fax2', Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location', AD_Element_ID=576287 WHERE UPPER(ColumnName)='FAX2' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-20T17:17:01.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Fax2', Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE AD_Element_ID=576287 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-20T17:17:01.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=576287) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 576287)
+;
+
+-- 2019-03-20T17:17:01.619
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Alternative Fax', Name='Alternative Fax' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=576287)
+;
+
+-- 2019-03-20T17:17:01.627
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location', CommitWarning = NULL WHERE AD_Element_ID = 576287
+;
+
+-- 2019-03-20T17:17:01.629
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE AD_Element_ID = 576287
+;
+
+-- 2019-03-20T17:17:01.630
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Alternative Fax', Description = 'Faxnummer', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576287
+;
+
+-- 2019-03-20T17:17:07.941
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Alternative Fax', PrintName='Alternative Fax',Updated=TO_TIMESTAMP('2019-03-20 17:17:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576287 AND AD_Language='de_CH'
+;
+
+-- 2019-03-20T17:17:07.942
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576287,'de_CH') 
+;
+
+-- 2019-03-20T17:17:12.124
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Alternative Fax', PrintName='Alternative Fax',Updated=TO_TIMESTAMP('2019-03-20 17:17:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576287 AND AD_Language='de_DE'
+;
+
+-- 2019-03-20T17:17:12.125
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576287,'de_DE') 
+;
+
+-- 2019-03-20T17:17:12.137
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(576287,'de_DE') 
+;
+
+-- 2019-03-20T17:17:12.140
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Fax2', Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE AD_Element_ID=576287
+;
+
+-- 2019-03-20T17:17:12.141
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Fax2', Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location', AD_Element_ID=576287 WHERE UPPER(ColumnName)='FAX2' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-20T17:17:12.141
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Fax2', Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE AD_Element_ID=576287 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-20T17:17:12.142
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=576287) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 576287)
+;
+
+-- 2019-03-20T17:17:12.153
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Alternative Fax', Name='Alternative Fax' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=576287)
+;
+
+-- 2019-03-20T17:17:12.155
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location', CommitWarning = NULL WHERE AD_Element_ID = 576287
+;
+
+-- 2019-03-20T17:17:12.156
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Alternative Fax', Description='Faxnummer', Help='The Fax identifies a facsimile number for this Business Partner or  Location' WHERE AD_Element_ID = 576287
+;
+
+-- 2019-03-20T17:17:12.157
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Alternative Fax', Description = 'Faxnummer', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576287
+;
+
+-- 2019-03-20T17:17:30.730
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,578034,0,541016,558012,541435,'F',TO_TIMESTAMP('2019-03-20 17:17:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Alternative Fax',134,0,0,TO_TIMESTAMP('2019-03-20 17:17:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-03-20T17:17:43.491
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2019-03-20 17:17:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558012
+;
+
+-- 2019-03-20T17:17:45.370
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2019-03-20 17:17:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558011
+;
+
+-- 2019-03-20T17:17:47.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2019-03-20 17:17:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558010
+;
+
+-- 2019-03-20T17:17:49.730
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2019-03-20 17:17:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558009
+;
+
+
+
