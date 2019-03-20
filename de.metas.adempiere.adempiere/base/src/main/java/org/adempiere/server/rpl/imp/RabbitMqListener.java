@@ -1,5 +1,31 @@
 package org.adempiere.server.rpl.imp;
 
+import static org.compiere.util.Util.firstGreaterThanZero;
+import static org.compiere.util.Util.firstNotEmptyTrimmed;
+
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.process.rpl.XMLHelper;
+import org.adempiere.server.rpl.IReplicationProcessor;
+import org.adempiere.server.rpl.api.IIMPProcessorBL;
+import org.adempiere.server.rpl.api.IImportHelper;
+import org.adempiere.server.rpl.exceptions.ReplicationException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.Mutable;
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.model.I_IMP_Processor;
+import org.slf4j.Logger;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageListener;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.w3c.dom.Document;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,68 +39,53 @@ package org.adempiere.server.rpl.imp;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.process.rpl.XMLHelper;
-import org.adempiere.server.rpl.IReplicationProcessor;
-import org.adempiere.server.rpl.api.IIMPProcessorBL;
-import org.adempiere.server.rpl.api.IImportHelper;
-import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.adempiere.util.lang.Mutable;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.w3c.dom.Document;
-
-import java.util.Properties;
 
 public class RabbitMqListener implements MessageListener
 {
-
 	private CachingConnectionFactory connectionFactory;
 
-	private String host = "localhost";
+	private final String host;
 
-	private int port = 5672;
+	private final int port;
 
-	private Properties ctx;
+	private final Properties ctx;
 
-	private String trxName;
+	private final String trxName;
 
-	private String queueName;
+	private final String queueName;
 
-	private boolean isDurableQueue;
+	private final boolean isDurableQueue;
 
-	private String exchangeName;
+	private final String exchangeName;
 
-	private IReplicationProcessor replicationProcessor;
+	private final IReplicationProcessor replicationProcessor;
 
-	protected Logger log = LogManager.getLogger(RabbitMqListener.class);
+	private final Logger logger = LogManager.getLogger(RabbitMqListener.class);
 
-	private String consumerTag;
+	private final String consumerTag;
 
-	private String userName;
+	private final String userName;
 
-	private String password;
+	private final String password;
 
 	private boolean isStopping = false;
+
+	private final String listenerReference;
 
 	public RabbitMqListener(final Properties ctx,
 			final IReplicationProcessor replicationProcessor,
@@ -88,15 +99,8 @@ public class RabbitMqListener implements MessageListener
 			final String exchangeName,
 			final boolean isDurableQueue)
 	{
-		if (host != null && !host.equals(""))
-		{
-			this.host = host;
-		}
-
-		if (port > 0)
-		{
-			this.port = port;
-		}
+		this.host = firstNotEmptyTrimmed(host,"localhost");
+		this.port = firstGreaterThanZero(port,5672);
 
 		this.queueName = queueName;
 
@@ -108,6 +112,8 @@ public class RabbitMqListener implements MessageListener
 		this.password = password;
 		this.exchangeName = exchangeName;
 		this.isDurableQueue = isDurableQueue;
+
+		this.listenerReference = "queueName=" + queueName + ", consumerTag=" + consumerTag;
 	}
 
 	public void run()
@@ -121,8 +127,7 @@ public class RabbitMqListener implements MessageListener
 		{
 			stop();
 			throw new ReplicationException("RabbitMqListener.run() caught Exception during startup: " + e.getMessage()
-					+ "\n Processor: " + replicationProcessor
-					, e);
+					+ "\n Processor: " + replicationProcessor, e);
 		}
 	}
 
@@ -135,9 +140,11 @@ public class RabbitMqListener implements MessageListener
 			connectionFactory.setUsername(userName);
 			connectionFactory.setPassword(password);
 		}
-		RabbitAdmin admin = new RabbitAdmin(connectionFactory);
-		Queue queue = new Queue(queueName, isDurableQueue);
-		TopicExchange exchange = new TopicExchange(exchangeName, isDurableQueue, false);
+
+		final RabbitAdmin admin = new RabbitAdmin(connectionFactory);
+		final Queue queue = new Queue(queueName, isDurableQueue);
+		final TopicExchange exchange = new TopicExchange(exchangeName, isDurableQueue, false);
+
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
 		// queue name and routing key are the same
@@ -160,7 +167,7 @@ public class RabbitMqListener implements MessageListener
 
 		log("Connected to AMQP Server. Waiting for messages!", // summary
 				null, // text
-				"queueName=" + queueName + ", consumerTag=" + consumerTag, // reference
+				listenerReference, // reference
 				null); // exception
 	}
 
@@ -197,9 +204,10 @@ public class RabbitMqListener implements MessageListener
 	public void stop()
 	{
 		isStopping = true;
-		try
+		try (final IAutoCloseable closable = setupLoggable(listenerReference))
 		{
-			getLogger(Level.TRACE).addLog("Closing AMQP Connection!");
+			Loggables.get().withLogger(logger, Level.TRACE).addLog("Closing AMQP Connection!");
+
 			if (connectionFactory != null)
 			{
 				connectionFactory.destroy();
@@ -231,17 +239,29 @@ public class RabbitMqListener implements MessageListener
 		Services.get(IIMPProcessorBL.class).createLog(impProcessor, summary, text, reference, error);
 	}
 
-	@Override public void onMessage(Message message)
+	@Override
+	public void onMessage(@NonNull final Message message)
 	{
 		String text = null;
-		try
+
+		final String messageReference = "onMessage-startAt-millis-" + Long.toString(SystemTime.millis());
+		try (final IAutoCloseable closable = setupLoggable(messageReference))
 		{
 			text = new String(message.getBody());
-			getLogger(Level.TRACE).addLog("Received message(text): \n{}", text);
+
+			Loggables.get().withLogger(logger, Level.TRACE)
+					.addLog("Received message(text): \n{}", text);
 
 			importXMLDocument(text);
 
-			log("Imported Document", text, null, null);
+			log("Imported Document", text, null, null); // loggable can't store the message-text for us
+
+			// not sending reply
+			if (StringUtils.isNotEmpty(message.getMessageProperties().getReplyTo()))
+			{
+				Loggables.get().withLogger(logger, Level.WARN)
+						.addLog("Sending reply currently not supported with rabbitmq");
+			}
 		}
 		catch (final RuntimeException e)
 		{
@@ -249,17 +269,13 @@ public class RabbitMqListener implements MessageListener
 		}
 		finally
 		{
-			// not sending reply
-			if (StringUtils.isNotEmpty(message.getMessageProperties().getReplyTo()))
-			{
-				getLogger(Level.WARN).addLog("Sending reply currently not supported with rabbitmq");
-			}
 		}
 	}
 
-	private ILoggable getLogger(@NonNull final Level level)
+	private IAutoCloseable setupLoggable(@NonNull final String reference)
 	{
-		return Loggables.get().withLogger(log, level);
+		final IIMPProcessorBL impProcessorBL = Services.get(IIMPProcessorBL.class);
+		final I_IMP_Processor importProcessor = replicationProcessor.getMImportProcessor();
+		return impProcessorBL.setupTemporaryLoggable(importProcessor, reference);
 	}
 }
-
