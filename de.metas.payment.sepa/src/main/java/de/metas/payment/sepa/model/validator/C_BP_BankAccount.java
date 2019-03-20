@@ -55,9 +55,6 @@ public class C_BP_BankAccount
 		{
 			// remove empty spaces
 			ibanCode = ibanCode.replaceAll("\\s", ""); // remove spaces
-			// replace IBAN
-			bp_bankAccount.setIBAN(ibanCode);
-
 			
 			// validate IBAN
 			final boolean isValidateIBAN = Services.get(ISysConfigBL.class).getBooleanValue("C_BP_BankAccount.validateIBAN", false);
