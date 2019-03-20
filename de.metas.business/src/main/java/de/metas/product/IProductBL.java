@@ -39,8 +39,6 @@ public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
 
-	int getUOMPrecision(int productId);
-
 	int getUOMPrecision(ProductId productId);
 
 	String getMMPolicy(I_M_Product product);

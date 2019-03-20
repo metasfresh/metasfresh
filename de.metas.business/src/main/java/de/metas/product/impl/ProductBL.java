@@ -70,13 +70,7 @@ public final class ProductBL implements IProductBL
 	public int getUOMPrecision(final I_M_Product product)
 	{
 		final int uomId = product.getC_UOM_ID();
-		return Services.get(IUOMConversionBL.class).getPrecision(uomId);
-	}
-
-	@Override
-	public int getUOMPrecision(final int productId)
-	{
-		return getUOMPrecision(ProductId.ofRepoId(productId));
+		return Services.get(IUOMDAO.class).getStandardPrecision(uomId);
 	}
 
 	@Override

@@ -102,25 +102,6 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal roundToUOMPrecisionIfPossible(BigDecimal qty, I_C_UOM uom);
 
 	/**
-	 * Gets UOM standard precision.
-	 *
-	 * @param ctx
-	 * @param uomId
-	 * @return
-	 */
-	int getPrecision(int uomId);
-
-	/**
-	 * Round quantity based on uom's standard precision if stdPrecision = true, uom's costing precision otherwise.
-	 *
-	 * @param uom
-	 * @param qty quantity
-	 * @param useStdPrecision true if standard precision
-	 * @return rounded quantity
-	 */
-	BigDecimal roundQty(I_C_UOM uom, BigDecimal qty, boolean useStdPrecision);
-
-	/**
 	 * Get Converted Qty from Server (no cache)
 	 *
 	 * @param qty The quantity to be converted

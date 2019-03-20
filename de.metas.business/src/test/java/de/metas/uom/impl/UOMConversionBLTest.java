@@ -45,7 +45,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.uom.impl.UOMConversionBL;
 import de.metas.util.Services;
 
 public class UOMConversionBLTest extends UOMTestBase
@@ -283,7 +282,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void testDeriveRate()
+	public void test_getTimeConversionRate()
 	{
 		final I_C_UOM minute = uomConversionHelper.createUOM(
 				"Minute",
@@ -324,47 +323,47 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal rate;
 
 		final BigDecimal minutesPerDay = new BigDecimal(60 * 24);
-		rate = conversionBL.deriveRate(day, minute);
+		rate = conversionBL.getTimeConversionRate(day, minute);
 		Assert.assertTrue(minutesPerDay.equals(rate));
 
 		final BigDecimal daysPerWeek = new BigDecimal(7);
-		rate = conversionBL.deriveRate(week, day);
+		rate = conversionBL.getTimeConversionRate(week, day);
 		Assert.assertTrue(daysPerWeek.equals(rate));
 
 		final BigDecimal hoursPerDay = new BigDecimal(24);
-		rate = conversionBL.deriveRate(day, hour);
+		rate = conversionBL.getTimeConversionRate(day, hour);
 		Assert.assertTrue(hoursPerDay.equals(rate));
 
 		final BigDecimal hoursPerWeek = daysPerWeek.multiply(hoursPerDay);
-		rate = conversionBL.deriveRate(week, hour);
+		rate = conversionBL.getTimeConversionRate(week, hour);
 		Assert.assertTrue(hoursPerWeek.equals(rate));
 
 		final BigDecimal weeksPerMonth = new BigDecimal(4);
-		rate = conversionBL.deriveRate(month, week);
+		rate = conversionBL.getTimeConversionRate(month, week);
 		Assert.assertTrue(weeksPerMonth.equals(rate));
 
 		final BigDecimal daysPerMinute = new BigDecimal(1.0 / 1440.0);
-		rate = conversionBL.deriveRate(minute, day);
+		rate = conversionBL.getTimeConversionRate(minute, day);
 		Assert.assertTrue(daysPerMinute.equals(rate));
 
 		final BigDecimal weeksPerDay = new BigDecimal(1.0 / 7.0);
-		rate = conversionBL.deriveRate(day, week);
+		rate = conversionBL.getTimeConversionRate(day, week);
 		Assert.assertTrue(weeksPerDay.equals(rate));
 
 		final BigDecimal daysPerHour = new BigDecimal(1.0 / 24.0);
-		rate = conversionBL.deriveRate(hour, day);
+		rate = conversionBL.getTimeConversionRate(hour, day);
 		Assert.assertTrue(daysPerHour.equals(rate));
 
 		final BigDecimal weeksPerHour = new BigDecimal(1.0 / 168.0);
-		rate = conversionBL.deriveRate(hour, week);
+		rate = conversionBL.getTimeConversionRate(hour, week);
 		Assert.assertTrue(weeksPerHour.equals(rate));
 
 		final BigDecimal monthsPerWeek = new BigDecimal(1.0 / 4.0);
-		rate = conversionBL.deriveRate(week, month);
+		rate = conversionBL.getTimeConversionRate(week, month);
 		Assert.assertTrue(monthsPerWeek.equals(rate));
 
 		final BigDecimal minutesPerYear = new BigDecimal(1.0 / 525600.0);
-		rate = conversionBL.deriveRate(minute, year);
+		rate = conversionBL.getTimeConversionRate(minute, year);
 		Assert.assertTrue(minutesPerYear.equals(rate));
 	}
 

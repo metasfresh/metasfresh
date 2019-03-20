@@ -134,6 +134,12 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public int getStandardPrecision(final int uomId)
 	{
+		if (uomId <= 0)
+		{
+			// NOTE: if there is no UOM specified, we assume UOM is Each => precision=0
+			return 0;
+		}
+
 		final I_C_UOM uom = getById(uomId);
 		return uom.getStdPrecision();
 	}

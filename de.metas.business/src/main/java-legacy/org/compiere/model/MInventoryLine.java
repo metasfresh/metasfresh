@@ -106,8 +106,8 @@ public class MInventoryLine extends X_M_InventoryLine
 			return null;
 		}
 
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		if (productId == null)
 		{
 			return qty;
 		}

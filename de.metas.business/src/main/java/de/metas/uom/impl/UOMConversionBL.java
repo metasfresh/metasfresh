@@ -149,6 +149,33 @@ public class UOMConversionBL implements IUOMConversionBL
 		return new Quantity(qty, uomTo, sourceQty, sourceUOM);
 	}
 
+	/**
+	 * Round quantity based on uom's standard precision if stdPrecision = true, uom's costing precision otherwise.
+	 *
+	 * @param uom
+	 * @param qty quantity
+	 * @param useStdPrecision true if standard precision
+	 * @return rounded quantity
+	 */
+	private BigDecimal roundQty(final I_C_UOM uom, final BigDecimal qty, final boolean useStdPrecision)
+	{
+		final int precision;
+		if (useStdPrecision)
+		{
+			precision = uom.getStdPrecision();
+		}
+		else
+		{
+			precision = uom.getCostingPrecision();
+		}
+
+		if (qty.scale() > precision)
+		{
+			return qty.setScale(precision, BigDecimal.ROUND_HALF_UP);
+		}
+		return qty;
+	}
+
 	@Override
 	public BigDecimal roundToUOMPrecisionIfPossible(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
@@ -171,7 +198,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 		else
 		{
-			// Qty's actual scale is less than UOM precision. Try to converte it to UOM precision
+			// Qty's actual scale is less than UOM precision. Try to convert it to UOM precision
 			// NOTE: we are using without scale because it shall be scaled without any problem
 			return qtyNoZero.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
@@ -244,44 +271,6 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		return priceConv;
-	}
-
-	@Override
-	public int getPrecision(final int uomId)
-	{
-		if (uomId <= 0)
-		{
-			// NOTE: if there is no UOM specified, we assume UOM is Each => precision=0
-			return 0;
-		}
-		// NOTE: we assume C_UOM is table level cached
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
-		if (uom == null)
-		{
-			return 2; // FIXME: is this ok, or better throw exception
-		}
-
-		return uom.getStdPrecision();
-	}
-
-	@Override
-	public BigDecimal roundQty(final I_C_UOM uom, final BigDecimal qty, final boolean useStdPrecision)
-	{
-		final int precision;
-		if (useStdPrecision)
-		{
-			precision = uom.getStdPrecision();
-		}
-		else
-		{
-			precision = uom.getCostingPrecision();
-		}
-
-		if (qty.scale() > precision)
-		{
-			return qty.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		}
-		return qty;
 	}
 
 	@Override
@@ -380,7 +369,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		// try to derive
-		return deriveRate(uomFrom, uomTo);
+		return getTimeConversionRate(uomFrom, uomTo);
 	}	// getConversion
 
 	/**
@@ -520,298 +509,291 @@ public class UOMConversionBL implements IUOMConversionBL
 		if (rate != null)
 		{
 			BigDecimal qtyConv = rate.multiply(qty);
-			qtyConv = roundQty(uomTo, qtyConv, true);
+			final boolean useStdPrecision = true;
+			qtyConv = roundQty(uomTo, qtyConv, useStdPrecision);
 			return qtyConv;
 		}
+
 		return null;
 	}	// convert
 
 	@VisibleForTesting
-	BigDecimal deriveRate(final I_C_UOM uomFrom, final I_C_UOM uomTo)
+	BigDecimal getTimeConversionRate(@NonNull final I_C_UOM fromTimeUom, @NonNull final I_C_UOM toTimeUom)
 	{
-		final int uomFromID = uomFrom.getC_UOM_ID();
-		final int uomToID = uomTo.getC_UOM_ID();
-
-		if (uomFromID == uomToID)
+		final UomId fromTimeUomId = UomId.ofRepoId(fromTimeUom.getC_UOM_ID());
+		final UomId toTimeUomId = UomId.ofRepoId(toTimeUom.getC_UOM_ID());
+		if (fromTimeUomId.equals(toTimeUomId))
 		{
 			return BigDecimal.ONE;
 		}
-		// get Info
-
-		if (uomFrom == null || uomTo == null)
-		{
-			return null;
-		}
 
 		// Time - Minute
-		if (UOMUtil.isMinute(uomFrom))
+		if (UOMUtil.isMinute(fromTimeUom))
 		{
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 60.0);
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 1440.0); // 24 * 60
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 480.0); // 8 * 60
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 10080.0); // 7 * 24 * 60
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 43200.0); // 30 * 24 * 60
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 9600.0); // 4 * 5 * 8 * 60
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 525600.0); // 365 * 24 * 60
 			}
 		}
 
 		// Time - Hour
-		if (UOMUtil.isHour(uomFrom))
+		if (UOMUtil.isHour(fromTimeUom))
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(60.0);
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 24.0);
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 8.0);
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 168.0); // 7 * 24
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 720.0); // 30 * 24
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 160.0); // 4 * 5 * 8
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 8760.0); // 365 * 24
 			}
 		}
 
 		// Time - Day
-		if (UOMUtil.isDay(uomFrom))
+		if (UOMUtil.isDay(fromTimeUom))
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(1440.0); // 24 * 60
 			}
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(24.0);
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(3.0); // 24 / 8
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 7.0); // 7
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 30.0); // 30
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 20.0); // 4 * 5
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 365.0); // 365
 			}
 		}
 
 		// Time - WorkDay
-
-		if (UOMUtil.isWorkDay(uomFrom))
+		if (UOMUtil.isWorkDay(fromTimeUom))
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(480.0); // 8 * 60
 			}
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(8.0); // 8
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 3.0); // 24 / 8
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 5); // 5
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 20.0); // 4 * 5
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 20.0); // 4 * 5
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 240.0); // 4 * 5 * 12
 			}
 		}
 
 		// Time - Week
-
-		if (UOMUtil.isWeek(uomFrom))
+		if (UOMUtil.isWeek(fromTimeUom))
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(10080.0); // 7 * 24 * 60
 			}
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(168.0); // 7 * 24
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(7.0);
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(5.0);
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 4.0); // 4
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 4.0); // 4
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 50.0); // 50
 			}
 		}
 
 		// Time - Month
-		if (UOMUtil.isMonth(uomFrom))
+		if (UOMUtil.isMonth(fromTimeUom))
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(43200.0); // 30 * 24 * 60
 			}
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(720.0); // 30 * 24
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(30.0); // 30
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(20.0); // 4 * 5
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(4.0); // 4
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(1.5); // 30 / 20
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 12.0); // 12
 			}
 		}
 
 		// Time - WorkMonth
-		if (UOMUtil.isWorkMonth(uomFrom))
+		if (UOMUtil.isWorkMonth(fromTimeUom))
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(9600.0); // 4 * 5 * 8 * 60
 			}
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(160.0); // 4 * 5 * 8
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(20.0); // 4 * 5
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(20.0); // 4 * 5
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(4.0); // 4
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(20.0 / 30.0); // 20 / 30
 			}
-			if (UOMUtil.isYear(uomTo))
+			if (UOMUtil.isYear(toTimeUom))
 			{
 				return new BigDecimal(1.0 / 12.0); // 12
 			}
 		}
 
 		// Time - Year
-		if (UOMUtil.isYear(uomFrom))
+		if (UOMUtil.isYear(fromTimeUom))
 
 		{
-			if (UOMUtil.isMinute(uomTo))
+			if (UOMUtil.isMinute(toTimeUom))
 			{
 				return new BigDecimal(518400.0); // 12 * 30 * 24 * 60
 			}
-			if (UOMUtil.isHour(uomTo))
+			if (UOMUtil.isHour(toTimeUom))
 			{
 				return new BigDecimal(8640.0); // 12 * 30 * 24
 			}
-			if (UOMUtil.isDay(uomTo))
+			if (UOMUtil.isDay(toTimeUom))
 			{
 				return new BigDecimal(365.0); // 365
 			}
-			if (UOMUtil.isWorkDay(uomTo))
+			if (UOMUtil.isWorkDay(toTimeUom))
 			{
 				return new BigDecimal(240.0); // 12 * 4 * 5
 			}
-			if (UOMUtil.isWeek(uomTo))
+			if (UOMUtil.isWeek(toTimeUom))
 			{
 				return new BigDecimal(50.0); // 52
 			}
-			if (UOMUtil.isMonth(uomTo))
+			if (UOMUtil.isMonth(toTimeUom))
 			{
 				return new BigDecimal(12.0); // 12
 			}
-			if (UOMUtil.isWorkMonth(uomTo))
+			if (UOMUtil.isWorkMonth(toTimeUom))
 			{
 				return new BigDecimal(12.0); // 12
 			}
 		}
 
 		return null;
-	}	// deriveRate
+	}
 
 	@Override
 	public ProductPrice convertProductPriceToUom(
