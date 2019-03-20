@@ -866,6 +866,7 @@ export class RawWidget extends Component {
       handlePatch,
       widgetType,
       handleZoomInto,
+      dataEntry,
     } = this.props;
     const {
       errorPopup,
@@ -906,6 +907,26 @@ export class RawWidget extends Component {
       .map(field => 'form-field-' + field.field)
       .join(' ');
 
+    let labelClass = dataEntry ? 'col-sm-4' : '';
+    if (!labelClass) {
+      labelClass =
+        type === 'primary' && !oneLineException
+          ? 'col-sm-12 panel-title'
+          : type === 'primaryLongLabels'
+          ? 'col-sm-6'
+          : 'col-sm-3';
+    }
+
+    let fieldClass = dataEntry ? 'col-sm-8' : '';
+    if (!fieldClass) {
+      fieldClass =
+        ((type === 'primary' || noLabel) && !oneLineException
+          ? 'col-sm-12 '
+          : type === 'primaryLongLabels'
+          ? 'col-sm-6'
+          : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+    }
+
     return (
       <div
         className={classnames(
@@ -920,14 +941,7 @@ export class RawWidget extends Component {
         {!noLabel && caption && (
           <div
             key="title"
-            className={
-              'form-control-label ' +
-              (type === 'primary' && !oneLineException
-                ? 'col-sm-12 panel-title'
-                : type === 'primaryLongLabels'
-                ? 'col-sm-6'
-                : 'col-sm-3 ')
-            }
+            className={classnames('form-control-label', labelClass)}
             title={description || caption}
           >
             {fields[0].supportZoomInto ? (
@@ -943,13 +957,7 @@ export class RawWidget extends Component {
           </div>
         )}
         <div
-          className={
-            ((type === 'primary' || noLabel) && !oneLineException
-              ? 'col-sm-12 '
-              : type === 'primaryLongLabels'
-              ? 'col-sm-6'
-              : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex ' : '')
-          }
+          className={fieldClass}
           onMouseEnter={() => this.handleErrorPopup(true)}
           onMouseLeave={() => this.handleErrorPopup(false)}
         >
