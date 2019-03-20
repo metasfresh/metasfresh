@@ -69,33 +69,31 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Ansprechpartner.
-	 * User within the system - Internal or Business Partner Contact
+	 * Set Contact.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	public void setC_BP_Contact_ID (int C_BP_Contact_ID);
 
 	/**
-	 * Get Ansprechpartner.
-	 * User within the system - Internal or Business Partner Contact
+	 * Get Contact.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	public int getC_BP_Contact_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
+	public org.compiere.model.I_AD_User getC_BP_Contact();
 
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
+	public void setC_BP_Contact(org.compiere.model.I_AD_User C_BP_Contact);
 
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version_Line, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version_Line, org.compiere.model.I_AD_User>(I_C_Phonecall_Schema_Version_Line.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+    /** Column definition for C_BP_Contact_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version_Line, org.compiere.model.I_AD_User> COLUMN_C_BP_Contact_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schema_Version_Line, org.compiere.model.I_AD_User>(I_C_Phonecall_Schema_Version_Line.class, "C_BP_Contact_ID", org.compiere.model.I_AD_User.class);
+    /** Column name C_BP_Contact_ID */
+    public static final String COLUMNNAME_C_BP_Contact_ID = "C_BP_Contact_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -156,7 +154,7 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Anrufliste.
+	 * Set Anruf Planung.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -165,7 +163,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID);
 
 	/**
-	 * Get Anrufliste.
+	 * Get Anruf Planung.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -183,7 +181,7 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_C_Phonecall_Schema_ID = "C_Phonecall_Schema_ID";
 
 	/**
-	 * Set Anruflistenversion.
+	 * Set Anruf Planung Version.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -192,7 +190,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	public void setC_Phonecall_Schema_Version_ID (int C_Phonecall_Schema_Version_ID);
 
 	/**
-	 * Get Anruflistenversion.
+	 * Get Anruf Planung Version.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -210,7 +208,7 @@ public interface I_C_Phonecall_Schema_Version_Line
     public static final String COLUMNNAME_C_Phonecall_Schema_Version_ID = "C_Phonecall_Schema_Version_ID";
 
 	/**
-	 * Set Anrufliste Position.
+	 * Set Anruf Planung Version Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -219,7 +217,7 @@ public interface I_C_Phonecall_Schema_Version_Line
 	public void setC_Phonecall_Schema_Version_Line_ID (int C_Phonecall_Schema_Version_Line_ID);
 
 	/**
-	 * Get Anrufliste Position.
+	 * Get Anruf Planung Version Position.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

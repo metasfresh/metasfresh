@@ -56,7 +56,7 @@ public class PhonecallScheduleRepository
 
 		phonecallScheduleRecord.setC_BPartner_ID(schedule.getBpartnerAndLocationId().getBpartnerId().getRepoId());
 		phonecallScheduleRecord.setC_BPartner_Location_ID(schedule.getBpartnerAndLocationId().getRepoId());
-		phonecallScheduleRecord.setAD_User_ID(schedule.getContactId().getRepoId());
+		phonecallScheduleRecord.setC_BP_Contact_ID(schedule.getContactId().getRepoId());
 
 		phonecallScheduleRecord.setC_Phonecall_Schema_ID(schedule.getPhonecallSchemaId().getRepoId());
 		phonecallScheduleRecord.setC_Phonecall_Schema_Version_ID(schedule.getPhonecallSchemaVersionId().getRepoId());
@@ -80,7 +80,7 @@ public class PhonecallScheduleRepository
 
 		return PhonecallSchedule.builder()
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(phonecallScheduleRecord.getC_BPartner_ID(), phonecallScheduleRecord.getC_BPartner_Location_ID()))
-				.contactId(UserId.ofRepoId(phonecallScheduleRecord.getAD_User_ID()))
+				.contactId(UserId.ofRepoId(phonecallScheduleRecord.getC_BP_Contact_ID()))
 				.date(TimeUtil.asLocalDate(phonecallScheduleRecord.getPhonecallDate()))
 				.startTime(TimeUtil.asZonedDateTime(phonecallScheduleRecord.getPhonecallTimeMin()))
 				.endTime(TimeUtil.asZonedDateTime(phonecallScheduleRecord.getPhonecallTimeMax()))

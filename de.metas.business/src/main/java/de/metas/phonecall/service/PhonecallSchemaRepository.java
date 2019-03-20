@@ -121,7 +121,7 @@ public class PhonecallSchemaRepository
 		return PhonecallSchemaVersionLine.builder()
 				.id(phonecallSchemaVersionLineId)
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(phonecallSchemaVersionLineRecord.getC_BPartner_ID(), phonecallSchemaVersionLineRecord.getC_BPartner_Location_ID()))
-				.contactId(UserId.ofRepoId(phonecallSchemaVersionLineRecord.getAD_User_ID()))
+				.contactId(UserId.ofRepoId(phonecallSchemaVersionLineRecord.getC_BP_Contact_ID()))
 				.phonecallSchemaVersionId(phonecallSchemaVersionLineId.getPhonecallSchemaVersionId())
 				.startTime(TimeUtil.asZonedDateTime(phonecallSchemaVersionLineRecord.getPhonecallTimeMin()))
 				.endTime(TimeUtil.asZonedDateTime(phonecallSchemaVersionLineRecord.getPhonecallTimeMax()))

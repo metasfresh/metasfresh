@@ -69,33 +69,31 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Ansprechpartner.
-	 * User within the system - Internal or Business Partner Contact
+	 * Set Contact.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	public void setC_BP_Contact_ID (int C_BP_Contact_ID);
 
 	/**
-	 * Get Ansprechpartner.
-	 * User within the system - Internal or Business Partner Contact
+	 * Get Contact.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	public int getC_BP_Contact_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
+	public org.compiere.model.I_AD_User getC_BP_Contact();
 
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
+	public void setC_BP_Contact(org.compiere.model.I_AD_User C_BP_Contact);
 
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+    /** Column definition for C_BP_Contact_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User> COLUMN_C_BP_Contact_ID = new org.adempiere.model.ModelColumn<I_C_Phonecall_Schedule, org.compiere.model.I_AD_User>(I_C_Phonecall_Schedule.class, "C_BP_Contact_ID", org.compiere.model.I_AD_User.class);
+    /** Column name C_BP_Contact_ID */
+    public static final String COLUMNNAME_C_BP_Contact_ID = "C_BP_Contact_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -315,7 +313,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsCalled.
+	 * Set Anruf getätigt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -324,7 +322,7 @@ public interface I_C_Phonecall_Schedule
 	public void setIsCalled (boolean IsCalled);
 
 	/**
-	 * Get IsCalled.
+	 * Get Anruf getätigt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -338,7 +336,7 @@ public interface I_C_Phonecall_Schedule
     public static final String COLUMNNAME_IsCalled = "IsCalled";
 
 	/**
-	 * Set Ordered.
+	 * Set Auftrag erteilt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -347,7 +345,7 @@ public interface I_C_Phonecall_Schedule
 	public void setIsOrdered (boolean IsOrdered);
 
 	/**
-	 * Get Ordered.
+	 * Get Auftrag erteilt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

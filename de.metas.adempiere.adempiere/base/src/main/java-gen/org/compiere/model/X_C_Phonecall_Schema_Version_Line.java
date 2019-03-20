@@ -14,7 +14,7 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -926255592L;
+	private static final long serialVersionUID = -1418880665L;
 
     /** Standard Constructor */
     public X_C_Phonecall_Schema_Version_Line (Properties ctx, int C_Phonecall_Schema_Version_Line_ID, String trxName)
@@ -49,37 +49,34 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
     }
 
 	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	public org.compiere.model.I_AD_User getC_BP_Contact() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+		return get_ValueAsPO(COLUMNNAME_C_BP_Contact_ID, org.compiere.model.I_AD_User.class);
 	}
 
 	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	public void setC_BP_Contact(org.compiere.model.I_AD_User C_BP_Contact)
 	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+		set_ValueFromPO(COLUMNNAME_C_BP_Contact_ID, org.compiere.model.I_AD_User.class, C_BP_Contact);
 	}
 
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
+	/** Set Contact.
+		@param C_BP_Contact_ID Contact	  */
 	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setC_BP_Contact_ID (int C_BP_Contact_ID)
 	{
-		if (AD_User_ID < 0) 
-			set_Value (COLUMNNAME_AD_User_ID, null);
+		if (C_BP_Contact_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Contact_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_C_BP_Contact_ID, Integer.valueOf(C_BP_Contact_ID));
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
+	/** Get Contact.
+		@return Contact	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getC_BP_Contact_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Contact_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -171,8 +168,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_ID, org.compiere.model.I_C_Phonecall_Schema.class, C_Phonecall_Schema);
 	}
 
-	/** Set Anrufliste.
-		@param C_Phonecall_Schema_ID Anrufliste	  */
+	/** Set Anruf Planung.
+		@param C_Phonecall_Schema_ID Anruf Planung	  */
 	@Override
 	public void setC_Phonecall_Schema_ID (int C_Phonecall_Schema_ID)
 	{
@@ -182,8 +179,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 			set_Value (COLUMNNAME_C_Phonecall_Schema_ID, Integer.valueOf(C_Phonecall_Schema_ID));
 	}
 
-	/** Get Anrufliste.
-		@return Anrufliste	  */
+	/** Get Anruf Planung.
+		@return Anruf Planung	  */
 	@Override
 	public int getC_Phonecall_Schema_ID () 
 	{
@@ -205,8 +202,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 		set_ValueFromPO(COLUMNNAME_C_Phonecall_Schema_Version_ID, org.compiere.model.I_C_Phonecall_Schema_Version.class, C_Phonecall_Schema_Version);
 	}
 
-	/** Set Anruflistenversion.
-		@param C_Phonecall_Schema_Version_ID Anruflistenversion	  */
+	/** Set Anruf Planung Version.
+		@param C_Phonecall_Schema_Version_ID Anruf Planung Version	  */
 	@Override
 	public void setC_Phonecall_Schema_Version_ID (int C_Phonecall_Schema_Version_ID)
 	{
@@ -216,8 +213,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 			set_Value (COLUMNNAME_C_Phonecall_Schema_Version_ID, Integer.valueOf(C_Phonecall_Schema_Version_ID));
 	}
 
-	/** Get Anruflistenversion.
-		@return Anruflistenversion	  */
+	/** Get Anruf Planung Version.
+		@return Anruf Planung Version	  */
 	@Override
 	public int getC_Phonecall_Schema_Version_ID () 
 	{
@@ -227,8 +224,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
-	/** Set Anrufliste Position.
-		@param C_Phonecall_Schema_Version_Line_ID Anrufliste Position	  */
+	/** Set Anruf Planung Version Position.
+		@param C_Phonecall_Schema_Version_Line_ID Anruf Planung Version Position	  */
 	@Override
 	public void setC_Phonecall_Schema_Version_Line_ID (int C_Phonecall_Schema_Version_Line_ID)
 	{
@@ -238,8 +235,8 @@ public class X_C_Phonecall_Schema_Version_Line extends org.compiere.model.PO imp
 			set_ValueNoCheck (COLUMNNAME_C_Phonecall_Schema_Version_Line_ID, Integer.valueOf(C_Phonecall_Schema_Version_Line_ID));
 	}
 
-	/** Get Anrufliste Position.
-		@return Anrufliste Position	  */
+	/** Get Anruf Planung Version Position.
+		@return Anruf Planung Version Position	  */
 	@Override
 	public int getC_Phonecall_Schema_Version_Line_ID () 
 	{
