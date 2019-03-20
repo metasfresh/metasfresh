@@ -488,7 +488,7 @@ input:checked + .input-slider:before {
     position: relative;
     display: inline-block;
     padding-right: 0.5rem;
-    border-radius: 3px;
+    border-radius: 0;
 }
 
 .input-icon-right{
