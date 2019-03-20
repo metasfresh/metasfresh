@@ -1,5 +1,6 @@
 package de.metas.impexp.partner;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -10,9 +11,16 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -40,6 +48,15 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 /* package */ class PharmaBPartnerLocationImportHelper
 {
+	final private Comparator<Address> addressComparator = Comparator.comparing(Address::getCity)
+			.thenComparing(Address::getStreet1)
+			.thenComparing(Address::getStreet2)
+			.thenComparing(Address::getStreet3)
+			.thenComparing(Address::getStreet4)
+			.thenComparing(Address::getPostal)
+			.thenComparing(Address::getPobox)
+			.thenComparingInt(Address::getCounrytId);
+
 	public I_C_BPartner_Location importRecord(
 			@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
@@ -54,13 +71,6 @@ import lombok.experimental.UtilityClass;
 		return bpartnerLocation;
 	}
 
-	/**
-	 * retrieve existent BPartner location and call method for updating the fields
-	 *
-	 * @param importRecord
-	 * @param previousImportRecordsForSameBPartner
-	 * @return
-	 */
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
 	{
@@ -69,8 +79,9 @@ import lombok.experimental.UtilityClass;
 		final List<I_I_Pharma_BPartner> importRecordsWithEqualAddresses = getImportRecordsWithEqualAddresses(importRecord, previousImportRecordsForSameBPartner);
 
 		final boolean previousImportRecordsHaveAnEqualAddress = !importRecordsWithEqualAddresses.isEmpty();
+
 		if (previousImportRecordsHaveAnEqualAddress
-				|| bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0)// Update Location
+				|| (bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0))// Update Location
 		{
 			if (previousImportRecordsHaveAnEqualAddress)
 			{
@@ -78,8 +89,51 @@ import lombok.experimental.UtilityClass;
 			}
 
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+
+			return bpartnerLocation;
 		}
 
+		return updateOldAddressIfExistsAndMatches(importRecord, bpartnerLocation);
+	}
+
+	private I_C_BPartner_Location updateOldAddressIfExistsAndMatches(final I_I_Pharma_BPartner importRecord, I_C_BPartner_Location bpartnerLocation)
+	{
+		final List<I_C_BPartner_Location> existentBPLocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(importRecord.getC_BPartner());
+		if (!existentBPLocations.isEmpty())
+		{
+			final Address importAddress = Address.builder()
+					.counrytId(importRecord.getC_Country_ID())
+					.city(importRecord.getb00ortzu())
+					.street1(importRecord.getb00str())
+					.street2(importRecord.getb00hnrv())
+					.street3(importRecord.getb00hnrvz())
+					.street4(importRecord.getb00hnrb() + " " + importRecord.getb00hnrbz())
+					.postal(importRecord.getb00plzzu1())
+					.pobox(buildPOBox(importRecord))
+					.build();
+
+			final List<Address> matchedAddreses = existentBPLocations.stream()
+					.map(bpLocation -> Address.builder()
+							.counrytId(importRecord.getC_Country_ID())
+							.city(importRecord.getb00ortzu())
+							.street1(importRecord.getb00str())
+							.street2(importRecord.getb00hnrv())
+							.street3(importRecord.getb00hnrvz())
+							.street4(importRecord.getb00hnrb() + " " + importRecord.getb00hnrbz())
+							.postal(importRecord.getb00plzzu1())
+							.pobox(buildPOBox(importRecord))
+							.bpLocationId(bpLocation.getC_BPartner_Location_ID())
+							.build())
+					.filter(address -> addressComparator.compare(address, importAddress) == 0)
+					.collect(ImmutableList.toImmutableList());
+
+			if (matchedAddreses.size() > 0)
+			{
+				bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), matchedAddreses.get(0).getBpLocationId()));
+				updateExistingBPartnerLocation(importRecord,bpartnerLocation);
+			}
+
+		}
 		return bpartnerLocation;
 	}
 
@@ -102,22 +156,26 @@ import lombok.experimental.UtilityClass;
 				&& Objects.equals(importRecord.getb00str(), p.getb00str())
 				&& Objects.equals(importRecord.getb00hnrv(), p.getb00hnrv())
 				&& Objects.equals(importRecord.getb00hnrvz(), p.getb00hnrvz())
-				&& Objects.equals(importRecord.getb00hnrb() + " " +  importRecord.getb00hnrbz(), p.getb00hnrb() + " " +  p.getb00hnrbz())
+				&& Objects.equals(importRecord.getb00hnrb() + " " + importRecord.getb00hnrbz(), p.getb00hnrb() + " " + p.getb00hnrbz())
 				&& Objects.equals(importRecord.getb00plzzu1(), p.getb00plzzu1());
 	}
 
-	/**
-	 * create a new BPartner location
-	 * <ul>
-	 * * C_Country_ID > 0
-	 * </ul>
-	 * <ul>
-	 * * City not empty
-	 * </ul>
-	 *
-	 * @param importRecord
-	 * @return
-	 */
+	@Builder
+	@Value
+	public class Address
+	{
+		final int counrytId;
+		final String city;
+		final String street1;
+		final String street2;
+		final String street3;
+		final String street4;
+		final String postal;
+		final String pobox;;
+		final int bpLocationId;
+
+	}
+
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		if (importRecord.getC_Country_ID() > 0
@@ -138,7 +196,7 @@ import lombok.experimental.UtilityClass;
 		updateLocation(importRecord, bpartnerLocation);
 
 		bpartnerLocation.setIsShipTo(true);
-		
+
 		updatePhoneAndFax(importRecord, bpartnerLocation);
 
 		importRecord.setC_BPartner_Location(bpartnerLocation);
@@ -160,14 +218,14 @@ import lombok.experimental.UtilityClass;
 		location.setAddress1(importRecord.getb00str());
 		location.setAddress2(importRecord.getb00hnrv());
 		location.setAddress3(importRecord.getb00hnrvz());
-		location.setAddress4(importRecord.getb00hnrb() + " " +  importRecord.getb00hnrbz());
+		location.setAddress4(importRecord.getb00hnrb() + " " + importRecord.getb00hnrbz());
 		location.setPostal(importRecord.getb00plzzu1());
 		location.setCity(importRecord.getb00ortzu());
 		location.setC_Country_ID(importRecord.getC_Country_ID());
 		location.setPOBox(buildPOBox(importRecord));
 		InterfaceWrapperHelper.save(location);
 	}
-	
+
 	private String buildPOBox(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
@@ -199,12 +257,11 @@ import lombok.experimental.UtilityClass;
 			}
 			sb.append(importRecord.getb00plzgk1());
 		}
-		
+
 		return sb.toString();
 	}
 
-
-	private void updatePhoneAndFax(@NonNull final I_I_Pharma_BPartner importRecord,	@NonNull final I_C_BPartner_Location bpartnerLocation)
+	private void updatePhoneAndFax(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		if (!Check.isEmpty(importRecord.getb00tel1()))
 		{
