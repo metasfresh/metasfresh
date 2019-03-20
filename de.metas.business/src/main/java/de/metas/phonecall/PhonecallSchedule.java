@@ -58,6 +58,12 @@ public class PhonecallSchedule
 	@NonNull
 	ZonedDateTime endTime;
 
+	boolean isOrdered;
+
+	boolean isCalled;
+
+	UserId salesRepId;
+
 	public PhonecallSchemaId getPhonecallSchemaId()
 	{
 		return getSchemaVersionLineId().getPhonecallSchemaId();

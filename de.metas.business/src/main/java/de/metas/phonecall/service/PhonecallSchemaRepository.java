@@ -242,7 +242,6 @@ public class PhonecallSchemaRepository
 				.createQueryBuilder(I_C_Phonecall_Schedule.class)
 				.addCompareFilter(I_C_Phonecall_Schedule.COLUMN_PhonecallDate, Operator.GREATER_OR_EQUAL, phonecallSchemaVersionRange.getStartDate(), dateTruncModifier)
 				.addCompareFilter(I_C_Phonecall_Schedule.COLUMN_PhonecallDate, Operator.LESS_OR_EQUAL, phonecallSchemaVersionRange.getEndDate(), dateTruncModifier)
-				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_IsManualPhonecall, false) // not manual entries
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersion.getPhonecallSchemaId().getRepoId());
 
 		queryBuilder.orderBy(I_C_Phonecall_Schedule.COLUMN_PhonecallDate);
