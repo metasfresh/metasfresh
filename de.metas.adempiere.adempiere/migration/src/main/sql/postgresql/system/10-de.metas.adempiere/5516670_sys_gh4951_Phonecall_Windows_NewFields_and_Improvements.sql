@@ -463,3 +463,153 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2019-03-20 13:48:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557945
 ;
 
+-- 2019-03-20T13:57:24.252
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Auftrag erteilt', PrintName='Auftrag erteilt',Updated=TO_TIMESTAMP('2019-03-20 13:57:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576252 AND AD_Language='de_CH'
+;
+
+-- 2019-03-20T13:57:24.304
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576252,'de_CH') 
+;
+
+-- 2019-03-20T13:57:28.403
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Auftrag erteilt', PrintName='Auftrag erteilt',Updated=TO_TIMESTAMP('2019-03-20 13:57:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576252 AND AD_Language='de_DE'
+;
+
+-- 2019-03-20T13:57:28.406
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576252,'de_DE') 
+;
+
+-- 2019-03-20T13:57:28.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(576252,'de_DE') 
+;
+
+-- 2019-03-20T13:57:28.437
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsOrdered', Name='Auftrag erteilt', Description=NULL, Help=NULL WHERE AD_Element_ID=576252
+;
+
+-- 2019-03-20T13:57:28.438
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsOrdered', Name='Auftrag erteilt', Description=NULL, Help=NULL, AD_Element_ID=576252 WHERE UPPER(ColumnName)='ISORDERED' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-20T13:57:28.440
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsOrdered', Name='Auftrag erteilt', Description=NULL, Help=NULL WHERE AD_Element_ID=576252 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-20T13:57:28.441
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auftrag erteilt', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=576252) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 576252)
+;
+
+-- 2019-03-20T13:57:28.452
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Auftrag erteilt', Name='Auftrag erteilt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=576252)
+;
+
+-- 2019-03-20T13:57:28.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Auftrag erteilt', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 576252
+;
+
+-- 2019-03-20T13:57:28.457
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Auftrag erteilt', Description=NULL, Help=NULL WHERE AD_Element_ID = 576252
+;
+
+-- 2019-03-20T13:57:28.458
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Auftrag erteilt', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576252
+;
+
+-- 2019-03-20T13:57:52.393
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anruf getätigt', PrintName='Anruf getätigt',Updated=TO_TIMESTAMP('2019-03-20 13:57:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576253 AND AD_Language='de_CH'
+;
+
+-- 2019-03-20T13:57:52.396
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576253,'de_CH') 
+;
+
+-- 2019-03-20T13:57:56.762
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anruf getätigt', PrintName='Anruf getätigt',Updated=TO_TIMESTAMP('2019-03-20 13:57:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576253 AND AD_Language='de_DE'
+;
+
+-- 2019-03-20T13:57:56.765
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576253,'de_DE') 
+;
+
+-- 2019-03-20T13:57:56.792
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(576253,'de_DE') 
+;
+
+-- 2019-03-20T13:57:56.795
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsCalled', Name='Anruf getätigt', Description=NULL, Help=NULL WHERE AD_Element_ID=576253
+;
+
+-- 2019-03-20T13:57:56.796
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsCalled', Name='Anruf getätigt', Description=NULL, Help=NULL, AD_Element_ID=576253 WHERE UPPER(ColumnName)='ISCALLED' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-20T13:57:56.797
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsCalled', Name='Anruf getätigt', Description=NULL, Help=NULL WHERE AD_Element_ID=576253 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-20T13:57:56.798
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anruf getätigt', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=576253) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 576253)
+;
+
+-- 2019-03-20T13:57:56.809
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Anruf getätigt', Name='Anruf getätigt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=576253)
+;
+
+-- 2019-03-20T13:57:56.811
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Anruf getätigt', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 576253
+;
+
+-- 2019-03-20T13:57:56.812
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Anruf getätigt', Description=NULL, Help=NULL WHERE AD_Element_ID = 576253
+;
+
+-- 2019-03-20T13:57:56.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Anruf getätigt', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576253
+;
+
+-- 2019-03-20T13:58:45.682
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Anruf getätigt',Updated=TO_TIMESTAMP('2019-03-20 13:58:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541082
+;
+
+-- 2019-03-20T13:58:50.488
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Anruf getätigt',Updated=TO_TIMESTAMP('2019-03-20 13:58:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541082
+;
+
+-- 2019-03-20T13:58:57.759
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Mark As Called',Updated=TO_TIMESTAMP('2019-03-20 13:58:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541082
+;
+
+-- 2019-03-20T13:59:02.080
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Anruf getätigt',Updated=TO_TIMESTAMP('2019-03-20 13:59:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541082
+;
+
