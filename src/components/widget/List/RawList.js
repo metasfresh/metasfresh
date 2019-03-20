@@ -324,6 +324,7 @@ export class RawList extends PureComponent {
             'input-disabled': readonly,
             'input-dropdown-container-static': rowId,
             'input-table': rowId && !isModal,
+            'input-empty': !value,
             'lookup-dropdown': lookupList,
             'select-dropdown': !lookupList,
             focused: isFocused,
@@ -340,7 +341,6 @@ export class RawList extends PureComponent {
             className={classnames('input-dropdown input-block', {
               'input-secondary': rank,
               pulse: updated,
-              'input-empty': !value,
               'input-mandatory': mandatory && !selected,
               'input-error':
                 validStatus &&
