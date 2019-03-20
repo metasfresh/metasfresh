@@ -48,6 +48,8 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess
 	{
 		final PhonecallSchedule phonecallSchedule = phonecallSchedueRepo.retrieveById(PhonecallScheduleId.ofRepoId(getRecord_ID()));
 
+		phonecallSchedueRepo.markAsOrdered(phonecallSchedule);
+
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
