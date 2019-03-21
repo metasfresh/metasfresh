@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_fonts" columnCount="3" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="185" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="18919103-87b5-48a4-92b0-e54b676a0022">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<scriptlet name="RetrieveAvailableFonts" class="de.metas.report.jasper.fonts.AvailableFonts">
+		<scriptletDescription><![CDATA[]]></scriptletDescription>
+	</scriptlet>
+	<queryString language="SQL">
+		<![CDATA[select 1;]]>
+	</queryString>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="34" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="3" width="555" height="30" uuid="2a40d81d-f2dc-4339-8f73-e6d19b28c678"/>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Available Fonts"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="95" splitType="Stretch">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="1" width="195" height="49" uuid="d3e2f3ac-b79a-44ad-90e5-4fb15fd218ed"/>
+				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.retrieveAvailableFonts()]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
