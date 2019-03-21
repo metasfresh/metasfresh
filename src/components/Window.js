@@ -282,7 +282,10 @@ class Window extends PureComponent {
         closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
 
       return (
-        <div key={`section-${idx}`} className="section">
+        <div
+          key={`section-${idx}`}
+          className={classnames('section', { collapsed: sectionCollapsed })}
+        >
           {title && (
             <Separator
               {...{ title, idx, sectionCollapsed, collapsible }}

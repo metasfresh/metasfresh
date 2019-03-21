@@ -24,6 +24,9 @@
 
     &.nested-tabs {
         background-color: white;
+        border: 1px solid $brand-border-color;
+        border-left: none;
+        border-top: none;
 
         .nav-item {
             padding: 0;
@@ -33,9 +36,13 @@
             border: none;
             background-color: white;
 
+            &:first-of-type {
+                border-left: 1px solid $brand-border-color;
+            }
+
             &.active {
-                border: 1px solid #dee6ec;
-                border-color: #e9ecef #e9ecef #dee2e6;
+                border: 1px solid $brand-border-color;
+                border-color: #e9ecef #e9ecef $brand-border-color;
                 border-bottom: none;
                 border-top: 1px solid transparent;
                 border-radius: 0;

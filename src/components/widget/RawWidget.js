@@ -907,7 +907,7 @@ export class RawWidget extends Component {
       .map(field => 'form-field-' + field.field)
       .join(' ');
 
-    let labelClass = dataEntry ? 'col-sm-4' : '';
+    let labelClass = dataEntry ? 'col-sm-5' : '';
     if (!labelClass) {
       labelClass =
         type === 'primary' && !oneLineException
@@ -917,7 +917,7 @@ export class RawWidget extends Component {
           : 'col-sm-3';
     }
 
-    let fieldClass = dataEntry ? 'col-sm-8' : '';
+    let fieldClass = dataEntry ? 'col-sm-7' : '';
     if (!fieldClass) {
       fieldClass =
         ((type === 'primary' || noLabel) && !oneLineException
