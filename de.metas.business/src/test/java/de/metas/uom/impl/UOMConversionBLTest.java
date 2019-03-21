@@ -601,40 +601,79 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertFromTripToTones()
+	public void test_convertProductPriceToUom_1()
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(1);
+		final CurrencyPrecision currencyPrecision = CurrencyPrecision.ofInt(3);
 
-		final I_C_UOM uomTonnes = uomConversionHelper.createUOM("Metric Tonnes", 3, 0);
-		final I_C_UOM uomTripOfSand = uomConversionHelper.createUOM("Trip of Sand", 2, 0);
+		final UomId uomTonnes = toUomId(uomConversionHelper.createUOM("Metric Tonnes", 3, 0));
+		final UomId uomTripOfSand = toUomId(uomConversionHelper.createUOM("Trip of Sand", 2, 0));
 
 		final ProductId productId = createProduct("Sand", uomTonnes);
 
 		//
 		// Conversion: 1 Trip = 27 Tonnes
-		uomConversionHelper.createUOMConversion(
-				productId,
-				uomTonnes,
-				uomTripOfSand,
-				new BigDecimal("0.037037037037"), // multiply rate
-				new BigDecimal("27")  // divide rate
-		);
-
-		final ProductPrice price = ProductPrice.builder()
+		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(productId)
-				.uomId(toUomId(uomTripOfSand))
+				.fromUomId(uomTonnes)
+				.toUomId(uomTripOfSand)
+				.fromToMultiplier(new BigDecimal("0.037037037037"))
+				.toFromMultiplier(new BigDecimal("27"))
+				.build());
+
+		final ProductPrice pricePerTrip = ProductPrice.builder()
+				.productId(productId)
+				.uomId(uomTripOfSand)
 				.value(Money.of(950, currencyId))
 				.build();
+		System.out.println("Price/Trip: " + pricePerTrip);
 
-		final ProductPrice priceConv = conversionBL.convertProductPriceToUom(price, toUomId(uomTonnes), CurrencyPrecision.ofInt(10));
+		//
+		// Convert Price/Trip to Price/Tonne
+		final ProductPrice pricePerTonne = conversionBL.convertProductPriceToUom(pricePerTrip, uomTonnes, currencyPrecision);
+		System.out.println("Price/Tonne: " + pricePerTonne);
+		assertThat(pricePerTonne.toBigDecimal()).isEqualTo("35.185");
+		assertThat(pricePerTonne.getUomId()).isEqualTo(uomTonnes);
+	}
 
-		System.out.println("    Price: " + price);
-		System.out.println("Converted: " + priceConv);
+	@Test
+	public void test_convertProductPriceToUom_2()
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(1);
+		final CurrencyPrecision currencyPrecision = CurrencyPrecision.ofInt(3);
+
+		final UomId uomSheet = toUomId(uomConversionHelper.createUOM("Sheet", 3, 3));
+		final UomId uomSQM = toUomId(uomConversionHelper.createUOM("Square meter", 3, 3));
+
+		final ProductId productId = createProduct("Clear glass", uomSheet);
+
+		//
+		// Conversion: 1 Sheet = 7.2225 SQMs
+		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(productId)
+				.fromUomId(uomSheet)
+				.toUomId(uomSQM)
+				.fromToMultiplier(new BigDecimal("7.2225"))
+				.toFromMultiplier(new BigDecimal("0.1384562132225684"))
+				.build());
+
+		final ProductPrice pricePerSQM = ProductPrice.builder()
+				.productId(productId)
+				.uomId(uomSQM)
+				.value(Money.of(new BigDecimal("42.03"), currencyId))
+				.build();
+		System.out.println("Price/SQM: " + pricePerSQM);
+
+		//
+		// Convert Price/SQM to Price/Tone
+		final ProductPrice pricePerSheet = conversionBL.convertProductPriceToUom(pricePerSQM, uomSheet, currencyPrecision);
+		System.out.println("Price/Sheet: " + pricePerSheet);
+		assertThat(pricePerSheet.toBigDecimal()).isEqualTo("303.562");
+		assertThat(pricePerSheet.getUomId()).isEqualTo(uomSheet);
 	}
 
 	private static final UomId toUomId(final I_C_UOM uom)
 	{
 		return UomId.ofRepoId(uom.getC_UOM_ID());
 	}
-
 }

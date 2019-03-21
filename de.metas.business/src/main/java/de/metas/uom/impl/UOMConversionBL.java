@@ -689,16 +689,9 @@ public class UOMConversionBL implements IUOMConversionBL
 			return price;
 		}
 
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+		final UOMConversionRate rate = getRate(price.getProductId(), toUomId, price.getUomId());
+		final BigDecimal priceConv = pricePrecision.round(rate.convert(price.toBigDecimal()));
 
-		final BigDecimal factor = convertQty(
-				price.getProductId(),
-				BigDecimal.ONE,
-				uomsRepo.getById(price.getUomId()),
-				uomsRepo.getById(toUomId));
-
-		return price.withValueAndUomId(
-				price.toMoney().multiply(factor),
-				toUomId);
+		return price.withValueAndUomId(priceConv, toUomId);
 	}
 }
