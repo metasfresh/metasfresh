@@ -17,7 +17,7 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]),
 	pipelineTriggers([]),
-	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
+	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '100')) // keep the last 20 builds
 ])
 
 
@@ -110,6 +110,7 @@ Related jenkins jobs:
 				],
 				wait: true
 		}
+	}
 	else
 	{
 		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger metasfresh as downstream build."
