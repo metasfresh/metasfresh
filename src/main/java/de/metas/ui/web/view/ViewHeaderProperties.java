@@ -3,8 +3,8 @@ package de.metas.ui.web.view;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,6 +36,6 @@ public class ViewHeaderProperties
 	public static final ViewHeaderProperties EMPTY = builder().build();
 
 	@NonNull
-	@Default
-	ImmutableList<ViewHeaderProperty> entries = ImmutableList.of();
+	@Singular
+	ImmutableList<ViewHeaderProperty> entries;
 }
