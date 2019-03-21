@@ -50,10 +50,11 @@ public class UOMPrecision
 		}
 	}
 
+	public static final UOMPrecision ZERO = new UOMPrecision(0);
 	public static final UOMPrecision TWO = new UOMPrecision(2);
 
 	private static final UOMPrecision[] cachedValues = new UOMPrecision[] {
-			new UOMPrecision(0),
+			ZERO,
 			new UOMPrecision(1),
 			TWO,
 			new UOMPrecision(3),

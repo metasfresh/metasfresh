@@ -59,6 +59,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -96,10 +98,11 @@ public class PPOrderBL implements IPPOrderBL
 	public void setQtyEntered(final I_PP_Order order, final BigDecimal QtyEntered)
 	{
 		final BigDecimal qtyEnteredToUse;
-		if (QtyEntered != null && order.getC_UOM_ID() > 0)
+		final UomId uomId = UomId.ofRepoIdOrNull(order.getC_UOM_ID());
+		if (QtyEntered != null && uomId != null)
 		{
-			final int precision = Services.get(IUOMDAO.class).getStandardPrecision(order.getC_UOM_ID());
-			qtyEnteredToUse = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final UOMPrecision precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
+			qtyEnteredToUse = precision.round(QtyEntered);
 		}
 		else
 		{
@@ -120,8 +123,8 @@ public class PPOrderBL implements IPPOrderBL
 		if (qtyOrdered != null)
 		{
 			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-			final int precision = Services.get(IProductBL.class).getUOMPrecision(productId);
-			qtyOrderedToUse = qtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
+			qtyOrderedToUse = precision.round(qtyOrdered);
 		}
 		else
 		{

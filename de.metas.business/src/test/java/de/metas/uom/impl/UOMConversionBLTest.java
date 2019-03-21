@@ -61,6 +61,11 @@ public class UOMConversionBLTest extends UOMTestBase
 		return uomConversionHelper.createProduct(name, uom);
 	}
 
+	private ProductId createProduct(final String name, final UomId uomId)
+	{
+		return uomConversionHelper.createProduct(name, uomId);
+	}
+
 	@Test
 	public void test_adjustToUOMPrecisionWithoutRoundingIfPossible()
 	{

@@ -39,6 +39,7 @@ import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -132,15 +133,15 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public int getStandardPrecision(final int uomId)
+	public UOMPrecision getStandardPrecision(final UomId uomId)
 	{
-		if (uomId <= 0)
+		if (uomId == null)
 		{
 			// NOTE: if there is no UOM specified, we assume UOM is Each => precision=0
-			return 0;
+			return UOMPrecision.ZERO;
 		}
 
 		final I_C_UOM uom = getById(uomId);
-		return uom.getStdPrecision();
+		return UOMPrecision.ofInt(uom.getStdPrecision());
 	}
 }

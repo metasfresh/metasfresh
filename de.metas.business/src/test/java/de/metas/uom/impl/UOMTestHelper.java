@@ -1,5 +1,8 @@
 package de.metas.uom.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -54,11 +57,16 @@ public class UOMTestHelper
 
 	public ProductId createProduct(final String name, final I_C_UOM uom)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
+		return createProduct(name, UomId.ofRepoId(uom.getC_UOM_ID()));
+	}
+
+	public ProductId createProduct(final String name, final UomId uomId)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setValue(name);
 		product.setName(name);
-		product.setC_UOM_ID(uom.getC_UOM_ID());
-		InterfaceWrapperHelper.save(product);
+		product.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(product);
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
@@ -134,7 +142,7 @@ public class UOMTestHelper
 				.toFromMultiplier(divideRate)
 				.build());
 	}
-	
+
 	public void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
 	{
 		Services.get(IUOMConversionDAO.class).createUOMConversion(request);

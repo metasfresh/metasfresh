@@ -30,6 +30,7 @@ import de.metas.cache.CCache;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -126,7 +127,9 @@ public class MUOM extends X_C_UOM
 		{
 			return 2;
 		}
-		return Services.get(IUOMDAO.class).getStandardPrecision(C_UOM_ID);
+		return Services.get(IUOMDAO.class)
+				.getStandardPrecision(UomId.ofRepoId(C_UOM_ID))
+				.toInt();
 	}	// getPrecision
 
 	/**

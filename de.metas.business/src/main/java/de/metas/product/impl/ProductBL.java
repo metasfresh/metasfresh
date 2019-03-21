@@ -58,6 +58,8 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,14 +69,14 @@ public final class ProductBL implements IProductBL
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
 	@Override
-	public int getUOMPrecision(final I_M_Product product)
+	public UOMPrecision getUOMPrecision(final I_M_Product product)
 	{
-		final int uomId = product.getC_UOM_ID();
+		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
 		return Services.get(IUOMDAO.class).getStandardPrecision(uomId);
 	}
 
 	@Override
-	public int getUOMPrecision(@NonNull final ProductId productId)
+	public UOMPrecision getUOMPrecision(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getUOMPrecision(product);

@@ -62,6 +62,6 @@ public interface IUOMDAO extends ISingletonService
 	I_C_UOM retrieveEachUOM(Properties ctx);
 
 	TemporalUnit getTemporalUnitByUomId(final UomId uomId);
-	
-	int getStandardPrecision(final int uomId);
+
+	UOMPrecision getStandardPrecision(final UomId uomId);
 }

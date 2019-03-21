@@ -37,6 +37,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.product.IProductBL;
 import de.metas.uom.LegacyUOMConversionUtils;
+import de.metas.uom.UOMPrecision;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -647,8 +648,8 @@ public class CalloutInOut extends CalloutEngine
 			final I_M_Product product = inoutLine.getM_Product();
 			if (product != null && C_UOM_To_ID > 0)
 			{
-				final int precision = Services.get(IProductBL.class).getUOMPrecision(product);
-				final BigDecimal MovementQty1 = MovementQty.setScale(precision, BigDecimal.ROUND_HALF_UP);
+				final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(product);
+				final BigDecimal MovementQty1 = precision.round(MovementQty);
 				if (MovementQty.compareTo(MovementQty1) != 0)
 				{
 					log.debug("Corrected MovementQty {}->{}", MovementQty, MovementQty1);

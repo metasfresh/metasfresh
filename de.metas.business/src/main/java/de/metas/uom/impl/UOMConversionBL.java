@@ -64,7 +64,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final I_C_UOM fromUOM,
 			@NonNull final I_C_UOM toUOM)
 	{
-		final UOMPrecision precision = UOMPrecision.ofInt(toUOM.getStdPrecision());
+		final UOMPrecision precision = extractStandardPrecision(toUOM);
 
 		if (qty.signum() == 0)
 		{
@@ -73,7 +73,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		final UomId fromUomId = UomId.ofRepoId(fromUOM.getC_UOM_ID());
 		final UomId toUomId = UomId.ofRepoId(toUOM.getC_UOM_ID());
-		final UOMConversionRate rate = getRate(productId, fromUomId, toUomId)
+		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId)
 				.orElseThrow(() -> new NoUOMConversionException(productId, fromUomId, toUomId));
 
 		return rate.convert(qty, precision);
@@ -152,8 +152,18 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public BigDecimal adjustToUOMPrecisionWithoutRoundingIfPossible(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
-		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
+		final UOMPrecision precision = extractStandardPrecision(uom);
 		return precision.adjustToPrecisionWithoutRoundingIfPossible(qty);
+	}
+
+	private static UOMPrecision extractStandardPrecision(final I_C_UOM uom)
+	{
+		return UOMPrecision.ofInt(uom.getStdPrecision());
+	}
+
+	private static UOMPrecision extractCostingPrecision(final I_C_UOM uom)
+	{
+		return UOMPrecision.ofInt(uom.getCostingPrecision());
 	}
 
 	@Override
@@ -193,8 +203,8 @@ public class UOMConversionBL implements IUOMConversionBL
 		final UOMConversionRate rate = conversions.getRate(fromUomId, toUomId);
 
 		final UOMPrecision precision = useStdPrecision
-				? UOMPrecision.ofInt(toUOM.getStdPrecision())
-				: UOMPrecision.ofInt(toUOM.getCostingPrecision());
+				? extractStandardPrecision(toUOM)
+				: extractCostingPrecision(toUOM);
 
 		// Calculate & Scale
 		return rate.convert(qty, precision);
@@ -213,10 +223,10 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		final UomId fromUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
 		final UomId toUomId = UomId.ofRepoId(uomDest.getC_UOM_ID());
-		final UOMConversionRate rate = getRate(productId, fromUomId, toUomId).orElse(null);
+		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
-			final UOMPrecision precision = UOMPrecision.ofInt(uomDest.getStdPrecision());
+			final UOMPrecision precision = extractStandardPrecision(uomDest);
 			return rate.convert(qtyToConvert, precision);
 		}
 		else
@@ -257,7 +267,16 @@ public class UOMConversionBL implements IUOMConversionBL
 		return getTimeConversionRate(uomFrom, uomTo);
 	}	// getConversion
 
-	private Optional<UOMConversionRate> getRate(
+	private UOMConversionRate getRate(
+			@Nullable final ProductId productId,
+			@NonNull final UomId fromUomId,
+			@NonNull final UomId toUomId)
+	{
+		return getRateIfExists(productId, fromUomId, toUomId)
+				.orElseThrow(() -> new NoUOMConversionException(productId, fromUomId, toUomId));
+	}
+
+	private Optional<UOMConversionRate> getRateIfExists(
 			@Nullable final ProductId productId,
 			@NonNull final UomId fromUomId,
 			@NonNull final UomId toUomId)
@@ -310,11 +329,11 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		final UomId toUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-		final UOMConversionRate rate = getRate(productId, fromUomId, toUomId).orElse(null);
+		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
 			final I_C_UOM toUOM = Services.get(IUOMDAO.class).getById(toUomId);
-			final UOMPrecision precision = UOMPrecision.ofInt(toUOM.getStdPrecision());
+			final UOMPrecision precision = extractStandardPrecision(toUOM);
 			return rate.convert(qtyToConvert, precision);
 		}
 		else
@@ -344,7 +363,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final UOMConversionRate rate = getGenericRate(fromUOM, toUOM).orElse(null);
 		if (rate != null)
 		{
-			final UOMPrecision precision = UOMPrecision.ofInt(toUOM.getStdPrecision());
+			final UOMPrecision precision = extractStandardPrecision(toUOM);
 			final BigDecimal qtyConv = rate.convert(qty, precision);
 			return Optional.of(qtyConv);
 		}
