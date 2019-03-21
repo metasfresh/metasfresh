@@ -23,6 +23,7 @@ package de.metas.uom;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.compiere.model.I_C_UOM;
 
@@ -99,7 +100,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uom
 	 * @return qty rounded to UOM precision
 	 */
-	BigDecimal roundToUOMPrecisionIfPossible(BigDecimal qty, I_C_UOM uom);
+	BigDecimal adjustToUOMPrecisionWithoutRoundingIfPossible(BigDecimal qty, I_C_UOM uom);
 
 	/**
 	 * Get Converted Qty from Server (no cache)
@@ -134,20 +135,23 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param qty qty
 	 * @return converted qty (std precision)
 	 */
-	BigDecimal convert(I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
+	Optional<BigDecimal> convert(I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
 
 	/**
 	 * Converts the given qty from the given source UOM to the given product's stocking UOM.
 	 *
-	 * @param product
-	 * @param uomSource the UOM of the given qty
-	 * @param qtyToConvert
-	 *
-	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>C_UOM_Source_ID</code> and if there is no conversion rate to use.
+	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>fromUomId</code> and if there is no conversion rate to use.
 	 */
-	BigDecimal convertToProductUOM(ProductId productId, I_C_UOM uomSource, BigDecimal qtyToConvert);
+	BigDecimal convertToProductUOM(ProductId productId, BigDecimal qtyToConvert, UomId fromUomId);
+
+	default BigDecimal convertToProductUOM(final ProductId productId, final I_C_UOM uomSource, final BigDecimal qtyToConvert)
+	{
+		final UomId fromUomId = uomSource != null ? UomId.ofRepoId(uomSource.getC_UOM_ID()) : null;
+		return convertToProductUOM(productId, qtyToConvert, fromUomId);
+	}
 
 	Quantity convertToProductUOM(Quantity quantity, ProductId productId);
 
 	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId, CurrencyPrecision pricePrecision);
+
 }

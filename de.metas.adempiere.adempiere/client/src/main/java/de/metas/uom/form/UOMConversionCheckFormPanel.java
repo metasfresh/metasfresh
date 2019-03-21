@@ -283,7 +283,7 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 			}
 			else
 			{
-				qtyConv = uomConversionBL.convert(uomFrom, uomTo, qty);
+				qtyConv = uomConversionBL.convert(uomFrom, uomTo, qty).orElse(null);
 			}
 			setQtyConv(qtyConv);
 			setDescription("Converted "

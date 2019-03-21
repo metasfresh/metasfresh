@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.product.IProductBL;
@@ -44,33 +45,61 @@ public class NoUOMConversionException extends AdempiereException
 		final StringBuilder sb = new StringBuilder("@" + AD_Message + "@ - ");
 
 		//
-		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
-		sb.append("@M_Product_ID@:").append(productName);
+		sb.append("@M_Product_ID@:").append(extractProductName(productId));
 
 		//
 		if (fromUomId != null)
 		{
-			sb.append("  @C_UOM_ID@:");
-			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(fromUomId);
-			if (uom != null)
-			{
-				sb.append(uom.getUOMSymbol());
-			}
+			sb.append("  @C_UOM_ID@:").append(extractUOMSymbol(fromUomId));
 		}
 
 		//
 		if (toUomId != null)
 		{
-			sb.append("  @C_UOM_To_ID@:");
-			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(toUomId);
-			if (uom != null)
-			{
-				sb.append(uom.getUOMSymbol());
-			}
+			sb.append("  @C_UOM_To_ID@:").append(extractUOMSymbol(toUomId));
 		}
 
 		//
 		return sb.toString();
+	}
+
+	private static String extractProductName(ProductId productId)
+	{
+		if (productId == null)
+		{
+			return "";
+		}
+
+		// avoid DB connection issues
+		if (Adempiere.isUnitTestMode())
+		{
+			return String.valueOf(productId.getRepoId());
+		}
+
+		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		return productName;
+	}
+
+	private static String extractUOMSymbol(UomId uomId)
+	{
+		if (uomId == null)
+		{
+			return "";
+		}
+
+		// avoid DB connection issues
+		if (Adempiere.isUnitTestMode())
+		{
+			return String.valueOf(uomId.getRepoId());
+		}
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
+		if (uom == null)
+		{
+			return String.valueOf(uomId.getRepoId());
+		}
+
+		return uom.getUOMSymbol();
 	}
 
 }

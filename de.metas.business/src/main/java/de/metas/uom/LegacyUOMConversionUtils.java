@@ -46,7 +46,7 @@ public class LegacyUOMConversionUtils
 
 		// return convert(ctx, uomFrom, uomTo, qty);
 
-		return Services.get(IUOMConversionBL.class).convert(uomFrom, uomTo, qty);
+		return Services.get(IUOMConversionBL.class).convert(uomFrom, uomTo, qty).orElse(null);
 	}
 
 	/**
@@ -104,10 +104,9 @@ public class LegacyUOMConversionUtils
 			final int C_UOM_Source_ID,
 			final BigDecimal qtyToConvert)
 	{
-		final ProductId product = ProductId.ofRepoIdOrNull(M_Product_ID);
-		final I_C_UOM uomSource = MUOM.get(ctx, C_UOM_Source_ID);
+		final ProductId productId = ProductId.ofRepoIdOrNull(M_Product_ID);
+		final UomId fromUomId = UomId.ofRepoIdOrNull(C_UOM_Source_ID);
 
-		final BigDecimal qtyConvToProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(product, uomSource, qtyToConvert);
-		return qtyConvToProductUOM;
+		return Services.get(IUOMConversionBL.class).convertToProductUOM(productId, qtyToConvert, fromUomId);
 	}
 }

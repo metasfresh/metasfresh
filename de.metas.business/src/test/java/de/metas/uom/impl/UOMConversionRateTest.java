@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
-import de.metas.uom.UOMConversion;
+import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UomId;
 
 /*
@@ -31,22 +31,41 @@ import de.metas.uom.UomId;
  * #L%
  */
 
-public class UOMConversionTest
+public class UOMConversionRateTest
 {
+	@Test
+	public void test_isOne()
+	{
+		assertThat(UOMConversionRate.one(UomId.ofRepoId(1234)).isOne()).isTrue();
+	}
+
+	@Test
+	public void test_invert()
+	{
+		final UOMConversionRate rate = UOMConversionRate.builder()
+				.fromUomId(UomId.ofRepoId(1))
+				.toUomId(UomId.ofRepoId(2))
+				.fromToMultiplier(new BigDecimal("2"))
+				.toFromMultiplier(new BigDecimal("0.5"))
+				.build();
+
+		assertThat(rate.invert().invert()).isEqualTo(rate);
+	}
+
 	@Test
 	public void test_standardCase()
 	{
 		final UomId meterUomId = UomId.ofRepoId(1);
 		final UomId centimeterUomId = UomId.ofRepoId(2);
 
-		final UOMConversion conv = UOMConversion.builder()
+		final UOMConversionRate rate = UOMConversionRate.builder()
 				.fromUomId(meterUomId)
 				.toUomId(centimeterUomId)
 				.fromToMultiplier(new BigDecimal("100"))
 				.toFromMultiplier(new BigDecimal("0.01"))
 				.build();
 
-		assertThat(conv.convert(new BigDecimal("1"), meterUomId, centimeterUomId)).isEqualTo("100");
-		assertThat(conv.convert(new BigDecimal("100"), centimeterUomId, meterUomId)).isEqualTo("1.00");
+		assertThat(rate.convert(new BigDecimal("1"))).isEqualTo("100");
+		assertThat(rate.invert().convert(new BigDecimal("100"))).isEqualTo("1.00");
 	}
 }

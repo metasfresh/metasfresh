@@ -18,7 +18,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.UOMConversion;
+import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -42,7 +42,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	{
 		final UomId productStockingUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
 
-		final ImmutableList<UOMConversion> conversions = Services.get(IQueryBL.class)
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
@@ -54,9 +54,9 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 		return UOMConversionsMap.builder()
 				.productId(productId)
-				.conversions(ImmutableList.<UOMConversion> builder()
-						.add(UOMConversion.one(productStockingUomId)) // default conversion
-						.addAll(conversions)
+				.rates(ImmutableList.<UOMConversionRate> builder()
+						.add(UOMConversionRate.one(productStockingUomId)) // default conversion
+						.addAll(rates)
 						.build())
 				.build();
 	}
@@ -64,7 +64,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@Override
 	public UOMConversionsMap getGenericConversions()
 	{
-		final ImmutableList<UOMConversion> conversions = Services.get(IQueryBL.class)
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, null)
 				.addOnlyActiveRecordsFilter()
@@ -76,11 +76,11 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 		return UOMConversionsMap.builder()
 				.productId(null)
-				.conversions(conversions)
+				.rates(rates)
 				.build();
 	}
 
-	private static UOMConversion toUOMConversionOrNull(final I_C_UOM_Conversion record)
+	private static UOMConversionRate toUOMConversionOrNull(final I_C_UOM_Conversion record)
 	{
 		final BigDecimal fromToMultiplier = record.getMultiplyRate();
 		BigDecimal toFromMultiplier = record.getDivideRate();
@@ -101,7 +101,8 @@ public class UOMConversionDAO implements IUOMConversionDAO
 			return null;
 		}
 
-		return UOMConversion.builder()
+		return UOMConversionRate.builder()
+				// .repoId(record.getC_UOM_Conversion_ID())
 				.fromUomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(record.getC_UOM_To_ID()))
 				.fromToMultiplier(fromToMultiplier)

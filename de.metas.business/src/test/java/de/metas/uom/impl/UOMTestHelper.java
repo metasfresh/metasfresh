@@ -126,7 +126,7 @@ public class UOMTestHelper
 			final BigDecimal multiplyRate,
 			final BigDecimal divideRate)
 	{
-		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+		createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(productId)
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
@@ -134,4 +134,10 @@ public class UOMTestHelper
 				.toFromMultiplier(divideRate)
 				.build());
 	}
+	
+	public void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
+	{
+		Services.get(IUOMConversionDAO.class).createUOMConversion(request);
+	}
+
 }

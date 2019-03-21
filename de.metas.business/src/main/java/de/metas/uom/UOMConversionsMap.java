@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -46,26 +47,26 @@ public class UOMConversionsMap
 
 	private final ProductId productId;
 	@Getter(AccessLevel.NONE)
-	private final ImmutableMap<FromAndToUomIds, UOMConversion> conversions;
+	private final ImmutableMap<FromAndToUomIds, UOMConversionRate> rates;
 
 	@Builder
 	private UOMConversionsMap(
 			@Nullable final ProductId productId,
-			@NonNull final List<UOMConversion> conversions)
+			@NonNull @Singular final List<UOMConversionRate> rates)
 	{
 		this.productId = productId;
-		this.conversions = Maps.uniqueIndex(conversions, conversion -> toFromAndToUomIds(conversion));
+		this.rates = Maps.uniqueIndex(rates, conversion -> toFromAndToUomIds(conversion));
 	}
 
 	private UOMConversionsMap()
 	{
 		productId = null;
-		conversions = ImmutableMap.of();
+		rates = ImmutableMap.of();
 	}
 
-	public UOMConversion getRate(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
+	public UOMConversionRate getRate(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
-		final UOMConversion rate = getRateOrNull(fromUomId, toUomId);
+		final UOMConversionRate rate = getRateOrNull(fromUomId, toUomId);
 		if (rate == null)
 		{
 			throw new NoUOMConversionException(productId, fromUomId, toUomId);
@@ -73,16 +74,16 @@ public class UOMConversionsMap
 		return rate;
 	}
 
-	public Optional<UOMConversion> getRateIfExists(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
+	public Optional<UOMConversionRate> getRateIfExists(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
 		return Optional.ofNullable(getRateOrNull(fromUomId, toUomId));
 	}
 
-	private UOMConversion getRateOrNull(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
+	private UOMConversionRate getRateOrNull(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
 		if (fromUomId.equals(toUomId))
 		{
-			return UOMConversion.one(fromUomId);
+			return UOMConversionRate.one(fromUomId);
 		}
 
 		final FromAndToUomIds key = FromAndToUomIds.builder()
@@ -90,16 +91,16 @@ public class UOMConversionsMap
 				.toUomId(toUomId)
 				.build();
 
-		final UOMConversion directConversion = conversions.get(key);
-		if (directConversion != null)
+		final UOMConversionRate directRate = rates.get(key);
+		if (directRate != null)
 		{
-			return directConversion;
+			return directRate;
 		}
 
-		final UOMConversion invertedConversion = conversions.get(key.invert());
-		if (invertedConversion != null)
+		final UOMConversionRate invertedRate = rates.get(key.invert());
+		if (invertedRate != null)
 		{
-			return invertedConversion.invert();
+			return invertedRate.invert();
 		}
 
 		return null;
@@ -107,10 +108,10 @@ public class UOMConversionsMap
 
 	public boolean isEmpty()
 	{
-		return conversions.isEmpty();
+		return rates.isEmpty();
 	}
 
-	private static FromAndToUomIds toFromAndToUomIds(final UOMConversion conversion)
+	private static FromAndToUomIds toFromAndToUomIds(final UOMConversionRate conversion)
 	{
 		return FromAndToUomIds.builder()
 				.fromUomId(conversion.getFromUomId())

@@ -1153,7 +1153,7 @@ public class CalloutOrder extends CalloutEngine
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 
-			final BigDecimal QtyEntered1 = uomConversionBL.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
+			final BigDecimal QtyEntered1 = uomConversionBL.adjustToUOMPrecisionWithoutRoundingIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);

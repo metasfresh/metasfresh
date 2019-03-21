@@ -28,9 +28,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -38,16 +37,16 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConversion;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -61,24 +60,23 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public BigDecimal convertQty(
 			@Nullable final ProductId productId,
-			final BigDecimal qty,
-			@NonNull final I_C_UOM uomFrom,
-			@NonNull final I_C_UOM uomTo)
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_UOM fromUOM,
+			@NonNull final I_C_UOM toUOM)
 	{
+		final UOMPrecision precision = UOMPrecision.ofInt(toUOM.getStdPrecision());
+
 		if (qty.signum() == 0)
 		{
-			return roundToUOMPrecisionIfPossible(qty, uomTo);
+			return precision.round(qty);
 		}
 
-		if (uomFrom.getC_UOM_ID() == uomTo.getC_UOM_ID())
-		{
-			return roundToUOMPrecisionIfPossible(qty, uomTo);
-		}
-		else
-		{
-			final BigDecimal qtyConverted = convertQty0(productId, qty, uomFrom, uomTo);
-			return roundToUOMPrecisionIfPossible(qtyConverted, uomTo);
-		}
+		final UomId fromUomId = UomId.ofRepoId(fromUOM.getC_UOM_ID());
+		final UomId toUomId = UomId.ofRepoId(toUOM.getC_UOM_ID());
+		final UOMConversionRate rate = getRate(productId, fromUomId, toUomId)
+				.orElseThrow(() -> new NoUOMConversionException(productId, fromUomId, toUomId));
+
+		return rate.convert(qty, precision);
 	}
 
 	@Override
@@ -151,111 +149,11 @@ public class UOMConversionBL implements IUOMConversionBL
 		return new Quantity(qty, uomTo, sourceQty, sourceUOM);
 	}
 
-	/**
-	 * Round quantity based on uom's standard precision if stdPrecision = true, uom's costing precision otherwise.
-	 *
-	 * @param uom
-	 * @param qty quantity
-	 * @param useStdPrecision true if standard precision
-	 * @return rounded quantity
-	 */
-	private BigDecimal roundQty(final I_C_UOM uom, final BigDecimal qty, final boolean useStdPrecision)
-	{
-		final int precision;
-		if (useStdPrecision)
-		{
-			precision = uom.getStdPrecision();
-		}
-		else
-		{
-			precision = uom.getCostingPrecision();
-		}
-
-		if (qty.scale() > precision)
-		{
-			return qty.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		}
-		return qty;
-	}
-
 	@Override
-	public BigDecimal roundToUOMPrecisionIfPossible(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
+	public BigDecimal adjustToUOMPrecisionWithoutRoundingIfPossible(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
-		final int precision = uom.getStdPrecision();
-		// NOTE: negative precision is not supported atm
-		Check.assume(precision >= 0, "UOM {} shall have positive precision", uom);
-
-		// NOTE: it seems that ZERO is a special case of BigDecimal, so we are computing it right away
-		if (qty == null || qty.signum() == 0)
-		{
-			return BigDecimal.ZERO.setScale(precision);
-		}
-
-		final BigDecimal qtyNoZero = qty.stripTrailingZeros();
-		final int qtyScale = qtyNoZero.scale();
-		if (qtyScale >= precision)
-		{
-			// Qty's actual scale is bigger than UOM precision, don't touch it
-			return qtyNoZero;
-		}
-		else
-		{
-			// Qty's actual scale is less than UOM precision. Try to convert it to UOM precision
-			// NOTE: we are using without scale because it shall be scaled without any problem
-			return qtyNoZero.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		}
-	}
-
-	private BigDecimal convertQty0(final ProductId productId, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
-	{
-		final I_M_Product product = productId != null
-				? Services.get(IProductDAO.class).getById(productId)
-				: null;
-
-		BigDecimal result;
-
-		if (product == null)
-		{
-			result = convert(uomFrom, uomTo, qty);
-		}
-
-		//
-		// Case: uomFrom is the stocking UOM
-		else if (product.getC_UOM_ID() == uomFrom.getC_UOM_ID())
-		{
-			// convertProductFrom: converts Qty from stocking UOM to given UOM
-			result = convertFromProductUOM(productId, uomTo, qty);
-		}
-		//
-		// Case: uomTo is the stocking UOM
-		else if (product.getC_UOM_ID() == uomTo.getC_UOM_ID())
-		{
-			// convertProductTo: converts Qty from given UOM to stocking UOM
-			result = convertToProductUOM(productId, uomFrom, qty);
-		}
-		//
-		//
-		else
-		{
-			final I_C_UOM productUOM = product.getC_UOM();
-			throw new AdempiereException("Case not supported: product's UOM is not " + uomFrom.getUOMSymbol()
-					+ " and not " + uomTo.getUOMSymbol()
-					+ " but it is " + (productUOM == null ? "NULL" : productUOM.getUOMSymbol()));
-		}
-
-		//
-		// If result is null throw an exception
-		// NOTE: we check the result first and then we gather more debug info
-		if (result == null)
-		{
-			throw new AdempiereException("Failed to convert Qty=" + qty
-					+ " of product=" + (product != null ? product.getValue() : null)
-					+ " from UOM=" + uomFrom.getName()
-					+ " to UOM=" + uomTo.getName());
-		}
-
-		return result;
-
+		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
+		return precision.adjustToPrecisionWithoutRoundingIfPossible(qty);
 	}
 
 	@Override
@@ -269,7 +167,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		BigDecimal priceConv = convertQty(ProductId.ofRepoIdOrNull(productId), price, uomFrom, uomTo);
 		if (priceConv.scale() > pricePrecision)
 		{
-			priceConv = priceConv.setScale(pricePrecision, BigDecimal.ROUND_HALF_UP);
+			priceConv = priceConv.setScale(pricePrecision, RoundingMode.HALF_UP);
 		}
 
 		return priceConv;
@@ -292,19 +190,15 @@ public class UOMConversionBL implements IUOMConversionBL
 		final UomId toUomId = UomId.ofRepoId(toUOM.getC_UOM_ID());
 
 		final UOMConversionsMap conversions = getGenericRates();
-		final UOMConversion rate = conversions.getRate(fromUomId, toUomId);
+		final UOMConversionRate rate = conversions.getRate(fromUomId, toUomId);
 
-		final int precision = useStdPrecision ? toUOM.getStdPrecision() : toUOM.getCostingPrecision();
+		final UOMPrecision precision = useStdPrecision
+				? UOMPrecision.ofInt(toUOM.getStdPrecision())
+				: UOMPrecision.ofInt(toUOM.getCostingPrecision());
 
 		// Calculate & Scale
-		BigDecimal qtyConv = rate.convert(qty, fromUomId, toUomId);
-		if (qtyConv.scale() > precision)
-		{
-			qtyConv = qtyConv.setScale(precision, BigDecimal.ROUND_HALF_UP);
-		}
-
-		return qtyConv;
-	}   // convert
+		return rate.convert(qty, precision);
+	}
 
 	@Override
 	public BigDecimal convertFromProductUOM(
@@ -312,31 +206,24 @@ public class UOMConversionBL implements IUOMConversionBL
 			final I_C_UOM uomDest,
 			final BigDecimal qtyToConvert)
 	{
-
 		if (qtyToConvert == null || qtyToConvert.signum() == 0 || productId == null || uomDest == null)
 		{
 			return qtyToConvert;
 		}
 
-		final UOMConversion rate = getRateForConversionFromProductUOM(productId, uomDest);
+		final UomId fromUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId toUomId = UomId.ofRepoId(uomDest.getC_UOM_ID());
+		final UOMConversionRate rate = getRate(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
-			final boolean useStdPrecision = true;
-			return roundQty(uomDest, rate.convert(qtyToConvert), useStdPrecision);
+			final UOMPrecision precision = UOMPrecision.ofInt(uomDest.getStdPrecision());
+			return rate.convert(qtyToConvert, precision);
 		}
-
-		// metas: tsa: begin: 01428
-		// Fallback: check general conversion rates
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
-		final BigDecimal qtyConv = convert(productUOM, uomDest, qtyToConvert);
-		if (qtyConv != null)
+		else
 		{
-			return qtyConv;
+			return null;
 		}
-		// metas: tsa: end: 01428
-
-		return null;
-	}	// convertProductTo
+	}
 
 	private UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
@@ -350,96 +237,53 @@ public class UOMConversionBL implements IUOMConversionBL
 		return uomConversionsRepo.getGenericConversions();
 	}
 
-	private UOMConversion getRate(I_C_UOM uomFrom, I_C_UOM uomTo)
+	private Optional<UOMConversionRate> getGenericRate(I_C_UOM uomFrom, I_C_UOM uomTo)
 	{
 		final UomId fromUomId = UomId.ofRepoId(uomFrom.getC_UOM_ID());
 		final UomId toUomId = UomId.ofRepoId(uomTo.getC_UOM_ID());
 		if (fromUomId.equals(toUomId))
 		{
-			return UOMConversion.one(fromUomId);
+			return Optional.of(UOMConversionRate.one(fromUomId));
 		}
 
 		final UOMConversionsMap conversions = getGenericRates();
-		final Optional<UOMConversion> rate = conversions.getRateIfExists(fromUomId, toUomId);
+		final Optional<UOMConversionRate> rate = conversions.getRateIfExists(fromUomId, toUomId);
 		if (rate.isPresent())
 		{
-			return rate.get();
+			return rate;
 		}
 
 		// try to derive
 		return getTimeConversionRate(uomFrom, uomTo);
 	}	// getConversion
 
-	/**
-	 * Get rate to convert a qty from the stocking UOM of the given <code>M_Product_ID</code>'s product to the given <code>C_UOM_Dest_ID</code> to.
-	 *
-	 * @param ctx context
-	 * @param product product from whose stocking UOM we want to convert
-	 * @param uomDest uom we want to convert to
-	 * @return multiplier or null
-	 */
-	@VisibleForTesting
-	UOMConversion getRateForConversionFromProductUOM(final ProductId productId, final I_C_UOM uomDest)
+	private Optional<UOMConversionRate> getRate(
+			@Nullable final ProductId productId,
+			@NonNull final UomId fromUomId,
+			@NonNull final UomId toUomId)
 	{
-		if (productId == null)
+		if (fromUomId.equals(toUomId))
 		{
-			return null;
+			return Optional.of(UOMConversionRate.one(fromUomId));
 		}
 
-		final UOMConversionsMap rates = getProductConversions(productId);
-		if (rates.isEmpty())
+		if (productId != null)
 		{
-			logger.debug("None found");
-			return null;
+			final UOMConversionsMap rates = getProductConversions(productId);
+			final Optional<UOMConversionRate> rate = rates.getRateIfExists(fromUomId, toUomId);
+			if (rate.isPresent())
+			{
+				return rate;
+			}
 		}
 
-		final UomId fromUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-		final UomId toUomId = UomId.ofRepoId(uomDest.getC_UOM_ID());
-
-		final Optional<UOMConversion> rate = rates.getRateIfExists(fromUomId, toUomId);
-		if (rate.isPresent())
+		final Optional<UOMConversionRate> genericRate = getGenericRates().getRateIfExists(fromUomId, toUomId);
+		if (genericRate.isPresent())
 		{
-			return rate.get();
-		}
-		else
-		{
-			logger.debug("None applied");
-			return null;
-		}
-	}
-
-	/**
-	 * Get rate to convert a qty from the given <code>C_UOM_Source_ID</code> to the stocking UOM of the given <code>M_Product_ID</code>'s product.
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID product to whose stocking UOM we want to convert
-	 * @param C_UOM_Source_ID UOM we want to convert from
-	 *
-	 * @return multiplier or null
-	 */
-	@VisibleForTesting
-	UOMConversion getRateForConversionToProductUOM(final ProductId productId, final I_C_UOM uomSource)
-	{
-		final UOMConversionsMap rates = getProductConversions(productId);
-		if (rates.isEmpty())
-		{
-			logger.debug("getProductRateFrom - none found");
-			return null;
+			return genericRate;
 		}
 
-		final UomId fromUomId = UomId.ofRepoId(uomSource.getC_UOM_ID());
-		final UomId toUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-
-		final Optional<UOMConversion> rate = rates.getRateIfExists(fromUomId, toUomId);
-		if (rate.isPresent())
-		{
-			return rate.get();
-		}
-		else
-		{
-			logger.debug("None applied");
-			return null;
-		}
+		return getTimeConversionRate(fromUomId, toUomId);
 	}
 
 	@Override
@@ -448,89 +292,92 @@ public class UOMConversionBL implements IUOMConversionBL
 			final I_C_UOM uomSource,
 			final BigDecimal qtyToConvert)
 	{
+		final UomId fromUomId = uomSource != null ? UomId.ofRepoId(uomSource.getC_UOM_ID()) : null;
+		return convertToProductUOM(productId, qtyToConvert, fromUomId);
+	}
 
+	@Override
+	public BigDecimal convertToProductUOM(
+			final ProductId productId,
+			final BigDecimal qtyToConvert,
+			final UomId fromUomId)
+	{
 		// No conversion
-		if (qtyToConvert == null || qtyToConvert.signum() == 0 || uomSource == null || productId == null)
+		if (qtyToConvert == null || qtyToConvert.signum() == 0 || fromUomId == null || productId == null)
 		{
 			logger.debug("No Conversion - QtyPrice={}", qtyToConvert);
 			return qtyToConvert;
 		}
 
-		final UOMConversion rate = getRateForConversionToProductUOM(productId, uomSource);
+		final UomId toUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UOMConversionRate rate = getRate(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
-			if (rate.isOne())
-			{
-				return qtyToConvert;
-			}
-
-			BigDecimal qtyConv = rate.convert(qtyToConvert);
-
-			// Round converted quantity to product UOM precision
-			// NOTE: product UOM is the UOM in which we converted
-			final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
-			qtyConv = roundQty(productUOM, qtyConv, true);
-
-			return qtyConv;
+			final I_C_UOM toUOM = Services.get(IUOMDAO.class).getById(toUomId);
+			final UOMPrecision precision = UOMPrecision.ofInt(toUOM.getStdPrecision());
+			return rate.convert(qtyToConvert, precision);
 		}
-
-		// metas: tsa: begin: 01428
-		// Fallback: check general conversion rates
-
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(productId);
-		final BigDecimal conversion = convert(uomSource, productUOM, qtyToConvert);
-		if (conversion != null)
+		else
 		{
-			return conversion;
+			return null;
 		}
-		// metas: tsa: end: 01428
-
-		logger.debug("No Rate found for product: {}", productId);
-		return null;
-	}	// convertProductFrom
+	}
 
 	@Override
-	public BigDecimal convert(
-			final I_C_UOM uomFrom, // int C_UOM_ID,
-			final I_C_UOM uomTo, // int C_UOM_To_ID,
-			final BigDecimal qty)
+	public Optional<BigDecimal> convert(
+			@NonNull final I_C_UOM fromUOM, // int C_UOM_ID,
+			@NonNull final I_C_UOM toUOM, // int C_UOM_To_ID,
+			@NonNull final BigDecimal qty)
 	{
-		final int uomFromID = uomFrom.getC_UOM_ID();
-		final int uomToID = uomTo.getC_UOM_ID();
-
-		if (qty == null || qty.signum() == 0 || uomFromID == uomToID)
+		if (qty.signum() == 0)
 		{
-			return qty;
+			return Optional.of(qty);
 		}
 
-		final UOMConversion rate = getRate(uomFrom, uomTo);
+		final int fromUomId = fromUOM.getC_UOM_ID();
+		final int toUomId = toUOM.getC_UOM_ID();
+		if (fromUomId == toUomId)
+		{
+			return Optional.of(qty);
+		}
+
+		final UOMConversionRate rate = getGenericRate(fromUOM, toUOM).orElse(null);
 		if (rate != null)
 		{
-			BigDecimal qtyConv = rate.convert(qty);
-			final boolean useStdPrecision = true;
-			qtyConv = roundQty(uomTo, qtyConv, useStdPrecision);
-			return qtyConv;
+			final UOMPrecision precision = UOMPrecision.ofInt(toUOM.getStdPrecision());
+			final BigDecimal qtyConv = rate.convert(qty, precision);
+			return Optional.of(qtyConv);
 		}
-
-		return null;
+		else
+		{
+			return Optional.empty();
+		}
 	}	// convert
 
-	private UOMConversion getTimeConversionRate(@NonNull final I_C_UOM fromTimeUom, @NonNull final I_C_UOM toTimeUom)
+	private Optional<UOMConversionRate> getTimeConversionRate(@NonNull final UomId fromTimeUomId, @NonNull final UomId toTimeUomId)
+	{
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+		final I_C_UOM fromUom = uomsRepo.getById(fromTimeUomId);
+		final I_C_UOM toUom = uomsRepo.getById(toTimeUomId);
+		return getTimeConversionRate(fromUom, toUom);
+	}
+
+	private Optional<UOMConversionRate> getTimeConversionRate(@NonNull final I_C_UOM fromTimeUom, @NonNull final I_C_UOM toTimeUom)
 	{
 		final BigDecimal fromToMultiplier = getTimeConversionRateAsBigDecimal(fromTimeUom, toTimeUom);
 		if (fromToMultiplier == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final UomId fromTimeUomId = UomId.ofRepoId(fromTimeUom.getC_UOM_ID());
 		final UomId toTimeUomId = UomId.ofRepoId(toTimeUom.getC_UOM_ID());
-		return UOMConversion.builder()
+		return Optional.of(UOMConversionRate.builder()
 				.fromUomId(fromTimeUomId)
 				.toUomId(toTimeUomId)
 				.fromToMultiplier(fromToMultiplier)
 				.toFromMultiplier(BigDecimal.ONE.divide(fromToMultiplier, 12, RoundingMode.HALF_UP))
-				.build();
+				.build());
 
 	}
 

@@ -2,8 +2,6 @@ package de.metas.uom;
 
 import java.math.BigDecimal;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +31,7 @@ import lombok.Value;
 
 @Builder
 @Value
-public class UOMConversion
+public class UOMConversionRate
 {
 	UomId fromUomId;
 	UomId toUomId;
@@ -41,7 +39,7 @@ public class UOMConversion
 	BigDecimal toFromMultiplier;
 
 	@Builder
-	private UOMConversion(
+	private UOMConversionRate(
 			@NonNull final UomId fromUomId,
 			@NonNull final UomId toUomId,
 			@NonNull final BigDecimal fromToMultiplier,
@@ -56,7 +54,7 @@ public class UOMConversion
 		this.toFromMultiplier = toFromMultiplier;
 	}
 
-	public static UOMConversion one(@NonNull final UomId uomId)
+	public static UOMConversionRate one(@NonNull final UomId uomId)
 	{
 		return builder()
 				.fromUomId(uomId)
@@ -66,14 +64,14 @@ public class UOMConversion
 				.build();
 	}
 
-	public UOMConversion invert()
+	public UOMConversionRate invert()
 	{
 		if (fromUomId.equals(toUomId))
 		{
 			return this;
 		}
 
-		return UOMConversion.builder()
+		return UOMConversionRate.builder()
 				.fromUomId(toUomId)
 				.toUomId(fromUomId)
 				.fromToMultiplier(toFromMultiplier)
@@ -87,40 +85,19 @@ public class UOMConversion
 				&& toFromMultiplier.compareTo(BigDecimal.ONE) == 0;
 	}
 
-	public BigDecimal convert(@NonNull final BigDecimal qty)
+	public BigDecimal convert(@NonNull final BigDecimal qty, @NonNull final UOMPrecision precision)
 	{
-		return convert(qty, fromUomId, toUomId);
+		BigDecimal qtyConverted = convert(qty);
+		return precision.round(qtyConverted);
 	}
 
-	public BigDecimal convert(
-			@NonNull final BigDecimal qty,
-			@NonNull final UomId fromUomId,
-			@NonNull final UomId toUomId)
+	public BigDecimal convert(@NonNull final BigDecimal qty)
 	{
 		if (qty.signum() == 0)
 		{
 			return qty;
 		}
 
-		//
-		// Direct
-		if (this.fromUomId.equals(fromUomId)
-				&& this.toUomId.equals(toUomId))
-		{
-			return qty.multiply(fromToMultiplier);
-		}
-		//
-		// Reversed
-		else if (this.fromUomId.equals(toUomId)
-				&& this.toUomId.equals(fromUomId))
-		{
-			return qty.multiply(toFromMultiplier);
-		}
-		//
-		// N/A
-		else
-		{
-			throw new AdempiereException("UOMs not match. Cannot convert " + qty + ", " + fromUomId + "->" + toUomId + " using " + this);
-		}
+		return qty.multiply(fromToMultiplier);
 	}
 }
