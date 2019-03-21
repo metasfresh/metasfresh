@@ -109,15 +109,14 @@ Related jenkins jobs:
 					booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
 				],
 				wait: true
+			currentBuild.description="""${currentBuild.description}
+		<p/>
+		This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshBuildResult.absoluteUrl}">${metasfreshBuildResult.displayName}</a>
+		"""
 		}
 	}
 	else
 	{
 		echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger metasfresh as downstream build."
 	}
-	currentBuild.description="""${currentBuild.description}
-<p/>
-This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshBuildResult.absoluteUrl}">${metasfreshBuildResult.displayName}</a>
-"""
-}
 } // timestamps
