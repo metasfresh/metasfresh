@@ -228,3 +228,325 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erreichbar bis', PrintName='Er
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576123,'nl_NL') 
 ;
 
+
+
+
+
+
+
+
+
+
+
+-- 2019-03-21T11:50:45.370
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_ViewQuickAction_Default='Y',Updated=TO_TIMESTAMP('2019-03-21 11:50:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540686
+;
+
+-- 2019-03-21T11:51:14.918
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=40,Updated=TO_TIMESTAMP('2019-03-21 11:51:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564166
+;
+
+-- 2019-03-21T11:51:14.948
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=50,Updated=TO_TIMESTAMP('2019-03-21 11:51:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564555
+;
+
+-- 2019-03-21T11:51:14.958
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=60,Updated=TO_TIMESTAMP('2019-03-21 11:51:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564123
+;
+
+
+
+
+
+
+
+
+
+
+
+-- 2019-03-21T13:43:16.678
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Jeden x Wochen', Name='Jede Woche', PrintName='Jede Woche',Updated=TO_TIMESTAMP('2019-03-21 13:43:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541371 AND AD_Language='de_DE'
+;
+
+-- 2019-03-21T13:43:16.718
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541371,'de_DE') 
+;
+
+-- 2019-03-21T13:43:16.758
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(541371,'de_DE') 
+;
+
+-- 2019-03-21T13:43:16.758
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='EveryWeek', Name='Jede Woche', Description='Jeden x Wochen', Help=NULL WHERE AD_Element_ID=541371
+;
+
+-- 2019-03-21T13:43:16.758
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='EveryWeek', Name='Jede Woche', Description='Jeden x Wochen', Help=NULL, AD_Element_ID=541371 WHERE UPPER(ColumnName)='EVERYWEEK' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-21T13:43:16.768
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='EveryWeek', Name='Jede Woche', Description='Jeden x Wochen', Help=NULL WHERE AD_Element_ID=541371 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-21T13:43:16.768
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Jede Woche', Description='Jeden x Wochen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541371) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 541371)
+;
+
+-- 2019-03-21T13:43:16.908
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Jede Woche', Name='Jede Woche' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=541371)
+;
+
+-- 2019-03-21T13:43:16.908
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Jede Woche', Description='Jeden x Wochen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 541371
+;
+
+-- 2019-03-21T13:43:16.908
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Jede Woche', Description='Jeden x Wochen', Help=NULL WHERE AD_Element_ID = 541371
+;
+
+-- 2019-03-21T13:43:16.918
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Jede Woche', Description = 'Jeden x Wochen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 541371
+;
+
+-- 2019-03-21T13:45:29.622
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Jeden x Monate', Name='Jeden Monat', PrintName='Jeden Monat',Updated=TO_TIMESTAMP('2019-03-21 13:45:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541373 AND AD_Language='fr_CH'
+;
+
+-- 2019-03-21T13:45:29.632
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541373,'fr_CH') 
+;
+
+-- 2019-03-21T13:45:36.508
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Jede x Wochen',Updated=TO_TIMESTAMP('2019-03-21 13:45:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541371 AND AD_Language='de_DE'
+;
+
+-- 2019-03-21T13:45:36.518
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541371,'de_DE') 
+;
+
+-- 2019-03-21T13:45:36.539
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(541371,'de_DE') 
+;
+
+-- 2019-03-21T13:45:36.539
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='EveryWeek', Name='Jede Woche', Description='Jede x Wochen', Help=NULL WHERE AD_Element_ID=541371
+;
+
+-- 2019-03-21T13:45:36.539
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='EveryWeek', Name='Jede Woche', Description='Jede x Wochen', Help=NULL, AD_Element_ID=541371 WHERE UPPER(ColumnName)='EVERYWEEK' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-21T13:45:36.539
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='EveryWeek', Name='Jede Woche', Description='Jede x Wochen', Help=NULL WHERE AD_Element_ID=541371 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-21T13:45:36.539
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Jede Woche', Description='Jede x Wochen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541371) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 541371)
+;
+
+-- 2019-03-21T13:45:36.549
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Jede Woche', Description='Jede x Wochen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 541371
+;
+
+-- 2019-03-21T13:45:36.549
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Jede Woche', Description='Jede x Wochen', Help=NULL WHERE AD_Element_ID = 541371
+;
+
+-- 2019-03-21T13:45:36.549
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Jede Woche', Description = 'Jede x Wochen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 541371
+;
+
+-- 2019-03-21T13:47:56.900
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Tag des Monats 1 to 28/29/30/31', Name='Tag des Monats',Updated=TO_TIMESTAMP('2019-03-21 13:47:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2454 AND AD_Language='de_DE'
+;
+
+-- 2019-03-21T13:47:56.900
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2454,'de_DE') 
+;
+
+-- 2019-03-21T13:47:56.931
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(2454,'de_DE') 
+;
+
+-- 2019-03-21T13:47:56.931
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='MonthDay', Name='Tag des Monats', Description='Tag des Monats 1 to 28/29/30/31', Help=NULL WHERE AD_Element_ID=2454
+;
+
+-- 2019-03-21T13:47:56.941
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='MonthDay', Name='Tag des Monats', Description='Tag des Monats 1 to 28/29/30/31', Help=NULL, AD_Element_ID=2454 WHERE UPPER(ColumnName)='MONTHDAY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-21T13:47:56.941
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='MonthDay', Name='Tag des Monats', Description='Tag des Monats 1 to 28/29/30/31', Help=NULL WHERE AD_Element_ID=2454 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-21T13:47:56.941
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Tag des Monats', Description='Tag des Monats 1 to 28/29/30/31', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2454) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 2454)
+;
+
+-- 2019-03-21T13:47:56.951
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Tag des Monats', Name='Tag des Monats' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2454)
+;
+
+-- 2019-03-21T13:47:56.951
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Tag des Monats', Description='Tag des Monats 1 to 28/29/30/31', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 2454
+;
+
+-- 2019-03-21T13:47:56.951
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Tag des Monats', Description='Tag des Monats 1 to 28/29/30/31', Help=NULL WHERE AD_Element_ID = 2454
+;
+
+-- 2019-03-21T13:47:56.951
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Tag des Monats', Description = 'Tag des Monats 1 to 28/29/30/31', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 2454
+;
+
+-- 2019-03-21T13:48:25.533
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Wöchentlich', PrintName='Wöchentlich',Updated=TO_TIMESTAMP('2019-03-21 13:48:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541370 AND AD_Language='de_DE'
+;
+
+-- 2019-03-21T13:48:25.533
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541370,'de_DE') 
+;
+
+-- 2019-03-21T13:48:25.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(541370,'de_DE') 
+;
+
+-- 2019-03-21T13:48:25.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsWeekly', Name='Wöchentlich', Description=NULL, Help=NULL WHERE AD_Element_ID=541370
+;
+
+-- 2019-03-21T13:48:25.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsWeekly', Name='Wöchentlich', Description=NULL, Help=NULL, AD_Element_ID=541370 WHERE UPPER(ColumnName)='ISWEEKLY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-21T13:48:25.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsWeekly', Name='Wöchentlich', Description=NULL, Help=NULL WHERE AD_Element_ID=541370 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-21T13:48:25.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Wöchentlich', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541370) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 541370)
+;
+
+-- 2019-03-21T13:48:25.554
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Wöchentlich', Name='Wöchentlich' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=541370)
+;
+
+-- 2019-03-21T13:48:25.554
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Wöchentlich', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 541370
+;
+
+-- 2019-03-21T13:48:25.554
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Wöchentlich', Description=NULL, Help=NULL WHERE AD_Element_ID = 541370
+;
+
+-- 2019-03-21T13:48:25.554
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Wöchentlich', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 541370
+;
+
+-- 2019-03-21T13:48:52.104
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Monatlich', PrintName='Monatlich',Updated=TO_TIMESTAMP('2019-03-21 13:48:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541372 AND AD_Language='de_DE'
+;
+
+-- 2019-03-21T13:48:52.104
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541372,'de_DE') 
+;
+
+-- 2019-03-21T13:48:52.135
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(541372,'de_DE') 
+;
+
+-- 2019-03-21T13:48:52.135
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsMonthly', Name='Monatlich', Description=NULL, Help=NULL WHERE AD_Element_ID=541372
+;
+
+-- 2019-03-21T13:48:52.145
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsMonthly', Name='Monatlich', Description=NULL, Help=NULL, AD_Element_ID=541372 WHERE UPPER(ColumnName)='ISMONTHLY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-03-21T13:48:52.145
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsMonthly', Name='Monatlich', Description=NULL, Help=NULL WHERE AD_Element_ID=541372 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-03-21T13:48:52.145
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Monatlich', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541372) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 541372)
+;
+
+-- 2019-03-21T13:48:52.175
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Monatlich', Name='Monatlich' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=541372)
+;
+
+-- 2019-03-21T13:48:52.175
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Monatlich', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 541372
+;
+
+-- 2019-03-21T13:48:52.175
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Monatlich', Description=NULL, Help=NULL WHERE AD_Element_ID = 541372
+;
+
+-- 2019-03-21T13:48:52.175
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Monatlich', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 541372
+;
+
+
+
