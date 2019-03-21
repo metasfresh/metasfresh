@@ -7,10 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.user.UserId;
+import org.compiere.model.I_C_Phonecall_Schedule;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallSchema;
@@ -69,7 +74,7 @@ public class PhonecallScheduleService
 		for (final PhonecallSchemaVersionRange phonecallSchemaVersionRange : phonecallSchemaVersionRanges)
 		{
 
-			schemaRepo.inactivatePhonecallDaysInRange(phonecallSchemaVersionRange);
+			schemaRepo.deletePhonecallDaysInRange(phonecallSchemaVersionRange);
 
 			final PhonecallSchemaVersion phonecallSchemaVersion = phonecallSchemaVersionRange.getPhonecallSchemaVersion();
 			final List<PhonecallSchemaVersionLine> phonecallSchemaVersionLines = phonecallSchemaVersion.getLines();
@@ -95,9 +100,28 @@ public class PhonecallScheduleService
 
 		for (final LocalDate currentPhonecallDate : phonecallDates)
 		{
-			createPhonecallSchedule(phonecallSchemaVersionLine, currentPhonecallDate);
+			if (!phonecallScheduleAlreadyExists(currentPhonecallDate, phonecallSchemaVersionLine))
+			{
+				createPhonecallSchedule(phonecallSchemaVersionLine, currentPhonecallDate);
+			}
 		}
 
+	}
+
+	private boolean phonecallScheduleAlreadyExists(final LocalDate currentPhonecallDate, final PhonecallSchemaVersionLine phonecallSchemaVersionLine)
+	{
+		final BPartnerLocationId bpartnerAndLocationId = phonecallSchemaVersionLine.getBpartnerAndLocationId();
+		final UserId contactId = phonecallSchemaVersionLine.getContactId();
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Phonecall_Schedule.class)
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BPartner_ID, bpartnerAndLocationId.getBpartnerId().getRepoId())
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BPartner_Location_ID, bpartnerAndLocationId.getRepoId())
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BP_Contact_ID, contactId.getRepoId())
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMin, TimeUtil.asTimestamp(phonecallSchemaVersionLine.getStartTime()))
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMax, TimeUtil.asTimestamp(phonecallSchemaVersionLine.getEndTime()))
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallDate, TimeUtil.asTimestamp(currentPhonecallDate))
+				.create()
+				.match();
 	}
 
 	private void createPhonecallSchedule(PhonecallSchemaVersionLine phonecallSchemaVersionLine, LocalDate currentPhonecallDate)

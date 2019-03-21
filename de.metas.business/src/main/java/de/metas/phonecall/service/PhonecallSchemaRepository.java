@@ -1,7 +1,6 @@
 package de.metas.phonecall.service;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.time.DayOfWeek;
 import java.util.HashSet;
@@ -10,7 +9,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.user.UserId;
@@ -31,7 +29,6 @@ import de.metas.phonecall.PhonecallSchemaVersion;
 import de.metas.phonecall.PhonecallSchemaVersionId;
 import de.metas.phonecall.PhonecallSchemaVersionLine;
 import de.metas.phonecall.PhonecallSchemaVersionLineId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import de.metas.util.time.generator.Frequency;
@@ -232,7 +229,7 @@ public class PhonecallSchemaRepository
 		return weekDays;
 	}
 
-	public void inactivatePhonecallDaysInRange(final PhonecallSchemaVersionRange phonecallSchemaVersionRange)
+	public void deletePhonecallDaysInRange(final PhonecallSchemaVersionRange phonecallSchemaVersionRange)
 	{
 		final PhonecallSchemaVersion phonecallSchemaVersion = phonecallSchemaVersionRange.getPhonecallSchemaVersion();
 
@@ -240,26 +237,14 @@ public class PhonecallSchemaRepository
 
 		final IQueryBuilder<I_C_Phonecall_Schedule> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Phonecall_Schedule.class)
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_IsCalled, false)
 				.addCompareFilter(I_C_Phonecall_Schedule.COLUMN_PhonecallDate, Operator.GREATER_OR_EQUAL, phonecallSchemaVersionRange.getStartDate(), dateTruncModifier)
 				.addCompareFilter(I_C_Phonecall_Schedule.COLUMN_PhonecallDate, Operator.LESS_OR_EQUAL, phonecallSchemaVersionRange.getEndDate(), dateTruncModifier)
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_Phonecall_Schema_ID, phonecallSchemaVersion.getPhonecallSchemaId().getRepoId());
 
 		queryBuilder.orderBy(I_C_Phonecall_Schedule.COLUMN_PhonecallDate);
 
-		queryBuilder.create()
-				.update(new IQueryUpdater<I_C_Phonecall_Schedule>()
-				{
-
-					@Override
-					public boolean update(final I_C_Phonecall_Schedule phonecallSchedule)
-					{
-						Check.assumeNotNull(phonecallSchedule, "phonecallSchedule not null");
-						phonecallSchedule.setIsActive(false);
-						save(phonecallSchedule);
-
-						return MODEL_UPDATED;
-					}
-				});
+		queryBuilder.create().delete();
 	}
 
 	public OnNonBussinessDay extractOnNonBussinessDayOrNull(final PhonecallSchemaVersion phonecallSchemaVersion)
