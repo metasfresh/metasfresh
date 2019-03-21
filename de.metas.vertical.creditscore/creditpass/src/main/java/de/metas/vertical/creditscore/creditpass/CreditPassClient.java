@@ -1,0 +1,101 @@
+package de.metas.vertical.creditscore.creditpass;
+
+/*
+ * #%L
+ * de.metas.vertical.creditscore.creditpass
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.collect.ImmutableList;
+import de.metas.vertical.creditscore.base.spi.CreditScoreClient;
+import de.metas.vertical.creditscore.base.spi.model.CreditScore;
+import de.metas.vertical.creditscore.base.spi.model.CreditScoreRequestLogData;
+import de.metas.vertical.creditscore.base.spi.model.TransactionData;
+import de.metas.vertical.creditscore.creditpass.mapper.RequestMapper;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
+import de.metas.vertical.creditscore.creditpass.model.schema.Request;
+import de.metas.vertical.creditscore.creditpass.model.schema.Response;
+import lombok.Getter;
+import lombok.NonNull;
+import org.springframework.http.*;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDateTime;
+
+public class CreditPassClient implements CreditScoreClient
+{
+	private final RestTemplate restTemplate;
+
+	@Getter
+	private final CreditPassConfig creditPassConfig;
+
+	public CreditPassClient(@NonNull final RestTemplate restTemplate,
+			@NonNull final CreditPassConfig creditPassConfig)
+	{
+		this.restTemplate = restTemplate;
+		this.creditPassConfig = creditPassConfig;
+	}
+
+	@Override
+	public CreditScore getCreditScore(@NonNull final TransactionData transactionData, @NonNull final String paymentRule) throws Exception
+	{
+
+		Request request = new RequestMapper().mapToRequest((CreditPassTransactionData)transactionData, creditPassConfig, paymentRule);
+
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_XML));
+		httpHeaders.setContentType(MediaType.APPLICATION_XML);
+
+		final HttpEntity<Request> entity = new HttpEntity<>(request, httpHeaders);
+		CreditScoreRequestLogData requestLogData = new CreditScoreRequestLogData();
+		requestLogData.setRequestTime(LocalDateTime.now());
+		requestLogData.setCustomerTransactionID(request.getCustomer().getCustomerTransactionId());
+		XmlMapper xmlMapper = new XmlMapper();
+		requestLogData.setRequestData(xmlMapper.writeValueAsString(request));
+		try
+		{
+			final ResponseEntity<Response> result = restTemplate.exchange("/", HttpMethod.POST, entity, Response.class);
+			Response response = result.getBody();
+			requestLogData.setTransactionID(response.getProcess().getTransactionID());
+			requestLogData.setResponseTime(LocalDateTime.now());
+			requestLogData.setResponseData(xmlMapper.writeValueAsString(response));
+			return CreditScore.builder()
+					.requestLogData(requestLogData)
+					.resultCode(response.getProcess().getAnswerCode())
+					.resultText(response.getProcess().getAnswerText())
+					.resultDetails(response.getProcess().getAnswerDetails())
+					.build();
+		}
+		catch (final RestClientException e)
+		{
+			//TODO handle exception
+			return CreditScore.builder()
+					.requestLogData(requestLogData)
+					.resultCode(creditPassConfig.getDefaultResult().getResultCode())
+					.resultText(CreditPassConstants.DEFAULT_RESULT_TEXT)
+					.resultDetails(e.getMessage())
+					.build();
+		}
+
+	}
+
+}

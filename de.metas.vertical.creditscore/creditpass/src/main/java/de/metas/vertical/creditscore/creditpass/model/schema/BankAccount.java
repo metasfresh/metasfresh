@@ -1,13 +1,8 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.creditpass.model.schema;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.vertical.creditscore.creditpass.model.schema
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,25 +22,27 @@ import lombok.Value;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+
 @Value
-@Builder(toBuilder = true)
-public class Location
+@Builder
+public class BankAccount
 {
-	LocationId id;
 
-	@Nullable
-	String address;
+	@JsonProperty("BLZ")
+	private String bankRoutingCode;
 
-	@Nullable
-	String postal;
+	@JsonProperty("KONTONR")
+	private String accountNr;
 
-	@Nullable
-	String city;
+	@JsonProperty("IBAN")
+	private String iban;
 
-	@Nullable
-	String countryCode;
+	@JsonProperty("PAN")
+	private String creditCardNr;
 
-	@Nullable
-	String streetAddress;
-
+	@JsonProperty("PAN_TYPE")
+	private String creditCardType;
 }

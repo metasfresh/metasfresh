@@ -1,14 +1,9 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.creditpass.model;
 
 /*
  * #%L
- * de.metas.business
- * %%
+ * de.metas.vertical.creditscore.creditpass.model
+ *
  * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
@@ -27,25 +22,19 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Location
+public enum DefaultResult
 {
-	LocationId id;
+	P(0), N(1);
 
-	@Nullable
-	String address;
+	private final int resultCode;
 
-	@Nullable
-	String postal;
+	DefaultResult(int resultCode)
+	{
+		this.resultCode = resultCode;
+	}
 
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
-
+	public int getResultCode()
+	{
+		return resultCode;
+	}
 }

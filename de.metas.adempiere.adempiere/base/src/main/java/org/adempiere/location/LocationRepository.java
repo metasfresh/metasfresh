@@ -46,7 +46,7 @@ public class LocationRepository
 				.address(address)
 				.city(locationRecord.getCity())
 				.postal(locationRecord.getPostal())
-				.streetAddress1(locationRecord.getAddress1())
+				.streetAddress(locationRecord.getAddress1())
 				.countryCode(Optional.of(locationRecord.getC_Country()).map(I_C_Country::getCountryCode).get())
 				.build();
 	}

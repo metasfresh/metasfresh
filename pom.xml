@@ -171,6 +171,8 @@
 
 		<module>de.metas.datev</module>
 
+		<module>de.metas.vertical.creditscore</module>
+
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>
 		<module>de.metas.vertical.pharma.msv3.schema.v1</module>

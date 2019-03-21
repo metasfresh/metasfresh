@@ -1,14 +1,9 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.creditpass.model;
 
 /*
  * #%L
- * de.metas.business
- * %%
+ * de.metas.vertical.creditscore.creditpass.model
+ *
  * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
@@ -27,25 +22,41 @@ import lombok.Value;
  * #L%
  */
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.user.UserId;
+
+import java.util.List;
+
 @Value
-@Builder(toBuilder = true)
-public class Location
+@Builder
+public class CreditPassConfig
 {
-	LocationId id;
+	@NonNull
+	private String restApiBaseUrl;
 
-	@Nullable
-	String address;
+	@NonNull
+	private String authId;
 
-	@Nullable
-	String postal;
+	@NonNull
+	private String authPassword;
 
-	@Nullable
-	String city;
+	private int transactionType;
 
-	@Nullable
-	String countryCode;
+	private int processingCode;
 
-	@Nullable
-	String streetAddress;
+	@NonNull
+	private DefaultResult defaultResult;
+
+	@NonNull
+	private UserId notificationUserId;
+
+	private int retryDays;
+
+	@NonNull
+	private String requestReason;
+
+	private List<CreditPassConfigPaymentRule> creditPassConfigPaymentRuleList;
 
 }

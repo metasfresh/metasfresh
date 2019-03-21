@@ -15,6 +15,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -64,7 +69,10 @@ public class UserRepository
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())
-				.birthday(userRecord.getBirthday().toLocalDateTime().toLocalDate())
+				.birthday(Optional.ofNullable(userRecord.getBirthday())
+						.map(Timestamp::toLocalDateTime)
+						.map(LocalDateTime::toLocalDate)
+						.orElse(null))
 				.emailAddress(userRecord.getEMail())
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bPartnerLanguage)

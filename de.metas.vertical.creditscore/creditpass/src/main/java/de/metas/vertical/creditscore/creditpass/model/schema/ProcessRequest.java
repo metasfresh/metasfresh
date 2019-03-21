@@ -1,13 +1,8 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.creditpass.model.schema;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.vertical.creditscore.creditpass.model.schema
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,25 +22,24 @@ import lombok.Value;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
-@Builder(toBuilder = true)
-public class Location
+@Builder
+public class ProcessRequest
 {
-	LocationId id;
 
-	@Nullable
-	String address;
+	@JsonProperty("PROCESSING_CODE")
+	private Integer processingCode;
 
-	@Nullable
-	String postal;
+	@NonNull
+	@JsonProperty("REQUESTREASON")
+	private String requestReason;
 
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
+	@JsonProperty("TA_TYPE")
+	private int transactionType;
 
 }

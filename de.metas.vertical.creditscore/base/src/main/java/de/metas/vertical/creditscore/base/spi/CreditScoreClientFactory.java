@@ -1,13 +1,8 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.base.spi;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.vertical.creditscore.base.spi
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,25 +22,9 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Location
+import de.metas.bpartner.BPartnerId;
+
+public interface CreditScoreClientFactory
 {
-	LocationId id;
-
-	@Nullable
-	String address;
-
-	@Nullable
-	String postal;
-
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
-
+	CreditScoreClient newClientForBusinessPartner(final BPartnerId businessPartnerGroupId);
 }
