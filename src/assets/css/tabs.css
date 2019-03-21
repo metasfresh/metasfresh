@@ -125,7 +125,8 @@
 
     .separator {
         background-color: $brand-color-secondary;
-        border-bottom: 1px solid $brand-border-color;;
+        border: 1px solid $brand-border-color;
+        border-radius: 3px 3px 0 0;
         margin-top: 0;
         padding: .50rem .7rem;
         height: 42px;
@@ -143,6 +144,7 @@
         overflow: visible;
         background: $brand-bright-color;
         border-top: none;
+        padding: 8px 0;
     }
 
     .table {
