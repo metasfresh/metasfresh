@@ -27,7 +27,8 @@
 		<band height="95" splitType="Stretch">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="1" width="195" height="49" uuid="d3e2f3ac-b79a-44ad-90e5-4fb15fd218ed"/>
+				<reportElement x="0" y="0" width="180" height="40" uuid="077a0e38-38e1-4574-a5ef-f68d76105fb7"/>
+				<textElement markup="styled"/>
 				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.retrieveAvailableFonts()]]></textFieldExpression>
 			</textField>
 		</band>
