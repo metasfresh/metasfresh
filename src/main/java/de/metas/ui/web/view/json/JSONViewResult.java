@@ -94,6 +94,10 @@ public final class JSONViewResult
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String description;
 
+	@JsonProperty("headerProperties")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JSONViewHeaderProperties headerProperties;
+
 	@JsonProperty("size")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Long size;
@@ -157,6 +161,7 @@ public final class JSONViewResult
 		this.parentViewId = parentViewId == null ? null : parentViewId.getViewId();
 
 		description = viewResult.getViewDescription(adLanguage);
+		headerProperties = JSONViewHeaderProperties.of(viewResult.getHeaderProperties(), adLanguage);
 
 		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
@@ -203,6 +208,7 @@ public final class JSONViewResult
 			@JsonProperty("parentViewId") final String parentViewId,
 			//
 			@JsonProperty("description") final String description,
+			@JsonProperty("headerProperties") final JSONViewHeaderProperties headerProperties,
 			//
 			@JsonProperty("size") final Long size,
 			@JsonProperty("staticFilters") final List<JSONStickyDocumentFilter> staticFilters,
@@ -230,6 +236,7 @@ public final class JSONViewResult
 		this.parentViewId = parentViewId;
 		//
 		this.description = description;
+		this.headerProperties = headerProperties;
 		//
 		this.size = size;
 		this.filters = filters == null ? ImmutableList.of() : filters;

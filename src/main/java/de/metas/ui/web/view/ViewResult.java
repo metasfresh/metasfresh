@@ -16,7 +16,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
-
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -96,6 +95,7 @@ public final class ViewResult
 	private final ViewProfileId profileId;
 	private final ViewId parentViewId;
 	private final ITranslatableString viewDescription;
+	private final ViewHeaderProperties viewHeaderProperties;
 	private final long size;
 	private final int queryLimit;
 	private final boolean queryLimitHit;
@@ -112,7 +112,8 @@ public final class ViewResult
 	private final ImmutableList<IViewRow> page;
 	private final ImmutableMap<String, ViewResultColumn> columnInfosByFieldName;
 
-	/**+
+	/**
+	 * +
 	 * View and loaded page constructor
 	 */
 	@Builder
@@ -129,6 +130,7 @@ public final class ViewResult
 		this.profileId = view.getProfileId();
 		this.parentViewId = view.getParentViewId();
 		this.viewDescription = view.getDescription();
+		this.viewHeaderProperties = view.getHeaderProperties() != null ? view.getHeaderProperties() : ViewHeaderProperties.EMPTY;
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
@@ -147,8 +149,7 @@ public final class ViewResult
 		this.pageLength = pageLength;
 		this.rowIds = rowIds != null ? ImmutableList.copyOf(rowIds) : null;
 		this.page = rows != null ? ImmutableList.copyOf(rows) : null;
-		this.columnInfosByFieldName = columnInfos != null ? 
-				Maps.uniqueIndex(columnInfos, ViewResultColumn::getFieldName)
+		this.columnInfosByFieldName = columnInfos != null ? Maps.uniqueIndex(columnInfos, ViewResultColumn::getFieldName)
 				: ImmutableMap.of();
 	}
 
@@ -159,6 +160,7 @@ public final class ViewResult
 		this.profileId = view.getProfileId();
 		this.parentViewId = view.getParentViewId();
 		this.viewDescription = view.getDescription();
+		this.viewHeaderProperties = view.getHeaderProperties() != null ? view.getHeaderProperties() : ViewHeaderProperties.EMPTY;
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
@@ -221,6 +223,11 @@ public final class ViewResult
 		return !Check.isEmpty(viewDescriptionStr, true) ? viewDescriptionStr : null;
 	}
 
+	public ViewHeaderProperties getHeaderProperties()
+	{
+		return viewHeaderProperties;
+	}
+
 	public long getSize()
 	{
 		return size;
@@ -278,7 +285,7 @@ public final class ViewResult
 		}
 		return page;
 	}
-	
+
 	public Map<String, ViewResultColumn> getColumnInfosByFieldName()
 	{
 		return columnInfosByFieldName;
