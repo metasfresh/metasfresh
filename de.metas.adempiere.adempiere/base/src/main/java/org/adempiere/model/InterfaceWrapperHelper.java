@@ -159,9 +159,10 @@ public class InterfaceWrapperHelper
 	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
 	 */
-	public static <T> T newInstance(final Class<T> cl, final Object contextProvider, final boolean useClientOrgFromProvider)
+	public static <T> T newInstance(final Class<T> cl,
+			@NonNull final Object contextProvider,
+			final boolean useClientOrgFromProvider)
 	{
-		Check.assumeNotNull(contextProvider, "contextProvider not null");
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
 		//
 		// Get transaction name from contextProvider.
