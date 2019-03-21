@@ -125,7 +125,7 @@ public class PhonecallSchemaRepository
 				.build();
 	}
 
-	private List<PhonecallSchemaVersion> retrievePhonecallSchemaVersions(final PhonecallSchemaId phonecallSchemaId)
+	public List<PhonecallSchemaVersion> retrievePhonecallSchemaVersions(final PhonecallSchemaId phonecallSchemaId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Phonecall_Schema_Version.class)
 				.addOnlyActiveRecordsFilter()
