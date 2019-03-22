@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom.impl;
 
 /*
  * #%L
@@ -23,18 +23,38 @@ package org.adempiere.uom.api;
  */
 
 
-import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.I_C_UOM_Conversion;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.Env;
+import org.junit.Before;
 
-import de.metas.product.ProductId;
-
-import de.metas.util.ISingletonService;
-
-public interface IUOMConversionDAO extends ISingletonService
+/**
+ * Base test case for all UOM related tests
+ * 
+ * @author tsa
+ *
+ */
+public abstract class UOMTestBase
 {
-	List<I_C_UOM_Conversion> retrieveProductConversions(ProductId productId);
+	protected Properties ctx;
+	protected UOMTestHelper uomConversionHelper;
 
-	List<I_C_UOM_Conversion> retrieveGenericConversions(Properties ctx);
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		POJOWrapper.setDefaultStrictValues(true);
+
+		this.ctx = Env.getCtx();
+		this.uomConversionHelper = new UOMTestHelper(ctx);
+
+		afterInit();
+	}
+
+	/**
+	 * Called before each test, after {@link #init()}.
+	 */
+	protected abstract void afterInit();
 }

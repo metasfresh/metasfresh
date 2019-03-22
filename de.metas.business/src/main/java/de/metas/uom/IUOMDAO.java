@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 import java.time.temporal.TemporalUnit;
 
@@ -26,7 +26,6 @@ import java.time.temporal.TemporalUnit;
 
 import java.util.Properties;
 
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.util.ISingletonService;
@@ -63,6 +62,6 @@ public interface IUOMDAO extends ISingletonService
 	I_C_UOM retrieveEachUOM(Properties ctx);
 
 	TemporalUnit getTemporalUnitByUomId(final UomId uomId);
-	
-	int getStandardPrecision(final int uomId);
+
+	UOMPrecision getStandardPrecision(final UomId uomId);
 }

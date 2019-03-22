@@ -3,8 +3,6 @@ package de.metas.handlingunits.picking.candidate.commands;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.HuId;
@@ -34,6 +32,8 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;

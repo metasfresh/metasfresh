@@ -13,10 +13,13 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import org.compiere.model.MUOM;
-import org.compiere.util.Env;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_UOM;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -32,40 +35,71 @@ public class NoUOMConversionException extends AdempiereException
 	 */
 	private static final long serialVersionUID = -4868882017576097089L;
 
-	public NoUOMConversionException(int M_Product_ID, int C_UOM_ID, int C_UOM_To_ID)
+	public NoUOMConversionException(ProductId productId, UomId fromUomId, UomId toUomId)
 	{
-		super(buildMessage(M_Product_ID, C_UOM_ID, C_UOM_To_ID));
+		super(buildMessage(productId, fromUomId, toUomId));
 	}
 
-	private static String buildMessage(int M_Product_ID, int C_UOM_ID, int C_UOM_To_ID)
+	private static String buildMessage(ProductId productId, UomId fromUomId, UomId toUomId)
 	{
 		final StringBuilder sb = new StringBuilder("@" + AD_Message + "@ - ");
 
 		//
-		final String productName = Services.get(IProductBL.class).getProductValueAndName(M_Product_ID);
-		sb.append("@M_Product_ID@:").append(productName);
+		sb.append("@M_Product_ID@:").append(extractProductName(productId));
 
 		//
-		if (C_UOM_ID > 0)
+		if (fromUomId != null)
 		{
-			sb.append("  @C_UOM_ID@:");
-			MUOM uom = MUOM.get(Env.getCtx(), C_UOM_ID);
-			if (uom != null)
-			{
-				sb.append(uom.getUOMSymbol());
-			}
+			sb.append("  @C_UOM_ID@:").append(extractUOMSymbol(fromUomId));
 		}
 
 		//
-		sb.append("  @C_UOM_To_ID@:");
-		final MUOM uomTo = MUOM.get(Env.getCtx(), C_UOM_To_ID);
-		if (uomTo != null)
+		if (toUomId != null)
 		{
-			sb.append(uomTo.getUOMSymbol());
+			sb.append("  @C_UOM_To_ID@:").append(extractUOMSymbol(toUomId));
 		}
 
 		//
 		return sb.toString();
+	}
+
+	private static String extractProductName(ProductId productId)
+	{
+		if (productId == null)
+		{
+			return "";
+		}
+
+		// avoid DB connection issues
+		if (Adempiere.isUnitTestMode())
+		{
+			return String.valueOf(productId.getRepoId());
+		}
+
+		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		return productName;
+	}
+
+	private static String extractUOMSymbol(UomId uomId)
+	{
+		if (uomId == null)
+		{
+			return "";
+		}
+
+		// avoid DB connection issues
+		if (Adempiere.isUnitTestMode())
+		{
+			return String.valueOf(uomId.getRepoId());
+		}
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
+		if (uom == null)
+		{
+			return String.valueOf(uomId.getRepoId());
+		}
+
+		return uom.getUOMSymbol();
 	}
 
 }

@@ -27,11 +27,11 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -81,7 +81,7 @@ import lombok.NonNull;
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(
-				ctx, getProductId(), orderLine.getC_UOM(), qty);
+				getProductId(), orderLine.getC_UOM(), qty);
 
 		orderLine.setQtyEntered(qtyEntered);
 	}

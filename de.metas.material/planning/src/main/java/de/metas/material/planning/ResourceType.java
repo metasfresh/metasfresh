@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalUnit;
 
-import org.adempiere.uom.UomId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.product.ProductCategoryId;
+import de.metas.uom.UomId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

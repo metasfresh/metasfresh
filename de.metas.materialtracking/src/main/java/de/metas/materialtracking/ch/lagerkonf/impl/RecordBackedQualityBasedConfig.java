@@ -36,7 +36,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Currency;
@@ -53,6 +52,7 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Ve
 import de.metas.materialtracking.ch.lagerkonf.model.X_M_QualityInsp_LagerKonf_Month_Adj;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

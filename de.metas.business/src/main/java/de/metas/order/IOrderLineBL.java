@@ -31,11 +31,11 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.money.Money;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
@@ -224,7 +224,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 	
-	Money getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
+	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 

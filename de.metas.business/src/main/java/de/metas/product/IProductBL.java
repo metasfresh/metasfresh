@@ -26,22 +26,21 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IProductBL extends ISingletonService
 {
-	int getUOMPrecision(I_M_Product product);
+	UOMPrecision getUOMPrecision(I_M_Product product);
 
-	int getUOMPrecision(int productId);
-
-	int getUOMPrecision(ProductId productId);
+	UOMPrecision getUOMPrecision(ProductId productId);
 
 	String getMMPolicy(I_M_Product product);
 

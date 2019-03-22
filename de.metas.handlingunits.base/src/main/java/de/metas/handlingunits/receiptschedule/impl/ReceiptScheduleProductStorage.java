@@ -26,13 +26,13 @@ package de.metas.handlingunits.receiptschedule.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /* package */class ReceiptScheduleProductStorage extends AbstractProductStorage
