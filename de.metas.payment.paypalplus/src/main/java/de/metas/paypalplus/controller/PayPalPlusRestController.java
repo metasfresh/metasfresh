@@ -38,16 +38,18 @@ import java.util.Optional;
 @RequestMapping(PayPalPlusRestEndpoint.ENDPOINT)
 public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 {
-	private String clientId;
-	private String clientSecret;
-	private String executionMode;
+	private APIContext apiContext;
 
 	public PayPalPlusRestController()
 	{
-		PayPalProperties payPalProperties = new PayPalProperties();
-		clientId = payPalProperties.getClientId();
-		clientSecret = payPalProperties.getClientSecret();
-		executionMode = payPalProperties.getExecutionMode();
+		PayPalProperties payPalProperties = new PayPalProperties(PayPalProperties.CONFIG_SANDBOX_PROPERTIES);
+		apiContext = new APIContext(payPalProperties.getClientId(), payPalProperties.getClientSecret(), payPalProperties.getExecutionMode());
+	}
+
+	public PayPalPlusRestController(String propertiesFile)
+	{
+		PayPalProperties payPalProperties = new PayPalProperties(propertiesFile);
+		apiContext = new APIContext(payPalProperties.getClientId(), payPalProperties.getClientSecret(), payPalProperties.getExecutionMode());
 	}
 
 	private Optional<Payment> processPayment(PayPalPlusPayment payPalPlusPayment, String sale) throws PayPalRESTException
@@ -67,7 +69,6 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		payer.setPaymentMethod("paypal");
 
 		Payment payment = new Payment();
-		//authorize = reserve payment
 		payment.setIntent(sale);
 		payment.setPayer(payer);
 		payment.setTransactions(transactions);
@@ -77,7 +78,6 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		redirectUrls.setReturnUrl("https://localhost:3000/return");
 		payment.setRedirectUrls(redirectUrls);
 
-		APIContext apiContext = new APIContext(clientId, clientSecret, executionMode);
 		return Optional.ofNullable(payment.create(apiContext));
 	}
 
@@ -97,15 +97,17 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		return processPayment(payPalPlusPayment, "sale");
 	}
 
-	@Override public Optional<Payment> cancelPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	@Override public Optional<DetailedRefund> refundCapturedPayment(Payment payment, int transactionNumber) throws PayPalRESTException
 	{
-		//TODO: implement
-		return Optional.empty();
+		Sale sale = new Sale();
+		sale.setId(payment.getTransactions().get(transactionNumber).getRelatedResources().get(transactionNumber).getSale().getId());
+		RefundRequest refund = new RefundRequest();
+		return Optional.of(sale.refund(apiContext, refund));
 	}
 
 	public final static void main(String[] args)
 	{
-		PayPalPlusRestController controller = new PayPalPlusRestController();
+		PayPalPlusRestController controller = new PayPalPlusRestController(PayPalProperties.CONFIG_SANDBOX_PROPERTIES);
 		try
 		{
 			PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");

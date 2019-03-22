@@ -1,5 +1,6 @@
 package de.metas.paypalplus.controller;
 
+import com.paypal.api.payments.DetailedRefund;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 import de.metas.paypalplus.model.PayPalPlusPayment;
@@ -43,6 +44,6 @@ public interface PayPalPlusRestEndpoint
 
 	Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
 
-	Optional<Payment> cancelPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
+	Optional<DetailedRefund> refundCapturedPayment(Payment payment, int transactionNumber) throws PayPalRESTException;
 
 }

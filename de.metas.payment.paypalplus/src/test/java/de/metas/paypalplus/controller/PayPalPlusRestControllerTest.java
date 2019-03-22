@@ -1,10 +1,20 @@
 package de.metas.paypalplus.controller;
 
+import com.paypal.api.payments.Payment;
+import com.paypal.base.rest.PayPalRESTException;
+import de.metas.paypalplus.PayPalProperties;
+import de.metas.paypalplus.model.PayPalPlusPayment;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /*
  * #%L
@@ -28,10 +38,78 @@ import org.springframework.test.context.web.WebAppConfiguration;
  * #L%
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = PayPalPlusRestController.class)
-@WebAppConfiguration
-@Ignore
 public class PayPalPlusRestControllerTest
 {
+	private static PayPalPlusRestController controller;
 
+	@BeforeClass
+	public static void beforeClass()
+	{
+		controller = new PayPalPlusRestController(PayPalProperties.CONFIG_SANDBOX_PROPERTIES);
+
+	}
+
+	@Test
+	public void capturePayment()
+	{
+		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+		Optional<Payment> payment = Optional.empty();
+		try
+		{
+			payment = controller.capturePayment(payPalPlusPayment);
+		}
+		catch (PayPalRESTException e)
+		{
+			fail();
+			e.printStackTrace();
+		}
+		assertEquals(payment.get().getState(), "created");
+		System.out.println("Payment capturing state:" + payment.get().getState());
+	}
+
+	@Test
+	public void reservePayment()
+	{
+		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+		Optional<Payment> payment = Optional.empty();
+		try
+		{
+			payment = controller.reservePayment(payPalPlusPayment);
+		}
+		catch (PayPalRESTException e)
+		{
+			fail();
+			e.printStackTrace();
+		}
+		assertEquals(payment.get().getState(), "created");
+		System.out.println("Payment reservation state:" + payment.get().getState());
+	}
+
+	@Test
+	@Ignore
+	public void refundPayment()
+	{
+		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+		Optional<Payment> payment = Optional.empty();
+		try
+		{
+			payment = controller.reservePayment(payPalPlusPayment);
+		}
+		catch (PayPalRESTException e)
+		{
+			fail();
+			e.printStackTrace();
+		}
+		assertEquals(payment.get().getState(), "created");
+		assertEquals(payment.get().getTransactions().size(), 1);
+		try
+		{
+			controller.refundCapturedPayment(payment.get(), 0);
+		}
+		catch (PayPalRESTException e)
+		{
+			fail();
+			e.printStackTrace();
+		}
+	}
 }
