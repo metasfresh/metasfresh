@@ -78,6 +78,15 @@ public class CreditPassTransactionService
 		return hasConfig;
 	}
 
+	public void shouldPerformRequestForSalesOrder(
+			@NonNull final BPartnerId bPartnerId)
+	{
+		CreditPassConfig config =  creditPassConfigRepository.getByBPartnerId(bPartnerId);
+		config.getRetryDays();
+
+	}
+
+
 	private CreditScore convertResult(@NonNull final CreditPassClient client, @NonNull final CreditScore creditScore,
 			@NonNull final Properties ctx)
 	{

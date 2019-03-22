@@ -23,10 +23,13 @@ package de.metas.vertical.creditscore.base.spi.repository;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderId;
+import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Results;
 import de.metas.vertical.creditscore.base.spi.model.CreditScore;
 import de.metas.vertical.creditscore.base.spi.model.CreditScoreRequestLogData;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -55,6 +58,18 @@ public class TransactionResultsRepository
 		transactionResult.setC_BPartner_ID(bPartnerId.getRepoId());
 		save(transactionResult);
 		return transactionResult.getCS_Transaction_Results_ID();
+	}
+
+	public I_CS_Transaction_Results getLastTransactionResultBySalesOrder(@NonNull final OrderId orderId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL
+				.createQueryBuilder(I_CS_Transaction_Results.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_CS_Transaction_Results.COLUMNNAME_RequestStartTime)
+				.addEqualsFilter(I_CS_Transaction_Results.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+				.create().first();
 	}
 
 }
