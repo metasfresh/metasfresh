@@ -31,7 +31,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.DB;
 
@@ -57,6 +56,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -188,11 +188,10 @@ public class DesadvBL implements IDesadvBL
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(desadvLine);
 		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 
 		desadvLine.setMovementQty(newMovementQty);
-		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, productId, desadvLine.getC_UOM(), newMovementQty));
+		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(productId, desadvLine.getC_UOM(), newMovementQty));
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)

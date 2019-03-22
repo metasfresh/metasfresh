@@ -1,4 +1,4 @@
-package org.adempiere.uom;
+package de.metas.uom;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;

@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.spi.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -11,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.uom.impl.UOMTestHelper;
 
 public class HUReceiptLineCandidatesBuilderTest
 {

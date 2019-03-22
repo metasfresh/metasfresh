@@ -34,7 +34,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
-import org.compiere.model.MUOMConversion;
 import org.compiere.util.Env;
 import org.eevolution.api.IDDOrderLineBL;
 import org.eevolution.model.I_DD_OrderLine;
@@ -44,6 +43,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.util.Services;
 
 @Callout(I_DD_OrderLine.class)
@@ -110,7 +110,7 @@ public class DD_OrderLine
 				ddOrderLine.setQtyEntered(QtyEntered);
 			}
 
-			QtyOrdered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
+			QtyOrdered = LegacyUOMConversionUtils.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			final boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
@@ -129,7 +129,7 @@ public class DD_OrderLine
 				QtyEntered = QtyEntered1;
 				ddOrderLine.setQtyEntered(QtyEntered);
 			}
-			QtyOrdered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
+			QtyOrdered = LegacyUOMConversionUtils.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
@@ -150,7 +150,7 @@ public class DD_OrderLine
 				QtyOrdered = QtyOrdered1;
 				ddOrderLine.setQtyOrdered(QtyOrdered);
 			}
-			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyOrdered);
+			QtyEntered = LegacyUOMConversionUtils.convertFromProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyOrdered);
 			if (QtyEntered == null)
 				QtyEntered = QtyOrdered;
 			final boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;

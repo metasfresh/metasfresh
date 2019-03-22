@@ -1,38 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_UOM_Conversion
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_C_UOM_Conversion extends org.compiere.model.PO implements I_C_UOM_Conversion, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -397118694L;
 
     /** Standard Constructor */
     public X_C_UOM_Conversion (Properties ctx, int C_UOM_Conversion_ID, String trxName)
@@ -43,8 +26,8 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 			setC_UOM_Conversion_ID (0);
 			setC_UOM_ID (0);
 			setC_UOM_To_ID (0);
-			setDivideRate (Env.ZERO);
-			setMultiplyRate (Env.ZERO);
+			setDivideRate (BigDecimal.ZERO);
+			setMultiplyRate (BigDecimal.ZERO);
         } */
     }
 
@@ -54,32 +37,20 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_UOM_Conversion[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set UOM Conversion.
+	/** Set Umrechnung Maßeinheit.
 		@param C_UOM_Conversion_ID 
 		Unit of Measure Conversion
 	  */
+	@Override
 	public void setC_UOM_Conversion_ID (int C_UOM_Conversion_ID)
 	{
 		if (C_UOM_Conversion_ID < 1) 
@@ -88,9 +59,10 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 			set_ValueNoCheck (COLUMNNAME_C_UOM_Conversion_ID, Integer.valueOf(C_UOM_Conversion_ID));
 	}
 
-	/** Get UOM Conversion.
+	/** Get Umrechnung Maßeinheit.
 		@return Unit of Measure Conversion
 	  */
+	@Override
 	public int getC_UOM_Conversion_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_Conversion_ID);
@@ -99,23 +71,23 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getC_UOM_Conversion_ID()));
-    }
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
 
-	public I_C_UOM getC_UOM() throws RuntimeException
-    {
-		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
-			.getPO(getC_UOM_ID(), get_TrxName());	}
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
 
-	/** Set UOM.
+	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Unit of Measure
 	  */
+	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -124,9 +96,10 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
-	/** Get UOM.
+	/** Get Maßeinheit.
 		@return Unit of Measure
 	  */
+	@Override
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
@@ -135,15 +108,23 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 		return ii.intValue();
 	}
 
-	public I_C_UOM getC_UOM_To() throws RuntimeException
-    {
-		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
-			.getPO(getC_UOM_To_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM_To() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_To_ID, org.compiere.model.I_C_UOM.class);
+	}
 
-	/** Set UoM To.
+	@Override
+	public void setC_UOM_To(org.compiere.model.I_C_UOM C_UOM_To)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_To_ID, org.compiere.model.I_C_UOM.class, C_UOM_To);
+	}
+
+	/** Set Maßeinheit Nach.
 		@param C_UOM_To_ID 
 		Target or destination Unit of Measure
 	  */
+	@Override
 	public void setC_UOM_To_ID (int C_UOM_To_ID)
 	{
 		if (C_UOM_To_ID < 1) 
@@ -152,9 +133,10 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 			set_Value (COLUMNNAME_C_UOM_To_ID, Integer.valueOf(C_UOM_To_ID));
 	}
 
-	/** Get UoM To.
+	/** Get Maßeinheit Nach.
 		@return Target or destination Unit of Measure
 	  */
+	@Override
 	public int getC_UOM_To_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_To_ID);
@@ -163,35 +145,45 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 		return ii.intValue();
 	}
 
-	/** Set Divide Rate.
+	/** Set Divisor.
 		@param DivideRate 
 		To convert Source number to Target number, the Source is divided
 	  */
-	public void setDivideRate (BigDecimal DivideRate)
+	@Override
+	public void setDivideRate (java.math.BigDecimal DivideRate)
 	{
 		set_Value (COLUMNNAME_DivideRate, DivideRate);
 	}
 
-	/** Get Divide Rate.
+	/** Get Divisor.
 		@return To convert Source number to Target number, the Source is divided
 	  */
-	public BigDecimal getDivideRate () 
+	@Override
+	public java.math.BigDecimal getDivideRate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DivideRate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -200,9 +192,10 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -211,23 +204,25 @@ public class X_C_UOM_Conversion extends PO implements I_C_UOM_Conversion, I_Pers
 		return ii.intValue();
 	}
 
-	/** Set Multiply Rate.
+	/** Set Faktor.
 		@param MultiplyRate 
 		Rate to multiple the source by to calculate the target.
 	  */
-	public void setMultiplyRate (BigDecimal MultiplyRate)
+	@Override
+	public void setMultiplyRate (java.math.BigDecimal MultiplyRate)
 	{
 		set_Value (COLUMNNAME_MultiplyRate, MultiplyRate);
 	}
 
-	/** Get Multiply Rate.
+	/** Get Faktor.
 		@return Rate to multiple the source by to calculate the target.
 	  */
-	public BigDecimal getMultiplyRate () 
+	@Override
+	public java.math.BigDecimal getMultiplyRate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MultiplyRate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }
