@@ -1,10 +1,11 @@
 package org.adempiere.server.rpl.imp;
 
-import static org.compiere.util.Util.firstGreaterThanZero;
-import static org.compiere.util.Util.firstNotEmptyTrimmed;
-
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.XMLHelper;
@@ -17,14 +18,15 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_IMP_Processor;
 import org.slf4j.Logger;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageListener;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.w3c.dom.Document;
+
+import java.util.Properties;
+
+import static org.compiere.util.Util.firstGreaterThanZero;
+import static org.compiere.util.Util.firstNotEmptyTrimmed;
 
 /*
  * #%L
@@ -47,13 +49,6 @@ import org.w3c.dom.Document;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 public class RabbitMqListener implements MessageListener
 {
@@ -99,8 +94,8 @@ public class RabbitMqListener implements MessageListener
 			final String exchangeName,
 			final boolean isDurableQueue)
 	{
-		this.host = firstNotEmptyTrimmed(host,"localhost");
-		this.port = firstGreaterThanZero(port,5672);
+		this.host = firstNotEmptyTrimmed(host, "localhost");
+		this.port = firstGreaterThanZero(port, 5672);
 
 		this.queueName = queueName;
 
@@ -165,6 +160,7 @@ public class RabbitMqListener implements MessageListener
 		container.setMessageListener(this);
 		container.startConsumers();
 
+		//set logger
 		log("Connected to AMQP Server. Waiting for messages!", // summary
 				null, // text
 				listenerReference, // reference
@@ -204,7 +200,7 @@ public class RabbitMqListener implements MessageListener
 	public void stop()
 	{
 		isStopping = true;
-		try (final IAutoCloseable closable = setupLoggable(listenerReference))
+		try
 		{
 			Loggables.get().withLogger(logger, Level.TRACE).addLog("Closing AMQP Connection!");
 

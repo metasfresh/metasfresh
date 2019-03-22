@@ -21,10 +21,7 @@
  */
 package org.adempiere.server.rpl.exp;
 
-import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.IExportProcessor;
@@ -77,7 +74,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		I_EXP_ProcessorParameter[] processorParameters = expProcessor.getEXP_ProcessorParameters();
 		for (I_EXP_ProcessorParameter processorParameter : processorParameters)
 		{
-			getLogger().addLog("ProcesParameter: Value = {} ; ParameterValue = {}",
+			log.info("ProcesParameter: Value = {} ; ParameterValue = {}",
 					processorParameter.getValue(),
 					processorParameter.getParameterValue());
 			if (processorParameter.getValue().equals(EXCHANGE_NAME_PARAMETER))
@@ -140,7 +137,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		// queue name and routing key are the same
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
 		template.convertAndSend(msg);
-		getLogger().addLog("AMQP Message sent!");
+		log.info("AMQP Message sent!");
 		connectionFactory.stop();
 
 	}
@@ -167,10 +164,5 @@ public class RabbitMqExportProcessor implements IExportProcessor
 				"AMQP Export Processor Parameter Help",
 				"true");
 
-	}
-
-	private ILoggable getLogger()
-	{
-		return Loggables.get().withLogger(log, Level.INFO);
 	}
 }
