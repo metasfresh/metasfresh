@@ -231,7 +231,7 @@ public class RabbitMqListener implements MessageListener
 
 	private void log(final String summary, final String text, final String reference, final Throwable error)
 	{
-		final org.compiere.model.I_IMP_Processor impProcessor = replicationProcessor.getMImportProcessor();
+		final I_IMP_Processor impProcessor = replicationProcessor.getMImportProcessor();
 		Services.get(IIMPProcessorBL.class).createLog(impProcessor, summary, text, reference, error);
 	}
 
@@ -262,9 +262,6 @@ public class RabbitMqListener implements MessageListener
 		catch (final RuntimeException e)
 		{
 			logException(e, text);
-		}
-		finally
-		{
 		}
 	}
 

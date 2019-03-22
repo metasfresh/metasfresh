@@ -28,10 +28,10 @@
  **********************************************************************/
 package org.compiere.server;
 
-import java.util.Properties;
-
 import ch.qos.logback.classic.Level;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.IImportProcessor;
 import org.adempiere.server.rpl.IReplicationProcessor;
@@ -42,8 +42,7 @@ import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.util.TimeUtil;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 /**
  * @author Trifon N. Trifonov
