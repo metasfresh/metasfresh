@@ -282,7 +282,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
 	 *
-	 * @see org.adempiere.uom.api.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
+	 * @see de.metas.uom.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
 	 */
 	BigDecimal convertToPriceUOM(BigDecimal qty, I_C_Invoice_Candidate ic);
 

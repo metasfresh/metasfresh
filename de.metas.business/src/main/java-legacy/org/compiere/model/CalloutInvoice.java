@@ -27,7 +27,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -40,6 +39,8 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -605,8 +606,7 @@ public class CalloutInvoice extends CalloutEngine
 
 				if (columnName.equals("QtyEntered"))
 				{
-					qtyInvoiced = MUOMConversion.convertFromProductUOM(ctx, productID,
-							uomToID, qtyEntered);
+					qtyInvoiced = LegacyUOMConversionUtils.convertFromProductUOM(ctx, productID, uomToID, qtyEntered);
 				}
 
 				if (qtyInvoiced == null)
@@ -643,8 +643,7 @@ public class CalloutInvoice extends CalloutEngine
 		else if (columnName.equals("PriceActual"))
 		{
 			priceActual = (BigDecimal)value;
-			priceEntered = MUOMConversion.convertToProductUOM(ctx, productID,
-					uomToID, priceActual);
+			priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceActual);
 
 			if (priceEntered == null)
 			{
@@ -715,8 +714,7 @@ public class CalloutInvoice extends CalloutEngine
 		)
 		{
 			priceActual = priceLimit;
-			priceEntered = MUOMConversion.convertToProductUOM(ctx, productID,
-					uomToID, priceLimit);
+			priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceLimit);
 
 			if (priceEntered == null)
 			{
@@ -840,8 +838,7 @@ public class CalloutInvoice extends CalloutEngine
 				invoiceLine.setQtyEntered(qtyEntered);
 			}
 
-			qtyInvoiced = MUOMConversion.convertToProductUOM(ctx, productID,
-					uomToID, qtyEntered);
+			qtyInvoiced = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, qtyEntered);
 			if (qtyInvoiced == null)
 			{
 				qtyInvoiced = qtyEntered;
@@ -854,8 +851,7 @@ public class CalloutInvoice extends CalloutEngine
 			{
 				priceActual = invoiceLine.getPriceActual();
 
-				priceEntered = MUOMConversion.convertToProductUOM(ctx, productID,
-						uomToID, priceActual);
+				priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceActual);
 
 				if (priceEntered == null)
 				{
@@ -890,8 +886,7 @@ public class CalloutInvoice extends CalloutEngine
 				invoiceLine.setQtyEntered(qtyEntered);
 
 			}
-			qtyInvoiced = MUOMConversion.convertToProductUOM(ctx, productID,
-					uomToID, qtyEntered);
+			qtyInvoiced = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, qtyEntered);
 
 			if (qtyInvoiced == null)
 			{
@@ -926,8 +921,7 @@ public class CalloutInvoice extends CalloutEngine
 				invoiceLine.setQtyInvoiced(qtyInvoiced);
 
 			}
-			qtyEntered = MUOMConversion.convertFromProductUOM(ctx, productID,
-					uomToID, qtyInvoiced);
+			qtyEntered = LegacyUOMConversionUtils.convertFromProductUOM(ctx, productID, uomToID, qtyInvoiced);
 			if (qtyEntered == null)
 			{
 				qtyEntered = qtyInvoiced;

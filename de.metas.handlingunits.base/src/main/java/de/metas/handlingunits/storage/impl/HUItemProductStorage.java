@@ -25,8 +25,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -35,6 +33,8 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.NonNull;
 

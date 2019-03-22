@@ -28,6 +28,7 @@ import org.compiere.util.DB;
 import de.metas.inventory.IInventoryBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.UOMPrecision;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -106,14 +107,14 @@ public class MInventoryLine extends X_M_InventoryLine
 			return null;
 		}
 
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		if (productId == null)
 		{
 			return qty;
 		}
 
-		final int precision = Services.get(IProductBL.class).getUOMPrecision(productId);
-		return qty.setScale(precision, BigDecimal.ROUND_HALF_UP);
+		final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
+		return precision.round(qty);
 	}
 
 	/**

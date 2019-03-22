@@ -45,8 +45,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
@@ -63,7 +61,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -101,6 +98,8 @@ import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -415,7 +414,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		// final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
 		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(
-				Env.getCtx(),
 				olAndSched.getProductId(),
 				olAndSched.getOrderPriceUOM(),
 				olAndSched.getOrderQtyReserved());

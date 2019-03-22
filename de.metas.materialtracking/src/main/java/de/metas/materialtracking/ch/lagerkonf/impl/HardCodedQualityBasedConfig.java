@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
@@ -44,6 +43,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.product.IProductPA;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;

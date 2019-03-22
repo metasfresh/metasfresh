@@ -28,12 +28,12 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
