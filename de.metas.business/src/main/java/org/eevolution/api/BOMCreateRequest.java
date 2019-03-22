@@ -6,12 +6,12 @@ import java.time.Month;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Builder.Default;

@@ -2,11 +2,10 @@ package de.metas.pricing.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.UomId;
-
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

@@ -24,13 +24,16 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostingService;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -79,10 +82,9 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	/** @return PO cost amount in accounting schema currency */
 	public CostAmount getPOCostAmount(final AcctSchema as)
 	{
-		I_C_OrderLine orderLine = getOrderLine();
-		final CostAmount poCostPrice = getOrderLineCostAmount();
-
-		final CostAmount poCost = poCostPrice.multiply(getQty());
+		final I_C_OrderLine orderLine = getOrderLine();
+		final ProductPrice poCostPrice = getOrderLineCostPrice();
+		final CostAmount poCost = CostAmount.multiply(poCostPrice, getQty());
 		if (poCost.getCurrencyId().equals(as.getCurrencyId()))
 		{
 			return poCost;
@@ -142,8 +144,8 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
 
-		final CostAmount costPrice = getOrderLineCostAmount();
-		final CostAmount amt = costPrice.multiply(qty);
+		final ProductPrice costPrice = getOrderLineCostPrice();
+		final CostAmount amt = CostAmount.multiply(costPrice, qty);
 
 		final AcctSchemaId acctSchemaId = as.getId();
 
@@ -168,13 +170,17 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return orderLine;
 	}
 
-	private CostAmount getOrderLineCostAmount()
+	private ProductPrice getOrderLineCostPrice()
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
 
 		final I_C_OrderLine orderLine = getOrderLine();
-		final Money costPrice = orderLineBL.getCostPrice(orderLine);
-		return CostAmount.ofMoney(costPrice);
+		final ProductPrice costPrice = orderLineBL.getCostPrice(orderLine);
+
+		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
 	}
 
 	public int getReceipt_InOutLine_ID()

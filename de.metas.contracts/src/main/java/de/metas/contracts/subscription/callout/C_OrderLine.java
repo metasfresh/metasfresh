@@ -30,7 +30,6 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
@@ -49,6 +48,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -78,7 +78,7 @@ public class C_OrderLine
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final BigDecimal qtyEntered = ol.getQtyEntered();
 
-			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(Env.getCtx(), productId, ol.getC_UOM(), qtyEntered);
+			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, ol.getC_UOM(), qtyEntered);
 			ol.setQtyOrdered(qtyOrdered);
 
 			Services.get(IOrderLineBL.class).updatePrices(OrderLinePriceUpdateRequest.builder()

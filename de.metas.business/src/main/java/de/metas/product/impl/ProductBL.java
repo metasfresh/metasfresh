@@ -36,9 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -58,6 +55,11 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,20 +69,14 @@ public final class ProductBL implements IProductBL
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
 	@Override
-	public int getUOMPrecision(final I_M_Product product)
+	public UOMPrecision getUOMPrecision(final I_M_Product product)
 	{
-		final int uomId = product.getC_UOM_ID();
-		return Services.get(IUOMConversionBL.class).getPrecision(uomId);
+		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
+		return Services.get(IUOMDAO.class).getStandardPrecision(uomId);
 	}
 
 	@Override
-	public int getUOMPrecision(final int productId)
-	{
-		return getUOMPrecision(ProductId.ofRepoId(productId));
-	}
-
-	@Override
-	public int getUOMPrecision(@NonNull final ProductId productId)
+	public UOMPrecision getUOMPrecision(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getUOMPrecision(product);

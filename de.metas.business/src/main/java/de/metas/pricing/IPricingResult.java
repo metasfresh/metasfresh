@@ -27,8 +27,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.uom.UomId;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
@@ -36,6 +34,7 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
