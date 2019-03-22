@@ -8,15 +8,12 @@ LABEL maintainer="dev@metasfresh-com"
 # thx to https://github.com/moby/moby/issues/1996#issuecomment-185872769
 ARG CACHEBUST=1
 
-# add this repository so we can install openjdk
-RUN echo "deb http://http.debian.net/debian jessie-backports main" >> /etc/apt/sources.list
-
 RUN apt -y update \
     && apt -y upgrade \
     && apt -y install curl \
 # install openjdk so that we can run mg migrate from within the provisioning script
     && apt -y install libcups2 \
-    && apt -y install -t jessie-backports openjdk-8-jre-headless \
+    && apt -y install openjdk-8-jre-headless \
     && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y clean
