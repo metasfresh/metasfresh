@@ -39,8 +39,10 @@ public interface PayPalPlusRestEndpoint
 	 * @return Payment
 	 * @throws PayPalRESTException
 	 */
-	Optional<Payment> reservePayPalPlusPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
+	Optional<Payment> reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
 
-	Optional<Payment> capturePayPalPlusPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
+	Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
+
+	Optional<Payment> cancelPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
 
 }

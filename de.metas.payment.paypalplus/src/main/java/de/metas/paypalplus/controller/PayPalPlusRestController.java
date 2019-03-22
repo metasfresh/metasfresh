@@ -3,6 +3,7 @@ package de.metas.paypalplus.controller;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import de.metas.paypalplus.PayPalProperties;
 import de.metas.paypalplus.model.PayPalPlusPayment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,18 +38,16 @@ import java.util.Optional;
 @RequestMapping(PayPalPlusRestEndpoint.ENDPOINT)
 public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 {
-	private static final String CLIENT_ID = "AYSq3RDGsmBLJE-otTkBtM-jBRd1TCQwFf9RGfwddNXWz0uFU9ztymylOhRS";
-	private static final String CLIENT_SECRET = "EGnHDxD_qRPdaLdZz8iCr8N7_MzF-YHPTkjs6NKYQvQSBngp4PTTVWkPZRbL";
-	private static final String EXECUTION_MODE = "sandbox";
+	private String clientId;
+	private String clientSecret;
+	private String executionMode;
 
-	private Optional<Payment> reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	public PayPalPlusRestController()
 	{
-		return processPayment(payPalPlusPayment, "authorize");
-	}
-
-	private Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
-	{
-		return processPayment(payPalPlusPayment, "sale");
+		PayPalProperties payPalProperties = new PayPalProperties();
+		clientId = payPalProperties.getClientId();
+		clientSecret = payPalProperties.getClientSecret();
+		executionMode = payPalProperties.getExecutionMode();
 	}
 
 	private Optional<Payment> processPayment(PayPalPlusPayment payPalPlusPayment, String sale) throws PayPalRESTException
@@ -78,7 +77,7 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		redirectUrls.setReturnUrl("https://localhost:3000/return");
 		payment.setRedirectUrls(redirectUrls);
 
-		APIContext apiContext = new APIContext(CLIENT_ID, CLIENT_SECRET, EXECUTION_MODE);
+		APIContext apiContext = new APIContext(clientId, clientSecret, executionMode);
 		return Optional.ofNullable(payment.create(apiContext));
 	}
 
@@ -88,14 +87,20 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 	 * @return Payment
 	 * @throws PayPalRESTException
 	 */
-	public Optional<Payment> reservePayPalPlusPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	public Optional<Payment> reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
 	{
-		return reservePayment(payPalPlusPayment);
+		return processPayment(payPalPlusPayment, "authorize");
 	}
 
-	@Override public Optional<Payment> capturePayPalPlusPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	@Override public Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
 	{
-		return capturePayment(payPalPlusPayment);
+		return processPayment(payPalPlusPayment, "sale");
+	}
+
+	@Override public Optional<Payment> cancelPayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	{
+		//TODO: implement
+		return Optional.empty();
 	}
 
 	public final static void main(String[] args)
@@ -104,9 +109,9 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		try
 		{
 			PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
-			Optional<Payment> payment = controller.reservePayPalPlusPayment(payPalPlusPayment);
+			Optional<Payment> payment = controller.reservePayment(payPalPlusPayment);
 			System.out.println("Payment reservation state:" + payment.get().getState());
-			payment = controller.capturePayPalPlusPayment(payPalPlusPayment);
+			payment = controller.capturePayment(payPalPlusPayment);
 			System.out.println("Payment capturing state:" + payment.get().getState());
 
 		}
