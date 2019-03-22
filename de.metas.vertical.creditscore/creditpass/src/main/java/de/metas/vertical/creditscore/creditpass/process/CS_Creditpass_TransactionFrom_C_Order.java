@@ -23,23 +23,27 @@ package de.metas.vertical.creditscore.creditpass.process;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.process.*;
-import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.vertical.creditscore.creditpass.service.CreditPassTransactionService;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 
-public class CS_Creditpass_TransactionFrom_C_BPartner extends JavaProcess implements IProcessPrecondition
+public class CS_Creditpass_TransactionFrom_C_Order extends JavaProcess implements IProcessPrecondition
 {
 	final CreditPassTransactionService creditPassTransactionService = Adempiere.getBean(CreditPassTransactionService.class);
 
-	@Param(mandatory = true, parameterName = CreditPassConstants.PROCESS_PAYMENT_RULE_PARAM)
-	private String paymentRule;
-
 	@Override protected String doIt() throws Exception
 	{
-		BPartnerId bPartnerId = BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
+		I_C_Order order = getRecord(I_C_Order.class);
+		BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		String paymentRule = order.getPaymentRule();
+
+		//TODO check config days
 		creditPassTransactionService.getAndSaveCreditScore(paymentRule, bPartnerId, getCtx());
+		//TODO update fields
 		return MSG_OK;
 	}
 
@@ -57,13 +61,12 @@ public class CS_Creditpass_TransactionFrom_C_BPartner extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		I_C_BPartner partner = context.getSelectedModel(I_C_BPartner.class);
-		if (!partner.isCustomer())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Business partner is not a customer");
+		I_C_Order order = getRecord(I_C_Order.class);
+		if(order.getC_BPartner_ID() < 0){
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The order has no business partner");
 		}
 
-		if (creditPassTransactionService.hasConfigForPartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID())))
+		if (creditPassTransactionService.hasConfigForPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Business partner has no associated creditPass config");
 		}
