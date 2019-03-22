@@ -37,11 +37,11 @@ import lombok.Value;
 @Builder
 public class PhonecallSchemaVersionLine
 {
-	@NonNull
-	PhonecallSchemaVersionId phonecallSchemaVersionId;
-
 	@Nullable
 	PhonecallSchemaVersionLineId id;
+
+	@NonNull
+	PhonecallSchemaVersionId versionId;
 
 	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;

@@ -46,7 +46,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PhonecallSchedule phonecallSchedule = phonecallSchedueRepo.retrieveById(PhonecallScheduleId.ofRepoId(getRecord_ID()));
+		final PhonecallSchedule phonecallSchedule = phonecallSchedueRepo.getById(PhonecallScheduleId.ofRepoId(getRecord_ID()));
 
 		phonecallSchedueRepo.markAsOrdered(phonecallSchedule);
 

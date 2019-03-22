@@ -34,9 +34,9 @@ public class C_Phonecall_Schedule_MarkAsCalled extends JavaProcess
 	private final PhonecallScheduleRepository phonecallSchedueRepo = Adempiere.getBean(PhonecallScheduleRepository.class);
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final PhonecallSchedule phonecallSchedule = phonecallSchedueRepo.retrieveById(PhonecallScheduleId.ofRepoId(getRecord_ID()));
+		final PhonecallSchedule phonecallSchedule = phonecallSchedueRepo.getById(PhonecallScheduleId.ofRepoId(getRecord_ID()));
 		phonecallSchedueRepo.markAsCalled(phonecallSchedule);
 
 		return MSG_OK;

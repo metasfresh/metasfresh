@@ -16,7 +16,10 @@ import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaId;
+import de.metas.phonecall.PhonecallSchemaVersion;
+import de.metas.phonecall.PhonecallSchemaVersionId;
 import de.metas.phonecall.PhonecallSchemaVersionPOCopyRecordSupport;
 import de.metas.phonecall.service.PhonecallSchemaRepository;
 import de.metas.util.Services;
@@ -66,20 +69,16 @@ public class C_Phonecall_Schema_Version
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		PhonecallSchemaId phonecallSchemaId = PhonecallSchemaId.ofRepoId(
-				phonecallSchemaVersion.getC_Phonecall_Schema_ID());
-
+		final PhonecallSchemaId schemaId = PhonecallSchemaId.ofRepoId(phonecallSchemaVersion.getC_Phonecall_Schema_ID());
+		final PhonecallSchemaVersionId versionId = PhonecallSchemaVersionId.ofRepoIdOrNull(schemaId, phonecallSchemaVersion.getC_Phonecall_Schema_Version_ID());
 		final LocalDate validFrom = TimeUtil.asLocalDate(phonecallSchemaVersion.getValidFrom());
 
-		final boolean existingVersionWithSameValidFrom = phonecallSchemaRepo.retrievePhonecallSchemaVersions(phonecallSchemaId)
-				.stream()
-				.filter(version -> version.getValidFrom().equals(validFrom))
-				.findAny()
-				.isPresent();
+		final PhonecallSchema phonecallSchema = phonecallSchemaRepo.getById(schemaId);
+		final PhonecallSchemaVersion existingVersion = phonecallSchema.getVersionByValidFrom(validFrom).orElse(null);
 
-		if (existingVersionWithSameValidFrom)
+		if (existingVersion != null
+				&& (versionId == null || !versionId.equals(existingVersion.getId())))
 		{
-
 			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom,
 					phonecallSchemaVersion.getName(),
 					validFrom);

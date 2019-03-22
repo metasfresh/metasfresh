@@ -30,32 +30,21 @@ import lombok.Value;
 @Value
 public class PhonecallSchemaVersionLineId implements RepoIdAware
 {
+	@NonNull
+	PhonecallSchemaVersionId versionId;
+
 	int repoId;
 
-	@NonNull
-	PhonecallSchemaId phonecallSchemaId;
-
-	@NonNull
-	PhonecallSchemaVersionId phonecallSchemaVersionId;
-
-	public static PhonecallSchemaVersionLineId ofRepoId(
-			final int phonecallSchemaId,
-			final int phonecallSchemaVersionId,
-			final int phonecallSchemaVersionLineId)
+	public static PhonecallSchemaVersionLineId ofRepoId(@NonNull final PhonecallSchemaVersionId versionId, final int lineId)
 	{
-		return new PhonecallSchemaVersionLineId(
-				PhonecallSchemaId.ofRepoId(phonecallSchemaId),
-				PhonecallSchemaVersionId.ofRepoId(phonecallSchemaId, phonecallSchemaVersionId),
-				phonecallSchemaVersionLineId);
+		return new PhonecallSchemaVersionLineId(versionId, lineId);
 	}
 
 	private PhonecallSchemaVersionLineId(
-			@NonNull final PhonecallSchemaId phonecallSchemaId,
-			@NonNull PhonecallSchemaVersionId phonecallSchemaVersionId,
-			int phonecallSchemaVersionLineId)
+			@NonNull final PhonecallSchemaVersionId versionId,
+			final int lineId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(phonecallSchemaVersionLineId, "phonecallSchemaVersionLineId");
-		this.phonecallSchemaId = phonecallSchemaId;
-		this.phonecallSchemaVersionId = phonecallSchemaVersionId;
+		this.versionId = versionId;
+		this.repoId = Check.assumeGreaterThanZero(lineId, "lineId");
 	}
 }

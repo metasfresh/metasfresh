@@ -66,12 +66,12 @@ public class PhonecallSchedule
 
 	public PhonecallSchemaId getPhonecallSchemaId()
 	{
-		return getSchemaVersionLineId().getPhonecallSchemaId();
+		return getSchemaVersionLineId().getVersionId().getPhonecallSchemaId();
 	}
 
 	public PhonecallSchemaVersionId getPhonecallSchemaVersionId()
 	{
-		return getSchemaVersionLineId().getPhonecallSchemaVersionId();
+		return getSchemaVersionLineId().getVersionId();
 	}
 
 }

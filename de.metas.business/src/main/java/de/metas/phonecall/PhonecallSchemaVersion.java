@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.time.generator.Frequency;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,6 +48,9 @@ public class PhonecallSchemaVersion
 
 	@NonNull
 	LocalDate validFrom;
+
+	@NonNull
+	Frequency frequency;
 
 	ImmutableList<PhonecallSchemaVersionLine> lines;
 }

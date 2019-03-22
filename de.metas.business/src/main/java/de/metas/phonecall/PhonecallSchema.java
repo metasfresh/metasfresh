@@ -3,6 +3,7 @@ package de.metas.phonecall;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -74,5 +75,13 @@ public class PhonecallSchema
 		}
 
 		return phonecallVersionsForDateRange;
+	}
+
+	public Optional<PhonecallSchemaVersion> getVersionByValidFrom(@NonNull final LocalDate validFrom)
+	{
+		return getVersions()
+				.stream()
+				.filter(version -> version.getValidFrom().equals(validFrom))
+				.findFirst();
 	}
 }

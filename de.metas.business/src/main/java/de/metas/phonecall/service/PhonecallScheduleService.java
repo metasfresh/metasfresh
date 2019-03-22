@@ -67,31 +67,31 @@ public class PhonecallScheduleService
 		this.schemaRepo = schemaRepo;
 	}
 
-	public void generatePhonecallSchedulesForSchema(final PhonecallSchema phonecallSchema, final LocalDate startDate, final LocalDate endDate)
+	public void generatePhonecallSchedulesForSchema(final PhonecallSchema schema, final LocalDate startDate, final LocalDate endDate)
 	{
-		final List<PhonecallSchemaVersionRange> phonecallSchemaVersionRanges = retrievePhonecallSchemaVersionRanges(phonecallSchema, startDate, endDate);
+		final List<PhonecallSchemaVersionRange> schemaVersionRanges = retrievePhonecallSchemaVersionRanges(schema, startDate, endDate);
 
-		for (final PhonecallSchemaVersionRange phonecallSchemaVersionRange : phonecallSchemaVersionRanges)
+		for (final PhonecallSchemaVersionRange schemaVersionRange : schemaVersionRanges)
 		{
 
-			schemaRepo.deletePhonecallDaysInRange(phonecallSchemaVersionRange);
+			schemaRepo.deletePhonecallDaysInRange(schemaVersionRange);
 
-			final PhonecallSchemaVersion phonecallSchemaVersion = phonecallSchemaVersionRange.getPhonecallSchemaVersion();
-			final List<PhonecallSchemaVersionLine> phonecallSchemaVersionLines = phonecallSchemaVersion.getLines();
-			if (phonecallSchemaVersionLines.isEmpty())
+			final PhonecallSchemaVersion schemaVersion = schemaVersionRange.getPhonecallSchemaVersion();
+			final List<PhonecallSchemaVersionLine> schemaVersionLines = schemaVersion.getLines();
+			if (schemaVersionLines.isEmpty())
 			{
 				continue;
 			}
-			for (final PhonecallSchemaVersionLine phonecallSchemaVersionLine : phonecallSchemaVersionLines)
+			for (final PhonecallSchemaVersionLine schemaVersionLine : schemaVersionLines)
 			{
-				createPhonecallSchedulesForLine(phonecallSchemaVersionRange, phonecallSchemaVersionLine);
+				createPhonecallSchedulesForLine(schemaVersionRange, schemaVersionLine);
 			}
 		}
 	}
 
-	public void createPhonecallSchedulesForLine(final PhonecallSchemaVersionRange phonecallSchemaVersionRange, final PhonecallSchemaVersionLine phonecallSchemaVersionLine)
+	public void createPhonecallSchedulesForLine(final PhonecallSchemaVersionRange schemaVersionRange, final PhonecallSchemaVersionLine schemaVersionLine)
 	{
-		final Set<LocalDate> phonecallDates = phonecallSchemaVersionRange.generatePhonecallDates();
+		final Set<LocalDate> phonecallDates = schemaVersionRange.generatePhonecallDates();
 		if (phonecallDates.isEmpty())
 		{
 
@@ -100,42 +100,42 @@ public class PhonecallScheduleService
 
 		for (final LocalDate currentPhonecallDate : phonecallDates)
 		{
-			if (!phonecallScheduleAlreadyExists(currentPhonecallDate, phonecallSchemaVersionLine))
+			if (!phonecallScheduleAlreadyExists(currentPhonecallDate, schemaVersionLine))
 			{
-				createPhonecallSchedule(phonecallSchemaVersionLine, currentPhonecallDate);
+				createPhonecallSchedule(schemaVersionLine, currentPhonecallDate);
 			}
 		}
 
 	}
 
-	private boolean phonecallScheduleAlreadyExists(final LocalDate currentPhonecallDate, final PhonecallSchemaVersionLine phonecallSchemaVersionLine)
+	private boolean phonecallScheduleAlreadyExists(final LocalDate currentPhonecallDate, final PhonecallSchemaVersionLine schemaVersionLine)
 	{
-		final BPartnerLocationId bpartnerAndLocationId = phonecallSchemaVersionLine.getBpartnerAndLocationId();
-		final UserId contactId = phonecallSchemaVersionLine.getContactId();
+		final BPartnerLocationId bpartnerAndLocationId = schemaVersionLine.getBpartnerAndLocationId();
+		final UserId contactId = schemaVersionLine.getContactId();
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Phonecall_Schedule.class)
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BPartner_ID, bpartnerAndLocationId.getBpartnerId().getRepoId())
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BPartner_Location_ID, bpartnerAndLocationId.getRepoId())
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_C_BP_Contact_ID, contactId.getRepoId())
-				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMin, TimeUtil.asTimestamp(phonecallSchemaVersionLine.getStartTime()))
-				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMax, TimeUtil.asTimestamp(phonecallSchemaVersionLine.getEndTime()))
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMin, TimeUtil.asTimestamp(schemaVersionLine.getStartTime()))
+				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallTimeMax, TimeUtil.asTimestamp(schemaVersionLine.getEndTime()))
 				.addEqualsFilter(I_C_Phonecall_Schedule.COLUMNNAME_PhonecallDate, TimeUtil.asTimestamp(currentPhonecallDate))
 				.create()
 				.match();
 	}
 
-	private void createPhonecallSchedule(PhonecallSchemaVersionLine phonecallSchemaVersionLine, LocalDate currentPhonecallDate)
+	private void createPhonecallSchedule(final PhonecallSchemaVersionLine schemaVersionLine, final LocalDate currentPhonecallDate)
 	{
-		final PhonecallSchedule phonecallSchedule = PhonecallSchedule.builder()
-				.bpartnerAndLocationId(phonecallSchemaVersionLine.getBpartnerAndLocationId())
-				.contactId(phonecallSchemaVersionLine.getContactId())
-				.schemaVersionLineId(phonecallSchemaVersionLine.getId())
+		final PhonecallSchedule schedule = PhonecallSchedule.builder()
+				.bpartnerAndLocationId(schemaVersionLine.getBpartnerAndLocationId())
+				.contactId(schemaVersionLine.getContactId())
+				.schemaVersionLineId(schemaVersionLine.getId())
 				.date(currentPhonecallDate)
-				.startTime(phonecallSchemaVersionLine.getStartTime())
-				.endTime(phonecallSchemaVersionLine.getEndTime())
+				.startTime(schemaVersionLine.getStartTime())
+				.endTime(schemaVersionLine.getEndTime())
 				.build();
 
-		schedulesRepo.save(phonecallSchedule);
+		schedulesRepo.save(schedule);
 	}
 
 	/**
@@ -143,43 +143,43 @@ public class PhonecallScheduleService
 	 * I made this method similar with de.metas.tourplanning.api.impl.TourDAO.retrieveTourVersionRanges(I_M_Tour, LocalDate, LocalDate) and I kept the comments
 	 * Maybe in the future these shall be somehow brought together in a single structure so we don't have similar code in 2 places.
 	 *
-	 * @param phonecallSchema
+	 * @param schema
 	 * @param dateFrom
 	 * @param dateTo
 	 * @return
 	 */
 	public List<PhonecallSchemaVersionRange> retrievePhonecallSchemaVersionRanges(
-			@NonNull final PhonecallSchema phonecallSchema,
+			@NonNull final PhonecallSchema schema,
 			@NonNull final LocalDate dateFrom,
 			@NonNull final LocalDate dateTo)
 	{
 		Check.assume(dateFrom.compareTo(dateTo) <= 0, "startDate({}) <= endDate({})", dateFrom, dateTo);
 
-		final List<PhonecallSchemaVersion> phonecallSchemaVersions = phonecallSchema.getChronologicallyOrderedPhonecallSchemaVersions(dateTo);
-		if (phonecallSchemaVersions.isEmpty())
+		final List<PhonecallSchemaVersion> schemaVersions = schema.getChronologicallyOrderedPhonecallSchemaVersions(dateTo);
+		if (schemaVersions.isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
 		//
 		// Continue iterating the phonecall schema versions and create phonecall schema version ranges
-		List<PhonecallSchemaVersionRange> phonecallSchemaVersionRanges = new ArrayList<>();
-		boolean previousPhonecallVersionValid = false;
-		PhonecallSchemaVersion previousPhonecallSchemaVersion = null;
-		LocalDate previousPhonecallSchemaVersionValidFrom = null;
+		List<PhonecallSchemaVersionRange> schemaVersionRanges = new ArrayList<>();
+		boolean previousVersionValid = false;
+		PhonecallSchemaVersion previousSchemaVersion = null;
+		LocalDate previousSchemaVersionValidFrom = null;
 
-		final Iterator<PhonecallSchemaVersion> phonecallSchemaVersionsIterator = phonecallSchemaVersions.iterator();
-		while (phonecallSchemaVersionsIterator.hasNext())
+		final Iterator<PhonecallSchemaVersion> schemaVersionsIterator = schemaVersions.iterator();
+		while (schemaVersionsIterator.hasNext())
 		{
-			final PhonecallSchemaVersion phonecallSchemaVersion = phonecallSchemaVersionsIterator.next();
+			final PhonecallSchemaVersion schemaVersion = schemaVersionsIterator.next();
 
-			final LocalDate phonecallSchemaVersionValidFrom = phonecallSchemaVersion.getValidFrom();
+			final LocalDate schemaVersionValidFrom = schemaVersion.getValidFrom();
 
-			Check.assumeNotNull(phonecallSchemaVersionValidFrom, "phonecallSchemaVersionValidFrom not null");
+			Check.assumeNotNull(schemaVersionValidFrom, "phonecallSchemaVersionValidFrom not null");
 
 			//
 			// Guard: phonecall schema version's ValidFrom shall be before "dateTo"
-			if (phonecallSchemaVersionValidFrom.compareTo(dateTo) > 0)
+			if (schemaVersionValidFrom.compareTo(dateTo) > 0)
 			{
 				// shall not happen because we retrieved until dateTo, but just to make sure
 				break;
@@ -187,46 +187,46 @@ public class PhonecallScheduleService
 
 			//
 			// Case: We are still searching for first phonecall schema version to consider
-			if (!previousPhonecallVersionValid)
+			if (!previousVersionValid)
 			{
 				// Case: our current phonecall schema version is before given dateFrom
-				if (phonecallSchemaVersionValidFrom.compareTo(dateFrom) < 0)
+				if (schemaVersionValidFrom.compareTo(dateFrom) < 0)
 				{
-					if (!phonecallSchemaVersionsIterator.hasNext())
+					if (!schemaVersionsIterator.hasNext())
 					{
 						// there is no other next, so we need to consider this one
-						previousPhonecallSchemaVersion = phonecallSchemaVersion;
-						previousPhonecallSchemaVersionValidFrom = dateFrom;
-						previousPhonecallVersionValid = true;
+						previousSchemaVersion = schemaVersion;
+						previousSchemaVersionValidFrom = dateFrom;
+						previousVersionValid = true;
 						continue;
 					}
 				}
 				// Case: our current phonecall schema version starts exactly on our given dateFrom
-				else if (phonecallSchemaVersionValidFrom.compareTo(dateFrom) == 0)
+				else if (schemaVersionValidFrom.compareTo(dateFrom) == 0)
 				{
-					previousPhonecallSchemaVersion = phonecallSchemaVersion;
-					previousPhonecallSchemaVersionValidFrom = dateFrom;
-					previousPhonecallVersionValid = true;
+					previousSchemaVersion = schemaVersion;
+					previousSchemaVersionValidFrom = dateFrom;
+					previousVersionValid = true;
 					continue;
 				}
 				// Case: our current phonecall schema version start after our given dateFrom
 				else
 				{
 					// Check if we have a previous phonecall schema version, because if we have, that shall be the first phonecall schema version to consider
-					if (previousPhonecallSchemaVersion != null)
+					if (previousSchemaVersion != null)
 					{
 						// NOTE: we consider dateFrom as first date because phonecall schema version's ValidFrom is before dateFrom
-						previousPhonecallSchemaVersionValidFrom = dateFrom;
-						previousPhonecallVersionValid = true;
+						previousSchemaVersionValidFrom = dateFrom;
+						previousVersionValid = true;
 						// don't continue: we got it right now
 						// continue;
 					}
 					// ... else it seems this is the first phonecall schema version which actually starts after our dateFrom
 					else
 					{
-						previousPhonecallSchemaVersion = phonecallSchemaVersion;
-						previousPhonecallSchemaVersionValidFrom = phonecallSchemaVersionValidFrom;
-						previousPhonecallVersionValid = true;
+						previousSchemaVersion = schemaVersion;
+						previousSchemaVersionValidFrom = schemaVersionValidFrom;
+						previousVersionValid = true;
 						continue;
 					}
 				}
@@ -234,52 +234,62 @@ public class PhonecallScheduleService
 
 			//
 			// Case: we do have a previous valid phonecall schema version to consider so we can generate phonecall schema ranges
-			if (previousPhonecallVersionValid)
+			if (previousVersionValid)
 			{
-				final LocalDate previousPhonecallSchemaVersionValidTo = phonecallSchemaVersionValidFrom.minusDays(1);
-				final PhonecallSchemaVersionRange previousphonecallSchemaVersionRange = createPhonecallSchemaVersionRange(previousPhonecallSchemaVersion, previousPhonecallSchemaVersionValidFrom, previousPhonecallSchemaVersionValidTo);
-				phonecallSchemaVersionRanges.add(previousphonecallSchemaVersionRange);
+				final LocalDate previousSchemaVersionValidTo = schemaVersionValidFrom.minusDays(1);
+				final PhonecallSchemaVersionRange previousSchemaVersionRange = createPhonecallSchemaVersionRange(
+						previousSchemaVersion,
+						previousSchemaVersionValidFrom,
+						previousSchemaVersionValidTo);
+
+				schemaVersionRanges.add(previousSchemaVersionRange);
 			}
 
 			//
 			// Set current as previous and move on
-			previousPhonecallSchemaVersion = phonecallSchemaVersion;
-			previousPhonecallSchemaVersionValidFrom = phonecallSchemaVersionValidFrom;
+			previousSchemaVersion = schemaVersion;
+			previousSchemaVersionValidFrom = schemaVersionValidFrom;
 		}
 
 		//
 		// Create phonecall schema Version Range for last version
-		if (previousPhonecallVersionValid)
+		if (previousVersionValid)
 		{
-			final PhonecallSchemaVersionRange lastPhonecallSchemaVersionRange = createPhonecallSchemaVersionRange(previousPhonecallSchemaVersion, previousPhonecallSchemaVersionValidFrom, dateTo);
-			phonecallSchemaVersionRanges.add(lastPhonecallSchemaVersionRange);
+			final PhonecallSchemaVersionRange lastSchemaVersionRange = createPhonecallSchemaVersionRange(
+					previousSchemaVersion,
+					previousSchemaVersionValidFrom,
+					dateTo);
+			schemaVersionRanges.add(lastSchemaVersionRange);
 		}
 
-		return phonecallSchemaVersionRanges;
+		return schemaVersionRanges;
 	}
 
-	private PhonecallSchemaVersionRange createPhonecallSchemaVersionRange(PhonecallSchemaVersion phonecallSchemaVersion, LocalDate startDate, LocalDate endDate)
+	private PhonecallSchemaVersionRange createPhonecallSchemaVersionRange(
+			final PhonecallSchemaVersion schemaVersion,
+			final LocalDate startDate,
+			final LocalDate endDate)
 	{
 		return PhonecallSchemaVersionRange.builder()
-				.phonecallSchemaVersion(phonecallSchemaVersion)
+				.phonecallSchemaVersion(schemaVersion)
 				.startDate(startDate)
 				.endDate(endDate)
-				.dateSequenceGenerator(createDateSequenceGenerator(phonecallSchemaVersion, startDate, endDate))
+				.dateSequenceGenerator(createDateSequenceGenerator(schemaVersion, startDate, endDate))
 				.build();
 	}
 
 	public DateSequenceGenerator createDateSequenceGenerator(
-			@NonNull final PhonecallSchemaVersion phonecallSchemaVersion,
+			@NonNull final PhonecallSchemaVersion schemaVersion,
 			@NonNull final LocalDate validFrom,
 			@NonNull final LocalDate validTo)
 	{
-		final Frequency frequency = schemaRepo.extractFrequency(phonecallSchemaVersion);
+		final Frequency frequency = schemaVersion.getFrequency();
 		if (frequency == null)
 		{
 			return null;
 		}
 
-		final OnNonBussinessDay onNonBusinessDay = schemaRepo.extractOnNonBussinessDayOrNull(phonecallSchemaVersion);
+		final OnNonBussinessDay onNonBusinessDay = schemaRepo.extractOnNonBussinessDayOrNull(schemaVersion);
 
 		return DateSequenceGenerator.builder()
 				.dateFrom(validFrom)

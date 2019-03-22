@@ -1,7 +1,6 @@
 package de.metas.phonecall.service;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
+import de.metas.phonecall.PhonecallSchemaVersionId;
 import de.metas.phonecall.PhonecallSchemaVersionLineId;
 import lombok.NonNull;
 
@@ -43,79 +43,78 @@ public class PhonecallScheduleRepository
 {
 	public void save(@NonNull final PhonecallSchedule schedule)
 	{
-		final I_C_Phonecall_Schedule phonecallScheduleRecord;
+		final I_C_Phonecall_Schedule scheduleRecord;
 
 		if (schedule.getId() == null)
 		{
-			phonecallScheduleRecord = newInstance(I_C_Phonecall_Schedule.class);
+			scheduleRecord = newInstance(I_C_Phonecall_Schedule.class);
 		}
 		else
 		{
-			phonecallScheduleRecord = load(schedule.getId().getRepoId(), I_C_Phonecall_Schedule.class);
+			scheduleRecord = load(schedule.getId().getRepoId(), I_C_Phonecall_Schedule.class);
 		}
 
-		phonecallScheduleRecord.setC_BPartner_ID(schedule.getBpartnerAndLocationId().getBpartnerId().getRepoId());
-		phonecallScheduleRecord.setC_BPartner_Location_ID(schedule.getBpartnerAndLocationId().getRepoId());
-		phonecallScheduleRecord.setC_BP_Contact_ID(schedule.getContactId().getRepoId());
+		scheduleRecord.setC_BPartner_ID(schedule.getBpartnerAndLocationId().getBpartnerId().getRepoId());
+		scheduleRecord.setC_BPartner_Location_ID(schedule.getBpartnerAndLocationId().getRepoId());
+		scheduleRecord.setC_BP_Contact_ID(schedule.getContactId().getRepoId());
 
-		phonecallScheduleRecord.setC_Phonecall_Schema_ID(schedule.getPhonecallSchemaId().getRepoId());
-		phonecallScheduleRecord.setC_Phonecall_Schema_Version_ID(schedule.getPhonecallSchemaVersionId().getRepoId());
-		phonecallScheduleRecord.setC_Phonecall_Schema_Version_Line_ID(schedule.getSchemaVersionLineId().getRepoId());
+		scheduleRecord.setC_Phonecall_Schema_ID(schedule.getPhonecallSchemaId().getRepoId());
+		scheduleRecord.setC_Phonecall_Schema_Version_ID(schedule.getPhonecallSchemaVersionId().getRepoId());
+		scheduleRecord.setC_Phonecall_Schema_Version_Line_ID(schedule.getSchemaVersionLineId().getRepoId());
 
-		phonecallScheduleRecord.setPhonecallDate(TimeUtil.asTimestamp(schedule.getDate()));
-		phonecallScheduleRecord.setPhonecallTimeMin(TimeUtil.asTimestamp(schedule.getStartTime()));
-		phonecallScheduleRecord.setPhonecallTimeMax(TimeUtil.asTimestamp(schedule.getEndTime()));
+		scheduleRecord.setPhonecallDate(TimeUtil.asTimestamp(schedule.getDate()));
+		scheduleRecord.setPhonecallTimeMin(TimeUtil.asTimestamp(schedule.getStartTime()));
+		scheduleRecord.setPhonecallTimeMax(TimeUtil.asTimestamp(schedule.getEndTime()));
 
-		phonecallScheduleRecord.setIsCalled(schedule.isCalled());
-		phonecallScheduleRecord.setIsOrdered(schedule.isOrdered());
+		scheduleRecord.setIsCalled(schedule.isCalled());
+		scheduleRecord.setIsOrdered(schedule.isOrdered());
 
-		final UserId salesRepId = schedule.getSalesRepId();
-		if (salesRepId != null)
-		{
-			phonecallScheduleRecord.setSalesRep_ID(salesRepId.getRepoId());
-		}
+		scheduleRecord.setSalesRep_ID(UserId.toRepoId(schedule.getSalesRepId()));
 
-		saveRecord(phonecallScheduleRecord);
+		saveRecord(scheduleRecord);
 	}
 
-	public PhonecallSchedule retrieveById(@NonNull final PhonecallScheduleId phonecallScheduleId)
+	public PhonecallSchedule getById(@NonNull final PhonecallScheduleId scheduleId)
 	{
-		final I_C_Phonecall_Schedule phonecallScheduleRecord = loadOutOfTrx(phonecallScheduleId, I_C_Phonecall_Schedule.class);
+		final I_C_Phonecall_Schedule scheduleRecord = load(scheduleId, I_C_Phonecall_Schedule.class);
+
+		final PhonecallSchemaVersionId schemaVersionId = PhonecallSchemaVersionId.ofRepoId(
+				scheduleRecord.getC_Phonecall_Schema_ID(),
+				scheduleRecord.getC_Phonecall_Schema_Version_ID());
 
 		return PhonecallSchedule.builder()
-				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(phonecallScheduleRecord.getC_BPartner_ID(), phonecallScheduleRecord.getC_BPartner_Location_ID()))
-				.contactId(UserId.ofRepoId(phonecallScheduleRecord.getC_BP_Contact_ID()))
-				.date(TimeUtil.asLocalDate(phonecallScheduleRecord.getPhonecallDate()))
-				.startTime(TimeUtil.asZonedDateTime(phonecallScheduleRecord.getPhonecallTimeMin()))
-				.endTime(TimeUtil.asZonedDateTime(phonecallScheduleRecord.getPhonecallTimeMax()))
-				.id(phonecallScheduleId)
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(scheduleRecord.getC_BPartner_ID(), scheduleRecord.getC_BPartner_Location_ID()))
+				.contactId(UserId.ofRepoId(scheduleRecord.getC_BP_Contact_ID()))
+				.date(TimeUtil.asLocalDate(scheduleRecord.getPhonecallDate()))
+				.startTime(TimeUtil.asZonedDateTime(scheduleRecord.getPhonecallTimeMin()))
+				.endTime(TimeUtil.asZonedDateTime(scheduleRecord.getPhonecallTimeMax()))
+				.id(scheduleId)
 				.schemaVersionLineId(PhonecallSchemaVersionLineId.ofRepoId(
-						phonecallScheduleRecord.getC_Phonecall_Schema_ID(),
-						phonecallScheduleRecord.getC_Phonecall_Schema_Version_ID(),
-						phonecallScheduleRecord.getC_Phonecall_Schema_Version_Line_ID()))
-				.isOrdered(phonecallScheduleRecord.isOrdered())
-				.isCalled(phonecallScheduleRecord.isCalled())
-				.salesRepId(UserId.ofRepoId(phonecallScheduleRecord.getSalesRep_ID()))
+						schemaVersionId,
+						scheduleRecord.getC_Phonecall_Schema_Version_Line_ID()))
+				.isOrdered(scheduleRecord.isOrdered())
+				.isCalled(scheduleRecord.isCalled())
+				.salesRepId(UserId.ofRepoId(scheduleRecord.getSalesRep_ID()))
 				.build();
 	}
 
-	public void markAsOrdered(@NonNull final PhonecallSchedule phonecallSchedule)
+	public void markAsOrdered(@NonNull final PhonecallSchedule schedule)
 	{
-		final I_C_Phonecall_Schedule phonecallScheduleRecord = loadOutOfTrx(phonecallSchedule.getId(), I_C_Phonecall_Schedule.class);
+		final I_C_Phonecall_Schedule scheduleRecord = load(schedule.getId(), I_C_Phonecall_Schedule.class);
 
-		phonecallScheduleRecord.setIsCalled(true);
-		phonecallScheduleRecord.setIsOrdered(true);
+		scheduleRecord.setIsCalled(true);
+		scheduleRecord.setIsOrdered(true);
 
-		saveRecord(phonecallScheduleRecord);
+		saveRecord(scheduleRecord);
 	}
 
-	public void markAsCalled(@NonNull final PhonecallSchedule phonecallSchedule)
+	public void markAsCalled(@NonNull final PhonecallSchedule schedule)
 	{
-		final I_C_Phonecall_Schedule phonecallScheduleRecord = loadOutOfTrx(phonecallSchedule.getId(), I_C_Phonecall_Schedule.class);
+		final I_C_Phonecall_Schedule scheduleRecord = load(schedule.getId(), I_C_Phonecall_Schedule.class);
 
-		phonecallScheduleRecord.setIsCalled(true);
+		scheduleRecord.setIsCalled(true);
 
-		saveRecord(phonecallScheduleRecord);
+		saveRecord(scheduleRecord);
 	}
 
 }
