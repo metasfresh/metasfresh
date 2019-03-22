@@ -64,6 +64,11 @@ public interface IView
 		return ITranslatableString.empty();
 	}
 
+	default ViewHeaderProperties getHeaderProperties()
+	{
+		return ViewHeaderProperties.EMPTY;
+	}
+
 	Set<DocumentPath> getReferencingDocumentPaths();
 
 	/**

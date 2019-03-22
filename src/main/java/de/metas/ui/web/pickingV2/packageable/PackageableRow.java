@@ -62,9 +62,11 @@ public final class PackageableRow implements IViewRow
 	}
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, seqNo = 10)
+	@Getter
 	private final String orderDocumentNo;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, seqNo = 20)
+	@Getter
 	private final LookupValue customer;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID, seqNo = 30)
@@ -86,6 +88,7 @@ public final class PackageableRow implements IViewRow
 	private final ITranslatableString lineNetAmt;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, seqNo = 80)
+	@Getter
 	private final LocalDateTime preparationDate;
 
 	//

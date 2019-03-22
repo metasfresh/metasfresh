@@ -18,6 +18,8 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewHeaderProperties;
+import de.metas.ui.web.view.ViewHeaderProperty;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -132,6 +134,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		final ProductsToPickView view = ProductsToPickView.builder()
 				.viewId(viewId)
 				.rowsData(rowsData)
+				.headerProperties(extractViewHeaderProperties(packageableRow))
 				//
 				// Picker processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickSelected.class))
@@ -147,6 +150,26 @@ public class ProductsToPickViewFactory implements IViewFactory
 		viewsRepository.getViewsStorageFor(viewId).put(view);
 
 		return view;
+	}
+
+	private ViewHeaderProperties extractViewHeaderProperties(@NonNull final PackageableRow packageableRow)
+	{
+		final IMsgBL msgs = Services.get(IMsgBL.class);
+
+		return ViewHeaderProperties.builder()
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgs.translatable("OrderDocumentNo"))
+						.value(packageableRow.getOrderDocumentNo())
+						.build())
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgs.translatable("C_BPartner_ID"))
+						.value(packageableRow.getCustomer().getDisplayNameTrl())
+						.build())
+				.entry(ViewHeaderProperty.builder()
+						.caption(msgs.translatable("PreparationDate"))
+						.value(packageableRow.getPreparationDate())
+						.build())
+				.build();
 	}
 
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)

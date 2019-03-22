@@ -3,8 +3,6 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -24,6 +22,8 @@ import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.NonNull;
 
