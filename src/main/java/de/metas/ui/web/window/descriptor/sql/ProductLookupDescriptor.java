@@ -317,7 +317,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
-				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
