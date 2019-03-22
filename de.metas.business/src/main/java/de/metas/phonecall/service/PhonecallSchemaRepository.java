@@ -66,7 +66,9 @@ import lombok.NonNull;
 @Repository
 public class PhonecallSchemaRepository
 {
+
 	private final CCache<PhonecallSchemaId, PhonecallSchema> schemas = CCache.<PhonecallSchemaId, PhonecallSchema> builder()
+			.additionalTableNameToResetFor(I_C_Phonecall_Schema_Version.Table_Name)
 			.tableName(I_C_Phonecall_Schema.Table_Name)
 			.build();
 

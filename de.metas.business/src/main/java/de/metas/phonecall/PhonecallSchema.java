@@ -5,8 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
@@ -42,7 +40,7 @@ import lombok.Value;
 @Value
 public class PhonecallSchema
 {
-	@Nullable
+	@NonNull
 	PhonecallSchemaId id;
 	@NonNull
 	String name;
