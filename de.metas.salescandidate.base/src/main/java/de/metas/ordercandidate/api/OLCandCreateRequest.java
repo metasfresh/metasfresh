@@ -8,12 +8,12 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
 
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;

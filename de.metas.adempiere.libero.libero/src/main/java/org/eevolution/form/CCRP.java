@@ -63,8 +63,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.images.Images;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.InfoBuilder;
@@ -106,6 +104,8 @@ import org.jfree.ui.TextAnchor;
 import de.metas.i18n.Msg;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**

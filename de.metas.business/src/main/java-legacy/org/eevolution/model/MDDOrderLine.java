@@ -29,6 +29,7 @@ import org.compiere.model.MUOM;
 import org.compiere.util.DB;
 
 import de.metas.product.IProductBL;
+import de.metas.uom.UOMPrecision;
 import de.metas.util.Services;
 
 /**
@@ -408,8 +409,8 @@ public class MDDOrderLine extends X_DD_OrderLine
 		final I_M_Product product = getM_Product();
 		if (QtyOrdered != null && product != null)
 		{
-			final int precision = Services.get(IProductBL.class).getUOMPrecision(product);
-			QtyOrdered = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(product);
+			QtyOrdered = precision.round(QtyOrdered);
 		}
 		super.setQtyOrdered(QtyOrdered);
 	}	// setQtyOrdered

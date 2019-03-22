@@ -33,7 +33,6 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -61,6 +60,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

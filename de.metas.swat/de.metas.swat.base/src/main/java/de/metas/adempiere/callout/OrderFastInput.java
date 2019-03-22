@@ -34,7 +34,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UomId;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
@@ -65,6 +64,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

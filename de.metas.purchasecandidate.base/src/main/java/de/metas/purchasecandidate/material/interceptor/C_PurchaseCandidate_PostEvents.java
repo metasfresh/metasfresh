@@ -4,7 +4,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
@@ -24,6 +23,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
