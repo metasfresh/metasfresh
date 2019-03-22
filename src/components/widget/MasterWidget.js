@@ -255,6 +255,7 @@ class MasterWidget extends Component {
 }
 
 MasterWidget.propTypes = {
+  dataEntry: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
   openModal: PropTypes.func.isRequired,
 };

@@ -12,7 +12,7 @@
         white-space: nowrap;
 
         &.active {
-            font-weight: 500;
+            font-weight: 600;
         }
     }
 
@@ -24,6 +24,9 @@
 
     &.nested-tabs {
         background-color: white;
+        border: 1px solid $brand-border-color;
+        border-left: none;
+        border-top: none;
 
         .nav-item {
             padding: 0;
@@ -33,9 +36,13 @@
             border: none;
             background-color: white;
 
+            &:first-of-type {
+                border-left: 1px solid $brand-border-color;
+            }
+
             &.active {
-                border: 1px solid #dee6ec;
-                border-color: #e9ecef #e9ecef #dee2e6;
+                border: 1px solid $brand-border-color;
+                border-color: #e9ecef #e9ecef $brand-border-color;
                 border-bottom: none;
                 border-top: 1px solid transparent;
                 border-radius: 0;
@@ -58,29 +65,30 @@
         border-radius: 2px;
 
         .btn {
-            padding: .25rem .25rem;
-            line-height: 1rem;
-            border-radius: 2px;
-            background: white;
+            border: none;
+            background: inherit;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            box-shadow: none;
         }
 
         .icon {
             display: block;
-            padding-right: 2px;
 
             &:before {
                 display: block;
             }
 
             &.meta-icon-flip-horizontally {
-                transform-origin: 6px center;
+                transform-origin: 10px center;
             }
         }
     }
 
     .collapsible-section {
         transition: height, padding .25s ease-in-out;
-        margin: 0;
+        /*margin: 0;*/
         margin-bottom: 20px;
 
         &.collapsed {
@@ -100,45 +108,50 @@
             transition: visibility .25s ease-in-out;
         }
     }
-
-    .panel {
-        overflow: visible;
-    }
 }
 
 .tab-sections {
     flex-grow: 1;
     flex-direction: column;
     display: flex;
-    overflow: none;
+    overflow: visible;
     position: relative;
+    padding-top: 2.5rem;
 
     .btn-fullscreen {
         position: absolute;
         top: 0px;
-        right: 20px;
+        right: 0px;
         background: white;
     }
 
     .section {
-        background: $brand-bright-color;
-        border: 1px solid $brand-border-color;
+        background: white;
+        border: none;
     }
 
     .separator {
         background-color: $brand-color-secondary;
-        padding-bottom: 5px;
-        padding-top: 5px;
+        border: 1px solid $brand-border-color;
+        border-radius: 3px 3px 0 0;
         margin-top: 0;
+        padding: .50rem .7rem;
+        height: 42px;
 
         .separator-title {
             color: white;
+            line-height: 22px;
+            vertical-align: middle;
+            position: relative;
         }
     }
 
     .panel {
         padding-bottom: 0 !important;
-        background: transparent;
+        overflow: visible;
+        background: $brand-bright-color;
+        border-top: none;
+        padding: 8px 0;
     }
 
     .table {
@@ -158,17 +171,30 @@
             position: relative;
             height: auto;
 
+            .input-table {
+                .input-field {
+                    background: transparent;
+                }
+            }
+
             &.field-LongText {
                 .col-sm-9 {
                     max-width: 75%;
                 }
 
-                .input-block {
-                    padding: 0;
+                .input-body-container {
+                    height: 6.8rem;
                 }
 
-                textarea {
+                .input-block {
+                    padding: 0;
+                    height: 100%;
+                }
+
+                .input-field {
                     padding: 5px;
+                    background: white;
+                    height: 100%;
                 }
             }
 
@@ -202,12 +228,6 @@
                     position: absolute;
                     top: 15px;
                     left: 10px;
-                }
-            }
-
-            .input-body-container {
-                textarea {
-                    height: 6.8rem;
                 }
             }
         }
