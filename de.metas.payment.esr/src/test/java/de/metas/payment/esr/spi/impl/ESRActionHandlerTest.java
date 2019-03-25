@@ -127,8 +127,6 @@ public class ESRActionHandlerTest extends ESRTestBase
 				"10" /* invoice grandtotal */,
 				false, /* isInvoicePaid */
 				"000000010501536417000120686", /* complete ESR reference incl check digit*/
-				///*"536417000120686",*/ /* invoice reference */
-				/*"000000010501536417000120686",*/ /* invoice reference */
 				"01-059931-0", /* ESR account number */
 				"15364170",
 				"40", /* esr transaction amount */
@@ -188,7 +186,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testWriteoffESRAction()
 	{
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /*"536417000120686",*/ "01-059931-0", "15364170", "40", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		final I_C_Invoice invoice = getC_Invoice();

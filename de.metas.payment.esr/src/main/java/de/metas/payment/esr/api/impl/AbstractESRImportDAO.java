@@ -1,5 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -25,11 +27,9 @@ package de.metas.payment.esr.api.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
@@ -38,7 +38,6 @@ import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.util.Env;
 
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -128,9 +127,11 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public I_C_ReferenceNo_Doc retrieveESRInvoiceReferenceNumberDocument(final Properties ctx, final String esrReferenceNumber)
+	public I_C_ReferenceNo_Doc retrieveESRInvoiceReferenceNumberDocument(
+			@NonNull final OrgId orgId,
+			@NonNull final String esrReferenceNumber)
 	{
-		final I_C_ReferenceNo referenceNo = fetchESRInvoiceReferenceNumber(esrReferenceNumber, OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(ctx)));
+		final I_C_ReferenceNo referenceNo = fetchESRInvoiceReferenceNumber(esrReferenceNumber, orgId);
 
 		if (referenceNo == null)
 		{
@@ -138,29 +139,17 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 			return null;
 		}
 
-		final int invoiceTableID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name);
 
-		final List<I_C_ReferenceNo_Doc> docs = Services.get(IReferenceNoDAO.class).retrieveAllDocAssignments(referenceNo);
+		final int invoiceTableID = getTableId(I_C_Invoice.class);
+
+		final List<I_C_ReferenceNo_Doc> docs = Services.get(IReferenceNoDAO.class).retrieveDocAssignments(referenceNo);
 		final List<I_C_ReferenceNo_Doc> invoiceDocs = new ArrayList<I_C_ReferenceNo_Doc>();
 		for (final I_C_ReferenceNo_Doc doc : docs)
 		{
-			final int adClientId = doc.getAD_Client_ID();
-			final int adOrgId = doc.getAD_Org_ID();
-			if (adClientId != 0 && adClientId != Env.getAD_Client_ID(ctx))
-			{
-				continue;
-			}
-
-			if (adOrgId != 0 && adOrgId != Env.getAD_Org_ID(ctx))
-			{
-				continue;
-			}
-
 			if (doc.getAD_Table_ID() != invoiceTableID)
 			{
 				continue;
 			}
-
 			invoiceDocs.add(doc);
 		}
 

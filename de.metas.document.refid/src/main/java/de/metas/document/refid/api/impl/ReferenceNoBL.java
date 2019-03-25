@@ -94,8 +94,8 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final int recordId = po.get_ID();
 		final int referenceNoTypeId = instance.getType().getC_ReferenceNo_Type_ID();
 
-		final List<I_C_ReferenceNo_Doc> assignments = dao.retrieveDocAssignments(ctx, referenceNoTypeId, tableId, recordId, trxName);
-		dao.removeDocAssignments(assignments);
+		final List<I_C_ReferenceNo_Doc> assignments = dao.retrieveAllDocAssignments(ctx, referenceNoTypeId, tableId, recordId, trxName);
+		assignments.forEach(InterfaceWrapperHelper::delete);
 	}
 
 	@Override
@@ -200,7 +200,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		}
 
 		final IReferenceNoDAO dao = Services.get(IReferenceNoDAO.class);
-		final List<I_C_ReferenceNo_Doc> fromAssignments = dao.retrieveDocAssignments(ctx,
+		final List<I_C_ReferenceNo_Doc> fromAssignments = dao.retrieveAllDocAssignments(ctx,
 				-1, // referenceNoTypeId - return all assignments
 				MTable.getTable_ID(fromTableName), // tableId
 				fromRecordId,

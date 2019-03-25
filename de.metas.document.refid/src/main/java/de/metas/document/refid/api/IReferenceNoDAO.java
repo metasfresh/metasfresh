@@ -68,18 +68,11 @@ public interface IReferenceNoDAO extends ISingletonService
 	/**
 	 * Retrieve all document assignments for given tableId/recordId
 	 *
-	 * @param ctx
 	 * @param referenceNoTypeId optional; if not specified, assignments for all types will be returned
-	 * @param tableId
-	 * @param recordId
-	 * @param trxName
-	 * @return assignments
 	 */
-	List<I_C_ReferenceNo_Doc> retrieveDocAssignments(Properties ctx, int referenceNoTypeId, int tableId, int recordId, String trxName);
+	List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(Properties ctx, int referenceNoTypeId, int tableId, int recordId, String trxName);
 
-	List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(I_C_ReferenceNo referenceNo);
-
-	void removeDocAssignments(List<I_C_ReferenceNo_Doc> docAssignments);
+	List<I_C_ReferenceNo_Doc> retrieveDocAssignments(I_C_ReferenceNo referenceNo);
 
 	/**
 	 * Retrieves all <code>C_ReferenceNo</code> records that have the given <code>type</code> and are associated with the given doc/model object via <code>C_ReferenceNo_Doc</code>. Note that one

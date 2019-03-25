@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
@@ -66,56 +65,7 @@ public class ReferenceNoDAO extends AbstractReferenceNoDAO
 	}
 
 	@Override
-	public I_C_ReferenceNo_Doc getCreateReferenceNoDoc(
-			@NonNull final I_C_ReferenceNo referenceNo,
-			@NonNull final ITableRecordReference referencedModel)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(referenceNo);
-		final String trxName = InterfaceWrapperHelper.getTrxName(referenceNo);
-
-		boolean isNewReference = false;
-		if (referenceNo.getC_ReferenceNo_ID() <= 0)
-		{
-			InterfaceWrapperHelper.save(referenceNo);
-			isNewReference = true;
-		}
-
-		I_C_ReferenceNo_Doc assignment = null;
-
-		//
-		// Search for an already existing assignment, only if the reference was not new
-		if (!isNewReference)
-		{
-			final String whereClause = I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID + "=?"
-					+ " AND " + I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID + "=?"
-					+ " AND " + I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID + "=?";
-
-			assignment = new Query(ctx, I_C_ReferenceNo_Doc.Table_Name, whereClause, trxName)
-					.setParameters(
-							referenceNo.getC_ReferenceNo_ID(),
-							referencedModel.getAD_Table_ID(),
-							referencedModel.getRecord_ID())
-					.firstOnly(I_C_ReferenceNo_Doc.class);
-		}
-
-		//
-		// Creating new referenceNo assignment
-		if (assignment == null)
-		{
-			assignment = InterfaceWrapperHelper.create(ctx, I_C_ReferenceNo_Doc.class, trxName);
-			assignment.setC_ReferenceNo(referenceNo);
-			assignment.setAD_Table_ID(referencedModel.getAD_Table_ID());
-			assignment.setRecord_ID(referencedModel.getRecord_ID());
-		}
-
-		assignment.setIsActive(true);
-		InterfaceWrapperHelper.save(assignment);
-
-		return assignment;
-	}
-
-	@Override
-	public List<I_C_ReferenceNo_Doc> retrieveDocAssignments(final Properties ctx, final int referenceNoTypeId, final int tableId, final int recordId, final String trxName)
+	public List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(final Properties ctx, final int referenceNoTypeId, final int tableId, final int recordId, final String trxName)
 	{
 		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
@@ -179,9 +129,8 @@ public class ReferenceNoDAO extends AbstractReferenceNoDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(referenceNo);
 		final String trxName = InterfaceWrapperHelper.getTrxName(referenceNo);
 
-		final String whereClause =
-				I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID + "=? AND "
-						+ I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID + "=?";
+		final String whereClause = I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID + "=? AND "
+				+ I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID + "=?";
 
 		final List<I_C_ReferenceNo_Doc> refNoDocs = new Query(ctx, I_C_ReferenceNo_Doc.Table_Name, whereClause, trxName)
 				.setParameters(referenceNo.getC_ReferenceNo_ID(), MTable.getTable_ID(tableName))
@@ -191,20 +140,5 @@ public class ReferenceNoDAO extends AbstractReferenceNoDAO
 				.list(I_C_ReferenceNo_Doc.class);
 
 		return refNoDocs;
-	}
-
-	@Override
-	public List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(final I_C_ReferenceNo referenceNo)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(referenceNo);
-		final String trxName = InterfaceWrapperHelper.getTrxName(referenceNo);
-
-		final String whereClause = I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID + "=?";
-
-		final List<I_C_ReferenceNo_Doc> result = new Query(ctx, I_C_ReferenceNo_Doc.Table_Name, whereClause, trxName)
-				.setParameters(referenceNo.getC_ReferenceNo_ID())
-				.list(I_C_ReferenceNo_Doc.class);
-
-		return result;
 	}
 }

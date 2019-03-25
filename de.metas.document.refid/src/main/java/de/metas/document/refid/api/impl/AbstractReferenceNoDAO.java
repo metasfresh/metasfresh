@@ -1,6 +1,11 @@
 package de.metas.document.refid.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableName;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -31,15 +36,14 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -59,10 +63,10 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 	}
 
 	@Override
-	public final I_C_ReferenceNo_Type retrieveRefNoTypeByClass(final Properties ctx, final Class<? extends IReferenceNoGenerator> clazz)
+	public final I_C_ReferenceNo_Type retrieveRefNoTypeByClass(
+			final Properties ctx,
+			@NonNull final Class<? extends IReferenceNoGenerator> clazz)
 	{
-		Check.assumeNotNull(clazz, "Param 'clazz' not null");
-
 		final ArrayList<I_C_ReferenceNo_Type> typesWithClass = new ArrayList<I_C_ReferenceNo_Type>();
 		for (final I_C_ReferenceNo_Type type : retrieveReferenceNoTypes())
 		{
@@ -137,28 +141,19 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 	}
 
 	@Override
-	public final void removeDocAssignments(List<I_C_ReferenceNo_Doc> docAssignments)
-	{
-		for (I_C_ReferenceNo_Doc da : docAssignments)
-		{
-			InterfaceWrapperHelper.delete(da);
-		}
-	}
-
-	@Override
 	public final <T> List<T> retrieveAssociatedRecords(
 			@NonNull final Object model,
 			@NonNull final Class<? extends IReferenceNoGenerator> generatorClazz,
 			@NonNull final Class<T> clazz)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
+		final Properties ctx = getCtx(model);
+		final String trxName = getTrxName(model);
 
 		final I_C_ReferenceNo_Type type = retrieveRefNoTypeByClass(ctx, generatorClazz);
 
 		final List<I_C_ReferenceNo> referenceNos = retrieveReferenceNos(model, type);
 
-		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
+		final String tableName = getTableName(clazz);
 
 		final List<T> result = new ArrayList<T>();
 
@@ -168,7 +163,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 
 			for (final I_C_ReferenceNo_Doc refNoDoc : refNoDocs)
 			{
-				final T referencedDoc = InterfaceWrapperHelper.create(ctx, refNoDoc.getRecord_ID(), clazz, trxName);
+				final T referencedDoc = create(ctx, refNoDoc.getRecord_ID(), clazz, trxName);
 				result.add(referencedDoc);
 			}
 		}
@@ -176,4 +171,65 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 	}
 
 	protected abstract List<I_C_ReferenceNo_Doc> retrieveRefNoDocByRefNoAndTableName(I_C_ReferenceNo referenceNo, String tableName);
+
+	@Override
+	public final List<I_C_ReferenceNo_Doc> retrieveDocAssignments(@NonNull final I_C_ReferenceNo referenceNo)
+	{
+		final List<I_C_ReferenceNo_Doc> result = Services
+				.get(IQueryBL.class)
+				.createQueryBuilder(I_C_ReferenceNo_Doc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, referenceNo.getC_ReferenceNo_ID())
+				.orderBy(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_Doc_ID)
+				.create()
+				.setApplyAccessFilter(true)
+				.list();
+		return result;
+	}
+
+	@Override
+	public final I_C_ReferenceNo_Doc getCreateReferenceNoDoc(
+			@NonNull final I_C_ReferenceNo referenceNo,
+			@NonNull final ITableRecordReference referencedModel)
+	{
+		boolean isNewReference = false;
+		if (referenceNo.getC_ReferenceNo_ID() <= 0)
+		{
+			save(referenceNo);
+			isNewReference = true;
+		}
+
+		I_C_ReferenceNo_Doc assignment = null;
+
+		//
+		// Search for an already existing assignment, only if the reference was not new
+		if (!isNewReference)
+		{
+			assignment = Services
+					.get(IQueryBL.class)
+					.createQueryBuilder(I_C_ReferenceNo_Doc.class, referenceNo)
+					// .addOnlyActiveRecordsFilter() the old code didn't have an active-check; not sure why, but might be a feature
+					.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, referenceNo.getC_ReferenceNo_ID())
+					.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID, referencedModel.getAD_Table_ID())
+					.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID, referencedModel.getRecord_ID())
+					.create()
+					.firstOnly(I_C_ReferenceNo_Doc.class);
+		}
+
+		//
+		// Creating new referenceNo assignment
+		if (assignment == null)
+		{
+			assignment = newInstance(I_C_ReferenceNo_Doc.class, referenceNo);
+			assignment.setC_ReferenceNo(referenceNo);
+			assignment.setAD_Table_ID(referencedModel.getAD_Table_ID());
+			assignment.setRecord_ID(referencedModel.getRecord_ID());
+		}
+
+		assignment.setIsActive(true);
+		save(assignment);
+
+		return assignment;
+	}
+
 }

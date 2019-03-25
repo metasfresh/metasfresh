@@ -31,7 +31,6 @@ import java.util.Set;
 import org.adempiere.ad.wrapper.IPOJOFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MTable;
 
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -51,13 +50,7 @@ public class PlainReferenceNoDAO extends AbstractReferenceNoDAO
 	}
 
 	@Override
-	public I_C_ReferenceNo_Doc getCreateReferenceNoDoc(I_C_ReferenceNo referenceNo, ITableRecordReference referencesModel)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List<I_C_ReferenceNo_Doc> retrieveDocAssignments(Properties ctx, int referenceNoTypeId, int tableId, int recordId, String trxName)
+	public List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(Properties ctx, int referenceNoTypeId, int tableId, int recordId, String trxName)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -89,25 +82,6 @@ public class PlainReferenceNoDAO extends AbstractReferenceNoDAO
 		}
 
 		return new ArrayList<>(refNos);
-	}
-
-	@Override
-	public List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(final I_C_ReferenceNo referenceNo)
-	{
-		return lookupMap.getRecords(I_C_ReferenceNo_Doc.class, new IPOJOFilter<I_C_ReferenceNo_Doc>()
-		{
-
-			@Override
-			public boolean accept(I_C_ReferenceNo_Doc pojo)
-			{
-				if (pojo.getC_ReferenceNo_ID() != referenceNo.getC_ReferenceNo_ID())
-				{
-					return false;
-				}
-
-				return true;
-			}
-		});
 	}
 
 	@Override
