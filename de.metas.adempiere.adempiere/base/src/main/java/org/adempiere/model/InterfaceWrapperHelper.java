@@ -675,15 +675,21 @@ public class InterfaceWrapperHelper
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
-	 * @param model
-	 * @param useClientOrgFromModel
-	 * @return
+	 * @param model may be null
+	 * @param useClientOrgFromModel ignored, unless the given model is {@link ModelContextAware} or just a "normal" model. See {@link #getCtx(Object, boolean)}
 	 */
-	public static Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	public static Properties getCtx(
+			@Nullable final Object model,
+			final boolean useClientOrgFromModel)
 	{
 		if (model == null)
 		{
 			return Env.getCtx();
+		}
+		else if (model instanceof ModelContextAware)
+		{
+			// we have an IContextAware that is based on a model, so we can act on the value of the given useClientOrgFromModel
+			return ((ModelContextAware)model).getCtx(useClientOrgFromModel);
 		}
 		else if (model instanceof IContextAware)
 		{
