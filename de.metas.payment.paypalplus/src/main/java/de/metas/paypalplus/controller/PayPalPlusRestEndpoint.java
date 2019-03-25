@@ -44,6 +44,6 @@ public interface PayPalPlusRestEndpoint
 
 	Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
 
-	Optional<DetailedRefund> refundCapturedPayment(Payment payment, int transactionNumber) throws PayPalRESTException;
+	Optional<DetailedRefund> refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalRESTException;
 
 }

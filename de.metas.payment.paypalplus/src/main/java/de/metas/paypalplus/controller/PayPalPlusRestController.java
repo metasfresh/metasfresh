@@ -97,10 +97,10 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		return processPayment(payPalPlusPayment, "sale");
 	}
 
-	@Override public Optional<DetailedRefund> refundCapturedPayment(Payment payment, int transactionNumber) throws PayPalRESTException
+	@Override public Optional<DetailedRefund> refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalRESTException
 	{
 		Sale sale = new Sale();
-		sale.setId(payment.getTransactions().get(transactionNumber).getRelatedResources().get(transactionNumber).getSale().getId());
+		sale.setId(saleId);
 		RefundRequest refund = new RefundRequest();
 		return Optional.of(sale.refund(apiContext, refund));
 	}

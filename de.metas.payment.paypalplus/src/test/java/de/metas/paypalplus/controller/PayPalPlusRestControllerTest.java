@@ -104,7 +104,7 @@ public class PayPalPlusRestControllerTest
 		assertEquals(payment.get().getTransactions().size(), 1);
 		try
 		{
-			controller.refundCapturedPayment(payment.get(), 0);
+			controller.refundCapturedPayment("1", 0);
 		}
 		catch (PayPalRESTException e)
 		{
