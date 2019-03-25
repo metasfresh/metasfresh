@@ -33,6 +33,9 @@ import java.time.LocalDate;
 public class PayPalPlusPayment
 {
 	@NonNull
+	String id;
+
+	@NonNull
 	String paymentDocumentNumber;
 
 	@NonNull

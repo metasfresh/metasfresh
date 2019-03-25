@@ -86,7 +86,7 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		{
 			throw new PayPalPlusException(e.getMessage());
 		}
-		return new PaymentStatus(payment.getState());
+		return new PaymentStatus(payment.getId(), payment.getState());
 	}
 
 	/**
@@ -105,14 +105,16 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		return processPayment(payPalPlusPayment, "sale");
 	}
 
-	@Override public PaymentStatus refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalPlusException
+	@Override public PaymentStatus refundCapturedPayment(String paymentId, String reason) throws PayPalPlusException
 	{
-		Sale sale = new Sale();
-		sale.setId(saleId);
 		RefundRequest refund = new RefundRequest();
+		refund.setReason(reason);
 		DetailedRefund detailedRefund;
 		try
 		{
+			Payment payment = Payment.get(apiContext, paymentId);
+			Sale sale = Sale.get(apiContext, payment.getTransactions().get(0).getRelatedResources().get(0).getSale().getId());
+
 			detailedRefund = sale.refund(apiContext, refund);
 		}
 		catch (PayPalRESTException e)
@@ -120,7 +122,7 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 			throw new PayPalPlusException(e.getMessage());
 		}
 
-		return new PaymentStatus(detailedRefund.getState());
+		return new PaymentStatus(paymentId, detailedRefund.getState());
 	}
 
 	public final static void main(String[] args)
@@ -128,7 +130,7 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		PayPalPlusRestController controller = new PayPalPlusRestController(PayPalProperties.CONFIG_SANDBOX_PROPERTIES);
 		try
 		{
-			PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+			PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
 			PaymentStatus paymentStatus = controller.reservePayment(payPalPlusPayment);
 			System.out.println("Payment reservation state:" + paymentStatus.toString());
 			paymentStatus = controller.capturePayment(payPalPlusPayment);

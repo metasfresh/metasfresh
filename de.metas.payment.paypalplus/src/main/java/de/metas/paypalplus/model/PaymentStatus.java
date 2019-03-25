@@ -10,6 +10,9 @@ import lombok.Value;
 public class PaymentStatus
 {
 	@NonNull
+	String paymentId;
+
+	@NonNull
 	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	String paymentState;
 }

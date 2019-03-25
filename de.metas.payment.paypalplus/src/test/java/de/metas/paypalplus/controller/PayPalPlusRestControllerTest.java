@@ -52,7 +52,7 @@ public class PayPalPlusRestControllerTest
 	@Test
 	public void capturePayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
 		PaymentStatus paymentStatus = null;
 		try
 		{
@@ -69,7 +69,7 @@ public class PayPalPlusRestControllerTest
 	@Test
 	public void reservePayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
 		PaymentStatus paymentStatus = null;
 		try
 		{
@@ -87,11 +87,11 @@ public class PayPalPlusRestControllerTest
 	@Ignore
 	public void refundPayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
+		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
 		PaymentStatus paymentStatus = null;
 		try
 		{
-			paymentStatus = controller.reservePayment(payPalPlusPayment);
+			paymentStatus = controller.capturePayment(payPalPlusPayment);
 		}
 		catch (PayPalPlusException e)
 		{
@@ -101,7 +101,7 @@ public class PayPalPlusRestControllerTest
 		assertEquals(paymentStatus.getPaymentState(), "created");
 		try
 		{
-			controller.refundCapturedPayment("1", 0);
+			controller.refundCapturedPayment(paymentStatus.getPaymentId(), "Refund reason - something");
 		}
 		catch (PayPalPlusException e)
 		{
