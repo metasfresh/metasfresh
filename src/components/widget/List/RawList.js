@@ -324,6 +324,7 @@ export class RawList extends PureComponent {
             'input-disabled': readonly,
             'input-dropdown-container-static': rowId,
             'input-table': rowId && !isModal,
+            'input-empty': !value,
             'lookup-dropdown': lookupList,
             'select-dropdown': !lookupList,
             focused: isFocused,

@@ -51,6 +51,7 @@ export const RawWidgetPropTypes = {
   noLabel: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
+  dataEntry: PropTypes.bool,
 };
 
 export const RawWidgetDefaultProps = {

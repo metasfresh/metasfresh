@@ -1,11 +1,15 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
+import counterpart from 'counterpart';
 
-import Table from '../components/table/Table';
-import EntryTable from '../components/table/EntryTable';
-import Tabs, { TabSingleEntry } from '../components/tabs/Tabs';
-import MasterWidget from '../components/widget/MasterWidget';
+import Table from './table/Table';
+import EntryTable from './table/EntryTable';
+import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
+import keymap from '../shortcuts/keymap';
+import Tabs, { TabSingleEntry } from './tabs/Tabs';
+import Tooltips from './tooltips/Tooltips';
+import MasterWidget from './widget/MasterWidget';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
@@ -18,6 +22,7 @@ class Window extends PureComponent {
       fullScreen: null,
       dragActive: false,
       collapsedSections: {},
+      isSectionExpandTooltipShow: false,
     };
 
     if (props.isModal) {
@@ -108,9 +113,22 @@ class Window extends PureComponent {
     return this.state.collapsedSections[`${tabId}_${idx}`];
   };
 
+  hideSectionExpandTooltip = (key = null) => {
+    this.setState({
+      isSectionExpandTooltipShow: key,
+    });
+  };
+
+  showSectionExpandTooltip = () => {
+    this.setState({
+      isSectionExpandTooltipShow: keymap.TOGGLE_EXPAND,
+    });
+  };
+
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
     const { windowId } = this.props.layout;
-    const { rowData, newRow, tabsInfo, sort } = this.props;
+    const { rowData, newRow, tabsInfo, sort, allowShortcut } = this.props;
+    const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
     tabs.forEach(elem => {
       const {
@@ -156,6 +174,36 @@ class Window extends PureComponent {
             }}
           >
             {sections && this.renderSections(sections, dataEntry, { tabId })}
+            <button
+              className="btn-icon btn-meta-outline-secondary pointer btn-fullscreen"
+              onClick={this.toggleTableFullScreen}
+              onMouseEnter={this.showSectionExpandTooltip}
+              onMouseLeave={this.hideSectionExpandTooltip}
+              tabIndex="-1"
+            >
+              {fullScreen ? (
+                <i className="meta-icon-collapse" />
+              ) : (
+                <i className="meta-icon-fullscreen" />
+              )}
+
+              {isSectionExpandTooltipShow === keymap.TOGGLE_EXPAND && (
+                <Tooltips
+                  name={keymap.TOGGLE_EXPAND}
+                  action={
+                    fullScreen
+                      ? counterpart.translate('window.table.collapse')
+                      : counterpart.translate('window.table.expand')
+                  }
+                  type={''}
+                />
+              )}
+            </button>
+            {allowShortcut && (
+              <TableContextShortcuts
+                handleToggleExpand={this.toggleTableFullScreen}
+              />
+            )}
           </TabSingleEntry>
         );
       } else {
@@ -234,7 +282,10 @@ class Window extends PureComponent {
         closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
 
       return (
-        <div key={`section-${idx}`} className="section">
+        <div
+          key={`section-${idx}`}
+          className={classnames('section', { collapsed: sectionCollapsed })}
+        >
           {title && (
             <Separator
               {...{ title, idx, sectionCollapsed, collapsible }}

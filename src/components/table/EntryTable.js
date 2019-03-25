@@ -82,6 +82,7 @@ export default class EntryTable extends Component {
                 entity="window"
                 windowType={layout.windowId}
                 dataId={dataId}
+                dataEntry={true}
                 fieldName={fieldName}
                 widgetData={widgetData}
                 isModal={false}

@@ -13,7 +13,7 @@ const Separator = props => {
         })}
         onClick={() => onClick(idx, tabId)}
       >
-        {title} - {sectionCollapsed}
+        {title}
       </span>
       {collapsible && (
         <div className="panel-size-button">
