@@ -31,12 +31,8 @@ export class RawLookup extends Component {
       parentElement: undefined,
     };
 
-    const debounceTime = props.item
-      ? props.item.lookupSearchStartDelayMillis || 100
-      : 100;
-    this.minQueryLength = props.item
-      ? props.item.lookupSearchStringMinLength || 0
-      : 0;
+    const debounceTime = props.item.lookupSearchStartDelayMillis || 100;
+    this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
 
     this.handleBlur = this.handleBlur.bind(this);
     this.handleFocus = this.handleFocus.bind(this);
@@ -467,11 +463,17 @@ export class RawLookup extends Component {
       forceEmpty,
       isFocused,
       parentElement,
+      query,
     } = this.state;
     const tetherProps = {};
+    let showDropdown = false;
 
     if (parentElement) {
       tetherProps.target = parentElement;
+    }
+
+    if (query.length > this.minQueryLength) {
+      showDropdown = true;
     }
 
     return (
@@ -520,7 +522,7 @@ export class RawLookup extends Component {
               </div>
             </div>
           </div>
-          {isOpen && !isInputEmpty && (
+          {showDropdown && isOpen && !isInputEmpty && (
             <SelectionDropdown
               loading={loading}
               options={list}
