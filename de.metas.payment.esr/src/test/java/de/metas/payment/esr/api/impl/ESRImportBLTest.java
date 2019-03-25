@@ -73,9 +73,9 @@ import de.metas.util.Services;
 public class ESRImportBLTest extends ESRTestBase
 {
 	private static final BigDecimal FOURTY = new BigDecimal("40");
-	private static final BigDecimal TWENTY = new BigDecimal(20.0);
+	private static final BigDecimal TWENTY = new BigDecimal("20");
 	private static final BigDecimal SIXTY = new BigDecimal("60");
-	private static final BigDecimal HUNDRET = new BigDecimal(100);
+	private static final BigDecimal HUNDRET = new BigDecimal("100");
 	private static final BigDecimal ESR_LINE_1_AMOUNT = new BigDecimal("31");
 	private static final BigDecimal INVOICE_GRANDTOTAL = new BigDecimal("62.50");
 	private I_C_Invoice invoice;
