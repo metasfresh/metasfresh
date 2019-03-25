@@ -1174,3 +1174,408 @@ UPDATE AD_Tab SET TabLevel=0,Updated=TO_TIMESTAMP('2019-03-25 12:09:04','YYYY-MM
 UPDATE AD_Tab SET TabLevel=1,Updated=TO_TIMESTAMP('2019-03-25 12:09:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541682
 ;
 
+-- 2019-03-25T12:29:05.508
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578055
+;
+
+-- 2019-03-25T12:29:05.511
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578055
+;
+
+-- 2019-03-25T12:29:05.520
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558052
+;
+
+-- 2019-03-25T12:29:05.521
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578044
+;
+
+-- 2019-03-25T12:29:05.522
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578044
+;
+
+-- 2019-03-25T12:29:05.528
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558051
+;
+
+-- 2019-03-25T12:29:05.529
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578045
+;
+
+-- 2019-03-25T12:29:05.531
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578045
+;
+
+-- 2019-03-25T12:29:05.536
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558049
+;
+
+-- 2019-03-25T12:29:05.537
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578046
+;
+
+-- 2019-03-25T12:29:05.544
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578046
+;
+
+-- 2019-03-25T12:29:05.556
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558040
+;
+
+-- 2019-03-25T12:29:05.559
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578047
+;
+
+-- 2019-03-25T12:29:05.566
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578047
+;
+
+-- 2019-03-25T12:29:05.573
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558047
+;
+
+-- 2019-03-25T12:29:05.577
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578048
+;
+
+-- 2019-03-25T12:29:05.579
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578048
+;
+
+-- 2019-03-25T12:29:05.586
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558046
+;
+
+-- 2019-03-25T12:29:05.587
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578049
+;
+
+-- 2019-03-25T12:29:05.588
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578049
+;
+
+-- 2019-03-25T12:29:05.594
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558042
+;
+
+-- 2019-03-25T12:29:05.595
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578050
+;
+
+-- 2019-03-25T12:29:05.596
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578050
+;
+
+-- 2019-03-25T12:29:05.601
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578051
+;
+
+-- 2019-03-25T12:29:05.602
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578051
+;
+
+-- 2019-03-25T12:29:05.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558048
+;
+
+-- 2019-03-25T12:29:05.612
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578052
+;
+
+-- 2019-03-25T12:29:05.613
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578052
+;
+
+-- 2019-03-25T12:29:05.619
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558045
+;
+
+-- 2019-03-25T12:29:05.620
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578053
+;
+
+-- 2019-03-25T12:29:05.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578053
+;
+
+-- 2019-03-25T12:29:05.625
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578054
+;
+
+-- 2019-03-25T12:29:05.626
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578054
+;
+
+-- 2019-03-25T12:29:05.905
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558050
+;
+
+-- 2019-03-25T12:29:05.906
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578056
+;
+
+-- 2019-03-25T12:29:05.907
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578056
+;
+
+-- 2019-03-25T12:29:05.924
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558041
+;
+
+-- 2019-03-25T12:29:05.925
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578057
+;
+
+-- 2019-03-25T12:29:05.926
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578057
+;
+
+-- 2019-03-25T12:29:05.932
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558043
+;
+
+-- 2019-03-25T12:29:05.933
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578058
+;
+
+-- 2019-03-25T12:29:05.935
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578058
+;
+
+-- 2019-03-25T12:29:05.942
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=558044
+;
+
+-- 2019-03-25T12:29:05.943
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=578059
+;
+
+-- 2019-03-25T12:29:05.944
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=578059
+;
+
+-- 2019-03-25T12:29:05.945
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Tab_Trl WHERE AD_Tab_ID=541682
+;
+
+-- 2019-03-25T12:29:05.947
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Tab WHERE AD_Tab_ID=541682
+;
+
+-- 2019-03-25T12:29:05.961
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=542399
+;
+
+-- 2019-03-25T12:29:05.964
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=542398
+;
+
+-- 2019-03-25T12:29:05.966
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Column WHERE AD_UI_Column_ID=541585
+;
+
+-- 2019-03-25T12:29:05.973
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=542397
+;
+
+-- 2019-03-25T12:29:05.975
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=542396
+;
+
+-- 2019-03-25T12:29:05.977
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Column WHERE AD_UI_Column_ID=541584
+;
+
+-- 2019-03-25T12:29:05.978
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_UI_Section_Trl WHERE AD_UI_Section_ID=541239
+;
+
+-- 2019-03-25T12:29:05.980
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Section WHERE AD_UI_Section_ID=541239
+;
+
+-- 2019-03-25T12:30:37.409
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558053
+;
+
+-- 2019-03-25T12:30:37.412
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558055
+;
+
+-- 2019-03-25T12:30:37.414
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558056
+;
+
+-- 2019-03-25T12:30:37.416
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558057
+;
+
+-- 2019-03-25T12:30:37.419
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558058
+;
+
+-- 2019-03-25T12:30:37.421
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558059
+;
+
+-- 2019-03-25T12:30:37.423
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558060
+;
+
+-- 2019-03-25T12:30:37.425
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558061
+;
+
+-- 2019-03-25T12:30:37.426
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558062
+;
+
+-- 2019-03-25T12:30:37.428
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558063
+;
+
+-- 2019-03-25T12:30:37.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558068
+;
+
+-- 2019-03-25T12:30:37.430
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558069
+;
+
+-- 2019-03-25T12:30:37.432
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558070
+;
+
+-- 2019-03-25T12:30:37.433
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558071
+;
+
+-- 2019-03-25T12:30:37.434
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558072
+;
+
+-- 2019-03-25T12:30:37.436
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558066
+;
+
+-- 2019-03-25T12:30:37.437
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558067
+;
+
+-- 2019-03-25T12:30:37.439
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558064
+;
+
+-- 2019-03-25T12:30:37.441
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2019-03-25 12:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558073
+;
+
+-- 2019-03-25T12:30:42.607
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2019-03-25 12:30:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558073
+;
+
+-- 2019-03-25T12:30:42.610
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2019-03-25 12:30:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558064
+;
+
+-- 2019-03-25T12:35:01.347
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=210,Updated=TO_TIMESTAMP('2019-03-25 12:35:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558064
+;
+
+-- 2019-03-25T12:35:04.313
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=220,Updated=TO_TIMESTAMP('2019-03-25 12:35:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558065
+;
+
+-- 2019-03-25T12:36:40.656
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=12,Updated=TO_TIMESTAMP('2019-03-25 12:36:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558059
+;
+
+-- 2019-03-25T12:36:42.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-03-25 12:36:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558053
+;
+
+-- 2019-03-25T12:37:01.765
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=15,Updated=TO_TIMESTAMP('2019-03-25 12:37:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558053
+;
+
