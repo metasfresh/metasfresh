@@ -32,7 +32,7 @@ public class PayPalProperties
 	public PayPalProperties(String configurationFile)
 	{
 		File file = new File(configurationFile + ".properties");
-		URL[] urls = new URL[0];
+		URL[] urls;
 		try
 		{
 			urls = new URL[] { file.toURI().toURL() };

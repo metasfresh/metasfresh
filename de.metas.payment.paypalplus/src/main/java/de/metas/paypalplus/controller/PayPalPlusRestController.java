@@ -4,14 +4,15 @@ import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import de.metas.paypalplus.PayPalProperties;
+import de.metas.paypalplus.model.PayPalPlusException;
 import de.metas.paypalplus.model.PayPalPlusPayment;
+import de.metas.paypalplus.model.PaymentStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -52,7 +53,7 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		apiContext = new APIContext(payPalProperties.getClientId(), payPalProperties.getClientSecret(), payPalProperties.getExecutionMode());
 	}
 
-	private Optional<Payment> processPayment(PayPalPlusPayment payPalPlusPayment, String sale) throws PayPalRESTException
+	private PaymentStatus processPayment(PayPalPlusPayment payPalPlusPayment, String sale) throws PayPalPlusException
 	{
 		Amount amount = new Amount();
 		amount.setCurrency(payPalPlusPayment.getPaymentCurrency());
@@ -77,32 +78,49 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		redirectUrls.setCancelUrl("https://localhost:3000/cancel");
 		redirectUrls.setReturnUrl("https://localhost:3000/return");
 		payment.setRedirectUrls(redirectUrls);
-
-		return Optional.ofNullable(payment.create(apiContext));
+		try
+		{
+			payment = payment.create(apiContext);
+		}
+		catch (PayPalRESTException e)
+		{
+			throw new PayPalPlusException(e.getMessage());
+		}
+		return new PaymentStatus(payment.getState());
 	}
 
 	/**
 	 * Reserve a PayPal Plus payment
 	 *
 	 * @return Payment
-	 * @throws PayPalRESTException
+	 * @throws PayPalPlusException
 	 */
-	public Optional<Payment> reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	public PaymentStatus reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException
 	{
 		return processPayment(payPalPlusPayment, "authorize");
 	}
 
-	@Override public Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException
+	@Override public PaymentStatus capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException
 	{
 		return processPayment(payPalPlusPayment, "sale");
 	}
 
-	@Override public Optional<DetailedRefund> refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalRESTException
+	@Override public PaymentStatus refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalPlusException
 	{
 		Sale sale = new Sale();
 		sale.setId(saleId);
 		RefundRequest refund = new RefundRequest();
-		return Optional.of(sale.refund(apiContext, refund));
+		DetailedRefund detailedRefund;
+		try
+		{
+			detailedRefund = sale.refund(apiContext, refund);
+		}
+		catch (PayPalRESTException e)
+		{
+			throw new PayPalPlusException(e.getMessage());
+		}
+
+		return new PaymentStatus(detailedRefund.getState());
 	}
 
 	public final static void main(String[] args)
@@ -111,10 +129,10 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		try
 		{
 			PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", LocalDate.now(), "15.5", "EUR");
-			Optional<Payment> payment = controller.reservePayment(payPalPlusPayment);
-			System.out.println("Payment reservation state:" + payment.get().getState());
-			payment = controller.capturePayment(payPalPlusPayment);
-			System.out.println("Payment capturing state:" + payment.get().getState());
+			PaymentStatus paymentStatus = controller.reservePayment(payPalPlusPayment);
+			System.out.println("Payment reservation state:" + paymentStatus.toString());
+			paymentStatus = controller.capturePayment(payPalPlusPayment);
+			System.out.println("Payment capturing state:" + paymentStatus.toString());
 
 		}
 		catch (PayPalRESTException e)

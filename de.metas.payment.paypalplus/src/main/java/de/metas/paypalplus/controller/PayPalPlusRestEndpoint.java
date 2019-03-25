@@ -1,12 +1,9 @@
 package de.metas.paypalplus.controller;
 
-import com.paypal.api.payments.DetailedRefund;
-import com.paypal.api.payments.Payment;
-import com.paypal.base.rest.PayPalRESTException;
+import de.metas.paypalplus.model.PayPalPlusException;
 import de.metas.paypalplus.model.PayPalPlusPayment;
+import de.metas.paypalplus.model.PaymentStatus;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-
-import java.util.Optional;
 
 /*
  * #%L
@@ -38,12 +35,24 @@ public interface PayPalPlusRestEndpoint
 	 * Reserve a PayPal Plus payment
 	 *
 	 * @return Payment
-	 * @throws PayPalRESTException
+	 * @throws PayPalPlusException
 	 */
-	Optional<Payment> reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
+	PaymentStatus reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
 
-	Optional<Payment> capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalRESTException;
+	/**
+	 * Capture a PayPal Plus payment
+	 *
+	 * @return Payment
+	 * @throws PayPalPlusException
+	 */
+	PaymentStatus capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
 
-	Optional<DetailedRefund> refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalRESTException;
+	/**
+	 * Refund a PayPal Plus payment
+	 *
+	 * @return Payment
+	 * @throws PayPalPlusException
+	 */
+	PaymentStatus refundCapturedPayment(String saleId, Integer transactionNumber) throws PayPalPlusException;
 
 }
