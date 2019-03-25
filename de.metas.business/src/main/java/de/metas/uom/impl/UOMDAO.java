@@ -1,4 +1,4 @@
-package org.adempiere.uom.api.impl;
+package de.metas.uom.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -33,14 +33,15 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMUtil;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -132,9 +133,15 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public int getStandardPrecision(final int uomId)
+	public UOMPrecision getStandardPrecision(final UomId uomId)
 	{
+		if (uomId == null)
+		{
+			// NOTE: if there is no UOM specified, we assume UOM is Each => precision=0
+			return UOMPrecision.ZERO;
+		}
+
 		final I_C_UOM uom = getById(uomId);
-		return uom.getStdPrecision();
+		return UOMPrecision.ofInt(uom.getStdPrecision());
 	}
 }

@@ -29,6 +29,9 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -226,7 +229,7 @@ public class MProduct extends X_M_Product
 	}	// setExpenseType
 
 	/** UOM Precision */
-	private Integer m_precision = null;
+	private UOMPrecision m_precision = null;
 
 	/**
 	 * Get UOM Standard Precision
@@ -237,16 +240,21 @@ public class MProduct extends X_M_Product
 	@Deprecated
 	public int getUOMPrecision()
 	{
-		if (m_precision == null)
+		UOMPrecision precision = m_precision;
+		if (precision == null)
 		{
-			int C_UOM_ID = getC_UOM_ID();
-			if (C_UOM_ID == 0)
-			 {
-				return 0;	// EA
+			final UomId uomId = UomId.ofRepoIdOrNull(getC_UOM_ID());
+			if (uomId == null)
+			{
+				precision = UOMPrecision.ZERO;	// EA
+				// NOTE: don't cache the precision (i.e. don't set m_precision)
 			}
-			m_precision = MUOM.getPrecision(getCtx(), C_UOM_ID);
+			else
+			{
+				precision = m_precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
+			}
 		}
-		return m_precision.intValue();
+		return precision.toInt();
 	}	// getUOMPrecision
 
 	/**

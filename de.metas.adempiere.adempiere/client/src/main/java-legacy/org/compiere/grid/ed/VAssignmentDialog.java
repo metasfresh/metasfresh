@@ -30,10 +30,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.WindowConstants;
@@ -44,18 +40,20 @@ import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.InfoSchedule;
 import org.compiere.model.MResourceAssignment;
-import org.compiere.model.MUOMConversion;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.uom.LegacyUOMConversionUtils;
 
 /**
  *	Resource Assignment Dialog
@@ -331,7 +329,7 @@ public class VAssignmentDialog extends CDialog
 		final Timestamp assignDateFrom = fDateFrom.getTimestamp();
 		final BigDecimal qty = (BigDecimal)fQty.getValue();
 		final KeyNamePair uom = m_lookup.get(fResource.getSelectedItem());
-		final int minutes = MUOMConversion.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
+		final int minutes = LegacyUOMConversionUtils.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
 		
 		final Timestamp assignDateTo = TimeUtil.addMinutes(assignDateFrom, minutes);
 		m_mAssignment.setAssignDateTo (assignDateTo);

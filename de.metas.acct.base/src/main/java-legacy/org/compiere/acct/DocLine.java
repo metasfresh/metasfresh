@@ -61,6 +61,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -601,6 +602,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return productBL.getStockingUOM(getProductId());
 	}
+	
+	protected final UomId getProductStockingUOMId()
+	{
+		return productBL.getStockingUOMId(getProductId());
+	}
+
 
 	/**
 	 * Get Revenue Recognition

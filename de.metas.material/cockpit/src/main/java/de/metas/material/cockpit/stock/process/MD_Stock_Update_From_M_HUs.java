@@ -7,7 +7,6 @@ import lombok.NonNull;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.Adempiere;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -22,6 +21,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 
 /*

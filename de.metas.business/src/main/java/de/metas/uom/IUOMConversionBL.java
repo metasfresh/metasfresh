@@ -1,4 +1,4 @@
-package org.adempiere.uom.api;
+package de.metas.uom;
 
 /*
  * #%L
@@ -23,14 +23,13 @@ package org.adempiere.uom.api;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
 
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -101,28 +100,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @param uom
 	 * @return qty rounded to UOM precision
 	 */
-	BigDecimal roundToUOMPrecisionIfPossible(BigDecimal qty, I_C_UOM uom);
-
-	/**
-	 * Gets UOM standard precision.
-	 *
-	 * @param ctx
-	 * @param uomId
-	 * @return
-	 */
-	int getPrecision(int uomId);
-
-	/**
-	 * Round quantity based on uom's standard precision if stdPrecision = true, uom's costing precision otherwise.
-	 *
-	 * @param uom
-	 * @param qty quantity
-	 * @param useStdPrecision true if standard precision
-	 * @return rounded quantity
-	 */
-	BigDecimal roundQty(I_C_UOM uom, BigDecimal qty, boolean useStdPrecision);
-
-	// BigDecimal convert(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
+	BigDecimal adjustToUOMPrecisionWithoutRoundingIfPossible(BigDecimal qty, I_C_UOM uom);
 
 	/**
 	 * Get Converted Qty from Server (no cache)
@@ -135,77 +113,45 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @deprecated should not be used
 	 */
 	@Deprecated
-	BigDecimal convert(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty, boolean useStdPrecision);
+	BigDecimal convert(I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty, boolean useStdPrecision);
 
 	/**
 	 * * Converts the given qty from the given product's stocking UOM to the given destination UOM.
 	 * <p>
 	 * As a rule of thumb, if you want to get QtyEntered from QtOrdered/Moved/Invoiced/Requiered, this is your method.
 	 *
-	 * @param ctx context
 	 * @param product product from whose stocking UOM we want to convert
 	 * @param uomDest the UOM to which we want to convert
 	 * @param qtyToConvert the Qty in the product's stocking UOM
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>uomDest</code> and if there is no conversion rate to use.
 	 */
-	BigDecimal convertFromProductUOM(Properties ctx, ProductId productId, I_C_UOM uomDest, BigDecimal qtyToConvert);
-	
-
-	/**
-	 * Derive Standard Conversions
-	 *
-	 * @param ctx context
-	 * @param uomFrom from UOM
-	 * @param uomTo to UOM
-	 * @return Conversion or null
-	 */
-	BigDecimal deriveRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo);
+	BigDecimal convertFromProductUOM(ProductId productId, I_C_UOM uomDest, BigDecimal qtyToConvert);
 
 	/**
 	 * Convert qty to target UOM and round.
 	 *
-	 * @param ctx context
 	 * @param uomFrom from UOM
 	 * @param uomTo to UOM
 	 * @param qty qty
 	 * @return converted qty (std precision)
 	 */
-	BigDecimal convert(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
+	Optional<BigDecimal> convert(I_C_UOM uomFrom, I_C_UOM uomTo, BigDecimal qty);
 
 	/**
 	 * Converts the given qty from the given source UOM to the given product's stocking UOM.
 	 *
-	 * @param ctx context
-	 * @param product
-	 * @param uomSource the UOM of the given qty
-	 * @param qtyToConvert
-	 *
-	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>C_UOM_Source_ID</code> and if there is no conversion rate to use.
+	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>fromUomId</code> and if there is no conversion rate to use.
 	 */
-	BigDecimal convertToProductUOM(Properties ctx, ProductId productId, I_C_UOM uomSource, BigDecimal qtyToConvert);
+	BigDecimal convertToProductUOM(ProductId productId, BigDecimal qtyToConvert, UomId fromUomId);
+
+	default BigDecimal convertToProductUOM(final ProductId productId, final I_C_UOM uomSource, final BigDecimal qtyToConvert)
+	{
+		final UomId fromUomId = uomSource != null ? UomId.ofRepoId(uomSource.getC_UOM_ID()) : null;
+		return convertToProductUOM(productId, qtyToConvert, fromUomId);
+	}
 
 	Quantity convertToProductUOM(Quantity quantity, ProductId productId);
 
-	/**
-	 * Get Product Conversions (cached). More detailed: gets those <code>C_UOM_Conversion</code>s that
-	 * <ul>
-	 * <li>reference the given <code>product</code>
-	 * <li>have <code>C_UOM_ID</code> (i.e. the "from" UOM) being equal to the product's <code>C_UOM</code>
-	 * </ul>
-	 *
-	 * @param ctx context
-	 * @param product
-	 * @return array of conversions
-	 */
-	List<I_C_UOM_Conversion> getProductConversions(ProductId productId);
+	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId, CurrencyPrecision pricePrecision);
 
-	/**
-	 * Get Multiplier Rate to target UOM
-	 *
-	 * @param ctx context
-	 * @param uomFrom
-	 * @param uomTo
-	 * @return multiplier
-	 */
-	BigDecimal getRate(Properties ctx, I_C_UOM uomFrom, I_C_UOM uomTo);
 }

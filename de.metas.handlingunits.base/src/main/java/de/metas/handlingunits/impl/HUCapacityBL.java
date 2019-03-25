@@ -25,7 +25,6 @@ package de.metas.handlingunits.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -38,6 +37,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

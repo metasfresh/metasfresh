@@ -13,15 +13,14 @@ package de.metas.adempiere.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -32,7 +31,6 @@ import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -47,6 +45,9 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.pricing.rules.MockedPricingRule;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 public class OrderLineBLTest
@@ -103,11 +104,12 @@ public class OrderLineBLTest
 		InterfaceWrapperHelper.save(priceUom);
 
 		// Define conversion: uom->priceUom
-		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.create(ctx, I_C_UOM_Conversion.class, ITrx.TRXNAME_None);
-		conversion.setC_UOM_ID(uom.getC_UOM_ID());
-		conversion.setC_UOM_To_ID(priceUom.getC_UOM_ID());
-		conversion.setMultiplyRate(BigDecimal.ONE);
-		InterfaceWrapperHelper.save(conversion);
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(priceUom.getC_UOM_ID()))
+				.fromToMultiplier(BigDecimal.ONE)
+				.toFromMultiplier(BigDecimal.ONE)
+				.build());
 
 		final I_M_ProductPrice productprice = InterfaceWrapperHelper.create(ctx, I_M_ProductPrice.class, ITrx.TRXNAME_None);
 		productprice.setM_Product_ID(product.getM_Product_ID());
@@ -133,7 +135,6 @@ public class OrderLineBLTest
 
 		return orderline;
 	}
-
 
 	@Test
 	public void test_ManualPrice()

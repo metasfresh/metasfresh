@@ -35,6 +35,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ConversionType;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -133,6 +134,15 @@ public class CurrencyDAO implements ICurrencyDAO
 			return DEFAULT_PRECISION.toInt(); // default
 		}
 		return c.getStdPrecision();
+	}
+
+	@Override
+	public CurrencyPrecision getCostingPrecision(@NonNull final CurrencyId currencyId)
+	{
+		final I_C_Currency currency = getById(currencyId);
+		Check.assumeNotNull(currency, "Parameter currency is not null");
+
+		return CurrencyPrecision.ofInt(currency.getCostingPrecision());
 	}
 
 	@Override
