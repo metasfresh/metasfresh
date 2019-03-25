@@ -10,8 +10,34 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.97
+## Features
+* metasfresh
+  * [#5051](https://github.com/metasfresh/metasfresh/issues/5051) Allow the formatting of IBAN in BPartner Bank
+  * [#5068](https://github.com/metasfresh/metasfresh/issues/5068) Dataentry Implementation Fieldname larger
+  * [#5059](https://github.com/metasfresh/metasfresh/issues/5059) DataEntry - change terminology
+
+* metasfresh-webui-api
+  * [#1175](https://github.com/metasfresh/metasfresh-webui-api/issues/1174) Provide View Header Properties to be displayed on frontend
+
+* metasfresh-webui-frontend
+  * [#2209](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2209) Single entry changes
+  * [#2220](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2220) More changes to data entry tab
+
+## Fixes
+* metasfresh
+  * [#5028](https://github.com/metasfresh/metasfresh/issues/5028) Order candidate - missing SyncAdvise for Org on-the-fly-creation/update
+  * [#5048](https://github.com/metasfresh/metasfresh/issues/5048) Average purchase cost is updating the Price as per the Price Unit and not as per the Items Base UoM
+  * [#5053](https://github.com/metasfresh/metasfresh/issues/5053) Log related NPE on metasfresh startup
+  * [#5055](https://github.com/metasfresh/metasfresh/issues/5055) IFA fields shall be Readonly in Pharma Product window
+  * [#5061](https://github.com/metasfresh/metasfresh/issues/5061) Deadlock in CConnection.get() when the metasfresh.properties is not already created
+
+* metasfresh-webui-api
+  * [#1175](https://github.com/metasfresh/metasfresh-webui-api/issues/1175) Picking v2: Products to pick view shall show order no, customer name and preparation time in header
+  * [#1177](https://github.com/metasfresh/metasfresh-webui-api/issues/1177) Error on order quick entry
+
 # metasfresh 5.96
-# Features
+## Features
 * metasfresh
   * [#4959](https://github.com/metasfresh/metasfresh/issues/4959) Data entry implementation
 
@@ -22,7 +48,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#2177](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2177) Support single entry view mode for Tabs
 
-# Fixes
+## Fixes
 * metasfresh-webui-api
   * [#1163](https://github.com/metasfresh/metasfresh-webui-api/issues/1163) Warehouse cannot be created / opening window causes error
 
