@@ -37,3 +37,4 @@ de.metas.report/report-service/application.properties
 
 *.iml
 
+*.txt
