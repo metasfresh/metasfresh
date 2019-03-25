@@ -3,7 +3,6 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMDAO;
@@ -14,6 +13,7 @@ import com.google.common.base.Predicates;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;

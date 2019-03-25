@@ -28,9 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -56,6 +53,10 @@ import de.metas.order.PriceAndDiscount;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.LegacyUOMConversionUtils;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -1067,7 +1068,7 @@ public class CalloutOrder extends CalloutEngine
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
 			final BigDecimal priceActual = orderLine.getPriceActual();
-			BigDecimal priceEntered = MUOMConversion.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
+			BigDecimal priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
@@ -1152,7 +1153,7 @@ public class CalloutOrder extends CalloutEngine
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 
-			final BigDecimal QtyEntered1 = uomConversionBL.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
+			final BigDecimal QtyEntered1 = uomConversionBL.adjustToUOMPrecisionWithoutRoundingIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
@@ -1194,7 +1195,7 @@ public class CalloutOrder extends CalloutEngine
 				QtyEntered = QtyEntered1;
 				orderLine.setQtyEntered(QtyEntered);
 			}
-			BigDecimal QtyOrdered = MUOMConversion.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
+			BigDecimal QtyOrdered = LegacyUOMConversionUtils.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
 			{
 				QtyOrdered = QtyEntered;
@@ -1217,7 +1218,7 @@ public class CalloutOrder extends CalloutEngine
 				QtyOrdered = QtyOrdered1;
 				orderLine.setQtyOrdered(QtyOrdered);
 			}
-			BigDecimal QtyEntered = MUOMConversion.convertFromProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyOrdered);
+			BigDecimal QtyEntered = LegacyUOMConversionUtils.convertFromProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyOrdered);
 			if (QtyEntered == null)
 			{
 				QtyEntered = QtyOrdered;

@@ -1,0 +1,7 @@
+
+
+-- 2019-02-11T15:07:15.449
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ CREATE TABLE public.C_Phonecall_Schema (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Phonecall_Schema_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Name VARCHAR(250), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT C_Phonecall_Schema_Key PRIMARY KEY (C_Phonecall_Schema_ID))
+;
+

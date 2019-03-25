@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -38,6 +37,7 @@ import de.metas.material.planning.exception.MrpException;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 

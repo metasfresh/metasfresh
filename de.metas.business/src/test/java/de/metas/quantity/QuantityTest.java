@@ -29,7 +29,6 @@ import java.math.RoundingMode;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -38,6 +37,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.uom.impl.UOMTestHelper;
 import de.metas.util.lang.Percent;
 
 public class QuantityTest

@@ -23,14 +23,11 @@ package de.metas.handlingunits.empties;
  */
 
 import java.math.BigDecimal;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -76,11 +73,9 @@ import de.metas.util.Services;
 	{
 		inoutLine.setMovementQty(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inoutLine);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(
-				ctx, getProductId(), inoutLine.getC_UOM(), qty);
+		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(getProductId(), inoutLine.getC_UOM(), qty);
 		inoutLine.setQtyEntered(qtyEntered);
 	}
 }
