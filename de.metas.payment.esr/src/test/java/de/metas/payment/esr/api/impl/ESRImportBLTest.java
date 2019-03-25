@@ -49,7 +49,6 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Currency;
@@ -73,6 +72,10 @@ import de.metas.util.Services;
 
 public class ESRImportBLTest extends ESRTestBase
 {
+	private static final BigDecimal FOURTY = new BigDecimal("40");
+	private static final BigDecimal TWENTY = new BigDecimal("20");
+	private static final BigDecimal SIXTY = new BigDecimal("60");
+	private static final BigDecimal HUNDRET = new BigDecimal("100");
 	private static final BigDecimal ESR_LINE_1_AMOUNT = new BigDecimal("31");
 	private static final BigDecimal INVOICE_GRANDTOTAL = new BigDecimal("62.50");
 	private I_C_Invoice invoice;
@@ -178,13 +181,13 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
-		invoice.setGrandTotal(new BigDecimal(100));
+		invoice.setGrandTotal(HUNDRET);
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
 		save(invoice);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
-		referenceNo.setReferenceNo("000000010501536417000120686");
+		referenceNo.setReferenceNo("0000000105015364170001206869"); // note that we include the check-digit 9 in here
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		referenceNo.setAD_Org_ID(org.getAD_Org_ID());
@@ -202,14 +205,15 @@ public class ESRImportBLTest extends ESRTestBase
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		assertThat(esrImportLine.getAmount(), comparesEqualTo(new BigDecimal("40"))); // guard
+		assertThat(esrImportLine.getAmount(), comparesEqualTo(FOURTY)); // guard
 		// guards
-		assertThat("Invoice not set correctly", esrImportLine.getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat("Incorrect grandtotal", esrImportLine.getESR_Invoice_Grandtotal(), comparesEqualTo(new BigDecimal(100)));
-		assertThat("Incorrect grandtotal", invoice.getGrandTotal(), comparesEqualTo(new BigDecimal(100)));
+		assertThat(esrImportLine.getC_Invoice_ID()).as("Invoice not set correctly").isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(esrImportLine.getESR_Invoice_Grandtotal()).as("Incorrect grandtotal").isEqualByComparingTo(HUNDRET);
+		assertThat(invoice.getGrandTotal()).as("Incorrect grandtotal").isEqualByComparingTo(HUNDRET);
+
 		// guard: invoice has grandtotal=100; 10 already written off => 90 open; payment of 40 already allocated as of task 06677 => 50 open
 		// TODO: write unit tests to further dig into the "matching" and "updateOpenAmount" topics
-		assertThat("Incorrect invoice open amount", esrImportLine.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal("60")));
+		assertThat(esrImportLine.getESR_Invoice_Openamt()).as("Incorrect invoice open amount").isEqualByComparingTo(SIXTY);
 
 		final BigDecimal invoice2GrandTotal = new BigDecimal("123.56");
 
@@ -224,18 +228,18 @@ public class ESRImportBLTest extends ESRTestBase
 		// create allocation over 100 (plus 20 writeoff)
 		// note that PlainInvoiceDAO.retrieveAllocatedAmt() currently only checks for allocation lines, ignoring any hdr info.
 		final I_C_AllocationLine allocAmt2 = newInstance(I_C_AllocationLine.class);
-		allocAmt2.setWriteOffAmt(new BigDecimal(20.0));
-		allocAmt2.setAmount(new BigDecimal(100));
+		allocAmt2.setWriteOffAmt(TWENTY);
+		allocAmt2.setAmount(HUNDRET);
 		allocAmt2.setC_Invoice_ID(invoice2.getC_Invoice_ID());
 		save(allocAmt2);
 
 		esrImportBL.setInvoice(esrImportLine, invoice2);
 
-		assertThat("Invoice not set correctly", esrImportLine.getC_Invoice_ID(), is(invoice2.getC_Invoice_ID()));
-		Assert.assertTrue("Incorrect grandtotal", invoice2GrandTotal.equals(esrImportLine.getESR_Invoice_Grandtotal()));
+		assertThat(esrImportLine.getC_Invoice_ID()).as("Invoice not set correctly").isEqualTo(invoice2.getC_Invoice_ID());
+		assertThat(invoice2GrandTotal).as("Incorrect grandtotal").isEqualByComparingTo(esrImportLine.getESR_Invoice_Grandtotal());
 
 		// ts: note that we always subtract the line's (or lines' !) amount from the invoice's open amount
-		assertThat(esrImportLine.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal("3.56").subtract(esrImportLine.getAmount()))); // this should be correct when we have a non-credit-memo
+		assertThat(esrImportLine.getESR_Invoice_Openamt()).isEqualByComparingTo(new BigDecimal("3.56").subtract(esrImportLine.getAmount())); // this should be correct when we have a non-credit-memo
 	}
 
 	@Test
@@ -319,8 +323,8 @@ public class ESRImportBLTest extends ESRTestBase
 		save(invoice2);
 
 		final I_C_AllocationLine allocAmt2 = newInstance(I_C_AllocationLine.class);
-		allocAmt2.setWriteOffAmt(new BigDecimal(20.0));
-		allocAmt2.setAmount(new BigDecimal(100));
+		allocAmt2.setWriteOffAmt(TWENTY);
+		allocAmt2.setAmount(HUNDRET);
 		allocAmt2.setC_Invoice_ID(invoice2.getC_Invoice_ID());
 		save(allocAmt2);
 

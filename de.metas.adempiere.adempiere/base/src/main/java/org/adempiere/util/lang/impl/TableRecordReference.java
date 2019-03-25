@@ -80,7 +80,7 @@ public final class TableRecordReference implements ITableRecordReference
 	 * @param model model interface or {@link TableRecordReference}; <code>null</code> is NOT allowed
 	 * @return {@link TableRecordReference}; never returns null
 	 */
-	public static final TableRecordReference of(final Object model)
+	public static final TableRecordReference of(@NonNull final Object model)
 	{
 		if (model instanceof TableRecordReference)
 		{
