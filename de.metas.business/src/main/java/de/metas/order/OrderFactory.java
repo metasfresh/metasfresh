@@ -73,7 +73,6 @@ public class OrderFactory
 	private OrderFactory()
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-
 		order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 		order.setDocStatus(IDocument.STATUS_Drafted);
 		order.setDocAction(IDocument.ACTION_Complete);
@@ -90,23 +89,29 @@ public class OrderFactory
 
 	public I_C_Order createDraft()
 	{
-		assertNotBuilt();
-		built = true;
-
 		if (orderLineBuilders.isEmpty())
 		{
 			throw new AdempiereException("no lines");
 		}
+
+		createDraftOrderHeader();
+
+		orderLineBuilders.forEach(OrderLineBuilder::build);
+
+		return order;
+	}
+
+	public I_C_Order createDraftOrderHeader()
+	{
+		assertNotBuilt();
+		built = true;
 
 		if (order.getC_DocTypeTarget_ID() <= 0)
 		{
 			final IOrderBL orderBL = Services.get(IOrderBL.class);
 			orderBL.setDocTypeTargetId(order);
 		}
-
 		save(order);
-
-		orderLineBuilders.forEach(OrderLineBuilder::build);
 
 		return order;
 	}
@@ -137,7 +142,7 @@ public class OrderFactory
 				.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
 				.findFirst();
 	}
-	
+
 	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
 	{
 		order.setIsSOTrx(soTrx.toBoolean());
