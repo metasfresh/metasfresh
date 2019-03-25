@@ -1,14 +1,6 @@
 package de.metas.invoice_gateway.spi.model.imp;
 
-import java.time.Instant;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import de.metas.invoice_gateway.spi.model.InvoiceId;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -33,31 +25,13 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * Contains the response from a 3rd party that reacted to an invoice with we send from metasfresh.
- */
 @Value
-@Builder(toBuilder=true)
-public class ImportedInvoiceResponse
+@Builder
+public class ImportInvoiceResponseRequest
 {
-	public enum Status
-	{
-		ACCEPTET, PENDING, REJECTED
-	}
+	String fileName;
 
-	@Nullable
-	InvoiceId id;
+	String mimeType;
 
-	@NonNull
-	String documentNumber;
-
-	@NonNull
-	Instant invoiceCreated;
-
-	Status status;
-
-	ImportInvoiceResponseRequest request;
-
-	@Singular
-	Map<String, String> additionalTags;
+	byte[] data;
 }

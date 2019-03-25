@@ -1,4 +1,4 @@
-package de.metas.invoice_gateway.spi.model.exp;
+package de.metas.invoice_gateway.spi.model.export;
 
 import lombok.Builder;
 import lombok.NonNull;

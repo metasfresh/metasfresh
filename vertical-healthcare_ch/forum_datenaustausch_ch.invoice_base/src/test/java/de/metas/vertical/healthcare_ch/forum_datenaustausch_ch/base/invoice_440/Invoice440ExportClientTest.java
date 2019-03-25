@@ -13,7 +13,7 @@ import de.metas.invoice_gateway.spi.model.EAN;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
-import de.metas.invoice_gateway.spi.model.exp.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 
 /*
  * #%L

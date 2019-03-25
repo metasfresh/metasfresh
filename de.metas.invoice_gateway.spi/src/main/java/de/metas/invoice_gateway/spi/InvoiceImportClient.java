@@ -1,7 +1,6 @@
 package de.metas.invoice_gateway.spi;
 
-import java.io.InputStream;
-
+import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 
 /*
@@ -28,5 +27,5 @@ import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 
 public interface InvoiceImportClient
 {
-	public ImportedInvoiceResponse importInvoiceResponse(InputStream xmlInput);
+	public ImportedInvoiceResponse importInvoiceResponse(ImportInvoiceResponseRequest request);
 }

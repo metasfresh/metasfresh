@@ -44,7 +44,7 @@ import de.metas.invoice_gateway.spi.model.InvoiceTax;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.ProductId;
-import de.metas.invoice_gateway.spi.model.exp.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.util.Check;
 import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;

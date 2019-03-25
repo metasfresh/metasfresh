@@ -4,6 +4,10 @@ import java.io.InputStream;
 
 import javax.xml.bind.JAXBElement;
 
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionResponseConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
@@ -32,6 +36,8 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
+@Profile(ForumDatenaustauschChConstants.PROFILE)
 public class Invoice440ResponseConversionService implements CrossVersionResponseConverter
 {
 	public static final String INVOICE_440_RESPONSE_XSD = "http://www.forum-datenaustausch.ch/invoice generalInvoiceResponse_440.xsd";

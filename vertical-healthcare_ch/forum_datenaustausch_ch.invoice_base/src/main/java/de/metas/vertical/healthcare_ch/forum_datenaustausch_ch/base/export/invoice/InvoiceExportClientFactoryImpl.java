@@ -9,7 +9,7 @@ import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
-import de.metas.invoice_gateway.spi.model.exp.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.util.Loggables;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;

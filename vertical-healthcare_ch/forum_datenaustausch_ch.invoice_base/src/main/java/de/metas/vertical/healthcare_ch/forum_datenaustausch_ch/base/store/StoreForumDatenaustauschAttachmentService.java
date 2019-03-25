@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.store;
 
-import lombok.NonNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,9 +30,10 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Store
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -192,7 +191,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 		// get the converter to use
 		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(new ByteArrayInputStream(attachmentData));
-		final CrossVersionRequestConverter<?> converter = crossVersionServiceRegistry.getConverterForXsdName(xsdName);
+		final CrossVersionRequestConverter converter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 		Check.assumeNotNull(converter, "Missing CrossVersionRequestConverter for XSD={}; attachmentEntry={}", xsdName, attachmentEntry);
 
 		// convert to crossVersion data

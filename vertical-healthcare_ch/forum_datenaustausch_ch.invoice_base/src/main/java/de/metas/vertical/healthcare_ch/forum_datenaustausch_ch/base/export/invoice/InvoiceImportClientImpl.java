@@ -5,16 +5,22 @@ import static de.metas.util.Check.assume;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.io.ByteStreams;
-
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.InvoiceImportClient;
+import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
+import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.ImportedInvoiceResponseBuilder;
+import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionResponseConverter;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlInvoice;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlPayload;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
 import lombok.NonNull;
 
 /*
@@ -39,21 +45,30 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Note that we don't yet have a factory for {@link InvoiceImportClient}s because we don't need it yet.
+ * The importing process that we currently have is in the same module and knows to use this implementation.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class InvoiceImportClientImpl implements InvoiceImportClient
 {
+	final String requiredAttachmentTagName = InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
+
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 
-	private InvoiceImportClientImpl(@NonNull final CrossVersionServiceRegistry crossVersionServiceRegistry)
+	public InvoiceImportClientImpl(@NonNull final CrossVersionServiceRegistry crossVersionServiceRegistry)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
 	}
 
 	@Override
-	public ImportedInvoiceResponse importInvoiceResponse(@NonNull final InputStream xmlInput)
+	public ImportedInvoiceResponse importInvoiceResponse(@NonNull final ImportInvoiceResponseRequest request)
 	{
 		try
 		{
-			return import0(xmlInput);
+			return import0(request);
 		}
 		catch (final IOException e)
 		{
@@ -61,30 +76,36 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 		}
 	}
 
-	private ImportedInvoiceResponse import0(final InputStream xmlInput) throws IOException
+	private ImportedInvoiceResponse import0(@NonNull final ImportInvoiceResponseRequest request) throws IOException
 	{
-		final InputStream inputStreamToUse;
-		if (xmlInput.markSupported())
-		{
-			inputStreamToUse = xmlInput;
-		}
-		else
-		{
-			final byte[] targetArray = ByteStreams.toByteArray(xmlInput);
-			inputStreamToUse = new ByteArrayInputStream(targetArray);
-			assume(inputStreamToUse.markSupported(), "ByteArrayInputStreams support mark and reset; inputStream={}", inputStreamToUse);
-		}
+		final InputStream inputStreamToUse = new ByteArrayInputStream(request.getData());
+		assume(inputStreamToUse.markSupported(), "ByteArrayInputStreams support mark and reset; inputStream={}", inputStreamToUse);
 
 		inputStreamToUse.mark(Integer.MAX_VALUE);
 		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(inputStreamToUse);
 		inputStreamToUse.reset();
 
-		final CrossVersionRequestConverter<?> converter = crossVersionServiceRegistry.getConverterForXsdName(xsdName);
+		final CrossVersionResponseConverter converter = crossVersionServiceRegistry.getResponseConverterForXsdName(xsdName);
 
-		converter.toCrossVersionRequest(inputStreamToUse);
+		final XmlResponse xInvoiceResponse = converter.toCrossVersionResponse(inputStreamToUse);
 
-		// TODO Auto-generated method stub
-		return null;
+		final XmlPayload payload = xInvoiceResponse.getPayload();
+		final XmlInvoice invoice = payload.getInvoice();
+
+		final Instant invoiceCreatedTimestamp = Instant.ofEpochSecond(invoice.getRequestTimestamp().longValue());
+
+		final ImportedInvoiceResponseBuilder builder = ImportedInvoiceResponse
+				.builder()
+				.documentNumber(invoice.getRequestId())
+				.invoiceCreated(invoiceCreatedTimestamp)
+				.request(request);
+
+		if (payload.getBody().getRejected() != null)
+		{
+			builder.status(Status.REJECTED);
+		}
+
+		return builder.build();
 	}
 
 }

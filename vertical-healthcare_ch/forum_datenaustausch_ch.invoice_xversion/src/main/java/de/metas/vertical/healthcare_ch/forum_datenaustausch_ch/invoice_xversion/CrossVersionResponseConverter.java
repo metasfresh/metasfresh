@@ -27,7 +27,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
  * #L%
  */
 
-public interface CrossVersionResponseConverter<T>
+public interface CrossVersionResponseConverter
 {
 	// currently not needed
 	// public void fromCrossVersionResponse(XmlResponse xReponse, OutputStream outputStream);
