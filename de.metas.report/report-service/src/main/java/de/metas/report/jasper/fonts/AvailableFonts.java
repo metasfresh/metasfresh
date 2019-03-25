@@ -1,9 +1,16 @@
 package de.metas.report.jasper.fonts;
 
 import java.awt.GraphicsEnvironment;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRDefaultScriptlet;
 import net.sf.jasperreports.engine.JRScriptletException;
+import net.sf.jasperreports.engine.JasperReportsContext;
+import net.sf.jasperreports.engine.fonts.FontUtil;
 
 /*
  * #%L
@@ -35,13 +42,49 @@ public class AvailableFonts extends JRDefaultScriptlet
 		final GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
 		final StringBuilder sb = new StringBuilder();
-		
-		for(String font:e.getAvailableFontFamilyNames())
+
+		for (String font : e.getAvailableFontFamilyNames())
 		{
 			sb.append(font);
 			sb.append("\n");
 		}
+
+		return sb.toString();
+	}
+
+	public static String getFontNames()
+	{
+		final List<String[]> classes = new ArrayList<String[]>();
+		List<String> elements = new ArrayList<String>();
+
+		final JasperReportsContext context = DefaultJasperReportsContext.getInstance();
+		final Collection<?> extensionFonts = FontUtil.getInstance(context).getFontFamilyNames();
+		for (final Iterator<?> it = extensionFonts.iterator(); it.hasNext();)
+		{
+			String fname = (String)it.next();
+			elements.add(fname);
+		}
+		classes.add(elements.toArray(new String[elements.size()]));
+		
+		final StringBuilder sb = new StringBuilder();
+		
+		String[] names = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+		for (int i = 0; i < names.length; i++)
+		{
+			sb.append(names[i]);
+			sb.append("\n");
+		}
+		
+		System.out.println(names);
 		
 		return sb.toString();
 	}
+	
+	public static void main(String[] args)
+	{
+
+		getFontNames();
+		
+	}
+
 }

@@ -29,6 +29,13 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="0" width="180" height="40" uuid="077a0e38-38e1-4574-a5ef-f68d76105fb7"/>
 				<textElement markup="styled"/>
+				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.getFontNames()]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="180" height="40" uuid="7908e44a-bb9f-4d2b-9786-ba7c19022de8"/>
+				<textElement markup="styled"/>
 				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.retrieveAvailableFonts()]]></textFieldExpression>
 			</textField>
 		</band>
