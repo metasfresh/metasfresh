@@ -2,7 +2,7 @@ package de.metas.invoice_gateway.spi;
 
 import java.util.Optional;
 
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.exp.InvoiceToExport;
 
 /*
  * #%L

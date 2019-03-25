@@ -18,10 +18,10 @@ import org.xmlunit.validation.Validator;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 
 /*
@@ -198,6 +198,12 @@ public class Invoice440RequestConversionServiceTest
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
 	}
 
+	private InputStream createInputStream(final String resourceName)
+	{
+		final InputStream xmlInput = this.getClass().getResourceAsStream(resourceName);
+		return xmlInput;
+	}
+
 	private void assertXmlIsValid(@NonNull final InputStream inputStream)
 	{
 		final StreamSource xsdInvoice = new StreamSource(getClass().getResourceAsStream("/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request/generalInvoiceRequest_440.xsd"));
@@ -210,11 +216,5 @@ public class Invoice440RequestConversionServiceTest
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
 		Assert.assertTrue(r.isValid());
-	}
-
-	private InputStream createInputStream(final String resourceName)
-	{
-		final InputStream xmlInput = this.getClass().getResourceAsStream(resourceName);
-		return xmlInput;
 	}
 }

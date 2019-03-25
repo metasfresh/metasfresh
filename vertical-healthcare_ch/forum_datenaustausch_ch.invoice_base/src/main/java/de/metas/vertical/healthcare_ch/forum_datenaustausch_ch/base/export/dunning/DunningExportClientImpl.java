@@ -35,17 +35,17 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Expor
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.prolog.XmlSoftware.SoftwareMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlReminder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody.BodyMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance.BalanceMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog.PrologMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.prolog.XmlSoftware.SoftwareMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 
 /*

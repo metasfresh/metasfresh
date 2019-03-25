@@ -1,9 +1,8 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.validation.invoice_440;
 
 import lombok.NonNull;
-
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.invoice_gateway.spi.model.exp.InvoiceToExport;
 import de.metas.util.Check;
 
 /*
