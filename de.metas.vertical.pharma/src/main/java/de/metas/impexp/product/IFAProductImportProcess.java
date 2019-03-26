@@ -47,7 +47,7 @@ import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
 
-public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
+public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
 {
 	private final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
