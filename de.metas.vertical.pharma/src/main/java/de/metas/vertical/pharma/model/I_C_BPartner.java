@@ -75,6 +75,7 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	public static final String ReceiptPermissionPharma_TypeA = "A";
 	public static final String ReceiptPermissionPharma_TypeB = "B";
+	public static final String ReceiptPermissionPharma_TypeC = "C";
 	// @formatter:on
 
 	// @formatter:off
