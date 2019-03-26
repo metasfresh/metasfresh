@@ -101,7 +101,7 @@ java \
  ${ext_lib_param}\
  ${MEMORY_PARAMS}\
  -XX:+HeapDumpOnOutOfMemoryError\
- ${metasfresh_db_connectionpool_params}
+ ${metasfresh_db_connectionpool_params}\
  ${metasfresh_admin_params}\
  -DPropertyFile=/opt/metasfresh/metasfresh-print/metasfresh.properties\
  -Djava.security.egd=file:/dev/./urandom\

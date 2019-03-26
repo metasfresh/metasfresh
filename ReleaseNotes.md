@@ -43,7 +43,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1165](https://github.com/metasfresh/metasfresh-webui-api/issues/1165) Window Layout: allow first field of a fields combo to be a dropdown
-  * [#1167](https://github.com/metasfresh/metasfresh-webui-api/issues/1167) Product lookup performance improvements (repsective frontend isue not yet doen)
+  * [#1167](https://github.com/metasfresh/metasfresh-webui-api/issues/1167) Product lookup performance improvements (repsective frontend isue not yet done)
 
 * metasfresh-webui-frontend
   * [#2177](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2177) Support single entry view mode for Tabs
