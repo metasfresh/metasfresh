@@ -10,6 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.98
+## Features
+* metasfresh [#5070](https://github.com/metasfresh/metasfresh/issues/5070) Discount Schema Lines in separate window
+
 # metasfresh 5.97
 ## Features
 * metasfresh
