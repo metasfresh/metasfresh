@@ -211,3 +211,17 @@ DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541111
 
 INSERT INTO public.c_dataimport (ad_client_id, ad_impformat_id, ad_org_id, c_dataimport_id, created, createdby, isactive, updated, updatedby) VALUES (1000000, 540032, 1000000, 540002, '2019-03-26 16:59:24.000000', 100, 'Y', '2019-03-26 16:59:24.000000', 100);
 
+
+
+
+-- 2019-03-26T19:07:10.767
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2019-03-26 19:07:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541080
+;
+
+
+
+update ad_impformat_row
+set seqno = seqno+1, startno = startno+1
+where AD_ImpFormat_ID=540032;
+
