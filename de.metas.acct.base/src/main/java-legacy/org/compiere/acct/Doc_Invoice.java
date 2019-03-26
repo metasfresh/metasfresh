@@ -331,13 +331,19 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
 
+		//
 		// Header Charge CR
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
-			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as), getCurrencyId(), null, chargeAmt);
+			fact.createLine()
+					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(null, chargeAmt)
+					.buildAndAdd();
 		}
 
+		//
 		// TaxDue CR
 		for (final DocTax docTax : getTaxes())
 		{
@@ -439,14 +445,19 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
 
+		//
 		// Header Charge DR
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
 		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
-			fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
-					getCurrencyId(), chargeAmt, null);
+			fact.createLine()
+					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(chargeAmt, null)
+					.buildAndAdd();
 		}
 
+		//
 		// TaxDue DR
 		for (final DocTax docTax : getTaxes())
 		{
@@ -546,10 +557,19 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
 
+		//
 		// Charge DR
-		fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
-				getCurrencyId(), getAmount(Doc.AMTTYPE_Charge), null);
+		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
+		if (chargeAmt != null && chargeAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(chargeAmt, null)
+					.buildAndAdd();
+		}
 
+		//
 		// TaxCredit DR
 		for (final DocTax docTax : getTaxes())
 		{
@@ -665,9 +685,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
+
+		//
 		// Charge CR
-		fact.createLine(null, getAccount(Doc.ACCTTYPE_Charge, as),
-				getCurrencyId(), null, getAmount(Doc.AMTTYPE_Charge));
+		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
+		if (chargeAmt != null && chargeAmt.signum() != 0)
+		{
+			fact.createLine()
+					.setAccount(getValidCombinationId(Doc.ACCTTYPE_Charge, as))
+					.setCurrencyId(getCurrencyId())
+					.setAmtSource(null, chargeAmt)
+					.buildAndAdd();
+		}
+
+		//
 		// TaxCredit CR
 		for (final DocTax docTax : getTaxes())
 		{
