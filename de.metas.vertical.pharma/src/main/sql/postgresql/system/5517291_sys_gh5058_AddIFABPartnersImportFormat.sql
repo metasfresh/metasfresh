@@ -207,3 +207,7 @@ DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541110
 DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541111
 ;
 
+
+
+INSERT INTO public.c_dataimport (ad_client_id, ad_impformat_id, ad_org_id, c_dataimport_id, created, createdby, isactive, updated, updatedby) VALUES (1000000, 540032, 1000000, 540002, '2019-03-26 16:59:24.000000', 100, 'Y', '2019-03-26 16:59:24.000000', 100);
+
