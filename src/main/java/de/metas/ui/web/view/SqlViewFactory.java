@@ -406,6 +406,7 @@ public class SqlViewFactory implements IViewFactory
 
 		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames)
 				.filterDescriptors(filterDescriptors)
+				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
 				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
 
 		if (windowId2SqlDocumentFilterConverterDecorator.containsKey(windowId))
@@ -429,7 +430,7 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
 			@NonNull final Set<String> displayFieldNames)
 	{
-		final SqlViewBinding.Builder builder = createBuilderForEntityBinding(entityBinding);
+		final SqlViewBinding.Builder builder = prepareSqlViewBinding(entityBinding);
 
 		entityBinding.getFields()
 				.stream()
@@ -439,14 +440,13 @@ public class SqlViewFactory implements IViewFactory
 		return builder;
 	}
 
-	private SqlViewBinding.Builder createBuilderForEntityBinding(@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding)
+	private static SqlViewBinding.Builder prepareSqlViewBinding(@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding)
 	{
-		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
+		return SqlViewBinding.builder()
 				.tableName(entityBinding.getTableName())
 				.tableAlias(entityBinding.getTableAlias())
 				.sqlWhereClause(entityBinding.getSqlWhereClause())
 				.defaultOrderBys(entityBinding.getDefaultOrderBys());
-		return builder;
 	}
 
 	private static final SqlViewRowFieldBinding createViewFieldBinding(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)

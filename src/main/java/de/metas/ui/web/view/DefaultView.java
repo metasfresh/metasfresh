@@ -128,6 +128,9 @@ public final class DefaultView implements IEditableView
 
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
 
+	//
+	// View refreshing on change events
+	private final boolean refreshViewOnChangeEvents;
 	private final ChangedRowIdsCollector changedRowIdsToCheck = new ChangedRowIdsCollector();
 
 	private DefaultView(final Builder builder)
@@ -146,6 +149,7 @@ public final class DefaultView implements IEditableView
 		viewFilterDescriptors = builder.getViewFilterDescriptors();
 		stickyFilters = builder.getStickyFilters();
 		filters = builder.getFilters();
+		refreshViewOnChangeEvents = builder.isRefreshViewOnChangeEvents();
 
 		//
 		// Selection
@@ -552,8 +556,11 @@ public final class DefaultView implements IEditableView
 		}
 
 		//
-		// TODO: Schedule rows to be checked and added or removed from current view
-		changedRowIdsToCheck.addChangedRows(rowIds);
+		// Schedule rows to be checked and added or removed from current view
+		if (refreshViewOnChangeEvents)
+		{
+			changedRowIdsToCheck.addChangedRows(rowIds);
+		}
 
 		// Invalidate local rowsById cache
 		cache_rowsById.removeAll(rowIds);
@@ -565,6 +572,11 @@ public final class DefaultView implements IEditableView
 
 	private void checkChangedRows()
 	{
+		if (!refreshViewOnChangeEvents)
+		{
+			return;
+		}
+
 		changedRowIdsToCheck.process(rowIds -> selectionsRef
 				.get()
 				.computeDefaultSelection(defaultSelection -> viewDataRepository.removeRowIdsNotMatchingFilters(defaultSelection, getAllFilters(), rowIds)));
@@ -748,6 +760,7 @@ public final class DefaultView implements IEditableView
 
 		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
 		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
+		private boolean refreshViewOnChangeEvents = false;
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
@@ -900,6 +913,17 @@ public final class DefaultView implements IEditableView
 		{
 			filters.forEach(filter -> _filtersById.putIfAbsent(filter.getFilterId(), filter));
 			return this;
+		}
+
+		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		{
+			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+			return this;
+		}
+
+		public boolean isRefreshViewOnChangeEvents()
+		{
+			return refreshViewOnChangeEvents;
 		}
 
 		public Builder viewInvalidationAdvisor(@NonNull final IViewInvalidationAdvisor viewInvalidationAdvisor)

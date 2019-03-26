@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.search.IUserQuery;
 import org.compiere.apps.search.IUserQueryField;
@@ -61,10 +62,12 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 	private final UserQueryRepository repository;
 	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
 
-	public UserQueryDocumentFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
+	public UserQueryDocumentFilterDescriptorsProvider(
+			@NonNull final AdTabId adTabId, 
+			final String tableName, 
+			final Collection<DocumentFieldDescriptor> fields)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
-		Check.assume(adTabId > 0, "adTabId > 0");
 
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
@@ -74,7 +77,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 				.collect(GuavaCollectors.toImmutableList());
 
 		repository = UserQueryRepository.builder()
-				.setAD_Tab_ID(adTabId)
+				.setAD_Tab_ID(adTabId.getRepoId())
 				.setAD_Table_ID(adTableId)
 				.setAD_User_ID(100) // FIXME: hardcoded, see https://github.com/metasfresh/metasfresh-webui/issues/162
 				.setSearchFields(searchFields)
