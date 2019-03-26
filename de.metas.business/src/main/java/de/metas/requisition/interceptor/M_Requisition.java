@@ -38,6 +38,7 @@ public class M_Requisition
 	void init()
 	{
 		final IProgramaticCalloutProvider registry = Services.get(IProgramaticCalloutProvider.class);
+		registry.registerAnnotatedCallout(new de.metas.requisition.callout.M_Requisition());
 		registry.registerAnnotatedCallout(new de.metas.requisition.callout.M_RequisitionLine());
 	}
 }
