@@ -139,7 +139,7 @@ public class PharmaOrderLineInputValidatorTest
 		cOrderLine.setM_Warehouse(mWarehouse);
 		cOrderLine.setC_BPartner(cbPartner);
 		cOrderLine.setC_PaymentTerm_Override(cPaymentTerm);
-		cOrderLine.setDatePromised(new Timestamp(LocalDateTime.now().minusHours(1).toEpochSecond(ZoneOffset.UTC)));
+		cOrderLine.setDatePromised(Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
 		cOrderLine.setC_Order(cOrder);
 		cOrderLine.setC_Currency(cCurrency);
 		cOrderLine.setPriceActual(priceActual);
