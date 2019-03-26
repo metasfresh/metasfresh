@@ -207,7 +207,7 @@ export function removeRows(rowsList, changedRows) {
   changedRows.forEach(id => {
     const idx = rowsList.findIndex(row => row.id === id);
 
-    if (idx === -1) {
+    if (idx !== -1) {
       rowsList = rowsList.delete(idx);
       removedRows.push(id);
     }
@@ -225,8 +225,11 @@ export function mergeRows({
   columnInfosByFieldName = {},
   changedIds,
 }) {
-  if (!fromRows) {
-    return toRows;
+  if (!fromRows && !changedIds) {
+    return {
+      rows: toRows,
+      removedRows: [],
+    };
   } else if (!fromRows.length) {
     return removeRows(toRows, changedIds);
   }
