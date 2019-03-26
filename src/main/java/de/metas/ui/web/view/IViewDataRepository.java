@@ -49,7 +49,7 @@ public interface IViewDataRepository
 	String getTableName();
 
 	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds, SqlOptions sqlOpts);
-	
+
 	Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName();
 
 	DocumentFilterDescriptorsProvider getViewFilterDescriptors();
@@ -69,4 +69,6 @@ public interface IViewDataRepository
 	void scheduleDeleteSelections(Set<String> viewIds);
 
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, boolean applySecurityRestrictions, SqlDocumentFilterConverterContext context);
+
+	ViewRowIdsOrderedSelection removeRowIdsNotMatchingFilters(ViewRowIdsOrderedSelection selection, List<DocumentFilter> filters, Set<DocumentId> rowIds);
 }

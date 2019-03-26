@@ -11,6 +11,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
@@ -290,8 +292,8 @@ public final class SqlViewKeyColumnNamesMap
 	@Builder(builderMethodName = "prepareSqlFilterByRowIds", builderClassName = "SqlFilterByRowIdsBuilder")
 	private SqlAndParams getSqlFilterByRowIds(
 			@NonNull final DocumentIdsSelection rowIds,
-			final SqlViewRowIdsConverter rowIdsConverter,
-			final String sqlColumnPrefix,
+			@Nullable final SqlViewRowIdsConverter rowIdsConverter,
+			@Nullable final String sqlColumnPrefix,
 			final boolean useKeyColumnName,
 			final boolean embedSqlParams)
 	{
@@ -312,7 +314,6 @@ public final class SqlViewKeyColumnNamesMap
 		}
 		else
 		{
-
 			final List<SqlAndParams> sqls = rowIds.toSet()
 					.stream()
 					.map(rowId -> getSqlFilterByRowId(rowId, sqlColumnPrefix, useKeyColumnName, embedSqlParams))
@@ -366,6 +367,13 @@ public final class SqlViewKeyColumnNamesMap
 	public List<Object> getSqlValuesList(@NonNull final DocumentId rowId)
 	{
 		return ImmutableList.copyOf(extractComposedKey(rowId).values());
+	}
+
+	public DocumentId retrieveRowId(final ResultSet rs)
+	{
+		final String sqlColumnPrefix = null;
+		final boolean useKeyColumnNames = true;
+		return retrieveRowId(rs, sqlColumnPrefix, useKeyColumnNames);
 	}
 
 	public DocumentId retrieveRowId(final ResultSet rs, final String sqlColumnPrefix, final boolean useKeyColumnNames)
