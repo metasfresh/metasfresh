@@ -1,10 +1,8 @@
 package de.metas.report.jasper.fonts;
 
+import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRDefaultScriptlet;
@@ -37,54 +35,36 @@ import net.sf.jasperreports.engine.fonts.FontUtil;
 public class AvailableFonts extends JRDefaultScriptlet
 {
 
-	public String retrieveAvailableFonts() throws JRScriptletException
+	public static String retrieveAvailableFontsUsingGraphicsEnvironment()
 	{
-		final GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
-
 		final StringBuilder sb = new StringBuilder();
 
-		for (String font : e.getAvailableFontFamilyNames())
+		Font[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+		for (int i = 0; i < fonts.length; i++)
 		{
-			sb.append(font);
+			sb.append(fonts[i].getFontName());
 			sb.append("\n");
 		}
-
 		return sb.toString();
 	}
 
-	public static String getFontNames()
+	public static String retrieveAvailableFontsUsingFontUtil()
 	{
-		final List<String[]> classes = new ArrayList<String[]>();
-		List<String> elements = new ArrayList<String>();
-
 		final JasperReportsContext context = DefaultJasperReportsContext.getInstance();
-		final Collection<?> extensionFonts = FontUtil.getInstance(context).getFontFamilyNames();
-		for (final Iterator<?> it = extensionFonts.iterator(); it.hasNext();)
-		{
-			String fname = (String)it.next();
-			elements.add(fname);
-		}
-		classes.add(elements.toArray(new String[elements.size()]));
+		final Collection<String> extensionFonts = FontUtil.getInstance(context).getFontNames();
 		
 		final StringBuilder sb = new StringBuilder();
 		
-		String[] names = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-		for (int i = 0; i < names.length; i++)
-		{
-			sb.append(names[i]);
+		extensionFonts.forEach(name -> {
+			sb.append(name);
 			sb.append("\n");
-		}
-		
-		System.out.println(names);
+		});
 		
 		return sb.toString();
 	}
 	
 	public static void main(String[] args)
 	{
-
-		getFontNames();
-		
+		System.out.println(retrieveAvailableFontsUsingFontUtil());
 	}
-
 }

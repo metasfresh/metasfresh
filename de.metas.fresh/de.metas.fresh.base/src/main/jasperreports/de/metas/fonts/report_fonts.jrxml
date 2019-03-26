@@ -24,19 +24,41 @@
 		</band>
 	</title>
 	<detail>
-		<band height="95" splitType="Stretch">
-			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+		<band height="39" splitType="Stretch">
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="0" width="180" height="40" uuid="077a0e38-38e1-4574-a5ef-f68d76105fb7"/>
-				<textElement markup="styled"/>
-				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.getFontNames()]]></textFieldExpression>
+				<reportElement x="0" y="0" width="180" height="30" uuid="4cc5ef64-c704-49e1-907a-8b20d210b252"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fonts retrieved using jasper FontUtil class"]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="50">
+		<band height="40" splitType="Stretch">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<textField isStretchWithOverflow="true" evaluationTime="Band">
+				<reportElement x="0" y="0" width="180" height="40" uuid="077a0e38-38e1-4574-a5ef-f68d76105fb7"/>
+				<textElement markup="styled">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.retrieveAvailableFontsUsingFontUtil()]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="35" splitType="Stretch">
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="0" width="180" height="40" uuid="7908e44a-bb9f-4d2b-9786-ba7c19022de8"/>
-				<textElement markup="styled"/>
-				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.retrieveAvailableFonts()]]></textFieldExpression>
+				<reportElement positionType="Float" x="0" y="0" width="180" height="30" uuid="37738902-b200-48f3-9f9b-de0a33f6821c"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fonts retrieved using GraphicsEnvironment class"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="0" width="180" height="40" uuid="ae1376ee-81c4-4daf-a03b-6fdfb2c0f96c"/>
+				<textElement markup="styled">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{RetrieveAvailableFonts_SCRIPTLET}.retrieveAvailableFontsUsingGraphicsEnvironment()]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
