@@ -6,14 +6,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.MimeType;
+import org.springframework.context.annotation.Profile;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -23,6 +34,8 @@ import de.metas.util.time.SystemTime;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice.InvoiceImportClientImpl;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo.InvoiceResponseRepoException;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import lombok.NonNull;
 
 /*
@@ -47,8 +60,13 @@ import lombok.NonNull;
  * #L%
  */
 
+@Profile(ForumDatenaustauschChConstants.PROFILE)
 public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 {
+	private static int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
+
+	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
+	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
 	private static final String ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
 	private static final String ATTATCHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
 	private static final String ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
@@ -66,6 +84,8 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 	private final InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
 
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -82,35 +102,74 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		final FileFilter fileFilter = new WildcardFileFilter(importFileWildcard);
 		final File[] filesToImport = inputDirectory.listFiles(fileFilter);
 
+		final Mutable<Boolean> allFilesImported = new Mutable<Boolean>(true);
+
 		for (final File fileToImport : filesToImport)
 		{
-			Services.get(ITrxManager.class).run(() -> {
+			trxManager.run(() -> {
 
-				importSingleFile(fileToImport.toPath(), outputDirectory.toPath());
+				final boolean currentFileImported = importSingleFile(fileToImport.toPath(), outputDirectory.toPath());
+				allFilesImported.setValue(allFilesImported.getValue() && currentFileImported);
 			});
 		}
+
+		if (allFilesImported.getValue())
+		{
+			return MSG_OK; // all went fine; nothing more to do
+		}
+
+		if(getProcessInfo().isInvokedByScheduler())
+		{
+			// throw an exception so the problem is logged with the scheduler and a supervisor may be notified
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NOT_ALL_FILES_IMPORTED);
+			throw new AdempiereException(message);
+		}
+
+		// return "OK" (i.e. don't throw an exception), but notify the user
+		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
+				.builder()
+				.recipient(Recipient.user(getAD_User_ID()))
+				.contentADMessage(MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION)
+				.contentADMessageParam(getPinstanceId().getRepoId())
+				.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId()), WINDOW_ID_AD_PInstance_ID))
+				.build();
+		notificationBL.send(userNotificationRequest);
 
 		return MSG_OK;
 	}
 
-	private void importSingleFile(
+	private boolean importSingleFile(
 			@NonNull final Path fileToImport,
 			@NonNull final Path outputDirectory)
 	{
-		final ImportInvoiceResponseRequest request = createRequest(fileToImport);
+		try
+		{
+			final ImportInvoiceResponseRequest request = createRequest(fileToImport);
 
-		final InvoiceImportClientImpl invoiceImportClientImpl = new InvoiceImportClientImpl(crossVersionServiceRegistry);
-		final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
+			final InvoiceImportClientImpl invoiceImportClientImpl = new InvoiceImportClientImpl(crossVersionServiceRegistry);
+			final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
 
-		final ImportedInvoiceResponse responseWithTags = response.toBuilder()
-				.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
-				.additionalTag(ATTATCHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
-				.additionalTag(ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
-				.build();
+			final ImportedInvoiceResponse responseWithTags = response.toBuilder()
+					.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
+					.additionalTag(ATTATCHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
+					.additionalTag(ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
+					.build();
 
-		importedInvoiceResponseRepo.save(responseWithTags);
-
-		moveFile(fileToImport, outputDirectory);
+			final InvoiceId invoiceId = importedInvoiceResponseRepo.save(responseWithTags);
+			moveFile(fileToImport, outputDirectory);
+			addLog("Imported invoice response file={} into C_Invoice_ID={}", fileToImport.getFileName().toString(), invoiceId.getRepoId());
+			return true;
+		}
+		catch (final InvoiceResponseRepoException e)
+		{
+			addLog("InvoiceResponseRepoException while processing file {}; Message={};", fileToImport.getFileName().toString(), e.getMessage());
+		}
+		catch (final RuntimeException e)
+		{
+			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+			addLog("{} while processing file {}; AD_Issue_ID={}; Message={};", e.getClass().getSimpleName(), fileToImport.getFileName().toString(), issue.getAD_Issue_ID(), e.getMessage());
+		}
+		return false;
 	}
 
 	private ImportInvoiceResponseRequest createRequest(@NonNull final Path fileToImport)

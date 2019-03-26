@@ -4,11 +4,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Repository;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.util.Services;
@@ -39,9 +42,10 @@ import lombok.NonNull;
 @Repository
 public class InvoiceResponseRepo
 {
+	private static final String MSG_INVOICE_NOT_FOUND_2P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found";
 	private final AttachmentEntryService attachmentEntryService;
 
-	private InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
+	public InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
 	{
 		this.attachmentEntryService = attachmentEntryService;
 	}
@@ -75,7 +79,22 @@ public class InvoiceResponseRepo
 				.create()
 				.setApplyAccessFilterRW(true)
 				.firstOnly(I_C_Invoice.class);
-		return invoiceRecord;
+
+		if (invoiceRecord != null)
+		{
+			return invoiceRecord;
+		}
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final ITranslatableString message = msgBL
+				.getTranslatableMsgText(MSG_INVOICE_NOT_FOUND_2P,
+						response.getDocumentNumber(),
+						response.getInvoiceCreated().getEpochSecond());
+
+		throw new InvoiceResponseRepoException(message)
+				.markAsUserValidationError();
+
 	}
 
 	private void updateInvoiceRecord(@NonNull final ImportedInvoiceResponse response,
@@ -102,5 +121,15 @@ public class InvoiceResponseRepo
 				.build();
 
 		attachmentEntryService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);
+	}
+
+	public static final class InvoiceResponseRepoException extends AdempiereException
+	{
+		private static final long serialVersionUID = -4024895067979792864L;
+
+		public InvoiceResponseRepoException(@NonNull final ITranslatableString message)
+		{
+			super(message);
+		}
 	}
 }

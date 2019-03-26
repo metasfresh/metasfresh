@@ -1,6 +1,7 @@
 package de.metas.invoice_gateway.spi.model.imp;
 
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -27,6 +28,7 @@ import lombok.Value;
 
 @Value
 @Builder
+@ToString(exclude = "data")
 public class ImportInvoiceResponseRequest
 {
 	String fileName;
