@@ -3,12 +3,15 @@ package de.metas.ui.web.view;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -52,7 +55,6 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -114,6 +116,7 @@ public final class DefaultView implements IEditableView
 	/** Regular filters */
 	private final ImmutableList<DocumentFilter> filters;
 	private transient ImmutableList<DocumentFilter> _allFilters;
+	private final boolean applySecurityRestrictions;
 
 	//
 	// Misc
@@ -124,6 +127,11 @@ public final class DefaultView implements IEditableView
 	private final transient CCache<DocumentId, IViewRow> cache_rowsById;
 
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+
+	//
+	// View refreshing on change events
+	private final boolean refreshViewOnChangeEvents;
+	private final ChangedRowIdsCollector changedRowIdsToCheck = new ChangedRowIdsCollector();
 
 	private DefaultView(final Builder builder)
 	{
@@ -141,26 +149,26 @@ public final class DefaultView implements IEditableView
 		viewFilterDescriptors = builder.getViewFilterDescriptors();
 		stickyFilters = builder.getStickyFilters();
 		filters = builder.getFilters();
+		refreshViewOnChangeEvents = builder.isRefreshViewOnChangeEvents();
 
 		//
 		// Selection
 		{
 			viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 
-			final boolean applySecurityRestrictions = builder.isApplySecurityRestrictions();
+			this.applySecurityRestrictions = builder.isApplySecurityRestrictions();
 			selectionsRef = ExtendedMemorizingSupplier.of(() -> {
 				if (defaultSelectionDeleteBeforeCreate.get())
 				{
 					viewDataRepository.deleteSelection(viewId);
 				}
 
-				final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
 				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
 						getViewEvaluationCtx(),
 						viewId,
 						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)),
 						applySecurityRestrictions,
-						context);
+						SqlDocumentFilterConverterContext.EMPTY);
 
 				return new ViewRowIdsOrderedSelections(defaultSelection);
 			});
@@ -358,6 +366,7 @@ public final class DefaultView implements IEditableView
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		assertNotClosed();
+		checkChangedRows();
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
@@ -422,6 +431,7 @@ public final class DefaultView implements IEditableView
 	public ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		assertNotClosed();
+		checkChangedRows();
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
@@ -446,6 +456,8 @@ public final class DefaultView implements IEditableView
 
 	private final IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
+		checkChangedRows();
+
 		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
 	}
 
@@ -543,12 +555,36 @@ public final class DefaultView implements IEditableView
 			return;
 		}
 
+		//
+		// Schedule rows to be checked and added or removed from current view
+		if (refreshViewOnChangeEvents)
+		{
+			changedRowIdsToCheck.addChangedRows(rowIds);
+		}
+
 		// Invalidate local rowsById cache
-		rowIds.forEach(cache_rowsById::remove);
+		cache_rowsById.removeAll(rowIds);
 
 		// Collect event
 		// TODO: check which rowIds are contained in this view and fire events only for those
 		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
+	}
+
+	private void checkChangedRows()
+	{
+		if (!refreshViewOnChangeEvents)
+		{
+			return;
+		}
+
+		changedRowIdsToCheck.process(rowIds -> checkChangedRows(rowIds));
+	}
+
+	private ViewRowIdsOrderedSelection checkChangedRows(final Set<DocumentId> rowIds)
+	{
+		return selectionsRef
+				.get()
+				.computeDefaultSelection(defaultSelection -> viewDataRepository.removeRowIdsNotMatchingFilters(defaultSelection, getAllFilters(), rowIds));
 	}
 
 	@Override
@@ -609,24 +645,81 @@ public final class DefaultView implements IEditableView
 		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName));
 	}
 
+	//
+	//
+	//
+	//
+	//
+	private static class ChangedRowIdsCollector
+	{
+		private final HashSet<DocumentId> rowIds = new HashSet<>();
+
+		public synchronized void process(@NonNull final Consumer<Set<DocumentId>> consumer)
+		{
+			if (rowIds.isEmpty())
+			{
+				return;
+			}
+
+			consumer.accept(rowIds);
+			rowIds.clear();
+		}
+
+		public synchronized void addChangedRows(@NonNull final Collection<DocumentId> rowIdsToAdd)
+		{
+			rowIds.addAll(rowIdsToAdd);
+		}
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	@FunctionalInterface
 	private static interface ViewRowIdsOrderedSelectionFactory
 	{
 		ViewRowIdsOrderedSelection create(ViewRowIdsOrderedSelection defaultSelection, List<DocumentQueryOrderBy> orderBys);
 	}
 
+	//
+	//
+	//
+
 	private static final class ViewRowIdsOrderedSelections
 	{
-		@Getter
-		private final ViewRowIdsOrderedSelection defaultSelection;
-		private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+		private ViewRowIdsOrderedSelection defaultSelection;
+		private final HashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new HashMap<>();
 
 		public ViewRowIdsOrderedSelections(@NonNull final ViewRowIdsOrderedSelection defaultSelection)
 		{
 			this.defaultSelection = defaultSelection;
 		}
 
-		public ViewRowIdsOrderedSelection computeIfAbsent(final List<DocumentQueryOrderBy> orderBys, @NonNull final ViewRowIdsOrderedSelectionFactory factory)
+		public synchronized ViewRowIdsOrderedSelection getDefaultSelection()
+		{
+			return defaultSelection;
+		}
+
+		public synchronized ViewRowIdsOrderedSelection computeDefaultSelection(@NonNull final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
+		{
+			final ViewRowIdsOrderedSelection newDefaultSelection = mapper.apply(defaultSelection);
+			if (newDefaultSelection == null)
+			{
+				throw new AdempiereException("null default selection is not allowed");
+			}
+
+			if (!defaultSelection.equals(newDefaultSelection))
+			{
+				this.defaultSelection = newDefaultSelection;
+				selectionsByOrderBys.clear();
+			}
+
+			return defaultSelection;
+		}
+
+		public synchronized ViewRowIdsOrderedSelection computeIfAbsent(final List<DocumentQueryOrderBy> orderBys, @NonNull final ViewRowIdsOrderedSelectionFactory factory)
 		{
 			if (orderBys == null || orderBys.isEmpty())
 			{
@@ -641,7 +734,7 @@ public final class DefaultView implements IEditableView
 			return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> factory.create(defaultSelection, orderBysImmutable));
 		}
 
-		public Set<String> getSelectionIds()
+		public synchronized ImmutableSet<String> getSelectionIds()
 		{
 			final ImmutableSet.Builder<String> selectionIds = ImmutableSet.builder();
 			selectionIds.add(defaultSelection.getSelectionId());
@@ -671,6 +764,7 @@ public final class DefaultView implements IEditableView
 
 		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
 		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
+		private boolean refreshViewOnChangeEvents = false;
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
@@ -823,6 +917,17 @@ public final class DefaultView implements IEditableView
 		{
 			filters.forEach(filter -> _filtersById.putIfAbsent(filter.getFilterId(), filter));
 			return this;
+		}
+
+		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		{
+			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+			return this;
+		}
+
+		public boolean isRefreshViewOnChangeEvents()
+		{
+			return refreshViewOnChangeEvents;
 		}
 
 		public Builder viewInvalidationAdvisor(@NonNull final IViewInvalidationAdvisor viewInvalidationAdvisor)

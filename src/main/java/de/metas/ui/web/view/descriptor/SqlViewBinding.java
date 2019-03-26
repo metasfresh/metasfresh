@@ -37,6 +37,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 
@@ -82,6 +83,8 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 	private final SqlDocumentFilterConvertersList filterConverters;
+	@Getter
+	private final boolean refreshViewOnChangeEvents;
 
 	private final SqlViewRowIdsConverter rowIdsConverter;
 
@@ -146,6 +149,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		filterConverters = builder.buildViewFilterConverters();
 
 		filterConverterDecorator = builder.sqlDocumentFilterConverterDecorator;
+		
+		refreshViewOnChangeEvents = builder.refreshViewOnChangeEvents;
 
 		rowIdsConverter = builder.getRowIdsConverter();
 
@@ -364,6 +369,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private OrderByFieldNameAliasMap.OrderByFieldNameAliasMapBuilder orderByFieldNameAliasMap = OrderByFieldNameAliasMap.builder();
 		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private SqlDocumentFilterConvertersList.Builder filterConverters = null;
+		private boolean refreshViewOnChangeEvents;
 
 		private SqlViewRowIdsConverter rowIdsConverter = null;
 
@@ -607,6 +613,12 @@ public class SqlViewBinding implements SqlEntityBinding
 		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
 		{
 			return viewInvalidationAdvisor;
+		}
+
+		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		{
+			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+			return this;
 		}
 	}
 }

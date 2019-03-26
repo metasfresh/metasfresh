@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -133,7 +134,11 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, final List<DocumentFilter> filters, final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
+	public String getSqlWhereClause(
+			final ViewId viewId,
+			final List<DocumentFilter> filters,
+			final DocumentIdsSelection rowIds,
+			final SqlOptions sqlOpts)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
@@ -174,7 +179,8 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx,
+	public ViewRowIdsOrderedSelection createOrderedSelection(
+			final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
 			final List<DocumentFilter> filters,
 			final boolean applySecurityRestrictions,
@@ -604,4 +610,74 @@ class SqlViewDataRepository implements IViewDataRepository
 				.list(modelClass);
 	}
 
+	@Override
+	public ViewRowIdsOrderedSelection removeRowIdsNotMatchingFilters(
+			@NonNull final ViewRowIdsOrderedSelection selection,
+			@NonNull final List<DocumentFilter> filters,
+			@NonNull final Set<DocumentId> rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return selection;
+		}
+
+		final ViewId viewId = selection.getViewId();
+		final Set<DocumentId> matchingRowIds = retrieveRowIdsMatchingFilters(viewId, filters, rowIds);
+		final Set<DocumentId> notMatchingRowIds = Sets.difference(rowIds, matchingRowIds);
+		if (notMatchingRowIds.isEmpty())
+		{
+			return selection;
+		}
+
+		return viewRowIdsOrderedSelectionFactory.removeRowIdsFromSelection(selection, DocumentIdsSelection.of(notMatchingRowIds));
+	}
+
+	private Set<DocumentId> retrieveRowIdsMatchingFilters(
+			final ViewId viewId,
+			final List<DocumentFilter> filters,
+			@NonNull final Set<DocumentId> rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return rowIds;
+		}
+
+		final String sqlWhereClause = getSqlWhereClause(
+				viewId,
+				filters,
+				DocumentIdsSelection.of(rowIds),
+				SqlOptions.usingTableName(getTableName()));
+		final String sql = "SELECT "
+				+ keyColumnNamesMap.getKeyColumnNamesCommaSeparated()
+				+ "\n FROM " + getTableName()
+				+ "\n WHERE " + sqlWhereClause;
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			rs = pstmt.executeQuery();
+
+			final HashSet<DocumentId> matchingRowIds = new HashSet<>();
+			while (rs.next())
+			{
+				DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs);
+				if (rowId != null)
+				{
+					matchingRowIds.add(rowId);
+				}
+			}
+
+			return matchingRowIds;
+		}
+		catch (Exception ex)
+		{
+			throw new DBException(ex, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
 }

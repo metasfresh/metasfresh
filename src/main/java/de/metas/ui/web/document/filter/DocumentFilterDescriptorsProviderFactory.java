@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.Adempiere;
 import org.elasticsearch.client.Client;
 
@@ -74,7 +75,10 @@ public final class DocumentFilterDescriptorsProviderFactory
 		super();
 	}
 
-	public DocumentFilterDescriptorsProvider createFiltersProvider(final int adTabId, @Nullable final String tableName, final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(
+			final AdTabId adTabId, 
+			@Nullable final String tableName, 
+			final Collection<DocumentFieldDescriptor> fields)
 	{
 		return CompositeDocumentFilterDescriptorsProvider.compose(
 				createUserQueryDocumentFilterDescriptorsProvider(adTabId, tableName, fields),
@@ -170,11 +174,11 @@ public final class DocumentFilterDescriptorsProviderFactory
 	}
 
 	private static DocumentFilterDescriptorsProvider createUserQueryDocumentFilterDescriptorsProvider(
-			final int adTabId,
+			final AdTabId adTabId,
 			@Nullable final String tableName,
 			final Collection<DocumentFieldDescriptor> fields)
 	{
-		if (tableName != null && adTabId > 0)
+		if (tableName != null && adTabId != null)
 		{
 			return new UserQueryDocumentFilterDescriptorsProvider(adTabId, tableName, fields);
 		}
