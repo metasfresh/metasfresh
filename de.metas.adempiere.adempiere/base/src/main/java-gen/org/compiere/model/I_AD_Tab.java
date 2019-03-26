@@ -355,7 +355,7 @@ public interface I_AD_Tab
     public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
-	 * Set Schnelleingabe einschalten.
+	 * Set Schnelleingabe abschalten.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -364,7 +364,7 @@ public interface I_AD_Tab
 	public void setAllowQuickInput (boolean AllowQuickInput);
 
 	/**
-	 * Get Schnelleingabe einschalten.
+	 * Get Schnelleingabe abschalten.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -885,29 +885,6 @@ public interface I_AD_Tab
     public static final String COLUMNNAME_IsRefreshAllOnActivate = "IsRefreshAllOnActivate";
 
 	/**
-	 * Set Refresh view on change events.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents);
-
-	/**
-	 * Get Refresh view on change events.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isRefreshViewOnChangeEvents();
-
-    /** Column definition for IsRefreshViewOnChangeEvents */
-    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsRefreshViewOnChangeEvents = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsRefreshViewOnChangeEvents", null);
-    /** Column name IsRefreshViewOnChangeEvents */
-    public static final String COLUMNNAME_IsRefreshViewOnChangeEvents = "IsRefreshViewOnChangeEvents";
-
-	/**
 	 * Set Search Active.
 	 * This mark activates the search button from toolbar
 	 *
@@ -1057,6 +1034,7 @@ public interface I_AD_Tab
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -1066,6 +1044,7 @@ public interface I_AD_Tab
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
