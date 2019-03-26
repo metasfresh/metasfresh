@@ -32,12 +32,12 @@ public interface PayPalPlusRestEndpoint
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/paypalplus/";
 
 	/**
-	 * Reserve a PayPal Plus payment: authorize a payment and reserve it for 30 days
+	 * Authorize a payment and reserve it for 30 days
 	 *
 	 * @return Payment
 	 * @throws PayPalPlusException
 	 */
-	PaymentStatus reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
+	PaymentStatus authorizePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
 
 	/**
 	 * Capture a PayPal Plus payment: honor the payment
@@ -48,11 +48,11 @@ public interface PayPalPlusRestEndpoint
 	PaymentStatus capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
 
 	/**
-	 * Refund a PayPal Plus payment
+	 * Cancel(void) a PayPal Plus payment
 	 *
-	 * @return Payment
+	 * @return String
 	 * @throws PayPalPlusException
 	 */
-	PaymentStatus refundCapturedPayment(String paymentId, String reason) throws PayPalPlusException;
+	String cancelPayment(String paymentId, String reason) throws PayPalPlusException;
 
 }

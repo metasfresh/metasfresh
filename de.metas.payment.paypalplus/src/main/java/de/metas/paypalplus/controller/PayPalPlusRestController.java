@@ -1,12 +1,11 @@
 package de.metas.paypalplus.controller;
 
+import com.paypal.api.payments.CreditCard;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import de.metas.paypalplus.PayPalProperties;
-import de.metas.paypalplus.model.PayPalPlusException;
-import de.metas.paypalplus.model.PayPalPlusPayment;
-import de.metas.paypalplus.model.PaymentStatus;
+import de.metas.paypalplus.model.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,24 +52,55 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		apiContext = new APIContext(payPalProperties.getClientId(), payPalProperties.getClientSecret(), payPalProperties.getExecutionMode());
 	}
 
-	private PaymentStatus processPayment(PayPalPlusPayment payPalPlusPayment, String sale) throws PayPalPlusException
+	private PaymentStatus processPayment(PayPalPlusPayment payPalPlusPayment, String intent) throws PayPalPlusException
 	{
+		Details details = new Details();
+		details.setShipping(payPalPlusPayment.getPaymentAmount().getPaymentDetails().getShippingTax());
+		details.setSubtotal(payPalPlusPayment.getPaymentAmount().getPaymentDetails().getSubTotal());
+		details.setTax(payPalPlusPayment.getPaymentAmount().getPaymentDetails().getTax());
+
 		Amount amount = new Amount();
 		amount.setCurrency(payPalPlusPayment.getPaymentCurrency());
-		amount.setTotal(payPalPlusPayment.getPaymentAmount());
+		amount.setTotal(payPalPlusPayment.getPaymentAmount().getTotal());
+		amount.setDetails(details);
 
 		Transaction transaction = new Transaction();
 		transaction.setAmount(amount);
+		transaction
+				.setDescription(payPalPlusPayment.getTransactionDescription());
+
 		List<Transaction> transactions = new ArrayList<>();
 		transactions.add(transaction);
 
-		Payer payer = new Payer();
-		payer.setPayerInfo(new PayerInfo());
+		Address billingAddress = new Address();
+		billingAddress.setCity(payPalPlusPayment.getBillingAddress().getCity());
+		billingAddress.setCountryCode(payPalPlusPayment.getBillingAddress().getCountryCode());
+		billingAddress.setLine1(payPalPlusPayment.getBillingAddress().getAddress());
+		billingAddress.setPostalCode(payPalPlusPayment.getBillingAddress().getPostalCode());
+		billingAddress.setState(payPalPlusPayment.getBillingAddress().getState());
 
-		payer.setPaymentMethod("paypal");
+		CreditCard creditCard = new CreditCard();
+		creditCard.setBillingAddress(billingAddress);
+		creditCard.setCvv2(payPalPlusPayment.getCreditCard().getCvv2());
+		creditCard.setExpireMonth(payPalPlusPayment.getCreditCard().getExpirationMonth());
+		creditCard.setExpireYear(payPalPlusPayment.getCreditCard().getExpirationYear());
+		creditCard.setFirstName(payPalPlusPayment.getCreditCard().getFirstName());
+		creditCard.setLastName(payPalPlusPayment.getCreditCard().getLastName());
+		creditCard.setNumber(payPalPlusPayment.getCreditCard().getCardNumber());
+		creditCard.setType(payPalPlusPayment.getCreditCard().getCardType());
+
+		FundingInstrument fundingInstrument = new FundingInstrument();
+		fundingInstrument.setCreditCard(creditCard);
+
+		List<FundingInstrument> fundingInstruments = new ArrayList<>();
+		fundingInstruments.add(fundingInstrument);
+
+		Payer payer = new Payer();
+		payer.setFundingInstruments(fundingInstruments);
+		payer.setPaymentMethod("credit_card");
 
 		Payment payment = new Payment();
-		payment.setIntent(sale);
+		payment.setIntent(intent);
 		payment.setPayer(payer);
 		payment.setTransactions(transactions);
 
@@ -78,15 +108,24 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		redirectUrls.setCancelUrl("https://localhost:3000/cancel");
 		redirectUrls.setReturnUrl("https://localhost:3000/return");
 		payment.setRedirectUrls(redirectUrls);
+		Payment resultedPayment;
 		try
 		{
-			payment = payment.create(apiContext);
+			resultedPayment = payment.create(apiContext);
 		}
 		catch (PayPalRESTException e)
 		{
 			throw new PayPalPlusException(e.getMessage());
 		}
-		return new PaymentStatus(payment.getId(), payment.getState());
+		String authorizationId = "";
+		if (resultedPayment.getTransactions().size() > 0)
+			if (resultedPayment.getTransactions().get(0).getRelatedResources() != null &&
+					resultedPayment.getTransactions().get(0).getRelatedResources().size() > 0)
+				if (resultedPayment.getTransactions().get(0)
+						.getRelatedResources().get(0).getAuthorization() != null)
+					authorizationId = resultedPayment.getTransactions().get(0)
+							.getRelatedResources().get(0).getAuthorization().getId();
+		return new PaymentStatus(resultedPayment.getId(), authorizationId, resultedPayment.getState());
 	}
 
 	/**
@@ -95,34 +134,32 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 	 * @return Payment
 	 * @throws PayPalPlusException
 	 */
-	public PaymentStatus reservePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException
+	public PaymentStatus authorizePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException
 	{
 		return processPayment(payPalPlusPayment, "authorize");
 	}
+
 
 	@Override public PaymentStatus capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException
 	{
 		return processPayment(payPalPlusPayment, "sale");
 	}
 
-	@Override public PaymentStatus refundCapturedPayment(String paymentId, String reason) throws PayPalPlusException
+	@Override public String cancelPayment(String authorizationId, String reason) throws PayPalPlusException
 	{
-		RefundRequest refund = new RefundRequest();
-		refund.setReason(reason);
-		DetailedRefund detailedRefund;
+		Authorization authorization;
+		Authorization returnAuthorization;
 		try
 		{
-			Payment payment = Payment.get(apiContext, paymentId);
-			Sale sale = Sale.get(apiContext, payment.getTransactions().get(0).getRelatedResources().get(0).getSale().getId());
-
-			detailedRefund = sale.refund(apiContext, refund);
+			authorization = Authorization.get(apiContext, authorizationId);
+			returnAuthorization = authorization.doVoid(apiContext);
 		}
 		catch (PayPalRESTException e)
 		{
 			throw new PayPalPlusException(e.getMessage());
 		}
 
-		return new PaymentStatus(paymentId, detailedRefund.getState());
+		return returnAuthorization.getState();
 	}
 
 	public final static void main(String[] args)
@@ -130,8 +167,37 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 		PayPalPlusRestController controller = new PayPalPlusRestController(PayPalProperties.CONFIG_SANDBOX_PROPERTIES);
 		try
 		{
-			PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
-			PaymentStatus paymentStatus = controller.reservePayment(payPalPlusPayment);
+			PayPalPlusPayment payPalPlusPayment = PayPalPlusPayment.builder().
+					paymentAmount(PaymentAmount.builder().
+							paymentDetails(PaymentDetails.builder().
+									shippingTax("0.00").
+									subTotal("107.41").
+									tax("0.00").
+									build()).
+							total("107.41").
+							currency("EUR").
+							build()).
+					paymentCurrency("EUR").
+					paymentDate(LocalDate.now()).
+					creditCard(de.metas.paypalplus.model.CreditCard.builder().
+							cardType("visa").
+							firstName("Dummy first").
+							lastName("Dummy lastname").
+							expirationMonth(11).
+							expirationYear(2019).
+							cardNumber("4417119669820331").
+							cvv2("123").
+							build()).
+					billingAddress(BillingAddress.builder().
+							address("address").
+							city("Johnstown").
+							countryCode("US").
+							postalCode("43210").
+							state("OH")
+							.build()).
+					transactionDescription("Transaction description").
+					build();
+			PaymentStatus paymentStatus = controller.authorizePayment(payPalPlusPayment);
 			System.out.println("Payment reservation state:" + paymentStatus.toString());
 			paymentStatus = controller.capturePayment(payPalPlusPayment);
 			System.out.println("Payment capturing state:" + paymentStatus.toString());
@@ -142,4 +208,5 @@ public class PayPalPlusRestController implements PayPalPlusRestEndpoint
 			e.printStackTrace();
 		}
 	}
+
 }

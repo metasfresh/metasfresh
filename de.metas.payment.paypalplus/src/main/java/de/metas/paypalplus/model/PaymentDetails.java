@@ -1,19 +1,21 @@
 package de.metas.paypalplus.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Getter
-public class PaymentStatus
+@Builder
+public class PaymentDetails
 {
 	@NonNull
-	String paymentId;
+	String shippingTax;
 
 	@NonNull
-	String authorizationId;
+	String subTotal;
 
 	@NonNull
-	String paymentState;
+	String tax;
 }

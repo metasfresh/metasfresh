@@ -2,11 +2,8 @@ package de.metas.paypalplus.controller;
 
 import com.paypal.base.rest.PayPalRESTException;
 import de.metas.paypalplus.PayPalProperties;
-import de.metas.paypalplus.model.PayPalPlusException;
-import de.metas.paypalplus.model.PayPalPlusPayment;
-import de.metas.paypalplus.model.PaymentStatus;
+import de.metas.paypalplus.model.*;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -52,7 +49,7 @@ public class PayPalPlusRestControllerTest
 	@Test
 	public void capturePayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
+		PayPalPlusPayment payPalPlusPayment = buildPaymentObject();
 		PaymentStatus paymentStatus = null;
 		try
 		{
@@ -63,50 +60,85 @@ public class PayPalPlusRestControllerTest
 			fail();
 			e.printStackTrace();
 		}
-		assertEquals(paymentStatus.getPaymentState(), "created");
+		assertEquals(paymentStatus.getPaymentState(), "approved");
 	}
 
 	@Test
 	public void reservePayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
+		PayPalPlusPayment payPalPlusPayment = buildPaymentObject();
 		PaymentStatus paymentStatus = null;
 		try
 		{
-			paymentStatus = controller.reservePayment(payPalPlusPayment);
+			paymentStatus = controller.authorizePayment(payPalPlusPayment);
 		}
 		catch (PayPalPlusException e)
 		{
 			fail();
 			e.printStackTrace();
 		}
-		assertEquals(paymentStatus.getPaymentState(), "created");
+		assertEquals(paymentStatus.getPaymentState(), "approved");
 	}
 
 	@Test
-	@Ignore
-	public void refundPayment()
+	public void cancelPayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = new PayPalPlusPayment("1", "1", LocalDate.now(), "15.5", "EUR");
+		PayPalPlusPayment payPalPlusPayment = buildPaymentObject();
 		PaymentStatus paymentStatus = null;
 		try
 		{
-			paymentStatus = controller.capturePayment(payPalPlusPayment);
+			paymentStatus = controller.authorizePayment(payPalPlusPayment);
 		}
 		catch (PayPalPlusException e)
 		{
 			fail();
 			e.printStackTrace();
 		}
-		assertEquals(paymentStatus.getPaymentState(), "created");
+		assertEquals(paymentStatus.getPaymentState(), "approved");
+		String status = "";
 		try
 		{
-			controller.refundCapturedPayment(paymentStatus.getPaymentId(), "Refund reason - something");
+			status = controller.cancelPayment(paymentStatus.getAuthorizationId(), "Cancelling reason - something");
 		}
 		catch (PayPalPlusException e)
 		{
 			fail();
 			e.printStackTrace();
 		}
+		assertEquals(status, "voided");
+	}
+
+	private PayPalPlusPayment buildPaymentObject()
+	{
+		return PayPalPlusPayment.builder().
+				paymentAmount(PaymentAmount.builder().
+						paymentDetails(PaymentDetails.builder().
+								shippingTax("0.00").
+								subTotal("107.41").
+								tax("0.00").
+								build()).
+						total("107.41").
+						currency("EUR").
+						build()).
+				paymentCurrency("EUR").
+				paymentDate(LocalDate.now()).
+				creditCard(CreditCard.builder().
+						cardType("visa").
+						firstName("Dummy first").
+						lastName("Dummy lastname").
+						expirationMonth(11).
+						expirationYear(2019).
+						cardNumber("4417119669820331").
+						cvv2("123").
+						build()).
+				billingAddress(BillingAddress.builder().
+						address("address").
+						city("Johnstown").
+						countryCode("US").
+						postalCode("43210").
+						state("OH")
+						.build()).
+				transactionDescription("Transaction description").
+				build();
 	}
 }
