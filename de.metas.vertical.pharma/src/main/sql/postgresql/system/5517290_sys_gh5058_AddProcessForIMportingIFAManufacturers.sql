@@ -33,3 +33,32 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-03-26 18:3
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541086,541197,540692,TO_TIMESTAMP('2019-03-26 18:38:19','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.pharma','Y',TO_TIMESTAMP('2019-03-26 18:38:19','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
 ;
 
+
+-- 2019-03-26T18:42:08.324
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='IFA Hersteller importieren',Updated=TO_TIMESTAMP('2019-03-26 18:42:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541086
+;
+
+-- 2019-03-26T18:42:18.128
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='IFA Hersteller importieren',Updated=TO_TIMESTAMP('2019-03-26 18:42:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541086
+;
+
+
+
+-- 2019-03-26T18:43:02.071
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='IFA Produkt importieren',Updated=TO_TIMESTAMP('2019-03-26 18:43:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540903
+;
+
+-- 2019-03-26T18:43:07.210
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='IFA Produkt importieren',Updated=TO_TIMESTAMP('2019-03-26 18:43:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540903
+;
+
+-- 2019-03-26T18:43:10.167
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-03-26 18:43:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540903
+;
+
+
