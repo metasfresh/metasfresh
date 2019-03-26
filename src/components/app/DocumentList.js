@@ -216,8 +216,9 @@ export class DocumentList extends Component {
     }
   }
 
-  connectWebSocket = viewId => {
+  connectWebSocket = () => {
     const { windowType, dispatch } = this.props;
+    const { viewId } = this.state;
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
