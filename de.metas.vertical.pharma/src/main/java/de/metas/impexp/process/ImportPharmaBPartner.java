@@ -2,7 +2,7 @@ package de.metas.impexp.process;
 
 import org.compiere.process.AbstractImportJavaProcess;
 
-import de.metas.vertical.pharma.model.I_I_Pharma_Product;
+import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 
 /*
  * #%L
@@ -31,10 +31,10 @@ import de.metas.vertical.pharma.model.I_I_Pharma_Product;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ImportPharmaBPartner extends AbstractImportJavaProcess<I_I_Pharma_Product>
+public class ImportPharmaBPartner extends AbstractImportJavaProcess<I_I_Pharma_BPartner>
 {
 	public ImportPharmaBPartner()
 	{
-		super(I_I_Pharma_Product.class);
+		super(I_I_Pharma_BPartner.class);
 	}
 }
