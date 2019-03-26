@@ -434,7 +434,7 @@ export class RawWidget extends Component {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               field={fields[0].field}
-              timeFormat={true}
+              timeFormat="h:mm:ss A"
               dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,
