@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.user.UserId;
 import org.compiere.model.I_C_Phonecall_Schedule;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -21,6 +20,7 @@ import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaVersion;
 import de.metas.phonecall.PhonecallSchemaVersionLine;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.calendar.IBusinessDayMatcher;

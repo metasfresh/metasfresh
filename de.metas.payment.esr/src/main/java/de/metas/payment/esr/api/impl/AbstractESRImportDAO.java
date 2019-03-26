@@ -49,6 +49,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.security.permissions.Access;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
@@ -180,7 +181,7 @@ public abstract class AbstractESRImportDAO implements IESRImportDAO
 				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID, refNoType.getC_ReferenceNo_Type_ID())
 				.addInArrayFilter(I_C_ReferenceNo_Type.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY) // Note that we do need to filter by AD_Org_ID, because 'esrReferenceNumber' is not guaranteed to be unique!
 				.create()
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.firstOnly(I_C_ReferenceNo.class);  // unique constraint uc_referenceno_and_type
 
 		return referenceNoRecord;
