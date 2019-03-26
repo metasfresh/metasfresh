@@ -1,4 +1,4 @@
-package de.metas.impexp.partner;
+package de.metas.impexp.bpartner;
 
 import java.util.Comparator;
 import java.util.List;
@@ -46,7 +46,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-/* package */ class PharmaBPartnerLocationImportHelper
+/* package */ class IFABPartnerLocationImportHelper
 {
 	final private Comparator<Address> addressComparator = Comparator.comparing(Address::getCity)
 			.thenComparing(Address::getStreet1)

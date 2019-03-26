@@ -1,4 +1,4 @@
-package de.metas.impexp.partner;
+package de.metas.impexp.bpartner;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -36,7 +36,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-/* package */ class PharmaBPartnerImportHelper
+/* package */ class IFABPartnerImportHelper
 {
 
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#by#" + I_C_BPartner.COLUMNNAME_IFA_Manufacturer)

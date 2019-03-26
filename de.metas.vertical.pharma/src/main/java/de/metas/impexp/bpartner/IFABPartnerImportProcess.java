@@ -1,4 +1,4 @@
-package de.metas.impexp.partner;
+package de.metas.impexp.bpartner;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +17,7 @@ import de.metas.vertical.pharma.model.X_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
 
-public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_BPartner>
+public class IFABPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_BPartner>
 {
 	private final String DEACTIVATE_OPERATION_CODE = "2";
 
@@ -55,7 +55,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 	protected void updateAndValidateImportRecords()
 	{
 		final String whereClause = getWhereClause();
-		PharmaBPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
+		IFABPartnerImportTableSqlUpdater.updateBPartnerImportTable(whereClause);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 			final I_I_Pharma_BPartner importRecord,
 			final boolean isInsertOnly) throws Exception
 	{
-		final I_C_BPartner existentBPartner = PharmaBPartnerImportHelper.fetchManufacturer(importRecord.getb00adrnr());
+		final I_C_BPartner existentBPartner = IFABPartnerImportHelper.fetchManufacturer(importRecord.getb00adrnr());
 
 		final String operationCode = importRecord.getb00ssatz();
 		if (DEACTIVATE_OPERATION_CODE.equals(operationCode) && existentBPartner != null)
@@ -75,10 +75,10 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			//
 			// Get previous values
-			PharmaBPartnerContext context = (PharmaBPartnerContext)state.getValue();
+			IFABPartnerContext context = (IFABPartnerContext)state.getValue();
 			if (context == null)
 			{
-				context = new PharmaBPartnerContext();
+				context = new IFABPartnerContext();
 				state.setValue(context);
 			}
 			final I_I_Pharma_BPartner previousImportRecord = context.getPreviousImportRecord();
@@ -88,7 +88,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 
 			final ImportRecordResult bpartnerImportResult;
 
-			//  create a new BPartner or update the existing one
+			// create a new BPartner or update the existing one
 			final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getb00adrnr(), previousBPValue);
 			if (firstImportRecordOrNewBPartner)
 			{
@@ -114,7 +114,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 				}
 			}
 
-			PharmaBPartnerLocationImportHelper.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
+			IFABPartnerLocationImportHelper.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 
 			context.collectImportRecordForSameBP(importRecord);
 
@@ -129,7 +129,7 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 		partner.setIsActive(false);
 		InterfaceWrapperHelper.save(partner);
 	}
-	
+
 	private ImportRecordResult importOrUpdateBPartner(final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
 	{
 		final boolean bpartnerExists = importRecord.getC_BPartner_ID() > 0;
@@ -138,18 +138,18 @@ public class PharmaPartnerImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			return ImportRecordResult.Nothing;
 		}
-		
-		PharmaBPartnerImportHelper.importRecord(importRecord);
-		
+
+		IFABPartnerImportHelper.importRecord(importRecord);
+
 		return bpartnerExists ? ImportRecordResult.Updated : ImportRecordResult.Inserted;
 	}
-	
+
 	private ImportRecordResult doNothingAndUsePreviousPartner(final I_I_Pharma_BPartner importRecord, final I_I_Pharma_BPartner previousImportRecord)
 	{
 		importRecord.setC_BPartner(previousImportRecord.getC_BPartner());
 		return ImportRecordResult.Nothing;
 	}
-	
+
 	@Override
 	protected void markImported(final I_I_Pharma_BPartner importRecord)
 	{

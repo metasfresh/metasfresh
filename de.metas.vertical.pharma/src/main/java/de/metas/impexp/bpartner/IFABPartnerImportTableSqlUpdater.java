@@ -1,4 +1,4 @@
-package de.metas.impexp.partner;
+package de.metas.impexp.bpartner;
 
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
@@ -35,16 +35,16 @@ import lombok.experimental.UtilityClass;
  */
 
 /**
- * A helper class for {@link PharmaPartnerImportProcess} that performs the "dirty" but efficient SQL updates on the {@link I_I_Pharma_BPartner} table.
+ * A helper class for {@link IFABPartnerImportProcess} that performs the "dirty" but efficient SQL updates on the {@link I_I_Pharma_BPartner} table.
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @UtilityClass
-public class PharmaBPartnerImportTableSqlUpdater
+public class IFABPartnerImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(PharmaBPartnerImportTableSqlUpdater.class);
+	private static final transient Logger logger = LogManager.getLogger(IFABPartnerImportTableSqlUpdater.class);
 
 	public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{

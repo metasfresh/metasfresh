@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.impexp.partner;
+package de.metas.impexp.bpartner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final public class PharmaBPartnerContext
+final public class IFABPartnerContext
 {
 		private I_I_Pharma_BPartner previousImportRecord = null;
 		private List<I_I_Pharma_BPartner> previousImportRecordsForSameBP = new ArrayList<>();
