@@ -49,7 +49,7 @@ public class PhonecallSchemaVersion
 	@NonNull
 	LocalDate validFrom;
 
-	@NonNull
+	@Nullable
 	Frequency frequency;
 
 	ImmutableList<PhonecallSchemaVersionLine> lines;
