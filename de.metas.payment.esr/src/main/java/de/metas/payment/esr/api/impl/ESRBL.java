@@ -8,10 +8,10 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Invoice;
@@ -117,7 +117,8 @@ public class ESRBL implements IESRBL
 
 		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount, bankAccountRecord);
 
-		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class);
+		// create payment request with invoiceRecord's Client and Org
+		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class, invoiceRecord);
 		paymentRequestRecord.setReference(invoiceReferenceString.asString());
 		paymentRequestRecord.setFullPaymentString(renderedCodeStr);
 		paymentRequestRecord.setC_BP_BankAccount(bankAccountRecord);
@@ -192,14 +193,15 @@ public class ESRBL implements IESRBL
 			@NonNull final String renderedCodeStr,
 			@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
+		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(invoiceRecord);
 
-		final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(Env.getCtx(), ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
-		final I_C_ReferenceNo invoiceReferenceNo = referenceNoDAO.getCreateReferenceNo(Env.getCtx(), invoiceReferenceNoType, invoiceReferenceString.asString(), ITrx.TRXNAME_ThreadInherited);
+		final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
+		final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
+		final I_C_ReferenceNo invoiceReferenceNo = referenceNoDAO.getCreateReferenceNo(invoiceReferenceNoType, invoiceReferenceString.asString(), contextAware);
 		referenceNoDAO.getCreateReferenceNoDoc(invoiceReferenceNo, TableRecordReference.of(invoiceRecord));
 
-		final I_C_ReferenceNo_Type renderedCodeReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(Env.getCtx(), ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_ReferenceNumber);
-		final I_C_ReferenceNo renderedCodeReferenceNo = referenceNoDAO.getCreateReferenceNo(Env.getCtx(), renderedCodeReferenceNoType, renderedCodeStr, ITrx.TRXNAME_ThreadInherited);
+		final I_C_ReferenceNo_Type renderedCodeReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_ReferenceNumber);
+		final I_C_ReferenceNo renderedCodeReferenceNo = referenceNoDAO.getCreateReferenceNo(renderedCodeReferenceNoType, renderedCodeStr, contextAware);
 		referenceNoDAO.getCreateReferenceNoDoc(renderedCodeReferenceNo, TableRecordReference.of(invoiceRecord));
 	}
 }
