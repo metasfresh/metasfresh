@@ -44,6 +44,7 @@ public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 {
 	private final static String MSG_NoPrescriptionPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission";
 	private final static String MSG_NoPharmaShipmentPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions";
+	private final static String MSG_NoNarcoticPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoNarcoticPermissions";
 
 	private final PharmaBPartnerRepository pharmaBPartnerRepo;
 	private final PharmaProductRepository pharmaProductRepo;
@@ -74,12 +75,27 @@ public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 		final OrderLineInputValidatorResultsBuilder resultBuilder = OrderLineInputValidatorResults.builder();
 
 		final PharmaBPartner bpartner = pharmaBPartnerRepo.getById(bpartnerId);
+		final PharmaProduct product = pharmaProductRepo.getById(productId);
+
+		if (bpartner.getShipmentPermission().equals(PharmaShipmentPermission.TYPE_C))
+		{
+			return resultBuilder.isValid(true).build();
+		}
+
+		if (product.isNarcotic())
+		{
+			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(
+					MSG_NoNarcoticPermission,
+					product.getValue(),
+					bpartner.getName());
+			return resultBuilder.isValid(false).errorMessage(noPermissionMessage).build();
+		}
+
 		if (bpartner.isHasAtLeastOnePermission())
 		{
 			return resultBuilder.isValid(true).build();
 		}
 
-		final PharmaProduct product = pharmaProductRepo.getById(productId);
 		if (!product.isPrescriptionRequired())
 		{
 			return resultBuilder.isValid(true).build();
@@ -87,13 +103,13 @@ public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 
 		final ITranslatableString noPermissionReason = msgBL.getTranslatableMsgText(MSG_NoPharmaShipmentPermission, Collections.emptyList());
 
-		final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_NoPrescriptionPermission,
+		final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(
+				MSG_NoPrescriptionPermission,
 				product.getValue(),
 				bpartner.getName(),
 				Util.coalesce(bpartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
 
-		return resultBuilder.isValid(false)
-				.errorMessage(noPermissionMessage).build();
+		return resultBuilder.isValid(false).errorMessage(noPermissionMessage).build();
 
 	}
 

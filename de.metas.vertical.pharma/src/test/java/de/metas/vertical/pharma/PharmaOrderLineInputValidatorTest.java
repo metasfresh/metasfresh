@@ -120,6 +120,59 @@ public class PharmaOrderLineInputValidatorTest
 		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
 	}
 
+	@Test
+	public void assertTypeAbPartnerCanNotReceiveRxNarcoticProduct()
+	{
+		I_M_Product mProduct = createMProduct("Narcotic Product", true, true, "Narcotic Product");
+		I_M_Warehouse mWarehouse = createMWarehouse();
+		I_C_BPartner cbPartner = createCBpartner("Prescription Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeA, true);
+		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
+		I_C_Order cOrder = createCOrder(true);
+		I_C_Currency cCurrency = createCCurrency();
+		I_C_UOM cUom = createCUom();
+		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+
+		thrown.expect(AdempiereException.class);
+		// i' not sure if it's all right to check the expected message (below)
+		// because the string is an ITranslatableString, so the message may be changed depending on language settings.
+		thrown.expectMessage("NoNarcoticPermissions");
+		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
+	}
+
+	@Test
+	public void assertTypeBbPartnerCanNotReceiveRxNarcoticProduct()
+	{
+		I_M_Product mProduct = createMProduct("Narcotic Product", true, true, "Narcotic Product");
+		I_M_Warehouse mWarehouse = createMWarehouse();
+		I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeB, true);
+		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
+		I_C_Order cOrder = createCOrder(true);
+		I_C_Currency cCurrency = createCCurrency();
+		I_C_UOM cUom = createCUom();
+		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+
+		thrown.expect(AdempiereException.class);
+		// i' not sure if it's all right to check the expected message (below)
+		// because the string is an ITranslatableString, so the message may be changed depending on language settings.
+		thrown.expectMessage("NoNarcoticPermissions");
+		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
+	}
+
+	@Test
+	public void assertTypeCbPartnerCanReceiveRxNarcoticProduct()
+	{
+		I_M_Product mProduct = createMProduct("Narcotic Product", true, true, "Narcotic Product");
+		I_M_Warehouse mWarehouse = createMWarehouse();
+		I_C_BPartner cbPartner = createCBpartner("Narcotic Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeC, true);
+		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
+		I_C_Order cOrder = createCOrder(true);
+		I_C_Currency cCurrency = createCCurrency();
+		I_C_UOM cUom = createCUom();
+		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+
+		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
+	}
+
 	/**
 	 * All the create* methods should belong to a god-object TestHelperFactory of some kind.
 	 * It's really bad to keep creating these for all tests in all the different projects.
