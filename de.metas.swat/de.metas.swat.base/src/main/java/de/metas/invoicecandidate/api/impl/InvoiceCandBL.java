@@ -60,7 +60,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
@@ -136,6 +135,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -704,7 +704,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, ic.getPrice_UOM(), qty);
+		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(productId, ic.getPrice_UOM(), qty);
 
 		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}", qty, productId, qtyInPriceUOM, ic);
 

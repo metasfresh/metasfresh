@@ -1,7 +1,5 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,8 +28,6 @@ import java.util.Set;
 
 import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -70,6 +66,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -316,8 +315,9 @@ public class PricingBL implements IPricingBL
 
 		if (pricingCtx.getC_UOM_ID() > 0 && pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID())
 		{
-			final I_C_UOM uomTo = loadOutOfTrx(pricingCtx.getC_UOM_ID(), I_C_UOM.class);
-			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
+			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+			final I_C_UOM uomTo = uomsRepo.getById(pricingCtx.getC_UOM_ID());
+			final I_C_UOM uomFrom = uomsRepo.getById(result.getPrice_UOM_ID());
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
 					result.getProductId(),

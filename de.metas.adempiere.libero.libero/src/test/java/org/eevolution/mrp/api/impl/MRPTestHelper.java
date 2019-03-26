@@ -53,7 +53,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Shipper;
@@ -99,6 +98,9 @@ import de.metas.material.planning.impl.MRPContext;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -419,37 +421,40 @@ public class MRPTestHelper
 		return uom;
 	}
 
-	public I_C_UOM_Conversion createUOMConversion(
+	public void createUOMConversion(
 			final int productId,
 			final I_C_UOM uomFrom,
 			final I_C_UOM uomTo,
-			final BigDecimal multiplyRate,
-			final BigDecimal divideRate)
+			final BigDecimal fromToMultipler,
+			final BigDecimal toFromMultiplier)
 	{
-		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.create(Env.getCtx(), I_C_UOM_Conversion.class, ITrx.TRXNAME_None);
-
-		conversion.setM_Product_ID(productId);
-		conversion.setC_UOM_ID(uomFrom.getC_UOM_ID());
-		conversion.setC_UOM_To_ID(uomTo.getC_UOM_ID());
-		conversion.setMultiplyRate(multiplyRate);
-		conversion.setDivideRate(divideRate);
-
-		InterfaceWrapperHelper.save(conversion, ITrx.TRXNAME_None);
-
-		return conversion;
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoIdOrNull(productId))
+				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
+				.fromToMultiplier(fromToMultipler)
+				.toFromMultiplier(toFromMultiplier)
+				.build());
 	}
 
-	public I_C_UOM_Conversion createUOMConversion(
+	public void createUOMConversion(
 			final I_M_Product product,
 			final I_C_UOM uomFrom,
 			final I_C_UOM uomTo,
-			final String multiplyRateStr,
-			final String divideRateStr)
+			final String fromToMultiplierStr,
+			final String toFromMultiplierStr)
 	{
-		final int productId = product == null ? -1 : product.getM_Product_ID();
-		final BigDecimal multiplyRate = new BigDecimal(multiplyRateStr);
-		final BigDecimal divideRate = new BigDecimal(divideRateStr);
-		return createUOMConversion(productId, uomFrom, uomTo, multiplyRate, divideRate);
+		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
+		final BigDecimal fromToMultiplier = new BigDecimal(fromToMultiplierStr);
+		final BigDecimal toFromMultiplier = new BigDecimal(toFromMultiplierStr);
+		
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(productId)
+				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
+				.fromToMultiplier(fromToMultiplier)
+				.toFromMultiplier(toFromMultiplier)
+				.build());
 	}
 
 	public I_M_Product createProduct(final String name)

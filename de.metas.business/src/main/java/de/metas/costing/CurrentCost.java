@@ -3,12 +3,12 @@ package de.metas.costing;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;

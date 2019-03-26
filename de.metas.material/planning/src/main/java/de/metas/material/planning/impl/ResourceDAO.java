@@ -36,8 +36,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
@@ -55,6 +53,8 @@ import de.metas.material.planning.ResourceTypeId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

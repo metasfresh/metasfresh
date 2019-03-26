@@ -2,9 +2,8 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.UomId;
-
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 
 import lombok.Builder;

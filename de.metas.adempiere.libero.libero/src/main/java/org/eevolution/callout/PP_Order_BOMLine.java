@@ -4,9 +4,10 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.model.MUOMConversion;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import de.metas.uom.LegacyUOMConversionUtils;
 
 /*
  * #%L
@@ -54,7 +55,7 @@ public class PP_Order_BOMLine
 		}
 		else
 		{
-			qtyRequiered = MUOMConversion.convertToProductUOM(Env.getCtx(), productId, uomToId, qtyEntered);
+			qtyRequiered = LegacyUOMConversionUtils.convertToProductUOM(Env.getCtx(), productId, uomToId, qtyEntered);
 			if (qtyRequiered == null)
 			{
 				qtyRequiered = qtyEntered;

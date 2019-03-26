@@ -13,7 +13,6 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
@@ -28,6 +27,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -87,7 +87,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
 		newSched.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
 
 		final String groupingOrderLineLabel = DB

@@ -35,5 +35,8 @@ de.metas.shipper.gateway.go/src/main/resources/application.properties
 de.metas.vertical.pharma.msv3.server/application.properties
 de.metas.report/report-service/application.properties
 
+
+#Ignore IDEA files
 *.iml
+**/.idea
 

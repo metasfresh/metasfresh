@@ -44,7 +44,6 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_DocType;
@@ -98,6 +97,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -961,7 +961,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		invoiceLine.setQtyInvoiced(qtyInvoiced);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		boolean fallback = false;
@@ -989,11 +988,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), qtyInvoiced);
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 
