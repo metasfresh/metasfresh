@@ -62,6 +62,11 @@ public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 		return evaluatePrescriptionPermission(bpartnerId, productId);
 	}
 
+	/**
+	 * TypeB can only ship non-prescription products.
+	 * TypeA can ship typeB + prescription.
+	 * TypeC can ship typeA + narcotics.
+	 */
 	private OrderLineInputValidatorResults evaluatePrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);

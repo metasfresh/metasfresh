@@ -32,6 +32,14 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * A Shipment permission means that
+ * I, as a vendor can SHIP TO a particular customer.
+ *
+ * So Shipment Permission is for a BPartner who is a customer
+ * and
+ * Receipt Permission is for a BPartner who is a vendor
+ */
 public enum PharmaShipmentPermission
 {
 	TYPE_A(I_C_BPartner.ShipmentPermissionPharma_TypeA), //
