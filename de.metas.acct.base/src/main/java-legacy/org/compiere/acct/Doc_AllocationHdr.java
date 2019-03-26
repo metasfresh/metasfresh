@@ -749,7 +749,7 @@ public class Doc_AllocationHdr extends Doc
 	 */
 	private final Fact createInvoiceWriteOffFacts(final MAcctSchema as, final DocLine_Allocation line)
 	{
-		final BigDecimal writeOffAmt = line.getWriteOffAmt_CMAdjusted();
+		final BigDecimal writeOffAmt = line.getWriteOffAmt();
 		if (writeOffAmt.signum() == 0)
 		{
 			return null;
@@ -762,14 +762,29 @@ public class Doc_AllocationHdr extends Doc
 				.setC_Currency_ID(getC_Currency_ID())
 				.setAD_Org_ID(line.getPaymentOrg_ID())
 				.setC_BPartner_ID(line.getPaymentBPartner_ID());
-		if (line.isRevenue())
+		if (line.isSOTrxInvoice())
 		{
-			factLineBuilder.setAmtSource(writeOffAmt, null);
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(null, writeOffAmt.negate());
+			}
+			else
+			{
+				factLineBuilder.setAmtSource(writeOffAmt, null);
+			}
 		}
 		else
 		{
-			factLineBuilder.setAmtSource(null, writeOffAmt.negate());
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(writeOffAmt, null);
+			}
+			else
+			{
+				factLineBuilder.setAmtSource(null, writeOffAmt.negate());
+			}
 		}
+
 		factLineBuilder.buildAndAdd();
 
 		//
@@ -1293,33 +1308,35 @@ public class Doc_AllocationHdr extends Doc
 			if (m_DiscountAmt.signum() != 0)
 			{
 				final MAccount discountAcct = getTaxDiscountAcct(as, taxId);
-
 				// Original Tax is DR - need to correct it CR
 				if (taxFactAcct.getAmtSourceDr().signum() != 0)
 				{
 					final BigDecimal invoiceTaxAmt = taxFactAcct.getAmtSourceDr();
-					final BigDecimal amount = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_DiscountAmt, precision);
-					if (amount.signum() != 0)
+					final BigDecimal amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_DiscountAmt, precision, line.isCreditMemoInvoice());
+
+					if (amountCMAdjusted.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc Discount=" + m_DiscountAmt;
 
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
+
 						// Discount expense
 						if (isDiscountExpense)
 						{
-							final FactLine flDR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), amount, null);
+
+							final FactLine flDR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), amountCMAdjusted, null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amount);
+							final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amountCMAdjusted);
 							updateFactLine(flCR, taxId, description);
 						}
 						// Discount revenue
 						else
 						{
-							final FactLine flDR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), amount.negate(), null);
+							final FactLine flDR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), amountCMAdjusted.negate(), null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amount.negate());
+							final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amountCMAdjusted.negate());
 							updateFactLine(flCR, taxId, description);
 						}
 
@@ -1329,8 +1346,9 @@ public class Doc_AllocationHdr extends Doc
 				else
 				{
 					final BigDecimal invoiceTaxAmt = taxFactAcct.getAmtSourceCr();
-					final BigDecimal amount = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_DiscountAmt, precision);
-					if (amount.signum() != 0)
+					final BigDecimal amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_DiscountAmt, precision, line.isCreditMemoInvoice());
+
+					if (amountCMAdjusted.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc Discount=" + m_DiscountAmt;
 
@@ -1340,17 +1358,17 @@ public class Doc_AllocationHdr extends Doc
 						// Discount expense
 						if (isDiscountExpense)
 						{
-							final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amount, null);
+							final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amountCMAdjusted, null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), null, amount);
+							final FactLine flCR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), null, amountCMAdjusted);
 							updateFactLine(flCR, taxId, description);
 						}
 						// Discount revenue
 						else
 						{
-							final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amount.negate(), null);
+							final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amountCMAdjusted.negate(), null);
 							updateFactLine(flDR, taxId, description);
-							final FactLine flCR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), null, amount.negate());
+							final FactLine flCR = fact.createLine(line, discountAcct, as.getC_Currency_ID(), null, amountCMAdjusted.negate());
 							updateFactLine(flCR, taxId, description);
 						}
 					}
@@ -1365,17 +1383,18 @@ public class Doc_AllocationHdr extends Doc
 				if (taxFactAcct.getAmtSourceDr().signum() != 0)
 				{
 					final BigDecimal invoiceTaxAmt = taxFactAcct.getAmtSourceDr();
-					final BigDecimal amount = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, precision);
-					if (amount.signum() != 0)
+					final BigDecimal amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, precision, line.isCreditMemoInvoice());
+
+					if (amountCMAdjusted.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc WriteOff=" + m_WriteOffAmt;
 
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
-						final FactLine flDR = fact.createLine(line, m_WriteOffAccount, as.getC_Currency_ID(), amount, null);
+						final FactLine flDR = fact.createLine(line, m_WriteOffAccount, as.getC_Currency_ID(), amountCMAdjusted, null);
 						updateFactLine(flDR, taxId, description);
-						final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amount);
+						final FactLine flCR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), null, amountCMAdjusted);
 						updateFactLine(flCR, taxId, description);
 					}
 				}
@@ -1383,17 +1402,17 @@ public class Doc_AllocationHdr extends Doc
 				else
 				{
 					final BigDecimal invoiceTaxAmt = taxFactAcct.getAmtSourceCr();
-					final BigDecimal amount = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, precision);
-					if (amount.signum() != 0)
+					final BigDecimal amountCMAdjusted = calcAmount(invoiceTaxAmt, invoiceGrandTotalAmt, m_WriteOffAmt, precision, line.isCreditMemoInvoice());
+					if (amountCMAdjusted.signum() != 0)
 					{
 						final String description = "Invoice TaxAmt/GrandTotal=" + invoiceTaxAmt + "/" + invoiceGrandTotalAmt + ", Alloc WriteOff=" + m_WriteOffAmt;
 
 						final Fact fact = createEmptyFact(as);
 						result.add(fact);
 
-						final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amount, null);
+						final FactLine flDR = fact.createLine(line, taxAcct, as.getC_Currency_ID(), amountCMAdjusted, null);
 						updateFactLine(flDR, taxId, description);
-						final FactLine flCR = fact.createLine(line, m_WriteOffAccount, as.getC_Currency_ID(), null, amount);
+						final FactLine flCR = fact.createLine(line, m_WriteOffAccount, as.getC_Currency_ID(), null, amountCMAdjusted);
 						updateFactLine(flCR, taxId, description);
 					}
 				}
@@ -1417,7 +1436,12 @@ public class Doc_AllocationHdr extends Doc
 	 * @param precision precision
 	 * @return (taxAmt / invoice grand total amount) * taxAmt
 	 */
-	private static final BigDecimal calcAmount(final BigDecimal taxAmt, final BigDecimal invoiceGrandTotalAmt, final BigDecimal discountAmt, final int precision)
+	private static final BigDecimal calcAmount(
+			final BigDecimal taxAmt,
+			final BigDecimal invoiceGrandTotalAmt,
+			final BigDecimal discountAmt,
+			final int precision,
+			final boolean isCreditMemoInvoice)
 	{
 		if (log.isDebugEnabled())
 		{
@@ -1443,7 +1467,9 @@ public class Doc_AllocationHdr extends Doc
 		{
 			log.debug(taxAmtPart + " (Mult=" + multiplier + "(Prec=" + precision + ")");
 		}
-		return taxAmtPart;
+
+		final BigDecimal taxAmtPartCMAdjusted = isCreditMemoInvoice ? taxAmtPart.negate() : taxAmtPart;
+		return taxAmtPartCMAdjusted;
 	}	// calcAmount
 
 	/**
