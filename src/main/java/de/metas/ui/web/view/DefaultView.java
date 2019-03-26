@@ -577,10 +577,14 @@ public final class DefaultView implements IEditableView
 			return;
 		}
 
-		changedRowIdsToCheck.process(rowIds -> selectionsRef
-				.get()
-				.computeDefaultSelection(defaultSelection -> viewDataRepository.removeRowIdsNotMatchingFilters(defaultSelection, getAllFilters(), rowIds)));
+		changedRowIdsToCheck.process(rowIds -> checkChangedRows(rowIds));
+	}
 
+	private ViewRowIdsOrderedSelection checkChangedRows(final Set<DocumentId> rowIds)
+	{
+		return selectionsRef
+				.get()
+				.computeDefaultSelection(defaultSelection -> viewDataRepository.removeRowIdsNotMatchingFilters(defaultSelection, getAllFilters(), rowIds));
 	}
 
 	@Override
