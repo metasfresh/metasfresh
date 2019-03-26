@@ -6,12 +6,15 @@ import de.metas.order.OrderLineRepository;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -39,6 +42,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 // FIXME: (HELPME) @teo? I couldn't make my JUnit5 test to work with Spring4, so i changed to using JUnit4. Can i use Junit 5 somehow?
 public class PharmaOrderLineInputValidatorTest
 {
+	@Rule public ExpectedException thrown = ExpectedException.none();
+
 	private C_OrderLine orderLineInterceptor;
 
 	@BeforeClass
@@ -58,7 +63,7 @@ public class PharmaOrderLineInputValidatorTest
 	{
 		I_M_Product mProduct = createMProduct("Vitamin C", false, false, "VitaminC");
 		I_M_Warehouse mWarehouse = createMWarehouse();
-		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vitamin C Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeB);
+		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vitamin C Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeB, false);
 		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		I_C_Order cOrder = createCOrder(true);
 		I_C_Currency cCurrency = createCCurrency();
@@ -68,6 +73,64 @@ public class PharmaOrderLineInputValidatorTest
 		/////////////////////////
 		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
 	}
+
+	@Test
+	public void assertTypeBbPartnerCanNotSellRxProduct()
+	{
+		I_M_Product mProduct = createMProduct("Vaccines", true, false, "Vaccines");
+		I_M_Warehouse mWarehouse = createMWarehouse();
+		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vaccines Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeB, false);
+		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
+		I_C_Order cOrder = createCOrder(true);
+		I_C_Currency cCurrency = createCCurrency();
+		I_C_UOM cUom = createCUom();
+		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+
+		/////////////////////////
+		thrown.expect(AdempiereException.class);
+		// i' not sure if it's all right to check the expected message (below)
+		// because the string is an ITranslatableString, so the message may be changed depending on language settings.
+		thrown.expectMessage("NoPrescriptionPermission");
+		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
+	}
+
+	@Test
+	public void assertTypeAbPartnerCanSellNonRxProduct()
+	{
+		I_M_Product mProduct = createMProduct("Vitamin C", false, false, "VitaminC");
+		I_M_Warehouse mWarehouse = createMWarehouse();
+		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vitamin C Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeA, false);
+		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
+		I_C_Order cOrder = createCOrder(true);
+		I_C_Currency cCurrency = createCCurrency();
+		I_C_UOM cUom = createCUom();
+		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+
+		/////////////////////////
+		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
+	}
+
+	@Test
+	public void assertTypeAbPartnerCanSellRxProduct()
+	{
+		I_M_Product mProduct = createMProduct("Vaccines", true, false, "Vaccines");
+		I_M_Warehouse mWarehouse = createMWarehouse();
+		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vaccines Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeA, false);
+		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
+		I_C_Order cOrder = createCOrder(true);
+		I_C_Currency cCurrency = createCCurrency();
+		I_C_UOM cUom = createCUom();
+		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
+
+		///////////////////////// aici nu ar trbui sa crape
+		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
+	}
+
+	/**
+	 * All the methods create* should belong to a god-object TestHelperFactory of some kind.
+	 * It's really bad to keep creating these for all tests in all the different projects.
+	 */
+
 
 	private I_C_OrderLine createCOrderLine(I_M_Product mProduct, I_M_Warehouse mWarehouse, I_C_BPartner cbPartner, I_C_PaymentTerm cPaymentTerm, I_C_Order cOrder, I_C_Currency cCurrency, I_C_UOM cUom, BigDecimal priceActual, BigDecimal qtyEntered)
 	{
@@ -117,12 +180,13 @@ public class PharmaOrderLineInputValidatorTest
 		return cPaymentTerm;
 	}
 
-	private I_C_BPartner createCBpartner(String name, String shipmentPermissionPharma)
+	private I_C_BPartner createCBpartner(String name, String shipmentPermissionPharma, boolean isCustomer)
 	{
 		// since this is a sales order, this should be the seller, right?
 		I_C_BPartner cbPartner = newInstance(I_C_BPartner.class);
 		cbPartner.setName(name);
 		cbPartner.setShipmentPermissionPharma(shipmentPermissionPharma);
+		cbPartner.setIsCustomer(isCustomer);
 		save(cbPartner);
 		return cbPartner;
 	}
