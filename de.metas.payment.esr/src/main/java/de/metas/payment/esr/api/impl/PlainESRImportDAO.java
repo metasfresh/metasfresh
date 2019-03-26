@@ -13,35 +13,26 @@ package de.metas.payment.esr.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 
-import de.metas.document.refid.api.IReferenceNoDAO;
-import de.metas.document.refid.model.I_C_ReferenceNo;
-import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.util.Services;
 
 public class PlainESRImportDAO extends AbstractESRImportDAO
 {
@@ -106,58 +97,6 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 		Collections.sort(result, esrImportLineDefaultComparator);
 
 		return result;
-	}
-
-	@Override
-	protected I_C_ReferenceNo fetchESRInvoiceReferenceNumber(final Properties ctx, final String esrReferenceNumber)
-	{
-		final IReferenceNoDAO refNoDAO = Services.get(IReferenceNoDAO.class);
-		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ctx, ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
-
-		final Pattern esrReferenceNumberPattern = Pattern.compile("^[0-9]{6}([0-9]*)[0-9]{1}$");
-
-		return db.getFirstOnly(I_C_ReferenceNo.class, new IQueryFilter<I_C_ReferenceNo>()
-		{
-
-			@Override
-			public boolean accept(I_C_ReferenceNo pojo)
-			{
-				if (pojo.getC_ReferenceNo_Type_ID() != refNoType.getC_ReferenceNo_Type_ID())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Org_ID() != 0 && pojo.getAD_Org_ID() != Env.getAD_Org_ID(ctx))
-				{
-					return false;
-				}
-
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				final String referenceNo = pojo.getReferenceNo();
-				final Matcher esrReferenceNumberMatcher = esrReferenceNumberPattern.matcher(referenceNo);
-				if (!esrReferenceNumberMatcher.find())
-				{
-					return false;
-				}
-
-				// System.out.println(esrReferenceNumber + "     ->     " + esrReferenceNumberMatcher.group(1));
-				// if (!esrReferenceNumber.equals(esrReferenceNumberMatcher.group(1)))
-				// {
-				// return false;
-				// }
-
-				return true;
-			}
-		});
 	}
 
 	@Override

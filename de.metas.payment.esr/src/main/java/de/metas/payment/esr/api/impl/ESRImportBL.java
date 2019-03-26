@@ -7,8 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -86,6 +84,7 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Service
 public class ESRImportBL implements IESRImportBL
@@ -120,8 +119,6 @@ public class ESRImportBL implements IESRImportBL
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
-		Check.assumeNotNull(esrImport, "esrImport not null");
-
 		final ILockManager lockManager = Services.get(ILockManager.class);
 		if (!lockManager.lock(esrImport))
 		{

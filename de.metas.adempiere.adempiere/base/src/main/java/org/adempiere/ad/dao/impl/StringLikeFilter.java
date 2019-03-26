@@ -59,6 +59,15 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			final String stringVal = (String)value;
 
 			result.append(" '"); // we need one space after the "LIKE"
+			result.append(supplementWildCards(stringVal));
+			result.append("'");
+			return result.toString();
+		}
+
+		private String supplementWildCards(@NonNull final String stringVal)
+		{
+			final StringBuilder result = new StringBuilder();
+
 			if (!stringVal.startsWith("%"))
 			{
 				result.append("%");
@@ -70,7 +79,7 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			{
 				result.append("%");
 			}
-			result.append("'");
+
 			return result.toString();
 		}
 
@@ -104,7 +113,7 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			{
 				str = (String)value;
 			}
-			return str;
+			return supplementWildCards(str);
 		}
 
 		@Override
