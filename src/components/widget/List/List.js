@@ -170,11 +170,11 @@ class ListWidget extends Component {
   };
 
   handleFocus = () => {
-    const { onFocus, mandatory } = this.props;
+    const { onFocus, mandatory, field } = this.props;
     const { list, loading } = this.state;
 
     this.focus();
-    onFocus && onFocus();
+    onFocus && onFocus(field);
 
     if (!list.size && !loading) {
       this.requestListData(mandatory, true);
@@ -188,7 +188,7 @@ class ListWidget extends Component {
   };
 
   handleBlur = () => {
-    const { onBlur } = this.props;
+    const { onBlur, field } = this.props;
 
     this.setState(
       {
@@ -196,7 +196,7 @@ class ListWidget extends Component {
         listFocused: false,
       },
       () => {
-        onBlur && onBlur();
+        onBlur && onBlur(field);
       }
     );
   };
