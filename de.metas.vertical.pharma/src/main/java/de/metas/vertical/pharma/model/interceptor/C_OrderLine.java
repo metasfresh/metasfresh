@@ -87,15 +87,6 @@ public class C_OrderLine
 		}
 
 		final BPartnerId bpartnerId = orderLine.getBPartnerId();
-
-		final PharmaBPartner pharmaBPartner = pharmaBPartnerRepo.getById(bpartnerId);
-
-		if (pharmaBPartner.isHasAtLeastOnePermission())
-		{
-			// the partner has permissions for buying prescribed medicine
-			return;
-		}
-
 		final ProductId productId = orderLine.getProductId();
 
 		final OrderLineInputValidatorResults orderLineValidationResult = pharmaOrderLineInputValidator.validate(bpartnerId, productId);
