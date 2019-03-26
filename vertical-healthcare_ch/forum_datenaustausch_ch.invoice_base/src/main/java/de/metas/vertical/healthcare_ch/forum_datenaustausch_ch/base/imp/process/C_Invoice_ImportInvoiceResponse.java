@@ -49,6 +49,10 @@ import lombok.NonNull;
 
 public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 {
+	private static final String ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
+	private static final String ATTATCHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
+	private static final String ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
+
 	@Param(mandatory = true, parameterName = "InputDirectory")
 	private String inputFilePath;
 
@@ -58,9 +62,9 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	@Param(mandatory = true, parameterName = "OutputDirectory")
 	private String outputFilePath;
 
-	private CrossVersionServiceRegistry crossVersionServiceRegistry = Adempiere.getBean(CrossVersionServiceRegistry.class);
+	private final CrossVersionServiceRegistry crossVersionServiceRegistry = Adempiere.getBean(CrossVersionServiceRegistry.class);
 
-	private InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
+	private final InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
 
 	@Override
 	@RunOutOfTrx
@@ -99,9 +103,9 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
 
 		final ImportedInvoiceResponse responseWithTags = response.toBuilder()
-				.additionalTag("ImportFileAbsolutePath", fileToImport.toAbsolutePath().toString())
-				.additionalTag("ImportTimeMillis", Long.toString(SystemTime.millis()))
-				.additionalTag("ImportAD_PInstance_ID", Integer.toString(getPinstanceId().getRepoId()))
+				.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
+				.additionalTag(ATTATCHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
+				.additionalTag(ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
 				.build();
 
 		importedInvoiceResponseRepo.save(responseWithTags);
@@ -123,7 +127,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 					.mimeType(MimeType.getMimeType(fileName))
 					.build();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -135,7 +139,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		{
 			Files.move(fileToMove, outputDirectory.resolve(fileToMove.getFileName()));
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
