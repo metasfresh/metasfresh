@@ -292,8 +292,9 @@ public class SqlViewFactory implements IViewFactory
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
 				.addStickyFilter(extractReferencedDocumentFilter(windowId, request.getSingleReferencingDocumentPathOrNull()))
+				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
-				.applySecurityRestrictions(request.isApplySecurityRestrictions());
+				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
 
 		final DocumentFiltersList filters = request.getFilters();
 		if (filters.isJson())
