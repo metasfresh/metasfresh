@@ -22,7 +22,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -39,7 +38,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		PharmaProductRepository.class,
 		C_OrderLine.class,
 })
-// FIXME: (HELPME) @teo? I couldn't make my JUnit5 test to work with Spring4, so i changed to using JUnit4. Can i use Junit 5 somehow?
 public class PharmaOrderLineInputValidatorTest
 {
 	@Rule public ExpectedException thrown = ExpectedException.none();
@@ -59,34 +57,32 @@ public class PharmaOrderLineInputValidatorTest
 	}
 
 	@Test
-	public void assertTypeBbPartnerCanSellNonRxProduct()
+	public void assertTypeBbPartnerCanReceiveNonRxProduct()
 	{
-		I_M_Product mProduct = createMProduct("Vitamin C", false, false, "VitaminC");
+		I_M_Product mProduct = createMProduct("NonPrescription(Non-RX)Product", false, false, "NonPrescriptionProduct");
 		I_M_Warehouse mWarehouse = createMWarehouse();
-		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vitamin C Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeB, false);
+		I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeB, true);
 		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		I_C_Order cOrder = createCOrder(true);
 		I_C_Currency cCurrency = createCCurrency();
 		I_C_UOM cUom = createCUom();
 		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		/////////////////////////
 		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
 	}
 
 	@Test
-	public void assertTypeBbPartnerCanNotSellRxProduct()
+	public void assertTypeBbPartnerCanNotReceiveRxProduct()
 	{
-		I_M_Product mProduct = createMProduct("Vaccines", true, false, "Vaccines");
+		I_M_Product mProduct = createMProduct("Prescription(RX)Product", true, false, "PrescriptionProduct");
 		I_M_Warehouse mWarehouse = createMWarehouse();
-		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vaccines Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeB, false);
+		I_C_BPartner cbPartner = createCBpartner("NonPrescription Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeB, true);
 		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		I_C_Order cOrder = createCOrder(true);
 		I_C_Currency cCurrency = createCCurrency();
 		I_C_UOM cUom = createCUom();
 		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		/////////////////////////
 		thrown.expect(AdempiereException.class);
 		// i' not sure if it's all right to check the expected message (below)
 		// because the string is an ITranslatableString, so the message may be changed depending on language settings.
@@ -95,42 +91,39 @@ public class PharmaOrderLineInputValidatorTest
 	}
 
 	@Test
-	public void assertTypeAbPartnerCanSellNonRxProduct()
+	public void assertTypeAbPartnerCanReceiveNonRxProduct()
 	{
-		I_M_Product mProduct = createMProduct("Vitamin C", false, false, "VitaminC");
+		I_M_Product mProduct = createMProduct("NonPrescription(Non-RX)Product", false, false, "NonPrescriptionProduct");
 		I_M_Warehouse mWarehouse = createMWarehouse();
-		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vitamin C Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeA, false);
+		I_C_BPartner cbPartner = createCBpartner("Prescription Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeA, true);
 		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		I_C_Order cOrder = createCOrder(true);
 		I_C_Currency cCurrency = createCCurrency();
 		I_C_UOM cUom = createCUom();
 		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		/////////////////////////
 		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
 	}
 
 	@Test
-	public void assertTypeAbPartnerCanSellRxProduct()
+	public void assertTypeAbPartnerCanReceiveRxProduct()
 	{
-		I_M_Product mProduct = createMProduct("Vaccines", true, false, "Vaccines");
+		I_M_Product mProduct = createMProduct("Prescription(RX)Product", true, false, "PrescriptionProduct");
 		I_M_Warehouse mWarehouse = createMWarehouse();
-		I_C_BPartner cbPartner = createCBpartner("Your Friendly Vaccines Neighbourhood Reseller", I_C_BPartner.ShipmentPermissionPharma_TypeA, false);
+		I_C_BPartner cbPartner = createCBpartner("Prescription Product Customer", I_C_BPartner.ShipmentPermissionPharma_TypeA, true);
 		I_C_PaymentTerm cPaymentTerm = createCPaymentTerm();
 		I_C_Order cOrder = createCOrder(true);
 		I_C_Currency cCurrency = createCCurrency();
 		I_C_UOM cUom = createCUom();
 		I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		///////////////////////// aici nu ar trbui sa crape
 		orderLineInterceptor.validatePrescriptionProduct(cOrderLine);
 	}
 
 	/**
-	 * All the methods create* should belong to a god-object TestHelperFactory of some kind.
+	 * All the create* methods should belong to a god-object TestHelperFactory of some kind.
 	 * It's really bad to keep creating these for all tests in all the different projects.
 	 */
-
 
 	private I_C_OrderLine createCOrderLine(I_M_Product mProduct, I_M_Warehouse mWarehouse, I_C_BPartner cbPartner, I_C_PaymentTerm cPaymentTerm, I_C_Order cOrder, I_C_Currency cCurrency, I_C_UOM cUom, BigDecimal priceActual, BigDecimal qtyEntered)
 	{
@@ -186,6 +179,14 @@ public class PharmaOrderLineInputValidatorTest
 		I_C_BPartner cbPartner = newInstance(I_C_BPartner.class);
 		cbPartner.setName(name);
 		cbPartner.setShipmentPermissionPharma(shipmentPermissionPharma);
+		if (shipmentPermissionPharma.equals(I_C_BPartner.ShipmentPermissionPharma_TypeA) || shipmentPermissionPharma.equals(I_C_BPartner.ShipmentPermissionPharma_TypeC))
+		{
+			// need to have 1 pharmacie permission.
+			// this should be done automatically by the interceptor
+			// de.metas.vertical.pharma.model.interceptor.C_BPartner.onPharmaPermissionChanged_Customer
+			// but i can't figure out how to add it right now to the test.
+			cbPartner.setIsPharmaciePermission(true);
+		}
 		cbPartner.setIsCustomer(isCustomer);
 		save(cbPartner);
 		return cbPartner;
