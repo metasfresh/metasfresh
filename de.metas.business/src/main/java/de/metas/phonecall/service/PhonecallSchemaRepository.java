@@ -13,6 +13,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.UserId;
 import org.compiere.model.I_C_Phonecall_Schedule;
 import org.compiere.model.I_C_Phonecall_Schema;
@@ -164,12 +165,12 @@ public class PhonecallSchemaRepository
 				.phonecallSchemaId(id.getPhonecallSchemaId())
 				.validFrom(TimeUtil.asLocalDate(record.getValidFrom()))
 				.name(record.getName())
-				.frequency(extractFrequencyOrNull(record))
+				.frequency(extractFrequency(record))
 				.lines(ImmutableList.copyOf(lines))
 				.build();
 	}
 
-	private static Frequency extractFrequencyOrNull(final I_C_Phonecall_Schema_Version record)
+	private static Frequency extractFrequency(final I_C_Phonecall_Schema_Version record)
 	{
 		boolean isWeekly = record.isWeekly();
 		int everyWeek = record.getEveryWeek();
@@ -213,7 +214,7 @@ public class PhonecallSchemaRepository
 		}
 		else
 		{
-			return null; // No frequency was defined yet
+			throw new AdempiereException("No frequency: " + record);
 		}
 	}
 
