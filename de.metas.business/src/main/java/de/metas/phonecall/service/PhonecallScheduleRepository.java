@@ -69,7 +69,7 @@ public class PhonecallScheduleRepository
 		scheduleRecord.setIsCalled(schedule.isCalled());
 		scheduleRecord.setIsOrdered(schedule.isOrdered());
 
-		scheduleRecord.setSalesRep_ID(schedule.getSalesRepId().getRepoId());
+		scheduleRecord.setSalesRep_ID(UserId.toRepoId(schedule.getSalesRepId()));
 
 		saveRecord(scheduleRecord);
 	}
