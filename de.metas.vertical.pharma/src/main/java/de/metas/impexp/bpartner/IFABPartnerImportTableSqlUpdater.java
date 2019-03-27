@@ -78,7 +78,7 @@ public class IFABPartnerImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(I_I_Pharma_BPartner.Table_Name + " i ")
 				.append("SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' ")
-				.append("WHERE C_Country_ID IS NULL ")
+				.append("WHERE C_Country_ID IS NULL AND b00ssatz <> '2'") // do not try to match country for records that means to deactivate the partner
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid Country={}", no);
