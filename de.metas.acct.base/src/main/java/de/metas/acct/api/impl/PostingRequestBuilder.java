@@ -329,7 +329,7 @@ import lombok.ToString;
 
 			//
 			// Check if PostImmediate is allowed by AD_Client configuration
-			final I_AD_Client client = clientDAO.getById(getClientId().getRepoId());
+			final I_AD_Client client = clientDAO.getById(getClientId());
 			return client.isPostImmediate();
 		}
 		else

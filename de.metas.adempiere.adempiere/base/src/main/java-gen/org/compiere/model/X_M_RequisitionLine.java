@@ -1,38 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for M_RequisitionLine
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_M_RequisitionLine extends org.compiere.model.PO implements I_M_RequisitionLine, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -521454180L;
 
     /** Standard Constructor */
     public X_M_RequisitionLine (Properties ctx, int M_RequisitionLine_ID, String trxName)
@@ -40,14 +23,12 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
       super (ctx, M_RequisitionLine_ID, trxName);
       /** if (M_RequisitionLine_ID == 0)
         {
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_RequisitionLine WHERE M_Requisition_ID=@M_Requisition_ID@
-			setLineNetAmt (Env.ZERO);
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_RequisitionLine WHERE M_Requisition_ID=@M_Requisition_ID@
+			setLineNetAmt (BigDecimal.ZERO);
 			setM_Requisition_ID (0);
 			setM_RequisitionLine_ID (0);
-			setPriceActual (Env.ZERO);
-			setQty (Env.ZERO);
-// 1
+			setPriceActual (BigDecimal.ZERO);
+			setQty (BigDecimal.ZERO); // 1
         } */
     }
 
@@ -57,37 +38,32 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_RequisitionLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
 
-	/** Set Business Partner .
+	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -96,9 +72,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get Business Partner .
+	/** Get Geschäftspartner.
 		@return Identifies a Business Partner
 	  */
+	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -107,15 +84,23 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	public I_C_Charge getC_Charge() throws RuntimeException
-    {
-		return (I_C_Charge)MTable.get(getCtx(), I_C_Charge.Table_Name)
-			.getPO(getC_Charge_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
+	}
 
-	/** Set Charge.
+	@Override
+	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
+	}
+
+	/** Set Kosten.
 		@param C_Charge_ID 
 		Additional document charges
 	  */
+	@Override
 	public void setC_Charge_ID (int C_Charge_ID)
 	{
 		if (C_Charge_ID < 1) 
@@ -124,9 +109,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
 	}
 
-	/** Get Charge.
+	/** Get Kosten.
 		@return Additional document charges
 	  */
+	@Override
 	public int getC_Charge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
@@ -135,15 +121,23 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	public I_C_OrderLine getC_OrderLine() throws RuntimeException
-    {
-		return (I_C_OrderLine)MTable.get(getCtx(), I_C_OrderLine.Table_Name)
-			.getPO(getC_OrderLine_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
 
-	/** Set Sales Order Line.
+	@Override
+	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
+	}
+
+	/** Set Auftragsposition.
 		@param C_OrderLine_ID 
 		Sales Order Line
 	  */
+	@Override
 	public void setC_OrderLine_ID (int C_OrderLine_ID)
 	{
 		if (C_OrderLine_ID < 1) 
@@ -152,9 +146,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_Value (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
 	}
 
-	/** Get Sales Order Line.
+	/** Get Auftragsposition.
 		@return Sales Order Line
 	  */
+	@Override
 	public int getC_OrderLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
@@ -163,15 +158,23 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	public I_C_UOM getC_UOM() throws RuntimeException
-    {
-		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
-			.getPO(getC_UOM_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
 
 	/** Set UOM.
 		@param C_UOM_ID 
 		Unit of Measure
 	  */
+	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -183,6 +186,7 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 	/** Get UOM.
 		@return Unit of Measure
 	  */
+	@Override
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
@@ -191,35 +195,36 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Line No.
+	/** Set Zeile Nr..
 		@param Line 
 		Unique line for this document
 	  */
+	@Override
 	public void setLine (int Line)
 	{
 		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
 	}
 
-	/** Get Line No.
+	/** Get Zeile Nr..
 		@return Unique line for this document
 	  */
+	@Override
 	public int getLine () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
@@ -228,43 +233,45 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getLine()));
-    }
-
-	/** Set Line Amount.
+	/** Set Zeilennetto.
 		@param LineNetAmt 
 		Line Extended Amount (Quantity * Actual Price) without Freight and Charges
 	  */
-	public void setLineNetAmt (BigDecimal LineNetAmt)
+	@Override
+	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
 	{
 		set_Value (COLUMNNAME_LineNetAmt, LineNetAmt);
 	}
 
-	/** Get Line Amount.
+	/** Get Zeilennetto.
 		@return Line Extended Amount (Quantity * Actual Price) without Freight and Charges
 	  */
-	public BigDecimal getLineNetAmt () 
+	@Override
+	public java.math.BigDecimal getLineNetAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
-    {
-		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
-			.getPO(getM_AttributeSetInstance_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
 
-	/** Set Attribute Set Instance.
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
@@ -273,9 +280,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Attribute Set Instance.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
@@ -284,15 +292,23 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -301,9 +317,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -312,15 +329,23 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	public I_M_Requisition getM_Requisition() throws RuntimeException
-    {
-		return (I_M_Requisition)MTable.get(getCtx(), I_M_Requisition.Table_Name)
-			.getPO(getM_Requisition_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Requisition getM_Requisition() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Requisition_ID, org.compiere.model.I_M_Requisition.class);
+	}
 
-	/** Set Requisition.
+	@Override
+	public void setM_Requisition(org.compiere.model.I_M_Requisition M_Requisition)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Requisition_ID, org.compiere.model.I_M_Requisition.class, M_Requisition);
+	}
+
+	/** Set Bedarf.
 		@param M_Requisition_ID 
 		Material Requisition
 	  */
+	@Override
 	public void setM_Requisition_ID (int M_Requisition_ID)
 	{
 		if (M_Requisition_ID < 1) 
@@ -329,9 +354,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_ValueNoCheck (COLUMNNAME_M_Requisition_ID, Integer.valueOf(M_Requisition_ID));
 	}
 
-	/** Get Requisition.
+	/** Get Bedarf.
 		@return Material Requisition
 	  */
+	@Override
 	public int getM_Requisition_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Requisition_ID);
@@ -340,10 +366,11 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	/** Set Requisition Line.
+	/** Set Bedarfs-Position.
 		@param M_RequisitionLine_ID 
 		Material Requisition Line
 	  */
+	@Override
 	public void setM_RequisitionLine_ID (int M_RequisitionLine_ID)
 	{
 		if (M_RequisitionLine_ID < 1) 
@@ -352,9 +379,10 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 			set_ValueNoCheck (COLUMNNAME_M_RequisitionLine_ID, Integer.valueOf(M_RequisitionLine_ID));
 	}
 
-	/** Get Requisition Line.
+	/** Get Bedarfs-Position.
 		@return Material Requisition Line
 	  */
+	@Override
 	public int getM_RequisitionLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_RequisitionLine_ID);
@@ -363,43 +391,47 @@ public class X_M_RequisitionLine extends PO implements I_M_RequisitionLine, I_Pe
 		return ii.intValue();
 	}
 
-	/** Set Unit Price.
+	/** Set Einzelpreis.
 		@param PriceActual 
 		Actual Price 
 	  */
-	public void setPriceActual (BigDecimal PriceActual)
+	@Override
+	public void setPriceActual (java.math.BigDecimal PriceActual)
 	{
 		set_Value (COLUMNNAME_PriceActual, PriceActual);
 	}
 
-	/** Get Unit Price.
+	/** Get Einzelpreis.
 		@return Actual Price 
 	  */
-	public BigDecimal getPriceActual () 
+	@Override
+	public java.math.BigDecimal getPriceActual () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Quantity.
+	/** Set Menge.
 		@param Qty 
 		Quantity
 	  */
-	public void setQty (BigDecimal Qty)
+	@Override
+	public void setQty (java.math.BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Quantity.
+	/** Get Menge.
 		@return Quantity
 	  */
-	public BigDecimal getQty () 
+	@Override
+	public java.math.BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }
