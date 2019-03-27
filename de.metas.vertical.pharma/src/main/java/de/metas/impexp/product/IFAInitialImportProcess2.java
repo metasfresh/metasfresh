@@ -250,6 +250,11 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 		{
 			product.setIsTFG(isTFG);
 		}
+		
+		if (importRecord.getManufacturer_ID() > 0)
+		{
+			product.setManufacturer_ID(importRecord.getManufacturer_ID());
+		}
 	}
 
 	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
