@@ -593,7 +593,7 @@ public class MProductImportTableSqlUpdater
 		logger.warn("No Mandatory Pharma product category Name ={}", no);
 	}
 	
-	public void dbUpdateIsPriceCreated(@NonNull final String whereClause, @NonNull final String columnname)
+	public void dbUpdateIsPriceCopiedToYes(@NonNull final String whereClause, @NonNull final String columnname)
 	{
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")

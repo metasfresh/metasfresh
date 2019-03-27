@@ -15,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -431406436L;
+	private static final long serialVersionUID = -2004482234L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
       /** if (I_Pharma_Product_ID == 0)
         {
 			setA00ANBNR5 (0); // 0
-			setIsPriceCreated (false); // N
+			setIsPriceCopied (false); // N
         } */
     }
 
@@ -3118,20 +3118,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
-	/** Set Price Created.
-		@param IsPriceCreated Price Created	  */
+	/** Set Price Copied.
+		@param IsPriceCopied Price Copied	  */
 	@Override
-	public void setIsPriceCreated (boolean IsPriceCreated)
+	public void setIsPriceCopied (boolean IsPriceCopied)
 	{
-		set_Value (COLUMNNAME_IsPriceCreated, Boolean.valueOf(IsPriceCreated));
+		set_Value (COLUMNNAME_IsPriceCopied, Boolean.valueOf(IsPriceCopied));
 	}
 
-	/** Get Price Created.
-		@return Price Created	  */
+	/** Get Price Copied.
+		@return Price Copied	  */
 	@Override
-	public boolean isPriceCreated () 
+	public boolean isPriceCopied () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsPriceCreated);
+		Object oo = get_Value(COLUMNNAME_IsPriceCopied);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
