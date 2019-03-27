@@ -35,7 +35,7 @@ import de.metas.vertical.pharma.model.I_I_Pharma_Product;
  * #L%
  */
 
-public class IFAPRoductImportProcess_Test
+public class IFAProductImportProcess_Test
 {
 	private Properties ctx;
 
