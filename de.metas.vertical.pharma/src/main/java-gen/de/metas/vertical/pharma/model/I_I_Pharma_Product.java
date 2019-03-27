@@ -3450,7 +3450,7 @@ public interface I_I_Pharma_Product
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -3460,7 +3460,7 @@ public interface I_I_Pharma_Product
 	 * Get Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -3476,8 +3476,36 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Package UOM.
-	 * UOM of the package
+	 * Set Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getManufacturer_ID();
+
+	public org.compiere.model.I_C_BPartner getManufacturer();
+
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer);
+
+    /** Column definition for Manufacturer_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_BPartner> COLUMN_Manufacturer_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_BPartner>(I_I_Pharma_Product.class, "Manufacturer_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
+
+	/**
+	 * Set Verpackungseinheit.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -3486,8 +3514,7 @@ public interface I_I_Pharma_Product
 	public void setPackage_UOM_ID (int Package_UOM_ID);
 
 	/**
-	 * Get Package UOM.
-	 * UOM of the package
+	 * Get Verpackungseinheit.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

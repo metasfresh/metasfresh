@@ -762,7 +762,7 @@ public interface I_I_Pharma_BPartner
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -772,7 +772,7 @@ public interface I_I_Pharma_BPartner
 	 * Get Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
