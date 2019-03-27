@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.adempiere.user.User;
+import org.adempiere.user.UserId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -174,6 +175,8 @@ public interface IBPartnerBL extends ISingletonService
 	User retrieveBillContactOrNull(RetrieveBillContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
+
+	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
 	@Value
 	@Builder

@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.User;
+import org.adempiere.user.UserId;
 import org.adempiere.user.UserRepository;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -555,5 +556,17 @@ public class BPartnerBL implements IBPartnerBL
 
 		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
 		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
+	}
+
+	@Override
+	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
+	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartnerRecord = bPartnerDAO.getById(bpartnerId);
+
+		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
+
+		return UserId.ofRepoIdOrNull(salesRepRecordId);
 	}
 }

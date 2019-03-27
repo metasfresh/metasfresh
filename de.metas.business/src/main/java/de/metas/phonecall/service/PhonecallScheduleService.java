@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.calendar.ICalendarBL;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallSchema;
@@ -126,13 +128,20 @@ public class PhonecallScheduleService
 
 	private void createPhonecallSchedule(final PhonecallSchemaVersionLine schemaVersionLine, final LocalDate currentPhonecallDate)
 	{
+
+		final BPartnerLocationId bpartnerAndLocationId = schemaVersionLine.getBpartnerAndLocationId();
+		final BPartnerId bpartnerId = bpartnerAndLocationId.getBpartnerId();
+
+		final UserId salesRepId = Services.get(IBPartnerBL.class).getSalesRepIdOrNull(bpartnerId);
+
 		final PhonecallSchedule schedule = PhonecallSchedule.builder()
-				.bpartnerAndLocationId(schemaVersionLine.getBpartnerAndLocationId())
+				.bpartnerAndLocationId(bpartnerAndLocationId)
 				.contactId(schemaVersionLine.getContactId())
 				.schemaVersionLineId(schemaVersionLine.getId())
 				.date(currentPhonecallDate)
 				.startTime(schemaVersionLine.getStartTime())
 				.endTime(schemaVersionLine.getEndTime())
+				.salesRepId(salesRepId)
 				.build();
 
 		schedulesRepo.save(schedule);
