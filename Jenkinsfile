@@ -40,6 +40,10 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-e2e docker image name which it build',
 			name: 'MF_METASFRESH_E2E_DOCKER_IMAGE'),
 
+		string(defaultValue: '',
+				description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-edi docker image name which it build',
+				name: 'MF_METASFRESH_EDI_DOCKER_IMAGE'),
+
 		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''',
 			name: 'MF_SKIP_TO_DIST'),
 	]),
@@ -129,7 +133,7 @@ node('agent && linux')
 				'de.metas.material/dispo-service/target/docker' // workDir
 			);
 			dockerBuildAndPush(materialDispoDockerConf)
-		
+
 			final DockerConf reportDockerConf = materialDispoDockerConf
 				.withArtifactName('metasfresh-report')
 				.withWorkDir('de.metas.report/report-service/target/docker');
@@ -157,6 +161,7 @@ node('agent && linux')
 // these maps are populated in the "Invoke downstream jobs" stage
 final MF_ARTIFACT_VERSIONS = [:];
 final MF_DOCKER_IMAGES = [:];
+MF_DOCKER_IMAGES['metasfresh-edi'] = params.MF_METASFRESH_EDI_DOCKER_IMAGE
 
 currentBuild.description = currentBuild.description ?: '';
 
@@ -218,27 +223,26 @@ stage('Invoke downstream jobs')
 This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDownStreamBuildResult.absoluteUrl}">${webuiDownStreamBuildResult.displayName}</a>
 				"""
 			},
-			metasfresh_e2e: {
-				
+			// So why did we invoke metasfresh-e2e anyways?
+			// It does not depend on metasfresh after all.
+			// TODO: see what negative impacts we have without triggering it and the probably remove this block
+			// Result 1: running this used to provide us with an actual metasfresh-e2e docker image; but we can as well let the downstam branch sort this out
+			/* metasfresh_e2e: {
+
 				final def misc = new de.metas.jenkins.Misc();
 				final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
-				final String webuiFrontEndBranchName = misc.retrieveEffectiveBranchName('metasfresh-webui-frontend', MF_UPSTREAM_BRANCH);
 
 				final def e2eDownStreamBuildResult = build job: metasfreshE2eJobName,
 					parameters: [
-						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: webuiFrontEndBranchName)
-					], 
+						string(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false)
+					],
 					wait: true,
 					propagate: false
 
-				MF_ARTIFACT_VERSIONS['metasfresh-e2e'] = e2eDownStreamBuildResult.buildVariables.MF_VERSION
-				MF_DOCKER_IMAGES['metasfresh-e2e'] = e2eDownStreamBuildResult.buildVariables.MF_DOCKER_IMAGE
-				
 				currentBuild.description="""${currentBuild.description}<p/>
 This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStreamBuildResult.absoluteUrl}">${e2eDownStreamBuildResult.displayName}</a>
 				"""
-
-			},
+			},*/
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final def procurementWebuiDownStreamBuildResult = invokeDownStreamJobs(
@@ -251,25 +255,8 @@ This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStr
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamBuildResult.buildVariables.MF_VERSION;
 
 				// note that as of now, metasfresh-procurement-webui does not publish a docker image
-				currentBuild.description="""${currentBuild.description}<p/>
+				currentBuild.description = """${currentBuild.description}<p/>
 This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href="${procurementWebuiDownStreamBuildResult.absoluteUrl}">${procurementWebuiDownStreamBuildResult.displayName}</a>
-				"""
-			},
-			metasfresh_esb_camel: {
-				// yup, metasfresh-procurement-webui does share *some* code with this repo
-				final esbCamelDownStreamBuildResult = invokeDownStreamJobs(
-          env.BUILD_NUMBER,
-          MF_UPSTREAM_BRANCH,
-          MF_ARTIFACT_VERSIONS['metasfresh-parent'],
-          MF_VERSION,
-          true, // wait=true
-          'metasfresh-esb-camel');
-
-				MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = esbCamelDownStreamBuildResult.buildVariables.MF_VERSION;
-				MF_DOCKER_IMAGES['metasfresh-esb-camel'] = esbCamelDownStreamBuildResult.buildVariables.MF_DOCKER_IMAGE
-
-				currentBuild.description="""${currentBuild.description}<p/>
-This build triggered the <b>metasfresh-esb-camel</b> jenkins job <a href="${esbCamelDownStreamBuildResult.absoluteUrl}">${esbCamelDownStreamBuildResult.displayName}</a>
 				"""
 			}
 		);
@@ -281,10 +268,11 @@ This build triggered the <b>metasfresh-esb-camel</b> jenkins job <a href="${esbC
 	} // if(params.MF_SKIP_TO_DIST)
 
 	// complement the MF_ARTIFACT_VERSIONS we did not set so far
-  MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
+	MF_ARTIFACT_VERSIONS['metasfresh-e2e'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
 
 	echo "Invoking downstream jobs 'metasfresh-dist' and 'metasfresh-dist-orgs' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
@@ -298,11 +286,11 @@ This build triggered the <b>metasfresh-esb-camel</b> jenkins job <a href="${esbC
 			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']),
 			string(name: 'MF_METASFRESH_E2E_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-e2e']),
 
-			string(name: 'MF_METASFRESH_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			//string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-procurement-webui']), // currently no docker image created
-			string(name: 'MF_METASFRESH_WEBUI_API_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-webui']),
-			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-webui-frontend']),
-			string(name: 'MF_METASFRESH_E2E_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-e2e']),
+			string(name: 'MF_METASFRESH_WEBUI_API_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-webui'] ?: ''),
+			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-webui-frontend'] ?: ''),
+			string(name: 'MF_METASFRESH_E2E_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-e2e'] ?: ''),
+			string(name: 'MF_METASFRESH_EDI_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-edi'] ?: ''),
 		];
 
   def misc = new de.metas.jenkins.Misc();
@@ -374,7 +362,7 @@ Map invokeDownStreamJobs(
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
-		], 
+		],
 		wait: wait
 
 	echo "Job invokation done; Returning buildResult; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"

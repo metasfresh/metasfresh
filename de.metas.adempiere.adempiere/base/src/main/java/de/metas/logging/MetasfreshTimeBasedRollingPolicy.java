@@ -3,6 +3,7 @@ package de.metas.logging;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 
@@ -34,8 +35,8 @@ import de.metas.util.Check;
 public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E>
 {
 	private static final String EMPTY_MARKER = "-";
-	
-	private String logDir = LoggingConstants.DEFAULT_LogDir;
+
+	private String logDir = MetasfreshLogDirUtil.getLogDir();
 	private String logFilePrefix = LoggingConstants.DEFAULT_LogFilePrefix;
 	private String logFileDatePattern = LoggingConstants.DEFAULT_LogFileDatePattern;
 	private final String logFileSuffix = ".log";
@@ -59,14 +60,13 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 
 	public MetasfreshTimeBasedRollingPolicy()
 	{
-		super();
 		updateFileNamePattern();
 	}
 
 	public void setLogDir(final String logDir)
 	{
 		final String logDirNorm = normalizeFilename(logDir);
-		if (Check.equals(this.logDir, logDirNorm))
+		if (Objects.equals(this.logDir, logDirNorm))
 		{
 			return;
 		}
@@ -111,7 +111,7 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 	public void setLogFilePrefix(final String logFilePrefix)
 	{
 		final String logFilePrefixNorm = normalizeLogDirPrefix(logFilePrefix);
-		if (Check.equals(this.logFilePrefix, logFilePrefixNorm))
+		if (Objects.equals(this.logFilePrefix, logFilePrefixNorm))
 		{
 			return;
 		}
@@ -127,7 +127,7 @@ public class MetasfreshTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<
 
 	public void setLogFileDatePattern(final String logFileDatePattern)
 	{
-		if (Check.equals(this.logFileDatePattern, logFileDatePattern))
+		if (Objects.equals(this.logFileDatePattern, logFileDatePattern))
 		{
 			return;
 		}

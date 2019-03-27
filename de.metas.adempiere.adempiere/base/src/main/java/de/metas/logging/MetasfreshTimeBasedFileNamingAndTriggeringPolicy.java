@@ -32,10 +32,9 @@ import ch.qos.logback.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy
 public class MetasfreshTimeBasedFileNamingAndTriggeringPolicy<E> extends DefaultTimeBasedFileNamingAndTriggeringPolicy<E>
 {
 	private final AtomicBoolean forceRollover = new AtomicBoolean(true);
-	
+
 	public MetasfreshTimeBasedFileNamingAndTriggeringPolicy()
 	{
-		super();
 	}
 
 	@Override
@@ -53,10 +52,10 @@ public class MetasfreshTimeBasedFileNamingAndTriggeringPolicy<E> extends Default
 			nextCheck = 0; // i.e. check it now
 			//return true; // note: not returning directly because the underlying method is also updating the object status
 		}
-		
+
 		return super.isTriggeringEvent(activeFile, event);
 	}
-	
+
 	public void setForceRollover()
 	{
 		forceRollover.set(true);

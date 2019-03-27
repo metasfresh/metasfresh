@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -52,6 +51,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

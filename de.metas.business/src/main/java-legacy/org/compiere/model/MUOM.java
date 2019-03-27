@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.cache.CCache;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMUtil;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -126,7 +127,9 @@ public class MUOM extends X_C_UOM
 		{
 			return 2;
 		}
-		return Services.get(IUOMDAO.class).getStandardPrecision(C_UOM_ID);
+		return Services.get(IUOMDAO.class)
+				.getStandardPrecision(UomId.ofRepoId(C_UOM_ID))
+				.toInt();
 	}	// getPrecision
 
 	/**

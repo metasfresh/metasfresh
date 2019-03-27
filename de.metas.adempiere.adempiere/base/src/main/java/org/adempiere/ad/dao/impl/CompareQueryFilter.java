@@ -38,6 +38,7 @@ import org.compiere.util.Util;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
 import lombok.NonNull;
 
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -53,6 +54,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL), //
 		GREATER(">", MQuery.Operator.GREATER), //
 		GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL), //
+
 		STRING_LIKE("LIKE", MQuery.Operator.LIKE), //
 		STRING_LIKE_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
 
@@ -77,10 +79,19 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
+	@Getter
 	private final ModelColumnNameValue<T> operand1;
+
+	@Getter
 	private final Object operand2;
+
+	@Getter
 	private final Operator operator;
+
+	@Getter
 	private final IQueryFilterModifier operand1Modifier;
+
+	@Getter
 	private final IQueryFilterModifier operand2Modifier;
 
 	/* package */ CompareQueryFilter(
@@ -142,11 +153,6 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return operand2;
 	}
 
-	public final Operator getOperator()
-	{
-		return operator;
-	}
-
 	@Override
 	public final boolean accept(final T model)
 	{
@@ -166,7 +172,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 				final String operand2Regexp = operand2String
 						.replace('_', '.')
 						.replace("%", ".*");
-				return operand1String.matches(".*" + operand2Regexp + ".*");
+				return operand1String.matches(operand2Regexp);
 			}
 			else
 			{
@@ -206,7 +212,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	private final Object getModelValue(T model, final Object operand)
+	protected final Object getModelValue(T model, final Object operand)
 	{
 		if (operand instanceof ModelColumnNameValue<?>)
 		{

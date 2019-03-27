@@ -36,6 +36,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -162,7 +163,8 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 		final String swiftCode = Services.get(ISEPABankAccountBL.class).getSwiftCode(sepaBankAccount);
 
-		header.setIBAN(sepaBankAccount.getIBAN());
+		final String IBAN = sepaBankAccount.getIBAN();
+		header.setIBAN(StringUtils.deleteWhitespace(IBAN));
 		header.setSwiftCode(swiftCode);
 		header.setAD_Org_ID(adOrgId);
 		header.setDescription(null); // TODO: Add description.

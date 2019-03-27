@@ -26,7 +26,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Transaction;
 
@@ -37,6 +36,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
