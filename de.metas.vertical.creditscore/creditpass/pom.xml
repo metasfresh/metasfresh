@@ -6,6 +6,7 @@
         <artifactId>metasfresh-creditscore</artifactId>
         <groupId>de.metas.vertical.creditscore</groupId>
         <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
