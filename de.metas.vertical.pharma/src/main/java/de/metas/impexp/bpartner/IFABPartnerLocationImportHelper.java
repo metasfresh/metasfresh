@@ -235,8 +235,8 @@ import lombok.experimental.UtilityClass;
 		InterfaceWrapperHelper.save(location);
 	}
 
-	
-	private  String buildAddress1(final I_I_Pharma_BPartner importRecord)
+	// visible for testing
+	protected  String buildAddress1(final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00str()))
@@ -264,7 +264,8 @@ import lombok.experimental.UtilityClass;
 	}
 
 	
-	private String buildAddress2(final I_I_Pharma_BPartner importRecord)
+	// visible for testing
+	protected String buildAddress2(final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00hnrb()))
@@ -283,7 +284,8 @@ import lombok.experimental.UtilityClass;
 		return sb.toString();
 	}
 
-	private String buildPOBox(@NonNull final I_I_Pharma_BPartner importRecord)
+	// visible for testing
+	protected String buildPOBox(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00plzpf1()))

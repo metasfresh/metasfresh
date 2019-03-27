@@ -86,8 +86,10 @@ import lombok.experimental.UtilityClass;
 		// Location
 		final I_C_Location location = bplocation.getC_Location();
 		assertThat(location).isNotNull();
-//		assertThat(location.getAddress1()).isEqualTo(record.getAddress1());
-//		assertThat(location.getAddress2()).isEqualTo(record.getAddress2());
+		assertThat(location.getAddress1()).isEqualTo(IFABPartnerLocationImportHelper.buildAddress1(record));
+		assertThat(location.getAddress2()).isEqualTo(IFABPartnerLocationImportHelper.buildAddress2(record));
+		assertThat(location.getPOBox()).isEqualTo(IFABPartnerLocationImportHelper.buildPOBox(record));
+		assertThat(location.getPostal()).isEqualTo(record.getb00plzzu1());
 		assertThat(location.getCity()).isEqualTo(record.getb00ortzu());
 		assertThat(location.getC_Country_ID()).isEqualTo(record.getC_Country_ID());
 	}
