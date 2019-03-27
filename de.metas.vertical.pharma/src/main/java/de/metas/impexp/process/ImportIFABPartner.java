@@ -31,9 +31,9 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ImportPharmaBPartner extends AbstractImportJavaProcess<I_I_Pharma_BPartner>
+public class ImportIFABPartner extends AbstractImportJavaProcess<I_I_Pharma_BPartner>
 {
-	public ImportPharmaBPartner()
+	public ImportIFABPartner()
 	{
 		super(I_I_Pharma_BPartner.class);
 	}
