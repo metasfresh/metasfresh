@@ -15,6 +15,6 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 
 -- 2019-03-25T18:08:41.437
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,1000000,541275,'O',TO_TIMESTAMP('2019-03-25 18:08:41','YYYY-MM-DD HH24:MI:SS'),100,'The default amount for creditPass API calls. Needed for test cases.','de.metas.vertical.creditscore.creditpass','Y','de.metas.vertical.creditscore.creditpass.AmountDefault',TO_TIMESTAMP('2019-03-25 18:08:41','YYYY-MM-DD HH24:MI:SS'),100,'10')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,541275,'O',TO_TIMESTAMP('2019-03-25 18:08:41','YYYY-MM-DD HH24:MI:SS'),100,'The default amount for creditPass API calls. Needed for test cases.','de.metas.vertical.creditscore.creditpass','Y','de.metas.vertical.creditscore.creditpass.AmountDefault',TO_TIMESTAMP('2019-03-25 18:08:41','YYYY-MM-DD HH24:MI:SS'),100,'10')
 ;
 
