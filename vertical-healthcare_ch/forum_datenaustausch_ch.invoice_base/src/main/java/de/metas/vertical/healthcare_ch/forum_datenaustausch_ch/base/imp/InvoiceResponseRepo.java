@@ -3,6 +3,8 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.time.Instant;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -43,6 +45,8 @@ import lombok.NonNull;
 public class InvoiceResponseRepo
 {
 	private static final String MSG_INVOICE_NOT_FOUND_2P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found";
+	private static final String MSG_INVOICE_NOT_FOUND_BY_ID_1P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id";
+
 	private final AttachmentEntryService attachmentEntryService;
 
 	public InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
@@ -50,17 +54,15 @@ public class InvoiceResponseRepo
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
+	/**
+	 * Persists the given {@code importedInvoiceResponse}, if a related invoice can be found.
+	 * Lookup is done either via {@link ImportedInvoiceResponse#getInvoiceId()} or via {@link ImportedInvoiceResponse#getDocumentNumber()} and {@link ImportedInvoiceResponse#getInvoiceCreated()}.
+	 *
+	 * @throws InvoiceResponseRepoException if no related invoice is found.
+	 */
 	public InvoiceId save(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
 	{
-		final I_C_Invoice invoiceRecord;
-		if (importedInvoiceResponse.getId() == null)
-		{
-			invoiceRecord = retrieveInvoiceRecord(importedInvoiceResponse);
-		}
-		else
-		{
-			invoiceRecord = load(importedInvoiceResponse.getId(), I_C_Invoice.class);
-		}
+		final I_C_Invoice invoiceRecord = retrieveInvoiceRecord(importedInvoiceResponse);
 
 		updateInvoiceRecord(importedInvoiceResponse, invoiceRecord);
 
@@ -69,13 +71,27 @@ public class InvoiceResponseRepo
 		return InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 	}
 
-	private I_C_Invoice retrieveInvoiceRecord(@NonNull final ImportedInvoiceResponse response)
+	private I_C_Invoice retrieveInvoiceRecord(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
+	{
+		final I_C_Invoice invoiceRecord;
+		if (importedInvoiceResponse.getInvoiceId() == null)
+		{
+			invoiceRecord = retrieveInvoiceRecordByDocumentNoAndCreated(importedInvoiceResponse.getDocumentNumber(), importedInvoiceResponse.getInvoiceCreated());
+		}
+		else
+		{
+			invoiceRecord = retrieveInvoiceRecordById(importedInvoiceResponse.getInvoiceId());
+		}
+		return invoiceRecord;
+	}
+
+	private I_C_Invoice retrieveInvoiceRecordByDocumentNoAndCreated(@NonNull final String documentNo, @NonNull final Instant created)
 	{
 		final I_C_Invoice invoiceRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, response.getDocumentNumber())
-				.addEqualsFilter(I_C_Invoice.COLUMN_Created, response.getInvoiceCreated())
+				.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, documentNo)
+				.addEqualsFilter(I_C_Invoice.COLUMN_Created, created)
 				.create()
 				.setApplyAccessFilterRW(true)
 				.firstOnly(I_C_Invoice.class);
@@ -89,12 +105,28 @@ public class InvoiceResponseRepo
 
 		final ITranslatableString message = msgBL
 				.getTranslatableMsgText(MSG_INVOICE_NOT_FOUND_2P,
-						response.getDocumentNumber(),
-						response.getInvoiceCreated().getEpochSecond());
+						documentNo,
+						created.getEpochSecond());
 
 		throw new InvoiceResponseRepoException(message)
 				.markAsUserValidationError();
+	}
 
+	private I_C_Invoice retrieveInvoiceRecordById(@NonNull final InvoiceId invoiceId)
+	{
+		final I_C_Invoice invoiceRecord;
+		invoiceRecord = load(invoiceId, I_C_Invoice.class);
+		if (invoiceRecord == null)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final ITranslatableString message = msgBL
+					.getTranslatableMsgText(MSG_INVOICE_NOT_FOUND_BY_ID_1P,
+							invoiceId.getRepoId());
+
+			throw new InvoiceResponseRepoException(message)
+					.markAsUserValidationError();
+		}
+		return invoiceRecord;
 	}
 
 	private void updateInvoiceRecord(@NonNull final ImportedInvoiceResponse response,

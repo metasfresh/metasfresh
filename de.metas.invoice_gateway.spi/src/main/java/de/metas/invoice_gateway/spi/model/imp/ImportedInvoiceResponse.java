@@ -46,7 +46,7 @@ public class ImportedInvoiceResponse
 	}
 
 	@Nullable
-	InvoiceId id;
+	InvoiceId invoiceId;
 
 	@NonNull
 	String documentNumber;

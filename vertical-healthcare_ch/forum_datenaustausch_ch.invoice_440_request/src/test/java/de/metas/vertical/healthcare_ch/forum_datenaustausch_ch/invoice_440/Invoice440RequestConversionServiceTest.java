@@ -180,12 +180,12 @@ public class Invoice440RequestConversionServiceTest
 		testWithPublicExampleXmlFile("md_440_tp_uvg_de.xml");
 	}
 
-	private void testWithPublicExampleXmlFile(final String inputXmlFileName)
+	private void testWithPublicExampleXmlFile(@NonNull final String inputXmlFileName)
 	{
 		testWithXmlFile("/public_examples/" + inputXmlFileName);
 	}
 
-	private void testWithXmlFile(final String inputXmlFileName)
+	private void testWithXmlFile(@NonNull final String inputXmlFileName)
 	{
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
@@ -198,7 +198,7 @@ public class Invoice440RequestConversionServiceTest
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
 	}
 
-	private InputStream createInputStream(final String resourceName)
+	private InputStream createInputStream(@NonNull final String resourceName)
 	{
 		final InputStream xmlInput = this.getClass().getResourceAsStream(resourceName);
 		return xmlInput;

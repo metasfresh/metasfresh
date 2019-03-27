@@ -1,12 +1,18 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 
 import javax.xml.transform.stream.StreamSource;
 
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.validation.Languages;
@@ -48,14 +54,27 @@ class Invoice440ToCrossVersionModelToolTest
 		invoice440ResponseConversionService = new Invoice440ResponseConversionService();
 	}
 
-	@Test
-	void test()
+	@BeforeAll
+	public static void beforeAll()
 	{
-		final XmlResponse result = testWithXmlFile("/Cancelation_KV_12345.xml");
-		assertThat(result.getPayload().getInvoice().getRequestId()).isEqualTo("KV_12345");
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
-	private XmlResponse testWithXmlFile(final String inputXmlFileName)
+	@AfterAll
+	public static void afterAll()
+	{
+		validateSnapshots();
+	}
+
+	@Test
+	void toCrossVersionResponse()
+	{
+		final XmlResponse result = toCrossVersionResponseWithXmlFile("/Cancelation_KV_12345.xml");
+		assertThat(result.getPayload().getInvoice().getRequestId()).isEqualTo("KV_12345"); // sortof smoke-test
+		expect(result).toMatchSnapshot();
+	}
+
+	private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)
 	{
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
@@ -64,7 +83,7 @@ class Invoice440ToCrossVersionModelToolTest
 		return xResponse;
 	}
 
-	private InputStream createInputStream(final String resourceName)
+	private InputStream createInputStream(@NonNull final String resourceName)
 	{
 		final InputStream xmlInput = this.getClass().getResourceAsStream(resourceName);
 		assertThat(xmlInput).as("Unable to load resource %s", resourceName).isNotNull();

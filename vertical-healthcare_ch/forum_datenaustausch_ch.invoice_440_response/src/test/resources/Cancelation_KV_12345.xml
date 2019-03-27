@@ -23,7 +23,7 @@
 					<invoice:givenname>Patient-GivenName</invoice:givenname>
 					<invoice:postal>
 						<invoice:street>Patient-Street 1</invoice:street>
-						<invoice:zip countrycode="CH" statecode="ZH">8303</invoice:zip>
+						<invoice:zip countrycode="CH" statecode="ZH">1234</invoice:zip>
 						<invoice:city>Patient-City</invoice:city>
 					</invoice:postal>
 				</invoice:person>
@@ -32,7 +32,7 @@
 				<invoice:company>
 					<invoice:companyname>Contact-CompanyName</invoice:companyname>
 					<invoice:postal>
-						<invoice:zip countrycode="CH">1009</invoice:zip>
+						<invoice:zip countrycode="CH">2234</invoice:zip>
 						<invoice:city>Contact-City</invoice:city>
 					</invoice:postal>
 				</invoice:company>

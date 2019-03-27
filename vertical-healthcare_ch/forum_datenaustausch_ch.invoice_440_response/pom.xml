@@ -55,13 +55,20 @@
 			<version>2.6.2</version>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.xmlunit</groupId>
-			<artifactId>xmlunit-assertj</artifactId>
-			<version>2.6.2</version>
+		<dependency> <!-- needed for snapshot-testing -->
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency> <!-- we need base only for testing -->
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>
