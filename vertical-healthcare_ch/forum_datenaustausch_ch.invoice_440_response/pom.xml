@@ -58,14 +58,14 @@
 		<dependency> <!-- needed for snapshot-testing -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
 		<dependency> <!-- we need base only for testing -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 
