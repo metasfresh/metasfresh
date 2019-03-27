@@ -49,26 +49,38 @@ public class IFABPartnerImportTableSqlUpdater
 	public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
+		dbUpdateCountries(whereClause);
 	}
 
 	private void dbUpdateBPartners(@NonNull final String whereClause)
 	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE ")
+		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(I_I_Pharma_BPartner.Table_Name + " i ")
 				.append(" SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
 				.append(" WHERE i.B00ADRNR=p.IFA_Manufacturer AND i.AD_Client_ID=p.AD_Client_ID) ")
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbUpdateCountries(@NonNull final String whereClause)
+	{
+		int no;
+		StringBuilder sql;
+		sql = new StringBuilder("UPDATE ")
+				.append(I_I_Pharma_BPartner.Table_Name + " i ")
+				.append("SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c ")
+				.append("WHERE (i.B00LAND=c.CountryCode AND c.AD_Client_ID IN (0, i.AD_Client_ID))) ")
+				.append("WHERE C_Country_ID IS NULL ")
+				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
-				.append(I_I_Pharma_BPartner.Table_Name)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid BPartner,' ")
-				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
+				.append(I_I_Pharma_BPartner.Table_Name + " i ")
+				.append("SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' ")
+				.append("WHERE C_Country_ID IS NULL ")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid BPartner={}", no);
+		logger.info("Invalid Country={}", no);
 	}
 }
