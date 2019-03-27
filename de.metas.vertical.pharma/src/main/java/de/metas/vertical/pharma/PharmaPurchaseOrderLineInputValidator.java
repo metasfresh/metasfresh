@@ -1,21 +1,14 @@
 package de.metas.vertical.pharma;
 
-import java.util.Collections;
-
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.springframework.stereotype.Component;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.IOrderLineInputValidator;
 import de.metas.order.OrderLineInputValidatorResults;
-import de.metas.order.OrderLineInputValidatorResults.OrderLineInputValidatorResultsBuilder;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-
-import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -40,44 +33,30 @@ import lombok.NonNull;
  */
 
 @Component
-public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
+public class PharmaPurchaseOrderLineInputValidator implements IOrderLineInputValidator
 {
-	private final static String MSG_NoPrescriptionPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission";
-	private final static String MSG_NoPharmaShipmentPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions";
-	private final static String MSG_NoNarcoticPermission = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoNarcoticPermissions";
-
 	private final PharmaBPartnerRepository pharmaBPartnerRepo;
 	private final PharmaProductRepository pharmaProductRepo;
 
-	public PharmaOrderLineInputValidator(
-			@NonNull PharmaBPartnerRepository pharmaBPartnerRepo,
-			@NonNull PharmaProductRepository pharmaProductRepo)
+	@VisibleForTesting final static String MSG_NoNarcoticPermission = "de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoNarcoticPermission";
+	@VisibleForTesting final static String MSG_NoPrescriptionPermission = "de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoPrescriptionPermission";
+
+	public PharmaPurchaseOrderLineInputValidator(final PharmaBPartnerRepository pharmaBPartnerRepo, final PharmaProductRepository pharmaProductRepo)
 	{
 		this.pharmaBPartnerRepo = pharmaBPartnerRepo;
 		this.pharmaProductRepo = pharmaProductRepo;
 	}
 
-	@Override
-	public OrderLineInputValidatorResults validate(final @NonNull BPartnerId bpartnerId, final @NonNull ProductId productId)
-	{
-		return evaluatePrescriptionPermission(bpartnerId, productId);
-	}
-
-	/**
-	 * TypeB can only ship non-prescription products.
-	 * TypeA can ship typeB + prescription.
-	 * TypeC can ship typeA + narcotics.
-	 */
-	private OrderLineInputValidatorResults evaluatePrescriptionPermission(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
+	@Override public OrderLineInputValidatorResults validate(final BPartnerId bpartnerId, final ProductId productId)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		final OrderLineInputValidatorResultsBuilder resultBuilder = OrderLineInputValidatorResults.builder();
+		final OrderLineInputValidatorResults.OrderLineInputValidatorResultsBuilder resultBuilder = OrderLineInputValidatorResults.builder();
 
-		final PharmaBPartner bpartner = pharmaBPartnerRepo.getById(bpartnerId);
+		final PharmaBPartner bPartner = pharmaBPartnerRepo.getById(bpartnerId);
 		final PharmaProduct product = pharmaProductRepo.getById(productId);
 
-		if (bpartner.getShipmentPermission().equals(PharmaShipmentPermission.TYPE_C))
+		if (bPartner.getReceiptPermission().equals(PharmaReceiptPermission.TYPE_C))
 		{
 			return resultBuilder.isValid(true).build();
 		}
@@ -87,11 +66,11 @@ public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(
 					MSG_NoNarcoticPermission,
 					product.getValue(),
-					bpartner.getName());
+					bPartner.getName());
 			return resultBuilder.isValid(false).errorMessage(noPermissionMessage).build();
 		}
 
-		if (bpartner.isHasAtLeastOnePermission())
+		if (bPartner.isHasAtLeastOneVendorPermission())
 		{
 			return resultBuilder.isValid(true).build();
 		}
@@ -101,16 +80,11 @@ public class PharmaOrderLineInputValidator implements IOrderLineInputValidator
 			return resultBuilder.isValid(true).build();
 		}
 
-		final ITranslatableString noPermissionReason = msgBL.getTranslatableMsgText(MSG_NoPharmaShipmentPermission, Collections.emptyList());
-
 		final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(
 				MSG_NoPrescriptionPermission,
 				product.getValue(),
-				bpartner.getName(),
-				Util.coalesce(bpartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
+				bPartner.getName());
 
 		return resultBuilder.isValid(false).errorMessage(noPermissionMessage).build();
-
 	}
-
 }

@@ -1,5 +1,8 @@
 package de.metas.vertical.pharma.model.interceptor;
 
+import de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator;
+import de.metas.vertical.pharma.PharmaSalesOrderLineInputValidator;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -19,9 +22,7 @@ import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.PharmaBPartner;
 import de.metas.vertical.pharma.PharmaBPartnerRepository;
-import de.metas.vertical.pharma.PharmaOrderLineInputValidator;
 
 /*
  * #%L
@@ -53,7 +54,10 @@ public class C_OrderLine
 	PharmaBPartnerRepository pharmaBPartnerRepo;
 
 	@Autowired
-	PharmaOrderLineInputValidator pharmaOrderLineInputValidator;
+	PharmaSalesOrderLineInputValidator pharmaSalesOrderLineInputValidator;
+
+	@Autowired
+	PharmaPurchaseOrderLineInputValidator pharmaPurchaseOrderLineInputValidator;
 
 	@Autowired
 	OrderLineRepository orderLineRepository;
@@ -72,7 +76,7 @@ public class C_OrderLine
 			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
 			I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void validatePrescriptionProduct(final I_C_OrderLine orderLineRecord)
+	public void validateTheProducts(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		if (orderLineRecord.getM_Product_ID() <= 0)
 		{
@@ -80,16 +84,22 @@ public class C_OrderLine
 		}
 
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
-		if (SOTrx.PURCHASE.equals(orderLine.getSoTrx()))
-		{
-			// nothing to do, only applies to sales orders
-			return;
-		}
-
-		final BPartnerId bpartnerId = orderLine.getBPartnerId();
+		final BPartnerId bPartnerId = orderLine.getBPartnerId();
 		final ProductId productId = orderLine.getProductId();
 
-		final OrderLineInputValidatorResults orderLineValidationResult = pharmaOrderLineInputValidator.validate(bpartnerId, productId);
+		if (SOTrx.PURCHASE.equals(orderLine.getSoTrx()))
+		{
+			checksForPurchaseOrder(bPartnerId, productId);
+		}
+		else
+		{
+			checksForSalesOrder(bPartnerId, productId);
+		}
+	}
+
+	private void checksForSalesOrder(final BPartnerId bPartnerId, final ProductId productId)
+	{
+		final OrderLineInputValidatorResults orderLineValidationResult = pharmaSalesOrderLineInputValidator.validate(bPartnerId, productId);
 
 		if (orderLineValidationResult.isValid())
 		{
@@ -98,6 +108,19 @@ public class C_OrderLine
 		}
 
 		throw new AdempiereException(orderLineValidationResult.getErrorMessage());
+	}
+
+	private void checksForPurchaseOrder(final BPartnerId bPartnerId, final ProductId productId)
+	{
+		final OrderLineInputValidatorResults validatorResults = pharmaPurchaseOrderLineInputValidator.validate(bPartnerId, productId);
+
+		if (validatorResults.isValid())
+		{
+			// the partner has permissions for receiving the medicine
+			return;
+		}
+
+		throw new AdempiereException(validatorResults.getErrorMessage());
 
 	}
 

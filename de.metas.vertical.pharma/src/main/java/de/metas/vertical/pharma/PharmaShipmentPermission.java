@@ -39,6 +39,8 @@ import lombok.NonNull;
  * So Shipment Permission is for a BPartner who is a customer
  * and
  * Receipt Permission is for a BPartner who is a vendor
+ *
+ * This enum is related to PharmaReceiptPermission
  */
 public enum PharmaShipmentPermission
 {
@@ -49,14 +51,14 @@ public enum PharmaShipmentPermission
 	@Getter
 	private final String code;
 
-	private PharmaShipmentPermission(final String code)
+	PharmaShipmentPermission(final String code)
 	{
 		this.code = code;
 	}
 
 	public static PharmaShipmentPermission forCode(@NonNull final String code)
 	{
-		PharmaShipmentPermission type = code2type.get(code);
+		final PharmaShipmentPermission type = code2type.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PharmaShipmentPermission.class + " found for code: " + code);
