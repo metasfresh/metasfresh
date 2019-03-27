@@ -81,9 +81,7 @@ public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Pr
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
-			final I_I_Pharma_Product importRecord,
-			final boolean isInsertOnly) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Pharma_Product importRecord, final boolean isInsertOnly) 
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 

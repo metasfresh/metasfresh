@@ -174,7 +174,7 @@ import lombok.experimental.UtilityClass;
 		}
 	}
 
-	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
+	protected Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
 	{
 		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
 	}
