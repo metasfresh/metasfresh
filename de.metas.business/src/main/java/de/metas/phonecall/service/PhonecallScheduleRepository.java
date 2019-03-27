@@ -5,18 +5,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.user.UserId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Phonecall_Schedule;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.PhonecallSchemaVersionId;
 import de.metas.phonecall.PhonecallSchemaVersionLineId;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -72,8 +69,7 @@ public class PhonecallScheduleRepository
 		scheduleRecord.setIsCalled(schedule.isCalled());
 		scheduleRecord.setIsOrdered(schedule.isOrdered());
 
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(schedule.getBpartnerAndLocationId().getBpartnerId());
-		scheduleRecord.setSalesRep_ID(bpartner.getSalesRep_ID());
+		scheduleRecord.setSalesRep_ID(schedule.getSalesRepId().getRepoId());
 
 		saveRecord(scheduleRecord);
 	}
