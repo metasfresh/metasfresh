@@ -8,7 +8,7 @@ import NumericInput from './NumericQuickInput';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-import { DATE_FORMAT, DATE_FIELD_FORMATS } from '../../constants/Constants';
+import { DATE_FORMAT } from '../../constants/Constants';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
@@ -434,7 +434,7 @@ export class RawWidget extends Component {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               field={fields[0].field}
-              timeFormat={DATE_FIELD_FORMATS.Time}
+              timeFormat="h:mm"
               dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,
