@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -590762879L;
+	private static final long serialVersionUID = 1123049521L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -202,6 +202,44 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set eMail.
+		@param EMail 
+		EMail-Adresse
+	  */
+	@Override
+	public void setEMail (java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	/** Get eMail.
+		@return EMail-Adresse
+	  */
+	@Override
+	public java.lang.String getEMail () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+	}
+
+	/** Set Alternative eMail.
+		@param EMail2 
+		EMail-Adresse
+	  */
+	@Override
+	public void setEMail2 (java.lang.String EMail2)
+	{
+		set_Value (COLUMNNAME_EMail2, EMail2);
+	}
+
+	/** Get Alternative eMail.
+		@return EMail-Adresse
+	  */
+	@Override
+	public java.lang.String getEMail2 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail2);
 	}
 
 	/** Set External ID.

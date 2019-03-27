@@ -207,11 +207,9 @@ import lombok.experimental.UtilityClass;
 	private void updateExistingBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		updateLocation(importRecord, bpartnerLocation);
-
 		bpartnerLocation.setIsShipTo(true);
-
 		updatePhoneAndFax(importRecord, bpartnerLocation);
-
+		updateEmails(importRecord, bpartnerLocation);
 		importRecord.setC_BPartner_Location(bpartnerLocation);
 	}
 
@@ -339,5 +337,17 @@ import lombok.experimental.UtilityClass;
 			bpartnerLocation.setFax2(importRecord.getb00fax2());
 		}
 	}
-
+	
+	
+	private void updateEmails(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
+		if (!Check.isEmpty(importRecord.getb00email()))
+		{
+			bpartnerLocation.setEMail(importRecord.getb00email());
+		}
+		if (!Check.isEmpty(importRecord.getb00email2()))
+		{
+			bpartnerLocation.setEMail2(importRecord.getb00email2());
+		}
+	}
 }

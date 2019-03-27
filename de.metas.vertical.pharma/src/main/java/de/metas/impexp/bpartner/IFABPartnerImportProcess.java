@@ -59,9 +59,7 @@ public class IFABPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_B
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
-			final I_I_Pharma_BPartner importRecord,
-			final boolean isInsertOnly) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state,	final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
 	{
 		final I_C_BPartner existentBPartner = IFABPartnerImportHelper.fetchManufacturer(importRecord.getb00adrnr());
 

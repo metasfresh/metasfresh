@@ -236,6 +236,56 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEMail (java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEMail();
+
+    /** Column definition for EMail */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "EMail", null);
+    /** Column name EMail */
+    public static final String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEMail2 (java.lang.String EMail2);
+
+	/**
+	 * Get Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEMail2();
+
+    /** Column definition for EMail2 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail2 = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "EMail2", null);
+    /** Column name EMail2 */
+    public static final String COLUMNNAME_EMail2 = "EMail2";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
