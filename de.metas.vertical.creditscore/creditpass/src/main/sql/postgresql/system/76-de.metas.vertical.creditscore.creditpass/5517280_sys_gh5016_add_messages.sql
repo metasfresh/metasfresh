@@ -95,7 +95,7 @@ UPDATE AD_Message SET MsgText='Nicht erfolgreich für {0}',Updated=TO_TIMESTAMP(
 
 -- 2019-03-27T12:52:38.581
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544892,0,TO_TIMESTAMP('2019-03-27 12:52:38','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.creditscore.creditpass','Y','Creditpass Prüfung ist nicht erfolgreich. Bitte versuchen Sie erneut.','E',TO_TIMESTAMP('2019-03-27 12:52:38','YYYY-MM-DD HH24:MI:SS'),100,'OrderCompleted.CreditpassError')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544892,0,TO_TIMESTAMP('2019-03-27 12:52:38','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.creditscore.creditpass','Y','Die ausgewählte Zahlart erfordert eine erfolgreiche Creditpass Prüfung.','E',TO_TIMESTAMP('2019-03-27 12:52:38','YYYY-MM-DD HH24:MI:SS'),100,'OrderCompleted.CreditpassError')
 ;
 
 -- 2019-03-27T12:52:38.584
@@ -105,6 +105,6 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- 2019-03-27T12:53:08.880
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Creditpass check is unsuccessful. Please try again.',Updated=TO_TIMESTAMP('2019-03-27 12:53:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544892
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='The selected payment rule requires a creditpass check',Updated=TO_TIMESTAMP('2019-03-27 12:53:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544892
 ;
 

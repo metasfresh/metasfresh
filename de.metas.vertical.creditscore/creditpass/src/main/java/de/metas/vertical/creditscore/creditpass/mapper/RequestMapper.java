@@ -32,6 +32,7 @@ import de.metas.vertical.creditscore.creditpass.model.schema.*;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.lang3.StringUtils;
+import org.compiere.util.Env;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -50,7 +51,8 @@ public class RequestMapper
 
 		//TODO cleanup - only needed for testing mode
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		String amountDefault = sysConfigBL.getValue(CreditPassConstants.SYSCONFIG_AMOUNT_DEFAULT_VALUE, CreditPassConstants.AMOUNT_DEFAULT_VALUE);
+		String amountDefault = sysConfigBL.getValue(CreditPassConstants.SYSCONFIG_AMOUNT_DEFAULT_VALUE, CreditPassConstants.AMOUNT_DEFAULT_VALUE,
+				Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
 
 		return Request.builder()
 				.customer(Customer.builder()

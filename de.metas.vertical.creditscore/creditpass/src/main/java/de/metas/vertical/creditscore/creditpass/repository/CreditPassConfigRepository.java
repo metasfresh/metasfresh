@@ -28,10 +28,13 @@ import de.metas.cache.CCache;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.*;
+import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.UserId;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -45,7 +48,9 @@ public class CreditPassConfigRepository
 			.initialCapacity(1)
 			.tableName(I_CS_Creditpass_Config.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
+			.additionalTableNameToResetFor(I_C_Order.Table_Name)
 			.build();
 
 	public CreditPassConfig getConfigByBPartnerId(BPartnerId businessPartnerId)
@@ -92,8 +97,10 @@ public class CreditPassConfigRepository
 						.build()).collect(Collectors.toList());
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		int transactionType = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_TRANSACTION_TYPE, CreditPassConstants.DEFAULT_TRANSACTION_ID);
-		int processingCode = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_PROCESSING_CODE, CreditPassConstants.DEFAULT_PROCESSING_CODE);
+		final int clientId = Env.getAD_Client_ID();
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		int transactionType = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_TRANSACTION_TYPE, CreditPassConstants.DEFAULT_TRANSACTION_ID, clientId, orgId);
+		int processingCode = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_PROCESSING_CODE, CreditPassConstants.DEFAULT_PROCESSING_CODE, clientId, orgId);
 
 		return CreditPassConfig.builder()
 				.authId(config.getAuthId())

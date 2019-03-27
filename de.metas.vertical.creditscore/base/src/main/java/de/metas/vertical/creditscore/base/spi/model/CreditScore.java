@@ -42,6 +42,8 @@ public class CreditScore
    @NonNull
    private String paymentRule;
 
+   private boolean converted;
+
    @NonNull
    private CreditScoreRequestLogData requestLogData;
 

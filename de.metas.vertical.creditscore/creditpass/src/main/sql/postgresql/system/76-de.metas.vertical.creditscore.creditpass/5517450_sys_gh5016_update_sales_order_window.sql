@@ -113,11 +113,6 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=542394, SeqNo=20,Updated=TO_TIMES
 /* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN CreditpassStatus VARCHAR(1000)')
 ;
 
--- 2019-03-26T22:07:20.588
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
-
 -- 2019-03-26T22:07:20.595
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,541087,'Y','de.metas.vertical.creditscore.creditpass.process.CS_Creditpass_TransactionFrom_C_Order','N',TO_TIMESTAMP('2019-03-26 22:07:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.creditscore.creditpass','Y','N','N','N','N','N','N','Y','Y',0,'CreditPass überprüfen','N','N','Java',TO_TIMESTAMP('2019-03-26 22:07:20','YYYY-MM-DD HH24:MI:SS'),100,'10000000')

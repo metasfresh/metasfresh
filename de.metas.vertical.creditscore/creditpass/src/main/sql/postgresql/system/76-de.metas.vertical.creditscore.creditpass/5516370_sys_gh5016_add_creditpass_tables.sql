@@ -308,11 +308,6 @@ UPDATE AD_Process_Para SET ColumnName='RetryAfterDays', Name='Creditpass-Prüfun
 UPDATE AD_Process_Para SET ColumnName='RetryAfterDays', Name='Creditpass-Prüfung wiederholen ', Description=NULL, Help=NULL WHERE AD_Element_ID=576228 AND IsCentrallyMaintained='Y'
 ;
 
--- 2019-03-15T18:44:00.067
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,AD_Table_ID,Help,AD_Column_ID,IsMandatory,AD_Org_ID,AD_Element_ID,EntityType,ColumnName,Description,Name) VALUES (10,50,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-03-15 18:43:59','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','Y','N',TO_TIMESTAMP('2019-03-15 18:43:59','YYYY-MM-DD HH24:MI:SS'),100,541193,'Bestellungen wie ausgewählt abschließen, wenn credipass manuelle Prüfung empfiehlt oder wenn creditpass fehl schlägt',564499,'Y',0,576229,'U','DefaultCheckResult','Bestellungen wie ausgewählt abschließen','Standard Ergebnis')
-;
-
 -- 2019-03-15T16:42:33.232
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576229,0,'DefaultCheckResult',TO_TIMESTAMP('2019-03-15 16:42:33','YYYY-MM-DD HH24:MI:SS'),100,'Bestellungen wie ausgewählt abschließen','de.metas.vertical.creditscore.creditpass','Bestellungen wie ausgewählt abschließen, wenn credipass manuelle Prüfung empfiehlt oder wenn creditpass fehl schlägt','Y','Standard Ergebnis','Standard Ergebnis',TO_TIMESTAMP('2019-03-15 16:42:33','YYYY-MM-DD HH24:MI:SS'),100)
@@ -838,11 +833,6 @@ INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTran
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=564513 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 2019-03-15T19:06:22.113
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,AD_Table_ID,Help,AD_Column_ID,IsMandatory,AD_Org_ID,AD_Element_ID,EntityType,ColumnName,Description,Name) VALUES (10,50,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-03-15 19:06:22','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','Y','N',TO_TIMESTAMP('2019-03-15 19:06:22','YYYY-MM-DD HH24:MI:SS'),100,541194,'Bestellungen wie ausgewählt abschließen, wenn credipass manuelle Prüfung empfiehlt oder wenn creditpass fehl schlägt',564514,'Y',0,,'U','DefaultCheckResult','Bestellungen wie ausgewählt abschließen','Standard Ergebnis')
-;
-
 -- 2019-03-15T19:06:22.115
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=564514 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
@@ -1206,11 +1196,6 @@ INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTran
 -- 2019-03-15T19:59:30.449
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Column_ID=564524 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
-
--- 2019-03-15T20:10:58.467
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE CS_Creditpass_Config_PaymentRule ADD CONSTRAINT CSCreditpassConfig_CSCreditpassConfigPaymentRule FOREIGN KEY (CS_Creditpass_Config_ID) REFERENCES public.CS_Creditpass_Config DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- 2019-03-15T20:32:12.231
@@ -2022,11 +2007,6 @@ UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0',Updated=TO_TIMESTAMP('
 -- 2019-03-18T17:04:54.596
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Reference_ID=22,Updated=TO_TIMESTAMP('2019-03-18 17:04:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564492
-;
-
--- 2019-03-18T17:04:54.914
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('CS_Creditpass_Config','ALTER TABLE public.CS_Creditpass_Config ADD COLUMN ManualCheckUser NUMERIC DEFAULT 0 NOT NULL')
 ;
 
 -- 2019-03-18T17:05:07.166
