@@ -55,6 +55,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -555,5 +556,17 @@ public class BPartnerBL implements IBPartnerBL
 
 		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
 		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
+	}
+
+	@Override
+	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
+	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartnerRecord = bPartnerDAO.getById(bpartnerId);
+
+		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
+
+		return UserId.ofRepoIdOrNull(salesRepRecordId);
 	}
 }

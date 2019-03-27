@@ -323,10 +323,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_SalesInvoice(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, PostingType.Actual)
 				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
-		facts.add(fact);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -424,7 +422,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	/**
@@ -438,9 +436,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_SalesCreditMemo(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-		facts.add(fact);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -536,7 +533,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	/**
@@ -550,9 +547,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_PurchaseInvoice(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-		facts.add(fact);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -665,7 +661,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	/**
@@ -679,9 +675,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_PurchaseCreditMemo(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-		facts.add(fact);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -791,7 +786,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	@Override

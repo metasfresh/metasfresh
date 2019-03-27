@@ -41,6 +41,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -174,6 +175,8 @@ public interface IBPartnerBL extends ISingletonService
 	User retrieveBillContactOrNull(RetrieveBillContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
+
+	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
 	@Value
 	@Builder
