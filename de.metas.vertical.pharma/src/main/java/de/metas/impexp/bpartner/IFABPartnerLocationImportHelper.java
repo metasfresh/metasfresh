@@ -51,8 +51,6 @@ import lombok.experimental.UtilityClass;
 	final private Comparator<Address> addressComparator = Comparator.comparing(Address::getCity)
 			.thenComparing(Address::getAddress1)
 			.thenComparing(Address::getAddress2)
-			.thenComparing(Address::getAddress3)
-			.thenComparing(Address::getAddress4)
 			.thenComparing(Address::getPostal)
 			.thenComparing(Address::getPobox)
 			.thenComparingInt(Address::getCounrytId);
@@ -105,10 +103,8 @@ import lombok.experimental.UtilityClass;
 			final Address importAddress = Address.builder()
 					.counrytId(importRecord.getC_Country_ID())
 					.city(importRecord.getb00ortzu())
-					.address1(importRecord.getb00str())
-					.address2(importRecord.getb00hnrv())
-					.address3(importRecord.getb00hnrvz())
-					.address4(buildAddress4(importRecord))
+					.address1(buildAddress1(importRecord))
+					.address2(buildAddress2(importRecord))
 					.postal(importRecord.getb00plzzu1())
 					.pobox(buildPOBox(importRecord))
 					.build();
@@ -117,10 +113,8 @@ import lombok.experimental.UtilityClass;
 					.map(bpLocation -> Address.builder()
 							.counrytId(importRecord.getC_Country_ID())
 							.city(importRecord.getb00ortzu())
-							.address1(importRecord.getb00str())
-							.address2(importRecord.getb00hnrv())
-							.address3(importRecord.getb00hnrvz())
-							.address4(buildAddress4(importRecord))
+							.address1(buildAddress1(importRecord))
+							.address2(buildAddress2(importRecord))
 							.postal(importRecord.getb00plzzu1())
 							.pobox(buildPOBox(importRecord))
 							.bpLocationId(bpLocation.getC_BPartner_Location_ID())
@@ -162,11 +156,10 @@ import lombok.experimental.UtilityClass;
 		return p -> p.getC_BPartner_Location_ID() > 0
 				&& importRecord.getC_Country_ID() == p.getC_Country_ID()
 				&& Objects.equals(importRecord.getb00ortzu(), p.getb00ortzu())
-				&& Objects.equals(importRecord.getb00str(), p.getb00str())
-				&& Objects.equals(importRecord.getb00hnrv(), p.getb00hnrv())
-				&& Objects.equals(importRecord.getb00hnrvz(), p.getb00hnrvz())
-				&& Objects.equals(buildAddress4(importRecord), buildAddress4(p))
-				&& Objects.equals(importRecord.getb00plzzu1(), p.getb00plzzu1());
+				&& Objects.equals(buildAddress1(importRecord), buildAddress1(p))
+				&& Objects.equals(buildAddress2(importRecord), buildAddress2(p))
+				&& Objects.equals(importRecord.getb00plzzu1(), p.getb00plzzu1())
+				&& Objects.equals(buildPOBox(importRecord), buildPOBox(p));
 	}
 
 	@Value
@@ -176,22 +169,18 @@ import lombok.experimental.UtilityClass;
 		final String city;
 		final String address1;
 		final String address2;
-		final String address3;
-		final String address4;
 		final String postal;
 		final String pobox;;
 		final int bpLocationId;
 
 		@Builder(builderMethodName = "builder")
-		public Address(int counrytId, String city, String address1, String address2, String address3, String address4, String postal, String pobox, int bpLocationId)
+		public Address(int counrytId, String city, String address1, String address2, String postal, String pobox, int bpLocationId)
 		{
 			Check.assume(counrytId > 0, "CountryId shall be greater then 0!");
 			this.counrytId = counrytId;
 			this.city = city == null ? "" : city;
 			this.address1 = address1 == null ? "" : address1;
 			this.address2 = address2 == null ? "" : address2;
-			this.address3 = address3 == null ? "" : address3;
-			this.address4 = address4 == null ? "" : address4;
 			this.postal = postal == null ? "" : postal;
 			this.pobox = pobox == null ? "" : pobox;
 			this.bpLocationId = bpLocationId;
@@ -237,12 +226,10 @@ import lombok.experimental.UtilityClass;
 		bpartnerLocation.setC_Location(location);
 	}
 
-	private static void updateExistingLocation(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_Location location)
+	private void updateExistingLocation(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_Location location)
 	{
-		location.setAddress1(importRecord.getb00str());
-		location.setAddress2(importRecord.getb00hnrv());
-		location.setAddress3(importRecord.getb00hnrvz());
-		location.setAddress4(buildAddress4(importRecord));
+		location.setAddress1(buildAddress1(importRecord));
+		location.setAddress2(buildAddress2(importRecord));
 		location.setPostal(importRecord.getb00plzzu1());
 		location.setCity(importRecord.getb00ortzu());
 		location.setC_Country_ID(importRecord.getC_Country_ID());
@@ -250,7 +237,36 @@ import lombok.experimental.UtilityClass;
 		InterfaceWrapperHelper.save(location);
 	}
 
-	private static String buildAddress4(final I_I_Pharma_BPartner importRecord)
+	
+	private  String buildAddress1(final I_I_Pharma_BPartner importRecord)
+	{
+		final StringBuilder sb = new StringBuilder();
+		if (!Check.isEmpty(importRecord.getb00str()))
+		{
+			sb.append(importRecord.getb00str());
+		}
+		if (!Check.isEmpty(importRecord.getb00hnrv()))
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(" ");
+			}
+			sb.append(importRecord.getb00hnrv());
+		}
+		if (!Check.isEmpty(importRecord.getb00hnrvz()))
+		{
+			if (sb.length() > 0)
+			{
+				sb.append(" ");
+			}
+			sb.append(importRecord.getb00hnrvz());
+		}
+
+		return sb.toString();
+	}
+
+	
+	private String buildAddress2(final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00hnrb()))
@@ -259,6 +275,10 @@ import lombok.experimental.UtilityClass;
 		}
 		if (!Check.isEmpty(importRecord.getb00hnrbz()))
 		{
+			if (sb.length() > 0)
+			{
+				sb.append(" ");
+			}
 			sb.append(importRecord.getb00hnrbz());
 		}
 
