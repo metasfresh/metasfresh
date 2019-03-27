@@ -103,7 +103,6 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdateErrorMessages(whereClause);
 	}
-	
 
 	@Builder(buildMethodName = "updateIPharmaProduct")
 	private void updatePharmaProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx, @NonNull final String tableName, @NonNull final String valueName)
@@ -128,46 +127,6 @@ public class MProductImportTableSqlUpdater
 		dbUpdateErrorMessagesIFA(whereClause);
 	}
 	
-	private void dbUpdateErrorMessagesIFA(@NonNull final String whereClause)
-	{
-		StringBuilder sql;
-		int no;
-
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProdCategory,' ")
-				.append("WHERE M_Product_Category_ID IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid Category={}", no);
-		
-		
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=A00PZN is mandatory,' ")
-				.append("WHERE A00PZN IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid A00PZN={}", no);
-		
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Package UOM,' ")
-				.append("WHERE Package_UOM_ID IS NULL and i.A00PGEINH IS NOT NULL ")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid Package_UOM_ID={}", no);
-		
-		
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Dosage Form,' ")
-				.append("WHERE M_DosageForm_ID IS NULL and i.A00DARFO IS NOT NULL ")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid M_DosageForm_ID={}", no);
-	}
-
 	private void dbUpdateBPartners(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
@@ -591,6 +550,46 @@ public class MProductImportTableSqlUpdater
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.warn("No Mandatory Pharma product category Name ={}", no);
+	}
+	
+	private void dbUpdateErrorMessagesIFA(@NonNull final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProdCategory,' ")
+				.append("WHERE M_Product_Category_ID IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.warn("Invalid Category={}", no);
+		
+		
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=A00PZN is mandatory,' ")
+				.append("WHERE A00PZN IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.warn("Invalid A00PZN={}", no);
+		
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Package UOM,' ")
+				.append("WHERE Package_UOM_ID IS NULL and i.A00PGEINH IS NOT NULL ")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.warn("Invalid Package_UOM_ID={}", no);
+		
+		
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Dosage Form,' ")
+				.append("WHERE M_DosageForm_ID IS NULL and i.A00DARFO IS NOT NULL ")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.warn("Invalid M_DosageForm_ID={}", no);
 	}
 	
 	public void dbUpdateIsPriceCopiedToYes(@NonNull final String whereClause, @NonNull final String columnname)
