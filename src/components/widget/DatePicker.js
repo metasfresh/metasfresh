@@ -109,6 +109,8 @@ class DatePicker extends Component {
   );
 
   render() {
+    const format = this.state.open ? true : this.props.timeFormat;
+
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
@@ -122,6 +124,7 @@ class DatePicker extends Component {
           onFocusInput={this.focusInput}
           closeOnSelect={false}
           {...this.props}
+          timeFormat={format}
         />
         <i className="meta-icon-calendar" key={0} />
       </div>
