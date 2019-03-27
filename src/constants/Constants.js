@@ -21,6 +21,6 @@ export const DATE_FIELD_TYPES = ['Date', 'DateTime', 'Time'];
 export const DATE_FIELD_FORMATS = {
   Date: 'l',
   DateTime: 'l LTS',
-  Time: 'LTS',
+  Time: 'LT',
 };
 export const TIME_FIELD_TYPES = ['Time'];
