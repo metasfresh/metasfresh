@@ -15,7 +15,7 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1222554718L;
+	private static final long serialVersionUID = 1942282879L;
 
     /** Standard Constructor */
     public X_CS_Creditpass_Config (Properties ctx, int CS_Creditpass_Config_ID, String trxName)
@@ -30,7 +30,7 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 			setPassword (null);
 			setRequestReason (null); // ABK
 			setRestApiBaseURL (null);
-			setRetryAfterDays (BigDecimal.ZERO); // 30
+			setRetryAfterDays (BigDecimal.ZERO); // 0
         } */
     }
 

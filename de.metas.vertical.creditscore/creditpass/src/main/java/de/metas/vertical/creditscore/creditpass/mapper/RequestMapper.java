@@ -23,12 +23,14 @@ package de.metas.vertical.creditscore.creditpass.mapper;
  * #L%
  */
 
+import de.metas.util.Services;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRule;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
 import de.metas.vertical.creditscore.creditpass.model.schema.*;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
@@ -46,6 +48,10 @@ public class RequestMapper
 				.filter(p -> StringUtils.equals(p.getPaymentRule(), paymentRule))
 				.findFirst();
 
+		//TODO cleanup - only needed for testing mode
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		String amountDefault = sysConfigBL.getValue(CreditPassConstants.SYSCONFIG_AMOUNT_DEFAULT_VALUE, CreditPassConstants.AMOUNT_DEFAULT_VALUE);
+
 		return Request.builder()
 				.customer(Customer.builder()
 						.customerTransactionId(UUID.randomUUID().toString().replace("-", StringUtils.EMPTY))
@@ -58,7 +64,7 @@ public class RequestMapper
 						.transactionType(creditPassConfig.getTransactionType())
 						.build())
 				.query(Query.builder()
-						.amount(CreditPassConstants.AMOUNT_DEFAULT_VALUE)
+						.amount(amountDefault)
 						.purchaseType(configPaymentRule.map(CreditPassConfigPaymentRule::getPurchaseType).orElse(-1))
 						.contact(Contact.builder()
 								.firstName(transactionData.getFirstName())

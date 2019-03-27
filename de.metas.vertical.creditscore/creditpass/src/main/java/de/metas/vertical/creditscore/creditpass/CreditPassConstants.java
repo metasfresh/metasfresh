@@ -31,6 +31,8 @@ public final class CreditPassConstants
 
 	public static final String SYSCONFIG_PROCESSING_CODE = "de.metas.vertical.creditscore.creditpass.ProcessingCode";
 
+	public static final String SYSCONFIG_AMOUNT_DEFAULT_VALUE = "de.metas.vertical.creditscore.creditpass.AmountDefault";
+
 	public static final String PROCESS_PAYMENT_RULE_PARAM = "paymentRule";
 
 	public static final int DEFAULT_TRANSACTION_ID = 11920;
@@ -39,9 +41,25 @@ public final class CreditPassConstants
 
 	public static final int MANUAL_RESPONSE_CODE = 2;
 
+	public static final int REQUEST_SUCCESS_CODE = 0;
+
 	public static final String MANUAL_RESPONSE_CONVERSION_TEXT = "Manual response code to actual response";
 
 	public static final String DEFAULT_RESULT_TEXT = "Default result";
 
 	public static final String CREDITPASS_NOTIFICATION_MESSAGE_KEY = "CreditpassNotificationMessage";
+
+	public static final String CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY = "CreditpassStatus.Success";
+
+	public static final String CREDITPASS_STATUS_FAILURE_MESSAGE_KEY = "CreditpassStatus.Failure";
+
+	public static final String CREDITPASS_REQUEST_NEEDED_MESSAGE_KEY = "CreditpassStatus.RequestNeeded";
+
+	public static final String CREDITPASS_REQUEST_NOT_NEEDED_MESSAGE_KEY = "CreditpassStatus.RequestNotNeeded";
+
+	public static final String ORDER_COMPLETED_CREDITPASS_ERROR = "OrderCompleted.CreditpassError";
+
+	public static final String CREDITPASS_FLAG_YES = "Y";
+
+	public static final String CREDITPASS_FLAG_NO = "N";
 }

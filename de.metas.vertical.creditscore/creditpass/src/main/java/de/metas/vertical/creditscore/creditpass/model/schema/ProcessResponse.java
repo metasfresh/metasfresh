@@ -35,7 +35,6 @@ public class ProcessResponse
 	@JsonProperty("PROCESSING_CODE")
 	private Integer processingCode;
 
-	@NonNull
 	@JsonProperty("REQUESTREASON")
 	private String requestReason;
 

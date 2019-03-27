@@ -5,36 +5,35 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for CS_Transaction_Results
+/** Generated Model for CS_Transaction_Result
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_CS_Transaction_Results extends org.compiere.model.PO implements I_CS_Transaction_Results, org.compiere.model.I_Persistent 
+public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_CS_Transaction_Result, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1263214602L;
+	private static final long serialVersionUID = -1052036390L;
 
     /** Standard Constructor */
-    public X_CS_Transaction_Results (Properties ctx, int CS_Transaction_Results_ID, String trxName)
+    public X_CS_Transaction_Result (Properties ctx, int CS_Transaction_Result_ID, String trxName)
     {
-      super (ctx, CS_Transaction_Results_ID, trxName);
-      /** if (CS_Transaction_Results_ID == 0)
+      super (ctx, CS_Transaction_Result_ID, trxName);
+      /** if (CS_Transaction_Result_ID == 0)
         {
-			setCS_Transaction_Results_ID (0);
+			setCS_Transaction_Result_ID (0);
+			setPaymentRule (null);
 			setRequestEndTime (new Timestamp( System.currentTimeMillis() ));
 			setRequestStartTime (new Timestamp( System.currentTimeMillis() ));
-			setResponseCode (BigDecimal.ZERO); // 0
-			setResponseCodeText (null);
-			setTransactionCustomerId (null); // 0
+			setResponseCode (BigDecimal.ZERO);
 			setTransactionIdAPI (null);
         } */
     }
 
     /** Load Constructor */
-    public X_CS_Transaction_Results (Properties ctx, ResultSet rs, String trxName)
+    public X_CS_Transaction_Result (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -123,25 +122,64 @@ public class X_CS_Transaction_Results extends org.compiere.model.PO implements I
 	}
 
 	/** Set CS_Transaction_Results.
-		@param CS_Transaction_Results_ID CS_Transaction_Results	  */
+		@param CS_Transaction_Result_ID CS_Transaction_Results	  */
 	@Override
-	public void setCS_Transaction_Results_ID (int CS_Transaction_Results_ID)
+	public void setCS_Transaction_Result_ID(int CS_Transaction_Result_ID)
 	{
-		if (CS_Transaction_Results_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Results_ID, null);
+		if (CS_Transaction_Result_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Result_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Results_ID, Integer.valueOf(CS_Transaction_Results_ID));
+			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Result_ID, Integer.valueOf(CS_Transaction_Result_ID));
 	}
 
 	/** Get CS_Transaction_Results.
 		@return CS_Transaction_Results	  */
 	@Override
-	public int getCS_Transaction_Results_ID () 
+	public int getCS_Transaction_Result_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Transaction_Results_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Transaction_Result_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** Set Zahlungsweise.
+		@param PaymentRule 
+		Wie die Rechnung bezahlt wird
+	  */
+	@Override
+	public void setPaymentRule (java.lang.String PaymentRule)
+	{
+
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+	}
+
+	/** Get Zahlungsweise.
+		@return Wie die Rechnung bezahlt wird
+	  */
+	@Override
+	public java.lang.String getPaymentRule () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
 	}
 
 	/** Set Anfrage Ende.
@@ -200,7 +238,7 @@ public class X_CS_Transaction_Results extends org.compiere.model.PO implements I
 	@Override
 	public void setResponseCodeText (java.lang.String ResponseCodeText)
 	{
-		set_ValueNoCheck (COLUMNNAME_ResponseCodeText, ResponseCodeText);
+		set_Value (COLUMNNAME_ResponseCodeText, ResponseCodeText);
 	}
 
 	/** Get Antwort Text.
@@ -227,17 +265,11 @@ public class X_CS_Transaction_Results extends org.compiere.model.PO implements I
 		return (java.lang.String)get_Value(COLUMNNAME_ResponseDetails);
 	}
 
-	/** 
-	 * TransactionCustomerId AD_Reference_ID=110
-	 * Reference name: AD_User
-	 */
-	public static final int TRANSACTIONCUSTOMERID_AD_Reference_ID=110;
 	/** Set Transaktionsreferenz .
 		@param TransactionCustomerId Transaktionsreferenz 	  */
 	@Override
 	public void setTransactionCustomerId (java.lang.String TransactionCustomerId)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_TransactionCustomerId, TransactionCustomerId);
 	}
 

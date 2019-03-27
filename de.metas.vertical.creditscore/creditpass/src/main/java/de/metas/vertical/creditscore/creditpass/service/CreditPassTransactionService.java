@@ -1,12 +1,14 @@
 package de.metas.vertical.creditscore.creditpass.service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.impl.ADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.spi.model.CreditScore;
+import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
+import de.metas.vertical.creditscore.base.spi.repository.TransactionResultId;
 import de.metas.vertical.creditscore.base.spi.service.TransactionResultService;
 import de.metas.vertical.creditscore.creditpass.CreditPassClient;
 import de.metas.vertical.creditscore.creditpass.CreditPassClientFactory;
@@ -17,9 +19,11 @@ import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
 import de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CreditPassTransactionService
@@ -43,25 +47,37 @@ public class CreditPassTransactionService
 		this.creditPassConfigRepository = creditPassConfigRepository;
 	}
 
-	public void getAndSaveCreditScore(@NonNull final String paymentRule,
-			@NonNull final BPartnerId bPartnerId, @NonNull final Properties ctx) throws Exception
+	public List<TransactionResultId> getAndSaveCreditScore(@NonNull final String paymentRule,
+			@NonNull final BPartnerId bPartnerId) throws Exception
 	{
-		// TODO check if creation can be avoided sometimes
-		CreditPassClient creditScoreClient = (CreditPassClient)clientFactory.newClientForBusinessPartner(bPartnerId);
-		CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
+		final CreditPassClient creditScoreClient = (CreditPassClient)clientFactory.newClientForBusinessPartner(bPartnerId);
+		final CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
+		final List<TransactionResultId> transactionResultIds = new ArrayList<>();
 		if (StringUtils.isEmpty(paymentRule))
 		{
 			for (CreditPassConfigPaymentRule configPaymentRule : creditScoreClient.getCreditPassConfig().getCreditPassConfigPaymentRuleList())
 			{
-				CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, configPaymentRule.getPaymentRule());
-				transactionResultService.createAndSaveResult(convertResult(creditScoreClient, creditScore, ctx), bPartnerId);
+				final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, configPaymentRule.getPaymentRule());
+				TransactionResultId id = transactionResultService.createAndSaveResult(convertResult(creditScoreClient, creditScore), bPartnerId);
+				transactionResultIds.add(id);
 			}
 		}
 		else
 		{
-			CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
-			transactionResultService.createAndSaveResult(convertResult(creditScoreClient, creditScore, ctx), bPartnerId);
+			final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
+			TransactionResultId id = transactionResultService.createAndSaveResult(convertResult(creditScoreClient, creditScore), bPartnerId);
+			transactionResultIds.add(id);
 		}
+		return transactionResultIds;
+	}
+
+	public TransactionResult getAndSaveCreditScore(@NonNull final String paymentRule,
+			@NonNull final OrderId orderId, @NonNull final BPartnerId bPartnerId) throws Exception
+	{
+		final CreditPassClient creditScoreClient = (CreditPassClient)clientFactory.newClientForBusinessPartner(bPartnerId);
+		final CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
+		final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
+		return transactionResultService.createAndSaveResult(convertResult(creditScoreClient, creditScore), bPartnerId, orderId);
 	}
 
 	public boolean hasConfigForPartnerId(
@@ -69,7 +85,7 @@ public class CreditPassTransactionService
 	{
 
 		boolean hasConfig = false;
-		CreditPassConfig config = creditPassConfigRepository.getByBPartnerId(bPartnerId);
+		final CreditPassConfig config = creditPassConfigRepository.getConfigByBPartnerId(bPartnerId);
 
 		if (config != null)
 		{
@@ -78,29 +94,20 @@ public class CreditPassTransactionService
 		return hasConfig;
 	}
 
-	public void shouldPerformRequestForSalesOrder(
-			@NonNull final BPartnerId bPartnerId)
-	{
-		CreditPassConfig config =  creditPassConfigRepository.getByBPartnerId(bPartnerId);
-		config.getRetryDays();
-
-	}
-
-
-	private CreditScore convertResult(@NonNull final CreditPassClient client, @NonNull final CreditScore creditScore,
-			@NonNull final Properties ctx)
+	private CreditScore convertResult(@NonNull final CreditPassClient client, @NonNull final CreditScore creditScore)
 	{
 		if (creditScore.getResultCode() == CreditPassConstants.MANUAL_RESPONSE_CODE)
 		{
-			CreditScore convertedCreditScore = CreditScore.builder()
+			final CreditScore convertedCreditScore = CreditScore.builder()
 					.requestLogData(creditScore.getRequestLogData())
 					.resultCode(client.getCreditPassConfig().getDefaultResult().getResultCode())
 					.resultText(CreditPassConstants.MANUAL_RESPONSE_CONVERSION_TEXT)
+					.paymentRule(creditScore.getPaymentRule())
 					.build();
-			String message = Services.get(ADMessageDAO.class).retrieveByValue(ctx, CreditPassConstants.CREDITPASS_NOTIFICATION_MESSAGE_KEY).getMsgText();
-			UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+			final String message = Services.get(IMsgBL.class).getMsg(Env.getCtx(), CreditPassConstants.CREDITPASS_NOTIFICATION_MESSAGE_KEY);
+			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.recipientUserId(client.getCreditPassConfig().getNotificationUserId())
-					.contentADMessage(message)
+					.contentPlain(message)
 					.build();
 			Services.get(INotificationBL.class).sendAfterCommit(userNotificationRequest);
 			return convertedCreditScore;

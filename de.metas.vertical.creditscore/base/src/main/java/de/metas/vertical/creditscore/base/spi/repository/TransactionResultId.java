@@ -1,8 +1,8 @@
-package de.metas.vertical.creditscore.base.spi.model;
+package de.metas.vertical.creditscore.base.spi.repository;
 
 /*
  * #%L
- * de.metas.vertical.creditscore.base.spi.model
+ * de.metas.vertical.creditscore.base.spi.repository
  *
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,27 +22,23 @@ package de.metas.vertical.creditscore.base.spi.model;
  * #L%
  */
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Setter;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-@Builder
 @Value
-public class CreditScore
+public class TransactionResultId implements RepoIdAware
 {
+	public static TransactionResultId ofRepoId(final int repoId)
+	{
+		return new TransactionResultId(repoId);
+	}
 
-   @NonNull
-   private int resultCode;
+	int repoId;
 
-   private String resultText;
-
-   private String resultDetails;
-
-   @NonNull
-   private String paymentRule;
-
-   @NonNull
-   private CreditScoreRequestLogData requestLogData;
+	private TransactionResultId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 
 }

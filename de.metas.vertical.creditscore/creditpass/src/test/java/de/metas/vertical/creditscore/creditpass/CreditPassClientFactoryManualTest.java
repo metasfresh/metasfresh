@@ -1,13 +1,6 @@
 package de.metas.vertical.creditscore.creditpass;
 
-import de.metas.vertical.creditscore.base.spi.model.CreditScore;
-import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
-import de.metas.vertical.creditscore.creditpass.model.schema.*;
 import org.junit.Test;
-
-import java.time.LocalDate;
-
-import static org.junit.Assert.assertNotNull;
 
 public class CreditPassClientFactoryManualTest
 {

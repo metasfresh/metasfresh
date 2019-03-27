@@ -38,7 +38,7 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 @Service
 public class CreditPassClientFactory implements CreditScoreClientFactory
@@ -55,13 +55,13 @@ public class CreditPassClientFactory implements CreditScoreClientFactory
 	{
 		Check.errorIf(businessPartnerId.getRepoId() <= 0, "Given parameter businessPartnerId needs to be > 0; businessPartnerId={}", businessPartnerId.getRepoId());
 
-		final CreditPassConfig config = configRepository.getByBPartnerId(businessPartnerId);
+		final CreditPassConfig config = configRepository.getConfigByBPartnerId(businessPartnerId);
 
 		return createCreditPassClient(config);
 	}
 
 	@VisibleForTesting
-	CreditPassClient createCreditPassClient(@NonNull final CreditPassConfig config)
+	private CreditPassClient createCreditPassClient(@NonNull final CreditPassConfig config)
 	{
 		final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder()
 				.rootUri(config.getRestApiBaseUrl());
@@ -80,7 +80,7 @@ public class CreditPassClientFactory implements CreditScoreClientFactory
 				.map(MappingJackson2XmlHttpMessageConverter.class::cast)
 				.findFirst().orElseThrow(() -> new RuntimeException("MappingJackson2XmlHttpMessageConverter not found"));
 
-		messageConverter.setSupportedMediaTypes(Arrays.asList(new MediaType[] { MediaType.ALL }));
+		messageConverter.setSupportedMediaTypes(Collections.singletonList(MediaType.ALL));
 		final ObjectMapper objectMapper = messageConverter.getObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 

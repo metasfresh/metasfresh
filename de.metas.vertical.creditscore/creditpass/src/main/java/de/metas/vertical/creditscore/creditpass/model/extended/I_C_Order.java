@@ -1,8 +1,8 @@
-package de.metas.vertical.creditscore.base.spi.model;
+package de.metas.vertical.creditscore.creditpass.model.extended;
 
 /*
  * #%L
- * de.metas.vertical.creditscore.base.spi.model
+ * de.metas.vertical.creditscore.creditpass.model.extended
  *
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,27 +22,15 @@ package de.metas.vertical.creditscore.base.spi.model;
  * #L%
  */
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.Value;
-
-@Builder
-@Value
-public class CreditScore
+public interface I_C_Order extends org.compiere.model.I_C_Order
 {
 
-   @NonNull
-   private int resultCode;
+	public static final String COLUMNNAME_CreditpassFlag = "CreditpassFlag";
+	public boolean getCreditpassFlag();
+	public void setCreditpassFlag(boolean CreditpassFlag);
 
-   private String resultText;
-
-   private String resultDetails;
-
-   @NonNull
-   private String paymentRule;
-
-   @NonNull
-   private CreditScoreRequestLogData requestLogData;
+	public static final String COLUMNNAME_CreditpassStatus = "CreditpassStatus";
+	public String getCreditpassStatus();
+	public void setCreditpassStatus(String CreditpassStatus);
 
 }

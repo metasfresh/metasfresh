@@ -24,6 +24,7 @@ package de.metas.vertical.creditscore.creditpass.repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.*;
@@ -40,7 +41,19 @@ import java.util.stream.Collectors;
 public class CreditPassConfigRepository
 {
 
-	public CreditPassConfig getByBPartnerId(BPartnerId businessPartnerId)
+	private final CCache<BPartnerId, CreditPassConfig> configCache = CCache.<BPartnerId, CreditPassConfig>builder()
+			.initialCapacity(1)
+			.tableName(I_CS_Creditpass_Config.Table_Name)
+			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
+			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
+			.build();
+
+	public CreditPassConfig getConfigByBPartnerId(BPartnerId businessPartnerId)
+	{
+		return configCache.getOrLoad(businessPartnerId, () -> getByBPartnerId(businessPartnerId));
+	}
+
+	private CreditPassConfig getByBPartnerId(BPartnerId businessPartnerId)
 	{
 
 		final IBPGroupDAO bpGroupRepo = Services.get(IBPGroupDAO.class);

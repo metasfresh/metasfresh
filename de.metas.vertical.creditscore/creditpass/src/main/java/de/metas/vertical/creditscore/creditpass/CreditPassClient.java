@@ -24,6 +24,7 @@ package de.metas.vertical.creditscore.creditpass;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
 import de.metas.vertical.creditscore.base.spi.CreditScoreClient;
 import de.metas.vertical.creditscore.base.spi.model.CreditScore;
 import de.metas.vertical.creditscore.base.spi.model.CreditScoreRequestLogData;
@@ -35,6 +36,8 @@ import de.metas.vertical.creditscore.creditpass.model.schema.Request;
 import de.metas.vertical.creditscore.creditpass.model.schema.Response;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -43,6 +46,8 @@ import java.time.LocalDateTime;
 
 public class CreditPassClient implements CreditScoreClient
 {
+	private final transient Logger log = LogManager.getLogger(getClass());
+
 	private final RestTemplate restTemplate;
 
 	@Getter
@@ -83,16 +88,20 @@ public class CreditPassClient implements CreditScoreClient
 					.resultCode(response.getProcess().getAnswerCode())
 					.resultText(response.getProcess().getAnswerText())
 					.resultDetails(response.getProcess().getAnswerDetails())
+					.paymentRule(paymentRule)
 					.build();
 		}
 		catch (final RestClientException e)
 		{
-			//TODO handle exception
+			final Throwable cause = AdempiereException.extractCause(e);
+			log.error(e.getLocalizedMessage(), cause);
+			requestLogData.setResponseTime(LocalDateTime.now());
 			return CreditScore.builder()
 					.requestLogData(requestLogData)
 					.resultCode(creditPassConfig.getDefaultResult().getResultCode())
 					.resultText(CreditPassConstants.DEFAULT_RESULT_TEXT)
 					.resultDetails(e.getMessage())
+					.paymentRule(paymentRule)
 					.build();
 		}
 

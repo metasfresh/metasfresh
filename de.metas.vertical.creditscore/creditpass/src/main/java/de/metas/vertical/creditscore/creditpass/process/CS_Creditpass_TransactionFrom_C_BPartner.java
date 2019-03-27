@@ -24,22 +24,35 @@ package de.metas.vertical.creditscore.creditpass.process;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.process.*;
+import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
+import de.metas.vertical.creditscore.base.spi.repository.TransactionResultId;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.service.CreditPassTransactionService;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 public class CS_Creditpass_TransactionFrom_C_BPartner extends JavaProcess implements IProcessPrecondition
 {
-	final CreditPassTransactionService creditPassTransactionService = Adempiere.getBean(CreditPassTransactionService.class);
+	final private CreditPassTransactionService creditPassTransactionService = Adempiere.getBean(CreditPassTransactionService.class);
 
-	@Param(mandatory = true, parameterName = CreditPassConstants.PROCESS_PAYMENT_RULE_PARAM)
+	@Param(parameterName = CreditPassConstants.PROCESS_PAYMENT_RULE_PARAM)
 	private String paymentRule;
 
 	@Override protected String doIt() throws Exception
 	{
-		BPartnerId bPartnerId = BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
-		creditPassTransactionService.getAndSaveCreditScore(paymentRule, bPartnerId, getCtx());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
+		final List<TransactionResultId> transactionResultIdList = creditPassTransactionService
+				.getAndSaveCreditScore(Optional.ofNullable(paymentRule).orElse(StringUtils.EMPTY), bPartnerId);
+		List<Integer> tableRecordReferences = transactionResultIdList.stream()
+				.map(tr -> tr.getRepoId())
+				.collect(Collectors.toList());
+		getResult().setRecordsToOpen(I_CS_Transaction_Result.Table_Name, tableRecordReferences, null);
 		return MSG_OK;
 	}
 
@@ -57,13 +70,13 @@ public class CS_Creditpass_TransactionFrom_C_BPartner extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		I_C_BPartner partner = context.getSelectedModel(I_C_BPartner.class);
+		final I_C_BPartner partner = context.getSelectedModel(I_C_BPartner.class);
 		if (!partner.isCustomer())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Business partner is not a customer");
 		}
 
-		if (creditPassTransactionService.hasConfigForPartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID())))
+		if (!creditPassTransactionService.hasConfigForPartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Business partner has no associated creditPass config");
 		}

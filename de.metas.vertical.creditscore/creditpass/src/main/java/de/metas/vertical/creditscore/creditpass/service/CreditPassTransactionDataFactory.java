@@ -62,8 +62,8 @@ public class CreditPassTransactionDataFactory
 
 	public CreditPassTransactionData collectTransactionData(@NonNull final BPartnerId bPartnerId)
 	{
-		IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		IBankingBPBankAccountDAO bpBankAccountRepo = Services.get(IBankingBPBankAccountDAO.class);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final IBankingBPBankAccountDAO bpBankAccountRepo = Services.get(IBankingBPBankAccountDAO.class);
 
 		int userId = MBPartner.getDefaultContactId(bPartnerId.getRepoId());
 		User user = null;
@@ -75,7 +75,7 @@ public class CreditPassTransactionDataFactory
 
 		//TODO using bill location as default for now - will maybe change
 		Location location = null;
-		BPartnerLocationId bPartnerLocationId = bpartnersRepo.getBilltoDefaultLocationIdByBpartnerId(bPartnerId);
+		final BPartnerLocationId bPartnerLocationId = bpartnersRepo.getBilltoDefaultLocationIdByBpartnerId(bPartnerId);
 		if (bPartnerLocationId != null)
 		{
 			BPartnerLocation bPartnerLocation = bPartnerLocationRepository.getByBPartnerLocationId(bPartnerLocationId);

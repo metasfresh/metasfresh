@@ -56,10 +56,10 @@ public class PaymentRuleValidation extends AbstractJavaValidationRule
 
 		if (bPartnerId > -1)
 		{
-			CreditPassConfig config = creditPassConfigRepository.getByBPartnerId(BPartnerId.ofRepoId(bPartnerId));
+			CreditPassConfig config = creditPassConfigRepository.getConfigByBPartnerId(BPartnerId.ofRepoId(bPartnerId));
 			boolean hasMatch = config.getCreditPassConfigPaymentRuleList().stream()
 					.map(CreditPassConfigPaymentRule::getPaymentRule)
-					.anyMatch(pr -> StringUtils.equals(pr, item.getName()));
+					.anyMatch(pr -> StringUtils.equals(pr, item.getID()));
 			if (hasMatch)
 			{
 				accept = true;

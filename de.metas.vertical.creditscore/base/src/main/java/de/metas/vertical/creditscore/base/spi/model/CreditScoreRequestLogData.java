@@ -37,7 +37,6 @@ public class CreditScoreRequestLogData
 	@NonNull
 	private String responseData;
 
-	@NonNull
 	private String transactionID;
 
 	@NonNull
