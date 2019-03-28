@@ -5968,6 +5968,7 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=577999
 -- 2019-03-20T15:29:12.620
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Field WHERE AD_Field_ID=577999
+;
 
 -- 2019-03-20T15:44:29.822
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
