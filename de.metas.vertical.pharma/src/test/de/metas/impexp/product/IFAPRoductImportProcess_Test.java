@@ -60,6 +60,9 @@ public class IFAProductImportProcess_Test
 	private final BigDecimal A01AVP = BigDecimal.valueOf(3);
 	private final BigDecimal A01UVP = BigDecimal.valueOf(4);
 	private final BigDecimal A01ZBV = BigDecimal.valueOf(5);
+	
+	private final String countryCode ="de_DE";
+	private final String adLanguage ="DE";
 
 	@Before
 	public void init()
@@ -84,11 +87,11 @@ public class IFAProductImportProcess_Test
 	{
 		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
 		final I_AD_Language language = InterfaceWrapperHelper.newInstance(I_AD_Language.class, contextProvider);
-		language.setAD_Language("de_DE");
-		language.setCountryCode("DE");
+		language.setAD_Language(adLanguage);
+		language.setCountryCode(countryCode);
 		InterfaceWrapperHelper.save(language);
 
-		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, adLanguage);
 	}
 
 	private void createCountry()
@@ -96,7 +99,7 @@ public class IFAProductImportProcess_Test
 		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
 		final I_C_Country country = InterfaceWrapperHelper.newInstance(I_C_Country.class, contextProvider);
 		country.setAD_Language("de_DE");
-		country.setCountryCode("DE");
+		country.setCountryCode(countryCode);
 		InterfaceWrapperHelper.save(country);
 	}
 
