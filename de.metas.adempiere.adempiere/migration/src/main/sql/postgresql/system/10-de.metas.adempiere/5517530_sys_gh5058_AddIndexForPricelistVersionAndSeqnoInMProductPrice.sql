@@ -1,4 +1,4 @@
-DROP IF EXISTS INDEX public.m_productprice_pricelistver_seqno;
+DROP INDEX IF EXISTS public.m_productprice_pricelistver_seqno;
 
 CREATE INDEX m_productprice_pricelistver_seqno
   ON public.m_productprice
