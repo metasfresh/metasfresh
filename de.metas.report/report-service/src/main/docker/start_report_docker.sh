@@ -142,7 +142,7 @@ local MEMORY_PARAMS="-Xmx${java_max_heap}"
  -Djava.security.egd=file:/dev/./urandom\
  -Dserver.port=${server_port}\
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- org.springframework.boot.loader.JarLauncher
+ org.springframework.boot.loader.PropertiesLauncher
 }
 
 echo_variable_values
