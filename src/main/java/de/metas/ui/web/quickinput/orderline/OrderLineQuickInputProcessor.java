@@ -3,8 +3,10 @@ package de.metas.ui.web.quickinput.orderline;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.lang.SOTrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -96,20 +98,15 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private static void validateInput(final QuickInput quickInput, final Collection<IOrderLineInputValidator> validators)
 	{
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
-		if (!order.isSOTrx())
-		{
-			return;
-		}
-
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLineQuickInput.getM_Product_ID().getIdAsInt());
 
 		final List<ITranslatableString> validationErrorMessages = validators
 				.stream()
 				.map(validator -> {
-					final OrderLineInputValidatorResults validationResults = validator.validate(bpartnerId, productId);
+					final OrderLineInputValidatorResults validationResults = validator.validate(bpartnerId, productId, soTrx);
 
 					if (!validationResults.isValid())
 					{
@@ -118,7 +115,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 					return null;
 				})
-				.filter(errorMessage -> errorMessage != null)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		if (!validationErrorMessages.isEmpty())
@@ -128,7 +125,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 	}
 
-	private final void updateOrderLine(final I_C_OrderLine newOrderLine, final QuickInput fromQuickInput)
+	private void updateOrderLine(final I_C_OrderLine newOrderLine, final QuickInput fromQuickInput)
 	{
 		final I_C_Order order = fromQuickInput.getRootDocumentAs(I_C_Order.class);
 		final IOrderLineQuickInput fromOrderLineQuickInput = fromQuickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
@@ -199,7 +196,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return huPackingAware;
 	}
 
-	private static final int createASI(final ProductAndAttributes productAndAttributes)
+	private static int createASI(final ProductAndAttributes productAndAttributes)
 	{
 		final ImmutableAttributeSet attributes = productAndAttributes.getAttributes();
 		if (attributes.isEmpty())
