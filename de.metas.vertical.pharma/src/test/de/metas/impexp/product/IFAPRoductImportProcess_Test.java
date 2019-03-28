@@ -61,8 +61,8 @@ public class IFAProductImportProcess_Test
 	private final BigDecimal A01UVP = BigDecimal.valueOf(4);
 	private final BigDecimal A01ZBV = BigDecimal.valueOf(5);
 	
-	private final String countryCode ="de_DE";
-	private final String adLanguage ="DE";
+	private final String adLanguage ="de_DE";
+	private final String countryCode ="DE";
 
 	@Before
 	public void init()
@@ -98,7 +98,7 @@ public class IFAProductImportProcess_Test
 	{
 		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
 		final I_C_Country country = InterfaceWrapperHelper.newInstance(I_C_Country.class, contextProvider);
-		country.setAD_Language("de_DE");
+		country.setAD_Language(adLanguage);
 		country.setCountryCode(countryCode);
 		InterfaceWrapperHelper.save(country);
 	}
