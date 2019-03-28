@@ -36,10 +36,10 @@ import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
 import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.PersonInfo;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
@@ -49,31 +49,31 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Expor
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlInvoice.InvoiceMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice.InvoiceMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlDocument;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlEsr;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService.ServiceModWithSelector;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService.ServiceModWithSelector.ServiceModWithSelectorBuilder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlBank;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr9;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.prolog.XmlSoftware.SoftwareMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVat.VatMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVat.VatMod.VatModBuilder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVatRate;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody.BodyMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance.BalanceMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlDocument;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlEsr;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog.PrologMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceModWithSelectorBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlBank;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsr9;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.prolog.XmlSoftware.SoftwareMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat.VatMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat.VatMod.VatModBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVatRate;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 
 /*
@@ -101,7 +101,7 @@ import lombok.NonNull;
 public class InvoiceExportClientImpl implements InvoiceExportClient
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
-	private final CrossVersionRequestConverter<?> exportConverter;
+	private final CrossVersionRequestConverter exportConverter;
 	private final XmlMode exportFileMode;
 	private final String exportFileFromEAN;
 	private final String exportFileViaEAN;
@@ -111,7 +111,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		exportConverter = crossVersionServiceRegistry.getRequestConverterForSimpleVersionName(exportConfig.getXmlVersion());
 		exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
 		exportFileFromEAN = exportConfig.getFromEAN();
 		exportFileViaEAN = exportConfig.getViaEAN();
@@ -120,7 +120,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	@Override
 	public boolean canExport(@NonNull final InvoiceToExport invoice)
 	{
-		final ImmutableMultimap<CrossVersionRequestConverter<?>, InvoiceAttachment> //
+		final ImmutableMultimap<CrossVersionRequestConverter, InvoiceAttachment> //
 		converters = extractConverters(invoice.getInvoiceAttachments());
 
 		// TODO check if
@@ -132,12 +132,12 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	@Override
 	public List<InvoiceExportResult> export(@NonNull final InvoiceToExport invoice)
 	{
-		final ImmutableMultimap<CrossVersionRequestConverter<?>, InvoiceAttachment> //
+		final ImmutableMultimap<CrossVersionRequestConverter, InvoiceAttachment> //
 		converter2ConvertableAttachment = extractConverters(invoice.getInvoiceAttachments());
 
 		final ImmutableList.Builder<InvoiceExportResult> exportResults = ImmutableList.builder();
 
-		for (final CrossVersionRequestConverter<? extends Object> importConverter : converter2ConvertableAttachment.keySet())
+		for (final CrossVersionRequestConverter importConverter : converter2ConvertableAttachment.keySet())
 		{
 			for (final InvoiceAttachment attachment : converter2ConvertableAttachment.get(importConverter))
 			{
@@ -164,11 +164,11 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		return exportResults.build();
 	}
 
-	private ImmutableMultimap<CrossVersionRequestConverter<?>, InvoiceAttachment> extractConverters(
+	private ImmutableMultimap<CrossVersionRequestConverter, InvoiceAttachment> extractConverters(
 			@NonNull final List<InvoiceAttachment> invoiceAttachments)
 	{
-		final Builder<CrossVersionRequestConverter<?>, InvoiceAttachment> //
-		result = ImmutableMultimap.<CrossVersionRequestConverter<?>, InvoiceAttachment> builder();
+		final Builder<CrossVersionRequestConverter, InvoiceAttachment> //
+		result = ImmutableMultimap.<CrossVersionRequestConverter, InvoiceAttachment> builder();
 
 		for (final InvoiceAttachment attachment : invoiceAttachments)
 		{
@@ -179,7 +179,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 			final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(attachment.getDataAsInputStream());
 
-			final CrossVersionRequestConverter<?> converter = crossVersionServiceRegistry.getConverterForXsdName(xsdName);
+			final CrossVersionRequestConverter converter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 			if (converter == null)
 			{
 				continue;

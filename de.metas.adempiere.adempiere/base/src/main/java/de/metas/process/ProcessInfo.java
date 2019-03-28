@@ -64,6 +64,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -110,6 +111,7 @@ public final class ProcessInfo implements Serializable
 		translateExcelHeaders = builder.isTranslateExcelHeaders();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
+		invokedByScheduler = builder.isInvokedByScheduler();
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -150,7 +152,9 @@ public final class ProcessInfo implements Serializable
 	private final Properties ctx;
 
 	/** Title of the Process/Report */
+	@Getter
 	private final String title;
+	@Getter
 	private final AdProcessId adProcessId;
 
 	/** Table ID if the Process */
@@ -175,11 +179,19 @@ public final class ProcessInfo implements Serializable
 
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
+
+	@Getter
 	private final boolean translateExcelHeaders;
 	private final int adWorkflowId;
+
+	@Getter
 	private final boolean serverProcess;
 
+	@Getter
+	private final boolean invokedByScheduler;
+
 	/** Process Instance ID */
+	@Getter
 	private PInstanceId pinstanceId;
 
 	private Boolean async = null;
@@ -190,15 +202,23 @@ public final class ProcessInfo implements Serializable
 
 	//
 	// Reporting related
+
+	/** Is print preview instead of direct print ? Only relevant if this is a reporting process */
+	@Getter
 	private final boolean printPreview;
+	@Getter
 	private final boolean archiveReportData;
+	@Getter
 	private final boolean reportingProcess;
+	@Getter
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
+	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
 
 	/** Process result */
+	@Getter
 	private final ProcessExecutionResult result;
 
 	@Override
@@ -223,13 +243,6 @@ public final class ProcessInfo implements Serializable
 		return Env.coalesce(ctx);
 	}
 
-	/**
-	 * @return execution result
-	 */
-	public ProcessExecutionResult getResult()
-	{
-		return result;
-	}
 
 	/**
 	 * Advise if we want business logic to be executed asynchronously further down the road, or not.
@@ -243,8 +256,6 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * Shall only be called once. Intended to be called by {@link ProcessExecutor} only.
-	 *
-	 * @param async
 	 */
 	/* package */ void setAsync(final boolean async)
 	{
@@ -252,20 +263,10 @@ public final class ProcessInfo implements Serializable
 		this.async = async;
 	}
 
-	public PInstanceId getPinstanceId()
-	{
-		return pinstanceId;
-	}
-
 	public void setPInstanceId(final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
 		result.setPInstanceId(pinstanceId);
-	}
-
-	public AdProcessId getAdProcessId()
-	{
-		return adProcessId;
 	}
 
 	public String getClassName()
@@ -329,19 +330,9 @@ public final class ProcessInfo implements Serializable
 		return sqlStatement;
 	}
 
-	public boolean isTranslateExcelHeaders()
-	{
-		return translateExcelHeaders;
-	}
-
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
-	}
-
-	public boolean isServerProcess()
-	{
-		return serverProcess;
 	}
 
 	public String getTableNameOrNull()
@@ -466,14 +457,6 @@ public final class ProcessInfo implements Serializable
 		return Optional.of(record);
 	}
 
-	/**
-	 * @return process title/name
-	 */
-	public String getTitle()
-	{
-		return title;
-	}
-
 	public ClientId getClientId()
 	{
 		return adClientId;
@@ -548,28 +531,6 @@ public final class ProcessInfo implements Serializable
 		return new ProcessParams(getParameter());
 	}
 
-	/**
-	 * Is print preview instead of direct print ? Only relevant if this is a reporting process
-	 */
-	public boolean isPrintPreview()
-	{
-		return printPreview;
-	}
-
-	public boolean isArchiveReportData()
-	{
-		return archiveReportData;
-	}
-
-	/**
-	 * Is this a reporting process ?
-	 *
-	 * @return boolean
-	 */
-	public boolean isReportingProcess()
-	{
-		return reportingProcess;
-	}
 
 	public OrgId getOrgId()
 	{
@@ -690,16 +651,6 @@ public final class ProcessInfo implements Serializable
 		return reportLanguage == null ? null : reportLanguage.getAD_Language();
 	}
 
-	public Optional<String> getReportTemplate()
-	{
-		return reportTemplate;
-	}
-
-	public boolean isReportApplySecuritySettings()
-	{
-		return reportApplySecuritySettings;
-	}
-
 	public OutputType getJRDesiredOutputType()
 	{
 		return jrDesiredOutputType;
@@ -762,6 +713,8 @@ public final class ProcessInfo implements Serializable
 
 		private List<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
+		@Getter
+		private boolean invokedByScheduler = false;
 
 		private ProcessInfoBuilder()
 		{
@@ -1485,6 +1438,12 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setWhereClause(final String whereClause)
 		{
 			this.whereClause = Optional.ofNullable(whereClause);
+			return this;
+		}
+
+		public ProcessInfoBuilder setInvokedByScheduler(final boolean invokedByScheduler)
+		{
+			this.invokedByScheduler = invokedByScheduler;
 			return this;
 		}
 
