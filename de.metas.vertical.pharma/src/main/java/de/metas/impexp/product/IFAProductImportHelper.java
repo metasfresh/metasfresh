@@ -55,8 +55,7 @@ import lombok.experimental.UtilityClass;
 		product.setIsActive(false);
 		InterfaceWrapperHelper.save(product);
 	}
-	
-	
+
 	public I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class, importRecord);
@@ -167,7 +166,7 @@ import lombok.experimental.UtilityClass;
 		{
 			product.setIsTFG(isTFG);
 		}
-		
+
 		if (importRecord.getManufacturer_ID() > 0)
 		{
 			product.setManufacturer_ID(importRecord.getManufacturer_ID());
@@ -193,12 +192,12 @@ import lombok.experimental.UtilityClass;
 	{
 		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
 	}
-	
+
 	public void importPrices(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
 		if (importRecord.getA01GDAT() != null)
 		{
-			createKAEP(importRecord,useNewestPriceListversion);
+			createKAEP(importRecord, useNewestPriceListversion);
 			createAPU(importRecord, useNewestPriceListversion);
 			createAEP(importRecord, useNewestPriceListversion);
 			createAVP(importRecord, useNewestPriceListversion);
@@ -209,6 +208,12 @@ import lombok.experimental.UtilityClass;
 
 	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
+		// skip it
+		if (importRecord.getKAEP_Price_List_ID() <= 0)
+		{
+			return;
+		}
+
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
 				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
@@ -229,6 +234,12 @@ import lombok.experimental.UtilityClass;
 
 	private void createAPU(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
+		// skip it
+		if (importRecord.getAPU_Price_List_ID() <= 0)
+		{
+			return;
+		}
+
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
 				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
@@ -249,6 +260,12 @@ import lombok.experimental.UtilityClass;
 
 	private void createAEP(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
+		// skip it
+		if (importRecord.getAEP_Price_List_ID() <= 0)
+		{
+			return;
+		}
+
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
 				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
@@ -269,6 +286,12 @@ import lombok.experimental.UtilityClass;
 
 	private void createAVP(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
+		// skip it
+		if (importRecord.getAVP_Price_List_ID() <= 0)
+		{
+			return;
+		}
+
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
 				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
@@ -289,6 +312,12 @@ import lombok.experimental.UtilityClass;
 
 	private void createUVP(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
+		// skip it
+		if (importRecord.getUVP_Price_List_ID() <= 0)
+		{
+			return;
+		}
+
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
 				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
@@ -309,6 +338,12 @@ import lombok.experimental.UtilityClass;
 
 	private void createZBV(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
+		// skip it
+		if (importRecord.getZBV_Price_List_ID() <= 0)
+		{
+			return;
+		}
+
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
 				.type(extractTaxCategoryVATTYpe(importRecord))
 				.countryId(Services.get(ICountryDAO.class).getDefaultCountryId())
