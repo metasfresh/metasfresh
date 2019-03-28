@@ -773,7 +773,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	 * <br>
 	 */
 	@Override
-	public IInvoiceGenerateResult generateInvoices(final Iterator<I_C_Invoice_Candidate> invoiceCandidates)
+	public IInvoiceGenerateResult generateInvoices(@NonNull final Iterator<I_C_Invoice_Candidate> invoiceCandidates)
 	{
 		final boolean ignoreInvoiceSchedule = isIgnoreInvoiceSchedule();
 

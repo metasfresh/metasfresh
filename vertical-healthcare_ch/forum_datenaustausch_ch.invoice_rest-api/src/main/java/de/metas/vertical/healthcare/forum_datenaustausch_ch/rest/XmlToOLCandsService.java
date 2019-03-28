@@ -15,6 +15,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Conditional;
@@ -244,7 +246,11 @@ public class XmlToOLCandsService
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final PayloadType payload)
 	{
-		requestBuilder.poReference(createPOReference(payload));
+		final IPair<String, String> docSubTypeAndPOReference = createPOReference(payload);
+
+		requestBuilder.poReference(docSubTypeAndPOReference.getRight());
+
+		requestBuilder.invoiceDocType(createJsonDocTypeInfo(docSubTypeAndPOReference.getLeft()));
 
 		requestBuilder.externalHeaderId(createExternalHeaderId(payload));
 
@@ -256,7 +262,8 @@ public class XmlToOLCandsService
 
 	private String createExternalHeaderId(@NonNull final PayloadType payload)
 	{
-		final String requestIdToUse = createPOReference(payload);
+		final IPair<String, String> docSubTypeAndPOReference = createPOReference(payload);
+		final String requestIdToUse = docSubTypeAndPOReference.getRight();
 
 		final BillerAddressType biller;
 
@@ -276,18 +283,28 @@ public class XmlToOLCandsService
 		return billerEAN + "_" + requestIdToUse;
 	}
 
-	private String createPOReference(final PayloadType payload)
+	private IPair<String, String> createPOReference(final PayloadType payload)
 	{
 		final InvoiceType invoice = payload.getInvoice();
 
-		String requestIdToUse = Check.assumeNotEmpty(
+		final String requestIdToUse = Check.assumeNotEmpty(
 				invoice.getRequestId(),
 				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
+
+		final IPair<String, String> result;
 		if (requestIdToUse.startsWith("KV_"))
 		{
-			requestIdToUse = requestIdToUse.substring(3);
+			result = ImmutablePair.of("KV", requestIdToUse.substring("KV_".length()));
 		}
-		return requestIdToUse;
+		else if (requestIdToUse.startsWith("KT_"))
+		{
+			result = ImmutablePair.of("KT", requestIdToUse.substring("KT_".length()));
+		}
+		else
+		{
+			throw new XmlInvoiceUnmarshalException(); // TODO: change exceptions; return concrete error messages
+		}
+		return result;
 	}
 
 	private void insertInoviceIntoBuilder(
@@ -330,7 +347,6 @@ public class XmlToOLCandsService
 			@NonNull final GarantType tiersGarant)
 	{
 		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
-		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo());
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getInsurance()));
 
 		insuranceBuilder.org(createBillerOrg(tiersGarant.getBiller()));
@@ -357,26 +373,11 @@ public class XmlToOLCandsService
 		return org;
 	}
 
-	private String createNameString(final BillerAddressType biller)
-	{
-		final String orgName;
-		if (biller.getCompany() != null)
-		{
-			orgName = biller.getCompany().getCompanyname();
-		}
-		else
-		{
-			orgName = biller.getPerson().getGivenname() + " " + biller.getPerson().getFamilyname();
-		}
-		return orgName;
-	}
-
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertTiersPayantIntoBuilders(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final PayantType tiersPayant)
 	{
 		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
-		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo());
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getInsurance()));
 
 		insuranceBuilder.org(createBillerOrg(tiersPayant.getBiller()));
@@ -387,11 +388,11 @@ public class XmlToOLCandsService
 		return ImmutableList.of(insuranceBuilder /* , patientBuilder */);
 	}
 
-	private JsonDocTypeInfo createJsonDocTypeInfo()
+	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final String docSubType)
 	{
 		return JsonDocTypeInfo.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice)
-				.docSubType("KV")
+				.docSubType(docSubType)
 				.build();
 	}
 
@@ -468,6 +469,20 @@ public class XmlToOLCandsService
 				.build();
 
 		return bPartnerInfo;
+	}
+
+	private String createNameString(@NonNull final BillerAddressType biller)
+	{
+		final String orgName;
+		if (biller.getCompany() != null)
+		{
+			orgName = biller.getCompany().getCompanyname();
+		}
+		else
+		{
+			orgName = biller.getPerson().getGivenname() + " " + biller.getPerson().getFamilyname();
+		}
+		return orgName;
 	}
 
 	private String extracFirsttEmailOrNull(@Nullable final OnlineAddressType online)

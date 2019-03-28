@@ -229,7 +229,7 @@ public class MScheduler extends X_AD_Scheduler
 		}
 		//	Add Updater
 		if (list.size() == 0
-				&& getUpdatedBy() > 0 // avoid sending mails/notfications to the "System" user
+				&& getUpdatedBy() > 0 // avoid sending mails/notifications to the "System" user
 				)
 		{
 			list.add(getUpdatedBy());

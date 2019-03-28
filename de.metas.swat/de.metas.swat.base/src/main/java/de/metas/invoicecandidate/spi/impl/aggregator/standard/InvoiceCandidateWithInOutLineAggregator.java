@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -45,9 +43,12 @@ import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Aggregates {@link InvoiceCandidateWithInOutLine}s and creates one {@link IInvoiceCandAggregate}.
@@ -55,6 +56,7 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
+@ToString
 /* package */class InvoiceCandidateWithInOutLineAggregator
 {
 	// Services
@@ -91,15 +93,8 @@ import de.metas.util.Services;
 		super();
 	}
 
-	@Override
-	public String toString()
+	public void setInvoiceableQtys(@NonNull final IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> ic2QtyInvoiceable)
 	{
-		return ObjectUtils.toString(this);
-	}
-
-	public void setInvoiceableQtys(final IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> ic2QtyInvoiceable)
-	{
-		Check.assumeNotNull(ic2QtyInvoiceable, "ic2QtyInvoiceable not null");
 		this._ic2QtyInvoiceable = ic2QtyInvoiceable;
 	}
 
@@ -167,9 +162,8 @@ import de.metas.util.Services;
 		icsCollection.forEach(ics -> addInvoiceCandidateWithInOutLine(ics));
 	}
 
-	private void addInvoiceCandidateWithInOutLine(final InvoiceCandidateWithInOutLine ics)
+	private void addInvoiceCandidateWithInOutLine(@NonNull final InvoiceCandidateWithInOutLine ics)
 	{
-		Check.assumeNotNull(ics, "ics not null");
 		initializeIfNeeded(ics);
 
 		final boolean shipped = ics.isShipped();
@@ -179,12 +173,25 @@ import de.metas.util.Services;
 		// task 08606: if we need to allocate the full remaining qty we can't take care to stay within the limits of the current iol's shipped quantity
 		final boolean stayWithinShippedQty = !ics.isAllocateRemainingQty();
 
+		final I_C_Invoice_Candidate cand = ics.getC_Invoice_Candidate();
+
+		// Get quantity left to be invoiced
+		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand);
+
 		//
-		// we introduce a multiplier that can be 1 or -1. We will apply the factor in comparisons. If we deal with negative shipped quantities (RMA), then this way we still use the same
-		// comparisons
-		// we do for positive quantities
+		// we introduce a multiplier that can be 1 or -1. We will apply the factor in comparisons.
+		// If we deal with negative shipped quantities (RMA), then this way we still use the same comparisons as we do for positive quantities
+		final boolean positiveQty;
+		if (shipped)
+		{
+			positiveQty = qtyAlreadyShippedPerCurrentICS.signum() >= 0; // NOTE: we also consider ZERO as positive
+		}
+		else
+		{
+			positiveQty = qtyLeftToInvoice.signum() >= 0;
+		}
+
 		final BigDecimal factor;
-		final boolean positiveQty = qtyAlreadyShippedPerCurrentICS.signum() >= 0; // NOTE: we also consider ZERO as positive
 		if (positiveQty)
 		{
 			factor = BigDecimal.ONE;
@@ -193,24 +200,6 @@ import de.metas.util.Services;
 		{
 			factor = BigDecimal.ONE.negate();
 		}
-
-		final I_C_Invoice_Candidate cand = ics.getC_Invoice_Candidate();
-
-		//
-		// old comment from task 06630: We do not wish to create a line for candidates which don't have the QtyToInvoice set; skip them silently (they should be handled elsewhere)
-		// task 07372: yes we do; if there is 0 Qty of scrap, we want to document that on the invoice.
-		// also note that lines with QtyOrdered == QtyInvoices == 0 are not set to processed anymore, unless they have an invoice
-		//@formatter:off
-		// keeping this commented-out code for now because there might be a forgotten but valid reason behind it
-		//				if (candQtyToInvoiceInitial.signum() == 0)
-		//				{
-		//					continue;
-		//				}
-		//@formatter:on
-
-		//
-		// Get quantity left to be invoiced
-		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand);
 
 		// #1604
 		// if we deal with a material disposal, this qtyLeftToInvoice is acceptable
@@ -614,11 +603,10 @@ import de.metas.util.Services;
 		_ic2QtyInvoiceable.put(ic, qtyInvoiceableNew);
 	}
 
-	private BigDecimal getQtyInvoiceable(final I_C_Invoice_Candidate ic)
+	private BigDecimal getQtyInvoiceable(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qtyInvoiceable = _ic2QtyInvoiceable.get(ic);
-		Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {}", ic);
-		return qtyInvoiceable;
+		return Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {}", ic);
 	}
 
 	private void addLineNetAmount(final BigDecimal candLineNetAmt)
