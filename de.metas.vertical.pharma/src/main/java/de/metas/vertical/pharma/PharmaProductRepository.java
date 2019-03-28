@@ -43,6 +43,7 @@ public class PharmaProductRepository
 		return PharmaProduct.builder()
 				.productId(productId)
 				.prescriptionRequired(product.isPrescription())
+				.isNarcotic(product.isNarcotic())
 				.value(product.getValue())
 				.build();
 	}
