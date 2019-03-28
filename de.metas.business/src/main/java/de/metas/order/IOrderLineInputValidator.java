@@ -31,5 +31,5 @@ public interface IOrderLineInputValidator
 	/**
 	 * @return OrderLineQuickInputValidatorResults entry, containing a flag that specifies if the quick input was valid. If it was not valid ( flag is false) a reason for invalidity is also provided for it (in de.metas.order.OrderLineQuickInputValidatorResults.errorMessage).
 	 */
-	OrderLineInputValidatorResults validate(BPartnerId bpartnerId, ProductId productId, final SOTrx isSoTrx);
+	OrderLineInputValidatorResults validate(BPartnerId bpartnerId, ProductId productId, SOTrx isSoTrx);
 }
