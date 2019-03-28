@@ -167,7 +167,7 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET Manufacturer_ID =(SELECT C_BPartner_ID FROM C_BPartner bp")
-				.append(" WHERE bp.AD_Client_ID=i.AD_Client_ID AND i.A00ANBNR5 = bp.IFA_Manufacturer) ")
+				.append(" WHERE bp.AD_Client_ID=i.AD_Client_ID AND i.A00ANBNR5::varchar = bp.IFA_Manufacturer) ")
 				.append("WHERE Manufacturer_ID IS NULL AND A00ANBNR5 IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
