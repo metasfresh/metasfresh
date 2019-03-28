@@ -1,6 +1,7 @@
 package de.metas.order;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 
 /*
@@ -28,9 +29,7 @@ import de.metas.product.ProductId;
 public interface IOrderLineInputValidator
 {
 	/**
-	 * @param bpartnerId
-	 * @param productId
 	 * @return OrderLineQuickInputValidatorResults entry, containing a flag that specifies if the quick input was valid. If it was not valid ( flag is false) a reason for invalidity is also provided for it (in de.metas.order.OrderLineQuickInputValidatorResults.errorMessage).
 	 */
-	OrderLineInputValidatorResults validate(BPartnerId bpartnerId, ProductId productId);
+	OrderLineInputValidatorResults validate(BPartnerId bpartnerId, ProductId productId, SOTrx isSoTrx);
 }

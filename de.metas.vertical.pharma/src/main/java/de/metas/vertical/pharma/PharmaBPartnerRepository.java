@@ -9,6 +9,8 @@ import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -36,28 +38,41 @@ public class PharmaBPartnerRepository
 {
 	public PharmaBPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final IBPartnerDAO bPartnersRepo = Services.get(IBPartnerDAO.class);
 
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(bpartnersRepo.getById(bpartnerId), I_C_BPartner.class);
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnersRepo.getById(bpartnerId), I_C_BPartner.class);
 
-		final PharmaCustomerPermissions partnerPermissions = PharmaCustomerPermissions.of(bpartner);
+		final PharmaCustomerPermissions customerPermissions = PharmaCustomerPermissions.of(bPartner);
+		final PharmaVendorPermissions vendorPermissions = PharmaVendorPermissions.of(bPartner);
 
 		return PharmaBPartner.builder()
 				.bpartnerId(bpartnerId)
-				.name(bpartner.getName())
-				.hasAtLeastOnePermission(partnerPermissions.hasAtLeastOnePermission())
-				.shipmentPermission(extractPharmaShipmentPermission(bpartner))
+				.name(bPartner.getName())
+				.hasAtLeastOneCustomerPermission(customerPermissions.hasAtLeastOnePermission())
+				.shipmentPermission(extractPharmaShipmentPermission(bPartner))
+				.hasAtLeastOneVendorPermission(vendorPermissions.hasAtLeastOnePermission())
+				.receiptPermission(extractPharmaReceiptPermission(bPartner))
 				.build();
 	}
 
-	private static final PharmaShipmentPermission extractPharmaShipmentPermission(final I_C_BPartner bpartner)
+	@Nullable private static PharmaShipmentPermission extractPharmaShipmentPermission(final I_C_BPartner bPartner)
 	{
-		final String shipmentPermissionCode = bpartner.getShipmentPermissionPharma();
+		final String shipmentPermissionCode = bPartner.getShipmentPermissionPharma();
 		if (shipmentPermissionCode == null)
 		{
 			return null;
 		}
 
 		return PharmaShipmentPermission.forCode(shipmentPermissionCode);
+	}
+
+	@Nullable private PharmaReceiptPermission extractPharmaReceiptPermission(final I_C_BPartner bPartner){
+		final String receiptPermissionCode = bPartner.getReceiptPermissionPharma();
+		if (receiptPermissionCode == null)
+		{
+			return null;
+		}
+
+		return PharmaReceiptPermission.forCode(receiptPermissionCode);
 	}
 }
