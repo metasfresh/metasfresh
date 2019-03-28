@@ -24,8 +24,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-import static de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.MSG_NoNarcoticPermission;
-import static de.metas.vertical.pharma.PharmaSalesOrderLineInputValidator.MSG_NoPrescriptionPermission;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -36,13 +34,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 		// needed so that the spring context can discover those components. Note that there are other ways too, but this one is very fast
 		PharmaBPartnerRepository.class,
-		PharmaSalesOrderLineInputValidator.class,
-		PharmaPurchaseOrderLineInputValidator.class,
+		PharmaBPartnerProductPermissionValidator.class,
 		OrderLineRepository.class,
 		PharmaProductRepository.class,
 		C_OrderLine.class,
 })
-public class PharmaOrderLineInputValidatorTest
+public class PharmaBPartnerProductPermissionValidatorTest
 {
 	@Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -73,7 +70,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -89,8 +86,8 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(MSG_NoPrescriptionPermission);
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -105,7 +102,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -120,7 +117,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -136,8 +133,8 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaSalesOrderLineInputValidator.MSG_NoNarcoticPermission);
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -153,8 +150,8 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaSalesOrderLineInputValidator.MSG_NoNarcoticPermission);
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -169,7 +166,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	// here starts the VENDOR part
@@ -186,7 +183,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -202,8 +199,8 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaPurchaseOrderLineInputValidator.MSG_NoPrescriptionPermission);
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -218,7 +215,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -233,7 +230,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -249,9 +246,10 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(MSG_NoNarcoticPermission);
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
+
 
 	@Test
 	public void assertTypeBbPartnerCanNotSellRxNarcoticProduct()
@@ -266,8 +264,8 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(MSG_NoNarcoticPermission);
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	@Test
@@ -282,7 +280,7 @@ public class PharmaOrderLineInputValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, cCurrency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validateTheProducts(cOrderLine);
+		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
 	/**

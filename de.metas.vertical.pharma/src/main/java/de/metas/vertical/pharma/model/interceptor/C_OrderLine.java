@@ -1,7 +1,6 @@
 package de.metas.vertical.pharma.model.interceptor;
 
-import de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator;
-import de.metas.vertical.pharma.PharmaSalesOrderLineInputValidator;
+import de.metas.vertical.pharma.PharmaBPartnerProductPermissionValidator;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.SOTrx;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineRepository;
@@ -54,10 +52,7 @@ public class C_OrderLine
 	PharmaBPartnerRepository pharmaBPartnerRepo;
 
 	@Autowired
-	PharmaSalesOrderLineInputValidator pharmaSalesOrderLineInputValidator;
-
-	@Autowired
-	PharmaPurchaseOrderLineInputValidator pharmaPurchaseOrderLineInputValidator;
+	PharmaBPartnerProductPermissionValidator pharmaBPartnerProductPermissionValidator;
 
 	@Autowired
 	OrderLineRepository orderLineRepository;
@@ -76,7 +71,7 @@ public class C_OrderLine
 			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
 			I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void validateTheProducts(@NonNull final I_C_OrderLine orderLineRecord)
+	public void validatebPartnerProductPermissions(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		if (orderLineRecord.getM_Product_ID() <= 0)
 		{
@@ -87,20 +82,7 @@ public class C_OrderLine
 		final BPartnerId bPartnerId = orderLine.getBPartnerId();
 		final ProductId productId = orderLine.getProductId();
 
-		if (SOTrx.PURCHASE.equals(orderLine.getSoTrx()))
-		{
-			checksForPurchaseOrder(bPartnerId, productId);
-		}
-		else
-		{
-			checksForSalesOrder(bPartnerId, productId);
-		}
-	}
-
-	private void checksForSalesOrder(final BPartnerId bPartnerId, final ProductId productId)
-	{
-		final OrderLineInputValidatorResults orderLineValidationResult = pharmaSalesOrderLineInputValidator.validate(bPartnerId, productId);
-
+		final OrderLineInputValidatorResults orderLineValidationResult = pharmaBPartnerProductPermissionValidator.validate(bPartnerId, productId, orderLine.getSoTrx());
 		if (orderLineValidationResult.isValid())
 		{
 			// the partner has permissions for buying prescribed medicine
@@ -109,19 +91,4 @@ public class C_OrderLine
 
 		throw new AdempiereException(orderLineValidationResult.getErrorMessage());
 	}
-
-	private void checksForPurchaseOrder(final BPartnerId bPartnerId, final ProductId productId)
-	{
-		final OrderLineInputValidatorResults validatorResults = pharmaPurchaseOrderLineInputValidator.validate(bPartnerId, productId);
-
-		if (validatorResults.isValid())
-		{
-			// the partner has permissions for receiving the medicine
-			return;
-		}
-
-		throw new AdempiereException(validatorResults.getErrorMessage());
-
-	}
-
 }
