@@ -194,6 +194,8 @@ class ListWidget extends Component {
       {
         autoFocus: false,
         listFocused: false,
+        list: List(),
+        listHash: null,
       },
       () => {
         onBlur && onBlur(field);
