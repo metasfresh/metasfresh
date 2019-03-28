@@ -194,7 +194,7 @@ public class MScheduler extends X_AD_Scheduler
 		if (!reload && m_recipients != null)
 			return m_recipients;
 		//
-		String whereClause = MSchedulerRecipient.COLUMNNAME_AD_Scheduler_ID+"=?";
+		String whereClause = I_AD_SchedulerRecipient.COLUMNNAME_AD_Scheduler_ID+"=?";
 		final List<MSchedulerRecipient> list = new Query(getCtx(), MSchedulerRecipient.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{getAD_Scheduler_ID()})
 		.setOnlyActiveRecords(true)
