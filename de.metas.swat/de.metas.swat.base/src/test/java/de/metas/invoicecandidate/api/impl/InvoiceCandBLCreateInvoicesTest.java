@@ -32,14 +32,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
@@ -51,12 +55,17 @@ import de.metas.invoicecandidate.api.impl.InvoiceCandBLCreateInvoices.IInvoiceGe
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 {
+	@Rule
+	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+
 	// services
 	private InvoiceCandBLCreateInvoices invoiceCandBLCreateInvoices;
 	protected IOrderLineBL orderLineBL;
@@ -137,19 +146,23 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 	/**
 	 * Test: if we process an invoice candidate which does not have an user in charge, then don't create the AD_Note but flag it IsError=Y
+	 *
+	 * Note: the error is caused in {@link DefaultAggregator}, because the IC's LineAggregationKey is empty and there is no C_Invoice_Candidate_Recompute tag.
 	 */
 	@Test
 	public void test_InvalidInvoiceCandidate_NoUserInCharge_FlagItAsError()
 	{
 		final I_C_BPartner bpartner = bpartner("test-bp");
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
+		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
 		InterfaceWrapperHelper.save(ic);
+
+		// clear C_Invoice_Candidate_Recompute otherwise we won't get out error out of DefaultAggregator.mkLineAggregationKeyToUse()
+		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
+		pojoLookupMap.getRecords(I_C_Invoice_Candidate_Recompute.class).forEach(pojoLookupMap::delete);
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
-		// final boolean ignoreInvoiceSchedule = true;
-		// final IInvoiceGenerateResult existingResult = null;
-		// invoiceCandBLCreateInvoices.generateInvoices(ctx, Collections.singletonList(ic).iterator(), ignoreInvoiceSchedule, existingResult, NullLoggable.instance, trxName);
+
 		invoiceCandBLCreateInvoices
 				.setContext(ctx, trxName)
 				.setIgnoreInvoiceSchedule(true)

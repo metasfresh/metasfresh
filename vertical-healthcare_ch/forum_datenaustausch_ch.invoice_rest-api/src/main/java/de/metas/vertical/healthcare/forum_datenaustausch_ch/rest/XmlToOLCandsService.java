@@ -206,6 +206,13 @@ public class XmlToOLCandsService
 		private static final long serialVersionUID = 8216181888558013882L;
 	}
 
+	@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Invalid invoice request_id value; it has to start with KV_ or KT_")
+	public static class XmlInvalidRequestIdException extends RuntimeException
+	{
+		private static final long serialVersionUID = -4688552956794873772L;
+	}
+
+
 	@ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR, reason = "An error occurred while trying attach the XML data to the order line candidates")
 	public static class XmlInvoiceAttachException extends RuntimeException
 	{
@@ -302,7 +309,7 @@ public class XmlToOLCandsService
 		}
 		else
 		{
-			throw new XmlInvoiceUnmarshalException(); // TODO: change exceptions; return concrete error messages
+			throw new XmlInvalidRequestIdException();
 		}
 		return result;
 	}

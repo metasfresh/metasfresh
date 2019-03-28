@@ -19,7 +19,7 @@
 		<invoice:credit request_timestamp="1358435089"
 			request_date="2013-01-17T00:00:00" request_id="23_45.01" />
 		<invoice:invoice request_timestamp="1364223890"
-			request_date="2013-03-20T00:00:00" request_id="2009_01:001" />
+			request_date="2013-03-20T00:00:00" request_id="KV_2009_01:001" />
 		<invoice:body role="physician" place="practice">
 			<invoice:prolog>
 				<invoice:package name="GeneralInvoiceRequestTest"
