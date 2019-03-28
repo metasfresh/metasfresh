@@ -1,12 +1,12 @@
 package de.metas.impexp.product;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product_Category;
 
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -45,6 +45,7 @@ import lombok.Value;
 	private final String A00PZN; // value
 	private final String A00PNAM; // name
 	private final String A00PBEZ; // description
+	private final Timestamp A01GDAT; // validdate
 	private final String productCategoryValue;
 	private final String A00GTIN; // upc
 	private final String A00PGMENG; // package size
@@ -53,6 +54,19 @@ import lombok.Value;
 	private final String A02VSPFL; // IsPrescription
 	private final String A02BTM; // IsNarcotic
 	private final String A02TFG; // IsTFG
+	//prices
+	private final BigDecimal A01KAEP;
+	private final int KAEP_Price_List_ID;
+	private final BigDecimal A01APU;
+	private final int APU_Price_List_ID;
+	private final BigDecimal A01AEP;
+	private final int AEP_Price_List_ID;
+	private final BigDecimal A01AVP;
+	private final int AVP_Price_List_ID;
+	private final BigDecimal A01UVP;
+	private final int UVP_Price_List_ID;
+	private final BigDecimal A01ZBV;
+	private final int ZBV_Price_List_ID;
 
 	public static class IIFAProductFactoryBuilder
 	{
@@ -68,36 +82,29 @@ import lombok.Value;
 			ifaProduct.setA00PZN(A00PZN);
 			ifaProduct.setA00PNAM(A00PNAM);
 			ifaProduct.setA00PBEZ(A00PBEZ);
+			ifaProduct.setA01GDAT(A01GDAT);
 			ifaProduct.setA00GTIN(A00GTIN);
 			ifaProduct.setA00PGMENG(A00PGMENG);
 			ifaProduct.setA05KKETTE(A05KKETTE);
 			ifaProduct.setA02VSPFL(A02VSPFL);
 			ifaProduct.setA02BTM(A02BTM);
 			ifaProduct.setA02TFG(A02TFG);
-			ifaProduct.setM_Product_Category(createProductCategory(productCategoryValue));
-			ifaProduct.setPackage_UOM(createUOM(packageUOMCode));
+			ifaProduct.setM_Product_Category(IFAProductImportTestHelper.createProductCategory(productCategoryValue));
+			ifaProduct.setPackage_UOM(IFAProductImportTestHelper.createUOM(packageUOMCode));
+			ifaProduct.setKAEP_Price_List_ID(KAEP_Price_List_ID);
+			ifaProduct.setA01KAEP(A01KAEP);
+			ifaProduct.setAEP_Price_List_ID(AEP_Price_List_ID);
+			ifaProduct.setA01AEP(A01AEP);
+			ifaProduct.setAPU_Price_List_ID(APU_Price_List_ID);
+			ifaProduct.setA01APU(A01APU);
+			ifaProduct.setAVP_Price_List_ID(AVP_Price_List_ID);
+			ifaProduct.setA01AVP(A01AVP);
+			ifaProduct.setUVP_Price_List_ID(UVP_Price_List_ID);
+			ifaProduct.setA01UVP(A01UVP);
+			ifaProduct.setZBV_Price_List_ID(ZBV_Price_List_ID);
+			ifaProduct.setA01ZBV(A01ZBV);
 			InterfaceWrapperHelper.save(ifaProduct);
 			return ifaProduct;
 		}
-	}
-	
-	public static I_M_Product_Category createProductCategory(@NonNull final String value)
-	{
-		final I_M_Product_Category category = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
-		category.setValue(value);
-		category.setName(value);
-		InterfaceWrapperHelper.save(category);
-		return category;
-	}
-	
-	public static I_C_UOM createUOM(@NonNull final String value)
-	{
-		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
-		uom.setX12DE355(value);
-		uom.setIsActive(true);
-		uom.setUOMSymbol(value);
-		uom.setName(value);
-		InterfaceWrapperHelper.save(uom);
-		return uom;
 	}
 }

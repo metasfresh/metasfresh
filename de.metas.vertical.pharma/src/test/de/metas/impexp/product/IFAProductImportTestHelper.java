@@ -2,8 +2,20 @@ package de.metas.impexp.product;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product_Category;
+
+import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import lombok.Builder;
@@ -43,7 +55,36 @@ import lombok.experimental.UtilityClass;
 /* package */class IFAProductImportTestHelper
 {
 
-	public void assertIFAProductImported(final I_I_Pharma_Product ifaProduct)
+	public I_M_Product_Category createProductCategory(@NonNull final String value)
+	{
+		final I_M_Product_Category category = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
+		category.setValue(value);
+		category.setName(value);
+		InterfaceWrapperHelper.save(category);
+		return category;
+	}
+	
+	public I_C_UOM createUOM(@NonNull final String value)
+	{
+		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		uom.setX12DE355(value);
+		uom.setIsActive(true);
+		uom.setUOMSymbol(value);
+		uom.setName(value);
+		InterfaceWrapperHelper.save(uom);
+		return uom;
+	}
+	
+	public int createPriceList(@NonNull final String value)
+	{
+		final I_M_PriceList pl = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
+		pl.setName(value);
+		InterfaceWrapperHelper.save(pl);
+		return pl.getM_PriceList_ID();
+	}
+	
+	
+	public void assertIFAProductImported(@NonNull final I_I_Pharma_Product ifaProduct)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();
@@ -70,7 +111,7 @@ import lombok.experimental.UtilityClass;
 		final boolean isTFG;
 	}
 	
-	public void assertIFAProductFlags(final I_I_Pharma_Product ifaProduct, final @NonNull IFAFlags flags)
+	public void assertIFAProductFlags(@NonNull final I_I_Pharma_Product ifaProduct, final @NonNull IFAFlags flags)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();
@@ -80,4 +121,18 @@ import lombok.experimental.UtilityClass;
 		assertThat(product.isTFG()).isEqualTo(flags.isTFG());
 	}
 
+	
+	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull BigDecimal price)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
+		assertThat(product).isNotNull();
+		
+		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
+				.setProductId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.retrieveDefault(I_M_ProductPrice.class);
+		
+		assertThat(productPrice).isNotNull();
+		assertThat(productPrice.getPriceStd()).isEqualByComparingTo(price);
+	}
 }

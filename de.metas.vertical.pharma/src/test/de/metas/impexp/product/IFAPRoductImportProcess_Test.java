@@ -1,16 +1,24 @@
 package de.metas.impexp.product;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_AD_Language;
+import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.impexp.product.IFAProductImportTestHelper.IFAFlags;
+import de.metas.pricing.PriceListId;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 
 /*
@@ -39,12 +47,57 @@ public class IFAProductImportProcess_Test
 {
 	private Properties ctx;
 
+	private int KAEP_Price_List_ID;
+	private int APU_Price_List_ID;
+	private int AEP_Price_List_ID;
+	private int AVP_Price_List_ID;
+	private int UVP_Price_List_ID;
+	private int ZBV_Price_List_ID;
+	
+	private final BigDecimal A01KAEP = BigDecimal.valueOf(6);
+	private final BigDecimal A01APU = BigDecimal.valueOf(2);
+	private final BigDecimal A01AEP = BigDecimal.valueOf(1);
+	private final BigDecimal A01AVP = BigDecimal.valueOf(3);
+	private final BigDecimal A01UVP = BigDecimal.valueOf(4);
+	private final BigDecimal A01ZBV = BigDecimal.valueOf(5);
+
 	@Before
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
+		final AdempiereTestHelper adempiereTestHelper = AdempiereTestHelper.get();
+		adempiereTestHelper.init();
+		adempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		ctx = Env.getCtx();
-		IIFAProductFactory.createUOM("PCE");
+		IFAProductImportTestHelper.createUOM("PCE");
+		createAD_Language();
+		createCountry();
+
+		KAEP_Price_List_ID = IFAProductImportTestHelper.createPriceList("KAEP");
+		APU_Price_List_ID = IFAProductImportTestHelper.createPriceList("APU");
+		AEP_Price_List_ID = IFAProductImportTestHelper.createPriceList("AEP");
+		AVP_Price_List_ID = IFAProductImportTestHelper.createPriceList("AVP");
+		UVP_Price_List_ID = IFAProductImportTestHelper.createPriceList("UVP");
+		ZBV_Price_List_ID = IFAProductImportTestHelper.createPriceList("ZBV");
+	}
+
+	private void createAD_Language()
+	{
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
+		final I_AD_Language language = InterfaceWrapperHelper.newInstance(I_AD_Language.class, contextProvider);
+		language.setAD_Language("de_DE");
+		language.setCountryCode("DE");
+		InterfaceWrapperHelper.save(language);
+
+		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_DE");
+	}
+
+	private void createCountry()
+	{
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
+		final I_C_Country country = InterfaceWrapperHelper.newInstance(I_C_Country.class, contextProvider);
+		country.setAD_Language("de_DE");
+		country.setCountryCode("DE");
+		InterfaceWrapperHelper.save(country);
 	}
 
 	@Test
@@ -57,8 +110,16 @@ public class IFAProductImportProcess_Test
 
 		importRecords.forEach(record -> importProcess.importRecord(new Mutable<>(), record, false /* isInsertOnly */));
 
-		importRecords.forEach(ifaProduct -> IFAProductImportTestHelper.assertIFAProductImported(ifaProduct));
-		
+		importRecords.forEach(ifaProduct -> {
+			IFAProductImportTestHelper.assertIFAProductImported(ifaProduct);
+			IFAProductImportTestHelper.assertPrices(ifaProduct, PriceListId.ofRepoId(KAEP_Price_List_ID), A01KAEP);
+			IFAProductImportTestHelper.assertPrices(ifaProduct, PriceListId.ofRepoId(AEP_Price_List_ID), A01AEP);
+			IFAProductImportTestHelper.assertPrices(ifaProduct, PriceListId.ofRepoId(APU_Price_List_ID), A01APU);
+			IFAProductImportTestHelper.assertPrices(ifaProduct, PriceListId.ofRepoId(AVP_Price_List_ID), A01AVP);
+			IFAProductImportTestHelper.assertPrices(ifaProduct, PriceListId.ofRepoId(UVP_Price_List_ID), A01UVP);
+			IFAProductImportTestHelper.assertPrices(ifaProduct, PriceListId.ofRepoId(ZBV_Price_List_ID), A01ZBV);
+		});
+
 		// test flags
 		IFAFlags flags = IFAFlags.builder()
 				.isColdChain(true)
@@ -67,7 +128,7 @@ public class IFAProductImportProcess_Test
 				.isTFG(true)
 				.build();
 		IFAProductImportTestHelper.assertIFAProductFlags(importRecords.get(0), flags);
-		
+
 		flags = IFAFlags.builder()
 				.isColdChain(false)
 				.isPrescription(true)
@@ -75,7 +136,7 @@ public class IFAProductImportProcess_Test
 				.isTFG(false)
 				.build();
 		IFAProductImportTestHelper.assertIFAProductFlags(importRecords.get(1), flags);
-		
+
 		flags = IFAFlags.builder()
 				.isColdChain(false)
 				.isPrescription(false)
@@ -83,16 +144,16 @@ public class IFAProductImportProcess_Test
 				.isTFG(false)
 				.build();
 		IFAProductImportTestHelper.assertIFAProductFlags(importRecords.get(2), flags);
-		
+
 	}
 
 	/**
 	 * Build a test case for import<br>
 	 * <br>
-	 * <code>A00SSATZ	A00PZN		A00PNAM		A00PBEZ			productCategoryValue	A00GTIN		A00PGMENG	packageUOMCode	A05KKETTE	A02VSPFL	A02BTM	A02TFG	</code><br>
-	 * <code>1			04811250	product1	productDesc1	productCateg1			36620			20			ST			01			02			01		01</code><br>
-	 * <code>1			05811250	product2	productDesc2	productCateg2			36622			23			ST			00			01			00		00</code><br>
-	 * <code>1			05834260	product3	productDesc3	productCateg3			42512			14			ST			00			00			02		00</code><br>
+	 * <code>A00SSATZ	A01GDAT		A00PZN		A00PNAM		A00PBEZ			productCategoryValue	A00GTIN		A00PGMENG	packageUOMCode	A05KKETTE	A02VSPFL	A02BTM	A02TFG	A01KAEP	A01APU	A01AEP	A01AVP	A01UVP	A01ZBV</code><br>
+	 * <code>1			20181115	04811250	product1	productDesc1	productCateg1			36620			20			ST			01			02			01		01		6		2		1		3		4		5		</code><br>
+	 * <code>1			20181115	05811250	product2	productDesc2	productCateg2			36622			23			ST			00			01			00		00		6		2		1		3		4		5		</code><br>
+	 * <code>1			20181115	05834260	product3	productDesc3	productCateg3			42512			14			ST			00			00			02		00		6		2		1		3		4		5		</code><br>
 	 *
 	 * @param lines
 	 */
@@ -105,6 +166,7 @@ public class IFAProductImportProcess_Test
 				.A00PZN("04811250")
 				.A00PNAM("product1")
 				.A00PBEZ("productDesc1")
+				.A01GDAT(Timestamp.valueOf("2018-11-15 00:00:00"))
 				.productCategoryValue("productCateg1")
 				.A00GTIN("36620")
 				.A00PGMENG("20")
@@ -113,6 +175,18 @@ public class IFAProductImportProcess_Test
 				.A02VSPFL("02")
 				.A02BTM("01")
 				.A02TFG("01")
+				.KAEP_Price_List_ID(KAEP_Price_List_ID)
+				.A01KAEP(BigDecimal.valueOf(6))
+				.AEP_Price_List_ID(AEP_Price_List_ID)
+				.A01AEP(BigDecimal.valueOf(1))
+				.APU_Price_List_ID(APU_Price_List_ID)
+				.A01APU(BigDecimal.valueOf(2))
+				.AVP_Price_List_ID(AVP_Price_List_ID)
+				.A01AVP(BigDecimal.valueOf(3))
+				.UVP_Price_List_ID(UVP_Price_List_ID)
+				.A01UVP(BigDecimal.valueOf(4))
+				.ZBV_Price_List_ID(ZBV_Price_List_ID)
+				.A01ZBV(BigDecimal.valueOf(5))
 				.build();
 		records.add(ifaProduct);
 
@@ -121,6 +195,7 @@ public class IFAProductImportProcess_Test
 				.A00PZN("05811250")
 				.A00PNAM("product2")
 				.A00PBEZ("productDesc2")
+				.A01GDAT(Timestamp.valueOf("2018-11-15 00:00:00"))
 				.productCategoryValue("productCateg2")
 				.A00GTIN("36622")
 				.A00PGMENG("23")
@@ -129,6 +204,18 @@ public class IFAProductImportProcess_Test
 				.A02VSPFL("01")
 				.A02BTM("00")
 				.A02TFG("00")
+				.KAEP_Price_List_ID(KAEP_Price_List_ID)
+				.A01KAEP(BigDecimal.valueOf(6))
+				.AEP_Price_List_ID(AEP_Price_List_ID)
+				.A01AEP(BigDecimal.valueOf(1))
+				.APU_Price_List_ID(APU_Price_List_ID)
+				.A01APU(BigDecimal.valueOf(2))
+				.AVP_Price_List_ID(AVP_Price_List_ID)
+				.A01AVP(BigDecimal.valueOf(3))
+				.UVP_Price_List_ID(UVP_Price_List_ID)
+				.A01UVP(BigDecimal.valueOf(4))
+				.ZBV_Price_List_ID(ZBV_Price_List_ID)
+				.A01ZBV(BigDecimal.valueOf(5))
 				.build();
 		records.add(ifaProduct);
 
@@ -137,6 +224,7 @@ public class IFAProductImportProcess_Test
 				.A00PZN("05834260")
 				.A00PNAM("product3")
 				.A00PBEZ("productDesc3")
+				.A01GDAT(Timestamp.valueOf("2018-11-15 00:00:00"))
 				.productCategoryValue("productCateg3")
 				.A00GTIN("42512")
 				.A00PGMENG("14")
@@ -145,6 +233,18 @@ public class IFAProductImportProcess_Test
 				.A02VSPFL("00")
 				.A02BTM("02")
 				.A02TFG("00")
+				.KAEP_Price_List_ID(KAEP_Price_List_ID)
+				.A01KAEP(BigDecimal.valueOf(6))
+				.AEP_Price_List_ID(AEP_Price_List_ID)
+				.A01AEP(BigDecimal.valueOf(1))
+				.APU_Price_List_ID(APU_Price_List_ID)
+				.A01APU(BigDecimal.valueOf(2))
+				.AVP_Price_List_ID(AVP_Price_List_ID)
+				.A01AVP(BigDecimal.valueOf(3))
+				.UVP_Price_List_ID(UVP_Price_List_ID)
+				.A01UVP(BigDecimal.valueOf(4))
+				.ZBV_Price_List_ID(ZBV_Price_List_ID)
+				.A01ZBV(BigDecimal.valueOf(5))
 				.build();
 		records.add(ifaProduct);
 
