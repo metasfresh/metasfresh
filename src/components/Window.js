@@ -486,14 +486,10 @@ class Window extends PureComponent {
           currentWidgetIndex + 1
         );
 
-        // console.log('currentwidget: ', fieldName, currentWidgetIndex, nextWidgetIndex, 'length: ', this.widgets.length, this.widgets)
-
         // eslint-disable-next-line react/no-find-dom-node
         let element = ReactDOM.findDOMNode(this.widgets[nextWidgetIndex]);
         if (element) {
           let tabElement = element.querySelector('[tabindex]');
-
-          console.log('TABELEEM:NT< ', tabElement)
 
           if (tabElement) {
             tabElement.focus();
