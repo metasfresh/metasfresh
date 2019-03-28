@@ -8,6 +8,7 @@ import org.compiere.model.I_C_Location;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -42,13 +43,13 @@ import lombok.experimental.UtilityClass;
 /* package */class IFABPartnerImportTestHelper
 {
 
-	public void assertIFABPartnerImported(final I_I_Pharma_BPartner record)
+	final public void assertIFABPartnerImported(@NonNull final I_I_Pharma_BPartner record)
 	{
 		assertBPartnerImported(record);
 		assertLocationImported(record);
 	}
 	
-	private void assertBPartnerImported(final I_I_Pharma_BPartner record)
+	private void assertBPartnerImported(@NonNull final I_I_Pharma_BPartner record)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(record.getC_BPartner(), I_C_BPartner.class);
 		assertThat(bpartner).isNotNull();

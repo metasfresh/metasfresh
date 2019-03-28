@@ -130,22 +130,20 @@ public class MProductImportTableSqlUpdater
 	private void dbUpdateBPartners(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
-		int no;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
 				.append(" WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid BPartner,' ")
 				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid BPartner={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateManufacturers(@NonNull final String whereClause)
@@ -304,7 +302,6 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid UOM={}", no);
 	}
 
 	private void dbUpdatePackageUOM(@NonNull final String whereClause)
@@ -352,7 +349,6 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_Currency_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid Currency={}", no);
 	}
 
 	private void dbUpdateVendorProductNo(@NonNull final String whereClause)
@@ -488,47 +484,41 @@ public class MProductImportTableSqlUpdater
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
-		int no;
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProdCategory,' ")
 				.append("WHERE M_Product_Category_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid Category={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProductType,' ")
 				.append("WHERE ProductType NOT IN ('E','I','R','S')")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid ProductType={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value HAVING COUNT(*) > 1)").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Not Unique Value={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=UPC not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" AND UPC IN (SELECT UPC FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY UPC HAVING COUNT(*) > 1)").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Not Unique UPC={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=No Mandatory Value,' ")
 				.append("WHERE Value IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("No Mandatory Value={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -538,9 +528,7 @@ public class MProductImportTableSqlUpdater
 				.append(" AND (C_BPartner_ID, VendorProductNo) IN ")
 				.append(" (SELECT C_BPartner_ID, VendorProductNo FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY C_BPartner_ID, VendorProductNo HAVING COUNT(*) > 1)")
 				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Not Unique VendorProductNo={}", no);
-
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -548,48 +536,39 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE PharmaProductCategory_Name IS NOT NULL ")
 				.append("AND M_PharmaProductCategory_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("No Mandatory Pharma product category Name ={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 	
 	private void dbUpdateErrorMessagesIFA(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
-		int no;
-
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProdCategory,' ")
 				.append("WHERE M_Product_Category_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid Category={}", no);
-		
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=A00PZN is mandatory,' ")
 				.append("WHERE A00PZN IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid A00PZN={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Package UOM,' ")
 				.append("WHERE Package_UOM_ID IS NULL and i.A00PGEINH IS NOT NULL ")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid Package_UOM_ID={}", no);
-		
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Dosage Form,' ")
 				.append("WHERE M_DosageForm_ID IS NULL and i.A00DARFO IS NOT NULL ")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid M_DosageForm_ID={}", no);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 	
 	public void dbUpdateIsPriceCopiedToYes(@NonNull final String whereClause, @NonNull final String columnname)

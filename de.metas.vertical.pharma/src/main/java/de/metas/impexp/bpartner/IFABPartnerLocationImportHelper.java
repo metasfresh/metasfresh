@@ -6,11 +6,14 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -55,7 +58,7 @@ import lombok.experimental.UtilityClass;
 			.thenComparing(Address::getPobox)
 			.thenComparingInt(Address::getCounrytId);
 
-	public I_C_BPartner_Location importRecord(
+	final @Nullable public I_C_BPartner_Location importRecord(
 			@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
 	{
@@ -70,6 +73,7 @@ import lombok.experimental.UtilityClass;
 		return bpartnerLocation;
 	}
 
+	@Nullable
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
 	{
@@ -92,47 +96,50 @@ import lombok.experimental.UtilityClass;
 			return bpartnerLocation;
 		}
 
-		return updateOldAddressIfExistsAndMatches(importRecord, bpartnerLocation);
+		return updateOldAddressIfExistsAndMatches(importRecord);
 	}
 
-	private I_C_BPartner_Location updateOldAddressIfExistsAndMatches(final I_I_Pharma_BPartner importRecord, I_C_BPartner_Location bpartnerLocation)
+	@Nullable
+	private I_C_BPartner_Location updateOldAddressIfExistsAndMatches(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final List<I_C_BPartner_Location> existentBPLocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(importRecord.getC_BPartner());
-		if (!existentBPLocations.isEmpty())
+		if (existentBPLocations.isEmpty())
 		{
-			final Address importAddress = Address.builder()
-					.counrytId(importRecord.getC_Country_ID())
-					.city(importRecord.getb00ortzu())
-					.address1(buildAddress1(importRecord))
-					.address2(buildAddress2(importRecord))
-					.postal(importRecord.getb00plzzu1())
-					.pobox(buildPOBox(importRecord))
-					.build();
-
-			final List<Address> matchedAddreses = existentBPLocations.stream()
-					.map(bpLocation -> Address.builder()
-							.counrytId(importRecord.getC_Country_ID())
-							.city(importRecord.getb00ortzu())
-							.address1(buildAddress1(importRecord))
-							.address2(buildAddress2(importRecord))
-							.postal(importRecord.getb00plzzu1())
-							.pobox(buildPOBox(importRecord))
-							.bpLocationId(bpLocation.getC_BPartner_Location_ID())
-							.build())
-					.collect(ImmutableList.toImmutableList());
-
-			final List<Address> filtered = matchedAddreses.stream()
-					.filter(address -> isMatched(importAddress, address))
-					.collect(ImmutableList.toImmutableList());
-
-			if (filtered.size() > 0)
-			{
-				bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), matchedAddreses.get(0).getBpLocationId()));
-				updateExistingBPartnerLocation(importRecord, bpartnerLocation);
-			}
-
+			return null;
 		}
-		return bpartnerLocation;
+		
+		final Address importAddress = Address.builder()
+				.counrytId(importRecord.getC_Country_ID())
+				.city(importRecord.getb00ortzu())
+				.address1(buildAddress1(importRecord))
+				.address2(buildAddress2(importRecord))
+				.postal(importRecord.getb00plzzu1())
+				.pobox(buildPOBox(importRecord))
+				.build();
+
+		final List<Address> matchedAddreses = existentBPLocations.stream()
+				.map(bpLocation -> Address.builder()
+						.counrytId(importRecord.getC_Country_ID())
+						.city(importRecord.getb00ortzu())
+						.address1(buildAddress1(importRecord))
+						.address2(buildAddress2(importRecord))
+						.postal(importRecord.getb00plzzu1())
+						.pobox(buildPOBox(importRecord))
+						.bpLocationId(bpLocation.getC_BPartner_Location_ID())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		final List<Address> filtered = matchedAddreses.stream()
+				.filter(address -> isMatched(importAddress, address))
+				.collect(ImmutableList.toImmutableList());
+
+		if (filtered.size() > 0)
+		{
+			final I_C_BPartner_Location bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), matchedAddreses.get(0).getBpLocationId()));
+			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+		}
+		
+		return null;
 	}
 
 	private boolean isMatched(@NonNull final Address importAddress, @NonNull final Address address)
@@ -166,11 +173,11 @@ import lombok.experimental.UtilityClass;
 	public class Address
 	{
 		final int counrytId;
-		final String city;
-		final String address1;
-		final String address2;
-		final String postal;
-		final String pobox;;
+		@Nullable final String city;
+		@Nullable final String address1;
+		@Nullable final String address2;
+		@Nullable final String postal;
+		@Nullable final String pobox;;
 		final int bpLocationId;
 
 		@Builder(builderMethodName = "builder")
@@ -188,7 +195,7 @@ import lombok.experimental.UtilityClass;
 
 	}
 
-	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord)
+	@Nullable private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		if (importRecord.getC_Country_ID() > 0
 				&& !Check.isEmpty(importRecord.getb00ortzu(), true))
@@ -235,8 +242,8 @@ import lombok.experimental.UtilityClass;
 		InterfaceWrapperHelper.save(location);
 	}
 
-	// visible for testing
-	protected  String buildAddress1(final I_I_Pharma_BPartner importRecord)
+	@VisibleForTesting
+	protected String buildAddress1(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00str()))
@@ -263,9 +270,8 @@ import lombok.experimental.UtilityClass;
 		return sb.toString();
 	}
 
-	
-	// visible for testing
-	protected String buildAddress2(final I_I_Pharma_BPartner importRecord)
+	@VisibleForTesting
+	protected String buildAddress2(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00hnrb()))
@@ -284,7 +290,7 @@ import lombok.experimental.UtilityClass;
 		return sb.toString();
 	}
 
-	// visible for testing
+	@VisibleForTesting
 	protected String buildPOBox(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
@@ -339,8 +345,7 @@ import lombok.experimental.UtilityClass;
 			bpartnerLocation.setFax2(importRecord.getb00fax2());
 		}
 	}
-	
-	
+
 	private void updateEmails(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		if (!Check.isEmpty(importRecord.getb00email()))

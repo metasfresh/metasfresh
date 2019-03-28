@@ -17,6 +17,7 @@ import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
+import lombok.NonNull;
 
 public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_Product>
 {
@@ -67,8 +68,8 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
-			final I_I_Pharma_Product importRecord,
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+			@NonNull final I_I_Pharma_Product importRecord,
 			final boolean isInsertOnly) throws Exception
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
@@ -111,7 +112,7 @@ public class IFAInitialImportProcess2 extends AbstractImportProcess<I_I_Pharma_P
 	}
 
 	@Override
-	protected void markImported(final I_I_Pharma_Product importRecord)
+	protected void markImported(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		//set this to Yes because in initial import we don't want the prices to be copied
 		importRecord.setIsPriceCopied(true);

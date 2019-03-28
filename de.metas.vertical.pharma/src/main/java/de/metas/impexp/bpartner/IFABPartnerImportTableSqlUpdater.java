@@ -46,7 +46,7 @@ public class IFABPartnerImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(IFABPartnerImportTableSqlUpdater.class);
 
-	public void updateBPartnerImportTable(@NonNull final String whereClause)
+	final public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
 		dbUpdateCountries(whereClause);

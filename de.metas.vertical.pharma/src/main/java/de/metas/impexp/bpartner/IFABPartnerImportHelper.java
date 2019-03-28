@@ -2,6 +2,8 @@ package de.metas.impexp.bpartner;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
@@ -40,7 +42,7 @@ import lombok.experimental.UtilityClass;
 {
 
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#by#" + I_C_BPartner.COLUMNNAME_IFA_Manufacturer)
-	public I_C_BPartner fetchManufacturer(@NonNull final String manufacturer_IFA_Value)
+	@Nullable public I_C_BPartner fetchManufacturer(@NonNull final String manufacturer_IFA_Value)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
@@ -49,7 +51,7 @@ import lombok.experimental.UtilityClass;
 				.firstOnly(I_C_BPartner.class);
 	}
 
-	public I_C_BPartner importRecord(final I_I_Pharma_BPartner importRecord)
+	final public I_C_BPartner importRecord(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner;
 		if (importRecord.getC_BPartner_ID() <= 0)	// Insert new BPartner
@@ -67,7 +69,7 @@ import lombok.experimental.UtilityClass;
 		return bpartner;
 	}
 
-	private I_C_BPartner createNewBPartner(final I_I_Pharma_BPartner importRecord)
+	private I_C_BPartner createNewBPartner(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 
@@ -85,7 +87,7 @@ import lombok.experimental.UtilityClass;
 		return bpartner;
 	}
 
-	private I_C_BPartner updateExistingBPartner(final I_I_Pharma_BPartner importRecord)
+	private I_C_BPartner updateExistingBPartner(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner;
 		bpartner = InterfaceWrapperHelper.create(importRecord.getC_BPartner(), I_C_BPartner.class);

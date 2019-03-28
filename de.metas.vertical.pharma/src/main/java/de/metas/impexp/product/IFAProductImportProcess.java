@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -32,6 +34,7 @@ import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
+import lombok.NonNull;
 
 public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
 {
@@ -81,7 +84,7 @@ public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Pr
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Pharma_Product importRecord, final boolean isInsertOnly) 
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Pharma_Product importRecord, final boolean isInsertOnly) 
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(importRecord.getA00PZN());
 
@@ -123,7 +126,7 @@ public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Pr
 	}
 
 	@Override
-	protected void markImported(final I_I_Pharma_Product importRecord)
+	protected void markImported(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		importRecord.setI_IsImported(X_I_Pharma_Product.I_ISIMPORTED_Imported);
 		importRecord.setProcessed(true);
@@ -198,7 +201,7 @@ public class IFAProductImportProcess extends AbstractImportProcess<I_I_Pharma_Pr
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private final PriceListId extractPriceListIdorNull(final Map<String, Object> map)
+	@Nullable private PriceListId extractPriceListIdorNull(@NonNull final Map<String, Object> map)
 	{
 		final int priceListId = NumberUtils.asInt(map.get(I_M_PriceList.COLUMNNAME_M_PriceList_ID), -1);
 		if (priceListId <= 0)

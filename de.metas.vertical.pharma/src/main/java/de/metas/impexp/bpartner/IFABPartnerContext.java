@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,7 +45,7 @@ final public class IFABPartnerContext
 			return previousImportRecord;
 		}
 
-		public void setPreviousImportRecord(final I_I_Pharma_BPartner previousImportRecord)
+		public void setPreviousImportRecord(@NonNull final I_I_Pharma_BPartner previousImportRecord)
 		{
 			this.previousImportRecord = previousImportRecord;
 		}
@@ -69,7 +70,7 @@ final public class IFABPartnerContext
 			previousImportRecordsForSameBP = new ArrayList<>();
 		}
 
-		public void collectImportRecordForSameBP(final I_I_Pharma_BPartner importRecord)
+		public void collectImportRecordForSameBP(@NonNull final I_I_Pharma_BPartner importRecord)
 		{
 			previousImportRecordsForSameBP.add(importRecord);
 		}

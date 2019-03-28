@@ -59,7 +59,7 @@ public class IFABPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_B
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,	final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,@NonNull final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
 	{
 		final I_C_BPartner existentBPartner = IFABPartnerImportHelper.fetchManufacturer(importRecord.getb00adrnr());
 
@@ -128,7 +128,7 @@ public class IFABPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_B
 		InterfaceWrapperHelper.save(partner);
 	}
 
-	private ImportRecordResult importOrUpdateBPartner(final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
+	private ImportRecordResult importOrUpdateBPartner(@NonNull final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
 	{
 		final boolean bpartnerExists = importRecord.getC_BPartner_ID() > 0;
 
@@ -142,14 +142,14 @@ public class IFABPartnerImportProcess extends AbstractImportProcess<I_I_Pharma_B
 		return bpartnerExists ? ImportRecordResult.Updated : ImportRecordResult.Inserted;
 	}
 
-	private ImportRecordResult doNothingAndUsePreviousPartner(final I_I_Pharma_BPartner importRecord, final I_I_Pharma_BPartner previousImportRecord)
+	private ImportRecordResult doNothingAndUsePreviousPartner(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_I_Pharma_BPartner previousImportRecord)
 	{
 		importRecord.setC_BPartner(previousImportRecord.getC_BPartner());
 		return ImportRecordResult.Nothing;
 	}
 
 	@Override
-	protected void markImported(final I_I_Pharma_BPartner importRecord)
+	protected void markImported(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		importRecord.setI_IsImported(X_I_Pharma_Product.I_ISIMPORTED_Imported);
 		importRecord.setProcessed(true);

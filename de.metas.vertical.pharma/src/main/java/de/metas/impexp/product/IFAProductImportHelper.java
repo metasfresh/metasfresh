@@ -3,6 +3,8 @@ package de.metas.impexp.product;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,13 +52,13 @@ import lombok.experimental.UtilityClass;
 {
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
-	public void deactivateProduct(@NonNull final org.compiere.model.I_M_Product product)
+	final public void deactivateProduct(@NonNull final org.compiere.model.I_M_Product product)
 	{
 		product.setIsActive(false);
 		InterfaceWrapperHelper.save(product);
 	}
 
-	public I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
+	final public I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class, importRecord);
 		product.setValue(importRecord.getA00PZN());
@@ -89,7 +91,7 @@ import lombok.experimental.UtilityClass;
 		return product;
 	}
 
-	public I_M_Product updateProduct(@NonNull final I_I_Pharma_Product importRecord, final org.compiere.model.I_M_Product existentProduct)
+	final public I_M_Product updateProduct(@NonNull final I_I_Pharma_Product importRecord, @Nullable final org.compiere.model.I_M_Product existentProduct)
 	{
 		final I_M_Product product;
 		if (existentProduct == null && importRecord.getM_Product() != null)
@@ -127,7 +129,7 @@ import lombok.experimental.UtilityClass;
 		return product;
 	}
 
-	private void setPackageFields(@NonNull final I_I_Pharma_Product importRecord, final I_M_Product product)
+	private void setPackageFields(@NonNull final I_I_Pharma_Product importRecord, @NonNull final I_M_Product product)
 	{
 		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
 		{
@@ -139,7 +141,7 @@ import lombok.experimental.UtilityClass;
 		}
 	}
 
-	private void setPharmaFields(@NonNull final I_I_Pharma_Product importRecord, final I_M_Product product)
+	private void setPharmaFields(@NonNull final I_I_Pharma_Product importRecord, @NonNull final I_M_Product product)
 	{
 		if (importRecord.getM_DosageForm_ID() > 0)
 		{
@@ -173,27 +175,27 @@ import lombok.experimental.UtilityClass;
 		}
 	}
 
-	protected Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
+	@Nullable private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
 	{
 		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
 	}
 
-	private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
+	@Nullable private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_01.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_02.equals(importRecord.getA02VSPFL()));
 	}
 
-	private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
+	@Nullable private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_01.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_02.equals(importRecord.getA02BTM()));
 	}
 
-	private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
+	@Nullable private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
 	}
 
-	public void importPrices(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
+	final public void importPrices(@NonNull final I_I_Pharma_Product importRecord, final boolean useNewestPriceListversion)
 	{
 		if (importRecord.getA01GDAT() != null)
 		{
