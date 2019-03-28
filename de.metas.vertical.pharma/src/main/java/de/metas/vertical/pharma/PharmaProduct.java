@@ -37,5 +37,4 @@ public class PharmaProduct
 	String value;
 
 	boolean prescriptionRequired;
-	boolean isNarcotic;
 }
