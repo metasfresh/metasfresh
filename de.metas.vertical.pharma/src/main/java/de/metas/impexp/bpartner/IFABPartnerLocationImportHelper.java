@@ -137,6 +137,7 @@ import lombok.experimental.UtilityClass;
 		{
 			final I_C_BPartner_Location bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoId(importRecord.getC_BPartner_ID(), matchedAddreses.get(0).getBpLocationId()));
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+			return bpartnerLocation;
 		}
 		
 		return null;
