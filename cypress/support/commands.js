@@ -27,6 +27,8 @@
 // https://www.cypress.io/blog/2018/01/16/end-to-end-snapshot-testing/#End-to-end-snapshot-testing
 require('@cypress/snapshot').register();
 
+import uuid from 'uuid/v4';
+
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
 
@@ -165,12 +167,15 @@ Cypress.Commands.add('clickOnIsActive', modal => {
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
   describe('Enter value into string field', function() {
-    cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
-
-    // here we want to match URLs that don *not* end with "/NEW"
+    cy.log(
+      `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
+    );
+    const aliasName = `writeIntoStringField-${uuid()}`;
+    const expectedPatchValue = removeSubstringsWithCurlyBrakets(stringValue);
+    // in the default pattern we want to match URLs that don *not* end with "/NEW"
+    const patchUrlPattern = this.outerPatchUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchInputField`);
-
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
@@ -178,10 +183,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => 
     cy.get(path)
       .find('input')
       .type(`${stringValue}{enter}`)
-      .wait('@patchInputField', {
-        requestTimeout: 20000,
-        responseTimeout: 20000
-      });
+      .waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
 });
 
@@ -235,8 +237,9 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listV
 
     cy.get('.input-dropdown-list').should('exist');
     cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
-    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     cy.wait('@patchLookupField');
+
+    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
   });
 });
 
@@ -475,7 +478,11 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
     cy.on('emit:addressPatchResolved', requestId => {
       cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
 
+      // note: i hoped that within addressFunction's body i can access this.outerPatchUrl, but it's undefined in there
+      this.outerPatchUrl = `/rest/api/address/${requestId}`; 
       addressFunction();
+
+      // this.outerPatchUrl = undefined;
       cy.get(`.form-field-C_Location_ID`).click();
       cy.wait('@completeAddress');
     });
@@ -522,6 +529,13 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
+// thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+function removeSubstringsWithCurlyBrakets(stringValue) {
+  const regex = /{.*}/gi;
+  const expectedPatchValue = stringValue.replace(regex, stringValue);
+  return expectedPatchValue;
+}
+
 function executeHeaderAction(actionName) {
   cy.get('.header-container .btn-square .meta-icon-more').click();
   cy.get('.subheader-container').should('exist');
@@ -567,14 +581,15 @@ Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = '
 Cypress.Commands.add('waitForFieldValue', (alias, fieldName, fieldValue) => {
   cy.wait(alias).then(function(xhr) {
     const responseBody = xhr.responseBody;
-    if (!responseBody.length <= 0) {
+
+    if (responseBody.length <= 0) {
       cy.log(
         `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body is empty; continuing to wait`
       );
       return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
     }
 
-    if (!responseBody.fieldsByName) {
+    if (!responseBody[0].fieldsByName) {
       cy.log(
         `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body has no fieldsByName property; continuing to wait`
       );
@@ -582,10 +597,17 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, fieldValue) => {
     }
 
     const fieldsByName = responseBody[0].fieldsByName;
-    if (fieldsByName[fieldName] !== fieldValue) {
+    if (!fieldsByName.hasOwnProperty(fieldName)) {
       cy.log(
-        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the field has value=${
-          fieldsByName[fieldName]
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response has no ${fieldName} property; continuing to wait`
+      );
+      return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
+    }
+
+    if (fieldsByName[fieldName].value !== fieldValue) {
+      cy.log(
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}='${fieldValue}', but the field has value=${
+          fieldsByName[fieldName].value
         }; continuing to wait`
       );
       return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit

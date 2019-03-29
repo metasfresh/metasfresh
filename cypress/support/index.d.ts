@@ -72,5 +72,14 @@ declare namespace Cypress {
      * })
      */
     visitWindow(windowId: BigInteger, recordId: BigInteger, documentIdAliasName: string): Chainable<any>
+
+    /**
+     * May be useful to wait for the response to a particular patch where a particular field value was set
+     * not yet tested
+     * thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
+     * 
+     * @param alias name of the alias to wait for; needs to begin with '@'
+     */
+    waitForFieldValue(alias: String, fieldName: String, fieldValue: String): Chainable<any>
   }
 }

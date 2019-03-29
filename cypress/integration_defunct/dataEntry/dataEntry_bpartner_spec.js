@@ -25,7 +25,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
         new DataEntrySubGroup(dataEntrySubGroup1Name)
           .setTabName('Group1-Tab1-SubTab1')
           .setDescription(`${dataEntrySubGroup1Name} - Description`)
-          // .setSeqNo('10')
+        // .setSeqNo('10')
       )
       .apply();
 
@@ -33,18 +33,18 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDescription(
         'Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!'
       )
-      //.setSeqNo(15)
+      .setSeqNo(15)
       .addDataEntryLine(
         new DataEntryLine.builder()
-          // .setSeqNo('10')
+        // .setSeqNo('10')
       )
       .addDataEntryLine(
         new DataEntryLine.builder()
-          // .setSeqNo('20')
+        // .setSeqNo('20')
       )
       .addDataEntryLine(
         new DataEntryLine.builder()
-          // .setSeqNo('30')
+        // .setSeqNo('30')
       )
       .apply();
 
@@ -91,9 +91,9 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       // .setSeqNo(25)
       .addDataEntryLine(
         new DataEntryLine()
-          // .setSeqNo('000000000000000000010')
+        // .setSeqNo('000000000000000000010')
       )
-       .apply();
+      .apply();
 
     new DataEntryField(
       'Tab1-Section2-Line1-Field1',
@@ -114,14 +114,12 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDataEntryRecordType('List')
       // .setSeqNo('000000000000000020')
       .addDataEntryListValue(
-        new DataEntryListValue('ListItem 2')
-          .setDescription('ListItem 2 with SeqNo10')
-          // .setSeqNo('00000000000000020')
+        new DataEntryListValue('ListItem 2').setDescription('ListItem 2 with SeqNo10')
+        // .setSeqNo('00000000000000020')
       )
       .addDataEntryListValue(
-        new DataEntryListValue('ListItem 1')
-          .setDescription('ListItem 1 with SeqNo20')
-          // .setSeqNo('00000000000000010')
+        new DataEntryListValue('ListItem 1').setDescription('ListItem 1 with SeqNo20')
+        // .setSeqNo('00000000000000010')
       )
       .apply();
 
