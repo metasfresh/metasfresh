@@ -156,7 +156,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
 		InterfaceWrapperHelper.save(ic);
 
-		// clear C_Invoice_Candidate_Recompute otherwise we won't get out error out of DefaultAggregator.mkLineAggregationKeyToUse()
+		// clear C_Invoice_Candidate_Recompute; otherwise we won't get our error out of DefaultAggregator.mkLineAggregationKeyToUse()
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
 		pojoLookupMap.getRecords(I_C_Invoice_Candidate_Recompute.class).forEach(pojoLookupMap::delete);
 
