@@ -1,5 +1,9 @@
-class SalesOrders {
+import Metasfresh from './page';
+
+class SalesOrders extends Metasfresh {
   constructor() {
+    super();
+
     this.windowId = 143;
     this.tableRows = '.table-flex-wrapper-row';
     this.rowSelector = 'tbody tr';
@@ -28,11 +32,13 @@ class SalesOrders {
 
   clickListHeader() {
     // TODO: Find scrollable element instead of forcing click
+    // cy.get('body').scrollTo('top')
     // cy.get(this.documentList).scrollTo('top');
     // cy.get(this.listHeader).scrollIntoView();
     // cy.scrollTo('bottom')
     // cy.get('#root').scrollTo(0, 10);
-    cy.get('.document-list-wrapper').scrollTo(0, 0);
+    // cy.get('.document-list-wrapper').scrollTo(0, 0);
+    // cy.get('.header-sticky-distance').scrollTo('top')
     cy.get(this.listHeader).click({ force: true });
   }
 }

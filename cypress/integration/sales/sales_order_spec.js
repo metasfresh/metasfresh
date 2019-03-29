@@ -3,6 +3,7 @@ import { salesOrders } from '../../page_objects/sales_orders';
 
 describe('New sales order test', function() {
   const windowId = 143;
+  const list = salesOrders;
   let headerCaption = '';
   let menuOption = '';
 
@@ -20,131 +21,128 @@ describe('New sales order test', function() {
 
   describe('List tests', function() {
     it('Test if rows get selected/deselected properly', function() {
-      const s = salesOrders;
-
-      s.getRows()
+      list
+        .getRows()
         .eq(1)
         .find('td')
         .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      s.getRows()
+      list
+        .getRows()
         .eq(2)
         .find('td')
         .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      s.getSelectedRows().should('have.length', 2);
-      s.clickListHeader();
-      s.getSelectedRows().should('have.length', 0);
+      list.getSelectedRows().should('have.length', 2);
+      list.clickListHeader();
+      list.getSelectedRows().should('have.length', 0);
     });
   });
 
-  // describe('Create a new sales order', function() {
-  //   before(function() {
-  //     cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
+  describe('Create a new sales order', function() {
+    before(function() {
+      cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
 
-  //     const option = ~~(Math.random() * (2 - 0)) + 0;
+      const option = ~~(Math.random() * (2 - 0)) + 0;
 
-  //     if (option === 0) {
-  //       cy.get('.header-breadcrumb')
-  //         .contains('.header-item', headerCaption)
-  //         .click();
+      if (option === 0) {
+        cy.get('.header-breadcrumb')
+          .contains('.header-item', headerCaption)
+          .click();
 
-  //       cy.get('.header-breadcrumb')
-  //         .find('.menu-overlay')
-  //         .should('exist')
-  //         .find('.menu-overlay-link')
-  //         .contains(menuOption)
-  //         .click();
-  //     } else {
-  //       cy.clickHeaderNav('New');
-  //     }
+        cy.get('.header-breadcrumb')
+          .find('.menu-overlay')
+          .should('exist')
+          .find('.menu-overlay-link')
+          .contains(menuOption)
+          .click();
+      } else {
+        cy.clickHeaderNav('New');
+      }
 
-  //     cy.get('.header-breadcrumb-sitename').should('contain', '<');
-  //   });
+      cy.get('.header-breadcrumb-sitename').should('contain', '<');
+    });
 
-  //   it('Fill Business Partner', function() {
-  //     cy.writeIntoLookupListField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
-  //     cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
-  //     cy.writeIntoLookupListField('AD_User_ID', 'Test', 'Test');
+    it('Fill Business Partner', function() {
+      cy.writeIntoLookupListField('C_BPartner_ID', 'Cypress', 'Cypress Test Partner #1');
+      //we need a fake click to close the opened dropdown
+      cy.get('.header-breadcrumb-sitename').click();
+      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Warsaw', 'Warsaw, Potocka 1');
 
-  //     cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
-  //   });
+      cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
+    });
 
-  //   it('Fill order reference to differentiate cypress tests', function() {
-  //     cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
-  //     /*
-  //     cy.get('.indicator-pending').should('exist');
-  //     cy.wait(100);
-  //     cy.get('.indicator-pending').should('not.exist');
-  //     */
-  //   });
+    it('Fill order reference to differentiate cypress tests', function() {
+      cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
+      cy.get('.indicator-pending').should('not.exist');
+    });
 
-  //   it('Add new product', function() {
-  //     const addNewText = Cypress.messages.window.addNew.caption;
+    it('Add new product', function() {
+      const addNewText = Cypress.messages.window.addNew.caption;
 
-  //     cy.get('.tabs-wrapper .form-flex-align .btn')
-  //       .contains(addNewText)
-  //       .should('exist')
-  //       .click();
+      cy.get('.tabs-wrapper .form-flex-align .btn')
+        .contains(addNewText)
+        .should('exist')
+        .click();
 
-  //     cy.get('.panel-modal').should('exist');
+      cy.get('.panel-modal').should('exist');
 
-  //     cy.get('.form-field-M_Product_ID')
-  //       .find('input')
-  //       .type('C');
+      cy.get('.form-field-M_Product_ID')
+        .find('input')
+        .type('C');
 
-  //     cy.get('.input-dropdown-list').should('exist');
-  //     cy.contains('.input-dropdown-list-option', 'P002737_Convenience Salat 250g').click();
-  //     cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', 'P002737_Convenience Salat 250g').click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 
-  //     cy.get('.form-field-QtyEntered', { timeout: 12000 })
-  //       .find('input')
-  //       .should('not.have.value', '0');
+      cy.get('.form-field-QtyEntered', { timeout: 12000 })
+        .find('input')
+        .should('not.have.value', '0');
 
-  //     cy.get('.panel-modal-header')
-  //       .find('.btn')
-  //       .click();
-  //   });
+      cy.get('.panel-modal-header')
+        .find('.btn')
+        .click();
+    });
 
-  //   it('Change document status', function() {
-  //     let completeActionCaption = '';
-  //     const draftedCaption = Cypress.reduxStore.getState().windowHandler.master.data.DocStatus.value.caption;
-  //     const docId = Cypress.reduxStore.getState().windowHandler.master.docId;
+    it('Change document status', function() {
+      let completeActionCaption = '';
+      const draftedCaption = Cypress.reduxStore.getState().windowHandler.master.data.DocStatus.value.caption;
+      const docId = Cypress.reduxStore.getState().windowHandler.master.docId;
 
-  //     cy.request('GET', `${config.API_URL}/window/${windowId}/${docId}/field/DocAction/dropdown`).then(response => {
-  //       const resp = response.body;
+      cy.request('GET', `${config.API_URL}/window/${windowId}/${docId}/field/DocAction/dropdown`).then(response => {
+        const resp = response.body;
 
-  //       expect(resp).to.have.property('values');
-  //       expect(resp.values.length).to.be.gt(0);
+        expect(resp).to.have.property('values');
+        expect(resp.values.length).to.be.gt(0);
 
-  //       for (let i = 0; i < resp.values.length; i += 1) {
-  //         if (resp.values[i].key === 'CO') {
-  //           completeActionCaption = resp.values[i].caption;
+        for (let i = 0; i < resp.values.length; i += 1) {
+          if (resp.values[i].key === 'CO') {
+            completeActionCaption = resp.values[i].caption;
 
-  //           break;
-  //         }
-  //       }
+            break;
+          }
+        }
 
-  //       cy.get('.form-field-DocAction')
-  //         .find('.meta-dropdown-toggle')
-  //         .click();
+        cy.get('.form-field-DocAction')
+          .find('.meta-dropdown-toggle')
+          .click();
 
-  //       cy.get('.form-field-DocAction')
-  //         .find('.dropdown-status-toggler')
-  //         .should('have.class', 'dropdown-status-open');
+        cy.get('.form-field-DocAction')
+          .find('.dropdown-status-toggler')
+          .should('have.class', 'dropdown-status-open');
 
-  //       cy.get('.form-field-DocAction .dropdown-status-list')
-  //         .find('.dropdown-status-item')
-  //         .contains(completeActionCaption)
-  //         .click();
+        cy.get('.form-field-DocAction .dropdown-status-list')
+          .find('.dropdown-status-item')
+          .contains(completeActionCaption)
+          .click();
 
-  //       cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-  //       cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
-  //     });
-  //   });
-  // });
+        cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+        cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
+      });
+    });
+  });
 });
