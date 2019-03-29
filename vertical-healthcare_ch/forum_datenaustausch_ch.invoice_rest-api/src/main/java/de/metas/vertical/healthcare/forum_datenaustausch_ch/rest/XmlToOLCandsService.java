@@ -290,6 +290,10 @@ public class XmlToOLCandsService
 		return billerEAN + "_" + requestIdToUse;
 	}
 
+	/**
+	  * @return a pair consisting of invoice {@code DocSubType} and {@code POreference}.
+	  * TODO the hardcoded way of getting the invoice's {@code DocSubType} from the XML is not cool, but I want to keep it for now. Ideas of how to solve this in future are centered around linking the doc type to the invoice recipient
+	  */
 	private IPair<String, String> createPOReference(final PayloadType payload)
 	{
 		final InvoiceType invoice = payload.getInvoice();
