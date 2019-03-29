@@ -3,10 +3,10 @@ package org.adempiere.ad.column.model.interceptor;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
 
+import de.metas.security.impl.ParsedSql;
 import de.metas.util.Check;
 
 /*
@@ -46,8 +46,7 @@ public class AD_Column
 			return;
 		}
 
-		final AccessSqlParser accessSqlParserInstance = new AccessSqlParser();
-		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
+		final String adaptedWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
 
 		column.setColumnSQL(adaptedWhereClause);
 	}

@@ -38,12 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.OrgId;
-import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
 import org.compiere.util.DB;
@@ -68,6 +66,8 @@ import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.impl.ParsedSql.SqlSelect;
+import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.Constraints;
@@ -725,7 +725,11 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public String addAccessSQL(final String sql, final String TableNameIn, final boolean fullyQualified, final Access access)
+	public String addAccessSQL(
+			final String sql,
+			final String tableNameIn,
+			final boolean fullyQualified,
+			final Access access)
 	{
 		// Cut off last ORDER BY clause
 
@@ -745,7 +749,7 @@ class UserRolePermissions implements IUserRolePermissions
 			sqlOrderByAndOthers = null;
 		}
 
-		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, TableNameIn, fullyQualified, access);
+		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, tableNameIn, fullyQualified, access);
 		if (Check.isEmpty(sqlAccessSqlWhereClause, true))
 		{
 			logger.trace("Final SQL (no access sql applied): {}", sql);
@@ -766,16 +770,20 @@ class UserRolePermissions implements IUserRolePermissions
 		return sqlFinal;
 	}	// addAccessSQL
 
-	private final String buildAccessSQL(final String sqlSelectFromWhere, final String TableNameIn, final boolean fullyQualified, final Access access)
+	private final String buildAccessSQL(
+			final String sqlSelectFromWhere,
+			final String tableNameIn,
+			final boolean fullyQualified,
+			final Access access)
 	{
 		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
 
 		// Parse SQL
-		final AccessSqlParser asp = new AccessSqlParser(sqlSelectFromWhere);
-		final AccessSqlParser.TableInfo[] aspTableInfos = asp.getTableInfo(asp.getMainSqlIndex());
+		final ParsedSql parsedSql = ParsedSql.parse(sqlSelectFromWhere);
+		final SqlSelect mainSqlSelect = parsedSql.getMainSqlSelect();
 
 		// Do we have to add WHERE or AND
-		if (asp.getMainSql().indexOf(" WHERE ") == -1)
+		if (!mainSqlSelect.hasWhereClause())
 		{
 			sqlAcessSqlWhereClause.append(" WHERE ");
 		}
@@ -784,35 +792,19 @@ class UserRolePermissions implements IUserRolePermissions
 			sqlAcessSqlWhereClause.append(" AND ");
 		}
 
-		// Use First Table
-		String tableName = "";
-		if (aspTableInfos.length > 0)
+		String mainTableName = mainSqlSelect.getFirstTableAliasOrTableName();
+		if (!mainTableName.equals(tableNameIn))
 		{
-			tableName = aspTableInfos[0].getSynonym();
-			if (tableName.length() == 0)
-			{
-				tableName = aspTableInfos[0].getTableName();
-			}
-		}
-		if (TableNameIn != null && !tableName.equals(TableNameIn))
-		{
-			String msg = "TableName not correctly parsed - TableNameIn=" + TableNameIn + " - " + asp;
-			if (aspTableInfos.length > 0)
-			{
-				msg += " - #1 " + aspTableInfos[0];
-			}
-			msg += "\n SQL=" + sqlSelectFromWhere;
-			final AdempiereException ex = new AdempiereException(msg);
-			logger.warn(ex.getLocalizedMessage(), ex);
-			tableName = TableNameIn;
+			logger.warn("First tableName/alias is not matching TableNameIn={}. Considering the TableNameIn. \nmainSqlSelect: {}", tableNameIn, mainSqlSelect);
+			mainTableName = tableNameIn;
 		}
 
-		if (!tableName.equals(I_AD_PInstance_Log.Table_Name))
+		if (!I_AD_PInstance_Log.Table_Name.equals(mainTableName))
 		{
 			// Client Access
-			final String tableAlias = fullyQualified ? tableName : null;
+			final String tableAlias = fullyQualified ? mainTableName : null;
 			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
-			sqlAcessSqlWhereClause.append(getClientWhere(tableName, tableAlias, access));
+			sqlAcessSqlWhereClause.append(getClientWhere(mainTableName, tableAlias, access));
 
 			// Org Access
 			if (!isAccessAllOrgs())
@@ -821,9 +813,9 @@ class UserRolePermissions implements IUserRolePermissions
 				sqlAcessSqlWhereClause.append(" AND ");
 				if (fullyQualified)
 				{
-					sqlAcessSqlWhereClause.append(tableName).append(".");
+					sqlAcessSqlWhereClause.append(mainTableName).append(".");
 				}
-				sqlAcessSqlWhereClause.append(getOrgWhere(tableName, access));
+				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
 			}
 		}
 		else
@@ -832,61 +824,56 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		// ** Data Access **
-		for (int i = 0; i < aspTableInfos.length; i++)
+		for (final TableNameAndAlias tableNameAndAlias : mainSqlSelect.getTableNameAndAliases())
 		{
-			final String TableName = aspTableInfos[i].getTableName();
+			final String tableName = tableNameAndAlias.getTableName();
 
 			// [ 1644310 ] Rev. 1292 hangs on start
-			if (TableName.toUpperCase().endsWith("_TRL"))
+			if (tableName.toUpperCase().endsWith("_TRL"))
 			{
 				continue;
 			}
-			if (tablesAccessInfo.isView(TableName))
+			if (tablesAccessInfo.isView(tableName))
 			{
 				continue;
 			}
 
-			final int AD_Table_ID = tablesAccessInfo.getAD_Table_ID(TableName);
 			// Data Table Access
-			if (AD_Table_ID > 0 && !isTableAccess(AD_Table_ID, access))
+			final int adTableId = tablesAccessInfo.getAD_Table_ID(tableName);
+			if (adTableId > 0 && !isTableAccess(adTableId, access))
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
-				logger.debug("No access to AD_Table_ID={} - {} - {}", AD_Table_ID, TableName, sqlAcessSqlWhereClause);
+				logger.debug("No access to AD_Table_ID={} - {} - {}", adTableId, tableName, sqlAcessSqlWhereClause);
 				break;	// no need to check further
 			}
 
-			// Data Column Access
-
-			// Data Record Access
-			String keyColumnNameFQ = "";
-			if (fullyQualified)
-			{
-				keyColumnNameFQ = aspTableInfos[i].getSynonym();	// table synonym
-				if (keyColumnNameFQ.length() == 0)
-				{
-					keyColumnNameFQ = TableName;
-				}
-				keyColumnNameFQ += ".";
-			}
-			// keyColumnName += TableName + "_ID"; // derived from table
-			final String keyColumnName = tablesAccessInfo.getIdColumnName(TableName);
+			//
+			final String keyColumnName = tablesAccessInfo.getIdColumnName(tableName);
 			if (keyColumnName == null)
 			{
 				continue;
 			}
-			keyColumnNameFQ += keyColumnName;
+			//
+			final String keyColumnNameFQ;
+			if (fullyQualified)
+			{
+				keyColumnNameFQ = tableNameAndAlias.getAliasOrTableName() + "." + keyColumnName;
+			}
+			else
+			{
+				keyColumnNameFQ = keyColumnName;
+			}
 
-			// log.debug("addAccessSQL - " + TableName + "(" + AD_Table_ID + ") " + keyColumnName);
-			final String recordWhere = getRecordWhere(AD_Table_ID, keyColumnNameFQ, access);
-			if (recordWhere.length() > 0)
+			final String recordWhere = getRecordWhere(adTableId, keyColumnNameFQ, access);
+			if (!recordWhere.isEmpty())
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-record */ AND ").append(recordWhere);
 				logger.trace("Record access: {}", recordWhere);
 			}
-		}   	// for all table info
+		} // for all tables
 
 		// Dependent Records (only for main SQL)
-		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, asp, tableName, access);
+		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, mainSqlSelect, mainTableName, access);
 
 		return sqlAcessSqlWhereClause.toString();
 	}
@@ -1048,27 +1035,27 @@ class UserRolePermissions implements IUserRolePermissions
 	/**
 	 * Return Where clause for Record Access
 	 *
-	 * @param AD_Table_ID table
-	 * @param keyColumnName (fully qualified) key column name
-	 * @param rw true if read write
+	 * @param adTableId table
+	 * @param keyColumnNameFQ (fully qualified) key column name
+	 * @param access required access
 	 * @return where clause or ""
 	 */
-	private String getRecordWhere(final int AD_Table_ID, final String keyColumnName, final Access access)
+	private String getRecordWhere(final int adTableId, final String keyColumnNameFQ, final Access access)
 	{
-		final StringBuilder sb = recordPermissions.getRecordWhere(AD_Table_ID, keyColumnName, access);
+		final StringBuilder sb = recordPermissions.getRecordWhere(adTableId, keyColumnNameFQ, access);
 
 		// Don't ignore Privacy Access
 		if (!isPersonalAccess())
 		{
-			final String lockedIDs = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
-					+ " WHERE AD_Table_ID = " + AD_Table_ID
+			final String lockedIds = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
+					+ " WHERE AD_Table_ID = " + adTableId
 					+ " AND AD_User_ID <> " + UserId.toRepoId(getUserId())
 					+ " AND IsActive = 'Y' )";
 			if (sb.length() > 0)
 			{
 				sb.append(" AND ");
 			}
-			sb.append(keyColumnName).append(lockedIDs);
+			sb.append(keyColumnNameFQ).append(lockedIds);
 		}
 		//
 		return sb.toString();

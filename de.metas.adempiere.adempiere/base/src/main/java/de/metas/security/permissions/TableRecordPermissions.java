@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.compiere.model.AccessSqlParser;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.security.impl.ParsedSql.SqlSelect;
 import de.metas.security.impl.TablesAccessInfo;
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import lombok.NonNull;
@@ -143,9 +143,9 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 	}	// isRecordAccess
 
 	public void addRecordDependentAccessSql(
-			final StringBuilder retSQL,
-			final AccessSqlParser asp,
-			final String tableName,
+			@NonNull final StringBuilder retSQL,
+			@NonNull final SqlSelect mainSqlSelect,
+			@NonNull final String tableName,
 			@NonNull final Access access)
 	{
 		final Set<TableRecordPermission> dependentRecordPermissionsList = getDependentRecordPermissionsList();
@@ -154,7 +154,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 			return;
 		}
 
-		final String mainSql = asp.getMainSql();
+		final String mainSql = mainSqlSelect.getSql();
 
 		int AD_Table_ID = 0;
 		String whereColumnName = null;
@@ -162,7 +162,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 		final List<Integer> excludes = new ArrayList<>();
 		for (final TableRecordPermission recordDependentAccess : dependentRecordPermissionsList)
 		{
-			final String columnName = recordDependentAccess.getKeyColumnName(asp.getTableInfo(asp.getMainSqlIndex()));
+			final String columnName = recordDependentAccess.getKeyColumnName(mainSqlSelect.getTableNameAndAliases());
 			if (columnName == null)
 			{
 				continue;	// no key column
@@ -198,7 +198,7 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 				}
 			}
 
-			if (AD_Table_ID != 0 && AD_Table_ID != recordDependentAccess.getAD_Table_ID())
+			if (AD_Table_ID > 0 && AD_Table_ID != recordDependentAccess.getAD_Table_ID())
 			{
 				retSQL.append(getDependentAccess(whereColumnName, includes, excludes));
 			}
@@ -208,12 +208,12 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 			if (recordDependentAccess.isExclude())
 			{
 				excludes.add(recordDependentAccess.getRecord_ID());
-				logger.debug("Exclude " + columnName + " - " + recordDependentAccess);
+				logger.debug("Exclude {} - {}", columnName, recordDependentAccess);
 			}
 			else if (access.isReadOnly() || !recordDependentAccess.isReadOnly())
 			{
 				includes.add(recordDependentAccess.getRecord_ID());
-				logger.debug("Include " + columnName + " - " + recordDependentAccess);
+				logger.debug("Include {} - {}", columnName, recordDependentAccess);
 			}
 			whereColumnName = getDependentRecordWhereColumn(mainSql, columnName);
 		}	// for all dependent records
@@ -229,13 +229,16 @@ public class TableRecordPermissions extends AbstractPermissions<TableRecordPermi
 	 * @param excludes ids to exclude
 	 * @return where clause starting with AND or ""
 	 */
-	private static final String getDependentAccess(final String whereColumnName, final List<Integer> includes, final List<Integer> excludes)
+	private static final String getDependentAccess(
+			final String whereColumnName,
+			final List<Integer> includes,
+			final List<Integer> excludes)
 	{
-		if (includes.size() == 0 && excludes.size() == 0)
+		if (includes.isEmpty() && excludes.isEmpty())
 		{
 			return "";
 		}
-		if (includes.size() != 0 && excludes.size() != 0)
+		if (!includes.isEmpty() && !excludes.isEmpty())
 		{
 			logger.warn("Mixing Include and Excluse rules - Will not return values");
 		}

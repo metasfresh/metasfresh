@@ -1,6 +1,7 @@
 package de.metas.security.permissions;
 
-import org.compiere.model.AccessSqlParser;
+import java.util.List;
+
 import org.compiere.model.POInfo;
 
 import com.google.common.base.Optional;
@@ -8,6 +9,8 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.security.RoleId;
+import de.metas.security.impl.ParsedSql;
+import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -93,7 +96,7 @@ public class TableRecordPermission implements Permission
 	 *
 	 * @return Synonym Column Name
 	 */
-	public String getKeyColumnNameSynonym()
+	private String getKeyColumnNameSynonym()
 	{
 		final String keyColumnName = getKeyColumnName().orNull();
 		if (keyColumnName == null)
@@ -112,18 +115,18 @@ public class TableRecordPermission implements Permission
 		return null;
 	}
 
-	public Optional<String> getKeyColumnName()
+	private Optional<String> getKeyColumnName()
 	{
 		return keyColumnNameSupplier.get();
 	}
 
 	/**
-	 * Get Key Column Name with consideration of Synonym
+	 * Get Key Column Name with consideration of table aliases
 	 *
-	 * @param tableInfo
+	 * @param tableNameAndAliases
 	 * @return key column name or <code>null</code>
 	 */
-	public String getKeyColumnName(final AccessSqlParser.TableInfo[] tableInfo)
+	String getKeyColumnName(final List<ParsedSql.TableNameAndAlias> tableNameAndAliases)
 	{
 		final String keyColumnName = getKeyColumnName().orNull();
 		if (keyColumnName == null)
@@ -137,20 +140,20 @@ public class TableRecordPermission implements Permission
 			return keyColumnName;
 		}
 		// We have a synonym - ignore it if base table inquired
-		for (int i = 0; i < tableInfo.length; i++)
+		for (final TableNameAndAlias tableNameAndAlias : tableNameAndAliases)
 		{
-			if (keyColumnName.equals("AD_User_ID"))
+			if ("AD_User_ID".equals(keyColumnName))
 			{
 				// List of tables where not to use SalesRep_ID
-				if (tableInfo[i].getTableName().equals("AD_User"))
+				if ("AD_User".equals(tableNameAndAlias.getTableName()))
 				{
 					return keyColumnName;
 				}
 			}
-			else if (keyColumnName.equals("AD_ElementValue_ID"))
+			else if ("AD_ElementValue_ID".equals(keyColumnName))
 			{
 				// List of tables where not to use Account_ID
-				if (tableInfo[i].getTableName().equals("AD_ElementValue"))
+				if ("AD_ElementValue".equals(tableNameAndAlias.getTableName()))
 				{
 					return keyColumnName;
 				}
