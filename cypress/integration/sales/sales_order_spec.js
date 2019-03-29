@@ -1,79 +1,57 @@
-import config from '../../config';
+import { getBreadcrumbs } from '../../support/apiRequests';
+import { salesOrders } from '../../page_objects/sales_orders';
 
 describe('New sales order test', function() {
   const windowId = 143;
-  let caption = '';
-  let nodeId = null;
+  const list = salesOrders;
+  let headerCaption = '';
   let menuOption = '';
 
   before(function() {
     cy.loginByForm();
 
-    cy.request('GET', `${config.API_URL}/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`).then(
-      response => {
-        expect(response.body).to.have.property('captionBreadcrumb');
-        expect(response.body).to.have.property('nodeId');
-        caption = response.body.captionBreadcrumb;
-        nodeId = response.body.nodeId;
+    getBreadcrumbs(windowId).then(({ option, caption }) => {
+      menuOption = option;
+      headerCaption = caption;
+    });
 
-        cy.request('GET', `${config.API_URL}/menu/node/${nodeId}/breadcrumbMenu`).then(response => {
-          const resp = response.body;
-          expect(resp.length).to.be.gt(0);
-
-          for (let i = 0; i < resp.length; i += 1) {
-            if (resp[i].nodeId.includes('-new')) {
-              menuOption = resp[i].caption;
-
-              break;
-            }
-          }
-        });
-      }
-    );
-
-    cy.visit(`/window/${windowId}`);
+    salesOrders.visit();
+    salesOrders.verifyElements();
   });
 
   describe('List tests', function() {
     it('Test if rows get selected/deselected properly', function() {
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
-        .eq(0)
-        .should('exist');
-
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
+      list
+        .getRows()
         .eq(1)
         .find('td')
         .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
+      list
+        .getRows()
         .eq(2)
         .find('td')
         .eq(0)
         .type('{shift}', { release: false })
         .click();
 
-      cy.get('.row-selected').should('have.length', 2);
-
-      cy.get('.document-list-header').click();
-
-      cy.get('.row-selected').should('have.length', 0);
+      list.getSelectedRows().should('have.length', 2);
+      list.clickListHeader();
+      list.getSelectedRows().should('have.length', 0);
     });
   });
 
-  context('Create a new sales order', function() {
+  describe('Create a new sales order', function() {
     before(function() {
-      cy.get('.header-breadcrumb').contains('.header-item', caption, { timeout: 10000 });
+      cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
 
       const option = ~~(Math.random() * (2 - 0)) + 0;
 
       if (option === 0) {
         cy.get('.header-breadcrumb')
-          .contains('.header-item', caption)
+          .contains('.header-item', headerCaption)
           .click();
 
         cy.get('.header-breadcrumb')
@@ -90,20 +68,17 @@ describe('New sales order test', function() {
     });
 
     it('Fill Business Partner', function() {
-      cy.writeIntoLookupListField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
-      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Testadresse 3', 'Testadresse 3');
-      cy.writeIntoLookupListField('AD_User_ID', 'Test', 'Test');
+      cy.writeIntoLookupListField('C_BPartner_ID', 'Cypress', 'Cypress Test Partner #1');
+      //we need a fake click to close the opened dropdown
+      cy.get('.header-breadcrumb-sitename').click();
+      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Warsaw', 'Warsaw, Potocka 1');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });
 
     it('Fill order reference to differentiate cypress tests', function() {
       cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
-      /*
-      cy.get('.indicator-pending').should('exist');
-      cy.wait(100);
       cy.get('.indicator-pending').should('not.exist');
-      */
     });
 
     it('Add new product', function() {
