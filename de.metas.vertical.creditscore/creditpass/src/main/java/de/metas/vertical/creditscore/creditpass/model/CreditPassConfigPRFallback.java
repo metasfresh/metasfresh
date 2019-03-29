@@ -1,8 +1,5 @@
-package de.metas.vertical.creditscore.creditpass.model;
-
 /*
  * #%L
- * de.metas.vertical.creditscore.creditpass.model
  *
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,19 +19,19 @@ package de.metas.vertical.creditscore.creditpass.model;
  * #L%
  */
 
-public enum DefaultResult
+
+package de.metas.vertical.creditscore.creditpass.model;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class CreditPassConfigPRFallback
 {
-	P(0), N(1);
 
-	private final int resultCode;
+	@NonNull
+	private String fallbackPaymentRule;
 
-	DefaultResult(int resultCode)
-	{
-		this.resultCode = resultCode;
-	}
-
-	public int getResultCode()
-	{
-		return resultCode;
-	}
 }

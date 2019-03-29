@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.base.spi.service.TransactionResultService;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
@@ -71,8 +72,7 @@ public class C_Order
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final CreditPassConfig config = creditPassConfigRepository.getConfigByBPartnerId(bPartnerId);
-		final TransactionResult trResult = transactionResultService.findLastTransactionResult(order.getPaymentRule(), BPartnerId.ofRepoId(order.getC_BPartner_ID()));
-		Optional<TransactionResult> transactionResult = Optional.ofNullable(trResult);
+		final Optional<TransactionResult> transactionResult = transactionResultService.findLastTransactionResult(order.getPaymentRule(), BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		Optional<CreditPassConfig> configuration = Optional.ofNullable(config);
 		IMsgBL msgBL = Services.get(IMsgBL.class);
 		if (configuration.isPresent() && configuration.get().getCreditPassConfigPaymentRuleList().stream()
@@ -81,7 +81,7 @@ public class C_Order
 		{
 			if (transactionResult.filter(tr -> tr.getRequestDate().until(LocalDateTime.now(), ChronoUnit.DAYS) < config.getRetryDays()).isPresent())
 			{
-				if (transactionResult.filter(tr -> tr.getResultCode() == 0).isPresent())
+				if (transactionResult.filter(tr -> tr.getResultCodeEffective() == ResultCode.P).isPresent())
 				{
 					order.setCreditpassFlag(false);
 					final ITranslatableString message = msgBL.getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY);

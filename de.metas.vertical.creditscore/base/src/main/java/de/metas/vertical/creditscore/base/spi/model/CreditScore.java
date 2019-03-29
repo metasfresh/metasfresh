@@ -22,10 +22,14 @@ package de.metas.vertical.creditscore.base.spi.model;
  * #L%
  */
 
+import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Value;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @Builder
 @Value
@@ -33,7 +37,9 @@ public class CreditScore
 {
 
    @NonNull
-   private int resultCode;
+   private ResultCode resultCode;
+
+   private ResultCode resultCodeOverride;
 
    private String resultText;
 
@@ -41,6 +47,10 @@ public class CreditScore
 
    @NonNull
    private String paymentRule;
+
+   private BigDecimal requestPrice;
+
+   private CurrencyId currency;
 
    private boolean converted;
 

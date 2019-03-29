@@ -32,18 +32,18 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import de.metas.vertical.creditscore.creditpass.service.CreditPassTransactionService;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.apache.commons.lang3.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -58,9 +58,10 @@ public class CS_Creditpass_TransactionFrom_C_Order extends JavaProcess implement
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final String paymentRule = order.getPaymentRule();
 
-		TransactionResult transactionResult = creditPassTransactionService.getAndSaveCreditScore(paymentRule, orderId, bPartnerId);
+		final List<TransactionResult> transactionResults = creditPassTransactionService.getAndSaveCreditScore(paymentRule, orderId, bPartnerId);
 
-		if (transactionResult.getResultCode() == CreditPassConstants.REQUEST_SUCCESS_CODE)
+		TransactionResult transactionResult = transactionResults.stream().findFirst().get();
+		if (transactionResult.getResultCodeEffective() == ResultCode.P)
 		{
 			order.setCreditpassFlag(false);
 			final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY);
@@ -69,13 +70,15 @@ public class CS_Creditpass_TransactionFrom_C_Order extends JavaProcess implement
 		else
 		{
 			order.setCreditpassFlag(true);
-			//TODO check if one payment rule is enough
-			String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, paymentRule);
+			final String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, paymentRule);
 			final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
 			order.setCreditpassStatus(message.translate(Env.getAD_Language()));
 		}
 		save(order);
-		getResult().setRecordsToOpen(I_CS_Transaction_Result.Table_Name, Collections.singletonList(transactionResult.getTransactionResultId().getRepoId()), null);
+		List<Integer> tableRecordReferences = transactionResults.stream()
+				.map(tr -> tr.getTransactionResultId().getRepoId())
+				.collect(Collectors.toList());
+		getResult().setRecordsToOpen(I_CS_Transaction_Result.Table_Name, tableRecordReferences, null);
 		return MSG_OK;
 	}
 

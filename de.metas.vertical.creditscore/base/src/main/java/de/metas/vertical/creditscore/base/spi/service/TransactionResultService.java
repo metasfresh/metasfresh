@@ -37,8 +37,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
@@ -56,17 +54,17 @@ public class TransactionResultService
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	public TransactionResultId createAndSaveResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId)
+	public TransactionResult createAndSaveResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId
+			, @NonNull final Optional<OrderId> orderId)
 	{
 
-		TransactionResultId transactionResultId = transactionResultsRepository.createTransactionResult(creditScore, bPartnerId);
-
-		addResultAttachements(creditScore, transactionResultId);
-		return transactionResultId;
+		TransactionResult transactionResult = transactionResultsRepository.createTransactionResult(creditScore, bPartnerId, orderId);
+		addResultAttachements(creditScore, transactionResult.getTransactionResultId());
+		return transactionResult;
 
 	}
 
-	private void addResultAttachements(@NonNull CreditScore creditScore, TransactionResultId transactionResultId)
+	private void addResultAttachements(@NonNull final CreditScore creditScore, @NonNull final TransactionResultId transactionResultId)
 	{
 		final CreditScoreRequestLogData requestLogData = creditScore.getRequestLogData();
 		if (requestLogData.getRequestData() != null)
@@ -92,21 +90,10 @@ public class TransactionResultService
 		}
 	}
 
-	public TransactionResult createAndSaveResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId
-			, @NonNull final OrderId orderId)
+	public Optional<TransactionResult> findLastTransactionResult(@NonNull final String paymentRule, @NonNull final BPartnerId bPartnerId)
 	{
-
-		TransactionResult transactionResult = transactionResultsRepository.createTransactionResult(creditScore, bPartnerId, orderId);
-		addResultAttachements(creditScore, transactionResult.getTransactionResultId());
-		return transactionResult;
-
-	}
-
-	public TransactionResult findLastTransactionResult(@NonNull final String paymentRule, @NonNull final BPartnerId bPartnerId)
-	{
-		TransactionResult transactionResult = transactionResultsRepository
+		return transactionResultsRepository
 				.getLastTransactionResult(paymentRule, bPartnerId);
-		return transactionResult;
 	}
 
 }

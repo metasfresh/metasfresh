@@ -98,6 +98,35 @@ public interface I_CS_Transaction_Result
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_CS_Transaction_Result, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_CS_Transaction_Result, org.compiere.model.I_C_Currency>(I_CS_Transaction_Result.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Auftrag.
 	 * Auftrag
 	 *
@@ -163,10 +192,10 @@ public interface I_CS_Transaction_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCS_Transaction_Result_ID(int CS_Transaction_Result_ID);
+	public void setCS_Transaction_Result_ID (int CS_Transaction_Result_ID);
 
 	/**
-	 * Get CS_Transaction_Results.
+	 * Get CS_Transaction_Result.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -253,6 +282,29 @@ public interface I_CS_Transaction_Result
     public static final String COLUMNNAME_RequestEndTime = "RequestEndTime";
 
 	/**
+	 * Set Preis der Überprüfung.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRequestPrice (java.math.BigDecimal RequestPrice);
+
+	/**
+	 * Get Preis der Überprüfung.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getRequestPrice();
+
+    /** Column definition for RequestPrice */
+    public static final org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object> COLUMN_RequestPrice = new org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object>(I_CS_Transaction_Result.class, "RequestPrice", null);
+    /** Column name RequestPrice */
+    public static final String COLUMNNAME_RequestPrice = "RequestPrice";
+
+	/**
 	 * Set Anfrage Start .
 	 *
 	 * <br>Type: DateTime
@@ -276,27 +328,73 @@ public interface I_CS_Transaction_Result
     public static final String COLUMNNAME_RequestStartTime = "RequestStartTime";
 
 	/**
-	 * Set Antwort Code.
+	 * Set Antwort .
 	 *
-	 * <br>Type: Number
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setResponseCode (java.math.BigDecimal ResponseCode);
+	public void setResponseCode (java.lang.String ResponseCode);
 
 	/**
-	 * Get Antwort Code.
+	 * Get Antwort .
 	 *
-	 * <br>Type: Number
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getResponseCode();
+	public java.lang.String getResponseCode();
 
     /** Column definition for ResponseCode */
     public static final org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object> COLUMN_ResponseCode = new org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object>(I_CS_Transaction_Result.class, "ResponseCode", null);
     /** Column name ResponseCode */
     public static final String COLUMNNAME_ResponseCode = "ResponseCode";
+
+	/**
+	 * Set Antwort eff..
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setResponseCodeEffective (java.lang.String ResponseCodeEffective);
+
+	/**
+	 * Get Antwort eff..
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getResponseCodeEffective();
+
+    /** Column definition for ResponseCodeEffective */
+    public static final org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object> COLUMN_ResponseCodeEffective = new org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object>(I_CS_Transaction_Result.class, "ResponseCodeEffective", null);
+    /** Column name ResponseCodeEffective */
+    public static final String COLUMNNAME_ResponseCodeEffective = "ResponseCodeEffective";
+
+	/**
+	 * Set Antwort abw..
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setResponseCodeOverride (java.lang.String ResponseCodeOverride);
+
+	/**
+	 * Get Antwort abw..
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getResponseCodeOverride();
+
+    /** Column definition for ResponseCodeOverride */
+    public static final org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object> COLUMN_ResponseCodeOverride = new org.adempiere.model.ModelColumn<I_CS_Transaction_Result, Object>(I_CS_Transaction_Result.class, "ResponseCodeOverride", null);
+    /** Column name ResponseCodeOverride */
+    public static final String COLUMNNAME_ResponseCodeOverride = "ResponseCodeOverride";
 
 	/**
 	 * Set Antwort Text.
@@ -345,7 +443,7 @@ public interface I_CS_Transaction_Result
     public static final String COLUMNNAME_ResponseDetails = "ResponseDetails";
 
 	/**
-	 * Set Transaktionsreferenz .
+	 * Set Transaktionsreferenz Kunde .
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -354,7 +452,7 @@ public interface I_CS_Transaction_Result
 	public void setTransactionCustomerId (java.lang.String TransactionCustomerId);
 
 	/**
-	 * Get Transaktionsreferenz .
+	 * Get Transaktionsreferenz Kunde .
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -368,19 +466,19 @@ public interface I_CS_Transaction_Result
     public static final String COLUMNNAME_TransactionCustomerId = "TransactionCustomerId";
 
 	/**
-	 * Set Transaktionsreferenz .
+	 * Set Transaktionsreferenz API.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setTransactionIdAPI (java.lang.String TransactionIdAPI);
 
 	/**
-	 * Get Transaktionsreferenz .
+	 * Get Transaktionsreferenz API.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getTransactionIdAPI();

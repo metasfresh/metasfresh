@@ -25,10 +25,9 @@ package de.metas.vertical.creditscore.creditpass.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.process.*;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
-import de.metas.vertical.creditscore.base.spi.repository.TransactionResultId;
+import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.service.CreditPassTransactionService;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -47,10 +46,10 @@ public class CS_Creditpass_TransactionFrom_C_BPartner extends JavaProcess implem
 	@Override protected String doIt() throws Exception
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
-		final List<TransactionResultId> transactionResultIdList = creditPassTransactionService
+		final List<TransactionResult> transactionResults = creditPassTransactionService
 				.getAndSaveCreditScore(Optional.ofNullable(paymentRule).orElse(StringUtils.EMPTY), bPartnerId);
-		List<Integer> tableRecordReferences = transactionResultIdList.stream()
-				.map(tr -> tr.getRepoId())
+		List<Integer> tableRecordReferences = transactionResults.stream()
+				.map(tr -> tr.getTransactionResultId().getRepoId())
 				.collect(Collectors.toList());
 		getResult().setRecordsToOpen(I_CS_Transaction_Result.Table_Name, tableRecordReferences, null);
 		return MSG_OK;

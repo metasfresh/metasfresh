@@ -8,6 +8,7 @@ import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.CreditScore;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.base.spi.repository.TransactionResultId;
 import de.metas.vertical.creditscore.base.spi.service.TransactionResultService;
@@ -15,6 +16,7 @@ import de.metas.vertical.creditscore.creditpass.CreditPassClient;
 import de.metas.vertical.creditscore.creditpass.CreditPassClientFactory;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPRFallback;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRule;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
 import de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CreditPassTransactionService
@@ -49,47 +52,67 @@ public class CreditPassTransactionService
 		this.creditPassConfigRepository = creditPassConfigRepository;
 	}
 
-	public List<TransactionResultId> getAndSaveCreditScore(@NonNull final String paymentRule,
+	public List<TransactionResult> getAndSaveCreditScore(@NonNull final String paymentRule,
 			@NonNull final BPartnerId bPartnerId) throws Exception
 	{
 		final CreditPassClient creditScoreClient = (CreditPassClient)clientFactory.newClientForBusinessPartner(bPartnerId);
 		final CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
-		final List<TransactionResultId> transactionResultIds = new ArrayList<>();
+		final List<TransactionResult> transactionResults = new ArrayList<>();
 		final CreditPassConfig config = creditScoreClient.getCreditPassConfig();
 		if (StringUtils.isEmpty(paymentRule))
 		{
 			for (CreditPassConfigPaymentRule configPaymentRule : creditScoreClient.getCreditPassConfig().getCreditPassConfigPaymentRuleList())
 			{
 				final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, configPaymentRule.getPaymentRule());
-				transactionResultIds.add(handleResult(bPartnerId, config, creditScore));
+				transactionResults.add(handleResult(Optional.ofNullable(null), bPartnerId, config, creditScore));
 			}
 		}
 		else
 		{
 			final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
-			transactionResultIds.add(handleResult(bPartnerId, config, creditScore));
+			transactionResults.add(handleResult(Optional.ofNullable(null), bPartnerId, config, creditScore));
 		}
-		return transactionResultIds;
+		return transactionResults;
 	}
 
-	private TransactionResultId handleResult(@NonNull final BPartnerId bPartnerId, @NonNull final CreditPassConfig config, @NonNull final CreditScore creditScore)
-	{
-		final CreditScore finalCreditScore = convertResult(config, creditScore);
-		TransactionResultId id = transactionResultService.createAndSaveResult(finalCreditScore, bPartnerId);
-		if (finalCreditScore.isConverted())
-		{
-			sendNotification(config, id);
-		}
-		return id;
-	}
-
-	public TransactionResult getAndSaveCreditScore(@NonNull final String paymentRule,
+	public List<TransactionResult> getAndSaveCreditScore(@NonNull final String paymentRule,
 			@NonNull final OrderId orderId, @NonNull final BPartnerId bPartnerId) throws Exception
 	{
 		final CreditPassClient creditScoreClient = (CreditPassClient)clientFactory.newClientForBusinessPartner(bPartnerId);
 		final CreditPassConfig config = creditScoreClient.getCreditPassConfig();
 		final CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
 		final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
+		final TransactionResult result = handleResult(Optional.ofNullable(orderId), bPartnerId, config, creditScore);
+		final List<TransactionResult> transactionResults = new ArrayList<>();
+		transactionResults.add(result);
+		if (result.getResultCodeEffective() != ResultCode.P)
+		{
+			//perform fallback requests
+			Optional<CreditPassConfigPaymentRule> creditPassConfigPaymentRule = config.getCreditPassConfigPaymentRuleList()
+					.stream()
+					.filter(configPR -> StringUtils.equals(configPR.getPaymentRule(), paymentRule))
+					.findAny();
+			if (creditPassConfigPaymentRule.isPresent())
+			{
+				for (CreditPassConfigPRFallback configPRFallback : creditPassConfigPaymentRule.get().getCreditPassConfigPRFallbacks())
+				{
+					boolean hasPaymentRuleConfig = config.getCreditPassConfigPaymentRuleList().stream()
+							.anyMatch(configPr -> StringUtils.equals(configPr.getPaymentRule(), configPRFallback.getFallbackPaymentRule()));
+					if (hasPaymentRuleConfig)
+					{
+						final CreditScore fallbackCreditScore = creditScoreClient.getCreditScore(creditPassTransactionData, configPRFallback.getFallbackPaymentRule());
+						final TransactionResult fallbackResult = handleResult(Optional.ofNullable(orderId), bPartnerId, config, fallbackCreditScore);
+						transactionResults.add(fallbackResult);
+					}
+				}
+			}
+		}
+		return transactionResults;
+	}
+
+	private TransactionResult handleResult(@NonNull final Optional<OrderId> orderId, @NonNull final BPartnerId bPartnerId,
+			@NonNull final CreditPassConfig config, @NonNull final CreditScore creditScore)
+	{
 		final CreditScore finalCreditScore = convertResult(config, creditScore);
 		final TransactionResult result = transactionResultService.createAndSaveResult(finalCreditScore, bPartnerId, orderId);
 		if (finalCreditScore.isConverted())
@@ -115,13 +138,16 @@ public class CreditPassTransactionService
 
 	private CreditScore convertResult(@NonNull final CreditPassConfig config, @NonNull final CreditScore creditScore)
 	{
-		if (creditScore.getResultCode() == CreditPassConstants.MANUAL_RESPONSE_CODE)
+		if (creditScore.getResultCode() == ResultCode.M)
 		{
 			final CreditScore convertedCreditScore = CreditScore.builder()
 					.requestLogData(creditScore.getRequestLogData())
-					.resultCode(config.getDefaultResult().getResultCode())
-					.resultText(CreditPassConstants.MANUAL_RESPONSE_CONVERSION_TEXT)
+					.resultCode(creditScore.getResultCode())
+					.resultCodeOverride(config.getResultCode())
+					.resultText(creditScore.getResultText())
 					.paymentRule(creditScore.getPaymentRule())
+					.requestPrice(creditScore.getRequestPrice())
+					.currency(creditScore.getCurrency())
 					.converted(true)
 					.build();
 			return convertedCreditScore;

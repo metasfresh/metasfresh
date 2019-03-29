@@ -15,7 +15,7 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1942282879L;
+	private static final long serialVersionUID = -566389782L;
 
     /** Standard Constructor */
     public X_CS_Creditpass_Config (Properties ctx, int CS_Creditpass_Config_ID, String trxName)
@@ -89,13 +89,17 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 
 	/** 
 	 * DefaultCheckResult AD_Reference_ID=540961
-	 * Reference name: _CreditPassDefaultResult
+	 * Reference name: _CreditPassResult
 	 */
 	public static final int DEFAULTCHECKRESULT_AD_Reference_ID=540961;
 	/** Nicht authorisiert = N */
 	public static final String DEFAULTCHECKRESULT_NichtAuthorisiert = "N";
 	/** Authorisiert = P */
 	public static final String DEFAULTCHECKRESULT_Authorisiert = "P";
+	/** Fehler = E */
+	public static final String DEFAULTCHECKRESULT_Fehler = "E";
+	/** Manuell überprüfen = M */
+	public static final String DEFAULTCHECKRESULT_Manuellueberpruefen = "M";
 	/** Set Standard Ergebnis.
 		@param DefaultCheckResult 
 		Bestellungen wie ausgewählt abschließen

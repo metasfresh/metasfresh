@@ -15,7 +15,7 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1052036390L;
+	private static final long serialVersionUID = -66188413L;
 
     /** Standard Constructor */
     public X_CS_Transaction_Result (Properties ctx, int CS_Transaction_Result_ID, String trxName)
@@ -27,8 +27,7 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 			setPaymentRule (null);
 			setRequestEndTime (new Timestamp( System.currentTimeMillis() ));
 			setRequestStartTime (new Timestamp( System.currentTimeMillis() ));
-			setResponseCode (BigDecimal.ZERO);
-			setTransactionIdAPI (null);
+			setResponseCode (null);
         } */
     }
 
@@ -85,6 +84,43 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
@@ -121,21 +157,21 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set CS_Transaction_Results.
-		@param CS_Transaction_Result_ID CS_Transaction_Results	  */
+	/** Set CS_Transaction_Result.
+		@param CS_Transaction_Result_ID CS_Transaction_Result	  */
 	@Override
-	public void setCS_Transaction_Result_ID(int CS_Transaction_Result_ID)
+	public void setCS_Transaction_Result_ID (int CS_Transaction_Result_ID)
 	{
-		if (CS_Transaction_Result_ID < 1)
+		if (CS_Transaction_Result_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Result_ID, null);
 		else 
 			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Result_ID, Integer.valueOf(CS_Transaction_Result_ID));
 	}
 
-	/** Get CS_Transaction_Results.
-		@return CS_Transaction_Results	  */
+	/** Get CS_Transaction_Result.
+		@return CS_Transaction_Result	  */
 	@Override
-	public int getCS_Transaction_Result_ID()
+	public int getCS_Transaction_Result_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Transaction_Result_ID);
 		if (ii == null)
@@ -198,6 +234,25 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_RequestEndTime);
 	}
 
+	/** Set Preis der Überprüfung.
+		@param RequestPrice Preis der Überprüfung	  */
+	@Override
+	public void setRequestPrice (java.math.BigDecimal RequestPrice)
+	{
+		set_Value (COLUMNNAME_RequestPrice, RequestPrice);
+	}
+
+	/** Get Preis der Überprüfung.
+		@return Preis der Überprüfung	  */
+	@Override
+	public java.math.BigDecimal getRequestPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RequestPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Anfrage Start .
 		@param RequestStartTime Anfrage Start 	  */
 	@Override
@@ -214,23 +269,94 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_RequestStartTime);
 	}
 
-	/** Set Antwort Code.
-		@param ResponseCode Antwort Code	  */
+	/** 
+	 * ResponseCode AD_Reference_ID=540961
+	 * Reference name: _CreditPassResult
+	 */
+	public static final int RESPONSECODE_AD_Reference_ID=540961;
+	/** Nicht authorisiert = N */
+	public static final String RESPONSECODE_NichtAuthorisiert = "N";
+	/** Authorisiert = P */
+	public static final String RESPONSECODE_Authorisiert = "P";
+	/** Fehler = E */
+	public static final String RESPONSECODE_Fehler = "E";
+	/** Manuell überprüfen = M */
+	public static final String RESPONSECODE_Manuellueberpruefen = "M";
+	/** Set Antwort .
+		@param ResponseCode Antwort 	  */
 	@Override
-	public void setResponseCode (java.math.BigDecimal ResponseCode)
+	public void setResponseCode (java.lang.String ResponseCode)
 	{
+
 		set_ValueNoCheck (COLUMNNAME_ResponseCode, ResponseCode);
 	}
 
-	/** Get Antwort Code.
-		@return Antwort Code	  */
+	/** Get Antwort .
+		@return Antwort 	  */
 	@Override
-	public java.math.BigDecimal getResponseCode () 
+	public java.lang.String getResponseCode () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ResponseCode);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_ResponseCode);
+	}
+
+	/** 
+	 * ResponseCodeEffective AD_Reference_ID=540961
+	 * Reference name: _CreditPassResult
+	 */
+	public static final int RESPONSECODEEFFECTIVE_AD_Reference_ID=540961;
+	/** Nicht authorisiert = N */
+	public static final String RESPONSECODEEFFECTIVE_NichtAuthorisiert = "N";
+	/** Authorisiert = P */
+	public static final String RESPONSECODEEFFECTIVE_Authorisiert = "P";
+	/** Fehler = E */
+	public static final String RESPONSECODEEFFECTIVE_Fehler = "E";
+	/** Manuell überprüfen = M */
+	public static final String RESPONSECODEEFFECTIVE_Manuellueberpruefen = "M";
+	/** Set Antwort eff..
+		@param ResponseCodeEffective Antwort eff.	  */
+	@Override
+	public void setResponseCodeEffective (java.lang.String ResponseCodeEffective)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_ResponseCodeEffective, ResponseCodeEffective);
+	}
+
+	/** Get Antwort eff..
+		@return Antwort eff.	  */
+	@Override
+	public java.lang.String getResponseCodeEffective () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ResponseCodeEffective);
+	}
+
+	/** 
+	 * ResponseCodeOverride AD_Reference_ID=540961
+	 * Reference name: _CreditPassResult
+	 */
+	public static final int RESPONSECODEOVERRIDE_AD_Reference_ID=540961;
+	/** Nicht authorisiert = N */
+	public static final String RESPONSECODEOVERRIDE_NichtAuthorisiert = "N";
+	/** Authorisiert = P */
+	public static final String RESPONSECODEOVERRIDE_Authorisiert = "P";
+	/** Fehler = E */
+	public static final String RESPONSECODEOVERRIDE_Fehler = "E";
+	/** Manuell überprüfen = M */
+	public static final String RESPONSECODEOVERRIDE_Manuellueberpruefen = "M";
+	/** Set Antwort abw..
+		@param ResponseCodeOverride Antwort abw.	  */
+	@Override
+	public void setResponseCodeOverride (java.lang.String ResponseCodeOverride)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_ResponseCodeOverride, ResponseCodeOverride);
+	}
+
+	/** Get Antwort abw..
+		@return Antwort abw.	  */
+	@Override
+	public java.lang.String getResponseCodeOverride () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ResponseCodeOverride);
 	}
 
 	/** Set Antwort Text.
@@ -265,32 +391,32 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_ResponseDetails);
 	}
 
-	/** Set Transaktionsreferenz .
-		@param TransactionCustomerId Transaktionsreferenz 	  */
+	/** Set Transaktionsreferenz Kunde .
+		@param TransactionCustomerId Transaktionsreferenz Kunde 	  */
 	@Override
 	public void setTransactionCustomerId (java.lang.String TransactionCustomerId)
 	{
 		set_ValueNoCheck (COLUMNNAME_TransactionCustomerId, TransactionCustomerId);
 	}
 
-	/** Get Transaktionsreferenz .
-		@return Transaktionsreferenz 	  */
+	/** Get Transaktionsreferenz Kunde .
+		@return Transaktionsreferenz Kunde 	  */
 	@Override
 	public java.lang.String getTransactionCustomerId () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TransactionCustomerId);
 	}
 
-	/** Set Transaktionsreferenz .
-		@param TransactionIdAPI Transaktionsreferenz 	  */
+	/** Set Transaktionsreferenz API.
+		@param TransactionIdAPI Transaktionsreferenz API	  */
 	@Override
 	public void setTransactionIdAPI (java.lang.String TransactionIdAPI)
 	{
 		set_ValueNoCheck (COLUMNNAME_TransactionIdAPI, TransactionIdAPI);
 	}
 
-	/** Get Transaktionsreferenz .
-		@return Transaktionsreferenz 	  */
+	/** Get Transaktionsreferenz API.
+		@return Transaktionsreferenz API	  */
 	@Override
 	public java.lang.String getTransactionIdAPI () 
 	{

@@ -35,15 +35,11 @@ public final class CreditPassConstants
 
 	public static final String PROCESS_PAYMENT_RULE_PARAM = "paymentRule";
 
+	public static final String PROCESS_RESULT_OVERRIDE_PARAM = "resultOverride";
+
 	public static final int DEFAULT_TRANSACTION_ID = 11920;
 
 	public static final int DEFAULT_PROCESSING_CODE = 8;
-
-	public static final int MANUAL_RESPONSE_CODE = 2;
-
-	public static final int REQUEST_SUCCESS_CODE = 0;
-
-	public static final String MANUAL_RESPONSE_CONVERSION_TEXT = "Manual response code to actual response";
 
 	public static final String DEFAULT_RESULT_TEXT = "Default result";
 

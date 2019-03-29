@@ -25,7 +25,9 @@ package de.metas.vertical.creditscore.creditpass.repository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.cache.CCache;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.*;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
@@ -34,10 +36,14 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.UserId;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -50,6 +56,7 @@ public class CreditPassConfigRepository
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
+			.additionalTableNameToResetFor(I_CS_Creditpass_CP_Fallback.Table_Name)
 			.additionalTableNameToResetFor(I_C_Order.Table_Name)
 			.build();
 
@@ -84,17 +91,39 @@ public class CreditPassConfigRepository
 			return null;
 		}
 
-		final List<I_CS_Creditpass_Config_PaymentRule> configPaymentRules = queryBL
+		final List<CreditPassConfigPaymentRule> configPaymentRules = queryBL
 				.createQueryBuilder(I_CS_Creditpass_Config_PaymentRule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_CS_Creditpass_Config_PaymentRule.COLUMN_CS_Creditpass_Config_ID, config.getCS_Creditpass_Config_ID())
-				.create().list();
+				.create()
+				.list()
+				.stream()
+				.map(configPaymentRule -> CreditPassConfigPaymentRule.builder()
+						.paymentRule(configPaymentRule.getPaymentRule())
+						.requestPrice(configPaymentRule.getRequestPrice())
+						.requestPriceCurrency(CurrencyId.ofRepoId(configPaymentRule.getC_Currency_ID()))
+						.purchaseType(configPaymentRule.getPurchaseType().intValue())
+						.paymentRuleId(CreditPassConfigPaymentRuleId.ofRepoId(configPaymentRule.getCS_Creditpass_Config_PaymentRule_ID()))
+						.creditPassConfigPRFallbacks(new ArrayList<>())
+						.build())
+				.collect(Collectors.toList());
 
-		final List<CreditPassConfigPaymentRule> mappedConfigPaymentRules = configPaymentRules.stream().map(temp ->
-				CreditPassConfigPaymentRule.builder()
-						.paymentRule(temp.getPaymentRule())
-						.purchaseType(temp.getPurchaseType().intValue())
-						.build()).collect(Collectors.toList());
+		for (CreditPassConfigPaymentRule paymentRule : configPaymentRules)
+		{
+			final List<CreditPassConfigPRFallback> configPaymentRuleFallbacks = queryBL
+					.createQueryBuilder(I_CS_Creditpass_CP_Fallback.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_CS_Creditpass_CP_Fallback.COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, paymentRule.getPaymentRuleId().getRepoId())
+					.create()
+					.list()
+					.stream()
+					.map(configPaymentRule -> CreditPassConfigPRFallback.builder()
+							.fallbackPaymentRule(configPaymentRule.getFallbackPaymentRule())
+							.build())
+					.collect(Collectors.toList());
+
+			paymentRule.getCreditPassConfigPRFallbacks().addAll(configPaymentRuleFallbacks);
+		}
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID();
@@ -110,9 +139,10 @@ public class CreditPassConfigRepository
 				.restApiBaseUrl(config.getRestApiBaseURL())
 				.requestReason(config.getRequestReason())
 				.notificationUserId(UserId.ofRepoId(config.getManual_Check_User_ID()))
-				.defaultResult(DefaultResult.valueOf(config.getDefaultCheckResult()))
+				.resultCode(ResultCode.fromName(config.getDefaultCheckResult()))
 				.retryDays(config.getRetryAfterDays().intValue())
-				.creditPassConfigPaymentRuleList(mappedConfigPaymentRules)
+				.creditPassConfigId(CreditPassConfigId.ofRepoId(config.getCS_Creditpass_Config_ID()))
+				.creditPassConfigPaymentRuleList(configPaymentRules)
 				.build();
 
 	}

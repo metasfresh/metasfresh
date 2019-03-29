@@ -28,21 +28,25 @@ import de.metas.logging.LogManager;
 import de.metas.vertical.creditscore.base.spi.CreditScoreClient;
 import de.metas.vertical.creditscore.base.spi.model.CreditScore;
 import de.metas.vertical.creditscore.base.spi.model.CreditScoreRequestLogData;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.base.spi.model.TransactionData;
 import de.metas.vertical.creditscore.creditpass.mapper.RequestMapper;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRule;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
 import de.metas.vertical.creditscore.creditpass.model.schema.Request;
 import de.metas.vertical.creditscore.creditpass.model.schema.Response;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class CreditPassClient implements CreditScoreClient
 {
@@ -65,6 +69,8 @@ public class CreditPassClient implements CreditScoreClient
 	{
 
 		Request request = new RequestMapper().mapToRequest((CreditPassTransactionData)transactionData, creditPassConfig, paymentRule);
+		Optional<CreditPassConfigPaymentRule> configPaymentRule = creditPassConfig.getCreditPassConfigPaymentRuleList().stream()
+				.filter(configPr -> StringUtils.equals(configPr.getPaymentRule(), paymentRule)).findFirst();
 
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_XML));
@@ -85,10 +91,12 @@ public class CreditPassClient implements CreditScoreClient
 			requestLogData.setResponseData(xmlMapper.writeValueAsString(response));
 			return CreditScore.builder()
 					.requestLogData(requestLogData)
-					.resultCode(response.getProcess().getAnswerCode())
+					.resultCode(ResultCode.fromCode(response.getProcess().getAnswerCode()))
 					.resultText(response.getProcess().getAnswerText())
 					.resultDetails(response.getProcess().getAnswerDetails())
 					.paymentRule(paymentRule)
+					.requestPrice(configPaymentRule.get().getRequestPrice())
+					.currency(configPaymentRule.get().getRequestPriceCurrency())
 					.build();
 		}
 		catch (final RestClientException e)
@@ -98,10 +106,13 @@ public class CreditPassClient implements CreditScoreClient
 			requestLogData.setResponseTime(LocalDateTime.now());
 			return CreditScore.builder()
 					.requestLogData(requestLogData)
-					.resultCode(creditPassConfig.getDefaultResult().getResultCode())
+					.resultCode(ResultCode.E)
+					.resultCodeOverride(creditPassConfig.getResultCode())
 					.resultText(CreditPassConstants.DEFAULT_RESULT_TEXT)
 					.resultDetails(e.getMessage())
 					.paymentRule(paymentRule)
+					.requestPrice(configPaymentRule.get().getRequestPrice())
+					.currency(configPaymentRule.get().getRequestPriceCurrency())
 					.build();
 		}
 

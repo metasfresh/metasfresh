@@ -22,9 +22,13 @@ package de.metas.vertical.creditscore.creditpass.model;
  * #L%
  */
 
+import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Value
 @Builder
@@ -36,5 +40,14 @@ public class CreditPassConfigPaymentRule
 
 	@NonNull
 	private int purchaseType;
+
+	private BigDecimal requestPrice;
+
+	private CurrencyId requestPriceCurrency;
+
+	@NonNull
+	private CreditPassConfigPaymentRuleId paymentRuleId;
+
+	private List<CreditPassConfigPRFallback> creditPassConfigPRFallbacks;
 
 }

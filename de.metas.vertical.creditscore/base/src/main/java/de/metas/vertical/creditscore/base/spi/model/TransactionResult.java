@@ -12,7 +12,13 @@ import java.time.LocalDateTime;
 public class TransactionResult
 {
 
-	private int resultCode;
+	@NonNull
+	private ResultCode resultCode;
+
+	@NonNull
+	private ResultCode resultCodeEffective;
+
+	private ResultCode resultCodeOverride;
 
 	@NonNull
 	TransactionResultId transactionResultId;

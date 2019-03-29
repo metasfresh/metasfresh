@@ -22,6 +22,7 @@ package de.metas.vertical.creditscore.creditpass.model;
  * #L%
  */
 
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,7 +48,7 @@ public class CreditPassConfig
 	private int processingCode;
 
 	@NonNull
-	private DefaultResult defaultResult;
+	private ResultCode resultCode;
 
 	@NonNull
 	private UserId notificationUserId;
@@ -56,6 +57,9 @@ public class CreditPassConfig
 
 	@NonNull
 	private String requestReason;
+
+	@NonNull
+	private CreditPassConfigId creditPassConfigId;
 
 	private List<CreditPassConfigPaymentRule> creditPassConfigPaymentRuleList;
 

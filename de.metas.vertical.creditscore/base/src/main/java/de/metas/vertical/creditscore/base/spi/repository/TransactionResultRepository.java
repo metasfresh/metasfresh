@@ -23,18 +23,20 @@ package de.metas.vertical.creditscore.base.spi.repository;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.CreditScore;
 import de.metas.vertical.creditscore.base.spi.model.CreditScoreRequestLogData;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -43,45 +45,41 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class TransactionResultRepository
 {
 
-	public TransactionResultId createTransactionResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId)
+	public TransactionResult createTransactionResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId,
+			@NonNull final Optional<OrderId> orderId)
 	{
 		final I_CS_Transaction_Result transactionResult = newInstance(I_CS_Transaction_Result.class);
 
-		mapResultData(creditScore, bPartnerId, transactionResult);
-		save(transactionResult);
-		return TransactionResultId.ofRepoId(transactionResult.getCS_Transaction_Result_ID());
-	}
-
-	private void mapResultData(@NonNull CreditScore creditScore, @NonNull BPartnerId bPartnerId, I_CS_Transaction_Result transactionResult)
-	{
-		CreditScoreRequestLogData logData = creditScore.getRequestLogData();
+		final CreditScoreRequestLogData logData = creditScore.getRequestLogData();
 		transactionResult.setRequestStartTime(Timestamp.valueOf(logData.getRequestTime()));
 		transactionResult.setRequestEndTime(Timestamp.valueOf(logData.getResponseTime()));
-		transactionResult.setResponseCode(BigDecimal.valueOf(creditScore.getResultCode()));
+		transactionResult.setResponseCode(creditScore.getResultCode().name());
+		if (creditScore.getResultCodeOverride() != null)
+		{
+			transactionResult.setResponseCodeOverride(creditScore.getResultCodeOverride().name());
+			transactionResult.setResponseCodeEffective(creditScore.getResultCodeOverride().name());
+		}
+		else
+		{
+			transactionResult.setResponseCodeEffective(creditScore.getResultCode().name());
+		}
 		transactionResult.setPaymentRule(creditScore.getPaymentRule());
+		transactionResult.setRequestPrice(creditScore.getRequestPrice());
+		if (creditScore.getCurrency() != null)
+		{
+			transactionResult.setC_Currency_ID(creditScore.getCurrency().getRepoId());
+		}
 		transactionResult.setResponseCodeText(creditScore.getResultText());
 		transactionResult.setResponseDetails(creditScore.getResultDetails());
 		transactionResult.setTransactionCustomerId(logData.getCustomerTransactionID());
 		transactionResult.setTransactionIdAPI(logData.getTransactionID());
 		transactionResult.setC_BPartner_ID(bPartnerId.getRepoId());
-	}
-
-	public TransactionResult createTransactionResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId,
-			@NonNull final OrderId orderId)
-	{
-		final I_CS_Transaction_Result transactionResult = newInstance(I_CS_Transaction_Result.class);
-
-		transactionResult.setC_Order_ID(orderId.getRepoId());
-		mapResultData(creditScore, bPartnerId, transactionResult);
+		orderId.ifPresent(orderId1 -> transactionResult.setC_Order_ID(orderId1.getRepoId()));
 		save(transactionResult);
-		return TransactionResult.builder()
-				.resultCode(transactionResult.getResponseCode().intValue())
-				.requestDate(transactionResult.getRequestStartTime().toLocalDateTime())
-				.transactionResultId(TransactionResultId.ofRepoId(transactionResult.getCS_Transaction_Result_ID()))
-				.build();
+		return mapTransactionResult(transactionResult);
 	}
 
-	public TransactionResult getLastTransactionResult(@NonNull final String paymentRule, @NonNull final BPartnerId bPartnerId)
+	public Optional<TransactionResult> getLastTransactionResult(@NonNull final String paymentRule, @NonNull final BPartnerId bPartnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -92,18 +90,23 @@ public class TransactionResultRepository
 				.addEqualsFilter(I_CS_Transaction_Result.COLUMNNAME_PaymentRule, paymentRule)
 				.addEqualsFilter(I_CS_Transaction_Result.COLUMNNAME_C_BPartner_ID, bPartnerId.getRepoId())
 				.create().first();
+		TransactionResult mappedTransactionResult = null;
 		if (transactionResult != null)
 		{
-			return TransactionResult.builder()
-					.resultCode(transactionResult.getResponseCode().intValue())
-					.requestDate(transactionResult.getRequestStartTime().toLocalDateTime())
-					.transactionResultId(TransactionResultId.ofRepoId(transactionResult.getCS_Transaction_Result_ID()))
-					.build();
+			mappedTransactionResult = mapTransactionResult(transactionResult);
 		}
-		else
-		{
-			return null;
-		}
+		return Optional.ofNullable(mappedTransactionResult);
+	}
+
+	private TransactionResult mapTransactionResult(I_CS_Transaction_Result transactionResult)
+	{
+		return TransactionResult.builder()
+				.resultCode(ResultCode.fromName(transactionResult.getResponseCode()))
+				.resultCodeEffective(ResultCode.fromName(transactionResult.getResponseCodeEffective()))
+				.resultCodeOverride(ResultCode.fromName(transactionResult.getResponseCodeOverride()))
+				.requestDate(transactionResult.getRequestStartTime().toLocalDateTime())
+				.transactionResultId(TransactionResultId.ofRepoId(transactionResult.getCS_Transaction_Result_ID()))
+				.build();
 	}
 
 }
