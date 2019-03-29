@@ -92,89 +92,89 @@ class ListWidget extends Component {
       disableAutofocus,
       doNotOpenOnFocus,
     } = this.props;
-    const { listFocused } = this.state;
 
-    this.setState({
-      list: List(),
-      listHash: uuid(),
-      loading: true,
-    });
+    this.setState(
+      {
+        list: List(),
+        loading: true,
+      },
+      () => {
+        const propertyName = filterWidget
+          ? properties.parameterName
+          : properties.field;
 
-    const propertyName = filterWidget
-      ? properties[0].parameterName
-      : properties[0].field;
+        let request = null;
 
-    let request = null;
-
-    if (viewId && entity === 'window' && !filterWidget) {
-      request = dropdownModalRequest({
-        windowId: windowType,
-        fieldName: propertyName,
-        entity: 'documentView',
-        viewId,
-        rowId,
-      });
-    } else {
-      request = attribute
-        ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
-        : dropdownRequest({
-            attribute,
-            docId: dataId,
-            docType: windowType,
-            entity,
-            subentity,
-            subentityId,
-            tabId,
+        if (viewId && entity === 'window' && !filterWidget) {
+          request = dropdownModalRequest({
+            windowId: windowType,
+            fieldName: propertyName,
+            entity: 'documentView',
             viewId,
-            propertyName,
             rowId,
           });
-    }
-
-    request.then(res => {
-      let values = res.data.values || [];
-      let singleOption = values && values.length === 1;
-
-      if (forceSelection && singleOption) {
-        this.previousValue = '';
-
-        this.setState({
-          list: List(values),
-          listHash: uuid(),
-          loading: false,
-        });
-
-        let firstListValue = values[0];
-        if (firstListValue) {
-          this.handleSelect(firstListValue);
+        } else {
+          request = attribute
+            ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
+            : dropdownRequest({
+                attribute,
+                docId: dataId,
+                docType: windowType,
+                entity,
+                subentity,
+                subentityId,
+                tabId,
+                viewId,
+                propertyName,
+                rowId,
+              });
         }
-      } else {
-        this.setState({
-          list: List(values),
-          listHash: uuid(),
-          loading: false,
+
+        request.then(res => {
+          let values = res.data.values || [];
+          let singleOption = values && values.length === 1;
+
+          if (forceSelection && singleOption) {
+            this.previousValue = '';
+
+            this.setState({
+              list: List(values),
+              listHash: uuid(),
+              loading: false,
+            });
+
+            let firstListValue = values[0];
+            if (firstListValue) {
+              this.handleSelect(firstListValue);
+            }
+          } else {
+            this.setState({
+              list: List(values),
+              listHash: uuid(),
+              loading: false,
+            });
+          }
+
+          if (values.length === 0 && lastProperty) {
+            disableAutofocus();
+          } else if (
+            (ignoreFocus || this.state.autoFocus) &&
+            values &&
+            values.length > 1
+          ) {
+            !this.state.listFocused && this.handleFocus();
+            !doNotOpenOnFocus && this.activate();
+          }
         });
       }
-
-      if (values.length === 0 && lastProperty) {
-        disableAutofocus();
-      } else if (
-        (ignoreFocus || this.state.autoFocus) &&
-        values &&
-        values.length > 1
-      ) {
-        !listFocused && this.handleFocus();
-        !doNotOpenOnFocus && this.activate();
-      }
-    });
+    );
   };
 
   handleFocus = () => {
-    const { onFocus, mandatory, field } = this.props;
+    const { mandatory } = this.props;
     const { list, loading } = this.state;
 
     this.focus();
-    onFocus && onFocus(field);
 
     if (!list.size && !loading) {
       this.requestListData(mandatory, true);
@@ -194,6 +194,9 @@ class ListWidget extends Component {
       {
         autoFocus: false,
         listFocused: false,
+        list: List(),
+        listHash: null,
+        listToggled: false,
       },
       () => {
         onBlur && onBlur(field);
@@ -237,8 +240,8 @@ class ListWidget extends Component {
 
     if (this.previousValue !== (option && option.caption)) {
       if (lookupList) {
-        const promise = onChange(properties[0].field, option, id);
-        const mainPropertyField = mainProperty[0].field;
+        const promise = onChange(properties.field, option, id);
+        const mainPropertyField = mainProperty.field;
 
         this.setState({
           selectedItem: option,
@@ -330,7 +333,7 @@ ListWidget.defaultProps = {
 ListWidget.propTypes = {
   filter: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
-  properties: PropTypes.array,
+  properties: PropTypes.object,
   isInputEmpty: PropTypes.bool,
   defaultValue: PropTypes.any,
   dataId: PropTypes.any,
@@ -344,7 +347,7 @@ ListWidget.propTypes = {
   viewId: PropTypes.any,
   attribute: PropTypes.any,
   lookupList: PropTypes.bool,
-  mainProperty: PropTypes.any,
+  mainProperty: PropTypes.object,
   isModal: PropTypes.bool,
   autoFocus: PropTypes.bool,
   selected: PropTypes.object,

@@ -516,7 +516,7 @@ export class RawWidget extends Component {
             subentityId={subentityId}
             defaultValue={fields[0].emptyText}
             selected={widgetData[0].value || null}
-            properties={fields}
+            properties={fields[0]}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
             windowType={windowType}
