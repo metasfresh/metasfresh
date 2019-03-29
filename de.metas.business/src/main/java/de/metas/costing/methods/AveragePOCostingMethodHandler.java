@@ -37,13 +37,17 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -92,21 +96,40 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
+		final Quantity qty = request.getQty();
+		final UomId qtyUOMId = UomId.ofRepoId(qty.getUOMId());
+
 		final int matchInvId = request.getDocumentRef().getRecordId();
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
-				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request));
-		final CostAmount amt = costPrice.multiply(request.getQty());
+				.map(price -> convertToUOM(price, qtyUOMId))
+				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
+				.transform(CostAmount::ofProductPrice);
+		final CostAmount amt = costPrice.multiply(qty);
 
 		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
+	}
+
+	private ProductPrice convertToUOM(final ProductPrice costPrice, final UomId uomId)
+	{
+		final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+
+		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+		return uomConversionsBL.convertProductPriceToUom(costPrice, uomId, precision);
 	}
 
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
+		final Quantity qty = request.getQty();
+		final UomId qtyUOMId = UomId.ofRepoId(qty.getUOMId());
+
 		final InOutLineId receiptInOutLineId = InOutLineId.ofRepoId(request.getDocumentRef().getRecordId());
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
+				.map(price -> convertToUOM(price, qtyUOMId))
+				.map(CostAmount::ofProductPrice)
 				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
-		final CostAmount amt = costPrice.multiply(request.getQty());
+		final CostAmount amt = costPrice.multiply(qty);
 		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 
 		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amtConv));
@@ -164,7 +187,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		utils.saveCurrentCost(currentCosts);
 	}
 
-	private Optional<CostAmount> getPOCostPriceForMatchInv(final int matchInvId)
+	private Optional<ProductPrice> getPOCostPriceForMatchInv(final int matchInvId)
 	{
 		final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -173,19 +196,17 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		return Optional.of(matchInv)
 				.map(I_M_MatchInv::getC_InvoiceLine)
 				.map(I_C_InvoiceLine::getC_OrderLine)
-				.map(orderLineBL::getCostPrice)
-				.map(CostAmount::ofProductPrice);
+				.map(orderLineBL::getCostPrice);
 	}
 
-	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final InOutLineId receiptInOutLineId)
+	private Optional<ProductPrice> getPOCostPriceForReceiptInOutLine(final InOutLineId receiptInOutLineId)
 	{
 		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 
 		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(receiptInOutLineId);
 		return Optional.of(receiptLine)
 				.map(I_M_InOutLine::getC_OrderLine)
-				.map(Services.get(IOrderLineBL.class)::getCostPrice)
-				.map(CostAmount::ofProductPrice);
+				.map(Services.get(IOrderLineBL.class)::getCostPrice);
 	}
 
 	@Override
