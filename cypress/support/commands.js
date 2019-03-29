@@ -165,15 +165,15 @@ Cypress.Commands.add('clickOnIsActive', modal => {
  *
  * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
+Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl) => {
   describe('Enter value into string field', function() {
-    cy.log(
-      `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
-    );
     const aliasName = `writeIntoStringField-${uuid()}`;
     const expectedPatchValue = removeSubstringsWithCurlyBrakets(stringValue);
     // in the default pattern we want to match URLs that don *not* end with "/NEW"
-    const patchUrlPattern = this.outerPatchUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    cy.log(
+      `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
+    );
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     let path = `.form-field-${fieldName}`;
@@ -478,11 +478,9 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
     cy.on('emit:addressPatchResolved', requestId => {
       cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
 
-      // note: i hoped that within addressFunction's body i can access this.outerPatchUrl, but it's undefined in there
-      this.outerPatchUrl = `/rest/api/address/${requestId}`; 
-      addressFunction();
+      const outerPatchUrl = `/rest/api/address/${requestId}`;
+      addressFunction(outerPatchUrl);
 
-      // this.outerPatchUrl = undefined;
       cy.get(`.form-field-C_Location_ID`).click();
       cy.wait('@completeAddress');
     });
@@ -540,12 +538,6 @@ function removeSubstringsWithCurlyBrakets(stringValue) {
   const regex = /{.*}/gi;
   const expectedPatchValue = stringValue.replace(regex, stringValue);
   return expectedPatchValue;
-}
-
-function executeHeaderAction(actionName) {
-  cy.get('.header-container .btn-square .meta-icon-more').click();
-  cy.get('.subheader-container').should('exist');
-  cy.get(`#headerAction_${actionName}`).click();
 }
 
 Cypress.Commands.add('clickHeaderNav', navName => {

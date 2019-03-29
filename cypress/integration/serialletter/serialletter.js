@@ -45,10 +45,10 @@ it('Serial letter', function() {
   cy.visit('/window/540435/NEW');
   cy.writeIntoStringField('Name', marketingContactName);
   cy.writeIntoLookupListField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
-  cy.editAddress('C_Location_ID', function() {
+  cy.editAddress('C_Location_ID', function(url) {
     // note: this.outerPatchUrl is undefined although i set it within the editAddress command, right before invoking this function
-    cy.log(`this.outerPatchUrl=${this.outerPatchUrl}`);
-    cy.writeIntoStringField('City', 'Cologne');
+    cy.log(`this.outerPatchUrl=${url}`);
+    cy.writeIntoStringField('City', 'Cologne', null, url);
     cy.writeIntoLookupListField('C_Country_ID', 'Deu', 'Deutschland');
   });
 
