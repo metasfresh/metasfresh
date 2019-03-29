@@ -12,8 +12,11 @@ import de.metas.order.OrderFactory;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.service.PhonecallScheduleRepository;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 
 /*
@@ -38,7 +41,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess
+public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implements IProcessPrecondition
 {
 	private final PhonecallScheduleRepository phonecallSchedueRepo = Adempiere.getBean(PhonecallScheduleRepository.class);
 	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -72,5 +75,16 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess
 		getResult().setRecordToOpen(TableRecordReference.of(draftOrder), adWindowId, OpenTarget.SingleDocument);
 
 		return MSG_OK;
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if(!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 }
