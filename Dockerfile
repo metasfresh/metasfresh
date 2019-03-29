@@ -11,6 +11,15 @@ FROM cypress/browsers:chrome69
 # thx to https://github.com/moby/moby/issues/1996#issuecomment-185872769
 ARG CACHEBUST=1
 
+RUN echo "# According to https://wiki.debian.org/StableUpdates, jessie-updates no longer exists as this suite no longer receives updates since 2018-05-17." > /etc/apt/sources.list
+RUN echo "# Writing our own sources.list without jessie-updates as a workaround" >> /etc/apt/sources.list
+RUN echo "# See https://github.com/cypress-io/cypress-docker-images/issues/89" >> /etc/apt/sources.list
+RUN echo "" >> /etc/apt/sources.list
+RUN echo "deb http://deb.debian.org/debian jessie main" >> /etc/apt/sources.list
+RUN echo "deb http://security.debian.org/debian-security jessie/updates main" >> /etc/apt/sources.list
+RUN echo "# deb http://deb.debian.org/debian jessie-updates main" >> /etc/apt/sources.list
+RUN echo "" >> /etc/apt/sources.list
+
 RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
 
 WORKDIR /e2e

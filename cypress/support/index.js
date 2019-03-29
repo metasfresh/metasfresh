@@ -20,10 +20,11 @@ import nextTabbable from './nextTabbable';
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-Cypress.on('uncaught:exception', () =>{ //(err, runnable) => {
+Cypress.on('uncaught:exception', () => {
+  //(err, runnable) => {
   // returning false here prevents Cypress from
   // failing the test
-  return false
+  return false;
 });
 
 Cypress.on('emit:counterpartTranslations', messages => {
@@ -34,12 +35,11 @@ Cypress.on('emit:counterpartTranslations', messages => {
  * Emulates Tab key navigation.
  */
 Cypress.Commands.add('tab', { prevSubject: 'optional' }, ($subject, direction = 'forward', options = {}) => {
-  const thenable = $subject
-    ? cy.wrap($subject, { log: false })
-    : cy.focused({ log: options.log !== false });
+  const thenable = $subject ? cy.wrap($subject, { log: false }) : cy.focused({ log: options.log !== false });
+
   thenable
     .then($el => nextTabbable($el, direction))
-    .then(($el) => {
+    .then($el => {
       if (options.log !== false) {
         Cypress.log({
           $el,
@@ -60,7 +60,7 @@ Cypress.Commands.add('tab', { prevSubject: 'optional' }, ($subject, direction = 
 Cypress.Commands.add('active', (options = {}) => {
   cy.document({ log: false })
     .then(document => cy.wrap(document.activeElement, { log: false }))
-    .then(($el) => {
+    .then($el => {
       if (options.log !== false) {
         Cypress.log({
           $el,

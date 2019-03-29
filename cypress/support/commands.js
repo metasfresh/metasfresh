@@ -513,6 +513,12 @@ Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   });
 });
 
+function executeHeaderAction(actionName) {
+  cy.get('.header-container .btn-square .meta-icon-more').click();
+  cy.get('.subheader-container').should('exist');
+  cy.get(`#headerAction_${actionName}`).click();
+}
+
 Cypress.Commands.add('executeHeaderAction', actionName => {
   describe('Fire header action with a certain name', function() {
     executeHeaderAction(actionName);
