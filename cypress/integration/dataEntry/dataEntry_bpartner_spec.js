@@ -12,20 +12,20 @@ describe('Create bpartner with custom dataentry based tabs', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const dataEntryGroupName = `Group1 ${timestamp}`;
 
-    const dataEntrySubGroup1Name = 'SubGroup1-1';
+    const dataEntrySubGroup1Name = `SubGroup1-1 ${timestamp}`;
     const dataEntrySection1Name = `Section1-1 ${timestamp}`;
     const dataEntrySection2Name = `Section1-2 ${timestamp}`;
 
     new DataEntryGroup(dataEntryGroupName, 'Business Partner')
       .setTabName('Group1-Tab1')
-      // .setSeqNo(20)
+      //.setSeqNo(20)
       .setDescription(`Description of ${dataEntryGroupName}`)
       //.setActive(false) // you can set it to inactive, but then no subgroups can be added
       .addDataEntrySubGroup(
         new DataEntrySubGroup(dataEntrySubGroup1Name)
           .setTabName('Group1-Tab1-SubTab1')
           .setDescription(`${dataEntrySubGroup1Name} - Description`)
-        // .setSeqNo('10')
+          //.setSeqNo('10')
       )
       .apply();
 
@@ -33,22 +33,22 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDescription(
         'Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!'
       )
-      .setSeqNo(15)
+      //.setSeqNo(15)
       .addDataEntryLine(
-        new DataEntryLine.builder()
+        new DataEntryLine()
         // .setSeqNo('10')
       )
       .addDataEntryLine(
-        new DataEntryLine.builder()
+        new DataEntryLine()
         // .setSeqNo('20')
       )
       .addDataEntryLine(
-        new DataEntryLine.builder()
+        new DataEntryLine()
         // .setSeqNo('30')
       )
       .apply();
 
-    const section1FieldBuilder = new DataEntryField.builder(
+    const section1FieldBuilder = new DataEntryField(
       'Tab1-Section1-Line1-Field1',
       `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`
     )
@@ -56,7 +56,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setMandatory(true)
       .setDataEntryRecordType('Yes-No')
       .setPersonalDataCategory('Personal');
-    // .setSeqNo('10');
+      // .setSeqNo('10');
 
     section1FieldBuilder.apply();
     section1FieldBuilder

@@ -1,12 +1,49 @@
 export class BPartner {
-  constructor(builder) {
-    this.name = builder.name;
-    this.isVendor = builder.isVendor;
-    this.vendorPricingSystem = builder.vendorPricingSystem;
-    this.vendorDiscountSchema = builder.vendorDiscountSchema;
-    this.isCustomer = builder.isCustomer;
-    this.locations = builder.bPartnerLocations;
-    this.contacts = builder.contacts;
+  constructor(name) {
+    cy.log(`BPartner - set name = ${name}`);
+    this.name = name;
+    this.isVendor = false;
+    this.vendorPricingSystem = undefined;
+    this.vendorDiscountSchema = undefined;
+    this.isCustomer = false;
+    this.bPartnerLocations = [];
+    this.contacts = [];
+  }
+
+  setVendor(isVendor) {
+    cy.log(`BPartner - set isVendor = ${isVendor}`);
+    this.isVendor = isVendor;
+    return this;
+  }
+
+  setVendorPricingSystem(vendorPricingSystem) {
+    cy.log(`BPartner - set vendorPricingSystem = ${vendorPricingSystem}`);
+    this.vendorPricingSystem = vendorPricingSystem;
+    return this;
+  }
+
+  setVendorDiscountSchema(vendorDiscountSchema) {
+    cy.log(`BPartner - set vendorDiscountSchema = ${vendorDiscountSchema}`);
+    this.vendorDiscountSchema = vendorDiscountSchema;
+    return this;
+  }
+
+  setCustomer(isCustomer) {
+    cy.log(`BPartner - set isCustomer = ${isCustomer}`);
+    this.isCustomer = isCustomer;
+    return this;
+  }
+
+  addLocation(bPartnerLocation) {
+    cy.log(`BPartner - add location = ${JSON.stringify(bPartnerLocation)}`);
+    this.bPartnerLocations.push(bPartnerLocation);
+    return this;
+  }
+
+  addContact(contact) {
+    cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
+    this.contacts.push(contact);
+    return this;
   }
 
   apply() {
@@ -15,134 +52,48 @@ export class BPartner {
     cy.log(`BPartner - apply - END (name=${this.name})`);
     return this;
   }
-
-  static get builder() {
-    class Builder {
-      constructor(name) {
-        cy.log(`BPartnerBuilder - set name = ${name}`);
-        this.name = name;
-        this.isVendor = false;
-        this.vendorPricingSystem = undefined;
-        this.vendorDiscountSchema = undefined;
-        this.isCustomer = false;
-        this.bPartnerLocations = [];
-        this.contacts = [];
-      }
-
-      setVendor(isVendor) {
-        cy.log(`BPartnerBuilder - set isVendor = ${isVendor}`);
-        this.isVendor = isVendor;
-        return this;
-      }
-
-      setVendorPricingSystem(vendorPricingSystem) {
-        cy.log(`BPartnerBuilder - set vendorPricingSystem = ${vendorPricingSystem}`);
-        this.vendorPricingSystem = vendorPricingSystem;
-        return this;
-      }
-
-      setVendorDiscountSchema(vendorDiscountSchema) {
-        cy.log(`BPartnerBuilder - set vendorDiscountSchema = ${vendorDiscountSchema}`);
-        this.vendorDiscountSchema = vendorDiscountSchema;
-        return this;
-      }
-
-      setCustomer(isCustomer) {
-        cy.log(`BPartnerBuilder - set isCustomer = ${isCustomer}`);
-        this.isCustomer = isCustomer;
-        return this;
-      }
-
-      addLocation(bPartnerLocation) {
-        cy.log(`BPartnerBuilder - add location = ${JSON.stringify(bPartnerLocation)}`);
-        this.bPartnerLocations.push(bPartnerLocation);
-        return this;
-      }
-
-      addContact(contact) {
-        cy.log(`BPartnerBuilder - add contact = ${JSON.stringify(contact)}`);
-        this.contacts.push(contact);
-        return this;
-      }
-
-      build() {
-        return new BPartner(this);
-      }
-    }
-    return Builder;
-  }
 }
 
 export class BPartnerLocation {
-  constructor(builder) {
-    this.name = builder.name;
-    this.city = builder.city;
-    this.country = builder.country;
+  constructor(name) {
+    cy.log(`BPartnerLocation - set name = ${name}`);
+    this.name = name;
   }
 
-  static get builder() {
-    class Builder {
-      constructor(name) {
-        cy.log(`BPartnerLocationBuilder - set name = ${name}`);
-        this.name = name;
-      }
+  setCity(city) {
+    cy.log(`BPartnerLocation - set city = ${city}`);
+    this.city = city;
+    return this;
+  }
 
-      setCity(city) {
-        cy.log(`BPartnerLocationBuilder - set city = ${city}`);
-        this.city = city;
-        return this;
-      }
-
-      setCountry(country) {
-        cy.log(`BPartnerLocationBuilder - set country = ${country}`);
-        this.country = country;
-        return this;
-      }
-
-      build() {
-        return new BPartnerLocation(this);
-      }
-    }
-    return Builder;
+  setCountry(country) {
+    cy.log(`BPartnerLocation - set country = ${country}`);
+    this.country = country;
+    return this;
   }
 }
 
 export class BPartnerContact {
-  constructor(builder) {
-    this.firstName = builder.firstName;
-    this.lastName = builder.lastName;
-    this.isDefaultContact = builder.isDefaultContact;
+  constructor() {
+    this.isDefaultContact = false;
   }
 
-  static get builder() {
-    class Builder {
-      constructor() {
-        this.isDefaultContact = false;
-      }
+  setFirstName(firstName) {
+    cy.log(`BPartnerContact - set firstName = ${firstName}`);
+    this.firstName = firstName;
+    return this;
+  }
 
-      setFirstName(firstName) {
-        cy.log(`BPartnerContactBuilder - set firstName = ${firstName}`);
-        this.firstName = firstName;
-        return this;
-      }
+  setLastName(lastName) {
+    cy.log(`BPartnerContact - set lastName = ${lastName}`);
+    this.lastName = lastName;
+    return this;
+  }
 
-      setLastName(lastName) {
-        cy.log(`BPartnerContactBuilder - set lastName = ${lastName}`);
-        this.lastName = lastName;
-        return this;
-      }
-
-      setDefaultContact(isDefaultContact) {
-        cy.log(`BPartnerContactBuilder - set defaultContact = ${isDefaultContact}`);
-        this.isDefaultContact = isDefaultContact;
-        return this;
-      }
-
-      build() {
-        return new BPartnerContact(this);
-      }
-    }
-    return Builder;
+  setDefaultContact(isDefaultContact) {
+    cy.log(`BPartnerContact - set defaultContact = ${isDefaultContact}`);
+    this.isDefaultContact = isDefaultContact;
+    return this;
   }
 }
 
@@ -179,11 +130,11 @@ function applyBPartner(bPartner) {
     }
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-    if (bPartner.locations.length > 0) {
-      bPartner.locations.forEach(function(bPartnerLocation) {
+    if (bPartner.bPartnerLocations.length > 0) {
+      bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
-      cy.get('table tbody tr').should('have.length', bPartner.locations.length);
+      cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
       bPartner.contacts.forEach(function(bPartnerContact) {
