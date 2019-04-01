@@ -147,7 +147,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		// First line to import or this line does NOT have the same BP value
 		// => create a new BPartner or update the existing one
 		final boolean firstImportRecordOrNewBPartner = previousImportRecord == null || !Objects.equals(importRecord.getBPValue(), previousBPValue);
-		if (firstImportRecordOrNewBPartner)
+		if (firstImportRecordOrNewBPartner || isInsertOnly)
 		{
 			// create a new list because we are passing to a new partner
 			context.clearPreviousRecordsForSameBP();
