@@ -46,8 +46,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
-	I_C_BPartner_Product getById(int bpartnerProductId);
-
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor
 	 *
@@ -95,8 +93,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
-
-	Optional<I_C_BPartner_Product> retrieveDefaultVendor(ProductId productId, OrgId orgId);
 
 	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
 

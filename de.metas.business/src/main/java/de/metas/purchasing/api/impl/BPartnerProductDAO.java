@@ -3,8 +3,6 @@
  */
 package de.metas.purchasing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -71,12 +69,6 @@ import lombok.NonNull;
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
-	@Override
-	public I_C_BPartner_Product getById(final int bpartnerProductId)
-	{
-		return loadOutOfTrx(bpartnerProductId, I_C_BPartner_Product.class);
-	}
-
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(
 			final Properties ctx,
@@ -151,17 +143,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID())));
 	}
 
-	@Override
-	public Optional<I_C_BPartner_Product> retrieveDefaultVendor(final ProductId productId, final OrgId orgId)
-	{
-		return retrieveAllVendorsQuery(productId, orgId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_IsCurrentVendor, true)
-				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
-				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
-				.create()
-				.firstOptional(I_C_BPartner_Product.class);
-	}
-
 	private IQueryBuilder<I_C_BPartner_Product> retrieveAllVendorsQuery(final ProductId productId, final OrgId orgId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -233,7 +214,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				productId,
 				orgId,
 				trxName);
-
 
 		return bPartnerProductAssociationsQueryBuilder
 				.create()
