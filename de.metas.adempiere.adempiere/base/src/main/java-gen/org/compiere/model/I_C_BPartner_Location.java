@@ -40,31 +40,6 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Adresse.
-	 * Anschrift
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAddress (java.lang.String Address);
-
-	/**
-	 * Get Adresse.
-	 * Anschrift
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAddress();
-
-    /** Column definition for Address */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Address", null);
-    /** Column name Address */
-    public static final String COLUMNNAME_Address = "Address";
-
-	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -92,6 +67,31 @@ public interface I_C_BPartner_Location
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Org>(I_C_BPartner_Location.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Adresse.
+	 * Anschrift
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAddress (java.lang.String Address);
+
+	/**
+	 * Get Adresse.
+	 * Anschrift
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAddress();
+
+    /** Column definition for Address */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Address", null);
+    /** Column name Address */
+    public static final String COLUMNNAME_Address = "Address";
 
 	/**
 	 * Set Geschäftspartner.
@@ -177,6 +177,35 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
+	 * Set Vertriebsgebiet.
+	 * Sales coverage region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_SalesRegion_ID (int C_SalesRegion_ID);
+
+	/**
+	 * Get Vertriebsgebiet.
+	 * Sales coverage region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_SalesRegion_ID();
+
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion();
+
+	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion);
+
+    /** Column definition for C_SalesRegion_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion>(I_C_BPartner_Location.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
+    /** Column name C_SalesRegion_ID */
+    public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -207,33 +236,54 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Vertriebsgebiet.
-	 * Sales coverage region
+	 * Set eMail.
+	 * EMail-Adresse
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_SalesRegion_ID (int C_SalesRegion_ID);
+	public void setEMail (java.lang.String EMail);
 
 	/**
-	 * Get Vertriebsgebiet.
-	 * Sales coverage region
+	 * Get eMail.
+	 * EMail-Adresse
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_SalesRegion_ID();
+	public java.lang.String getEMail();
 
-	public org.compiere.model.I_C_SalesRegion getC_SalesRegion();
+    /** Column definition for EMail */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "EMail", null);
+    /** Column name EMail */
+    public static final String COLUMNNAME_EMail = "EMail";
 
-	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion);
+	/**
+	 * Set Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEMail2 (java.lang.String EMail2);
 
-    /** Column definition for C_SalesRegion_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion>(I_C_BPartner_Location.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
-    /** Column name C_SalesRegion_ID */
-    public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+	/**
+	 * Get Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEMail2();
+
+    /** Column definition for EMail2 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail2 = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "EMail2", null);
+    /** Column name EMail2 */
+    public static final String COLUMNNAME_EMail2 = "EMail2";
 
 	/**
 	 * Set External ID.
@@ -282,6 +332,31 @@ public interface I_C_BPartner_Location
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Fax = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Fax", null);
     /** Column name Fax */
     public static final String COLUMNNAME_Fax = "Fax";
+
+	/**
+	 * Set Alternative Fax.
+	 * Faxnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFax2 (java.lang.String Fax2);
+
+	/**
+	 * Get Alternative Fax.
+	 * Faxnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFax2();
+
+    /** Column definition for Fax2 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Fax2 = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Fax2", null);
+    /** Column name Fax2 */
+    public static final String COLUMNNAME_Fax2 = "Fax2";
 
 	/**
 	 * Set GLN.
@@ -623,7 +698,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -633,7 +707,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

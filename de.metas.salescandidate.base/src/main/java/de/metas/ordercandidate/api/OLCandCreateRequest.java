@@ -14,7 +14,6 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -112,7 +111,7 @@ public class OLCandCreateRequest
 			final CurrencyId currencyId,
 			final Percent discount)
 	{
-		Check.assume(qty.signum() > 0, "qty > 0");
+		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
 		this.externalLineId = externalLineId;
 		this.externalHeaderId = externalHeaderId;
