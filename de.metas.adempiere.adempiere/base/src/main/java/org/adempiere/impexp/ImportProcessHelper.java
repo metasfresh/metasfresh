@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +17,10 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.logging.LogManager;
+import groovy.transform.Immutable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -57,22 +61,18 @@ public class ImportProcessHelper
 
 	final public List<String> fetchImportBeforeCompleteFunctions(@NonNull final String tableName)
 	{
-		final StringBuilder pattern = new StringBuilder()
-				.append(tableName)
-				.append("_")
-				.append(IMPORT_BEFORE_COMPLETE)
-				.append("_");
-		return fetchImportFunctions(pattern.toString());
+		return fetchImportFunctions(tableName)
+				.stream()
+				.filter(function -> function.contains(IMPORT_BEFORE_COMPLETE))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	final public List<String> fetchImportAfterRowFunctions(@NonNull final String tableName)
 	{
-		final StringBuilder pattern = new StringBuilder()
-				.append(tableName)
-				.append("_")
-				.append(IMPORT_AFTER_ROW)
-				.append("_");
-		return fetchImportFunctions(pattern.toString());
+		return fetchImportFunctions(tableName)
+				.stream()
+				.filter(function -> function.contains(IMPORT_AFTER_ROW))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<String> fetchImportFunctions(@NonNull final String pattern)
@@ -99,7 +99,15 @@ public class ImportProcessHelper
 			throw new DBException(e, sql.toString());
 		}
 
-		return functions;
+		return functions.stream()
+				.peek(function -> {
+					if (!(function.contains(IMPORT_AFTER_ROW) || function.contains(IMPORT_BEFORE_COMPLETE)))
+					{
+						log.warn("Function {} does not contain {}, neither {}.", function, IMPORT_AFTER_ROW, IMPORT_BEFORE_COMPLETE);
+					}
+				})
+				.filter(function -> function.contains(IMPORT_AFTER_ROW) || function.contains(IMPORT_BEFORE_COMPLETE))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Value
