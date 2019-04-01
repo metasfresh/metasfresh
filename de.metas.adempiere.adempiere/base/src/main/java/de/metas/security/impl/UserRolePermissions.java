@@ -42,8 +42,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_PInstance_Log;
-import org.compiere.model.I_AD_Private_Access;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -66,8 +64,6 @@ import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
-import de.metas.security.impl.ParsedSql.SqlSelect;
-import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.Constraints;
@@ -101,14 +97,20 @@ class UserRolePermissions implements IUserRolePermissions
 	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
 
 	/** Permissions name (i.e. role name) */
+	@Getter
 	private final String name;
+	@Getter
 	private final RoleId roleId;
 	@Getter(AccessLevel.PACKAGE)
 	private final UserRolePermissionsIncludesList includes;
-	private final ImmutableSet<RoleId> addRoleIds;
+	@Getter
+	private final ImmutableSet<RoleId> allRoleIds;
 	/** User */
+	@Getter
 	private final UserId userId;
+	@Getter
 	private final ClientId clientId;
+	@Getter
 	private final TableAccessLevel userLevel;
 
 	/** Positive List of Organizational Access */
@@ -160,7 +162,7 @@ class UserRolePermissions implements IUserRolePermissions
 		name = builder.getName();
 		roleId = builder.getRoleId();
 		includes = builder.getUserRolePermissionsIncluded();
-		addRoleIds = ImmutableSet.copyOf(includes.getAllRoleIdsIncluding(roleId));
+		allRoleIds = ImmutableSet.copyOf(includes.getAllRoleIdsIncluding(roleId));
 		userId = builder.getUserId();
 
 		clientId = builder.getClientId();
@@ -219,33 +221,9 @@ class UserRolePermissions implements IUserRolePermissions
 		return sb.toString();
 	}
 
-	@Override
-	public String getName()
-	{
-		return name;
-	}
-
-	@Override
-	public RoleId getRoleId()
-	{
-		return roleId;
-	}
-
-	@Override
-	public Set<RoleId> getAllRoleIds()
-	{
-		return addRoleIds;
-	}
-
-	private boolean isAccessAllOrgs()
+	boolean isAccessAllOrgs()
 	{
 		return hasPermission(PERMISSION_AccessAllOrgs);
-	}
-
-	@Override
-	public ClientId getClientId()
-	{
-		return clientId;
 	}
 
 	@Override
@@ -280,13 +258,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return constraints.getConstraint(constraintType);
 	}
 
-	@Override
-	public TableAccessLevel getUserLevel()
-	{
-		return userLevel;
-	}
-
-	private boolean isPersonalAccess()
+	boolean isPersonalAccess()
 	{
 		return hasPermission(PERMISSION_PersonalAccess);
 	}
@@ -296,12 +268,6 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return getConstraint(UserPreferenceLevelConstraint.class)
 				.or(UserPreferenceLevelConstraint.NONE);
-	}
-
-	@Override
-	public UserId getUserId()
-	{
-		return userId;
 	}
 
 	@Override
@@ -731,152 +697,10 @@ class UserRolePermissions implements IUserRolePermissions
 			final boolean fullyQualified,
 			final Access access)
 	{
-		// Cut off last ORDER BY clause
-
-		// contains "SELECT .. FROM .. WHERE .." without ORDER BY
-		final String sqlSelectFromWhere;
-
-		final String sqlOrderByAndOthers;
-		final int idxOrderBy = sql.lastIndexOf(" ORDER BY ");
-		if (idxOrderBy >= 0)
-		{
-			sqlSelectFromWhere = sql.substring(0, idxOrderBy);
-			sqlOrderByAndOthers = "\n" + sql.substring(idxOrderBy);
-		}
-		else
-		{
-			sqlSelectFromWhere = sql;
-			sqlOrderByAndOthers = null;
-		}
-
-		final String sqlAccessSqlWhereClause = buildAccessSQL(sqlSelectFromWhere, tableNameIn, fullyQualified, access);
-		if (Check.isEmpty(sqlAccessSqlWhereClause, true))
-		{
-			logger.trace("Final SQL (no access sql applied): {}", sql);
-			return sql;
-		}
-
-		final String sqlFinal;
-		if (sqlOrderByAndOthers == null)
-		{
-			sqlFinal = sqlSelectFromWhere + " " + sqlAccessSqlWhereClause;
-		}
-		else
-		{
-			sqlFinal = sqlSelectFromWhere + " " + sqlAccessSqlWhereClause + sqlOrderByAndOthers;
-		}
-
-		logger.trace("Final SQL: {}", sqlFinal);
-		return sqlFinal;
-	}	// addAccessSQL
-
-	private final String buildAccessSQL(
-			final String sqlSelectFromWhere,
-			final String tableNameIn,
-			final boolean fullyQualified,
-			final Access access)
-	{
-		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
-
-		// Parse SQL
-		final ParsedSql parsedSql = ParsedSql.parse(sqlSelectFromWhere);
-		final SqlSelect mainSqlSelect = parsedSql.getMainSqlSelect();
-
-		// Do we have to add WHERE or AND
-		if (!mainSqlSelect.hasWhereClause())
-		{
-			sqlAcessSqlWhereClause.append(" WHERE ");
-		}
-		else
-		{
-			sqlAcessSqlWhereClause.append(" AND ");
-		}
-
-		String mainTableName = mainSqlSelect.getFirstTableAliasOrTableName();
-		if (!mainTableName.equals(tableNameIn))
-		{
-			logger.warn("First tableName/alias is not matching TableNameIn={}. Considering the TableNameIn. \nmainSqlSelect: {}", tableNameIn, mainSqlSelect);
-			mainTableName = tableNameIn;
-		}
-
-		if (!I_AD_PInstance_Log.Table_Name.equals(mainTableName))
-		{
-			// Client Access
-			final String tableAlias = fullyQualified ? mainTableName : null;
-			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
-			sqlAcessSqlWhereClause.append(getClientWhere(mainTableName, tableAlias, access));
-
-			// Org Access
-			if (!isAccessAllOrgs())
-			{
-				sqlAcessSqlWhereClause.append("\n /* security-org */ ");
-				sqlAcessSqlWhereClause.append(" AND ");
-				if (fullyQualified)
-				{
-					sqlAcessSqlWhereClause.append(mainTableName).append(".");
-				}
-				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
-			}
-		}
-		else
-		{
-			sqlAcessSqlWhereClause.append("\n /* no security */ 1=1");
-		}
-
-		// ** Data Access **
-		for (final TableNameAndAlias tableNameAndAlias : mainSqlSelect.getTableNameAndAliases())
-		{
-			final String tableName = tableNameAndAlias.getTableName();
-
-			// [ 1644310 ] Rev. 1292 hangs on start
-			if (tableName.toUpperCase().endsWith("_TRL"))
-			{
-				continue;
-			}
-			if (tablesAccessInfo.isView(tableName))
-			{
-				continue;
-			}
-
-			// Data Table Access
-			final int adTableId = tablesAccessInfo.getAD_Table_ID(tableName);
-			if (adTableId > 0 && !isTableAccess(adTableId, access))
-			{
-				sqlAcessSqlWhereClause.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
-				logger.debug("No access to AD_Table_ID={} - {} - {}", adTableId, tableName, sqlAcessSqlWhereClause);
-				break;	// no need to check further
-			}
-
-			//
-			final String keyColumnName = tablesAccessInfo.getIdColumnName(tableName);
-			if (keyColumnName == null)
-			{
-				continue;
-			}
-			//
-			final String keyColumnNameFQ;
-			if (fullyQualified)
-			{
-				keyColumnNameFQ = tableNameAndAlias.getAliasOrTableName() + "." + keyColumnName;
-			}
-			else
-			{
-				keyColumnNameFQ = keyColumnName;
-			}
-
-			final String recordWhere = getRecordWhere(adTableId, keyColumnNameFQ, access);
-			if (!recordWhere.isEmpty())
-			{
-				sqlAcessSqlWhereClause.append("\n /* security-record */ AND ").append(recordWhere);
-				logger.trace("Record access: {}", recordWhere);
-			}
-		} // for all tables
-
-		// Dependent Records (only for main SQL)
-		recordPermissions.addRecordDependentAccessSql(sqlAcessSqlWhereClause, mainSqlSelect, mainTableName, access);
-
-		return sqlAcessSqlWhereClause.toString();
+		return new UserRolePermissionsSqlHelpers(this)
+				.addAccessSQL(sql, tableNameIn, fullyQualified, access);
 	}
+
 
 	/**
 	 * VIEW - Can I view record in Table with given TableLevel. <code>
@@ -1032,34 +856,6 @@ class UserRolePermissions implements IUserRolePermissions
 		return null; // OK
 	}
 
-	/**
-	 * Return Where clause for Record Access
-	 *
-	 * @param adTableId table
-	 * @param keyColumnNameFQ (fully qualified) key column name
-	 * @param access required access
-	 * @return where clause or ""
-	 */
-	private String getRecordWhere(final int adTableId, final String keyColumnNameFQ, final Access access)
-	{
-		final StringBuilder sb = recordPermissions.getRecordWhere(adTableId, keyColumnNameFQ, access);
-
-		// Don't ignore Privacy Access
-		if (!isPersonalAccess())
-		{
-			final String lockedIds = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
-					+ " WHERE AD_Table_ID = " + adTableId
-					+ " AND AD_User_ID <> " + UserId.toRepoId(getUserId())
-					+ " AND IsActive = 'Y' )";
-			if (sb.length() > 0)
-			{
-				sb.append(" AND ");
-			}
-			sb.append(keyColumnNameFQ).append(lockedIds);
-		}
-		//
-		return sb.toString();
-	}	// getRecordWhere
 
 	/**
 	 * Show (Value) Preference Menu
@@ -1189,7 +985,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public String getIncludedRolesWhereClause(final String roleColumnSQL, final List<Object> params)
 	{
 		final StringBuilder whereClause = new StringBuilder();
-		for (final RoleId adRoleId : addRoleIds)
+		for (final RoleId adRoleId : allRoleIds)
 		{
 			if (whereClause.length() > 0)
 			{
