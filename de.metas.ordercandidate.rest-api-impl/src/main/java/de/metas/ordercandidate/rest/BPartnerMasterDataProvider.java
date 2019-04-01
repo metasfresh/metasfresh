@@ -31,9 +31,8 @@ import de.metas.adempiere.service.ILocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery.BPartnerQueryBuilder;
 import de.metas.cache.CCache;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
@@ -221,7 +220,7 @@ public class BPartnerMasterDataProvider
 
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
 
-		final BPartnerQueryBuilder query = BPartnerQuery.builder()
+		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
 				.orgId(context.getOrgId())
 				.includeAnyOrg(true)
 				.outOfTrx(syncAdvise.isLoadReadOnly())

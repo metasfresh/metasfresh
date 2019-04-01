@@ -79,6 +79,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.CCache;
