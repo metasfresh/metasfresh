@@ -87,7 +87,7 @@ public class ImportProcessHelper
 		final List<String> functions = new ArrayList<>();
 		try
 		{
-			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None); // i.e. out of transaction
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None); // out of transaction
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{

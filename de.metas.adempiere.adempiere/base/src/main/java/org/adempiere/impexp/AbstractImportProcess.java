@@ -421,7 +421,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		// nothing to do here
 	}
 	
-	private void runSQLAfterCompleteImport()
+	protected final void runSQLAfterCompleteImport()
 	{
 		final List<String> functions = ImportProcessHelper.fetchImportBeforeCompleteFunctions(getImportTableName());
 		final DBFunctionParams params = DBFunctionParams.builder()
@@ -430,7 +430,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		functions.forEach(function -> ImportProcessHelper.doDBFunctionCall(function, params, ITrx.TRXNAME_None));
 	}
 	
-	private void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord , @NonNull final String trxName)
+	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord , @NonNull final String trxName)
 	{
 		final List<String> functions = ImportProcessHelper.fetchImportAfterRowFunctions(getImportTableName());
 		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
