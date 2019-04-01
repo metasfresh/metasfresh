@@ -15,6 +15,7 @@ import com.google.common.collect.Range;
 
 import de.metas.cache.CCache;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -58,6 +59,11 @@ public class UserGroupRepository
 				.id(UserGroupId.ofRepoId(record.getAD_UserGroup_ID()))
 				.name(record.getName())
 				.build();
+	}
+
+	public Set<UserGroupId> getAssignedGroupIdsByUserId(@NonNull final UserId userId)
+	{
+		return getAssignedGroupIdsByUserId(userId, SystemTime.asInstant());
 	}
 
 	public Set<UserGroupId> getAssignedGroupIdsByUserId(@NonNull final UserId userId, @NonNull final Instant date)
