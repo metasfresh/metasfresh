@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.purchasing.api.impl;
+package de.metas.bpartner_product.impl;
 
 /*
  * #%L
@@ -51,14 +51,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.bpartner_product.ProductExclude;
+import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.purchasing.api.IBPartnerProductDAO;
-import de.metas.purchasing.api.ProductExclude;
-import de.metas.purchasing.api.ProductExclude.ProductExcludeBuilder;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;

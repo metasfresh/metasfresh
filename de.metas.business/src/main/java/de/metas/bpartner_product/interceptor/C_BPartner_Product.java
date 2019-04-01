@@ -1,4 +1,4 @@
-package de.metas.purchasing.model.interceptor;
+package de.metas.bpartner_product.interceptor;
 
 import java.util.List;
 
@@ -16,10 +16,10 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
 
 /*
@@ -45,7 +45,7 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_BPartner_Product.class)
-@Component("de.metas.purchasing.model.interceptor.C_BPartner_Product")
+@Component("de.metas.bpartner_product.interceptor.C_BPartner_Product")
 public class C_BPartner_Product
 {
 	private final static String MSG_C_BPartner_Product_Duplicate_ASI = "C_BPartner_Product_Duplicate_ASI";

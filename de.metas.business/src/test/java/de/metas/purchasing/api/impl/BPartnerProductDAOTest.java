@@ -18,8 +18,8 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
 
 /*

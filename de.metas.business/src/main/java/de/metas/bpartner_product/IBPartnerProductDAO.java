@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.purchasing.api;
+package de.metas.bpartner_product;
 
 /*
  * #%L

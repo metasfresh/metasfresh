@@ -46,13 +46,13 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
 
 /**
