@@ -20,8 +20,13 @@ describe('purchase - vendor spec', function() {
       .setVendorPricingSystem('Testpreisliste Lieferanten')
       .setVendorDiscountSchema(discountSchemaName)
       .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .addContact(new BPartnerContact.setFirstName('Default').setLastName('Contact').setDefaultContact(true))
-      .addContact(new BPartnerContact.setFirstName('Secondary').setLastName('Contact'))
+      .addContact(
+        new BPartnerContact()
+          .setFirstName('Default')
+          .setLastName('Contact')
+          .setDefaultContact(true)
+      )
+      .addContact(new BPartnerContact().setFirstName('Secondary').setLastName('Contact'))
       .apply();
 
     cy.log('Now going to verify all fields were set correctly');

@@ -25,7 +25,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
         new DataEntrySubGroup(dataEntrySubGroup1Name)
           .setTabName('Group1-Tab1-SubTab1')
           .setDescription(`${dataEntrySubGroup1Name} - Description`)
-          //.setSeqNo('10')
+        //.setSeqNo('10')
       )
       .apply();
 
@@ -56,7 +56,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setMandatory(true)
       .setDataEntryRecordType('Yes-No')
       .setPersonalDataCategory('Personal');
-      // .setSeqNo('10');
+    // .setSeqNo('10');
 
     section1FieldBuilder.apply();
     section1FieldBuilder

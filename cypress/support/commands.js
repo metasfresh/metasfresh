@@ -27,8 +27,6 @@
 // https://www.cypress.io/blog/2018/01/16/end-to-end-snapshot-testing/#End-to-end-snapshot-testing
 require('@cypress/snapshot').register();
 
-import uuid from 'uuid/v4';
-
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
 
@@ -238,7 +236,7 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listV
 
     const aliasName = `writeIntoLookupListField-${new Date().getTime()}`;
     //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
-    //const expectedPatchValue = removeSubstringsWithCurlyBrakets(partialValue);
+    const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
     cy.server();
@@ -246,8 +244,7 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listV
 
     cy.get('.input-dropdown-list').should('exist');
     cy.contains('.input-dropdown-list-option', listValue).click(/*{ force: true }*/);
-    cy.wait(`@${aliasName}`);
-    //cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
     cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
   });
 });
@@ -613,8 +610,14 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue)
       return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
     }
 
-    // TODO: take into account that expectedFieldValue might e.g. be an integer
     const actualFieldValue = fieldsByName[fieldName].value;
+    if (!isString(actualFieldValue)) {
+      cy.log(
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}'; the current response body's field has ${fieldName}=${actualFieldValue}; I don't know how do check if non-string values are correct; stop waiting`
+      );
+      return;
+    }
+
     if (actualFieldValue !== expectedFieldValue) {
       cy.log(
         `waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}', but the current response body's field has ${fieldName}=${actualFieldValue}; waiting once more`
@@ -622,4 +625,9 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue)
       return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
     }
   });
+
+  // Thx to https://stackoverflow.com/a/9436948/1012103
+  function isString(object) {
+    return typeof object === 'string' || object instanceof String;
+  }
 });
