@@ -73,7 +73,7 @@ import lombok.NonNull;
 	public int getAD_Tab_ID()
 	{
 		final Document document = getDocument();
-		return document.getEntityDescriptor().getAD_Tab_ID();
+		return document.getEntityDescriptor().getAdTabId().getRepoId();
 	}
 
 	@Override

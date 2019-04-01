@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +80,7 @@ import lombok.NonNull;
 public class PickingHURowsRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingHURowsRepository.class);
-	private final HUEditorViewRepository huEditorRepo;
+	private final ExtendedMemorizingSupplier<HUEditorViewRepository> huEditorRepoSupplier;
 	private final PickingCandidateRepository pickingCandidatesRepo;
 
 	@Autowired
@@ -88,7 +90,7 @@ public class PickingHURowsRepository
 			@NonNull final HUReservationService huReservationService)
 	{
 		this(
-				createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
+				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
 				pickingCandidatesRepo);
 	}
 
@@ -111,11 +113,16 @@ public class PickingHURowsRepository
 	 */
 	@VisibleForTesting
 	PickingHURowsRepository(
-			@NonNull final HUEditorViewRepository huEditorRepo,
+			@NonNull final Supplier<HUEditorViewRepository> huEditorRepoSupplier,
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo)
 	{
-		this.huEditorRepo = huEditorRepo;
+		this.huEditorRepoSupplier = ExtendedMemorizingSupplier.of(huEditorRepoSupplier);
 		this.pickingCandidatesRepo = pickingCandidatesRepo;
+	}
+
+	private HUEditorViewRepository getHUEditorViewRepository()
+	{
+		return huEditorRepoSupplier.get();
 	}
 
 	/**
@@ -126,6 +133,7 @@ public class PickingHURowsRepository
 	 */
 	public List<HUEditorRow> retrieveSourceHUs(@NonNull final PickingSlotRepoQuery query)
 	{
+		final HUEditorViewRepository huEditorRepo = getHUEditorViewRepository();
 		final MatchingSourceHusQuery matchingSourceHUsQuery = createMatchingSourceHusQuery(query);
 		final Set<HuId> sourceHUIds = SourceHUsService.get().retrieveMatchingSourceHUIds(matchingSourceHUsQuery);
 		return huEditorRepo.retrieveHUEditorRows(sourceHUIds, HUEditorRowFilter.ALL);
@@ -179,6 +187,8 @@ public class PickingHURowsRepository
 
 	private ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<PickingCandidate> pickingCandidates)
 	{
+		final HUEditorViewRepository huEditorRepo = getHUEditorViewRepository();
+
 		final Map<HuId, PickedHUEditorRow> huId2huRow = new HashMap<>();
 
 		final ImmutableListMultimap.Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
@@ -246,6 +256,7 @@ public class PickingHURowsRepository
 		final SetMultimap<PickingSlotId, HuId> //
 		huIdsByPickingSlotId = Services.get(IHUPickingSlotDAO.class).retrieveAllHUIdsIndexedByPickingSlotId(pickingSlots);
 
+		final HUEditorViewRepository huEditorRepo = getHUEditorViewRepository();
 		huEditorRepo.warmUp(ImmutableSet.copyOf(huIdsByPickingSlotId.values()));
 
 		return huIdsByPickingSlotId

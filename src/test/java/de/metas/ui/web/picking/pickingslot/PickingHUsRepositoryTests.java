@@ -163,7 +163,9 @@ public class PickingHUsRepositoryTests
 			huEditorViewRepository.addRow(huEditorRow);
 		}
 
-		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository, new PickingCandidateRepository());
+		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
+				() -> huEditorViewRepository,
+				new PickingCandidateRepository());
 		final ListMultimap<PickingSlotId, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(
 				PickingCandidatesQuery.builder()
 						.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
@@ -192,7 +194,9 @@ public class PickingHUsRepositoryTests
 	public void test_retrieveSourceHUs_empty_shipmentScheduleIds()
 	{
 		final HUEditorViewRepository huEditorViewRepository = new MockedHUEditorViewRepository();
-		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository, new PickingCandidateRepository());
+		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
+				() -> huEditorViewRepository,
+				new PickingCandidateRepository());
 		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(PickingSlotRepoQuery.builder().build());
 		assertThat(sourceHUs).isEmpty();
 	}
