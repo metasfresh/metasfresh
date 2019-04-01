@@ -29,4 +29,5 @@ public enum PharmaCustomerPermission
 	PHARMA_MANUFACTURER, //
 	PHARMA_WHOLESALE, //
 	VETERINARY_PHARMACY, //
+	PHARMA_NARCOTICS, //
 }
