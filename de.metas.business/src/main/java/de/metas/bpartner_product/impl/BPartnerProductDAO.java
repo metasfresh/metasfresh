@@ -59,6 +59,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -280,6 +281,33 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.create()
 				.setOrderBy(bppOrderBy)
 				.first(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByCustomerProductNo(
+			@NonNull final BPartnerId customerId,
+			@NonNull final String customerProductNo)
+	{
+		Check.assumeNotEmpty(customerProductNo, "customerProductNo shall not be empty");
+
+		final I_C_BPartner_Product record = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_ProductNo, customerProductNo)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_UsedForCustomer, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_C_BPartner_Product.class);
+
+		if (record == null)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+			return Optional.of(productId);
+		}
 	}
 
 	@Override

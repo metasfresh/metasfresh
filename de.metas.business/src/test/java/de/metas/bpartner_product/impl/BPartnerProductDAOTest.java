@@ -1,8 +1,11 @@
 package de.metas.bpartner_product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -49,30 +52,27 @@ public class BPartnerProductDAOTest
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private I_AD_Org org0;
-
-	private I_AD_Org org1;
-
-	private I_AD_Org org2;
-
+	private OrgId org0;
+	private OrgId org1;
+	private OrgId org2;
 	private I_C_BPartner partner1;
-
 	private I_M_Product product1;
-
 	private I_C_BPartner_Product bpProduct0;
-
 	private I_C_BPartner_Product bpProduct1;
+
+	private IBPartnerProductDAO bpartnerProductsRepo;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	}
 
 	@Test
 	public void BPartnerProductAssociation_Test()
 	{
-
 		createData();
 
 		test_BPartnerProductAssociation(bpProduct0, partner1, product1, org0);
@@ -104,78 +104,65 @@ public class BPartnerProductDAOTest
 		createData();
 
 		test_BPProductForCustomer(bpProduct0, partner1, product1, org0);
-
 		test_BPProductForCustomer(bpProduct1, partner1, product1, org1);
-
 		test_BPProductForCustomer(bpProduct0, partner1, product1, org2);
 	}
 
 	private void createData()
 	{
 		org0 = createOrg("Org0");
-
 		org1 = createOrg("Org1");
-
 		org2 = createOrg("Org3");
-
-		partner1 = createParnter("Partner1", org0);
-
+		partner1 = createPartner("Partner1", org0);
 		product1 = createProduct("Product1", org1);
-
-		bpProduct0 = createBPProduct(partner1, product1, 0);
-
-		bpProduct1 = createBPProduct(partner1, product1, org1.getAD_Org_ID());
+		bpProduct0 = createBPProduct(partner1, product1, OrgId.ANY);
+		bpProduct1 = createBPProduct(partner1, product1, org1);
 
 	}
 
-	private I_C_BPartner_Product createBPProduct(final I_C_BPartner partner, final I_M_Product product, final int adOrgID)
+	private I_C_BPartner_Product createBPProduct(
+			final I_C_BPartner partner,
+			final I_M_Product product,
+			final OrgId orgId)
 	{
-		final I_C_BPartner_Product bpProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		final I_C_BPartner_Product bpProduct = newInstance(I_C_BPartner_Product.class);
 
 		bpProduct.setC_BPartner(partner);
 		bpProduct.setM_Product(product);
-		bpProduct.setAD_Org_ID(adOrgID);
+		bpProduct.setAD_Org_ID(orgId.getRepoId());
 		bpProduct.setUsedForVendor(true);
 
 		bpProduct.setUsedForCustomer(true);
 		bpProduct.setC_BPartner_Vendor(partner);
 
-		InterfaceWrapperHelper.save(bpProduct);
+		saveRecord(bpProduct);
 
 		return bpProduct;
 	}
 
-	private I_AD_Org createOrg(final String name)
+	private OrgId createOrg(final String name)
 	{
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-
+		final I_AD_Org org = newInstance(I_AD_Org.class);
 		org.setName(name);
-		InterfaceWrapperHelper.save(org);
-
-		return org;
+		saveRecord(org);
+		return OrgId.ofRepoId(org.getAD_Org_ID());
 	}
 
-	private I_C_BPartner createParnter(final String name, final I_AD_Org org)
+	private I_C_BPartner createPartner(final String name, final OrgId orgId)
 	{
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setName(name);
-		partner.setAD_Org(org);
-
-		InterfaceWrapperHelper.save(partner);
-
+		partner.setAD_Org_ID(orgId.getRepoId());
+		saveRecord(partner);
 		return partner;
 	}
 
-	private I_M_Product createProduct(final String name, final I_AD_Org org)
+	private I_M_Product createProduct(final String name, final OrgId orgId)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-
+		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setName(name);
-		product.setAD_Org(org);
-
-		InterfaceWrapperHelper.save(product);
-
+		product.setAD_Org_ID(orgId.getRepoId());
+		saveRecord(product);
 		return product;
 	}
 
@@ -183,16 +170,15 @@ public class BPartnerProductDAOTest
 			// input :
 			final I_C_BPartner partnerInput,
 			final I_M_Product productInput,
-			final I_AD_Org orgInput)
+			final OrgId orgId)
 	{
 
-		final OrgId orgId = OrgId.ofRepoId(orgInput.getAD_Org_ID());
-		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partnerInput, productInput, orgId);
+		final I_C_BPartner_Product bpProductActual = bpartnerProductsRepo.retrieveBPartnerProductAssociation(partnerInput, productInput, orgId);
 
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()
 				+ "\n Product " + productInput.getName()
-				+ "\n Org " + orgInput.getName();
+				+ "\n Org " + orgId;
 
 		Assert.assertEquals(errmsg, bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID());
 	}
@@ -201,18 +187,18 @@ public class BPartnerProductDAOTest
 			// input :
 			final I_C_BPartner partnerInput,
 			final I_M_Product productInput,
-			final I_AD_Org orgInput)
+			final OrgId orgId)
 	{
-		final List<I_C_BPartner_Product> bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(
+		final List<I_C_BPartner_Product> bpProductActual = bpartnerProductsRepo.retrieveBPartnerForProduct(
 				Env.getCtx(),
 				BPartnerId.ofRepoId(partnerInput.getC_BPartner_ID()),
 				ProductId.ofRepoId(productInput.getM_Product_ID()),
-				OrgId.ofRepoId(orgInput.getAD_Org_ID()));
+				orgId);
 
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()
 				+ "\n Product " + productInput.getName()
-				+ "\n Org " + orgInput.getName();
+				+ "\n Org " + orgId;
 
 		Assert.assertTrue(errmsg, bpProductActual.contains(bpProductexpected));
 	}
@@ -221,12 +207,9 @@ public class BPartnerProductDAOTest
 			// input :
 			final I_C_BPartner partnerInput,
 			final I_M_Product productInput,
-			final I_AD_Org orgInput)
+			final OrgId orgId)
 	{
-
-		final OrgId orgId = OrgId.ofRepoId(orgInput.getAD_Org_ID());
-
-		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPProductForCustomer(
+		final I_C_BPartner_Product bpProductActual = bpartnerProductsRepo.retrieveBPProductForCustomer(
 				partnerInput,
 				productInput,
 				orgId);
@@ -234,10 +217,32 @@ public class BPartnerProductDAOTest
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()
 				+ "\n Product " + productInput.getName()
-				+ "\n Org " + orgInput.getName();
+				+ "\n Org " + orgId;
 
 		Assert.assertEquals(errmsg, bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID());
 
 	}
 
+	@Test
+	public void test_getProductIdByCustomerProductNo()
+	{
+		final I_C_BPartner partnerRecord = createPartner("Partner1", OrgId.ANY);
+		final BPartnerId partnerId = BPartnerId.ofRepoId(partnerRecord.getC_BPartner_ID());
+
+		final I_M_Product productRecord = createProduct("Product1", OrgId.ANY);
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+
+		final I_C_BPartner_Product record = newInstance(I_C_BPartner_Product.class);
+		record.setC_BPartner_ID(partnerId.getRepoId());
+		record.setM_Product_ID(productId.getRepoId());
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setUsedForCustomer(true);
+		record.setProductNo("customerProductNo");
+		saveRecord(record);
+
+		assertThat(bpartnerProductsRepo.getProductIdByCustomerProductNo(partnerId, "dummy")).isNotPresent();
+
+		assertThat(bpartnerProductsRepo.getProductIdByCustomerProductNo(partnerId, "customerProductNo").orElse(null))
+				.isEqualTo(productId);
+	}
 }
