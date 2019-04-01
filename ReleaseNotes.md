@@ -13,7 +13,37 @@ Here come the actual release notes:
 # metasfresh 5.98
 ## Features
 * metasfresh 
+  * [#4895](https://github.com/metasfresh/metasfresh/issues/4895) Support Automatic Numbering on Purchase Requisition
+  * [#4951](https://github.com/metasfresh/metasfresh/issues/4951) Phonecall Planning and Execution
+  * [#5040](https://github.com/metasfresh/metasfresh/issues/5040) Accounting for Payment Allocation and Vendor Credit Memo wrong
   * [#5070](https://github.com/metasfresh/metasfresh/issues/5070) Discount Schema Lines in separate window
+  * [#5072](https://github.com/metasfresh/metasfresh/issues/5072) Support forum-datenaustausch.ch XML invoice cancelation-response
+  * [#5081](https://github.com/metasfresh/metasfresh/issues/5081) Product prices window: don't sort it because on huge amount of data this is a performance issue
+  * [#5089](https://github.com/metasfresh/metasfresh/issues/5089) XML import/export for Kanton 
+
+* metasfresh-webui-api
+  * [#1178](https://github.com/metasfresh/metasfresh-webui-api/issues/1178) view: kick out a row if is no longer matching the filters
+
+* metasfresh-webui-frontend
+  * [#2221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2221) Display time fields with no seconds in gridview
+  * [#2224](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2224) View: after calling getByIds, frontend shall remove the rows which are no longer in the result
+
+* metasfresh-edi
+  * [#1](https://github.com/metasfresh/metasfresh-edi/issues/1) Modernize and update EDI ESB camel
+
+# Fixes
+* metasfresh
+  * [#5079](https://github.com/metasfresh/metasfresh/issues/5079) Error while posting purchase invoices because of charge even though charge is not used
+  * [#5084](https://github.com/metasfresh/metasfresh/issues/5084) Error while posting cost collector
+  * [#5086](https://github.com/metasfresh/metasfresh/issues/5086) Error logging in to webui when there is no default warehouse
+  * [#5092](https://github.com/metasfresh/metasfresh/issues/5092) Fix wrong avg PO cost on material receipt and match invoice in case we have a different price UOM
+  * [#5093](https://github.com/metasfresh/metasfresh/issues/5053) Log related NPE on metasfresh startup
+
+* metasfresh-webui-api
+  * [#1180](https://github.com/metasfresh/metasfresh-webui-api/issues/1180) Webui server shall start even if something in picking terminal code fails
+
+* metasfresh-webui-frontend
+  * [#2230](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2230) Refresh filtered list
 
 # metasfresh 5.97
 ## Features
