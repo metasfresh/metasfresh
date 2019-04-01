@@ -216,8 +216,9 @@ export class DocumentList extends Component {
     }
   }
 
-  connectWebSocket = viewId => {
+  connectWebSocket = () => {
     const { windowType, dispatch } = this.props;
+    const { viewId } = this.state;
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
@@ -225,7 +226,11 @@ export class DocumentList extends Component {
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
-            const { data, pageColumnInfosByFieldName } = this.state;
+            const {
+              data,
+              pageColumnInfosByFieldName,
+              filtersActive,
+            } = this.state;
             const toRows = data.result;
 
             const { rows, removedRows } = mergeRows({
@@ -239,6 +244,10 @@ export class DocumentList extends Component {
             if (removedRows.length) {
               dispatch(deselectTableItems(removedRows, windowType, viewId));
             } else {
+              if (filtersActive.size) {
+                this.filterView();
+              }
+
               // force updating actions
               this.updateQuickActions();
             }
