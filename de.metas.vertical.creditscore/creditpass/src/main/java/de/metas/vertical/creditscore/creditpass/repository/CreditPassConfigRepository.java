@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.cache.CCache;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.*;
@@ -53,6 +54,7 @@ public class CreditPassConfigRepository
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_CP_Fallback.Table_Name)
+			.additionalTableNameToResetFor(I_CS_Transaction_Result.Table_Name)
 			.additionalTableNameToResetFor(I_C_Order.Table_Name)
 			.build();
 
