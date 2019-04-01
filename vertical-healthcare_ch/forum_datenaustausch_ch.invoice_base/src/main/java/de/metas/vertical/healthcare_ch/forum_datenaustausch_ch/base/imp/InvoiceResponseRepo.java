@@ -16,6 +16,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -93,7 +94,7 @@ public class InvoiceResponseRepo
 				.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, documentNo)
 				.addEqualsFilter(I_C_Invoice.COLUMN_Created, created)
 				.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.firstOnly(I_C_Invoice.class);
 
 		if (invoiceRecord != null)

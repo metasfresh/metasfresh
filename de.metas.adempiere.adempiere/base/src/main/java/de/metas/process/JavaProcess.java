@@ -943,6 +943,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
+	 * @return process owner
+	 */
+	protected final UserId getUserId()
+	{
+		return getProcessInfo().getUserId();
+	}
+
+	/**
 	 * @return AD_Client_ID of Process owner
 	 */
 	protected final int getAD_Client_ID()
