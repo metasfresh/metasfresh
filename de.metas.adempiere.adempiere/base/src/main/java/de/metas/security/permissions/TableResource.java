@@ -1,10 +1,9 @@
 package de.metas.security.permissions;
 
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-
 import de.metas.util.Check;
+import lombok.Value;
 
+@Value
 public final class TableResource implements Resource
 {
 	/** Any table */
@@ -15,65 +14,30 @@ public final class TableResource implements Resource
 		return new TableResource(adTableId);
 	}
 
-	private final int AD_Table_ID;
-	private int hashcode = 0;
+	private final int adTableId;
 
-	private TableResource(final int AD_Table_ID)
+	private TableResource(final int adTableId)
 	{
-		super();
-
-		Check.assume(AD_Table_ID > 0, "AD_Table_ID > 0");
-		this.AD_Table_ID = AD_Table_ID;
+		Check.assume(adTableId > 0, "AD_Table_ID > 0");
+		this.adTableId = adTableId;
 	}
 
 	/** "Any table" constructor */
 	private TableResource()
 	{
-		super();
-		this.AD_Table_ID = -1;
+		this.adTableId = -1;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "@AD_Table_ID@="
-				+ (this == ANY_TABLE ? "*" : AD_Table_ID);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		if (hashcode == 0)
+		if (this == ANY_TABLE)
 		{
-			hashcode = new HashcodeBuilder()
-					.append(31) // seed
-					.append(AD_Table_ID)
-					.toHashcode();
+			return "@AD_Table_ID@=*";
 		}
-		return hashcode;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
+		else
 		{
-			return true;
+			return "@AD_Table_ID@=" + adTableId;
 		}
-
-		final TableResource other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(AD_Table_ID, other.AD_Table_ID)
-				.isEqual();
-	}
-
-	public int getAD_Table_ID()
-	{
-		return AD_Table_ID;
 	}
 }

@@ -507,7 +507,7 @@ class UserRolePermissions implements IUserRolePermissions
 			return false;
 		}
 		//
-		return tablePermissions.isCanReport(AD_Table_ID);
+		return getTablePermissions().isCanReport(AD_Table_ID);
 	}
 
 	/**

@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -88,7 +89,6 @@ import de.metas.security.permissions.TableColumnPermission;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TableColumnResource;
 import de.metas.security.permissions.TablePermission;
-import de.metas.security.permissions.TablePermission.Builder;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermission;
 import de.metas.security.permissions.TableRecordPermissions;
@@ -570,27 +570,24 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Cached(cacheName = I_AD_Table_Access.Table_Name + "#Accesses")
-	public TablePermissions retrieveTablePermissions(final RoleId adRoleId)
+	public TablePermissions retrieveTablePermissions(@NonNull final RoleId adRoleId)
 	{
-		final Properties ctx = Env.getCtx();
 		final List<I_AD_Table_Access> tableAccessRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Table_Access.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Table_Access.class)
 				.addEqualsFilter(I_AD_Table_Access.COLUMNNAME_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
 
-		final TablePermissions.Builder builder = TablePermissions.builder();
+		final TablePermissions.Builder permissionsCollector = TablePermissions.builder();
 
 		// Default permission: allow all because actually this is an "exclude" list (if no include options were found).
-		final Builder defaultPermission = TablePermission.ALL.asNewBuilder();
+		final HashSet<Access> defaultPermissionAccesses = new HashSet<>();
 
 		for (final I_AD_Table_Access tableAccessRecord : tableAccessRecords)
 		{
 			final TableResource resource = TableResource.ofAD_Table_ID(tableAccessRecord.getAD_Table_ID());
-			final TablePermission.Builder permission = TablePermission.builder()
-					.setResource(resource)
-					.removeAllAccesses();
+			final HashSet<Access> permissionAccesses = new HashSet<>();
 
 			final String type = tableAccessRecord.getAccessTypeRule();
 			final boolean exclude = tableAccessRecord.isExclude();
@@ -603,8 +600,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 					// you can only read data (otherwise no access).
 					if (readOnly)
 					{
-						permission.addAccess(Access.READ);
-						// permission.removeAccess(Access.WRITE); // not needed
+						permissionAccesses.add(Access.READ);
+						// permissionAccesses.remove(Access.WRITE); // not needed
 					}
 					else
 					{
@@ -614,41 +611,41 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				// include access
 				else
 				{
-					permission.addAccess(Access.READ);
+					permissionAccesses.add(Access.READ);
 					if (!readOnly)
 					{
-						permission.addAccess(Access.WRITE);
+						permissionAccesses.add(Access.WRITE);
 					}
 
 					// A include access implies that the default access is not granted
-					defaultPermission.removeAccess(Access.READ);
-					defaultPermission.removeAccess(Access.WRITE);
+					defaultPermissionAccesses.remove(Access.READ);
+					defaultPermissionAccesses.remove(Access.WRITE);
 				}
 			}
 			else if (X_AD_Table_Access.ACCESSTYPERULE_Reporting.equals(type))
 			{
 				if (tableAccessRecord.isCanReport())
 				{
-					permission.addAccess(Access.REPORT);
+					permissionAccesses.add(Access.REPORT);
 				}
 
 				// A include access implies that the default access is not granted
 				if (!exclude)
 				{
-					defaultPermission.removeAccess(Access.REPORT);
+					defaultPermissionAccesses.remove(Access.REPORT);
 				}
 			}
 			else if (X_AD_Table_Access.ACCESSTYPERULE_Exporting.equals(type))
 			{
 				if (tableAccessRecord.isCanExport())
 				{
-					permission.addAccess(Access.EXPORT);
+					permissionAccesses.add(Access.EXPORT);
 				}
 
 				// A include access implies that the default access is not granted
 				if (!exclude)
 				{
-					defaultPermission.removeAccess(Access.EXPORT);
+					defaultPermissionAccesses.remove(Access.EXPORT);
 				}
 			}
 			else
@@ -656,13 +653,22 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				throw new IllegalStateException("Unknown AccessRuleType: " + type);
 			}
 
-			builder.addPermission(permission.build(), CollisionPolicy.Override);
+			final TablePermission permissions = TablePermission.builder()
+					.resource(resource)
+					.accesses(permissionAccesses)
+					.build();
+			permissionsCollector.addPermission(permissions, CollisionPolicy.Override);
 		}
 
+		//
 		// Add default permission
-		builder.addPermission(defaultPermission.build(), CollisionPolicy.Override);
+		final TablePermission defaultPermissions = TablePermission.builder()
+				.resource(TableResource.ANY_TABLE)
+				.accesses(defaultPermissionAccesses)
+				.build();
+		permissionsCollector.addPermission(defaultPermissions, CollisionPolicy.Override);
 
-		return builder.build();
+		return permissionsCollector.build();
 	}	// loadTableAccess
 
 	@Cached(cacheName = I_AD_Column_Access.Table_Name + "#Accesses")
