@@ -55,7 +55,4 @@ public final class CreditPassConstants
 
 	public static final String ORDER_COMPLETED_CREDITPASS_ERROR = "OrderCompleted.CreditpassError";
 
-	public static final String CREDITPASS_FLAG_YES = "Y";
-
-	public static final String CREDITPASS_FLAG_NO = "N";
 }

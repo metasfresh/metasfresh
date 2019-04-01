@@ -2992,3 +2992,234 @@ update cs_transaction_result set responsecodeeffective='P' where responsecode='P
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 update cs_transaction_result set responsecodeeffective='N' where responsecode='N'
 ;
+
+-- 2019-04-01T11:00:14.516
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=628230
+;
+
+-- 2019-04-01T11:00:14.832
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,576241,628418,0,540608,TO_TIMESTAMP('2019-04-01 11:00:14','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-04-01 11:00:14','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-04-01T11:00:16.426
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET AD_Element_ID=576178, Description=NULL, Name='Creditpass Einstellung',Updated=TO_TIMESTAMP('2019-04-01 11:00:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540608
+;
+
+-- 2019-04-01T11:00:16.445
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Creditpass Einstellung',Updated=TO_TIMESTAMP('2019-04-01 11:00:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541221
+;
+
+-- 2019-04-01T11:00:16.556
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=628418
+;
+
+-- 2019-04-01T11:00:16.646
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,576178,628419,0,540608,TO_TIMESTAMP('2019-04-01 11:00:16','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-04-01 11:00:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-04-01T11:00:16.652
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_window_translation_from_ad_element(576178)
+;
+
+-- 2019-04-01T11:10:05.531
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540429,'not exists (Select pr.PaymentRule from CS_Creditpass_Config_PaymentRule pr where pr.CS_Creditpass_Config_ID=@CS_Creditpass_Config_ID@ and AD_REF_LIST.VALUE=pr.PaymentRule)',TO_TIMESTAMP('2019-04-01 11:10:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.creditscore.creditpass','Y','paymentRuleNotAlreadyInFallbacks','S',TO_TIMESTAMP('2019-04-01 11:10:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-04-01T11:11:38.316
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=540429,Updated=TO_TIMESTAMP('2019-04-01 11:11:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564502
+;
+
+-- 2019-04-01T11:13:03.213
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2019-04-01 11:13:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564502
+;
+
+-- 2019-04-01T11:35:53.127
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557969
+;
+
+-- 2019-04-01T11:35:54.251
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557970
+;
+
+-- 2019-04-01T11:35:55.176
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557971
+;
+
+-- 2019-04-01T11:35:56.080
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557974
+;
+
+-- 2019-04-01T11:35:56.993
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557972
+;
+
+-- 2019-04-01T11:35:58.043
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557975
+;
+
+-- 2019-04-01T11:35:59.090
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:35:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557973
+;
+
+-- 2019-04-01T11:36:00.952
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-04-01 11:36:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558100
+;
+
+-- 2019-04-01T11:38:02.007
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=20,Updated=TO_TIMESTAMP('2019-04-01 11:38:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557972
+;
+
+-- 2019-04-01T11:38:15.249
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2019-04-01 11:38:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557973
+;
+
+-- 2019-04-01T11:38:27.812
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=40,Updated=TO_TIMESTAMP('2019-04-01 11:38:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557975
+;
+
+-- 2019-04-01T11:38:35.068
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2019-04-01 11:38:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557974
+;
+
+-- 2019-04-01T11:38:53.764
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=60,Updated=TO_TIMESTAMP('2019-04-01 11:38:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558100
+;
+
+-- 2019-04-01T11:38:56.270
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=70,Updated=TO_TIMESTAMP('2019-04-01 11:38:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557971
+;
+
+-- 2019-04-01T11:38:58.653
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=80,Updated=TO_TIMESTAMP('2019-04-01 11:38:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557970
+;
+
+-- 2019-04-01T11:39:02.323
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=90,Updated=TO_TIMESTAMP('2019-04-01 11:39:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=557969
+;
+
+-- 2019-04-01T11:40:46.181
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=540429,Updated=TO_TIMESTAMP('2019-04-01 11:40:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564502
+;
+
+-- 2019-04-01T13:44:34.243
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Name='CreditpassPaymentRuleUnique',Updated=TO_TIMESTAMP('2019-04-01 13:44:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540429
+;
+
+-- 2019-04-01T13:45:22.391
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Name='Creditpass unique payment rule',Updated=TO_TIMESTAMP('2019-04-01 13:45:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540429
+;
+
+-- 2019-04-01T13:50:18.364
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Zahlart Rückgriff',Updated=TO_TIMESTAMP('2019-04-01 13:50:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558145
+;
+
+-- 2019-04-01T14:49:04.874
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='@C_Currency_ID@',Updated=TO_TIMESTAMP('2019-04-01 14:49:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=567302
+;
+
+-- 2019-04-01T15:59:27.034
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Preis per Überprüfung', PrintName='Preis per Überprüfung',Updated=TO_TIMESTAMP('2019-04-01 15:59:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576232 AND AD_Language='de_CH'
+;
+
+-- 2019-04-01T15:59:27.045
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576232,'de_CH')
+;
+
+-- 2019-04-01T15:59:34.402
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Preis per Überprüfung', PrintName='Preis per Überprüfung',Updated=TO_TIMESTAMP('2019-04-01 15:59:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576232 AND AD_Language='de_DE'
+;
+
+-- 2019-04-01T15:59:34.404
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576232,'de_DE')
+;
+
+-- 2019-04-01T15:59:34.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(576232,'de_DE')
+;
+
+-- 2019-04-01T15:59:34.435
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='RequestPrice', Name='Preis per Überprüfung', Description=NULL, Help=NULL WHERE AD_Element_ID=576232
+;
+
+-- 2019-04-01T15:59:34.436
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='RequestPrice', Name='Preis per Überprüfung', Description=NULL, Help=NULL, AD_Element_ID=576232 WHERE UPPER(ColumnName)='REQUESTPRICE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-04-01T15:59:34.442
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='RequestPrice', Name='Preis per Überprüfung', Description=NULL, Help=NULL WHERE AD_Element_ID=576232 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-04-01T15:59:34.443
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preis per Überprüfung', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=576232) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 576232)
+;
+
+-- 2019-04-01T15:59:34.519
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Preis per Überprüfung', Name='Preis per Überprüfung' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=576232)
+;
+
+-- 2019-04-01T15:59:34.524
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Preis per Überprüfung', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 576232
+;
+
+-- 2019-04-01T15:59:34.527
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Preis per Überprüfung', Description=NULL, Help=NULL WHERE AD_Element_ID = 576232
+;
+
+-- 2019-04-01T15:59:34.528
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Preis per Überprüfung', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576232
+;
+
+-- 2019-04-01T15:59:42.142
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Preis per Überprüfung', PrintName='Preis per Überprüfung',Updated=TO_TIMESTAMP('2019-04-01 15:59:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576232 AND AD_Language='nl_NL'
+;
+
+-- 2019-04-01T15:59:42.143
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576232,'nl_NL')
+;
+

@@ -60,7 +60,6 @@ public class CreditPassClientFactory implements CreditScoreClientFactory
 		return createCreditPassClient(config);
 	}
 
-	@VisibleForTesting
 	private CreditPassClient createCreditPassClient(@NonNull final CreditPassConfig config)
 	{
 		final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder()

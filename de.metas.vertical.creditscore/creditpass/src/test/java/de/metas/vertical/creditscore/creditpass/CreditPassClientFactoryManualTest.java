@@ -1,59 +1,77 @@
 package de.metas.vertical.creditscore.creditpass;
 
-import org.junit.Test;
+import de.metas.bpartner.BPartnerId;
+import de.metas.vertical.creditscore.base.spi.model.CreditScore;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
+import de.metas.vertical.creditscore.base.spi.model.TransactionData;
+import de.metas.vertical.creditscore.creditpass.model.*;
+import de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository;
+import org.adempiere.user.UserId;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
 
 public class CreditPassClientFactoryManualTest
 {
 
-	@Test
+	@InjectMocks
+	CreditPassClientFactory clientFactory;
+
+	@Mock
+	CreditPassConfigRepository configRepository;
+
+	@Before
+	public void init()
+	{
+		MockitoAnnotations.initMocks(this);
+	}
+
+	@Ignore
 	public void test() throws Exception
 	{
-
-		/*final CreditPassClientFactory clientFactory = new CreditPassClientFactory();
-
+		final List<CreditPassConfigPaymentRule> creditPassConfigPaymentRuleList = new ArrayList<>();
+		CreditPassConfigPaymentRule paymentRule = CreditPassConfigPaymentRule.builder()
+				.paymentRule("P")
+				.purchaseType(1)
+				.paymentRuleId(CreditPassConfigPaymentRuleId.ofRepoId(1))
+				.build();
+		creditPassConfigPaymentRuleList.add(paymentRule);
+		// please request auth ID and auth password for testing
 		final CreditPassConfig creditScoreConfig = CreditPassConfig.builder()
 				.restApiBaseUrl("https://secure.creditpass.de/atgw/authorize.cfm")
-				.authId("T920433")
-				.authPassword("riV5sXWH96L4Nq")
-				.purchaseType(1)
+				.authId("")
+				.authPassword("")
+				.creditPassConfigPaymentRuleList(creditPassConfigPaymentRuleList)
 				.requestReason("ABK")
 				.transactionType(11920)
-				.build();
-		final CreditPassClient client = clientFactory.createCreditPassClient(creditScoreConfig);
-
-		final Customer customer = Customer.builder()
-				.authId(creditScoreConfig.getAuthId())
-				.authPassword(creditScoreConfig.getAuthPassword())
-				.customerTransactionId("acf5a2923fe911e9b210d663bd873d93")
-				.build();
-		final ProcessRequest processRequest = ProcessRequest.builder()
-				.transactionType(creditScoreConfig.getTransactionType())
 				.processingCode(8)
-				.requestReason(creditScoreConfig.getRequestReason())
+				.resultCode(ResultCode.N)
+				.notificationUserId(UserId.ofRepoId(1))
+				.creditPassConfigId(CreditPassConfigId.ofRepoId(1))
+				.build();
+		BPartnerId partnerId = BPartnerId.ofRepoId(1);
+		Mockito.when(configRepository.getConfigByBPartnerId(partnerId)).thenReturn(creditScoreConfig);
+		final CreditPassClient client = (CreditPassClient)clientFactory.newClientForBusinessPartner(BPartnerId.ofRepoId(1));
+
+		TransactionData transactionData = CreditPassTransactionData.builder()
+				.accountNr("0123456789")
+				.bankRoutingCode("12345678")
+				.firstName("Peter")
+				.lastName("Test")
+				.dateOfBirth(LocalDate.now())
 				.build();
 
-		final Query query = Query.builder()
-				.purchaseType(1)
-				.amount("13050")
-				.bankAccount(BankAccount.builder()
-						.bankRoutingCode("12345678")
-						.accountNr("0123456789")
-						.build())
-				.contact(Contact.builder()
-						.firstName("Peter")
-						.lastName("Test")
-						.dateOfBirth(LocalDate.of(2019, 03, 06))
-						.build())
-				.build();
-
-		final Request request = Request.builder()
-				.customer(customer)
-				.process(processRequest)
-				.query(query)
-				.build();
-
-		final CreditScore creditScore = client.getCreditScore(request);
-		assertNotNull(creditScore);*/
+		final CreditScore creditScore = client.getCreditScore(transactionData, "P");
+		assertNotNull(creditScore);
 
 	}
 }

@@ -55,7 +55,7 @@ public class TransactionResultService
 	}
 
 	public TransactionResult createAndSaveResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId
-			, @NonNull final Optional<OrderId> orderId)
+			, final OrderId orderId)
 	{
 
 		TransactionResult transactionResult = transactionResultsRepository.createTransactionResult(creditScore, bPartnerId, orderId);

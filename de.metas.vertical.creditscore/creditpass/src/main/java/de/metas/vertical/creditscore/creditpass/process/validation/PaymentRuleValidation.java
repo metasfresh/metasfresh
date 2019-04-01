@@ -42,7 +42,6 @@ public class PaymentRuleValidation extends AbstractJavaValidationRule
 			I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 
 	private final CreditPassConfigRepository creditPassConfigRepository = Adempiere.getBean(CreditPassConfigRepository.class);
-	;
 
 	@Override public Set<String> getParameters()
 	{
@@ -52,7 +51,7 @@ public class PaymentRuleValidation extends AbstractJavaValidationRule
 	@Override public boolean accept(IValidationContext evalCtx, NamePair item)
 	{
 		boolean accept = false;
-		int bPartnerId = evalCtx.get_ValueAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1).intValue();
+		int bPartnerId = evalCtx.get_ValueAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 
 		if (bPartnerId > -1)
 		{

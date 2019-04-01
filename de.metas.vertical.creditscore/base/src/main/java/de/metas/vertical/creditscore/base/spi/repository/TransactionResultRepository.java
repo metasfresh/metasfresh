@@ -23,7 +23,6 @@ package de.metas.vertical.creditscore.base.spi.repository;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
@@ -46,7 +45,7 @@ public class TransactionResultRepository
 {
 
 	public TransactionResult createTransactionResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId,
-			@NonNull final Optional<OrderId> orderId)
+			final OrderId orderId)
 	{
 		final I_CS_Transaction_Result transactionResult = newInstance(I_CS_Transaction_Result.class);
 
@@ -74,7 +73,10 @@ public class TransactionResultRepository
 		transactionResult.setTransactionCustomerId(logData.getCustomerTransactionID());
 		transactionResult.setTransactionIdAPI(logData.getTransactionID());
 		transactionResult.setC_BPartner_ID(bPartnerId.getRepoId());
-		orderId.ifPresent(orderId1 -> transactionResult.setC_Order_ID(orderId1.getRepoId()));
+		if (orderId != null)
+		{
+			transactionResult.setC_Order_ID(orderId.getRepoId());
+		}
 		save(transactionResult);
 		return mapTransactionResult(transactionResult);
 	}

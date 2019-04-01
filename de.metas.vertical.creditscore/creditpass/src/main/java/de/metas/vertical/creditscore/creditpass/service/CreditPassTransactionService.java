@@ -64,13 +64,13 @@ public class CreditPassTransactionService
 			for (CreditPassConfigPaymentRule configPaymentRule : creditScoreClient.getCreditPassConfig().getCreditPassConfigPaymentRuleList())
 			{
 				final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, configPaymentRule.getPaymentRule());
-				transactionResults.add(handleResult(Optional.ofNullable(null), bPartnerId, config, creditScore));
+				transactionResults.add(handleResult(null, bPartnerId, config, creditScore));
 			}
 		}
 		else
 		{
 			final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
-			transactionResults.add(handleResult(Optional.ofNullable(null), bPartnerId, config, creditScore));
+			transactionResults.add(handleResult(null, bPartnerId, config, creditScore));
 		}
 		return transactionResults;
 	}
@@ -82,7 +82,7 @@ public class CreditPassTransactionService
 		final CreditPassConfig config = creditScoreClient.getCreditPassConfig();
 		final CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
 		final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
-		final TransactionResult result = handleResult(Optional.ofNullable(orderId), bPartnerId, config, creditScore);
+		final TransactionResult result = handleResult(orderId, bPartnerId, config, creditScore);
 		final List<TransactionResult> transactionResults = new ArrayList<>();
 		transactionResults.add(result);
 		if (result.getResultCodeEffective() != ResultCode.P)
@@ -101,7 +101,7 @@ public class CreditPassTransactionService
 					if (hasPaymentRuleConfig)
 					{
 						final CreditScore fallbackCreditScore = creditScoreClient.getCreditScore(creditPassTransactionData, configPRFallback.getFallbackPaymentRule());
-						final TransactionResult fallbackResult = handleResult(Optional.ofNullable(orderId), bPartnerId, config, fallbackCreditScore);
+						final TransactionResult fallbackResult = handleResult(orderId, bPartnerId, config, fallbackCreditScore);
 						transactionResults.add(fallbackResult);
 					}
 				}
@@ -110,7 +110,7 @@ public class CreditPassTransactionService
 		return transactionResults;
 	}
 
-	private TransactionResult handleResult(@NonNull final Optional<OrderId> orderId, @NonNull final BPartnerId bPartnerId,
+	private TransactionResult handleResult(final OrderId orderId, @NonNull final BPartnerId bPartnerId,
 			@NonNull final CreditPassConfig config, @NonNull final CreditScore creditScore)
 	{
 		final CreditScore finalCreditScore = convertResult(config, creditScore);
@@ -140,7 +140,7 @@ public class CreditPassTransactionService
 	{
 		if (creditScore.getResultCode() == ResultCode.M)
 		{
-			final CreditScore convertedCreditScore = CreditScore.builder()
+			return CreditScore.builder()
 					.requestLogData(creditScore.getRequestLogData())
 					.resultCode(creditScore.getResultCode())
 					.resultCodeOverride(config.getResultCode())
@@ -150,7 +150,6 @@ public class CreditPassTransactionService
 					.currency(creditScore.getCurrency())
 					.converted(true)
 					.build();
-			return convertedCreditScore;
 		}
 		return creditScore;
 	}

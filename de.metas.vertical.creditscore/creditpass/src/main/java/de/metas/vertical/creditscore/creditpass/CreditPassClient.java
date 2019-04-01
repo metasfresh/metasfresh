@@ -95,8 +95,8 @@ public class CreditPassClient implements CreditScoreClient
 					.resultText(response.getProcess().getAnswerText())
 					.resultDetails(response.getProcess().getAnswerDetails())
 					.paymentRule(paymentRule)
-					.requestPrice(configPaymentRule.get().getRequestPrice())
-					.currency(configPaymentRule.get().getRequestPriceCurrency())
+					.requestPrice(configPaymentRule.map(CreditPassConfigPaymentRule::getRequestPrice).orElse(null))
+					.currency(configPaymentRule.map(CreditPassConfigPaymentRule::getRequestPriceCurrency).orElse(null))
 					.build();
 		}
 		catch (final RestClientException e)
@@ -111,8 +111,8 @@ public class CreditPassClient implements CreditScoreClient
 					.resultText(CreditPassConstants.DEFAULT_RESULT_TEXT)
 					.resultDetails(e.getMessage())
 					.paymentRule(paymentRule)
-					.requestPrice(configPaymentRule.get().getRequestPrice())
-					.currency(configPaymentRule.get().getRequestPriceCurrency())
+					.requestPrice(configPaymentRule.map(CreditPassConfigPaymentRule::getRequestPrice).orElse(null))
+					.currency(configPaymentRule.map(CreditPassConfigPaymentRule::getRequestPriceCurrency).orElse(null))
 					.build();
 		}
 

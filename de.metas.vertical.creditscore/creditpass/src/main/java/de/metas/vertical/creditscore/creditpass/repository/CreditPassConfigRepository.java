@@ -35,13 +35,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.UserId;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,7 +51,6 @@ public class CreditPassConfigRepository
 			.initialCapacity(1)
 			.tableName(I_CS_Creditpass_Config.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
-			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_CP_Fallback.Table_Name)
 			.additionalTableNameToResetFor(I_C_Order.Table_Name)
@@ -98,14 +94,21 @@ public class CreditPassConfigRepository
 				.create()
 				.list()
 				.stream()
-				.map(configPaymentRule -> CreditPassConfigPaymentRule.builder()
-						.paymentRule(configPaymentRule.getPaymentRule())
-						.requestPrice(configPaymentRule.getRequestPrice())
-						.requestPriceCurrency(CurrencyId.ofRepoId(configPaymentRule.getC_Currency_ID()))
-						.purchaseType(configPaymentRule.getPurchaseType().intValue())
-						.paymentRuleId(CreditPassConfigPaymentRuleId.ofRepoId(configPaymentRule.getCS_Creditpass_Config_PaymentRule_ID()))
-						.creditPassConfigPRFallbacks(new ArrayList<>())
-						.build())
+				.map(configPaymentRule -> {
+					boolean hasCurrency = configPaymentRule.getC_Currency_ID() > 0;
+					CreditPassConfigPaymentRule creditPassConfigPaymentRule = CreditPassConfigPaymentRule.builder()
+							.paymentRule(configPaymentRule.getPaymentRule())
+							.requestPrice(configPaymentRule.getRequestPrice())
+							.purchaseType(configPaymentRule.getPurchaseType().intValue())
+							.paymentRuleId(CreditPassConfigPaymentRuleId.ofRepoId(configPaymentRule.getCS_Creditpass_Config_PaymentRule_ID()))
+							.creditPassConfigPRFallbacks(new ArrayList<>())
+							.build();
+					if (hasCurrency)
+					{
+						creditPassConfigPaymentRule.setRequestPriceCurrency(CurrencyId.ofRepoId(configPaymentRule.getC_Currency_ID()));
+					}
+					return creditPassConfigPaymentRule;
+				})
 				.collect(Collectors.toList());
 
 		for (CreditPassConfigPaymentRule paymentRule : configPaymentRules)
