@@ -1,4 +1,4 @@
-package de.metas.purchasing.api.impl;
+package de.metas.bpartner_product.impl;
 
 import java.util.List;
 
