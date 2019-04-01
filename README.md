@@ -101,6 +101,9 @@ We currently use [VS code](https://code.visualstudio.com/download) to develop cy
 Once you installed it, you can use IntelliSense for auto completion. 
 Details here: https://docs.cypress.io/guides/tooling/intelligent-code-completion.html#Set-up-in-your-Dev-Environment-1 (Note: in the VS Code preferences, look for "edit settings.json").
 
+Also, we recomment to setup your IDE to use `LF` (linux line endings) for EOL.
+Otherwise there might be issues with our linter.
+
 Additionally recommended VS Code plugins:
 * `ESLint` for developing test specs
 * `Docker` for editing our docker file

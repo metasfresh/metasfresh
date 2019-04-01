@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 import { BPartner, BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 
@@ -17,30 +15,18 @@ describe('purchase - vendor spec', function() {
   it('Create a vendor with two contacts', function() {
     new DiscountSchema(discountSchemaName).setValidFrom('01/01/2019{enter}').apply();
 
-    new BPartner.builder(vendorName)
+    new BPartner(vendorName)
       .setVendor(true)
       .setVendorPricingSystem('Testpreisliste Lieferanten')
       .setVendorDiscountSchema(discountSchemaName)
-      .addLocation(
-        new BPartnerLocation.builder('Address1')
-          .setCity('Cologne')
-          .setCountry('Deutschland')
-          .build()
-      )
+      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
       .addContact(
-        new BPartnerContact.builder()
+        new BPartnerContact()
           .setFirstName('Default')
           .setLastName('Contact')
           .setDefaultContact(true)
-          .build()
       )
-      .addContact(
-        new BPartnerContact.builder()
-          .setFirstName('Secondary')
-          .setLastName('Contact')
-          .build()
-      )
-      .build()
+      .addContact(new BPartnerContact().setFirstName('Secondary').setLastName('Contact'))
       .apply();
 
     cy.log('Now going to verify all fields were set correctly');

@@ -163,14 +163,17 @@ Cypress.Commands.add('clickOnIsActive', modal => {
  *
  * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => {
+Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl) => {
   describe('Enter value into string field', function() {
-    cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}`);
-
-    // here we want to match URLs that don *not* end with "/NEW"
+    const aliasName = `writeIntoStringField-${new Date().getTime()}`;
+    const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+    // in the default pattern we want to match URLs that do *not* end with "/NEW"
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    cy.log(
+      `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
+    );
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchInputField`);
-
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
@@ -178,23 +181,25 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal) => 
     cy.get(path)
       .find('input')
       .type(`${stringValue}{enter}`)
-      .wait('@patchInputField', {
-        requestTimeout: 20000,
-        responseTimeout: 20000,
-      });
+      .waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
 });
 
 /**
  * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
+Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewriteUrl) => {
   describe('Enter value into text field', function() {
     cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
+    const aliasName = `writeIntoTextField-${new Date().getTime()}`;
+    const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+    // in the default pattern we want to match URLs that do *not* end with "/NEW"
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+
     // here we want to match URLs that don *not* end with "/NEW"
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as('patchTextArea');
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -202,23 +207,19 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal) => {
     }
     cy.get(path)
       .find('textarea')
-      .type(`${stringValue}{enter}`)
-      .wait('@patchTextArea');
+      .type(`${stringValue}{enter}`);
+    //.wait(`@${aliasName}`);
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
 });
 
 /**
  * @param modal - use true, if the field is in a modal overlay; requiered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listValue, modal) => {
+Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listValue, modal, rewriteUrl) => {
   describe('Enter value into lookup list field', function() {
-    // here we want to match URLs that don *not* end with "/NEW"
-    cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchLookupField`);
-
     let path = `#lookup_${fieldName}`;
     if (modal) {
-      //path = `.panel-modal-content ${path}`;
       path = `.panel-modal ${path}`;
     }
 
@@ -233,10 +234,18 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listV
       return cy.get('.lookup-dropdown').click();
     });
 
+    const aliasName = `writeIntoLookupListField-${new Date().getTime()}`;
+    //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
+    const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
+    // in the default pattern we want to match URLs that do *not* end with "/NEW"
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+
     cy.get('.input-dropdown-list').should('exist');
-    cy.contains('.input-dropdown-list-option', listValue).click({ force: true });
+    cy.contains('.input-dropdown-list-option', listValue).click(/*{ force: true }*/);
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
     cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    cy.wait('@patchLookupField');
   });
 });
 
@@ -475,7 +484,9 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
     cy.on('emit:addressPatchResolved', requestId => {
       cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
 
-      addressFunction();
+      const outerPatchUrl = `/rest/api/address/${requestId}`;
+      addressFunction(outerPatchUrl);
+
       cy.get(`.form-field-C_Location_ID`).click();
       cy.wait('@completeAddress');
     });
@@ -528,6 +539,13 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
+// thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+function removeSubstringsWithCurlyBrackets(stringValue) {
+  const regex = /{.*}/gi;
+  const expectedPatchValue = stringValue.replace(regex, '');
+  return expectedPatchValue;
+}
+
 Cypress.Commands.add('clickHeaderNav', navName => {
   const name = navName.toLowerCase().replace(/\s/g, '');
 
@@ -542,15 +560,17 @@ Cypress.Commands.add('clickHeaderNav', navName => {
 Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = 'visitedDocumentId') => {
   describe('Open metasfresh window and wait for layout and data', function() {
     cy.server();
-    cy.route('GET', `/rest/api/window/${windowId}/layout`).as('getLayout');
-    cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as('getRecordData');
+    const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
+    cy.route('GET', `/rest/api/window/${windowId}/layout`).as(layoutAliasName);
+    const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
+    cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
     cy.visit(`/window/${windowId}/${recordId}`)
-      .wait('@getLayout', {
+      .wait(`@${layoutAliasName}`, {
         requestTimeout: 20000,
         responseTimeout: 20000,
       })
-      .wait('@getRecordData', {
+      .wait(`@${dataAliasName}`, {
         requestTimeout: 20000,
         responseTimeout: 20000,
       })
@@ -564,31 +584,50 @@ Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = '
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // not yet tested
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
-Cypress.Commands.add('waitForFieldValue', (alias, fieldName, fieldValue) => {
+Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue) => {
   cy.wait(alias).then(function(xhr) {
     const responseBody = xhr.responseBody;
-    if (!responseBody.length <= 0) {
+
+    if (responseBody.length <= 0) {
       cy.log(
-        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body is empty; continuing to wait`
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response-body is empty; waiting once more`
       );
-      return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
+      return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
     }
 
-    if (!responseBody.fieldsByName) {
+    if (!responseBody[0].fieldsByName) {
       cy.log(
-        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the response-body has no fieldsByName property; continuing to wait`
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response-body has no fieldsByName property; waiting once more`
       );
-      return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
+      return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
     }
 
     const fieldsByName = responseBody[0].fieldsByName;
-    if (fieldsByName[fieldName] !== fieldValue) {
+    if (!fieldsByName.hasOwnProperty(fieldName)) {
       cy.log(
-        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${fieldValue}, but the field has value=${
-          fieldsByName[fieldName]
-        }; continuing to wait`
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response has no ${fieldName} property; waiting once more`
       );
-      return cy.waitForFieldValue(alias, fieldName, fieldValue); //<---- this is the hacky bit
+      return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
+    }
+
+    const actualFieldValue = fieldsByName[fieldName].value;
+    if (!isString(actualFieldValue)) {
+      cy.log(
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}'; the current response body's field has ${fieldName}=${actualFieldValue}; I don't know how do check if non-string values are correct; stop waiting`
+      );
+      return;
+    }
+
+    if (actualFieldValue !== expectedFieldValue) {
+      cy.log(
+        `waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}', but the current response body's field has ${fieldName}=${actualFieldValue}; waiting once more`
+      );
+      return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
     }
   });
+
+  // Thx to https://stackoverflow.com/a/9436948/1012103
+  function isString(object) {
+    return typeof object === 'string' || object instanceof String;
+  }
 });

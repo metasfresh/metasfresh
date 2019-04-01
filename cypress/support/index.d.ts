@@ -4,11 +4,12 @@ declare namespace Cypress {
   interface Chainable<Subject> {
 
     /**
-     * Write a string into an input field
+     * Write a string into an input field. Assert that the frontend performs a PATCH request with the given value.
      * 
      * @param fieldName name of the field is question
-     * @param stringValue the string to write. This command prepends "{enter}" to that string
-     * @param modal set true if the field in question is in a modal dialog.
+     * @param stringValue the string to write. This command prepends "{enter}" to that string. Also works for date fields, e.g. '01/01/2018'.
+     * @param modal optional - set true if the field in question is in a modal dialog.
+     * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
      * 
      * @example
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
@@ -24,7 +25,7 @@ declare namespace Cypress {
      * 
      * @param fieldName name of the field is question
      * @param stringValue the string to write. This command prepends "{enter}" to that string
-     * @param modal set true if the field in question is in a modal/overlay dialog.
+     * @param modal optional - set true if the field in question is in a modal/overlay dialog.
      * 
      * @example
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
@@ -72,5 +73,14 @@ declare namespace Cypress {
      * })
      */
     visitWindow(windowId: BigInteger, recordId: BigInteger, documentIdAliasName: string): Chainable<any>
+
+    /**
+     * May be useful to wait for the response to a particular patch where a particular field value was set
+     * not yet tested
+     * thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
+     * 
+     * @param alias name of the alias to wait for; needs to begin with '@'
+     */
+    waitForFieldValue(alias: String, fieldName: String, fieldValue: String): Chainable<any>
   }
 }

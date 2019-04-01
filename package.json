@@ -1,5 +1,10 @@
 {
   "name": "metasfresh-e2e",
+  "license": "GPL-2.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:metasfresh/metasfresh-e2e.git"
+  },
   "scripts": {
     "cypress:open": "cypress open"
   },

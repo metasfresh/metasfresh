@@ -93,6 +93,9 @@ function applyDataEntryGroup(dataEntryGroup) {
     cy.visitWindow('540571', 'NEW', dataEntryGroup.name /*documentIdAliasName*/);
     cy.log(`applyDataEntryGroup - visitWindow yielded ${JSON.stringify(this.dataEntryGroupId)}`);
 
+    if (dataEntryGroup.seqNo) {
+      cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryGroup.seqNo}`);
+    }
     cy.writeIntoStringField('Name', dataEntryGroup.name);
     cy.writeIntoStringField('TabName', dataEntryGroup.tabName);
     cy.writeIntoLookupListField(
@@ -101,9 +104,6 @@ function applyDataEntryGroup(dataEntryGroup) {
       dataEntryGroup.targetWindowName
     );
 
-    if (dataEntryGroup.seqNo) {
-      cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryGroup.seqNo}`);
-    }
     if (dataEntryGroup.description) {
       cy.writeIntoTextField('Description', dataEntryGroup.description);
     }

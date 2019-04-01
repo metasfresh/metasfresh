@@ -45,9 +45,9 @@ it('Serial letter', function() {
   cy.visit('/window/540435/NEW');
   cy.writeIntoStringField('Name', marketingContactName);
   cy.writeIntoLookupListField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
-  cy.editAddress('C_Location_ID', function() {
-    cy.writeIntoStringField('City', 'Cologne');
-    cy.writeIntoLookupListField('C_Country_ID', 'Deu', 'Deutschland');
+  cy.editAddress('C_Location_ID', function(url) {
+    cy.writeIntoStringField('City', 'Cologne', null, url);
+    cy.writeIntoLookupListField('C_Country_ID', 'Deu', 'Deutschland', null, url);
   });
 
   // create marketing campaign
