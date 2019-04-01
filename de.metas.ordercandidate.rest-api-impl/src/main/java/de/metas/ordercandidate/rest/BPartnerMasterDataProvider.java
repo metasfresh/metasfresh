@@ -221,8 +221,8 @@ public class BPartnerMasterDataProvider
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
 
 		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
-				.orgId(context.getOrgId())
-				.includeAnyOrg(true)
+				.onlyOrgId(context.getOrgId())
+				.onlyOrgId(OrgId.ANY)
 				.outOfTrx(syncAdvise.isLoadReadOnly())
 				.failIfNotExists(syncAdvise.isFailIfNotExists())
 				.externalId(json.getExternalId())
@@ -231,7 +231,7 @@ public class BPartnerMasterDataProvider
 		final JsonBPartnerLocation jsonLocation = jsonBPartnerInfo.getLocation();
 		if (jsonLocation != null && jsonLocation.getGln() != null)
 		{
-			query.locatorGln(jsonLocation.getGln());
+			query.locationGln(jsonLocation.getGln());
 		}
 
 		return bpartnersRepo

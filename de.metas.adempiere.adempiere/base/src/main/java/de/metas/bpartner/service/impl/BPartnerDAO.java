@@ -51,8 +51,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
@@ -95,7 +93,9 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
@@ -956,11 +956,11 @@ public class BPartnerDAO implements IBPartnerDAO
 			searchedByInfo.add(StringUtils.formatMessage("Name={}", query.getBpartnerName()));
 		}
 		// BPLocation's GLN
-		if (existingBPartnerId == null && query.getLocatorGln() != null)
+		if (existingBPartnerId == null && query.getLocationGln() != null)
 		{
-			existingBPartnerId = getBPartnerIdByLocatorGlnIfExists(query)
+			existingBPartnerId = getBPartnerIdByLocationGlnIfExists(query)
 					.orElse(null);
-			searchedByInfo.add(StringUtils.formatMessage("Location.GLN={}", query.getLocatorGln()));
+			searchedByInfo.add(StringUtils.formatMessage("Location.GLN={}", query.getLocationGln()));
 		}
 
 		if (existingBPartnerId == null && query.isFailIfNotExists())
@@ -974,75 +974,101 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(@NonNull final BPartnerQuery query)
 	{
-		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(
-				query.isOutOfTrx(),
-				I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, query.getExternalId());
 
-		final int bpartnerRepoId = addOrgFilter(query, queryBuilder)
-				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, query.getExternalId())
-				.create()
-				.firstId();
+		if (!query.getOnlyOrgIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
+		}
+
+		final int bpartnerRepoId = queryBuilder.create().firstId();
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByValueIfExists(@NonNull final BPartnerQuery query)
 	{
-		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(
-				query.isOutOfTrx(),
-				I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_Value, query.getBpartnerValue());
 
-		final int bpartnerRepoId = addOrgFilter(query, queryBuilder)
-				.addEqualsFilter(I_C_BPartner.COLUMN_Value, query.getBpartnerValue())
-				.create()
-				.firstId();
+		if (!query.getOnlyOrgIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
+		}
+
+		final int bpartnerRepoId = queryBuilder.create().firstId();
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByNameIfExists(@NonNull final BPartnerQuery query)
 	{
-		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(
-				query.isOutOfTrx(),
-				I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_Name, query.getBpartnerName());
 
-		final int bpartnerRepoId = addOrgFilter(query, queryBuilder)
-				.addEqualsFilter(I_C_BPartner.COLUMN_Name, query.getBpartnerName())
-				.create()
-				.firstId();
+		if (!query.getOnlyOrgIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
+		}
+
+		final int bpartnerRepoId = queryBuilder.create().firstId();
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 
-	private final CCache<IPair<String, OrgId>, Optional<BPartnerId>> //
-	gln2BPartnerID = CCache.<IPair<String, OrgId>, Optional<BPartnerId>> builder()
+	@Value
+	@Builder
+	private static class BPartnerLocationGLNQuery
+	{
+		@NonNull
+		String gln;
+		@NonNull
+		ImmutableSet<OrgId> onlyOrgIds;
+
+		boolean outOfTrx;
+	}
+
+	private final CCache<BPartnerLocationGLNQuery, Optional<BPartnerId>> //
+	bpartnerIdsByGLNQuery = CCache.<BPartnerLocationGLNQuery, Optional<BPartnerId>> builder()
 			.tableName(I_C_BPartner_Location.Table_Name)
 			.build();
 
-	private Optional<BPartnerId> getBPartnerIdByLocatorGlnIfExists(@NonNull final BPartnerQuery query)
+	private Optional<BPartnerId> getBPartnerIdByLocationGlnIfExists(@NonNull final BPartnerQuery query)
 	{
-		if (query.isOutOfTrx())
+		final BPartnerLocationGLNQuery glnQuery = BPartnerLocationGLNQuery.builder()
+				.gln(query.getLocationGln())
+				.onlyOrgIds(query.getOnlyOrgIds())
+				.outOfTrx(query.isOutOfTrx())
+				.build();
+
+		if (glnQuery.isOutOfTrx())
 		{
-			final IPair<String, OrgId> key = ImmutablePair.of(query.getLocatorGln(), query.getOrgId());
-			return gln2BPartnerID.getOrLoad(key, k -> getBPartnerIdByLocatorGln0(query));
+			return bpartnerIdsByGLNQuery.getOrLoad(glnQuery, this::retrieveBPartnerIdByLocationGln);
 		}
-		return getBPartnerIdByLocatorGln0(query);
+		else
+		{
+			return retrieveBPartnerIdByLocationGln(glnQuery);
+		}
 	}
 
-	private Optional<BPartnerId> getBPartnerIdByLocatorGln0(@NonNull final BPartnerQuery query)
+	private Optional<BPartnerId> retrieveBPartnerIdByLocationGln(@NonNull final BPartnerLocationGLNQuery query)
 	{
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = createQueryBuilder(
-				query.isOutOfTrx(),
-				I_C_BPartner_Location.class);
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, query.getGln());
 
-		final I_C_BPartner_Location bPartnerLocationRecord = addOrgFilter(query, queryBuilder)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, query.getLocatorGln())
+		if (!query.getOnlyOrgIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, query.getOnlyOrgIds());
+		}
+
+		final I_C_BPartner_Location bpartnerLocationRecord = queryBuilder
 				.create()
 				.first(I_C_BPartner_Location.class);
 
-		if (bPartnerLocationRecord == null)
+		if (bpartnerLocationRecord == null)
 		{
 			return Optional.empty();
 		}
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerLocationRecord.getC_BPartner_ID());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerLocationRecord.getC_BPartner_ID());
 		return Optional.ofNullable(bPartnerId);
 	}
 
@@ -1076,23 +1102,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.orderByDescending(I_AD_Org.COLUMNNAME_AD_Org_ID); // prefer "more specific" AD_Org_IDs > 0;
-	}
-
-	private <T> IQueryBuilder<T> addOrgFilter(
-			@NonNull final BPartnerQuery query,
-			@NonNull final IQueryBuilder<T> queryBuilder)
-	{
-		final boolean includeAnyOrg = query.isIncludeAnyOrg();
-		if (includeAnyOrg)
-		{
-			queryBuilder.addInArrayFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
-		}
-		else
-		{
-			queryBuilder.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, query.getOrgId());
-		}
-		return queryBuilder;
-
 	}
 
 	@Override

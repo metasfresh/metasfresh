@@ -8,8 +8,11 @@ import javax.annotation.Nullable;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Util;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,25 +38,19 @@ import lombok.Value;
  */
 
 /**
- * If there is at least one bPartner with the given {@code externalId} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
- * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
- * <p>
- * If there is at least one bPartner with the given {@code bpartnerValue} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
- * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
- * <p>
- * If there is at least one bPartner a bPartner-Location that has the given {@code locatorGln} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
- * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
+ * Search by external ID, bpartner's Value, bpartner's Name or location's GLN in this order.
+ * Prefer the one with the specific orgId over the one with orgId "ANY".
  */
 @Value
 public class BPartnerQuery
 {
+	String externalId;
 	String bpartnerValue;
 	String bpartnerName;
-	String locatorGln;
-	String externalId;
-	OrgId orgId;
+	String locationGln;
 
-	boolean includeAnyOrg;
+	ImmutableSet<OrgId> onlyOrgIds;
+
 	boolean outOfTrx;
 	boolean failIfNotExists;
 
@@ -62,27 +59,27 @@ public class BPartnerQuery
 			@Nullable final String externalId,
 			@Nullable final String bpartnerValue,
 			@Nullable final String bpartnerName,
-			@Nullable final String locatorGln,
-			@NonNull final OrgId orgId,
-			@Nullable final Boolean includeAnyOrg,
+			@Nullable final String locationGln,
+			//
+			@NonNull @Singular final ImmutableSet<OrgId> onlyOrgIds,
+			//
 			@Nullable final Boolean outOfTrx,
 			@Nullable final Boolean failIfNotExists)
 	{
 
 		this.bpartnerValue = bpartnerValue;
 		this.bpartnerName = bpartnerName;
-		this.locatorGln = locatorGln;
+		this.locationGln = locationGln;
 		this.externalId = externalId;
 		errorIf(isEmpty(bpartnerValue, true)
 				&& isEmpty(bpartnerName, true)
 				&& isEmpty(externalId, true)
-				&& isEmpty(locatorGln, true),
-				"At least one of the given bpartnerValue, bpartnerName, locatorGln or externalId needs to be non-empty");
+				&& isEmpty(locationGln, true),
+				"At least one of the given bpartnerValue, bpartnerName, locationGln or externalId needs to be non-empty");
 
-		this.orgId = orgId;
+		this.onlyOrgIds = onlyOrgIds;
 
-		this.includeAnyOrg = Util.coalesce(includeAnyOrg, false);
-		this.outOfTrx = Util.coalesce(outOfTrx, false);
+		this.outOfTrx = Util.coalesce(outOfTrx, true);
 		this.failIfNotExists = Util.coalesce(failIfNotExists, false);
 	}
 }

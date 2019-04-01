@@ -93,9 +93,8 @@ public class BPartnerDAOTest
 	{
 		final BPartnerId bpartnerId = bpartnersRepo.retrieveBPartnerIdBy(BPartnerQuery.builder()
 				.bpartnerName(queryBPName)
+				.onlyOrgId(OrgId.ANY)
 				.failIfNotExists(false)
-				.includeAnyOrg(true)
-				.orgId(OrgId.ANY)
 				.build())
 				.orElse(null);
 		return assertThat(bpartnerId);
