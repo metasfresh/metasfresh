@@ -583,6 +583,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 		// Default permission: allow all because actually this is an "exclude" list (if no include options were found).
 		final HashSet<Access> defaultPermissionAccesses = new HashSet<>();
+		defaultPermissionAccesses.addAll(TablePermission.ALL_ACCESSES);
 
 		for (final I_AD_Table_Access tableAccessRecord : tableAccessRecords)
 		{
