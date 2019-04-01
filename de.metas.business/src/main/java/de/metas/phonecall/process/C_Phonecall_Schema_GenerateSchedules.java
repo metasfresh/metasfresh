@@ -8,8 +8,11 @@ import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaId;
 import de.metas.phonecall.service.PhonecallScheduleService;
 import de.metas.phonecall.service.PhonecallSchemaRepository;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /*
  * #%L
@@ -33,7 +36,7 @@ import de.metas.process.Param;
  * #L%
  */
 
-public class C_Phonecall_Schema_GenerateSchedules extends JavaProcess
+public class C_Phonecall_Schema_GenerateSchedules extends JavaProcess implements IProcessPrecondition
 {
 	private final PhonecallScheduleService phonecallScheduleService = Adempiere.getBean(PhonecallScheduleService.class);
 	private final PhonecallSchemaRepository schemaRepo = Adempiere.getBean(PhonecallSchemaRepository.class);
@@ -52,5 +55,17 @@ public class C_Phonecall_Schema_GenerateSchedules extends JavaProcess
 		phonecallScheduleService.generatePhonecallSchedulesForSchema(phonecallSchema, p_StartDate, p_EndDate);
 
 		return MSG_OK;
+	}
+
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if(!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 }

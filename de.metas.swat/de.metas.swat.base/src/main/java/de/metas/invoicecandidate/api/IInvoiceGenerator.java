@@ -47,9 +47,6 @@ public interface IInvoiceGenerator
 {
 	/**
 	 * Execute the generator
-	 *
-	 * @param invoiceCandidates
-	 * @return result
 	 */
 	IInvoiceGenerateResult generateInvoices(Iterator<I_C_Invoice_Candidate> invoiceCandidates);
 

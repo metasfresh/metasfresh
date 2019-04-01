@@ -159,8 +159,6 @@ public class Scheduler extends AdempiereServer
 	 * <li>Delete old logs
 	 * <li>create a new AD_SchedulerLog record based on {@link #m_summary}.
 	 * </ul>
-	 *
-	 * @param trxName
 	 */
 	private void saveLogs(final PInstanceId pinstanceId, final String trxName)
 	{
@@ -453,6 +451,7 @@ public class Scheduler extends AdempiereServer
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
+				.setInvokedByScheduler(true)
 				.build();
 
 		return pi;

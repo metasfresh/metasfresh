@@ -35,6 +35,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Checker used to make sure we are enqueueing and invoicing exactly the same amount that user seen on screen.
@@ -44,6 +45,7 @@ import lombok.NonNull;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
  */
+@ToString
 /* package */class ICNetAmtToInvoiceChecker implements IAggregator<BigDecimal, I_C_Invoice_Candidate>
 {
 	/** Process/Workpackage parameter name */

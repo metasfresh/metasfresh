@@ -13,6 +13,64 @@
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.xmlunit</groupId>
+			<artifactId>xmlunit-core</artifactId>
+			<version>2.6.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency> <!-- needed for snapshot-testing -->
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency> <!-- we need base only for testing -->
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>

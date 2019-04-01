@@ -29,6 +29,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -769,14 +770,11 @@ public final class DB
 
 	/**
 	 * Set PreparedStatement's parameter. Similar with calling <code>pstmt.setObject(index, param)</code>
-	 *
-	 * @param pstmt
-	 * @param index
-	 * @param param
-	 * @throws SQLException
 	 */
-	public static void setParameter(PreparedStatement pstmt, int index, Object param)
-			throws SQLException
+	public static void setParameter(
+			@NonNull final PreparedStatement pstmt,
+			final int index,
+			@Nullable final Object param) throws SQLException
 	{
 		if (param == null)
 			pstmt.setObject(index, null);
@@ -789,6 +787,8 @@ public final class DB
 		//
 		else if (param instanceof Timestamp)
 			pstmt.setTimestamp(index, (Timestamp)param);
+		else if (param instanceof Instant)
+			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
 		else if (param instanceof java.util.Date) // metas: support for java.util.Date
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
 		else if (param instanceof LocalDateTime)

@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
 
-import lombok.NonNull;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +13,8 @@ import com.google.common.collect.Maps;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionResponseConverter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,26 +42,45 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 @Profile(ForumDatenaustauschChConstants.PROFILE)
 public class CrossVersionServiceRegistry
 {
-	private final ImmutableMap<String, CrossVersionRequestConverter<?>> xsdName2converter;
+	private final ImmutableMap<String, CrossVersionRequestConverter> xsdName2Requestconverter;
+	private final ImmutableMap<XmlVersion, CrossVersionRequestConverter> simpleVersionName2RequestConverter;
 
-	private final ImmutableMap<XmlVersion, CrossVersionRequestConverter<?>> simpleVersionName2converter;
+	private final ImmutableMap<String, CrossVersionResponseConverter> xsdName2ResponseConverter;
+	private final ImmutableMap<XmlVersion, CrossVersionResponseConverter> simpleVersionName2ResponseConverter;
 
-	public CrossVersionServiceRegistry(@NonNull final Optional<List<CrossVersionRequestConverter<?>>> crossVersionRequestConverters)
+	public CrossVersionServiceRegistry(
+			@NonNull final Optional<List<CrossVersionRequestConverter>> crossVersionRequestConverters,
+			@NonNull final Optional<List<CrossVersionResponseConverter>> crossVersionResponseConverters
+			)
 	{
-		final List<CrossVersionRequestConverter<?>> //
-		converterList = crossVersionRequestConverters.orElse(ImmutableList.of());
+		final List<CrossVersionRequestConverter> //
+		requestConverterList = crossVersionRequestConverters.orElse(ImmutableList.of());
+		this.xsdName2Requestconverter = Maps.uniqueIndex(requestConverterList, CrossVersionRequestConverter::getXsdName);
+		this.simpleVersionName2RequestConverter = Maps.uniqueIndex(requestConverterList, CrossVersionRequestConverter::getVersion);
 
-		this.xsdName2converter = Maps.uniqueIndex(converterList, CrossVersionRequestConverter::getXsdName);
-		this.simpleVersionName2converter = Maps.uniqueIndex(converterList, CrossVersionRequestConverter::getVersion);
+		final List<CrossVersionResponseConverter> //
+		responseConverterList = crossVersionResponseConverters.orElse(ImmutableList.of());
+		this.xsdName2ResponseConverter = Maps.uniqueIndex(responseConverterList, CrossVersionResponseConverter::getXsdName);
+		this.simpleVersionName2ResponseConverter = Maps.uniqueIndex(responseConverterList, CrossVersionResponseConverter::getVersion);
 	}
 
-	public CrossVersionRequestConverter<?> getConverterForXsdName(@NonNull final String xsdName)
+	public CrossVersionRequestConverter getRequestConverterForXsdName(@NonNull final String xsdName)
 	{
-		return xsdName2converter.get(xsdName);
+		return xsdName2Requestconverter.get(xsdName);
 	}
 
-	public CrossVersionRequestConverter<?> getConverterForSimpleVersionName(@NonNull final XmlVersion version)
+	public CrossVersionRequestConverter getRequestConverterForSimpleVersionName(@NonNull final XmlVersion version)
 	{
-		return simpleVersionName2converter.get(version);
+		return simpleVersionName2RequestConverter.get(version);
+	}
+
+	public CrossVersionResponseConverter getResponseConverterForXsdName(@NonNull final String xsdName)
+	{
+		return xsdName2ResponseConverter.get(xsdName);
+	}
+
+	public CrossVersionResponseConverter getResponseConverterForSimpleVersionName(@NonNull final XmlVersion version)
+	{
+		return simpleVersionName2ResponseConverter.get(version);
 	}
 }

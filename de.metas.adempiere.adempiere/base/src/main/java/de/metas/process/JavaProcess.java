@@ -153,7 +153,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param instance
 	 * @return
 	 */
-	public static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance)
+	public static final IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance)
 	{
 		final boolean overrideCurrentInstance = false;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
@@ -238,7 +238,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Note: This method shall be called by the framework.
-	 * 
+	 *
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
@@ -1131,7 +1131,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.setRequiredAccess(Access.READ)
 				.createSelection(pinstanceId);
 	}
-	
+
 	protected final UserId getLoggedUserId()
 	{
 		return Env.getLoggedUserId();

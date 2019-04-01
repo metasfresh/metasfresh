@@ -65,6 +65,7 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	public static final String ShipmentPermissionPharma_TypeA = "A";
 	public static final String ShipmentPermissionPharma_TypeB = "B";
+	public static final String ShipmentPermissionPharma_TypeC = "C";
 	// @formatter:on
 
 	// @formatter:off
@@ -74,6 +75,7 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	public static final String ReceiptPermissionPharma_TypeA = "A";
 	public static final String ReceiptPermissionPharma_TypeB = "B";
+	public static final String ReceiptPermissionPharma_TypeC = "C";
 	// @formatter:on
 
 	// @formatter:off
@@ -176,5 +178,11 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	public static final String COLUMNNAME_StatusInfo = "StatusInfo";
 	public void setStatusInfo(String StatusInfo);
 	public String getStatusInfo();
+	// @formatter:on
+	
+	// @formatter:off
+	public static final String COLUMNNAME_IFA_Manufacturer = "IFA_Manufacturer";
+	public void setIFA_Manufacturer(String IFA_Manufacturer);
+	public String getIFA_Manufacturer();
 	// @formatter:on
 }

@@ -16,7 +16,7 @@ import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.AddressInfo;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.payment.esr.ESRStringUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;

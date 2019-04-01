@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 
 /*
  * #%L
@@ -28,7 +28,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
  * #L%
  */
 
-public interface CrossVersionRequestConverter<T>
+public interface CrossVersionRequestConverter
 {
 	public void fromCrossVersionRequest(XmlRequest xRequest, OutputStream outputStream);
 
