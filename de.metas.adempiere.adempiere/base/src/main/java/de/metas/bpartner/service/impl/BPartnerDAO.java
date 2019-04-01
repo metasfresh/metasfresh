@@ -941,12 +941,19 @@ public class BPartnerDAO implements IBPartnerDAO
 					.orElse(null);
 			searchedByInfo.add(StringUtils.formatMessage("ExternalId={}", query.getExternalId()));
 		}
-		// ..code (aka value)
+		// ..BPartner code (aka value)
 		if (existingBPartnerId == null && query.getBpartnerValue() != null)
 		{
 			existingBPartnerId = getBPartnerIdByValueIfExists(query)
 					.orElse(null);
 			searchedByInfo.add(StringUtils.formatMessage("Value/Code={}", query.getBpartnerValue()));
+		}
+		// ..BPartner Name
+		if (existingBPartnerId == null && query.getBpartnerName() != null)
+		{
+			existingBPartnerId = getBPartnerIdByNameIfExists(query)
+					.orElse(null);
+			searchedByInfo.add(StringUtils.formatMessage("Name={}", query.getBpartnerName()));
 		}
 		// BPLocation's GLN
 		if (existingBPartnerId == null && query.getLocatorGln() != null)
@@ -986,6 +993,19 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		final int bpartnerRepoId = addOrgFilter(query, queryBuilder)
 				.addEqualsFilter(I_C_BPartner.COLUMN_Value, query.getBpartnerValue())
+				.create()
+				.firstId();
+		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+	}
+
+	private Optional<BPartnerId> getBPartnerIdByNameIfExists(@NonNull final BPartnerQuery query)
+	{
+		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(
+				query.isOutOfTrx(),
+				I_C_BPartner.class);
+
+		final int bpartnerRepoId = addOrgFilter(query, queryBuilder)
+				.addEqualsFilter(I_C_BPartner.COLUMN_Name, query.getBpartnerName())
 				.create()
 				.firstId();
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);

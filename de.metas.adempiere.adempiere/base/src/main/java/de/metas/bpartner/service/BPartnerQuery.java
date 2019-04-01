@@ -25,15 +25,14 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 /**
  * If there is at least one bPartner with the given {@code externalId} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
@@ -49,6 +48,7 @@ import lombok.Value;
 public class BPartnerQuery
 {
 	String bpartnerValue;
+	String bpartnerName;
 	String locatorGln;
 	String externalId;
 	OrgId orgId;
@@ -61,6 +61,7 @@ public class BPartnerQuery
 	private BPartnerQuery(
 			@Nullable final String externalId,
 			@Nullable final String bpartnerValue,
+			@Nullable final String bpartnerName,
 			@Nullable final String locatorGln,
 			@NonNull final OrgId orgId,
 			@Nullable final Boolean includeAnyOrg,
@@ -69,10 +70,14 @@ public class BPartnerQuery
 	{
 
 		this.bpartnerValue = bpartnerValue;
+		this.bpartnerName = bpartnerName;
 		this.locatorGln = locatorGln;
 		this.externalId = externalId;
-		errorIf(isEmpty(bpartnerValue, true) && isEmpty(externalId, true) && isEmpty(locatorGln, true),
-				"At least one of the given bpartnerValue, locatorGln or externalId needs to be non-empty");
+		errorIf(isEmpty(bpartnerValue, true)
+				&& isEmpty(bpartnerName, true)
+				&& isEmpty(externalId, true)
+				&& isEmpty(locatorGln, true),
+				"At least one of the given bpartnerValue, bpartnerName, locatorGln or externalId needs to be non-empty");
 
 		this.orgId = orgId;
 
