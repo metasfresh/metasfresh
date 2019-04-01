@@ -28,11 +28,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.impexp.ImportProcessHelper.DBFunctionParams;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.api.IParams;
@@ -40,7 +42,6 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
-import org.compiere.util.DB.OnFail;
 import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.compiere.util.TrxRunnableAdapter;
@@ -53,6 +54,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Base implementation of {@link IImportProcess}.
@@ -74,6 +76,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 	public static final String COLUMNNAME_Processed = "Processed";
 	public static final String COLUMNNAME_Processing = "Processing";
+	public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
 
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
@@ -317,7 +320,9 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					public void run(final String localTrxName) throws Exception
 					{
 						this.recordImportResult = importRecord(state, importRecord, isInsertOnly());
-
+						//
+						runSQLAfterRowImport(importRecord, localTrxName);
+						//
 						markImported(importRecord);
 					}
 
@@ -349,6 +354,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 			}
 
 			afterImport();
+			
+			runSQLAfterCompleteImport();
 		}
 		catch (final SQLException e)
 		{
@@ -385,9 +392,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 				, importRecordId // record Id
 		};
 
-		DB.executeUpdate(sql.toString(),
+		DB.executeUpdateEx(sql.toString(),
 				sqlParams,
-				OnFail.IgnoreButLog,
 				ITrx.TRXNAME_ThreadInherited,
 				0, // no timeOut
 				(ISqlUpdateReturnProcessor)null);
@@ -398,7 +404,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		final StringBuilder sql = new StringBuilder("UPDATE " + getImportTableName()
 				+ " SET " + COLUMNNAME_I_IsImported + "='N', Updated=now() "
 				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y' ").append(getWhereClause());
-		final int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		return no >= 0 ? no : 0;
 	}
 
@@ -413,5 +419,26 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	protected void afterImport()
 	{
 		// nothing to do here
+	}
+	
+	private void runSQLAfterCompleteImport()
+	{
+		final List<String> functions = ImportProcessHelper.fetchImportBeforeCompleteFunctions(getImportTableName());
+		final DBFunctionParams params = DBFunctionParams.builder()
+				.dataImportId(0)
+				.build();
+		functions.forEach(function -> ImportProcessHelper.doDBFunctionCall(function, params, ITrx.TRXNAME_None));
+	}
+	
+	private void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord , @NonNull final String trxName)
+	{
+		final List<String> functions = ImportProcessHelper.fetchImportAfterRowFunctions(getImportTableName());
+		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
+		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
+		final DBFunctionParams params = DBFunctionParams.builder()
+				.dataImportId(dataImportId.orElse(0))
+				.recordId(recordId.orElse(0))
+				.build();
+		functions.forEach(function -> ImportProcessHelper.doDBFunctionCall(function, params, trxName));
 	}
 }
