@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import groovy.transform.Immutable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
