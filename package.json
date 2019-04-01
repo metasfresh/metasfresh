@@ -1,5 +1,10 @@
 {
   "name": "metasfresh-e2e",
+  "license": "GPL-2.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:metasfresh/metasfresh-e2e.git"
+  },
   "scripts": {
     "cypress:open": "cypress open"
   },
@@ -42,10 +47,10 @@
     "luxon": "^1.11.4",
     "moment": "^2.24.0",
     "numeral": "^2.0.6",
+    "react": "16.5.0",
+    "react-dom": "16.5.0",
     "react-router-redux": "^4.0.8",
     "sockjs-client": "^1.3.0",
-    "stompjs": "^2.3.3",
-    "react": "16.5.0",
-    "react-dom": "16.5.0"
+    "stompjs": "^2.3.3"
   }
 }

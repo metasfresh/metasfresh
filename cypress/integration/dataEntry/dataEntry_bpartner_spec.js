@@ -12,20 +12,20 @@ describe('Create bpartner with custom dataentry based tabs', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const dataEntryGroupName = `Group1 ${timestamp}`;
 
-    const dataEntrySubGroup1Name = 'SubGroup1-1';
+    const dataEntrySubGroup1Name = `SubGroup1-1 ${timestamp}`;
     const dataEntrySection1Name = `Section1-1 ${timestamp}`;
     const dataEntrySection2Name = `Section1-2 ${timestamp}`;
 
     new DataEntryGroup(dataEntryGroupName, 'Business Partner')
       .setTabName('Group1-Tab1')
-      // .setSeqNo(20)
+      //.setSeqNo(20)
       .setDescription(`Description of ${dataEntryGroupName}`)
       //.setActive(false) // you can set it to inactive, but then no subgroups can be added
       .addDataEntrySubGroup(
         new DataEntrySubGroup(dataEntrySubGroup1Name)
           .setTabName('Group1-Tab1-SubTab1')
           .setDescription(`${dataEntrySubGroup1Name} - Description`)
-          // .setSeqNo('10')
+        //.setSeqNo('10')
       )
       .apply();
 
@@ -35,20 +35,20 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       )
       //.setSeqNo(15)
       .addDataEntryLine(
-        new DataEntryLine.builder()
-          // .setSeqNo('10')
+        new DataEntryLine()
+        // .setSeqNo('10')
       )
       .addDataEntryLine(
-        new DataEntryLine.builder()
-          // .setSeqNo('20')
+        new DataEntryLine()
+        // .setSeqNo('20')
       )
       .addDataEntryLine(
-        new DataEntryLine.builder()
-          // .setSeqNo('30')
+        new DataEntryLine()
+        // .setSeqNo('30')
       )
       .apply();
 
-    const section1FieldBuilder = new DataEntryField.builder(
+    const section1FieldBuilder = new DataEntryField(
       'Tab1-Section1-Line1-Field1',
       `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`
     )
@@ -91,9 +91,9 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       // .setSeqNo(25)
       .addDataEntryLine(
         new DataEntryLine()
-          // .setSeqNo('000000000000000000010')
+        // .setSeqNo('000000000000000000010')
       )
-       .apply();
+      .apply();
 
     new DataEntryField(
       'Tab1-Section2-Line1-Field1',
@@ -114,14 +114,12 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDataEntryRecordType('List')
       // .setSeqNo('000000000000000020')
       .addDataEntryListValue(
-        new DataEntryListValue('ListItem 2')
-          .setDescription('ListItem 2 with SeqNo10')
-          // .setSeqNo('00000000000000020')
+        new DataEntryListValue('ListItem 2').setDescription('ListItem 2 with SeqNo10')
+        // .setSeqNo('00000000000000020')
       )
       .addDataEntryListValue(
-        new DataEntryListValue('ListItem 1')
-          .setDescription('ListItem 1 with SeqNo20')
-          // .setSeqNo('00000000000000010')
+        new DataEntryListValue('ListItem 1').setDescription('ListItem 1 with SeqNo20')
+        // .setSeqNo('00000000000000010')
       )
       .apply();
 
