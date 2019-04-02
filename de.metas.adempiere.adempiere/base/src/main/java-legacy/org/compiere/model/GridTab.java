@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.swing.event.EventListenerList;
@@ -68,7 +67,6 @@ import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
@@ -88,7 +86,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -98,9 +95,6 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -241,8 +235,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	private final AttachmentsMap attachmentsMap;
 	/** Chats */
 	private HashMap<Integer, Integer> m_Chats = null;
-	/** Locks */
-	private final ExtendedMemorizingSupplier<Set<Integer>> lockedRecordIdsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveLockedRecordIds());
 
 	/** Current Row */
 	private int m_currentRow = -1;
@@ -1692,7 +1684,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_KeyColumnName, keyColumnName);
 
 		attachmentsMap.setKeyColumnName(keyColumnName);
-		lockedRecordIdsSupplier.forget();
 	}
 
 	/**
@@ -2558,61 +2549,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return value.intValue();
 		}
 	}	// getCM_ChatID
-
-	/** Retrieve locked recordIds for current user */
-	private Set<Integer> retrieveLockedRecordIds()
-	{
-		if (!canHaveAttachment())
-		{
-			return ImmutableSet.of();
-		}
-
-		final UserId adUserId = Env.getLoggedUserId();
-		return Services.get(IUserRolePermissionsDAO.class).retrievePrivateAccessRecordIds(adUserId, getAD_Table_ID());
-	}
-
-	private Set<Integer> getLockedRecordIds()
-	{
-		return lockedRecordIdsSupplier.get();
-	}
-
-	/**
-	 * @return true if the record is locked
-	 */
-	public boolean isLocked()
-	{
-		if (!Env.getUserRolePermissions(getCtx()).hasPermission(IUserRolePermissions.PERMISSION_PersonalLock))
-		{
-			return false;
-		}
-
-		return getLockedRecordIds().contains(getRecord_ID());
-	}	// isLocked
-
-	/**
-	 * Lock Record
-	 *
-	 * @param ctx context
-	 * @param recordId id
-	 * @param lock true if lock, otherwise unlock
-	 */
-	public void lock(final int recordId, final boolean lock)
-	{
-		final UserId adUserId = Env.getLoggedUserId();
-		final int adTableId = getAD_Table_ID();
-
-		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		if(lock)
-		{
-			permissionsDAO.createPrivateAccess(adUserId, adTableId, recordId);
-		}
-		else
-		{
-			permissionsDAO.deletePrivateAccess(adUserId, adTableId, recordId);
-		}
-
-		lockedRecordIdsSupplier.forget();
-	}
 
 	/**************************************************************************
 	 * Data Status Listener from MTable.

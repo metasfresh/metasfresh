@@ -29,7 +29,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -85,7 +84,6 @@ import org.compiere.grid.APanelTab;
 import org.compiere.grid.GridController;
 import org.compiere.grid.GridSynchronizer;
 import org.compiere.grid.ICreateFrom;
-import org.compiere.grid.RecordAccessDialog;
 import org.compiere.grid.VCreateFromFactory;
 import org.compiere.grid.VOnlyCurrentDays;
 import org.compiere.grid.VSortTab;
@@ -396,8 +394,6 @@ public class APanel extends CPanel
 	public AppsAction aIgnore;
 	/** Save Button */
 	public AppsAction aSave;
-	/** Private Lock Button */
-	public AppsAction aLock;
 	// Local (added to toolbar)
 	@SuppressWarnings("unused")
 	private AppsAction aReport, aEnd, aHome, aHelp,
@@ -454,8 +450,6 @@ public class APanel extends CPanel
 		aRefresh = addAction("Refresh", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), false, false);
 		mEdit.addSeparator();
 		aFind = addAction("Find", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), true, false);	// toggle
-		if (m_isPersonalLock)
-			aLock = addAction("Lock", mEdit, null, true, false);		// toggle
 		// View
 		final JMenu mView = AEnv.getMenu("View");
 		menuBar.add(mView);
@@ -737,10 +731,6 @@ public class APanel extends CPanel
 	private int m_onlyCurrentDays = 0;
 	/** Process Info */
 	private boolean m_isLocked = false;
-	/** Show Personal Lock */
-	private boolean m_isPersonalLock = Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_PersonalLock);
-	/** Last Modifier of Action Event */
-	private int m_lastModifiers;
 
 	private final Map<Integer, GridController> includedTabId2ParentGC = new HashMap<>(4);
 	private final Map<Integer, Integer> includedTabId2Height = new HashMap<>(); // metas-2009_0021_AP1_CR051
@@ -1489,9 +1479,6 @@ public class APanel extends CPanel
 			aAttachment.setEnabled(false);
 			aChat.setEnabled(false);
 		}
-		// Lock Indicator
-		if (m_isPersonalLock)
-			aLock.setPressed(m_curTab.isLocked());
 
 		if (m_curWinTab instanceof VTabbedPane)
 		{
@@ -1927,7 +1914,6 @@ public class APanel extends CPanel
 		if (m_disposing || isUILocked())
 			return;
 
-		m_lastModifiers = e.getModifiers();
 		final String cmd = e.getActionCommand();
 
 		// Problem: doubleClick detection - can't disable button as clicking button may change button status
@@ -1979,8 +1965,6 @@ public class APanel extends CPanel
 				cmd_refresh();
 			else if (cmd.equals(aFind.getName()))
 				cmd_find();
-			else if (m_isPersonalLock && cmd.equals(aLock.getName()))
-				cmd_lock();
 			// View
 			else if (cmd.equals(aAttachment.getName()))
 				cmd_attachment();
@@ -2656,31 +2640,6 @@ public class APanel extends CPanel
 		m_curTab.loadChats();				// reload
 		aChat.setPressed(m_curTab.hasChat());
 	}	// chat
-
-	/**
-	 * Lock
-	 */
-	private void cmd_lock()
-	{
-		log.debug("cmd_lock: lastModifiers={}", m_lastModifiers);
-
-		if (!m_isPersonalLock)
-			return;
-		int record_ID = m_curTab.getRecord_ID();
-		if (record_ID == -1)  	// No Key
-			return;
-		// Control Pressed
-		if ((m_lastModifiers & InputEvent.CTRL_MASK) != 0)
-		{
-			new RecordAccessDialog(getCurrentFrame(), m_curTab.getAD_Table_ID(), record_ID);
-		}
-		else
-		{
-			m_curTab.lock(record_ID, aLock.getButton().isSelected());
-			m_curTab.loadAttachments();			// reload
-		}
-		aLock.setPressed(m_curTab.isLocked());
-	}	// lock
 
 	/**
 	 * Toggle History
