@@ -55,7 +55,7 @@ public class BPartnerProductRestController
 	private final IBPartnerProductDAO bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 
-	@GetMapping
+	@GetMapping("/query")
 	public ResponseEntity<JsonBPartnerProductResult> getByCustomerProductNo(
 			final String customerName,
 			final String customerProductNo)
