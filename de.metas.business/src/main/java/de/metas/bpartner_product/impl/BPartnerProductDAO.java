@@ -1,9 +1,7 @@
 /**
  *
  */
-package de.metas.purchasing.api.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+package de.metas.bpartner_product.impl;
 
 /*
  * #%L
@@ -53,14 +51,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.bpartner_product.ProductExclude;
+import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.purchasing.api.IBPartnerProductDAO;
-import de.metas.purchasing.api.ProductExclude;
-import de.metas.purchasing.api.ProductExclude.ProductExcludeBuilder;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -71,12 +70,6 @@ import lombok.NonNull;
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
-	@Override
-	public I_C_BPartner_Product getById(final int bpartnerProductId)
-	{
-		return loadOutOfTrx(bpartnerProductId, I_C_BPartner_Product.class);
-	}
-
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(
 			final Properties ctx,
@@ -151,17 +144,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID())));
 	}
 
-	@Override
-	public Optional<I_C_BPartner_Product> retrieveDefaultVendor(final ProductId productId, final OrgId orgId)
-	{
-		return retrieveAllVendorsQuery(productId, orgId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_IsCurrentVendor, true)
-				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
-				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
-				.create()
-				.firstOptional(I_C_BPartner_Product.class);
-	}
-
 	private IQueryBuilder<I_C_BPartner_Product> retrieveAllVendorsQuery(final ProductId productId, final OrgId orgId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -234,7 +216,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				orgId,
 				trxName);
 
-
 		return bPartnerProductAssociationsQueryBuilder
 				.create()
 				.list(I_C_BPartner_Product.class);
@@ -300,6 +281,33 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.create()
 				.setOrderBy(bppOrderBy)
 				.first(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByCustomerProductNo(
+			@NonNull final BPartnerId customerId,
+			@NonNull final String customerProductNo)
+	{
+		Check.assumeNotEmpty(customerProductNo, "customerProductNo shall not be empty");
+
+		final I_C_BPartner_Product record = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_ProductNo, customerProductNo)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_UsedForCustomer, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_C_BPartner_Product.class);
+
+		if (record == null)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+			return Optional.of(productId);
+		}
 	}
 
 	@Override

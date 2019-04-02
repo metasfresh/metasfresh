@@ -29,8 +29,8 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
@@ -109,15 +109,16 @@ public class SalesOrderRestController
 		}
 
 		final BPartnerQuery query = BPartnerQuery.builder()
-				.orgId(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())))
-				.includeAnyOrg(true)
-				.failIfNotExists(true)
 				.bpartnerValue(request.getShipBPartnerCode())
+				.onlyOrgId(OrgId.ANY)
+				.onlyOrgId(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())))
+				.outOfTrx(false)
+				.failIfNotExists(true)
 				.build();
 
 		final BPartnerId shipBPartnerId = bpartnersRepo
 				.retrieveBPartnerIdBy(query)
-				.get()/*bc failIfNotExists(true)*/;
+				.get()/* bc failIfNotExists(true) */;
 
 		salesOrderFactory.shipBPartner(shipBPartnerId);
 
