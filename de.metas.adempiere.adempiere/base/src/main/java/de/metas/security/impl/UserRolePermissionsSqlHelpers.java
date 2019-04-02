@@ -147,13 +147,12 @@ final class UserRolePermissionsSqlHelpers
 		// ** Data Access **
 		for (final TableNameAndAlias tableNameAndAlias : mainSqlSelect.getTableNameAndAliases())
 		{
-			final String tableName = tableNameAndAlias.getTableName();
-
-			// [ 1644310 ] Rev. 1292 hangs on start
-			if (tableName.toUpperCase().endsWith("_TRL"))
+			if(tableNameAndAlias.isTrlTable())
 			{
 				continue;
 			}
+			
+			final String tableName = tableNameAndAlias.getTableName();
 			if (tablesAccessInfo.isView(tableName))
 			{
 				continue;

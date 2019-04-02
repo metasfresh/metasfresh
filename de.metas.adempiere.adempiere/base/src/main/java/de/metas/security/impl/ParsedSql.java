@@ -339,6 +339,11 @@ public final class ParsedSql
 		{
 			return !alias.isEmpty() ? alias : tableName;
 		}
+
+		public boolean isTrlTable()
+		{
+			return tableName.toUpperCase().endsWith("_TRL");
+		}
 	}
 
 	@Value
