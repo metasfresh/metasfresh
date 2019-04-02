@@ -185,7 +185,7 @@ class UserRolePermissionsBuilder
 		if (!userRolePermissionsToInclude.isEmpty())
 		{
 			final OrgPermissions.Builder orgAccessesBuilder = orgAccesses.asNewBuilder();
-			final TablePermissions.Builder tableAccessesBuilder = tableAccesses.asNewBuilder();
+			final TablePermissions.Builder tableAccessesBuilder = tableAccesses.toBuilder();
 			final TableColumnPermissions.Builder columnAccessesBuilder = columnAccesses.asNewBuilder();
 			final TableRecordPermissions.Builder recordAccessesBuilder = recordAccesses.asNewBuilder();
 			final ElementPermissions.Builder windowAccessesBuilder = windowAccesses.asNewBuilder();

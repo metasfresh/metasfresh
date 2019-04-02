@@ -9,12 +9,12 @@ public final class TablePermissions extends AbstractPermissions<TablePermission>
 		return new Builder();
 	}
 
-	private TablePermissions(PermissionsBuilder<TablePermission, TablePermissions> builder)
+	private TablePermissions(final PermissionsBuilder<TablePermission, TablePermissions> builder)
 	{
 		super(builder);
 	}
 
-	public Builder asNewBuilder()
+	public Builder toBuilder()
 	{
 		final Builder builder = builder();
 		builder.addPermissions(this, CollisionPolicy.Override);
