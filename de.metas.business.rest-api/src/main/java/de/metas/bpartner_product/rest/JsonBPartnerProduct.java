@@ -1,10 +1,16 @@
-package de.metas.vertical.pharma;
+package de.metas.bpartner_product.rest;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +28,10 @@ package de.metas.vertical.pharma;
  * #L%
  */
 
-public enum PharmaCustomerPermission
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
+@Builder
+public class JsonBPartnerProduct
 {
-	PHARMA_AGENT, //
-	PHARMACIE, //
-	PHARMA_MANUFACTURER, //
-	PHARMA_WHOLESALE, //
-	VETERINARY_PHARMACY, //
-	PHARMA_NARCOTICS, //
+	String productNo;
 }

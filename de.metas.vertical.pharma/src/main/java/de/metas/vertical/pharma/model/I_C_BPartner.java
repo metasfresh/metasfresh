@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.model;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
@@ -42,6 +43,7 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	// @formatter:off
 	public static final String COLUMNNAME_IsPharmaVendorManufacturerPermission = "IsPharmaVendorManufacturerPermission";
+
 	public void setIsPharmaVendorManufacturerPermission(boolean IsPharmaVendorManufacturerPermission);
 	public boolean isPharmaVendorManufacturerPermission();
 	// @formatter:on
@@ -59,8 +61,20 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	// @formatter:on
 
 	// @formatter:off
+	public static final String COLUMNNAME_IsPharmaVendorNarcoticsPermission = "IsPharmaVendorNarcoticsPermission";
+	public void setIsPharmaVendorNarcoticsPermission(boolean IsPharmaVendorNarcoticsPermission);
+	public boolean isPharmaVendorNarcoticsPermission();
+	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_IsPharmaCustomerNarcoticsPermission = "IsPharmaCustomerNarcoticsPermission";
+	public void setIsPharmaCustomerNarcoticsPermission(boolean IsPharmaCustomerNarcoticsPermission);
+	public boolean isPharmaCustomerNarcoticsPermission();
+	// @formatter:on
+
+	// @formatter:off
 	public static final String COLUMNNAME_ShipmentPermissionPharma = "ShipmentPermissionPharma";
-	public void setShipmentPermissionPharma(String ShipmentPermissionPharma);
+	public void setShipmentPermissionPharma(@Nullable String ShipmentPermissionPharma);
 	public String getShipmentPermissionPharma();
 
 	public static final String ShipmentPermissionPharma_TypeA = "A";
@@ -70,7 +84,7 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	// @formatter:off
 	public static final String COLUMNNAME_ReceiptPermissionPharma = "ReceiptPermissionPharma";
-	public void setReceiptPermissionPharma(String ReceiptPermissionPharma);
+	public void setReceiptPermissionPharma(@Nullable String ReceiptPermissionPharma);
 	public String getReceiptPermissionPharma();
 
 	public static final String ReceiptPermissionPharma_TypeA = "A";
@@ -80,13 +94,13 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 
 	// @formatter:off
 	public static final String COLUMNNAME_ShipmentPermissionChangeDate = "ShipmentPermissionChangeDate";
-	public void setShipmentPermissionChangeDate(Timestamp ShipmentPermissionChangeDate);
+	public void setShipmentPermissionChangeDate(@Nullable Timestamp ShipmentPermissionChangeDate);
 	public Timestamp getShipmentPermissionChangeDate();
 	// @formatter:on
 
 	// @formatter:off
 	public static final String COLUMNNAME_ReceiptPermissionChangeDate = "ReceiptPermissionChangeDate";
-	public void setReceiptPermissionChangeDate(Timestamp ReceiptPermissionChangeDate);
+	public void setReceiptPermissionChangeDate(@Nullable Timestamp ReceiptPermissionChangeDate);
 	public Timestamp getReceiptPermissionChangeDate();
 	// @formatter:on
 

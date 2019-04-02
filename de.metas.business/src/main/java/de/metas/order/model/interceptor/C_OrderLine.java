@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -48,7 +49,6 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -1,8 +1,5 @@
 package de.metas.bpartner.service;
 
-import static de.metas.util.Check.errorIf;
-import static de.metas.util.Check.isEmpty;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,15 +28,11 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.location.CountryId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -266,53 +259,6 @@ public interface IBPartnerDAO extends ISingletonService
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
 	Optional<BPartnerId> retrieveBPartnerIdBy(BPartnerQuery query);
-
-	/**
-	 * If there is at least one bPartner with the given {@code externalId} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
-	 * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
-	 * <p>
-	 * If there is at least one bPartner with the given {@code bpartnerValue} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
-	 * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
-	 * <p>
-	 * If there is at least one bPartner a bPartner-Location that has the given {@code locatorGln} and either the given {@code orgId} or (depending on {@code includeAnyOrg}) {@code AD_Org_ID=0} (i.e. {@link OrgId#ANY}),
-	 * The return it. Prefer the one with the specific orgId over the one with orgId "ANY".
-	 */
-	@Value
-	public static class BPartnerQuery
-	{
-		String bpartnerValue;
-		String locatorGln;
-		String externalId;
-		OrgId orgId;
-
-		boolean includeAnyOrg;
-		boolean outOfTrx;
-		boolean failIfNotExists;
-
-		@Builder
-		private BPartnerQuery(
-				@Nullable final String externalId,
-				@Nullable final String bpartnerValue,
-				@Nullable final String locatorGln,
-				@NonNull final OrgId orgId,
-				@Nullable final Boolean includeAnyOrg,
-				@Nullable final Boolean outOfTrx,
-				@Nullable final Boolean failIfNotExists)
-		{
-
-			this.bpartnerValue = bpartnerValue;
-			this.locatorGln = locatorGln;
-			this.externalId = externalId;
-			errorIf(isEmpty(bpartnerValue, true) && isEmpty(externalId, true) && isEmpty(locatorGln, true),
-					"At least one of the given bpartnerValue, locatorGln or externalId needs to be non-empty");
-
-			this.orgId = orgId;
-
-			this.includeAnyOrg = Util.coalesce(includeAnyOrg, false);
-			this.outOfTrx = Util.coalesce(outOfTrx, false);
-			this.failIfNotExists = Util.coalesce(failIfNotExists, false);
-		}
-	}
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
