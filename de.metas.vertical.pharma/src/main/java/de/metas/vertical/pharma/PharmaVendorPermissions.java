@@ -54,7 +54,8 @@ public final class PharmaVendorPermissions
 		{
 			permissionsBuilder.add(PharmaVendorPermission.PHARMA_WHOLESALE);
 		}
-		if (bpartner.isPharmaVendorNarcoticsPermission()) {
+		if (bpartner.isPharmaVendorNarcoticsPermission()) 
+		{
 			permissionsBuilder.add(PharmaVendorPermission.PHARMA_NARCOTICS);
 		}
 
