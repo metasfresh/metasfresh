@@ -331,7 +331,6 @@ export class RawList extends PureComponent {
             'input-mandatory': !lookupList && mandatory && !selected,
           })}
           tabIndex={tabIndex}
-          _onFocus={readonly ? null : onFocus}
           onFocus={readonly ? null : this.focusDropdown}
           onClick={readonly ? null : this.handleClick}
           onKeyDown={this.handleKeyDown}
