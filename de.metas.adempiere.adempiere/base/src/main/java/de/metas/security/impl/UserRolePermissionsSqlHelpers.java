@@ -8,6 +8,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql.SqlSelect;
 import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -22,12 +23,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,12 +39,62 @@ final class UserRolePermissionsSqlHelpers
 {
 	private static final Logger logger = LogManager.getLogger(UserRolePermissionsSqlHelpers.class);
 
-	private final UserRolePermissions role;
-	private final TablesAccessInfo tablesAccessInfo = TablesAccessInfo.instance;
+	private final UserRolePermissions _role;
+	private final TablesAccessInfo _tablesAccessInfo = TablesAccessInfo.instance;
 
 	UserRolePermissionsSqlHelpers(@NonNull final UserRolePermissions role)
 	{
-		this.role = role;
+		_role = role;
+	}
+
+	private UserId getUserId()
+	{
+		return _role.getUserId();
+	}
+
+	private boolean hasAccessAllOrgs()
+	{
+		return _role.isAccessAllOrgs();
+	}
+
+	private boolean hasAccessToPersonalDataOfOtherUsers()
+	{
+		return _role.isPersonalAccess();
+	}
+
+	private boolean hasTableAccess(final int adTableId, final Access access)
+	{
+		return adTableId > 0 && !_role.isTableAccess(adTableId, access);
+	}
+
+	private String getClientWhere(final String tableName, final String tableAlias, final Access access)
+	{
+		return _role.getClientWhere(tableName, tableAlias, access);
+	}
+
+	private String getOrgWhere(final String tableName, final Access access)
+	{
+		return _role.getOrgWhere(tableName, access);
+	}
+
+	private TableRecordPermissions getRecordPermissions()
+	{
+		return _role.getRecordPermissions();
+	}
+
+	private boolean isView(final TableNameAndAlias tableNameAndAlias)
+	{
+		return _tablesAccessInfo.isView(tableNameAndAlias.getTableName());
+	}
+
+	private int getAdTableId(final TableNameAndAlias tableNameAndAlias)
+	{
+		return _tablesAccessInfo.getAD_Table_ID(tableNameAndAlias.getTableName());
+	}
+
+	private String getKeyColumnName(final TableNameAndAlias tableNameAndAlias)
+	{
+		return _tablesAccessInfo.getIdColumnName(tableNameAndAlias.getTableName());
 	}
 
 	public String addAccessSQL(
@@ -97,11 +148,17 @@ final class UserRolePermissionsSqlHelpers
 			final boolean fullyQualified,
 			final Access access)
 	{
-		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
-
-		// Parse SQL
 		final ParsedSql parsedSql = ParsedSql.parse(sqlSelectFromWhere);
 		final SqlSelect mainSqlSelect = parsedSql.getMainSqlSelect();
+
+		String mainTableName = mainSqlSelect.getFirstTableAliasOrTableName();
+		if (!mainTableName.equals(tableNameIn))
+		{
+			logger.warn("First tableName/alias is not matching TableNameIn={}. Considering the TableNameIn. \nmainSqlSelect: {}", tableNameIn, mainSqlSelect);
+			mainTableName = tableNameIn;
+		}
+
+		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
 
 		// Do we have to add WHERE or AND
 		if (!mainSqlSelect.hasWhereClause())
@@ -113,22 +170,17 @@ final class UserRolePermissionsSqlHelpers
 			sqlAcessSqlWhereClause.append(" AND ");
 		}
 
-		String mainTableName = mainSqlSelect.getFirstTableAliasOrTableName();
-		if (!mainTableName.equals(tableNameIn))
-		{
-			logger.warn("First tableName/alias is not matching TableNameIn={}. Considering the TableNameIn. \nmainSqlSelect: {}", tableNameIn, mainSqlSelect);
-			mainTableName = tableNameIn;
-		}
-
-		if (!I_AD_PInstance_Log.Table_Name.equals(mainTableName))
+		//
+		// Client/Org Access
+		if (isApplyClientAndOrgAccess(mainTableName))
 		{
 			// Client Access
 			final String tableAlias = fullyQualified ? mainTableName : null;
 			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
-			sqlAcessSqlWhereClause.append(role.getClientWhere(mainTableName, tableAlias, access));
+			sqlAcessSqlWhereClause.append(getClientWhere(mainTableName, tableAlias, access));
 
 			// Org Access
-			if (!role.isAccessAllOrgs())
+			if (!hasAccessAllOrgs())
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-org */ ");
 				sqlAcessSqlWhereClause.append(" AND ");
@@ -136,39 +188,39 @@ final class UserRolePermissionsSqlHelpers
 				{
 					sqlAcessSqlWhereClause.append(mainTableName).append(".");
 				}
-				sqlAcessSqlWhereClause.append(role.getOrgWhere(mainTableName, access));
+				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
 			}
 		}
 		else
 		{
-			sqlAcessSqlWhereClause.append("\n /* no security */ 1=1");
+			sqlAcessSqlWhereClause.append("\n /* security-client-org-NO */ 1=1");
 		}
 
-		// ** Data Access **
+		//
+		// Data Access
 		for (final TableNameAndAlias tableNameAndAlias : mainSqlSelect.getTableNameAndAliases())
 		{
-			if(tableNameAndAlias.isTrlTable())
+			if (tableNameAndAlias.isTrlTable())
 			{
 				continue;
 			}
-			
-			final String tableName = tableNameAndAlias.getTableName();
-			if (tablesAccessInfo.isView(tableName))
+
+			if (isView(tableNameAndAlias))
 			{
 				continue;
 			}
 
 			// Data Table Access
-			final int adTableId = tablesAccessInfo.getAD_Table_ID(tableName);
-			if (adTableId > 0 && !role.isTableAccess(adTableId, access))
+			final int adTableId = getAdTableId(tableNameAndAlias);
+			if (!hasTableAccess(adTableId, access))
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
-				logger.debug("No access to AD_Table_ID={} - {} - {}", adTableId, tableName, sqlAcessSqlWhereClause);
+				logger.debug("No access to AD_Table_ID={} - {} - {}", adTableId, tableNameAndAlias, sqlAcessSqlWhereClause);
 				break;	// no need to check further
 			}
 
 			//
-			final String keyColumnName = tablesAccessInfo.getIdColumnName(tableName);
+			final String keyColumnName = getKeyColumnName(tableNameAndAlias);
 			if (keyColumnName == null)
 			{
 				continue;
@@ -192,10 +244,17 @@ final class UserRolePermissionsSqlHelpers
 			}
 		} // for all tables
 
+		//
 		// Dependent Records (only for main SQL)
-		role.getRecordPermissions().addRecordDependentAccessSql(sqlAcessSqlWhereClause, mainSqlSelect, mainTableName, access);
+		getRecordPermissions().addRecordDependentAccessSql(sqlAcessSqlWhereClause, mainSqlSelect, mainTableName, access);
 
+		//
 		return sqlAcessSqlWhereClause.toString();
+	}
+
+	private boolean isApplyClientAndOrgAccess(final String mainTableName)
+	{
+		return !I_AD_PInstance_Log.Table_Name.equals(mainTableName);
 	}
 
 	/**
@@ -208,14 +267,14 @@ final class UserRolePermissionsSqlHelpers
 	 */
 	private String getRecordWhere(final int adTableId, final String keyColumnNameFQ, final Access access)
 	{
-		final StringBuilder sb = role.getRecordPermissions().getRecordWhere(adTableId, keyColumnNameFQ, access);
+		final StringBuilder sb = getRecordPermissions().getRecordWhere(adTableId, keyColumnNameFQ, access);
 
 		// Don't ignore Privacy Access
-		if (!role.isPersonalAccess())
+		if (!hasAccessToPersonalDataOfOtherUsers())
 		{
 			final String lockedIds = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
 					+ " WHERE AD_Table_ID = " + adTableId
-					+ " AND AD_User_ID <> " + UserId.toRepoId(role.getUserId())
+					+ " AND AD_User_ID <> " + UserId.toRepoId(getUserId())
 					+ " AND IsActive = 'Y' )";
 			if (sb.length() > 0)
 			{
