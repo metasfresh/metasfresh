@@ -1,11 +1,14 @@
 package de.metas.bpartner_product.rest;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -57,20 +60,16 @@ public class BPartnerProductRestController
 
 	@GetMapping("/query")
 	public ResponseEntity<JsonBPartnerProductResult> getByCustomerProductNo(
-			final String customerName,
-			final String customerProductNo)
+			@RequestParam("customerName") final String customerName,
+			@RequestParam("customerProduct") final String customerProductSearchString)
 	{
-		final BPartnerId customerId = bpartnersRepo.retrieveBPartnerIdBy(BPartnerQuery.builder()
-				.bpartnerName(customerName)
-				.build())
-				.orElse(null);
+		final BPartnerId customerId = findCustomerId(customerName).orElse(null);
 		if (customerId == null)
 		{
 			return JsonBPartnerProductResult.notFound(trl("@NotFound@ @C_BPartner_ID@"));
 		}
 
-		final ProductId productId = bpartnerProductsRepo.getProductIdByCustomerProductNo(customerId, customerProductNo)
-				.orElse(null);
+		final ProductId productId = findProductId(customerId, customerProductSearchString).orElse(null);
 		if (productId == null)
 		{
 			return JsonBPartnerProductResult.notFound(trl("@NotFound@ @M_Product_ID@"));
@@ -79,6 +78,30 @@ public class BPartnerProductRestController
 		return JsonBPartnerProductResult.ok(JsonBPartnerProduct.builder()
 				.productNo(productsService.getProductValue(productId))
 				.build());
+	}
+
+	private Optional<BPartnerId> findCustomerId(final String customerName)
+	{
+		return bpartnersRepo.retrieveBPartnerIdBy(BPartnerQuery.builder()
+				.bpartnerName(customerName)
+				.build());
+	}
+
+	private Optional<ProductId> findProductId(final BPartnerId customerId, final String customerProductSearchString)
+	{
+		final Optional<ProductId> productIdByProductNo = bpartnerProductsRepo.getProductIdByCustomerProductNo(customerId, customerProductSearchString);
+		if (productIdByProductNo.isPresent())
+		{
+			return productIdByProductNo;
+		}
+
+		final Optional<ProductId> productIdByProductName = bpartnerProductsRepo.getProductIdByCustomerProductName(customerId, customerProductSearchString);
+		if (productIdByProductName.isPresent())
+		{
+			return productIdByProductName;
+		}
+
+		return Optional.empty();
 	}
 
 	private String trl(final String message)

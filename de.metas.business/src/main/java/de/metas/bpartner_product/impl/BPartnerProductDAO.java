@@ -311,6 +311,33 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByCustomerProductName(
+			@NonNull final BPartnerId customerId,
+			@NonNull final String customerProductName)
+	{
+		Check.assumeNotEmpty(customerProductName, "customerProductName shall not be empty");
+
+		final I_C_BPartner_Product record = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_ProductName, customerProductName)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_UsedForCustomer, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_C_BPartner_Product.class);
+
+		if (record == null)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+			return Optional.of(productId);
+		}
+	}
+
+	@Override
 	public List<ProductExclude> retrieveAllProductSalesExcludes()
 	{
 		return Services.get(IQueryBL.class)
