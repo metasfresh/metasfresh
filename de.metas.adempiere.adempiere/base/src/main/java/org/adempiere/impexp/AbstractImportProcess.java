@@ -34,7 +34,8 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.impexp.ImportProcessHelper.DBFunctionParams;
+import org.adempiere.impexp.DBFunctions.DBFunction;
+import org.adempiere.impexp.DBFunctions.DBFunctionParams;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.api.IParams;
@@ -321,7 +322,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					{
 						this.recordImportResult = importRecord(state, importRecord, isInsertOnly());
 						//
-						runSQLAfterRowImport(importRecord, localTrxName);
+						runSQLAfterRowImport(importRecord);
 						//
 						markImported(importRecord);
 					}
@@ -423,22 +424,22 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	
 	protected final void runSQLAfterCompleteImport()
 	{
-		final List<String> functions = ImportProcessHelper.fetchImportBeforeCompleteFunctions(getImportTableName());
+		final List<DBFunction> functions = DBFunctions.fetchImportBeforeCompleteFunctions(getImportTableName());
 		final DBFunctionParams params = DBFunctionParams.builder()
 				.dataImportId(0)
 				.build();
-		functions.forEach(function -> ImportProcessHelper.doDBFunctionCall(function, params, ITrx.TRXNAME_None));
+		functions.forEach(function -> DBFunctions.doDBFunctionCall(function, params));
 	}
 	
-	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord , @NonNull final String trxName)
+	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
-		final List<String> functions = ImportProcessHelper.fetchImportAfterRowFunctions(getImportTableName());
+		final List<DBFunction> functions = DBFunctions.fetchImportAfterRowFunctions(getImportTableName());
 		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
 		final DBFunctionParams params = DBFunctionParams.builder()
 				.dataImportId(dataImportId.orElse(0))
 				.recordId(recordId.orElse(0))
 				.build();
-		functions.forEach(function -> ImportProcessHelper.doDBFunctionCall(function, params, trxName));
+		functions.forEach(function -> DBFunctions.doDBFunctionCall(function, params));
 	}
 }
