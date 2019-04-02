@@ -425,8 +425,9 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	protected final void runSQLAfterCompleteImport()
 	{
 		final List<DBFunction> functions = DBFunctions.fetchImportBeforeCompleteFunctions(getImportTableName());
+		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
 		final DBFunctionParams params = DBFunctionParams.builder()
-				.dataImportId(0)
+				.dataImportId(dataImportId.orElse(0))
 				.build();
 		functions.forEach(function -> DBFunctions.doDBFunctionCall(function, params));
 	}
