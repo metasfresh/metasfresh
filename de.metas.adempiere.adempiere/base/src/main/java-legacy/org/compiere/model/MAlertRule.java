@@ -125,7 +125,7 @@ public class MAlertRule extends X_AD_AlertRule
 				if (roleId != null)
 				{
 					final IUserRolePermissions role = Env.getUserRolePermissions(getCtx());
-					finalSQL = role.addAccessSQL(finalSQL, null, true, Access.READ);
+					finalSQL = role.addAccessSQL(finalSQL, null, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 				}
 			}
 		}

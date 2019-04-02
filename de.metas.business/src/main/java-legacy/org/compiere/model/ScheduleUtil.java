@@ -179,7 +179,7 @@ public class ScheduleUtil
 			"SELECT Name, Date1 FROM C_NonBusinessDay "
 			+ "WHERE TRUNC(Date1) BETWEEN ? AND ?",
 			"C_NonBusinessDay",
-			false,
+			IUserRolePermissions.SQL_NOTQUALIFIED,
 			Access.READ);	// not qualified - RO
 		try
 		{

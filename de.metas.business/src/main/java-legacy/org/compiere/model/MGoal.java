@@ -121,7 +121,7 @@ public class MGoal extends X_PA_Goal
 		ArrayList<MGoal> list = new ArrayList<MGoal>();
 		String sql = "SELECT * FROM PA_Goal WHERE IsActive='Y' "
 				+ "ORDER BY SeqNo";
-		sql = Env.getUserRolePermissions(ctx).addAccessSQL(sql, "PA_Goal", false, Access.WRITE);	// RW to restrict Access
+		sql = Env.getUserRolePermissions(ctx).addAccessSQL(sql, "PA_Goal", IUserRolePermissions.SQL_NOTQUALIFIED, Access.WRITE);	// RW to restrict Access
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

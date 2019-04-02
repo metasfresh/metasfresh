@@ -209,7 +209,7 @@ public class VAttributeGrid extends CPanel
 				+ " AND pl.C_Currency_ID=c.C_Currency_ID"
 				+ " AND M_PriceList_Version.IsActive='Y' AND pl.IsActive='Y'";
 		// Add Access & Order
-		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_PriceList_Version", true, Access.READ)	// fully qualidfied - RO
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_PriceList_Version", IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ)	// fully qualidfied - RO
 				+ " ORDER BY M_PriceList_Version.Name";
 		try
 		{

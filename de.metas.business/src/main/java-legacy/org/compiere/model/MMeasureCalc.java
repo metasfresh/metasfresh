@@ -449,7 +449,7 @@ public class MMeasureCalc extends X_PA_MeasureCalc
 			return finalSQL;
 		if (role == null)
 			role = Env.getUserRolePermissions();
-		String retValue = role.addAccessSQL(finalSQL, tableName, true, Access.READ);
+		String retValue = role.addAccessSQL(finalSQL, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		return retValue;
 	}	//	addRestrictions
 

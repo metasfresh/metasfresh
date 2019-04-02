@@ -685,7 +685,7 @@ public final class AMenu extends CFrame
 		return Env.getUserRolePermissions().addAccessSQL(
 				"SELECT COUNT(1) FROM " + I_R_Request.Table_Name + " WHERE " + sqlWindowWhereClauseParsed //
 				, I_R_Request.Table_Name // TableNameIn
-				, false // fullyQualified
+				, IUserRolePermissions.SQL_NOTQUALIFIED // fullyQualified
 				, Access.WRITE
 		);
 	}

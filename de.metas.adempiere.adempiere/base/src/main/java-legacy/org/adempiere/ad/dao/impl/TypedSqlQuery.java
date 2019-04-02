@@ -1229,8 +1229,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (requiredAccess != null)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
-			final boolean applyAccessFilterFullyQualified = true; // metas: shall always be true
-			sql = role.addAccessSQL(sql, getTableName(), applyAccessFilterFullyQualified, requiredAccess);
+			sql = role.addAccessSQL(sql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, requiredAccess);
 		}
 
 		// metas: begin

@@ -615,7 +615,8 @@ public final class InfoProduct extends Info implements ActionListener,
 					+ M_PriceList_ID
 					+ " AND pl.C_Currency_ID=xp.C_Currency_ID)";
 		// Add Access & Order
-		SQL = Env.getUserRolePermissions().addAccessSQL(SQL, "M_PriceList_Version", true,
+		SQL = Env.getUserRolePermissions().addAccessSQL(SQL, "M_PriceList_Version",
+				IUserRolePermissions.SQL_FULLYQUALIFIED,
 				Access.READ) // fully qualidfied - RO
 				+ " ORDER BY M_PriceList_Version.Name";
 		PreparedStatement pstmt = null;
