@@ -1,8 +1,10 @@
-package de.metas.purchasing.api;
+package de.metas.bpartner_product;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,12 +28,14 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface IBPartnerProductBL extends ISingletonService
+@Value
+@Builder
+public class ProductExclude
 {
-
-	/**
-	 * Throw an exception if the product and partner are involved in a C_BPartnerProduct entry that is flagged as IsExcludedFromSale.
-	 */
-	void assertNotExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
-
+	@NonNull
+	private final ProductId productId;
+	@NonNull
+	private final BPartnerId bpartnerId;
+	@NonNull
+	private final String reason;
 }
