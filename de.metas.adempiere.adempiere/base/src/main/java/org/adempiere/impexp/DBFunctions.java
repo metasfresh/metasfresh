@@ -7,7 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
@@ -52,8 +54,7 @@ public class DBFunctions
 	private final static String IMPORT_BEFORE_COMPLETE = "IMPORT_BEFORE_COMPLETE";
 	private final static String IMPORT_AFTER_ROW = "IMPORT_AFTER_ROW";
 	private static List<DBFunction> availableFunctions;
-	private static List<DBFunction> availableAfterRowFunctions;
-	private static List<DBFunction> availableBeforeCompleteFunctions;
+	private static Map<String,List<DBFunction>> sortedFunctions;
 
 	@Builder
 	@Value
@@ -63,11 +64,25 @@ public class DBFunctions
 		final @NonNull String routine_name;
 	}
 
+	
+	final public List<DBFunction> fetchImportBeforeCompleteFunctions(@NonNull final String tableName)
+	{
+		return fetchFunctions(tableName).get(IMPORT_BEFORE_COMPLETE);
+	}
+	
 	final public List<DBFunction> fetchImportAfterRowFunctions(@NonNull final String tableName)
 	{
-		if (availableAfterRowFunctions == null)
+		return fetchFunctions(tableName).get(IMPORT_AFTER_ROW);
+	}
+	
+	
+	private Map<String,List<DBFunction>> fetchFunctions(@NonNull final String tableName)
+	{
+		if (sortedFunctions == null)
 		{
-			availableAfterRowFunctions = new ArrayList<>();
+			sortedFunctions = new HashMap<>();
+			final List<DBFunction> availableAfterRowFunctions = new ArrayList<>();
+			final List<DBFunction> availableBeforeCompleteFunctions = new ArrayList<>();
 			for (final DBFunction function : fetchImportFunctions(tableName))
 			{
 				if (isEligibleFunction(function))
@@ -76,27 +91,7 @@ public class DBFunctions
 					{
 						availableAfterRowFunctions.add(function);
 					}
-				}
-				else
-				{
-					log.warn("Function {} from schema {} is not eliglible for importing process!", function.getRoutine_name(), function.getSpecific_schema());
-				}
-			}
-		}
-
-		return availableAfterRowFunctions;
-	}
-
-	final public List<DBFunction> fetchImportBeforeCompleteFunctions(@NonNull final String tableName)
-	{
-		if (availableBeforeCompleteFunctions == null)
-		{
-			availableBeforeCompleteFunctions = new ArrayList<>();
-			for (final DBFunction function : fetchImportFunctions(tableName))
-			{
-				if (isEligibleFunction(function))
-				{
-					if (function.getRoutine_name().contains(IMPORT_BEFORE_COMPLETE))
+					else 
 					{
 						availableBeforeCompleteFunctions.add(function);
 					}
@@ -106,36 +101,13 @@ public class DBFunctions
 					log.warn("Function {} from schema {} is not eliglible for importing process!", function.getRoutine_name(), function.getSpecific_schema());
 				}
 			}
+			sortedFunctions.put(IMPORT_AFTER_ROW, availableAfterRowFunctions);
+			sortedFunctions.put(IMPORT_BEFORE_COMPLETE, availableBeforeCompleteFunctions);
 		}
 
-		return availableBeforeCompleteFunctions;
+		return sortedFunctions;
 	}
 
-	@Value
-	@Builder
-	public class DBFunctionParams
-	{
-		final int recordId;
-		final int dataImportId;
-	}
-
-	final public void doDBFunctionCall(@NonNull final DBFunction function, @NonNull DBFunctionParams params)
-	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append(function.getSpecific_schema())
-				.append(".")
-				.append(function.getRoutine_name());
-
-		if (params.getRecordId() > 0)
-		{
-			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "SELECT " + sb.toString() + "(?,?)", new Object[] { params.getRecordId(), params.getDataImportId() });
-		}
-		else
-		{
-			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "SELECT " + sb.toString() + "(?)", new Object[] { params.getDataImportId() });
-		}
-		log.info("\nCalling " + function);
-	}
 
 	private boolean isEligibleFunction(@NonNull final DBFunction function)
 	{
@@ -165,5 +137,31 @@ public class DBFunctions
 				.specific_schema(specific_schema)
 				.routine_name(routine_name)
 				.build();
+	}
+	
+	@Value
+	@Builder
+	public class DBFunctionParams
+	{
+		final int recordId;
+		final int dataImportId;
+	}
+
+	final public void doDBFunctionCall(@NonNull final DBFunction function, @NonNull DBFunctionParams params)
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append(function.getSpecific_schema())
+				.append(".")
+				.append(function.getRoutine_name());
+
+		if (params.getRecordId() > 0)
+		{
+			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "SELECT " + sb.toString() + "(?,?)", new Object[] { params.getRecordId(), params.getDataImportId() });
+		}
+		else
+		{
+			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "SELECT " + sb.toString() + "(?)", new Object[] { params.getDataImportId() });
+		}
+		log.info("\nCalling " + function);
 	}
 }
