@@ -22,17 +22,11 @@ package de.metas.edi.esb.route.imports;
  * #L%
  */
 
-
-import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import de.metas.edi.esb.bean.order.EDICompudataOrdersBean;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.processor.strategy.aggregation.ValidTypeAggregationStrategy;
+import de.metas.edi.esb.route.AbstractEDIRoute;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
@@ -42,28 +36,20 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
-
-import de.metas.edi.esb.bean.order.EDICompudataOrdersBean;
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.processor.strategy.aggregation.AggregationHelper;
-import de.metas.edi.esb.processor.strategy.aggregation.ValidTypeAggregationStrategy;
-import de.metas.edi.esb.route.AbstractEDIRoute;
 import org.springframework.stereotype.Component;
+
+import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 @Component
 public class EDIOrderRoute extends AbstractEDIRoute
 {
 	public static final String EDI_INPUT_ORDERS = "{{edi.input.orders}}";
-
-	public static final String EDI_ORDER_EDIMessageDatePattern = "edi.order.edi_message_date_pattern";
-	public static final String EDI_ORDER_ADClientValue = "edi.order.ad_client_value";
-	public static final String EDI_ORDER_ADOrgID = "edi.order.ad_org_id";
-	public static final String EDI_ORDER_ADInputDataDestination_InternalName = "edi.order.ad_input_datadestination_internalname";
-	public static final String EDI_ORDER_ADInputDataSourceID = "edi.order.ad_input_datasource_id";
-	public static final String EDI_ORDER_ADUserEnteredByID = "edi.order.ad_user_enteredby_id";
-	public static final String EDI_ORDER_DELIVERY_RULE = "edi.order.deliveryrule";
-	public static final String EDI_ORDER_DELIVERY_VIA_RULE = "edi.order.deliveryviarule";
 
 	private static final Set<Class<?>> pojoTypes = new HashSet<Class<?>>();
 	static
@@ -157,26 +143,7 @@ public class EDIOrderRoute extends AbstractEDIRoute
 				.split().method(EDICompudataOrdersBean.class, EDICompudataOrdersBean.METHOD_createXMLDocument)
 					//
 					// aggregate exchanges back to List after data is sent to ADempiere so that we can move the EDI document to DONE
-					.aggregationStrategy(new AggregationStrategy()
-					{
-						@Override
-						public Exchange aggregate(final Exchange oldExchange, final Exchange newExchange)
-						{
-							final List<Object> aggregationResult = new ArrayList<Object>();
-							// aggregate old body
-							if (oldExchange != null) // if it's not the first iteration
-							{
-								final Object oldBody = oldExchange.getIn().getBody();
-								AggregationHelper.aggregateElement(aggregationResult, oldBody);
-							}
-							// aggregate new body
-							final Object newBody = newExchange.getIn().getBody();
-							AggregationHelper.aggregateElement(aggregationResult, newBody);
-
-							newExchange.getIn().setBody(aggregationResult);
-							return newExchange;
-						}
-					})
+					.aggregationStrategy(new EDIAggregationStrategy())
 					//
 					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
 					.marshal(jaxb)

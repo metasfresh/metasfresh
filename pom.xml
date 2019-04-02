@@ -17,6 +17,7 @@
         <guava.version>18.0</guava.version>
         <smooks.version>1.5.1</smooks.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb</jaxb.packageName>
+        <jaxb.stepcom.packageName>de.metas.edi.esb.pojo.order.stepcom</jaxb.stepcom.packageName>
 
         <!-- Testing -->
         <junit.version>4.12</junit.version>
@@ -220,14 +221,33 @@
                 <artifactId>jaxb2-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>xjc-schema-metas</id>
                         <goals>
                             <goal>xjc</goal>
                         </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/schema</source>
+                            </sources>
+
+                            <packageName>${jaxb.packageName}</packageName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-schema-order</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/order</source>
+                            </sources>
+
+                            <packageName>${jaxb.stepcom.packageName}</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <packageName>${jaxb.packageName}</packageName>
-                </configuration>
             </plugin>
 
             <plugin>

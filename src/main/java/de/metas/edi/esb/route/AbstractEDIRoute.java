@@ -22,11 +22,8 @@ package de.metas.edi.esb.route;
  * #L%
  */
 
-
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
@@ -34,8 +31,9 @@ import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 
 public abstract class AbstractEDIRoute extends RouteBuilder
 {
@@ -50,6 +48,15 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	protected static final String IS_CREATE_XML_FEEDBACK = "IsCreateXMLFeedback";
 
 	protected static final String EDI_GENERATED_CHARSET_NAME = "edi.generated.charset.name";
+
+	public static final String EDI_ORDER_EDIMessageDatePattern = "edi.order.edi_message_date_pattern";
+	public static final String EDI_ORDER_ADClientValue = "edi.order.ad_client_value";
+	public static final String EDI_ORDER_ADOrgID = "edi.order.ad_org_id";
+	public static final String EDI_ORDER_ADInputDataDestination_InternalName = "edi.order.ad_input_datadestination_internalname";
+	public static final String EDI_ORDER_ADInputDataSourceID = "edi.order.ad_input_datasource_id";
+	public static final String EDI_ORDER_ADUserEnteredByID = "edi.order.ad_user_enteredby_id";
+	public static final String EDI_ORDER_DELIVERY_RULE = "edi.order.deliveryrule";
+	public static final String EDI_ORDER_DELIVERY_VIA_RULE = "edi.order.deliveryviarule";
 
 	/**
 	 * The local folder where the EDI file will be stored if the conversion is successful
