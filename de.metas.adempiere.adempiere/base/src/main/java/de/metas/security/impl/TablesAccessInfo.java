@@ -51,7 +51,7 @@ public class TablesAccessInfo
 		return poInfo == null ? false : poInfo.isView();
 	}
 
-	public String getIdColumnName(final String tableName)
+	public String getSingleKeyColumnNameOrNull(final String tableName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		return poInfo == null ? null : poInfo.getKeyColumnName();

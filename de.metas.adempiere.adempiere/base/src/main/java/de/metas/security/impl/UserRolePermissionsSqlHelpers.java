@@ -92,9 +92,9 @@ final class UserRolePermissionsSqlHelpers
 		return _tablesAccessInfo.getAD_Table_ID(tableNameAndAlias.getTableName());
 	}
 
-	private String getKeyColumnName(final TableNameAndAlias tableNameAndAlias)
+	private String getSingleKeyColumnNameOrNull(final TableNameAndAlias tableNameAndAlias)
 	{
-		return _tablesAccessInfo.getIdColumnName(tableNameAndAlias.getTableName());
+		return _tablesAccessInfo.getSingleKeyColumnNameOrNull(tableNameAndAlias.getTableName());
 	}
 
 	public String addAccessSQL(
@@ -220,7 +220,7 @@ final class UserRolePermissionsSqlHelpers
 			}
 
 			//
-			final String keyColumnName = getKeyColumnName(tableNameAndAlias);
+			final String keyColumnName = getSingleKeyColumnNameOrNull(tableNameAndAlias);
 			if (keyColumnName == null)
 			{
 				continue;
