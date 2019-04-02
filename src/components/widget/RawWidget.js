@@ -116,11 +116,9 @@ export class RawWidget extends Component {
     );
   };
 
-  handleKeyDown = (e, property, value, widgetType) => {
+  handleKeyDown = (e, property, value) => {
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      if (e.key === 'Enter' && widgetType.search(/text/i) > -1) {
-        e.preventDefault();
-      }
+      e.preventDefault();
       return this.handlePatch(property, value);
     }
   };
