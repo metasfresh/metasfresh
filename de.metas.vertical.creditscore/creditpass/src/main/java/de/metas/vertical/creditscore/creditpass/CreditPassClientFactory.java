@@ -24,7 +24,6 @@ package de.metas.vertical.creditscore.creditpass;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.Check;
 import de.metas.vertical.creditscore.base.spi.CreditScoreClient;

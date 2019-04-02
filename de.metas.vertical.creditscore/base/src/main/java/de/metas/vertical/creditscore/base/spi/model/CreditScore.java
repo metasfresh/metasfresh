@@ -25,11 +25,9 @@ package de.metas.vertical.creditscore.base.spi.model;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Builder
 @Value

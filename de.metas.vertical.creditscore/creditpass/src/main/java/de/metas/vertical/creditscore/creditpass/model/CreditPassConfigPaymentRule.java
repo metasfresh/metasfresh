@@ -26,7 +26,6 @@ import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 import java.math.BigDecimal;
 import java.util.List;
