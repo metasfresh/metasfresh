@@ -23,12 +23,12 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,14 +40,18 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 	private static final String PARAM_IsPharmaVendorAgentPermission = I_C_BPartner.COLUMNNAME_IsPharmaVendorAgentPermission;
 	@Param(parameterName = PARAM_IsPharmaVendorAgentPermission)
 	private boolean p_IsPharmaVendorAgentPermission;
-	
+
 	private static final String PARAM_IsPharmaVendorManufacturerPermission = I_C_BPartner.COLUMNNAME_IsPharmaVendorManufacturerPermission;
 	@Param(parameterName = PARAM_IsPharmaVendorManufacturerPermission)
 	private boolean p_IsPharmaVendorManufacturerPermission;
-	
+
 	private static final String PARAM_IsPharmaVendorWholesalePermission = I_C_BPartner.COLUMNNAME_IsPharmaVendorWholesalePermission;
 	@Param(parameterName = PARAM_IsPharmaVendorWholesalePermission)
 	private boolean p_IsPharmaVendorWholesalePermission;
+
+	private static final String PARAM_IsPharmaVendorNarcoticsPermission = I_C_BPartner.COLUMNNAME_IsPharmaVendorNarcoticsPermission;
+	@Param(parameterName = PARAM_IsPharmaVendorNarcoticsPermission)
+	private boolean p_IsPharmaVendorNarcoticsPermission;
 
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
@@ -56,18 +60,22 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 		final PharmaVendorPermissions pharmaVendorPermissions = PharmaVendorPermissions.of(bpartner);
 
 		final String parameterName = parameter.getColumnName();
-		
-		if(PARAM_IsPharmaVendorAgentPermission.equals(parameterName))
+
+		if (PARAM_IsPharmaVendorAgentPermission.equals(parameterName))
 		{
 			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_AGENT);
 		}
-		else if(PARAM_IsPharmaVendorManufacturerPermission.equals(parameterName))
+		else if (PARAM_IsPharmaVendorManufacturerPermission.equals(parameterName))
 		{
 			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_MANUFACTURER);
 		}
-		else if(PARAM_IsPharmaVendorWholesalePermission.equals(parameterName))
+		else if (PARAM_IsPharmaVendorWholesalePermission.equals(parameterName))
 		{
 			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_WHOLESALE);
+		}
+		else if (PARAM_IsPharmaVendorNarcoticsPermission.equals(parameterName))
+		{
+			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_NARCOTICS);
 		}
 		else
 		{
@@ -105,6 +113,7 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 		partner.setIsPharmaVendorAgentPermission(p_IsPharmaVendorAgentPermission);
 		partner.setIsPharmaVendorManufacturerPermission(p_IsPharmaVendorManufacturerPermission);
 		partner.setIsPharmaVendorWholesalePermission(p_IsPharmaVendorWholesalePermission);
+		partner.setIsPharmaVendorNarcoticsPermission(p_IsPharmaVendorNarcoticsPermission);
 
 		save(partner);
 
