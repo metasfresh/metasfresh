@@ -43,7 +43,7 @@ public final class PharmaCustomerPermissions
 		{
 			return NONE;
 		}
-		
+
 		final I_C_BPartner pharmaBPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
 
 		final ImmutableSet.Builder<PharmaCustomerPermission> permissionsBuilder = ImmutableSet.builder();
@@ -66,6 +66,10 @@ public final class PharmaCustomerPermissions
 		if (pharmaBPartner.isVeterinaryPharmacyPermission())
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.VETERINARY_PHARMACY);
+		}
+		if (pharmaBPartner.isPharmaCustomerNarcoticsPermission())
+		{
+			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_NARCOTICS);
 		}
 
 		final ImmutableSet<PharmaCustomerPermission> permissions = permissionsBuilder.build();
