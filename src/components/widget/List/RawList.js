@@ -284,7 +284,6 @@ export class RawList extends PureComponent {
       lookupList,
       isToggled,
       isFocused,
-      onFocus,
       clearable,
     } = this.props;
 
