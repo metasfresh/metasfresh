@@ -432,7 +432,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	protected final void runSQLAfterCompleteImport()
 	{
 		final List<DBFunction> functions = getDbFunctions().fetchImportBeforeCompleteFunctions();
-		functions.forEach(function -> doDBFunctionCall(function, 0));
+		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, 0));
 	}
 	
 	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
@@ -440,20 +440,6 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		final List<DBFunction> functions = getDbFunctions().fetchImportAfterRowFunctions();
 		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
-		functions.forEach(function -> doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	final public <V> void doDBFunctionCall(@NonNull final DBFunction function, final V... params)
-	{
-		final StringBuilder sql = new StringBuilder();
-		sql.append("SELECT ")
-				.append(function.getSpecific_schema())
-				.append(".")
-				.append(function.getRoutine_name())
-				.append(params.length > 1 ? "(?,?)" : "(?)");
-		
-		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql.toString(), params);
-		log.info("\nCalling " + function);
+		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));
 	}
 }

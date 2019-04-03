@@ -52,6 +52,7 @@ public class DBFunctions
 	private static final transient Logger log = LogManager.getLogger(DBFunctions.class);
 	private final static String IMPORT_BEFORE_COMPLETE = "IMPORT_BEFORE_COMPLETE";
 	private final static String IMPORT_AFTER_ROW = "IMPORT_AFTER_ROW";
+	
 	@NonNull
 	private final String tableName;
 	@Getter(lazy = true)
@@ -109,7 +110,7 @@ public class DBFunctions
 		final StringBuilder sql = new StringBuilder("SELECT routines.specific_schema, routines.routine_name FROM information_schema.routines ")
 				.append(" WHERE routines.routine_name ILIKE ? ")
 				.append(" ORDER BY routines.routine_name ");
-		final List<Object> sqlParams = Arrays.<Object> asList(tableName + "%");
+		final List<Object> sqlParams = Arrays.<Object> asList(tableName + "_%");
 		return DB.retrieveRowsOutOfTrx(sql.toString(), sqlParams, rs -> retrieveDBFunction(rs));
 	}
 
