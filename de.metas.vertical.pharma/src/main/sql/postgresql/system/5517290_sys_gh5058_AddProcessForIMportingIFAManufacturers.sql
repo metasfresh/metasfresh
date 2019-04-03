@@ -1,6 +1,6 @@
 -- 2019-03-26T18:36:37.425
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,541086,'Y','de.metas.impexp.process.ImportPharmaProduct','N',TO_TIMESTAMP('2019-03-26 18:36:37','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','N','N','N','N','N','Y','Y',0,'Import IFA Manufacturers','N','N','Java',TO_TIMESTAMP('2019-03-26 18:36:37','YYYY-MM-DD HH24:MI:SS'),100,'10000000')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,541086,'Y','de.metas.impexp.process.ImportPharmaProduct','N',TO_TIMESTAMP('2019-03-26 18:36:37','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','N','N','N','N','N','Y','Y',0,'Import IFA Manufacturers','N','N','Java',TO_TIMESTAMP('2019-03-26 18:36:37','YYYY-MM-DD HH24:MI:SS'),100,'ImportIFAManufacturers')
 ;
 
 -- 2019-03-26T18:36:37.433
