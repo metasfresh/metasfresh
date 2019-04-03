@@ -24,11 +24,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,18 +41,18 @@ import lombok.experimental.UtilityClass;
 public class DBFunctionHelper
 {
 	private static final transient Logger log = LogManager.getLogger(DBFunctionHelper.class);
-	
-	@SuppressWarnings("unchecked")
-	final public <V> void doDBFunctionCall(@NonNull final DBFunction function, final V... params)
+
+	final public void doDBFunctionCall(@NonNull final DBFunction function, final int dataImportId, final int recordId)
 	{
-		final StringBuilder sql = new StringBuilder();
-		sql.append("SELECT ")
-				.append(function.getSpecific_schema())
+		final String sql = new StringBuilder()
+				.append("SELECT ")
+				.append(function.getSchema())
 				.append(".")
-				.append(function.getRoutine_name())
-				.append("(?,?)");
-		
-		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql.toString(), params);
-		log.info("\nCalling " + function);
+				.append(function.getName())
+				.append("(?,?)")
+				.toString();
+
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, new Object[] { dataImportId, recordId });
+		log.info("\nCalling {}", function);
 	}
 }

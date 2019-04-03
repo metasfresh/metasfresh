@@ -37,6 +37,6 @@ import lombok.Value;
 @Value
 public class DBFunction
 {
-	final @NonNull String specific_schema;
-	final @NonNull String routine_name;
+	final @NonNull String schema;
+	final @NonNull String name;
 }

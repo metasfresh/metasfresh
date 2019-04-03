@@ -39,6 +39,7 @@ import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -81,6 +82,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	protected final ITrxManager trxManager = Services.get(ITrxManager.class);
+	protected final DBFunctionsRepository dbFunctionsRepo = Adempiere.getBean(DBFunctionsRepository.class);
 
 	//
 	// Parameters
@@ -121,10 +123,10 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	{
 		return _parameters;
 	}
-
+	
 	private DBFunctions createDBFunctions()
 	{
-		return DBFunctions.of(getImportTableName());
+		return dbFunctionsRepo.retrieveByTableName(getImportTableName());
 	}
 
 	
@@ -430,7 +432,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	
 	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
-		final List<DBFunction> functions = getDbFunctions().getImportFunctions();
+		final List<DBFunction> functions = getDbFunctions().getEliglibleImportFunctions();
 		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
 		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));

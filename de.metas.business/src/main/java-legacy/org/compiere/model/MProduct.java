@@ -19,9 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
@@ -140,38 +138,6 @@ public class MProduct extends X_M_Product
 //		setResource(resourceType);
 //	}	// MProduct
 
-	/**
-	 * Import Constructor
-	 *
-	 * @param impP import
-	 */
-	public MProduct(I_I_Product impP)
-	{
-		this(InterfaceWrapperHelper.getCtx(impP),
-				0,
-				ITrx.TRXNAME_ThreadInherited);
-		setClientOrg(InterfaceWrapperHelper.getPO(impP));
-		setUpdatedBy(impP.getUpdatedBy());
-		//
-		setValue(impP.getValue());
-		setName(impP.getName());
-		setDescription(impP.getDescription());
-		setDocumentNote(impP.getDocumentNote());
-		setHelp(impP.getHelp());
-		setUPC(impP.getUPC());
-		setSKU(impP.getSKU());
-		setC_UOM_ID(impP.getC_UOM_ID());
-		setPackage_UOM_ID(impP.getPackage_UOM_ID());
-		setPackageSize(impP.getPackageSize());
-		setManufacturer_ID(impP.getManufacturer_ID());
-		setM_Product_Category_ID(impP.getM_Product_Category_ID());
-		setProductType(impP.getProductType());
-		setImageURL(impP.getImageURL());
-		setDescriptionURL(impP.getDescriptionURL());
-		setIsSold(impP.isSold());
-		setIsStocked(impP.isStocked());
-		setM_ProductPlanningSchema_Selector(impP.getM_ProductPlanningSchema_Selector()); // #3406
-	}	// MProduct
 
 	/**
 	 * Set Expense Type
