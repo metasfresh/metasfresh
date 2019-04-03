@@ -345,9 +345,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	}
 
 	@Override
-	public DocumentNoBuilder setAD_Client_ID(final int adClientId)
+	public DocumentNoBuilder setClientId(@NonNull final ClientId clientId)
 	{
-		_adClientId = ClientId.ofRepoIdOrNull(adClientId);
+		_adClientId = clientId;
 		_isAdempiereSys = null; // to be computed
 		return this;
 	}

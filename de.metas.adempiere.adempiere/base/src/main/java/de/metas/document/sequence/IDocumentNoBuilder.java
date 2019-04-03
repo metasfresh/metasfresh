@@ -4,6 +4,7 @@
 package de.metas.document.sequence;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
@@ -26,7 +27,7 @@ public interface IDocumentNoBuilder
 	 */
 	String build() throws DocumentNoBuilderException;
 
-	IDocumentNoBuilder setAD_Client_ID(int adClientId);
+	IDocumentNoBuilder setClientId(ClientId clientId);
 
 	IDocumentNoBuilder setDocumentSequenceInfo(DocumentSequenceInfo documentSeqInfo);
 

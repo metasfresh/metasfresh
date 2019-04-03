@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.IClientOrgAware;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 
 		return createDocumentNoBuilder()
 				.setDocumentSequenceInfo(computeDocumentSequenceInfoByTableName(tableName, adClientId, adOrgId))
-				.setAD_Client_ID(adClientId)
+				.setClientId(ClientId.ofRepoId(adClientId))
 				.setFailOnError(false);
 	}
 
@@ -106,12 +107,13 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	public IDocumentNoBuilder createValueBuilderFor(@NonNull final Object modelRecord)
 	{
 		final IClientOrgAware clientOrg = create(modelRecord, IClientOrgAware.class);
+		final ClientId clientId = ClientId.ofRepoId(clientOrg.getAD_Client_ID());
 
 		final ProviderResult providerResult = getDocumentSequenceInfo(modelRecord);
 
 		return createDocumentNoBuilder()
 				.setDocumentSequenceInfo(providerResult.getInfoOrNull())
-				.setAD_Client_ID(clientOrg.getAD_Client_ID())
+				.setClientId(clientId)
 				.setDocumentModel(modelRecord)
 				.setFailOnError(false);
 	}
