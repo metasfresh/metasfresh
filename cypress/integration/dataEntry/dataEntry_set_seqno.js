@@ -23,7 +23,7 @@ describe('Reproduce issue https://github.com/metasfresh/metasfresh-webui-fronten
       .find('input')
       .should('have.value', 'Group1-Tab1');
 
-    // here it comes: SeqNo is empty although we typed '21'
+    // here it comes: SeqNo has a value of '21', as entered by us
     cy.get('.form-field-SeqNo')
       .find('input')
       .should('have.value', '21');
