@@ -52,6 +52,7 @@ import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -1152,7 +1153,18 @@ public class InterfaceWrapperHelper
 		{
 			return POWrapper.hasColumnName(modelClass, columnName);
 		}
+	}
 
+	public static Optional<ClientId> getClientId(final Object model)
+	{
+		final Object clientIdObj = getValue(model, "AD_Client_ID").orElse(null);
+		if (clientIdObj == null)
+		{
+			return Optional.empty();
+		}
+
+		final int clientIdInt = NumberUtils.asInt(clientIdObj, -1);
+		return ClientId.optionalOfRepoId(clientIdInt);
 	}
 
 	public static Optional<OrgId> getOrgId(final Object model)

@@ -1,6 +1,7 @@
 package org.adempiere.service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.compiere.util.Env;
 
@@ -69,6 +70,11 @@ public class ClientId implements RepoIdAware
 		{
 			return ofRepoId(repoId);
 		}
+	}
+
+	public static Optional<ClientId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final ClientId clientId)
