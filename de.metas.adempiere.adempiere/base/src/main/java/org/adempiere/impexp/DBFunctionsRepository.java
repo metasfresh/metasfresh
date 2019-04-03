@@ -5,14 +5,18 @@ package org.adempiere.impexp;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -44,14 +48,29 @@ import lombok.NonNull;
 @Repository
 public class DBFunctionsRepository
 {
+	private static final transient Logger log = LogManager.getLogger(DBFunctionsRepository.class);
+	private static final String IMPORT_AFTER_ROW = "IMPORT_AFTER_ROW";
 
 	public DBFunctions retrieveByTableName(@NonNull final String tableName)
 	{
 		final ImmutableList<DBFunction> functions = retrieveAvailableImportFunctionsByTableName(tableName);
 
+		final List<DBFunction> availableAfterRowFunctions = new ArrayList<>();
+		for (final DBFunction function : functions)
+		{
+			if (isEligibleFunction(function))
+			{
+				availableAfterRowFunctions.add(function);
+			}
+			else
+			{
+				log.warn("Function {} from schema {} is not eliglible for importing process!", function.getName(), function.getSchema());
+			}
+		}
+
 		return DBFunctions.builder()
 				.tableName(tableName)
-				.importFunctions(functions)
+				.availableAfterRowFunctions(ImmutableList.copyOf(availableAfterRowFunctions))
 				.build();
 	}
 
@@ -72,6 +91,12 @@ public class DBFunctionsRepository
 				.schema(specific_schema)
 				.name(routine_name)
 				.build();
+	}
+	
+	private boolean isEligibleFunction(@NonNull final DBFunction function)
+	{
+		final String routine_name = function.getName();
+		return StringUtils.containsIgnoreCase(routine_name, IMPORT_AFTER_ROW);
 	}
 
 }
