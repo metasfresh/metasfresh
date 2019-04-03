@@ -52,6 +52,9 @@
 
 		<jackson.version>2.9.8</jackson.version>
 
+		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
+		<woodstox.version>5.0.3</woodstox.version>
+
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -170,6 +173,8 @@
 		<module>de.metas.vendor.gateway.api</module>
 
 		<module>de.metas.datev</module>
+
+		<module>de.metas.vertical.creditscore</module>
 
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>

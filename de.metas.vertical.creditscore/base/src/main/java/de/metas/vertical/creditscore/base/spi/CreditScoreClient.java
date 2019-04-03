@@ -1,15 +1,10 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.base.spi;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.vertical.creditscore.base.spi
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,25 +22,10 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Location
+import de.metas.vertical.creditscore.base.spi.model.CreditScore;
+import de.metas.vertical.creditscore.base.spi.model.TransactionData;
+
+public interface CreditScoreClient
 {
-	LocationId id;
-
-	@Nullable
-	String address;
-
-	@Nullable
-	String postal;
-
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
-
+	CreditScore getCreditScore(final TransactionData transactionData, final String paymentRule) throws Exception;
 }

@@ -32,10 +32,24 @@
 			<artifactId>javax.transaction-api</artifactId>
 		</dependency>
 
+		<!-- 
+		com.fasterxml.jackson.dataformat:jackson-dataformat-xml also needs woodstox, but in a later version
+        -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-core</artifactId>
 			<version>${metasfresh.cxf.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>woodstox-core-asl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.woodstox</groupId>
+			<artifactId>woodstox-core</artifactId>
+			<version>${woodstox.version}</version>
 		</dependency>
 
 		<dependency>

@@ -1,14 +1,9 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.base.spi.model;
 
 /*
  * #%L
- * de.metas.business
- * %%
+ * de.metas.vertical.creditscore.base.spi.model
+ *
  * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
@@ -27,25 +22,30 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Location
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+public class CreditScoreRequestLogData
 {
-	LocationId id;
+	@NonNull
+	private String requestData;
 
-	@Nullable
-	String address;
+	@NonNull
+	private String responseData;
 
-	@Nullable
-	String postal;
+	private String transactionID;
 
-	@Nullable
-	String city;
+	@NonNull
+	private String customerTransactionID;
 
-	@Nullable
-	String countryCode;
+	@NonNull
+	private LocalDateTime requestTime;
 
-	@Nullable
-	String streetAddress;
-
+	@NonNull
+	private LocalDateTime responseTime;
 }

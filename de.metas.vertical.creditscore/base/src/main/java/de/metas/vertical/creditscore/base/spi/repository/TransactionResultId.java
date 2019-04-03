@@ -1,14 +1,9 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.base.spi.repository;
 
 /*
  * #%L
- * de.metas.business
- * %%
+ * de.metas.vertical.creditscore.base.spi.repository
+ *
  * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
@@ -27,25 +22,23 @@ import lombok.Value;
  * #L%
  */
 
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
 @Value
-@Builder(toBuilder = true)
-public class Location
+public class TransactionResultId implements RepoIdAware
 {
-	LocationId id;
+	public static TransactionResultId ofRepoId(final int repoId)
+	{
+		return new TransactionResultId(repoId);
+	}
 
-	@Nullable
-	String address;
+	int repoId;
 
-	@Nullable
-	String postal;
-
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
+	private TransactionResultId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 
 }

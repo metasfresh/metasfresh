@@ -1,14 +1,9 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.creditpass.model.extended;
 
 /*
  * #%L
- * de.metas.business
- * %%
+ * de.metas.vertical.creditscore.creditpass.model.extended
+ *
  * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
@@ -27,25 +22,15 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Location
+public interface I_C_Order extends org.compiere.model.I_C_Order
 {
-	LocationId id;
 
-	@Nullable
-	String address;
+	public static final String COLUMNNAME_CreditpassFlag = "CreditpassFlag";
+	public boolean getCreditpassFlag();
+	public void setCreditpassFlag(boolean CreditpassFlag);
 
-	@Nullable
-	String postal;
-
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
+	public static final String COLUMNNAME_CreditpassStatus = "CreditpassStatus";
+	public String getCreditpassStatus();
+	public void setCreditpassStatus(String CreditpassStatus);
 
 }
