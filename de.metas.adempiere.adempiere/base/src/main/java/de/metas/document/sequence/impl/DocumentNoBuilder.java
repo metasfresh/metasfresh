@@ -26,19 +26,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
@@ -58,6 +61,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SimpleDateFormatThreadLocal;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -68,18 +72,19 @@ import lombok.NonNull;
  */
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
-	private static final String PROVIDER_NOT_APPLICABLE = "de.metas.document.CustomSequenceNotProviderNoApplicable";
 	// services
 	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 	final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+	private static final String MSG_PROVIDER_NOT_APPLICABLE = "de.metas.document.CustomSequenceNotProviderNoApplicable";
+
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
 
-	private Integer _adClientId;
+	private ClientId _adClientId;
 	private Boolean _isAdempiereSys;
-	private Object _documentModel;
+	private Evaluatee _evalContext = Evaluatees.empty();
 	private Supplier<DocumentSequenceInfo> _documentSeqInfoSupplier;
 
 	private String _sequenceNo = null;
@@ -186,20 +191,18 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	private String getCalendarYear(final String dateColumn)
 	{
-		final Object documentModel = getDocumentModelOrNull();
-		if (documentModel != null && !Check.isEmpty(dateColumn, true))
+		final Evaluatee evalContext = getEvaluationContext();
+		if (!Check.isEmpty(dateColumn, true))
 		{
-			final java.util.Date docDate = InterfaceWrapperHelper.getValueOrNull(documentModel, dateColumn);
+			final java.util.Date docDate = evalContext.get_ValueAsDate(dateColumn, null);
 			if (docDate != null)
 			{
-				final String calendarYear = DATEFORMAT_CalendarYear.format(docDate);
-				return calendarYear;
+				return DATEFORMAT_CalendarYear.format(docDate);
 			}
 		}
 
 		// Fallback: use current year
-		final String calendarYear = DATEFORMAT_CalendarYear.format(new Date());
-		return calendarYear;
+		return DATEFORMAT_CalendarYear.format(SystemTime.asDate());
 	}
 
 	/**
@@ -213,24 +216,25 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			return _sequenceNo;
 		}
 
-		//
-		// Don't increment sequence number if it's not Auto
 		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
 
 		final CustomSequenceNoProvider customSequenceNoProvider = docSeqInfo.getCustomSequenceNoProvider();
 		if (customSequenceNoProvider != null)
 		{
-			if (!customSequenceNoProvider.isApplicable(_documentModel))
+			final Evaluatee evalContext = getEvaluationContext();
+			if (!customSequenceNoProvider.isApplicable(evalContext))
 			{
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
+				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
 				throw new DocumentNoBuilderException(msg)
 						.appendParametersToMessage()
-						.setParameter("documentModel", _documentModel);
+						.setParameter("context", evalContext);
 			}
 
-			return customSequenceNoProvider.provideSequenceNo(_documentModel);
+			return customSequenceNoProvider.provideSequenceNo(evalContext);
 		}
 
+		//
+		// Don't increment sequence number if it's not Auto
 		if (!docSeqInfo.isAutoSequence())
 		{
 			logger.info("Skip getting and incrementing the sequence because it's not an auto sequence: {}", docSeqInfo);
@@ -335,30 +339,31 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			return _isAdempiereSys;
 		}
 
-		final int adClientId = getAD_Client_ID();
-		_isAdempiereSys = MSequence.isAdempiereSys(adClientId);
+		final ClientId adClientId = getClientId();
+		_isAdempiereSys = MSequence.isAdempiereSys(adClientId.getRepoId());
 		return _isAdempiereSys;
 	}
 
 	@Override
 	public DocumentNoBuilder setAD_Client_ID(final int adClientId)
 	{
-		_adClientId = adClientId;
-		_isAdempiereSys = MSequence.isAdempiereSys(adClientId);
+		_adClientId = ClientId.ofRepoIdOrNull(adClientId);
+		_isAdempiereSys = null; // to be computed
 		return this;
 	}
 
-	private final int getAD_Client_ID()
+	@NonNull
+	private final ClientId getClientId()
 	{
 		if (_adClientId != null)
 		{
 			return _adClientId;
 		}
 
-		final Object documentModel = getDocumentModelOrNull();
-		if (documentModel != null)
+		final Evaluatee evalCtx = getEvaluationContext();
+		if (evalCtx != null)
 		{
-			final Integer adClientId = InterfaceWrapperHelper.getValueOrNull(documentModel, "AD_Client_ID");
+			final ClientId adClientId = ClientId.ofRepoIdOrNull(evalCtx.get_ValueAsInt("AD_Client_ID", -1));
 			if (adClientId != null)
 			{
 				_adClientId = adClientId;
@@ -369,19 +374,17 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		throw new DocumentNoBuilderException("Cannot find AD_Client_ID");
 	}
 
-	private final int getAD_Org_ID()
+	private final OrgId getOrgId()
 	{
-		final Object documentModel = getDocumentModelOrNull();
-		if (documentModel != null)
+		final Evaluatee evalCtx = getEvaluationContext();
+		if (evalCtx != null)
 		{
-			final Integer adOrgId = InterfaceWrapperHelper.getValueOrNull(documentModel, "AD_Org_ID");
-			if (adOrgId != null)
-			{
-				return adOrgId;
-			}
+			return OrgId.ofRepoIdOrAny(evalCtx.get_ValueAsInt("AD_Org_ID", -1));
 		}
-
-		return Env.CTXVALUE_AD_Org_ID_Any;
+		else
+		{
+			return OrgId.ANY;
+		}
 	}
 
 	private DocumentSequenceInfo getDocumentSequenceInfo()
@@ -454,7 +457,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		else
 		{
 			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = DocSequenceId.ofRepoIdOrNull(docTypeSequenceMap.getDocNoSequence_ID(getAD_Client_ID(), getAD_Org_ID()));
+			docSequenceId = DocSequenceId.ofRepoIdOrNull(docTypeSequenceMap.getDocNoSequence_ID(getClientId().getRepoId(), getOrgId().getRepoId()));
 			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);
@@ -466,15 +469,15 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	}
 
-	private Object getDocumentModelOrNull()
+	private Evaluatee getEvaluationContext()
 	{
-		return _documentModel;
+		return _evalContext;
 	}
 
 	@Override
-	public DocumentNoBuilder setDocumentModel(final Object documentModel)
+	public IDocumentNoBuilder setEvaluationContext(@NonNull Evaluatee evalContext)
 	{
-		_documentModel = documentModel;
+		this._evalContext = evalContext;
 		return this;
 	}
 
