@@ -337,6 +337,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-creditpass</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-cockpit</artifactId>
 			<version>${metasfresh.version}</version>
