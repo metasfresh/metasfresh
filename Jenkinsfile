@@ -84,7 +84,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		}
 
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
-				sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below the webui's ${mvnConf.pomFile}
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
