@@ -46,7 +46,7 @@ import lombok.RequiredArgsConstructor;
  */
 
 @RequiredArgsConstructor(staticName = "of")
-public class DBFunctions
+final public class DBFunctions
 {
 	private static final transient Logger log = LogManager.getLogger(DBFunctions.class);
 	private final static String IMPORT_AFTER_ROW = "IMPORT_AFTER_ROW";
