@@ -169,7 +169,7 @@ describe('RawWidget component', () => {
       wrapper.update();
 
       wrapper.find('textarea')
-        .prop('onFocus')({ target: { value: fixtures.longText.data1.value } });
+        .prop('onFocus')({ target: { value: '' } });
 
       expect(focusSpy).toHaveBeenCalled();
       expect(handleFocusSpy).toHaveBeenCalled();

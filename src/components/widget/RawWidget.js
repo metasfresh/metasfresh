@@ -77,15 +77,17 @@ export class RawWidget extends Component {
 
     dispatch(disableShortcut());
 
-    setTimeout(() => {
-      this.setState({
+    listenOnKeysFalse && listenOnKeysFalse();
+
+    this.setState(
+      {
         isEdited: true,
         cachedValue: el.value,
-      });
-    }, 0);
-
-    listenOnKeysFalse && listenOnKeysFalse();
-    handleFocus && handleFocus();
+      },
+      () => {
+        handleFocus && handleFocus();
+      }
+    );
   };
 
   handleBlur = (widgetField, value, id) => {
@@ -99,7 +101,6 @@ export class RawWidget extends Component {
     this.setState(
       {
         isEdited: false,
-        cachedValue: undefined,
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
@@ -115,11 +116,9 @@ export class RawWidget extends Component {
     );
   };
 
-  handleKeyDown = (e, property, value, widgetType) => {
+  handleKeyDown = (e, property, value) => {
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      if (e.key === 'Enter' && widgetType.search(/text/i) > -1) {
-        e.preventDefault();
-      }
+      e.preventDefault();
       return this.handlePatch(property, value);
     }
   };
@@ -182,9 +181,9 @@ export class RawWidget extends Component {
 
     let allowPatching =
       (isValue &&
-        (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
-          JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
-      JSON.stringify(cachedValue) !== JSON.stringify(value);
+        (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
+          JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
+      JSON.stringify(cachedValue) != JSON.stringify(value);
 
     return allowPatching;
   };
