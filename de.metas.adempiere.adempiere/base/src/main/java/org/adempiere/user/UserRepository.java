@@ -8,11 +8,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.user.api.IUserBL;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.*;
 
@@ -65,10 +62,7 @@ public class UserRepository
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())
-				.birthday(Optional.ofNullable(userRecord.getBirthday())
-						.map(Timestamp::toLocalDateTime)
-						.map(LocalDateTime::toLocalDate)
-						.orElse(null))
+				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
 				.emailAddress(userRecord.getEMail())
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bPartnerLanguage)

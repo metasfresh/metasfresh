@@ -1,16 +1,14 @@
 package org.adempiere.location;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
+import de.metas.adempiere.service.ICountryDAO;
+import de.metas.adempiere.service.ILocationBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
 
-import de.metas.adempiere.service.ILocationBL;
-import de.metas.util.Services;
-import lombok.NonNull;
-
-import java.util.Optional;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -41,14 +39,14 @@ public class LocationRepository
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
-		Optional<I_C_Country> countryRecord = Optional.ofNullable(load(locationRecord.getC_Country_ID(), I_C_Country.class));
+		I_C_Country countryRecord = Services.get(ICountryDAO.class).getById(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
 		return Location.builder()
 				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
 				.address(address)
 				.city(locationRecord.getCity())
 				.postal(locationRecord.getPostal())
 				.streetAddress(locationRecord.getAddress1())
-				.countryCode(countryRecord.map(I_C_Country::getCountryCode).orElse(null))
+				.countryCode(countryRecord.getCountryCode())
 				.build();
 	}
 
