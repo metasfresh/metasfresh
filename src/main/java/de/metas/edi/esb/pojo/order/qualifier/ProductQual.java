@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.edi.esb.pojo.order.stepcom;
+package de.metas.edi.esb.pojo.order.qualifier;
 
 public enum ProductQual
 {

@@ -21,9 +21,9 @@
  *
  */
 
-package de.metas.edi.esb.pojo.order.stepcom;
+package de.metas.edi.esb.pojo.order.qualifier;
 
-public enum QuantityQual
+public enum AddressQual
 {
-	CUTU, ORDR, FREE, PACK
+	SUPL, BUYR, DELV, IVCE, ULCO
 }

@@ -17,7 +17,7 @@
         <guava.version>18.0</guava.version>
         <smooks.version>1.5.1</smooks.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb</jaxb.packageName>
-        <jaxb.stepcom.packageName>de.metas.edi.esb.pojo.order.stepcom</jaxb.stepcom.packageName>
+        <jaxb.order.packageName>de.metas.edi.esb.pojo.order</jaxb.order.packageName>
 
         <!-- Testing -->
         <junit.version>4.12</junit.version>
@@ -243,7 +243,7 @@
                                 <source>src/main/xsd/order</source>
                             </sources>
 
-                            <packageName>${jaxb.stepcom.packageName}</packageName>
+                            <packageName>${jaxb.order.packageName}</packageName>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>

@@ -21,9 +21,9 @@
  *
  */
 
-package de.metas.edi.esb.pojo.order.stepcom;
+package de.metas.edi.esb.pojo.order.qualifier;
 
-public enum ProductDescQual
+public enum QuantityQual
 {
-	PROD, QUTI
+	CUTU, ORDR, FREE, PACK
 }

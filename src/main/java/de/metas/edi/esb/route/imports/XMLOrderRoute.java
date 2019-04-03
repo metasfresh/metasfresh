@@ -26,7 +26,7 @@ package de.metas.edi.esb.route.imports;
 import de.metas.edi.esb.bean.order.XMLEDIOrdersBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.pojo.order.stepcom.ObjectFactory;
+import de.metas.edi.esb.pojo.order.ObjectFactory;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;

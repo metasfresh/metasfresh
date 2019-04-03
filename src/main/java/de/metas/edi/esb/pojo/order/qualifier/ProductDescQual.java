@@ -21,9 +21,9 @@
  *
  */
 
-package de.metas.edi.esb.pojo.order.stepcom;
+package de.metas.edi.esb.pojo.order.qualifier;
 
-public enum AddressQual
+public enum ProductDescQual
 {
-	SUPL, BUYR, DELV, IVCE, ULCO
+	PROD, QUTI
 }

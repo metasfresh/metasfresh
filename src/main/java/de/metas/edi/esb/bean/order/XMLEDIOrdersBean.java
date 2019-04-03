@@ -23,10 +23,11 @@
 
 package de.metas.edi.esb.bean.order;
 
+import de.metas.edi.esb.pojo.order.*;
 import de.metas.edi.esb.pojo.order.compudata.H000;
 import de.metas.edi.esb.pojo.order.compudata.H100;
 import de.metas.edi.esb.pojo.order.compudata.P100;
-import de.metas.edi.esb.pojo.order.stepcom.*;
+import de.metas.edi.esb.pojo.order.qualifier.*;
 import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
