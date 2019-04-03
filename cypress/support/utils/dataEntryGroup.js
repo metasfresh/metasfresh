@@ -94,8 +94,10 @@ function applyDataEntryGroup(dataEntryGroup) {
     cy.log(`applyDataEntryGroup - visitWindow yielded ${JSON.stringify(this.dataEntryGroupId)}`);
 
     if (dataEntryGroup.seqNo) {
-      cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryGroup.seqNo}`);
+      cy.clearField('SeqNo');
+      cy.writeIntoStringField('SeqNo', `${dataEntryGroup.seqNo}`);
     }
+
     cy.writeIntoStringField('Name', dataEntryGroup.name);
     cy.writeIntoStringField('TabName', dataEntryGroup.tabName);
     cy.writeIntoLookupListField(

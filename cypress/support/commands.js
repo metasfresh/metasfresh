@@ -122,7 +122,25 @@ context('Reusable "login" custom command', function() {
 });
 
 /*
- * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
+ * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('clearField', (fieldName, modal) => {
+  describe('Clear field', function() {
+    cy.log(`clearField - fieldName=${fieldName}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    cy.get(path)
+      .find('input')
+      .clear();
+  });
+});
+
+/*
+ * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
 Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
   describe('Click on a checkbox field', function() {
@@ -161,7 +179,7 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 /**
  * Should also work for date columns, e.g. '01/01/2018{enter}'.
  *
- * @param modal - use true if the field is in a modal overlay; requiered if the underlying window has a field with the same name
+ * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl) => {
   describe('Enter value into string field', function() {
@@ -178,15 +196,17 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     if (modal) {
       path = `.panel-modal ${path}`;
     }
+
     cy.get(path)
       .find('input')
-      .type(`${stringValue}{enter}`)
+      .type(`${stringValue}`)
+      .type('{enter}')
       .waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
 });
 
 /**
- * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
 Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewriteUrl) => {
   describe('Enter value into text field', function() {
@@ -214,7 +234,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
 });
 
 /**
- * @param modal - use true, if the field is in a modal overlay; requiered if the underlying window has a field with the same name
+ * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
 Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, listValue, modal, rewriteUrl) => {
   describe('Enter value into lookup list field', function() {
