@@ -79,7 +79,7 @@ public class DBFunctions
 		{
 			if (isEligibleFunction(function))
 			{
-				if (function.getRoutine_name().contains(IMPORT_AFTER_ROW))
+				if (StringUtils.containsIgnoreCase(function.getRoutine_name(), IMPORT_AFTER_ROW))
 				{
 					availableAfterRowFunctions.add(function);
 				}
