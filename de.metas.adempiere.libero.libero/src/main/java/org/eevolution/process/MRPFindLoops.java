@@ -39,10 +39,10 @@ import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * 

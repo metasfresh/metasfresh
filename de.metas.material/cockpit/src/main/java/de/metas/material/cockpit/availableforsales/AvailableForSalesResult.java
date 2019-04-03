@@ -1,12 +1,17 @@
-package de.metas.material.dispo.commons.repository.atp;
+package de.metas.material.cockpit.availableforsales;
 
-import org.junit.Test;
+import java.math.BigDecimal;
+
+import de.metas.material.event.commons.AttributesKey;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-material-dispo-commons
+ * metasfresh-available-for-sales
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,13 +29,18 @@ import org.junit.Test;
  * #L%
  */
 
-public class AvailableToPromiseQueryTest
+@Value
+@Builder
+public class AvailableForSalesResult
 {
+	@NonNull
+	AvailableForSalesQuery availableForSalesQuery;
 
-	@Test(expected = RuntimeException.class)
-	public void builder_throw_ex_if_not_complete()
-	{
-		AvailableToPromiseQuery.builder().build();
-	}
+	int productId;
 
+	@NonNull
+	AttributesKey storageAttributesKey;
+
+	@NonNull
+	BigDecimal quantity;
 }

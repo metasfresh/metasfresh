@@ -1,16 +1,15 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-
-import java.math.BigDecimal;
-
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 
 @Value
 @Builder(toBuilder = true)
