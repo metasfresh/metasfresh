@@ -41,13 +41,14 @@ public class LocationRepository
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
+		Optional<I_C_Country> countryRecord = Optional.ofNullable(load(locationRecord.getC_Country_ID(), I_C_Country.class));
 		return Location.builder()
 				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
 				.address(address)
 				.city(locationRecord.getCity())
 				.postal(locationRecord.getPostal())
 				.streetAddress(locationRecord.getAddress1())
-				.countryCode(Optional.of(locationRecord.getC_Country()).map(I_C_Country::getCountryCode).get())
+				.countryCode(countryRecord.map(I_C_Country::getCountryCode).orElse(null))
 				.build();
 	}
 

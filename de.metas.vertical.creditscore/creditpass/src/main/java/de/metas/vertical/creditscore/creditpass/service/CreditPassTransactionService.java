@@ -1,5 +1,6 @@
 package de.metas.vertical.creditscore.creditpass.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
@@ -57,7 +58,7 @@ public class CreditPassTransactionService
 	{
 		final CreditPassClient creditScoreClient = (CreditPassClient)clientFactory.newClientForBusinessPartner(bPartnerId);
 		final CreditPassTransactionData creditPassTransactionData = creditPassTransactionDataService.collectTransactionData(bPartnerId);
-		final List<TransactionResult> transactionResults = new ArrayList<>();
+		final ImmutableList.Builder<TransactionResult> transactionResults = ImmutableList.builder();
 		final CreditPassConfig config = creditScoreClient.getCreditPassConfig();
 		if (StringUtils.isEmpty(paymentRule))
 		{
@@ -72,7 +73,7 @@ public class CreditPassTransactionService
 			final CreditScore creditScore = creditScoreClient.getCreditScore(creditPassTransactionData, paymentRule);
 			transactionResults.add(handleResult(null, bPartnerId, config, creditScore));
 		}
-		return transactionResults;
+		return transactionResults.build();
 	}
 
 	public List<TransactionResult> getAndSaveCreditScore(@NonNull final String paymentRule,

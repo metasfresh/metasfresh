@@ -71,7 +71,7 @@ public class TransactionResultService
 		{
 			final AttachmentEntryCreateRequest requestDataAttachment = AttachmentEntryCreateRequest
 					.fromByteArray(
-							MessageFormat.format("Request_ {0}", requestLogData.getCustomerTransactionID()),
+							MessageFormat.format("Request_{0}", requestLogData.getCustomerTransactionID()),
 							requestLogData.getRequestData().getBytes());
 			attachmentEntryService.createNewAttachment(
 					TableRecordReference.of(I_CS_Transaction_Result.Table_Name, transactionResultId),
@@ -82,7 +82,7 @@ public class TransactionResultService
 		{
 			final AttachmentEntryCreateRequest responseDataAttachment = AttachmentEntryCreateRequest
 					.fromByteArray(
-							MessageFormat.format("Response_ {0}", requestLogData.getCustomerTransactionID()),
+							MessageFormat.format("Response_{0}", requestLogData.getCustomerTransactionID()),
 							requestLogData.getResponseData().getBytes());
 			attachmentEntryService.createNewAttachment(
 					TableRecordReference.of(I_CS_Transaction_Result.Table_Name, transactionResultId),

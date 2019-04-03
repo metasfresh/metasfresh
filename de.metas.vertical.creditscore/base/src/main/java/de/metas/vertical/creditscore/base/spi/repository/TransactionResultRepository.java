@@ -47,60 +47,60 @@ public class TransactionResultRepository
 	public TransactionResult createTransactionResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId,
 			final OrderId orderId)
 	{
-		final I_CS_Transaction_Result transactionResult = newInstance(I_CS_Transaction_Result.class);
+		final I_CS_Transaction_Result transactionResultRecord = newInstance(I_CS_Transaction_Result.class);
 
 		final CreditScoreRequestLogData logData = creditScore.getRequestLogData();
-		transactionResult.setRequestStartTime(Timestamp.valueOf(logData.getRequestTime()));
-		transactionResult.setRequestEndTime(Timestamp.valueOf(logData.getResponseTime()));
-		transactionResult.setResponseCode(creditScore.getResultCode().name());
+		transactionResultRecord.setRequestStartTime(Timestamp.valueOf(logData.getRequestTime()));
+		transactionResultRecord.setRequestEndTime(Timestamp.valueOf(logData.getResponseTime()));
+		transactionResultRecord.setResponseCode(creditScore.getResultCode().name());
 		if (creditScore.getResultCodeOverride() != null)
 		{
-			transactionResult.setResponseCodeOverride(creditScore.getResultCodeOverride().name());
-			transactionResult.setResponseCodeEffective(creditScore.getResultCodeOverride().name());
+			transactionResultRecord.setResponseCodeOverride(creditScore.getResultCodeOverride().name());
+			transactionResultRecord.setResponseCodeEffective(creditScore.getResultCodeOverride().name());
 		}
 		else
 		{
-			transactionResult.setResponseCodeEffective(creditScore.getResultCode().name());
+			transactionResultRecord.setResponseCodeEffective(creditScore.getResultCode().name());
 		}
-		transactionResult.setPaymentRule(creditScore.getPaymentRule());
-		transactionResult.setRequestPrice(creditScore.getRequestPrice());
+		transactionResultRecord.setPaymentRule(creditScore.getPaymentRule());
+		transactionResultRecord.setRequestPrice(creditScore.getRequestPrice());
 		if (creditScore.getCurrency() != null)
 		{
-			transactionResult.setC_Currency_ID(creditScore.getCurrency().getRepoId());
+			transactionResultRecord.setC_Currency_ID(creditScore.getCurrency().getRepoId());
 		}
-		transactionResult.setResponseCodeText(creditScore.getResultText());
-		transactionResult.setResponseDetails(creditScore.getResultDetails());
-		transactionResult.setTransactionCustomerId(logData.getCustomerTransactionID());
-		transactionResult.setTransactionIdAPI(logData.getTransactionID());
-		transactionResult.setC_BPartner_ID(bPartnerId.getRepoId());
+		transactionResultRecord.setResponseCodeText(creditScore.getResultText());
+		transactionResultRecord.setResponseDetails(creditScore.getResultDetails());
+		transactionResultRecord.setTransactionCustomerId(logData.getCustomerTransactionID());
+		transactionResultRecord.setTransactionIdAPI(logData.getTransactionID());
+		transactionResultRecord.setC_BPartner_ID(bPartnerId.getRepoId());
 		if (orderId != null)
 		{
-			transactionResult.setC_Order_ID(orderId.getRepoId());
+			transactionResultRecord.setC_Order_ID(orderId.getRepoId());
 		}
-		save(transactionResult);
-		return mapTransactionResult(transactionResult);
+		save(transactionResultRecord);
+		return ofRecord(transactionResultRecord);
 	}
 
 	public Optional<TransactionResult> getLastTransactionResult(@NonNull final String paymentRule, @NonNull final BPartnerId bPartnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final I_CS_Transaction_Result transactionResult = queryBL
+		final I_CS_Transaction_Result transactionResultRecord = queryBL
 				.createQueryBuilder(I_CS_Transaction_Result.class)
 				.addOnlyActiveRecordsFilter()
 				.orderByDescending(I_CS_Transaction_Result.COLUMNNAME_RequestStartTime)
 				.addEqualsFilter(I_CS_Transaction_Result.COLUMNNAME_PaymentRule, paymentRule)
 				.addEqualsFilter(I_CS_Transaction_Result.COLUMNNAME_C_BPartner_ID, bPartnerId.getRepoId())
 				.create().first();
-		TransactionResult mappedTransactionResult = null;
-		if (transactionResult != null)
+		TransactionResult transactionResult = null;
+		if (transactionResultRecord != null)
 		{
-			mappedTransactionResult = mapTransactionResult(transactionResult);
+			transactionResult = ofRecord(transactionResultRecord);
 		}
-		return Optional.ofNullable(mappedTransactionResult);
+		return Optional.ofNullable(transactionResult);
 	}
 
-	private TransactionResult mapTransactionResult(I_CS_Transaction_Result transactionResult)
+	private TransactionResult ofRecord(I_CS_Transaction_Result transactionResult)
 	{
 		return TransactionResult.builder()
 				.resultCode(ResultCode.fromName(transactionResult.getResponseCode()))

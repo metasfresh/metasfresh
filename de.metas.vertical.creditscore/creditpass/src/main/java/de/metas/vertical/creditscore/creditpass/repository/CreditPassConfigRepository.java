@@ -70,7 +70,7 @@ public class CreditPassConfigRepository
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final I_CS_Creditpass_Config config = queryBL
+		final I_CS_Creditpass_Config configRecord = queryBL
 				.createQueryBuilder(I_CS_Creditpass_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_CS_Creditpass_Config.COLUMN_Created).create().list()
@@ -83,7 +83,7 @@ public class CreditPassConfigRepository
 						.allMatch(group -> group.getC_BP_Group_ID() != bpGroup.getC_BP_Group_ID()))
 				.findFirst().orElse(null);
 
-		if (config == null)
+		if (configRecord == null)
 		{
 			return null;
 		}
@@ -91,7 +91,7 @@ public class CreditPassConfigRepository
 		final List<CreditPassConfigPaymentRule> configPaymentRules = queryBL
 				.createQueryBuilder(I_CS_Creditpass_Config_PaymentRule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_CS_Creditpass_Config_PaymentRule.COLUMN_CS_Creditpass_Config_ID, config.getCS_Creditpass_Config_ID())
+				.addEqualsFilter(I_CS_Creditpass_Config_PaymentRule.COLUMN_CS_Creditpass_Config_ID, configRecord.getCS_Creditpass_Config_ID())
 				.create()
 				.list()
 				.stream()
@@ -136,16 +136,16 @@ public class CreditPassConfigRepository
 		int processingCode = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_PROCESSING_CODE, CreditPassConstants.DEFAULT_PROCESSING_CODE, clientId, orgId);
 
 		return CreditPassConfig.builder()
-				.authId(config.getAuthId())
-				.authPassword(config.getPassword())
+				.authId(configRecord.getAuthId())
+				.authPassword(configRecord.getPassword())
 				.processingCode(processingCode)
 				.transactionType(transactionType)
-				.restApiBaseUrl(config.getRestApiBaseURL())
-				.requestReason(config.getRequestReason())
-				.notificationUserId(UserId.ofRepoId(config.getManual_Check_User_ID()))
-				.resultCode(ResultCode.fromName(config.getDefaultCheckResult()))
-				.retryDays(config.getRetryAfterDays().intValue())
-				.creditPassConfigId(CreditPassConfigId.ofRepoId(config.getCS_Creditpass_Config_ID()))
+				.restApiBaseUrl(configRecord.getRestApiBaseURL())
+				.requestReason(configRecord.getRequestReason())
+				.notificationUserId(UserId.ofRepoId(configRecord.getManual_Check_User_ID()))
+				.resultCode(ResultCode.fromName(configRecord.getDefaultCheckResult()))
+				.retryDays(configRecord.getRetryAfterDays().intValue())
+				.creditPassConfigId(CreditPassConfigId.ofRepoId(configRecord.getCS_Creditpass_Config_ID()))
 				.creditPassConfigPaymentRuleList(configPaymentRules)
 				.build();
 
