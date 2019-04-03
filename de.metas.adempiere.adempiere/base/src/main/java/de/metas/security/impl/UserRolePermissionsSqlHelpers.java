@@ -1,7 +1,14 @@
 package de.metas.security.impl;
 
+import java.util.Set;
+
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
+import org.compiere.model.I_AD_User_Record_Access;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -9,6 +16,8 @@ import de.metas.security.impl.ParsedSql.SqlSelect;
 import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.TableRecordPermissions;
+import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -42,6 +51,8 @@ final class UserRolePermissionsSqlHelpers
 	private final UserRolePermissions _role;
 	private final TablesAccessInfo _tablesAccessInfo = TablesAccessInfo.instance;
 
+	private Set<UserGroupId> userGroupIds;
+
 	UserRolePermissionsSqlHelpers(@NonNull final UserRolePermissions role)
 	{
 		_role = role;
@@ -57,9 +68,26 @@ final class UserRolePermissionsSqlHelpers
 		return _role.isAccessAllOrgs();
 	}
 
+	private Set<UserGroupId> getUserGroupIds()
+	{
+		Set<UserGroupId> userGroupIds = this.userGroupIds;
+		if (userGroupIds == null)
+		{
+			this.userGroupIds = userGroupIds = Adempiere.getBean(UserGroupRepository.class).getAssignedGroupIdsByUserId(getUserId());
+		}
+		return userGroupIds;
+	}
+
 	private boolean hasAccessToPersonalDataOfOtherUsers()
 	{
 		return _role.isPersonalAccess();
+	}
+
+	private boolean isApplyUserGroupRecordAccess(final String tableName)
+	{
+		// FIXME: HARDCODED
+		return I_C_BPartner.Table_Name.equals(tableName)
+				|| I_C_Order.Table_Name.equals(tableName);
 	}
 
 	private boolean hasTableAccess(final int adTableId, final Access access)
@@ -89,7 +117,7 @@ final class UserRolePermissionsSqlHelpers
 
 	private int getAdTableId(final TableNameAndAlias tableNameAndAlias)
 	{
-		return _tablesAccessInfo.getAD_Table_ID(tableNameAndAlias.getTableName());
+		return _tablesAccessInfo.getAdTableId(tableNameAndAlias.getTableName());
 	}
 
 	private String getSingleKeyColumnNameOrNull(final TableNameAndAlias tableNameAndAlias)
@@ -236,7 +264,7 @@ final class UserRolePermissionsSqlHelpers
 				keyColumnNameFQ = keyColumnName;
 			}
 
-			final String recordWhere = getRecordWhere(adTableId, keyColumnNameFQ, access);
+			final String recordWhere = getRecordWhere(tableNameAndAlias, adTableId, keyColumnNameFQ, access);
 			if (!recordWhere.isEmpty())
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-record */ AND ").append(recordWhere);
@@ -260,29 +288,78 @@ final class UserRolePermissionsSqlHelpers
 	/**
 	 * Return Where clause for Record Access
 	 *
-	 * @param adTableId table
-	 * @param keyColumnNameFQ (fully qualified) key column name
-	 * @param access required access
-	 * @return where clause or ""
+	 * @return record access where clause or empty
 	 */
-	private String getRecordWhere(final int adTableId, final String keyColumnNameFQ, final Access access)
+	private String getRecordWhere(
+			final TableNameAndAlias tableNameAndAlias,
+			final int adTableId,
+			final String keyColumnNameFQ,
+			final Access access)
 	{
-		final StringBuilder sb = getRecordPermissions().getRecordWhere(adTableId, keyColumnNameFQ, access);
+		final StringBuilder sqlWhereFinal = getRecordPermissions().getRecordWhere(adTableId, keyColumnNameFQ, access);
 
-		// Don't ignore Privacy Access
+		//
+		// Private data record access
+		final UserId userId = getUserId();
 		if (!hasAccessToPersonalDataOfOtherUsers())
 		{
-			final String lockedIds = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
-					+ " WHERE AD_Table_ID = " + adTableId
-					+ " AND AD_User_ID <> " + UserId.toRepoId(getUserId())
-					+ " AND IsActive = 'Y' )";
-			if (sb.length() > 0)
+			final String sqlWhere = buildPersonalDataRecordAccessSqlWhereClause(adTableId, keyColumnNameFQ, userId);
+			if (sqlWhereFinal.length() > 0)
 			{
-				sb.append(" AND ");
+				sqlWhereFinal.append(" AND ");
 			}
-			sb.append(keyColumnNameFQ).append(lockedIds);
+			sqlWhereFinal.append(sqlWhere);
 		}
+
 		//
-		return sb.toString();
+		// User/Group record access
+		if (isApplyUserGroupRecordAccess(tableNameAndAlias.getTableName()))
+		{
+			final String sqlWhere = buildUserGroupRecordAccessSqlWhereClause(adTableId, keyColumnNameFQ, userId, getUserGroupIds());
+			if (sqlWhereFinal.length() > 0)
+			{
+				sqlWhereFinal.append(" AND ");
+			}
+			sqlWhereFinal.append(sqlWhere);
+		}
+
+		//
+		return sqlWhereFinal.toString();
 	}	// getRecordWhere
+
+	private static String buildPersonalDataRecordAccessSqlWhereClause(
+			final int adTableId,
+			@NonNull final String keyColumnNameFQ,
+			@NonNull final UserId userId)
+	{
+		return keyColumnNameFQ + " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
+				+ " WHERE AD_Table_ID = " + adTableId
+				+ " AND AD_User_ID <> " + userId.getRepoId()
+				+ " AND IsActive = 'Y' )";
+	}
+
+	private static String buildUserGroupRecordAccessSqlWhereClause(
+			final int adTableId,
+			@NonNull final String keyColumnNameFQ,
+			@NonNull final UserId userId,
+			@NonNull final Set<UserGroupId> userGroupIds)
+	{
+		final StringBuilder sql = new StringBuilder();
+		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z "
+				+ " WHERE "
+				+ " z.AD_Table_ID = " + adTableId
+				+ " AND z.Record_ID=" + keyColumnNameFQ
+				+ " AND z.IsActive='Y'");
+
+		sql.append(" AND (AD_User_ID=" + userId.getRepoId());
+		if (!userGroupIds.isEmpty())
+		{
+			sql.append(" OR ").append(DB.buildSqlList("z.AD_UserGroup_ID", userGroupIds));
+		}
+		sql.append(")");
+
+		sql.append(" )"); // EXISTS
+
+		return sql.toString();
+	}
 }

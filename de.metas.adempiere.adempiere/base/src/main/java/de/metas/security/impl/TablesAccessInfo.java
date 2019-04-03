@@ -57,7 +57,7 @@ public class TablesAccessInfo
 		return poInfo == null ? null : poInfo.getKeyColumnName();
 	}
 
-	public int getAD_Table_ID(final String tableName)
+	public int getAdTableId(final String tableName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		return poInfo == null ? 0 : poInfo.getAD_Table_ID();
