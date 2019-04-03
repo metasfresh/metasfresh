@@ -78,6 +78,7 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 			QuantityQual quantityQual = QuantityQual.valueOf(dquan1.getQUANTITYQUAL());
 			switch (quantityQual)
 			{
+				//TODO what about the measurement unit if both types of quantity are there?
 				case CUTU:
 				{
 					final String quantityStr = dquan1.getQUANTITY();
@@ -93,6 +94,10 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 					break;
 				}
 			}
+		}
+		if (cutuQty == BigDecimal.ZERO)
+		{
+			cutuQty = BigDecimal.ONE;
 		}
 		p100.setCuperTU(cutuQty.toString());
 		p100.setOrderQty(orderQty.toString());
