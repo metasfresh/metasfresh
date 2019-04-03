@@ -329,9 +329,9 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					{
 						this.recordImportResult = importRecord(state, importRecord, isInsertOnly());
 						//
-						runSQLAfterRowImport(importRecord);
-						//
 						markImported(importRecord);
+						//
+						runSQLAfterRowImport(importRecord); // run after markImported because we need the recordId saved
 					}
 
 					@Override
@@ -363,7 +363,6 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 			afterImport();
 			
-			runSQLAfterCompleteImport();
 		}
 		catch (final SQLException e)
 		{
@@ -429,15 +428,9 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		// nothing to do here
 	}
 	
-	protected final void runSQLAfterCompleteImport()
-	{
-		final List<DBFunction> functions = getDbFunctions().fetchImportBeforeCompleteFunctions();
-		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, 0));
-	}
-	
 	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
-		final List<DBFunction> functions = getDbFunctions().fetchImportAfterRowFunctions();
+		final List<DBFunction> functions = getDbFunctions().getImportFunctions();
 		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
 		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));

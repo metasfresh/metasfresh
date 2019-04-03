@@ -50,7 +50,7 @@ public class DBFunctionHelper
 				.append(function.getSpecific_schema())
 				.append(".")
 				.append(function.getRoutine_name())
-				.append(params.length > 1 ? "(?,?)" : "(?)");
+				.append("(?,?)");
 		
 		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql.toString(), params);
 		log.info("\nCalling " + function);
