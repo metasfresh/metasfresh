@@ -1,5 +1,7 @@
 package de.metas.document.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -46,11 +48,13 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.JavaClassId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class DocumentSequenceDAO implements IDocumentSequenceDAO
 {
@@ -93,14 +97,9 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
-	public DocumentSequenceInfo retriveDocumentSequenceInfo(final int adSequenceId)
+	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final DocSequenceId sequenceId)
 	{
-		if (adSequenceId <= 0)
-		{
-			return null;
-		}
-
-		final I_AD_Sequence adSequence = InterfaceWrapperHelper.create(Env.getCtx(), adSequenceId, I_AD_Sequence.class, ITrx.TRXNAME_None);
+		final I_AD_Sequence adSequence = loadOutOfTrx(sequenceId, I_AD_Sequence.class);
 		Check.assumeNotNull(adSequence, "adSequence not null");
 
 		if (!adSequence.isActive())

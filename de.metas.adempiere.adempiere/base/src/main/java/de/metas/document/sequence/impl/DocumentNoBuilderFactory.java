@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.ValueSequenceInfoProvider;
@@ -86,6 +87,14 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 		return createDocumentNoBuilder()
 				.setDocumentSequenceByDocTypeId(C_DocType_ID, useDefiniteSequence);
 	}
+	
+	@Override
+	public IDocumentNoBuilder forSequenceId(final DocSequenceId sequenceId)
+	{
+		return createDocumentNoBuilder()
+				.setDocumentSequenceInfoBySequenceId(sequenceId);
+	}
+
 
 	@Override
 	public DocumentNoBuilder createDocumentNoBuilder()

@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -41,13 +42,13 @@ import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
@@ -122,7 +123,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		//
 		// Get the sequence number that we shall use
 		final String sequenceNo = getSequenceNoToUse();
-		if (Objects.equal(NO_DOCUMENTNO, sequenceNo))
+		if (Objects.equals(NO_DOCUMENTNO, sequenceNo))
 		{
 			return NO_DOCUMENTNO;
 		}
@@ -409,9 +410,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	}
 
 	@Override
-	public IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID)
+	public IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(@NonNull final DocSequenceId sequenceId)
 	{
-		setDocumentSequenceInfo(() -> documentSequenceDAO.retriveDocumentSequenceInfo(AD_Sequence_ID));
+		setDocumentSequenceInfo(() -> documentSequenceDAO.retriveDocumentSequenceInfo(sequenceId));
 		return this;
 	}
 
@@ -435,7 +436,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 					.setSkipGenerateDocumentNo(!isFailOnError());
 		}
 
-		final int docSequenceId;
+		final DocSequenceId docSequenceId;
 		if (useDefiniteSequence)
 		{
 			if (!docType.isOverwriteSeqOnComplete())
@@ -444,8 +445,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 						.setSkipGenerateDocumentNo(true);
 			}
 
-			docSequenceId = docType.getDefiniteSequence_ID();
-			if (docSequenceId <= 0)
+			docSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getDefiniteSequence_ID());
+			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Definite Sequence for DocType - " + docType);
 			}
@@ -453,8 +454,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		else
 		{
 			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = docTypeSequenceMap.getDocNoSequence_ID(getAD_Client_ID(), getAD_Org_ID());
-			if (docSequenceId <= 0)
+			docSequenceId = DocSequenceId.ofRepoIdOrNull(docTypeSequenceMap.getDocNoSequence_ID(getAD_Client_ID(), getAD_Org_ID()));
+			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);
 			}

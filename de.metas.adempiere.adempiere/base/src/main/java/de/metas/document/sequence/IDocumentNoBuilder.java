@@ -26,7 +26,7 @@ public interface IDocumentNoBuilder
 
 	IDocumentNoBuilder setDocumentSequenceInfo(DocumentSequenceInfo documentSeqInfo);
 
-	IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID);
+	IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(final DocSequenceId sequenceId);
 
 	IDocumentNoBuilder setFailOnError(boolean failOnError);
 
