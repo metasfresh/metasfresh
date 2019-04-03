@@ -2,7 +2,6 @@ package de.metas.ui.web.handlingunits.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -11,10 +10,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.ISerialNoDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
@@ -68,7 +66,7 @@ public class WEBUIHUCreationWithSerialNumberService
 	// Services
 	private final DocumentCollection documentCollections;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 
 	private final HUEditorView view;
 
@@ -269,7 +267,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 	private void assignSerialNumberToCU(final HuId huId, final String serialNo)
 	{
-		final I_M_HU hu = load(huId, I_M_HU.class);
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
 
 		final IContextAware ctxAware = getContextAware(hu);
 
@@ -277,11 +275,9 @@ public class WEBUIHUCreationWithSerialNumberService
 
 		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
 
-		final I_M_Attribute serialNoAttribute = serialNoDAO.getSerialNoAttribute(ctxAware.getCtx());
+		Check.errorUnless(attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo), "There is no SerialNo attribute {} defined for the handling unit {}", AttributeConstants.ATTR_SerialNo, hu);
 
-		Check.errorUnless(attributeStorage.hasAttribute(serialNoAttribute), "There is no SerialNo attribute {} defined for the handling unit {}", serialNoAttribute, hu);
-
-		attributeStorage.setValue(serialNoAttribute, serialNo.trim());
+		attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, serialNo.trim());
 		attributeStorage.saveChangesIfNeeded();
 	}
 
