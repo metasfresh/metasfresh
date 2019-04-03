@@ -34,8 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.impexp.DBFunctions.DBFunction;
-import org.adempiere.impexp.DBFunctions.DBFunctionParams;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.api.IParams;
@@ -55,6 +53,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -88,6 +87,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	private Properties _ctx;
 	private IParams _parameters = IParams.NULL;
 	private ILoggable loggable = LoggerLoggable.of(log, Level.INFO);
+	
+	@Getter(lazy=true) private final DBFunctions dbFunctions = createDBFunctions();
 
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setCtx(final Properties ctx)
@@ -121,6 +122,12 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return _parameters;
 	}
 
+	private DBFunctions createDBFunctions()
+	{
+		return DBFunctions.of(getImportTableName());
+	}
+
+	
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setLoggable(final ILoggable loggable)
 	{
@@ -424,23 +431,29 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	
 	protected final void runSQLAfterCompleteImport()
 	{
-		final List<DBFunction> functions = DBFunctions.fetchImportBeforeCompleteFunctions(getImportTableName());
-		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
-		final DBFunctionParams params = DBFunctionParams.builder()
-				.dataImportId(dataImportId.orElse(0))
-				.build();
-		functions.forEach(function -> DBFunctions.doDBFunctionCall(function, params));
+		final List<DBFunction> functions = getDbFunctions().fetchImportBeforeCompleteFunctions();
+		functions.forEach(function -> doDBFunctionCall(function, 0));
 	}
 	
 	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
-		final List<DBFunction> functions = DBFunctions.fetchImportAfterRowFunctions(getImportTableName());
+		final List<DBFunction> functions = getDbFunctions().fetchImportAfterRowFunctions();
 		final Optional<Integer> dataImportId = InterfaceWrapperHelper.getValue(importRecord, COLUMNNAME_C_DataImport_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
-		final DBFunctionParams params = DBFunctionParams.builder()
-				.dataImportId(dataImportId.orElse(0))
-				.recordId(recordId.orElse(0))
-				.build();
-		functions.forEach(function -> DBFunctions.doDBFunctionCall(function, params));
+		functions.forEach(function -> doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));
+	}
+	
+	@SuppressWarnings("unchecked")
+	final public <V> void doDBFunctionCall(@NonNull final DBFunction function, final V... params)
+	{
+		final StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ")
+				.append(function.getSpecific_schema())
+				.append(".")
+				.append(function.getRoutine_name())
+				.append(params.length > 1 ? "(?,?)" : "(?)");
+		
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql.toString(), params);
+		log.info("\nCalling " + function);
 	}
 }

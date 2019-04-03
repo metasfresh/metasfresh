@@ -11,15 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
+import lombok.RequiredArgsConstructor;
 
 /*
  * #%L
@@ -47,67 +45,58 @@ import lombok.experimental.UtilityClass;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@UtilityClass
+
+@RequiredArgsConstructor(staticName = "of")
 public class DBFunctions
 {
 	private static final transient Logger log = LogManager.getLogger(DBFunctions.class);
 	private final static String IMPORT_BEFORE_COMPLETE = "IMPORT_BEFORE_COMPLETE";
 	private final static String IMPORT_AFTER_ROW = "IMPORT_AFTER_ROW";
-	private static List<DBFunction> availableFunctions;
-	private static Map<String,List<DBFunction>> sortedFunctions;
+	@NonNull
+	private final String tableName;
+	@Getter(lazy = true)
+	private final List<DBFunction> availableFunctions = fetchImportFunctions();
+	@Getter(lazy = true)
+	private final Map<String, List<DBFunction>> sortedFunctions = mapFunctions();
 
-	@Builder
-	@Value
-	public class DBFunction
+	final public List<DBFunction> fetchImportBeforeCompleteFunctions()
 	{
-		final @NonNull String specific_schema;
-		final @NonNull String routine_name;
+		return getSortedFunctions().get(IMPORT_BEFORE_COMPLETE);
 	}
 
-	
-	final public List<DBFunction> fetchImportBeforeCompleteFunctions(@NonNull final String tableName)
+	final public List<DBFunction> fetchImportAfterRowFunctions()
 	{
-		return fetchFunctions(tableName).get(IMPORT_BEFORE_COMPLETE);
+		return getSortedFunctions().get(IMPORT_AFTER_ROW);
 	}
-	
-	final public List<DBFunction> fetchImportAfterRowFunctions(@NonNull final String tableName)
+
+	private Map<String, List<DBFunction>> mapFunctions()
 	{
-		return fetchFunctions(tableName).get(IMPORT_AFTER_ROW);
-	}
-	
-	
-	private Map<String,List<DBFunction>> fetchFunctions(@NonNull final String tableName)
-	{
-		if (sortedFunctions == null)
+		final List<DBFunction> availableAfterRowFunctions = new ArrayList<>();
+		final List<DBFunction> availableBeforeCompleteFunctions = new ArrayList<>();
+		for (final DBFunction function : getAvailableFunctions())
 		{
-			sortedFunctions = new HashMap<>();
-			final List<DBFunction> availableAfterRowFunctions = new ArrayList<>();
-			final List<DBFunction> availableBeforeCompleteFunctions = new ArrayList<>();
-			for (final DBFunction function : fetchImportFunctions(tableName))
+			if (isEligibleFunction(function))
 			{
-				if (isEligibleFunction(function))
+				if (function.getRoutine_name().contains(IMPORT_AFTER_ROW))
 				{
-					if (function.getRoutine_name().contains(IMPORT_AFTER_ROW))
-					{
-						availableAfterRowFunctions.add(function);
-					}
-					else 
-					{
-						availableBeforeCompleteFunctions.add(function);
-					}
+					availableAfterRowFunctions.add(function);
 				}
 				else
 				{
-					log.warn("Function {} from schema {} is not eliglible for importing process!", function.getRoutine_name(), function.getSpecific_schema());
+					availableBeforeCompleteFunctions.add(function);
 				}
 			}
-			sortedFunctions.put(IMPORT_AFTER_ROW, availableAfterRowFunctions);
-			sortedFunctions.put(IMPORT_BEFORE_COMPLETE, availableBeforeCompleteFunctions);
+			else
+			{
+				log.warn("Function {} from schema {} is not eliglible for importing process!", function.getRoutine_name(), function.getSpecific_schema());
+			}
 		}
 
-		return sortedFunctions;
+		final Map<String, List<DBFunction>> map = new HashMap<>();
+		map.put(IMPORT_AFTER_ROW, availableAfterRowFunctions);
+		map.put(IMPORT_BEFORE_COMPLETE, availableBeforeCompleteFunctions);
+		return map;
 	}
-
 
 	private boolean isEligibleFunction(@NonNull final DBFunction function)
 	{
@@ -115,18 +104,13 @@ public class DBFunctions
 		return routine_name.contains(IMPORT_BEFORE_COMPLETE) || routine_name.contains(IMPORT_AFTER_ROW);
 	}
 
-	private List<DBFunction> fetchImportFunctions(@NonNull final String tableName)
+	private List<DBFunction> fetchImportFunctions()
 	{
-		if (availableFunctions == null)
-		{
-			final StringBuilder sql = new StringBuilder("SELECT routines.routine_name FROM information_schema.routines ")
-					.append(" WHERE routines.routine_name ILIKE ? ")
-					.append(" ORDER BY routines.routine_name ");
-			final List<Object> sqlParams = Arrays.<Object> asList(tableName + "%");
-			availableFunctions = DB.retrieveRowsOutOfTrx(sql.toString(), sqlParams, rs -> retrieveDBFunction(rs));
-		}
-
-		return availableFunctions;
+		final StringBuilder sql = new StringBuilder("SELECT routines.specific_schema, routines.routine_name FROM information_schema.routines ")
+				.append(" WHERE routines.routine_name ILIKE ? ")
+				.append(" ORDER BY routines.routine_name ");
+		final List<Object> sqlParams = Arrays.<Object> asList(tableName + "%");
+		return DB.retrieveRowsOutOfTrx(sql.toString(), sqlParams, rs -> retrieveDBFunction(rs));
 	}
 
 	private DBFunction retrieveDBFunction(@NonNull final ResultSet rs) throws SQLException
@@ -137,31 +121,5 @@ public class DBFunctions
 				.specific_schema(specific_schema)
 				.routine_name(routine_name)
 				.build();
-	}
-	
-	@Value
-	@Builder
-	public class DBFunctionParams
-	{
-		final int recordId;
-		final int dataImportId;
-	}
-
-	final public void doDBFunctionCall(@NonNull final DBFunction function, @NonNull DBFunctionParams params)
-	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append(function.getSpecific_schema())
-				.append(".")
-				.append(function.getRoutine_name());
-
-		if (params.getRecordId() > 0)
-		{
-			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "SELECT " + sb.toString() + "(?,?)", new Object[] { params.getRecordId(), params.getDataImportId() });
-		}
-		else
-		{
-			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, "SELECT " + sb.toString() + "(?)", new Object[] { params.getDataImportId() });
-		}
-		log.info("\nCalling " + function);
 	}
 }
