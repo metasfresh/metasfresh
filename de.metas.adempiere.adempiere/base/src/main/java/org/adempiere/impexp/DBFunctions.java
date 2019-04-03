@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -102,7 +103,7 @@ public class DBFunctions
 	private boolean isEligibleFunction(@NonNull final DBFunction function)
 	{
 		final String routine_name = function.getRoutine_name();
-		return routine_name.contains(IMPORT_BEFORE_COMPLETE) || routine_name.contains(IMPORT_AFTER_ROW);
+		return StringUtils.containsIgnoreCase(routine_name, IMPORT_BEFORE_COMPLETE) || StringUtils.containsIgnoreCase(routine_name, IMPORT_AFTER_ROW);
 	}
 
 	private List<DBFunction> fetchImportFunctions()
