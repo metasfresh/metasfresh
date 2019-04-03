@@ -157,6 +157,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-creditpass</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>
 			<version>${metasfresh.version}</version>
