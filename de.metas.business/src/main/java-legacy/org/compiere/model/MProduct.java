@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -148,7 +149,7 @@ public class MProduct extends X_M_Product
 	{
 		this(InterfaceWrapperHelper.getCtx(impP),
 				0,
-				InterfaceWrapperHelper.getTrxName(impP));
+				ITrx.TRXNAME_ThreadInherited);
 		setClientOrg(InterfaceWrapperHelper.getPO(impP));
 		setUpdatedBy(impP.getUpdatedBy());
 		//
