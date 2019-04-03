@@ -2353,6 +2353,17 @@ public final class DB
 	}
 
 	/**
+	 * @return e.g. (e.g. ColumnName IN (1, 2) OR ColumnName IS NULL)
+	 */
+	public static String buildSqlList(
+			@NonNull final String columnName,
+			@NonNull final Collection<? extends Object> paramsIn)
+	{
+		final List<Object> paramsOut = null;
+		return buildSqlList(columnName, paramsIn, paramsOut);
+	}
+
+	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
 	 * @param columnName
@@ -2361,7 +2372,10 @@ public final class DB
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
-	public static String buildSqlList(final String columnName, final Collection<? extends Object> paramsIn, final List<Object> paramsOut)
+	public static String buildSqlList(
+			@NonNull final String columnName,
+			@NonNull final Collection<? extends Object> paramsIn,
+			@Nullable final List<Object> paramsOut)
 	{
 		Check.assumeNotEmpty(paramsIn, "paramsIn not empty");
 
