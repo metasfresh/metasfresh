@@ -80,7 +80,7 @@
 		<module>de.metas.aggregation</module>
 
 		<module>de.metas.business</module>
-
+		<module>de.metas.business.rest-api</module>
 
 		<module>de.metas.jax.rs</module>
 

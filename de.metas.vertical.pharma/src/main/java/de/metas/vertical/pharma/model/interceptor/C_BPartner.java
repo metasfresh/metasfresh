@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.model.interceptor;
 
+import de.metas.vertical.pharma.PharmaCustomerPermission;
+import de.metas.vertical.pharma.PharmaVendorPermission;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -20,12 +22,12 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +44,8 @@ public class C_BPartner
 			I_C_BPartner.COLUMNNAME_IsPharmaciePermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaManufacturerPermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaWholesalePermission,
-			I_C_BPartner.COLUMNNAME_IsVeterinaryPharmacyPermission
+			I_C_BPartner.COLUMNNAME_IsVeterinaryPharmacyPermission,
+			I_C_BPartner.COLUMNNAME_IsPharmaCustomerNarcoticsPermission
 	})
 	public void onPharmaPermissionChanged_Customer(final I_C_BPartner customer)
 	{
@@ -51,6 +54,11 @@ public class C_BPartner
 		{
 			customer.setShipmentPermissionPharma(null);
 			customer.setShipmentPermissionChangeDate(null);
+		}
+		else if (permissions.hasPermission(PharmaCustomerPermission.PHARMA_NARCOTICS))
+		{
+			customer.setShipmentPermissionPharma(I_C_BPartner.ShipmentPermissionPharma_TypeC);
+			customer.setShipmentPermissionChangeDate(SystemTime.asTimestamp());
 		}
 		else if (permissions.hasAtLeastOnePermission())
 		{
@@ -68,7 +76,8 @@ public class C_BPartner
 			I_C_BPartner.COLUMNNAME_IsVendor,
 			I_C_BPartner.COLUMNNAME_IsPharmaVendorAgentPermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaVendorManufacturerPermission,
-			I_C_BPartner.COLUMNNAME_IsPharmaVendorWholesalePermission
+			I_C_BPartner.COLUMNNAME_IsPharmaVendorWholesalePermission,
+			I_C_BPartner.COLUMNNAME_IsPharmaVendorNarcoticsPermission
 	})
 	public void onPharmaPermissionChanged_Vendor(final I_C_BPartner vendor)
 	{
@@ -77,6 +86,11 @@ public class C_BPartner
 		{
 			vendor.setReceiptPermissionPharma(null);
 			vendor.setReceiptPermissionChangeDate(null);
+		}
+		else if (permissions.hasPermission(PharmaVendorPermission.PHARMA_NARCOTICS))
+		{
+			vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeC);
+			vendor.setReceiptPermissionChangeDate(SystemTime.asTimestamp());
 		}
 		else if (permissions.hasAtLeastOnePermission())
 		{

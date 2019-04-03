@@ -1,15 +1,15 @@
-package de.metas.purchasing.api.impl;
+package de.metas.bpartner_product.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.bpartner_product.ProductExclude;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductBL;
-import de.metas.purchasing.api.IBPartnerProductDAO;
-import de.metas.purchasing.api.ProductExclude;
 import de.metas.util.Services;
 
 import lombok.NonNull;

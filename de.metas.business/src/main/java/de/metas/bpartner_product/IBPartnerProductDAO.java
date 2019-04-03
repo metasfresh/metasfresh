@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.purchasing.api;
+package de.metas.bpartner_product;
 
 /*
  * #%L
@@ -46,8 +46,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
-	I_C_BPartner_Product getById(int bpartnerProductId);
-
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor
 	 *
@@ -96,11 +94,13 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
 
-	Optional<I_C_BPartner_Product> retrieveDefaultVendor(ProductId productId, OrgId orgId);
-
 	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
 
 	I_C_BPartner_Product retrieveByVendorId(BPartnerId vendorId, ProductId productId, OrgId orgId);
 
 	List<I_C_BPartner_Product> retrieveAllBPartnerProductAssociations(Properties ctx, BPartnerId bpartnerId, ProductId productId, OrgId orgId, String trxName);
+
+	Optional<ProductId> getProductIdByCustomerProductNo(BPartnerId customerId, String customerProductNo);
+
+	Optional<ProductId> getProductIdByCustomerProductName(BPartnerId customerId, String customerProductName);
 }
