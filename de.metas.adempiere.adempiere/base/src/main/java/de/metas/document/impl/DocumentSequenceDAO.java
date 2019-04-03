@@ -46,6 +46,9 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -85,7 +88,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			throw new AdempiereException("@NotFound@ @AD_Sequence_ID@ (@Name@: " + sequenceName + ")");
 		}
 
-		return DocumentSequenceInfo.of(adSequence);
+		return toDocumentSequenceInfo(adSequence);
 	}
 
 	@Override
@@ -109,7 +112,38 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			return null;
 		}
 
-		return DocumentSequenceInfo.of(adSequence);
+		return toDocumentSequenceInfo(adSequence);
+	}
+
+	private DocumentSequenceInfo toDocumentSequenceInfo(final I_AD_Sequence record)
+	{
+		return DocumentSequenceInfo.builder()
+				.adSequenceId(record.getAD_Sequence_ID())
+				.name(record.getName())
+				//
+				.incrementNo(record.getIncrementNo())
+				.prefix(record.getPrefix())
+				.suffix(record.getSuffix())
+				.decimalPattern(record.getDecimalPattern())
+				.autoSequence(record.isAutoSequence())
+				.startNewYear(record.isStartNewYear())
+				.dateColumn(record.getDateColumn())
+				//
+				.customSequenceNoProvider(createCustomSequenceNoProviderOrNull(record))
+				//
+				.build();
+	}
+
+	private CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
+	{
+		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)
+		{
+			return null;
+		}
+
+		final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
+		final JavaClassId javaClassId = JavaClassId.ofRepoId(adSequence.getCustomSequenceNoProvider_JavaClass_ID());
+		return javaClassBL.newInstance(javaClassId);
 	}
 
 	@Override
