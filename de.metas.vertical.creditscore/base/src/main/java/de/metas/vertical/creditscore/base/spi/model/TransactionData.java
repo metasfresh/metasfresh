@@ -1,14 +1,9 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.vertical.creditscore.base.spi.model;
 
 /*
  * #%L
- * de.metas.business
- * %%
+ * de.metas.vertical.creditscore.base.spi.model
+ *
  * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
@@ -27,25 +22,6 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class Location
+public interface TransactionData
 {
-	LocationId id;
-
-	@Nullable
-	String address;
-
-	@Nullable
-	String postal;
-
-	@Nullable
-	String city;
-
-	@Nullable
-	String countryCode;
-
-	@Nullable
-	String streetAddress;
-
 }
