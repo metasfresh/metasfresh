@@ -5,34 +5,21 @@ describe('Create Pricing Masterdata for Automatic End2End Tests with cypress htt
   });
 
   it('Create a new Pricesystem and Pricelist with PLV', function() {
-    cy.visit('/window/540320/NEW');
+    //Pricesystem
+    cy.visitWindow('540320', 'NEW');
     cy.writeIntoStringField('Name', 'TestPriceSystem');
+    cy.clearField('Value')
+    cy.writeIntoStringField('Value', 'TestPriceSystem');
 
-    cy.get('.form-field-Value')
-      .first()
-      .find('input')
-      .clear()
-      .type('TestPriceSystem');
-
-    cy.visit('/window/540321/NEW');
-
+    //Pricelist
+    cy.visitWindow('540321', 'NEW');
     cy.writeIntoStringField('Name', 'TestPriceList');
+    cy.selectInListField('M_PricingSystem_ID', 'TestPriceSystem');
+    cy.selectInListField('C_Currency_ID', 'EUR');
 
-    cy.get('.form-field-M_PricingSystem_ID')
-      .find('input')
-      .type('T');
-    cy.get('.input-dropdown-list').should('exist');
-    cy.contains('.input-dropdown-list-option', 'TestPriceSystem').click();
-
-    cy.get('.form-field-C_Currency_ID')
-      .find('input')
-      .type('E');
-    cy.get('.input-dropdown-list').should('exist');
-    cy.contains('.input-dropdown-list-option', 'EUR').click();
-
+    //PLV
     cy.pressAddNewButton();
-
-    cy.clearField('Name', true);
+    cy.clearField('Name', 'T', true);
     cy.writeIntoStringField('Name', 'TestPLV', true);
     cy.pressDoneButton();
   });
