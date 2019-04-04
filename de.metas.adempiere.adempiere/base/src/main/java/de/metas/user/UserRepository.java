@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.compiere.model.I_AD_User;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
@@ -62,6 +63,9 @@ public class UserRepository
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.name(userRecord.getName())
+				.firstName(userRecord.getFirstname())
+				.lastName(userRecord.getLastname())
+				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
 				.emailAddress(userRecord.getEMail())
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bPartnerLanguage)

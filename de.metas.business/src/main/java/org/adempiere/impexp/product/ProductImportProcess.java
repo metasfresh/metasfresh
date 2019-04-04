@@ -52,6 +52,7 @@ import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Import {@link I_I_Product} to {@link I_M_Product}.
@@ -132,7 +133,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		// Product
 		if (newProduct)			// Insert new Product
 		{
-			final MProduct product = new MProduct(importRecord);
+			final I_M_Product product = createMProduct(importRecord);
 			if (Check.isEmpty(product.getName()))
 			{
 				product.setName(product.getValue());
@@ -249,4 +250,31 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		pp.setC_UOM_ID(uomId);
 		InterfaceWrapperHelper.save(pp);
 	}
+	
+	private I_M_Product createMProduct(@NonNull final I_I_Product importRecord)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setAD_Org_ID(importRecord.getAD_Org_ID());
+		//
+		product.setValue(importRecord.getValue());
+		product.setName(importRecord.getName());
+		product.setDescription(importRecord.getDescription());
+		product.setDocumentNote(importRecord.getDocumentNote());
+		product.setHelp(importRecord.getHelp());
+		product.setUPC(importRecord.getUPC());
+		product.setSKU(importRecord.getSKU());
+		product.setC_UOM_ID(importRecord.getC_UOM_ID());
+		product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
+		product.setPackageSize(importRecord.getPackageSize());
+		product.setManufacturer_ID(importRecord.getManufacturer_ID());
+		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		product.setProductType(importRecord.getProductType());
+		product.setImageURL(importRecord.getImageURL());
+		product.setDescriptionURL(importRecord.getDescriptionURL());
+		product.setIsSold(importRecord.isSold());
+		product.setIsStocked(importRecord.isStocked());
+		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
+		
+		return product;
+	}	// MProduct
 }

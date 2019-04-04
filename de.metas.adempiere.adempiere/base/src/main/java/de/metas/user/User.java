@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.business
@@ -45,7 +47,19 @@ public class User
 	String name;
 
 	@Nullable
+	String firstName;
+
+	@Nullable
+	String lastName;
+
+	@Nullable
 	String emailAddress;
+
+	@Nullable
+	LocalDate birthday;
+
+	@Nullable
+	String phone;
 
 	/**
 	 * Changes are persisted by the repo!
@@ -71,7 +85,11 @@ public class User
 			@Nullable final UserId id,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final String name,
+			@Nullable final String firstName,
+			@Nullable final String lastName,
 			@Nullable final String emailAddress,
+			@Nullable final LocalDate birthday,
+			@Nullable final String phone,
 			@Nullable final Language userLanguage,
 			@Nullable final Language bPartnerLanguage,
 			@NonNull final Language language)
@@ -79,7 +97,11 @@ public class User
 		this.id = id;
 		this.bpartnerId = bpartnerId;
 		this.name = name;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.emailAddress = emailAddress;
+		this.birthday = birthday;
+		this.phone = phone;
 		this.userLanguage = userLanguage;
 		this.bPartnerLanguage = bPartnerLanguage;
 		this.language = language;
