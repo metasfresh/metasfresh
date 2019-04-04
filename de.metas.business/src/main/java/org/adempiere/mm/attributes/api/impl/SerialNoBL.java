@@ -33,6 +33,7 @@ import lombok.NonNull;
 
 public class SerialNoBL implements ISerialNoBL
 {
+	@Override
 	public String getAndIncrementSerialNo(
 			@NonNull final DocSequenceId sequenceId,
 			@NonNull final SerialNoContext context)
