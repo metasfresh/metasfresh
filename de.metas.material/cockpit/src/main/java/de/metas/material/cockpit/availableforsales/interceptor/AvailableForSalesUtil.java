@@ -18,6 +18,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -194,6 +195,20 @@ public class AvailableForSalesUtil
 
 	public void checkAndUpdateOrderLineRecords(@NonNull final List<CheckAvailableForSalesRequest> requests)
 	{
+
+		// We cannot use the thread-inherited transaction that would otherwise be used by default.
+		// Because when this method is called, it means that the thread-inherited transaction is already committed
+		// Therefore, let's create our own trx to work in
+		Services.get(ITrxManager.class).run(trx -> {
+
+			retrieveDataAndUpdateOrderLines(requests);
+
+		});
+	}
+
+	@VisibleForTesting
+	void retrieveDataAndUpdateOrderLines(@NonNull final List<CheckAvailableForSalesRequest> requests)
+	{
 		final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> //
 		query2OrderLineIds = createQueries(requests);
 
@@ -205,28 +220,20 @@ public class AvailableForSalesUtil
 				.availableForSalesQueries(query2OrderLineIds.keySet())
 				.build();
 
-		// We cannot use the thread-inherited transaction that would otherwise be used by default.
-		// Because when this method is called, it means that the thread-inherited transaction is already committed
-		// Therefore, let's create our own trx to work in
-		Services.get(ITrxManager.class).run(trx -> {
+		// in here, the thread-inherited transaction is our *new* not-yet-committed/closed transaction
+		final ImmutableMap<OrderLineId, Quantities> //
+		qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
 
-			// in here, the thread-inherited transaction is our *new* not-yet-committed/closed transaction
-			final ImmutableMap<OrderLineId, Quantities> //
-			qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
+		for (final Entry<OrderLineId, Quantities> entry : qtyIncludingSalesOrderLine.entrySet())
+		{
+			final OrderLineId orderLineId = entry.getKey();
+			final Quantities quantities = entry.getValue();
 
-			for (final Entry<OrderLineId, Quantities> entry : qtyIncludingSalesOrderLine.entrySet())
-			{
-				final OrderLineId orderLineId = entry.getKey();
-				final Quantities quantities = entry.getValue();
+			final CheckAvailableForSalesRequest request = orderLineId2Request.get(orderLineId);
+			final ColorId insufficientQtyAvailableForSalesColorId = request.getInsufficientQtyAvailableForSalesColorId();
 
-				final CheckAvailableForSalesRequest request = orderLineId2Request.get(orderLineId);
-				final ColorId insufficientQtyAvailableForSalesColorId = request.getInsufficientQtyAvailableForSalesColorId();
-
-				updateOrderLineRecord(orderLineId, quantities, insufficientQtyAvailableForSalesColorId);
-
-			}
-
-		});
+			updateOrderLineRecord(orderLineId, quantities, insufficientQtyAvailableForSalesColorId);
+		}
 	}
 
 	private ImmutableMap<OrderLineId, Quantities> retrieveAvailableQty(
@@ -254,8 +261,10 @@ public class AvailableForSalesUtil
 	{
 		final I_C_OrderLine salesOrderLineRecord = load(orderLineId, I_C_OrderLine.class);
 
-		// qtyToBeShipped includes the subtracted salesOrderLineRecord.getQtyOrdered(). We add it again to make it comparable with the orderLine's qtyOrdered.
-		final BigDecimal qtyToBeShippedEff = quantities.getQtyToBeShipped().add(salesOrderLineRecord.getQtyOrdered());
+		// qtyToBeShipped includes the salesOrderLineRecord.getQtyOrdered(). We subtract it again to make it comparable with the orderLine's qtyOrdered.
+		final BigDecimal qtyToBeShippedEff = quantities
+				.getQtyToBeShipped()
+				.subtract(salesOrderLineRecord.getQtyOrdered());
 
 		final BigDecimal newValueInStockingUom = quantities
 				.getQtyOnHandStock()

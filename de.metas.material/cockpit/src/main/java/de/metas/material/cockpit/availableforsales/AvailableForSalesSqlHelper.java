@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.compiere.Adempiere;
 import org.compiere.db.Database;
@@ -68,12 +69,20 @@ public class AvailableForSalesSqlHelper
 			int queryNo,
 			@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
-		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = Services
+		final IQueryBuilder<I_MD_Available_For_Sales_QueryResult> queryBuilder = Services
 				.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Available_For_Sales_QueryResult.class)
-				.create();
+				.createQueryBuilder(I_MD_Available_For_Sales_QueryResult.class);
 
-		assume(isRealSqlQuery(), "Unit test mode is currently not supported");
+		if (!isRealSqlQuery())
+		{
+			return queryBuilder
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_MD_Available_For_Sales_QueryResult.COLUMN_M_Product_ID, availableForSalesQuery.getProductId())
+					// PLEASE ADD ADDITIONAL FILTERS AS NEEDED FOR YOUR TESTS
+					.create();
+		}
+
+		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = queryBuilder.create();
 		assume(dbQuery instanceof TypedSqlQuery, "If we are not in unit test mode, then our query has to be a sql query; query={}", dbQuery);
 
 		final TypedSqlQuery<I_MD_Available_For_Sales_QueryResult> sqlDbQuery = (TypedSqlQuery<I_MD_Available_For_Sales_QueryResult>)dbQuery;

@@ -65,7 +65,7 @@ public class AvailableForSalesRepository
 			for (final I_MD_Available_For_Sales_QueryResult recordForQueryNo : queryNo2records.get(queryNo))
 			{
 				qtyOnHandStock = qtyOnHandStock.add(recordForQueryNo.getQtyOnHandStock());
-				qtyToBeShipped = qtyToBeShipped.subtract(recordForQueryNo.getQtyToBeShipped());
+				qtyToBeShipped = qtyToBeShipped.add(recordForQueryNo.getQtyToBeShipped());
 			}
 
 			final AvailableForSalesQuery singleQuery = singleQueries.get(queryNo);
