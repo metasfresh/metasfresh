@@ -46,4 +46,6 @@ public final class AttributeConstants
 	//
 	public static final String ATTR_SubProducerBPartner_Value = "SubProducerBPartner";
 	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
+	
+	public static final String ATTR_SerialNo = "SerialNo";
 }
