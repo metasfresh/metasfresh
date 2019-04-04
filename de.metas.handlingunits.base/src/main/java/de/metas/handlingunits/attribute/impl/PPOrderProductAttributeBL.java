@@ -29,12 +29,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ISerialNoBL;
+import org.adempiere.mm.attributes.api.SerialNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -49,6 +54,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -60,7 +66,10 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -86,20 +95,29 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		//
 		// Fetch PP_Order's attributes that shall be propagated to HUs
-		final I_PP_Order fromPPOrder = Services.get(IPPOrderDAO.class).getById(fromPPOrderId);
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final I_PP_Order fromPPOrder = ppOrdersRepo.getById(fromPPOrderId);
 		final AttributesMap attributesMap = getAttributesMap(fromPPOrder);
-		if (attributesMap.isEmpty())
+		logger.trace("Using {}", attributesMap);
+
+		//
+		// SerialNo info (if any)
+		final Optional<SerialNoContext> serialNoContext = extractSerialNoContext(fromPPOrder);
+		logger.trace("Using {}", serialNoContext);
+
+		//
+		// Stop here if there is nothing to do
+		if (attributesMap.isEmpty() && !serialNoContext.isPresent())
 		{
-			logger.trace("Skip updating because there were no attributes");
+			logger.trace("Skip updating because there is nothing to update from");
 			return;
 		}
-		logger.trace("Using {}", attributesMap);
 
 		//
 		// Update the attributes of given HUs
 		final Set<Integer> huIdsUpdated = new HashSet<>();
 		husToUpdate.forEach(hu -> {
-			updateHUAttributesFromAttributesMap(hu, attributesMap);
+			updateHUAttributesFromAttributesMap(hu, attributesMap, serialNoContext);
 			huIdsUpdated.add(hu.getM_HU_ID());
 		});
 
@@ -109,7 +127,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		{
 			final Collection<I_M_HU> husAlreadyReceived = getAllReceivedHUs(fromPPOrderId, huIdsUpdated); // exclude those which were already updated above
 			husAlreadyReceived.forEach(hu -> {
-				updateHUAttributesFromAttributesMap(hu, attributesMap);
+				updateHUAttributesFromAttributesMap(hu, attributesMap, serialNoContext);
 				huIdsUpdated.add(hu.getM_HU_ID());
 			});
 		}
@@ -156,6 +174,30 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		}
 
 		return attributesMap;
+	}
+
+	private Optional<SerialNoContext> extractSerialNoContext(final I_PP_Order ppOrder)
+	{
+		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final DocSequenceId serialNoSequenceId = orderBOMBL.getSerialNoSequenceId(ppOrderId).orElse(null);
+		if (serialNoSequenceId == null)
+		{
+			return Optional.empty();
+		}
+
+		final ProductId finishedGoodsProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final String finishedGoodsProductValue = productsRepo.retrieveProductValueByProductId(finishedGoodsProductId);
+
+		final SerialNoContext serialNoContext = SerialNoContext.builder()
+				.sequenceId(serialNoSequenceId)
+				.clientId(ClientId.ofRepoId(ppOrder.getAD_Client_ID()))
+				.productNo(finishedGoodsProductValue)
+				.build();
+
+		return Optional.of(serialNoContext);
 	}
 
 	/** @return M_Attribute_IDs to be transferred from PP_Order to HUs */
@@ -235,32 +277,61 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	 * @param hu
 	 * @param from
 	 */
-	private static void updateHUAttributesFromAttributesMap(final I_M_HU hu, final AttributesMap from)
+	private static void updateHUAttributesFromAttributesMap(
+			final I_M_HU hu,
+			final AttributesMap from,
+			final Optional<SerialNoContext> serialNoContext)
 	{
-		if (from.isEmpty())
+		// Stop here if there is nothing to do
+		if (from.isEmpty() && !serialNoContext.isPresent())
 		{
 			return;
 		}
 
+		// services
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 		final IHUAttributesDAO huAttributesRepo = Services.get(IHUAttributesDAO.class);
 
+		final AttributeId serialNoAttributeId = serialNoContext.isPresent()
+				? attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo)
+				: null;
+
 		final List<I_M_HU_Attribute> existingHUAttributes = huAttributesRepo.retrieveAttributesOrdered(hu).getHuAttributes();
-		for (final I_M_HU_Attribute huAttribute : existingHUAttributes)
+		for (final I_M_HU_Attribute existingHUAttribute : existingHUAttributes)
 		{
-			final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
-			final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
-			if (attributeWithValue == null)
+			final AttributeId attributeId = AttributeId.ofRepoId(existingHUAttribute.getM_Attribute_ID());
+
+			//
+			// Update HU attribute from order's collected attribute
+			if (from.getByAttributeId(attributeId) != null)
 			{
-				// the attribute was not used in PPOrder. Nothing to modify
-				continue;
+				final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
+
+				// TODO: shall we skip it if attribute is null and isTransferIfNull=false
+
+				existingHUAttribute.setValue(attributeWithValue.getValueString());
+				existingHUAttribute.setValueNumber(attributeWithValue.getValueNumber());
+				huAttributesRepo.save(existingHUAttribute);
+				logger.trace("Updated {}/{} from {}", hu, existingHUAttribute, attributeWithValue);
 			}
 
-			// TODO: shall we skip it if attribute is null and isTransferIfNull=false
-
-			huAttribute.setValue(attributeWithValue.getValueString());
-			huAttribute.setValueNumber(attributeWithValue.getValueNumber());
-			huAttributesRepo.save(huAttribute);
-			logger.trace("Updated {}/{} from {}", hu, huAttribute, attributeWithValue);
+			//
+			// SerialNo
+			if (serialNoAttributeId != null
+					&& serialNoAttributeId.equals(attributeId)
+					&& serialNoContext.isPresent()
+					&& Check.isEmpty(existingHUAttribute.getValue(), true))
+			{
+				final String serialNo = serialNoBL.getAndIncrementSerialNo(serialNoContext.get()).orElse(null);
+				if (serialNo != null)
+				{
+					existingHUAttribute.setValue(serialNo);
+					existingHUAttribute.setValueNumber(null);
+					huAttributesRepo.save(existingHUAttribute);
+					logger.trace("Updated SerialNo {}/{} to {}", hu, existingHUAttribute, serialNo);
+				}
+			}
 		}
 	}
 
