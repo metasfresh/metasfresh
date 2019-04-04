@@ -8,6 +8,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -73,7 +74,8 @@ final class PPOrderBOMCreateCommand
 	{
 		final Timestamp dateStartSchedule = ppOrder.getDateStartSchedule();
 		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ppOrder.getPP_Product_BOM_ID());
+		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productBOMId);
 
 		PPOrderUtil.verifyProductBOMAndReturnIt(
 				mainProductId,
@@ -124,6 +126,7 @@ final class PPOrderBOMCreateCommand
 		orderBOM.setValue(bom.getValue());
 		orderBOM.setDocumentNo(bom.getDocumentNo());
 		orderBOM.setC_UOM_ID(bom.getC_UOM_ID()); // the bom's C_UOM_ID
+		orderBOM.setSerialNo_Sequence_ID(bom.getSerialNo_Sequence_ID());
 
 		ppOrderBOMsRepo.save(orderBOM);
 		return orderBOM;
