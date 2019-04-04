@@ -4,12 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.impexp.DBFunctionsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_I_ElementValue;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 
 /*
  * #%L
@@ -32,7 +39,9 @@ import org.junit.Test;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		DBFunctionsRepository.class})
 public class AccountImportProcess_Test
 {
 	private Properties ctx;

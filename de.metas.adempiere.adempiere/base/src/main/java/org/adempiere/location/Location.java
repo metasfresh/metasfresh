@@ -35,4 +35,17 @@ public class Location
 
 	@Nullable
 	String address;
+
+	@Nullable
+	String postal;
+
+	@Nullable
+	String city;
+
+	@Nullable
+	String countryCode;
+
+	@Nullable
+	String streetAddress;
+
 }
