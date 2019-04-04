@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
-import de.metas.document.sequence.DocSequenceId;
+import java.util.Optional;
+
 import de.metas.util.ISingletonService;
 
 /*
@@ -28,6 +29,6 @@ import de.metas.util.ISingletonService;
 public interface ISerialNoBL extends ISingletonService
 {
 
-	String getAndIncrementSerialNo(DocSequenceId sequenceId, SerialNoContext context);
+	Optional<String> getAndIncrementSerialNo(SerialNoContext context);
 
 }

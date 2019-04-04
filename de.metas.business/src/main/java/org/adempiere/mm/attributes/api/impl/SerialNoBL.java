@@ -1,10 +1,13 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.mm.attributes.api.SerialNoContext;
 import org.compiere.util.Evaluatees;
 
-import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -34,18 +37,20 @@ import lombok.NonNull;
 public class SerialNoBL implements ISerialNoBL
 {
 	@Override
-	public String getAndIncrementSerialNo(
-			@NonNull final DocSequenceId sequenceId,
-			@NonNull final SerialNoContext context)
+	public Optional<String> getAndIncrementSerialNo(@NonNull final SerialNoContext context)
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
-		return documentNoFactory.forSequenceId(sequenceId)
+		final String serialNo = documentNoFactory.forSequenceId(context.getSequenceId())
 				.setFailOnError(true)
 				.setClientId(context.getClientId())
 				.setEvaluationContext(Evaluatees.mapBuilder()
 						.put("ProductNo", context.getProductNo())
 						.build())
 				.build();
+
+		return serialNo != null && !Objects.equals(serialNo, IDocumentNoBuilder.NO_DOCUMENTNO)
+				? Optional.of(serialNo)
+				: Optional.empty();
 	}
 }
