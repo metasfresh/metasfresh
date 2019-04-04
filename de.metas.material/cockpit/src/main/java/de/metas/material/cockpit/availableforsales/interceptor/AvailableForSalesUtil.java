@@ -259,25 +259,34 @@ public class AvailableForSalesUtil
 			@NonNull final Quantities quantities,
 			@NonNull final ColorId insufficientQtyAvailableForSalesColorId)
 	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 		final I_C_OrderLine salesOrderLineRecord = load(orderLineId, I_C_OrderLine.class);
 
-		// qtyToBeShipped includes the salesOrderLineRecord.getQtyOrdered(). We subtract it again to make it comparable with the orderLine's qtyOrdered.
-		final BigDecimal qtyToBeShippedEff = quantities
-				.getQtyToBeShipped()
-				.subtract(salesOrderLineRecord.getQtyOrdered());
-
-		final BigDecimal newValueInStockingUom = quantities
-				.getQtyOnHandStock()
-				.subtract(qtyToBeShippedEff);
-
-		final BigDecimal newValue = Services.get(IUOMConversionBL.class)
+		// We do everything in the order line's UOM right from the start in order to depend on QtyEntered as opposed to QtyOrdered.
+		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
+		final BigDecimal qtyToBeShippedInOrderLineUOM = uomConversionBL
 				.convertFromProductUOM(
 						ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID()),
 						UomId.ofRepoId(salesOrderLineRecord.getC_UOM_ID()),
-						newValueInStockingUom);
-		salesOrderLineRecord.setQtyAvailableForSales(newValue);
+						quantities.getQtyToBeShipped());
 
-		if (newValue.compareTo(salesOrderLineRecord.getQtyOrdered()) < 0)
+		final BigDecimal qtyOnHandInOrderLineUOM = uomConversionBL
+				.convertFromProductUOM(
+						ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID()),
+						UomId.ofRepoId(salesOrderLineRecord.getC_UOM_ID()),
+						quantities.getQtyOnHandStock());
+
+		// QtyToBeShippedInOrderLineUOM includes the salesOrderLineRecord.getQtyEntered().
+		// We subtract it again to make it comparable with the orderLine's qtyOrdered.
+		final BigDecimal qtyToBeShippedEff = qtyToBeShippedInOrderLineUOM
+				.subtract(salesOrderLineRecord.getQtyEntered());
+
+		final BigDecimal qtyAvailableForSales = qtyOnHandInOrderLineUOM.subtract(qtyToBeShippedEff);
+
+		salesOrderLineRecord.setQtyAvailableForSales(qtyAvailableForSales);
+
+		if (qtyAvailableForSales.compareTo(salesOrderLineRecord.getQtyEntered()) < 0)
 		{
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor_ID(insufficientQtyAvailableForSalesColorId.getRepoId());
 		}

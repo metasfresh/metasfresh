@@ -38,7 +38,7 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine
 	public static final String COLUMNNAME_InsufficientQtyAvailaibleForSalesColor_ID = "InsufficientQtyAvailaibleForSalesColor_ID";
 	public void setInsufficientQtyAvailableForSalesColor_ID(int insufficientQtyAvailableForSalesColor_ID);
 	public void setInsufficientQtyAvailableForSalesColor(I_AD_Color insufficientQtyAvailableForSalesColor);
-	public int getsetInsufficientQtyAvailableForSalesColor_ID();
-	public I_AD_Color getsetInsufficientQtyAvailableForSalesColor();
+	public int getInsufficientQtyAvailableForSalesColor_ID();
+	public I_AD_Color getInsufficientQtyAvailableForSalesColor();
 	// @formatter:on
 }

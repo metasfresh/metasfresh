@@ -1,5 +1,7 @@
 package de.metas.material.cockpit.availableforsales.interceptor;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -30,7 +32,6 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.ColorId;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -59,10 +60,13 @@ class AvailableForSalesUtilTest
 
 	private static final BigDecimal FOUR = new BigDecimal("4");
 	private static final BigDecimal THREE = new BigDecimal("3");
+	private static final BigDecimal SEVEN = new BigDecimal("7");
+
 	private AvailableForSalesUtil availableForSalesUtil;
 	private ColorId colorId;
 	private OrderLineId orderLineId;
 	private ProductId productId;
+	private CheckAvailableForSalesRequest request;
 
 	@BeforeEach
 	public void beforeEach()
@@ -89,15 +93,75 @@ class AvailableForSalesUtilTest
 		saveRecord(orderLineRecord);
 		orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
 
+		request = CheckAvailableForSalesRequest.builder()
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.insufficientQtyAvailableForSalesColorId(colorId)
+				.orderLineId(orderLineId)
+				.preparationDate(TimeUtil.parseTimestamp("2019-04-04"))
+				.productId(productId)
+				.salesOrderLookBehindHours(3)
+				.shipmentDateLookAheadHours(72)
+				.build();
+
 		availableForSalesUtil = new AvailableForSalesUtil(new AvailableForSalesRepository());
 	}
 
 	@Test
-	void retrieveDataAndUpdateOrderLines()
+	void retrieveDataAndUpdateOrderLines_2resultRecords_0withStock()
 	{
 		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
-		createRecord(salesOrderLastUpdated, THREE);
-		createRecord(null, FOUR);
+		createQueryResultRecord(salesOrderLastUpdated, THREE, null/* qtyOnHandStock */);
+		createQueryResultRecord(null, FOUR, null/* qtyOnHandStock */);
+
+		// invoke the method under test
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+
+		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
+
+		// we have -7 in foreseeable shipments 3 of which are in in updatedOrderRecord
+		assertThat(updatedOrderRecord.getQtyAvailableForSales()).isEqualByComparingTo(FOUR.negate());
+		assertThat(updatedOrderRecord.getInsufficientQtyAvailableForSalesColor_ID()).isEqualTo(colorId.getRepoId());
+	}
+
+	@Test
+	void retrieveDataAndUpdateOrderLines_1resultRecord_0withtock()
+	{
+		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
+		createQueryResultRecord(salesOrderLastUpdated, THREE, null/* qtyOnHandStock */);
+
+		// invoke the method under test
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+
+		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
+
+		// we have -7 in foreseeable shipments 3 of which are in in updatedOrderRecord
+		assertThat(updatedOrderRecord.getQtyAvailableForSales()).isZero();
+		assertThat(updatedOrderRecord.getInsufficientQtyAvailableForSalesColor_ID()).isEqualTo(colorId.getRepoId());
+	}
+
+	@Test
+	void retrieveDataAndUpdateOrderLines_2resultRecords_1withStock()
+	{
+		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
+		createQueryResultRecord(salesOrderLastUpdated, THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
+		createQueryResultRecord(null/* salesOrderLastUpdated */, THREE/* qtyToBeShipped */, FOUR/* qtyOnHandStock */);
+
+		// invoke the method under test
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+
+		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
+
+		// we have -6 in foreseeable shipments 3 of which are in in updatedOrderRecord; we have 4 on stock => -6+3+4=1
+		assertThat(updatedOrderRecord.getQtyAvailableForSales()).isEqualByComparingTo(ONE);
+		assertThat(updatedOrderRecord.getInsufficientQtyAvailableForSalesColor_ID()).isEqualTo(colorId.getRepoId());
+	}
+
+	@Test
+	void retrieveDataAndUpdateOrderLines_4()
+	{
+		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
+		createQueryResultRecord(salesOrderLastUpdated, THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
+		createQueryResultRecord(null/* salesOrderLastUpdated */, THREE/* qtyToBeShipped */, TEN/* qtyOnHandStock */);
 
 		final CheckAvailableForSalesRequest request = CheckAvailableForSalesRequest.builder()
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
@@ -113,13 +177,15 @@ class AvailableForSalesUtilTest
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
-		// we have -7 in foreseeable shipments 3 of which are in in updatedOrderRecord
-		assertThat(updatedOrderRecord.getQtyAvailableForSales()).isEqualByComparingTo(FOUR.negate());
+		// we have -6 in foreseeable shipments 3 of which are in in updatedOrderRecord; we have 10 on stock => -6+3+10=7
+		assertThat(updatedOrderRecord.getQtyAvailableForSales()).isEqualByComparingTo(SEVEN);
+		assertThat(updatedOrderRecord.getInsufficientQtyAvailableForSalesColor()).isNull();
 	}
 
-	private void createRecord(
+	private void createQueryResultRecord(
 			@Nullable final Timestamp salesOrderLastUpdated,
-			@NonNull final BigDecimal qtyToBeShipped)
+			@Nullable final BigDecimal qtyToBeShipped,
+			@Nullable final BigDecimal qtyOnHandStock)
 	{
 		final I_MD_Available_For_Sales_QueryResult resultRecord1 = newInstance(I_MD_Available_For_Sales_QueryResult.class);
 
@@ -130,6 +196,7 @@ class AvailableForSalesUtilTest
 		resultRecord1.setM_Product_ID(productId.getRepoId());
 		resultRecord1.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 		resultRecord1.setQtyToBeShipped(qtyToBeShipped);
+		resultRecord1.setQtyOnHandStock(qtyOnHandStock);
 		resultRecord1.setSalesOrderLastUpdated(salesOrderLastUpdated);
 		resultRecord1.setShipmentPreparationDate(TimeUtil.parseTimestamp("2019-04-04"));
 		saveRecord(resultRecord1);
