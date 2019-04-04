@@ -162,8 +162,9 @@ class TableQuickInput extends Component {
     this.rawWidgets = [];
 
     if (data && layout) {
-      return layout.map((item, id) => {
+      return layout.map((item, idx) => {
         const widgetData = item.fields.map(elem => data[elem.field] || -1);
+        const lastFormField = idx === layout.length - 1;
 
         return (
           <RawWidget
@@ -184,16 +185,14 @@ class TableQuickInput extends Component {
             gridAlign={item.gridAlign}
             forceFullWidth={widgetData.length > 1}
             forceHeight={forceHeight}
-            key={id}
+            key={idx}
+            lastFormField={lastFormField}
             caption={item.caption}
-            handlePatch={(prop, value, callback) =>
-              this.handlePatch(prop, value, callback)
-            }
-            handleFocus={() => {}}
+            handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             type="secondary"
-            autoFocus={id === 0}
-            initialFocus={id === 0}
+            autoFocus={idx === 0}
+            initialFocus={idx === 0}
           />
         );
       });
