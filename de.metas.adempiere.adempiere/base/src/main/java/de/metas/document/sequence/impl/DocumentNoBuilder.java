@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -140,10 +142,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		//
 		// DocumentNo - Prefix
 		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
-		final String prefix = docSeqInfo.getPrefix();
-		if (!Check.isEmpty(prefix, true))
+		final IStringExpression prefix = docSeqInfo.getPrefix();
+		if (!prefix.isNullExpression())
 		{
-			documentNo.append(prefix);
+			final String prefixEvaluated = prefix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
+			documentNo.append(prefixEvaluated);
 		}
 
 		//
@@ -170,10 +173,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		//
 		// DocumentNo - Suffix
-		final String suffix = docSeqInfo.getSuffix();
-		if (!Check.isEmpty(suffix, true))
+		final IStringExpression suffix = docSeqInfo.getSuffix();
+		if (!suffix.isNullExpression())
 		{
-			documentNo.append(suffix);
+			final String suffixEvaluated = suffix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
+			documentNo.append(suffixEvaluated);
 		}
 
 		//

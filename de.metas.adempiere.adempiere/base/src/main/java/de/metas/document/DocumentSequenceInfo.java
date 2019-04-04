@@ -1,5 +1,7 @@
 package de.metas.document;
 
+import org.adempiere.ad.expression.api.IStringExpression;
+
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import lombok.Builder;
 import lombok.Value;
@@ -18,8 +20,8 @@ public class DocumentSequenceInfo
 
 	//
 	private final int incrementNo;
-	private final String prefix;
-	private final String suffix;
+	private final IStringExpression prefix;
+	private final IStringExpression suffix;
 	private final String decimalPattern;
 	private final boolean autoSequence;
 	private final boolean startNewYear;
@@ -32,8 +34,8 @@ public class DocumentSequenceInfo
 			final int adSequenceId,
 			final String name,
 			final int incrementNo,
-			final String prefix,
-			final String suffix,
+			final IStringExpression prefix,
+			final IStringExpression suffix,
 			final String decimalPattern,
 			final boolean autoSequence,
 			final boolean startNewYear,
@@ -43,8 +45,8 @@ public class DocumentSequenceInfo
 		this.adSequenceId = adSequenceId;
 		this.name = name;
 		this.incrementNo = incrementNo;
-		this.prefix = prefix;
-		this.suffix = suffix;
+		this.prefix = prefix != null ? prefix : IStringExpression.NULL;
+		this.suffix = suffix != null ? suffix : IStringExpression.NULL;
 		this.decimalPattern = decimalPattern;
 		this.autoSequence = autoSequence;
 		this.startNewYear = startNewYear;
