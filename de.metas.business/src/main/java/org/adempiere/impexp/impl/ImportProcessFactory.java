@@ -22,10 +22,10 @@ package org.adempiere.impexp.impl;
  * #L%
  */
 
-
 import java.util.HashMap;
 import java.util.Map;
 
+import de.metas.postal.impexp.PostalCodeImportProcess;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.ADUserImportProcess;
 import org.adempiere.impexp.IImportProcess;
@@ -35,13 +35,7 @@ import org.adempiere.impexp.inventory.InventoryImportProcess;
 import org.adempiere.impexp.product.ProductImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.I_I_BPartner_GlobalID;
-import org.compiere.model.I_I_DiscountSchema;
-import org.compiere.model.I_I_Inventory;
-import org.compiere.model.I_I_Product;
-import org.compiere.model.I_I_Request;
-import org.compiere.model.I_I_User;
+import org.compiere.model.*;
 
 import com.google.common.base.Supplier;
 
@@ -49,6 +43,8 @@ import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
 import de.metas.util.Check;
+
+import javax.annotation.Nullable;
 
 public class ImportProcessFactory implements IImportProcessFactory
 {
@@ -66,6 +62,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
 		registerImportProcess(I_I_DiscountSchema.class, DiscountSchemaImportProcess.class);
 		registerImportProcess(I_I_BPartner_GlobalID.class, BPartnerGlobalIDImportProcess.class);
+		registerImportProcess(I_I_Postal.class, PostalCodeImportProcess.class);
 	}
 
 	@Override
@@ -88,7 +85,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		return importProcess;
 	}
 
-	@Override
+	@Nullable @Override
 	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(final Class<ImportRecordType> modelImportClass)
 	{
 		Check.assumeNotNull(modelImportClass, "modelImportClass not null");
@@ -105,17 +102,16 @@ public class ImportProcessFactory implements IImportProcessFactory
 	{
 		try
 		{
-			@SuppressWarnings("unchecked")
-			final IImportProcess<ImportRecordType> importProcess = (IImportProcess<ImportRecordType>)importProcessClass.newInstance();
+			@SuppressWarnings("unchecked") final IImportProcess<ImportRecordType> importProcess = (IImportProcess<ImportRecordType>)importProcessClass.newInstance();
 			return importProcess;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed instantiating " + importProcessClass, e);
 		}
 	}
 
-	@Override
+	@Nullable @Override
 	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(final String tableName)
 	{
 		Check.assumeNotNull(tableName, "tableName not null");
@@ -144,7 +140,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 	}
 
 	@Override
-	public void setAsyncImportProcessBuilderSupplier(Supplier<IAsyncImportProcessBuilder> asyncImportProcessBuilderSupplier)
+	public void setAsyncImportProcessBuilderSupplier(final Supplier<IAsyncImportProcessBuilder> asyncImportProcessBuilderSupplier)
 	{
 		Check.assumeNotNull(asyncImportProcessBuilderSupplier, "asyncImportProcessBuilderSupplier not null");
 		this.asyncImportProcessBuilderSupplier = asyncImportProcessBuilderSupplier;
