@@ -29,6 +29,7 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderBL;
@@ -210,29 +211,29 @@ public class AvailableForSalesUtil
 		Services.get(ITrxManager.class).run(trx -> {
 
 			// in here, the thread-inherited transaction is our *new* not-yet-committed/closed transaction
-			final ImmutableMap<OrderLineId, BigDecimal> //
+			final ImmutableMap<OrderLineId, Quantities> //
 			qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
 
-			for (final Entry<OrderLineId, BigDecimal> entry : qtyIncludingSalesOrderLine.entrySet())
+			for (final Entry<OrderLineId, Quantities> entry : qtyIncludingSalesOrderLine.entrySet())
 			{
 				final OrderLineId orderLineId = entry.getKey();
-				final BigDecimal qty = entry.getValue();
+				final Quantities quantities = entry.getValue();
 
 				final CheckAvailableForSalesRequest request = orderLineId2Request.get(orderLineId);
 				final ColorId insufficientQtyAvailableForSalesColorId = request.getInsufficientQtyAvailableForSalesColorId();
 
-				updateOrderLineRecord(orderLineId, qty, insufficientQtyAvailableForSalesColorId);
+				updateOrderLineRecord(orderLineId, quantities, insufficientQtyAvailableForSalesColorId);
 
 			}
 
 		});
 	}
 
-	private ImmutableMap<OrderLineId, BigDecimal> retrieveAvailableQty(
+	private ImmutableMap<OrderLineId, Quantities> retrieveAvailableQty(
 			@NonNull final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> query2OrderLineIds,
 			@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
 	{
-		final ImmutableMap.Builder<OrderLineId, BigDecimal> result = ImmutableMap.builder();
+		final ImmutableMap.Builder<OrderLineId, Quantities> result = ImmutableMap.builder();
 
 		final AvailableForSalesMultiResult multiResult = availableForSalesRepository.getBy(availableForSalesMultiQuery);
 		for (final AvailableForSalesResult availableForSalesResult : multiResult.getAvailableForSalesResults())
@@ -240,7 +241,7 @@ public class AvailableForSalesUtil
 			final AvailableForSalesQuery query = availableForSalesResult.getAvailableForSalesQuery();
 			for (final OrderLineId orderLineId : query2OrderLineIds.get(query))
 			{
-				result.put(orderLineId, availableForSalesResult.getQuantity());
+				result.put(orderLineId, availableForSalesResult.getQuantities());
 			}
 		}
 		return result.build();
@@ -248,23 +249,26 @@ public class AvailableForSalesUtil
 
 	private void updateOrderLineRecord(
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final BigDecimal qtyIncludingSalesOrderLine,
+			@NonNull final Quantities quantities,
 			@NonNull final ColorId insufficientQtyAvailableForSalesColorId)
 	{
 		final I_C_OrderLine salesOrderLineRecord = load(orderLineId, I_C_OrderLine.class);
 
-		// qtyIncludingSalesOrderLine included the subtracted salesOrderLineRecord.getQtyOrdered(). we add it again to make the two values comparable
-		final BigDecimal newValueInStockingUOM = qtyIncludingSalesOrderLine.add(salesOrderLineRecord.getQtyOrdered());
+		// qtyToBeShipped includes the subtracted salesOrderLineRecord.getQtyOrdered(). We add it again to make it comparable with the orderLine's qtyOrdered.
+		final BigDecimal qtyToBeShippedEff = quantities.getQtyToBeShipped().add(salesOrderLineRecord.getQtyOrdered());
+
+		final BigDecimal newValueInStockingUom = quantities
+				.getQtyOnHandStock()
+				.subtract(qtyToBeShippedEff);
 
 		final BigDecimal newValue = Services.get(IUOMConversionBL.class)
 				.convertFromProductUOM(
 						ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID()),
 						UomId.ofRepoId(salesOrderLineRecord.getC_UOM_ID()),
-						newValueInStockingUOM);
-
+						newValueInStockingUom);
 		salesOrderLineRecord.setQtyAvailableForSales(newValue);
 
-		if (qtyIncludingSalesOrderLine.signum() < 0)
+		if (newValue.compareTo(salesOrderLineRecord.getQtyOrdered()) < 0)
 		{
 			salesOrderLineRecord.setInsufficientQtyAvailableForSalesColor_ID(insufficientQtyAvailableForSalesColorId.getRepoId());
 		}

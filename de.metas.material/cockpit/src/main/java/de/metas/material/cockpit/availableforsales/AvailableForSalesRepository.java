@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult.AvailableForSalesMultiResultBuilder;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
 import lombok.NonNull;
 
@@ -58,12 +59,13 @@ public class AvailableForSalesRepository
 
 		for (int queryNo = 0; queryNo < singleQueries.size(); queryNo++)
 		{
-			BigDecimal qty = ZERO;
+			BigDecimal qtyOnHandStock = ZERO;
+			BigDecimal qtyToBeShipped = ZERO;
+
 			for (final I_MD_Available_For_Sales_QueryResult recordForQueryNo : queryNo2records.get(queryNo))
 			{
-				qty = qty
-						.add(recordForQueryNo.getQtyOnHandStock())
-						.subtract(recordForQueryNo.getQtyToBeShipped());
+				qtyOnHandStock = qtyOnHandStock.add(recordForQueryNo.getQtyOnHandStock());
+				qtyToBeShipped = qtyToBeShipped.subtract(recordForQueryNo.getQtyToBeShipped());
 			}
 
 			final AvailableForSalesQuery singleQuery = singleQueries.get(queryNo);
@@ -73,7 +75,9 @@ public class AvailableForSalesRepository
 					.availableForSalesQuery(singleQuery)
 					.productId(singleQuery.getProductId())
 					.storageAttributesKey(singleQuery.getStorageAttributesKey())
-					.quantity(qty)
+					.quantities(Quantities.builder()
+							.qtyOnHandStock(qtyOnHandStock)
+							.qtyToBeShipped(qtyToBeShipped).build())
 					.build();
 			multiResult.availableForSalesResult(result);
 		}

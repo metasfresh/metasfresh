@@ -42,5 +42,16 @@ public class AvailableForSalesResult
 	AttributesKey storageAttributesKey;
 
 	@NonNull
-	BigDecimal quantity;
+	Quantities quantities;
+
+	@Value
+	@Builder
+	public static class Quantities
+	{
+		@NonNull
+		BigDecimal qtyOnHandStock;
+
+		@NonNull
+		BigDecimal qtyToBeShipped;
+	}
 }
