@@ -76,18 +76,19 @@ export class RawWidget extends Component {
     const el = e.target;
 
     dispatch(disableShortcut());
-
     listenOnKeysFalse && listenOnKeysFalse();
 
-    this.setState(
-      {
-        isEdited: true,
-        cachedValue: el.value,
-      },
-      () => {
-        handleFocus && handleFocus();
-      }
-    );
+    setTimeout(() => {
+      this.setState(
+        {
+          isEdited: true,
+          cachedValue: el.value,
+        },
+        () => {
+          handleFocus && handleFocus();
+        }
+      );
+    }, 0);
   };
 
   handleBlur = (widgetField, value, id) => {
