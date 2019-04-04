@@ -1,5 +1,7 @@
 package de.metas.document.sequence;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -41,6 +43,11 @@ public class DocSequenceId implements RepoIdAware
 	public static DocSequenceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new DocSequenceId(repoId) : null;
+	}
+
+	public static Optional<DocSequenceId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;
