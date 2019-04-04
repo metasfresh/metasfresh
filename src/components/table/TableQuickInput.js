@@ -156,8 +156,6 @@ class TableQuickInput extends Component {
     });
   };
 
-  handleBlurWidget = () => {};
-
   renderFields = (layout, data, dataId, attributeType, quickInputId) => {
     const { tabId, docType, forceHeight } = this.props;
 
@@ -193,7 +191,6 @@ class TableQuickInput extends Component {
             }
             handleFocus={() => {}}
             handleChange={this.handleChange}
-            onBlurWidget={this.handleBlurWidget}
             type="secondary"
             autoFocus={id === 0}
             initialFocus={id === 0}
