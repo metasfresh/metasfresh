@@ -32,7 +32,7 @@ import org.junit.Test;
 public class TypedSqlQueryTests
 {
 	@Test
-	public void test()
+	public void buildSQL()
 	{
 		final TypedSqlQuery<I_AD_Table> typedSqlQuery = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "whereClause_0", ITrx.TRXNAME_None);
 
@@ -41,17 +41,23 @@ public class TypedSqlQueryTests
 		typedSqlQuery.addUnion(unionQuery1, true);
 		typedSqlQuery.addUnion(unionQuery2, true);
 
-		final String result = typedSqlQuery.buildSQL(new StringBuilder("selectClause"), true);
+		final String result = typedSqlQuery.buildSQL(
+				new StringBuilder("customSelectClause"),
+				new StringBuilder("customFromClause"),
+				true);
 		assertThat(result).isNotEmpty();
+
+		// the first select shall have "our" customFromClause, but the other two shall bring their own (in this case default) from clause
+		// however, for the time being, all 3 selects shall have our customSelectClause
 		assertThat(result).isEqualToIgnoringWhitespace(
-				"selectClause WHERE (whereClause_0)\n" +
+				"customSelectClause customFromClause WHERE (whereClause_0)\n" +
 						"UNION DISTINCT\n" +
 						"(\n" +
-						"   selectClause WHERE (whereClause_1)\n" +
+						"   customSelectClause FROM AD_Table WHERE (whereClause_1)\n" +
 						")\n" +
 						"UNION DISTINCT\n" +
 						"(\n" +
-						"   selectClause WHERE (whereClause_2)\n" +
+						"   customSelectClause FROM AD_Table WHERE (whereClause_2)\n" +
 						")"
 		);
 	}

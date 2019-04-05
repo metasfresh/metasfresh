@@ -189,8 +189,9 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	{
 		//
 		// Build the new sub-query's SELECT FROM
-		final StringBuilder subQuerySelectClause = new StringBuilder()
-				.append("SELECT 1 FROM ").append(subQueryImpl.getTableName());
+		final StringBuilder subQuerySelectClause = new StringBuilder("SELECT 1 ");
+		final StringBuilder subQueryFromClause = new StringBuilder(" FROM ").append(subQueryImpl.getTableName());
+
 		final boolean subQueryUseOrderByClause = false;
 
 		//
@@ -235,7 +236,10 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		//
 		// Build the new sub-query SQL
 		final TypedSqlQuery<?> subQueryImpNew = subQueryImpl.setWhereClause(subQueryWhereClauseNew.toString());
-		final String subQuerySql = subQueryImpNew.buildSQL(subQuerySelectClause, subQueryUseOrderByClause);
+		final String subQuerySql = subQueryImpNew.buildSQL(
+				subQuerySelectClause,
+				subQueryFromClause,
+				subQueryUseOrderByClause);
 
 		//
 		// Wrap the sub-query SQL in an EXISTS and return it
@@ -272,9 +276,9 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		//
 		// Build the new sub-query's SELECT FROM
-		final StringBuilder subQuerySelectClause = new StringBuilder()
-				.append("SELECT ").append(subQueryColumnNameWithModifier)
-				.append(" FROM ").append(subQueryImpl.getTableName());
+		final StringBuilder subQuerySelectClause = new StringBuilder("SELECT ").append(subQueryColumnNameWithModifier);
+		final StringBuilder subQueryFromClause = new StringBuilder(" FROM ").append(subQueryImpl.getTableName());
+
 		// We shall have ORDER BY in sub-query if the sub-query has a LIMIT/OFFSET set
 		final boolean subQueryUseOrderByClause = subQueryImpl.hasLimitOrOffset();
 
@@ -296,7 +300,10 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		//
 		// Build the new sub-query SQL
 		final TypedSqlQuery<?> subQueryImpNew = subQueryImpl.setWhereClause(subQueryWhereClauseNew.toString());
-		final String subQuerySql = subQueryImpNew.buildSQL(subQuerySelectClause, subQueryUseOrderByClause);
+		final String subQuerySql = subQueryImpNew.buildSQL(
+				subQuerySelectClause,
+				subQueryFromClause,
+				subQueryUseOrderByClause);
 
 		//
 		// Wrap the sub-query SQL in an IN (SELECT ...) and return it
