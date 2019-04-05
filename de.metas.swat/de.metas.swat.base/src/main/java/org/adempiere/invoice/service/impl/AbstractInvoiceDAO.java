@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,6 +48,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.IDocument;
@@ -186,7 +188,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 	}
 
-
 	@Override
 	public Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(final I_C_Invoice invoice)
 	{
@@ -231,7 +232,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return adjustmentCharges.iterator();
 	}
 
-
 	private Iterator<I_C_Invoice> retrieveReferencesForInvoice(final I_C_Invoice invoice)
 	{
 		// services
@@ -246,11 +246,20 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.iterate(I_C_Invoice.class);
 	}
 
-
 	@Override
 	public org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull final InvoiceId invoiceId)
 	{
 		return load(invoiceId.getRepoId(), org.compiere.model.I_C_Invoice.class);
 	}
 
+	@Override
+	public Stream<InvoiceId> streamInvoiceIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice.class)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(InvoiceId::ofRepoId)
+				.stream();
+	}
 }
