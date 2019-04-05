@@ -1,5 +1,13 @@
 package de.metas.vertical.creditscore.creditpass.service;
 
+import java.util.Optional;
+
+import org.adempiere.location.Location;
+import org.adempiere.location.LocationRepository;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.MBPartner;
+import org.springframework.stereotype.Service;
+
 /*
  * #%L
  *  de.metas.vertical.creditscore.creditpass.service
@@ -28,19 +36,12 @@ import de.metas.bpartner.BPartnerLocation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
 import lombok.NonNull;
-import org.adempiere.location.Location;
-import org.adempiere.location.LocationRepository;
-import org.adempiere.user.User;
-import org.adempiere.user.UserId;
-import org.adempiere.user.UserRepository;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.MBPartner;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class CreditPassTransactionDataFactory

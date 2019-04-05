@@ -1,5 +1,15 @@
 package de.metas.vertical.creditscore.creditpass.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Repository;
+
 /*
  * #%L
  *  de.metas.vertical.creditscore.creditpass.repository
@@ -26,22 +36,21 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.cache.CCache;
 import de.metas.money.CurrencyId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
-import de.metas.vertical.creditscore.creditpass.model.*;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigId;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPRFallback;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRule;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRuleId;
+import de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_BP_Group;
+import de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_CP_Fallback;
+import de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config;
+import de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config_PaymentRule;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.UserId;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class CreditPassConfigRepository
