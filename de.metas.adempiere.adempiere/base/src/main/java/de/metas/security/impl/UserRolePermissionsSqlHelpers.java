@@ -5,10 +5,8 @@ import java.util.Set;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
-import org.compiere.model.I_AD_User_Record_Access;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -16,6 +14,7 @@ import de.metas.security.impl.ParsedSql.SqlSelect;
 import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.TableRecordPermissions;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
@@ -315,7 +314,7 @@ final class UserRolePermissionsSqlHelpers
 		// User/Group record access
 		if (isApplyUserGroupRecordAccess(tableNameAndAlias.getTableName()))
 		{
-			final String sqlWhere = buildUserGroupRecordAccessSqlWhereClause(adTableId, keyColumnNameFQ, userId, getUserGroupIds());
+			final String sqlWhere = UserGroupRecordAccessService.buildUserGroupRecordAccessSqlWhereClause(adTableId, keyColumnNameFQ, userId, getUserGroupIds());
 			if (sqlWhereFinal.length() > 0)
 			{
 				sqlWhereFinal.append(" AND ");
@@ -336,30 +335,5 @@ final class UserRolePermissionsSqlHelpers
 				+ " WHERE AD_Table_ID = " + adTableId
 				+ " AND AD_User_ID <> " + userId.getRepoId()
 				+ " AND IsActive = 'Y' )";
-	}
-
-	private static String buildUserGroupRecordAccessSqlWhereClause(
-			final int adTableId,
-			@NonNull final String keyColumnNameFQ,
-			@NonNull final UserId userId,
-			@NonNull final Set<UserGroupId> userGroupIds)
-	{
-		final StringBuilder sql = new StringBuilder();
-		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z "
-				+ " WHERE "
-				+ " z.AD_Table_ID = " + adTableId
-				+ " AND z.Record_ID=" + keyColumnNameFQ
-				+ " AND z.IsActive='Y'");
-
-		sql.append(" AND (AD_User_ID=" + userId.getRepoId());
-		if (!userGroupIds.isEmpty())
-		{
-			sql.append(" OR ").append(DB.buildSqlList("z.AD_UserGroup_ID", userGroupIds));
-		}
-		sql.append(")");
-
-		sql.append(" )"); // EXISTS
-
-		return sql.toString();
 	}
 }
