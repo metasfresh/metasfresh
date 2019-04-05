@@ -34,8 +34,11 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsEventBus;
+import de.metas.security.process.GrantUserGroupRecordAccess;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -83,6 +86,12 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		UserRolePermissionsEventBus.install();
+
+		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
+		adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
+				.processId(adProcessesRepo.retrieveProcessIdByClass(GrantUserGroupRecordAccess.class))
+				.anyTable()
+				.build());
 	}
 
 	@ToString
