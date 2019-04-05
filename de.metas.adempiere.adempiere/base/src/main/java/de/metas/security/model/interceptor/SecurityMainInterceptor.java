@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsEventBus;
@@ -88,15 +89,25 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 	{
 		UserRolePermissionsEventBus.install();
 
-		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
-		adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
-				.processId(adProcessesRepo.retrieveProcessIdByClass(GrantUserGroupRecordAccess.class))
-				.anyTable()
-				.build());
-		adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
-				.processId(adProcessesRepo.retrieveProcessIdByClass(RevokeUserGroupRecordAccess.class))
-				.anyTable()
-				.build());
+		registerProcessNoFail(GrantUserGroupRecordAccess.class);
+		registerProcessNoFail(RevokeUserGroupRecordAccess.class);
+	}
+
+	private void registerProcessNoFail(final Class<? extends JavaProcess> processClass)
+	{
+		try
+		{
+			final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
+			adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
+					.processId(adProcessesRepo.retrieveProcessIdByClass(processClass))
+					.anyTable()
+					.build());
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Cannot register process {}. Skip", processClass, ex);
+		}
+
 	}
 
 	@ToString
