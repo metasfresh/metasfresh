@@ -11,7 +11,6 @@ import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql.SqlSelect;
 import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
@@ -104,11 +103,6 @@ final class UserRolePermissionsSqlHelpers
 	private String getOrgWhere(final String tableName, final Access access)
 	{
 		return _role.getOrgWhere(tableName, access);
-	}
-
-	private TableRecordPermissions getRecordPermissions()
-	{
-		return _role.getRecordPermissions();
 	}
 
 	private boolean isView(final TableNameAndAlias tableNameAndAlias)
@@ -274,10 +268,6 @@ final class UserRolePermissionsSqlHelpers
 		} // for all tables
 
 		//
-		// Dependent Records (only for main SQL)
-		getRecordPermissions().addRecordDependentAccessSql(sqlAcessSqlWhereClause, mainSqlSelect, mainTableName, access);
-
-		//
 		return sqlAcessSqlWhereClause.toString();
 	}
 
@@ -297,7 +287,7 @@ final class UserRolePermissionsSqlHelpers
 			final String keyColumnNameFQ,
 			final Access access)
 	{
-		final StringBuilder sqlWhereFinal = getRecordPermissions().getRecordWhere(adTableId, keyColumnNameFQ, access);
+		final StringBuilder sqlWhereFinal = new StringBuilder();
 
 		//
 		// Private data record access

@@ -13,15 +13,12 @@ import org.compiere.model.I_AD_Role_OrgAccess;
 import com.google.common.base.Optional;
 
 import de.metas.security.impl.RolePermissionsNotFoundException;
-import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
-import de.metas.security.requests.CreateRecordAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
-import de.metas.security.requests.DeleteRecordAccessRequest;
 import de.metas.security.requests.RemoveDocActionAccessRequest;
 import de.metas.security.requests.RemoveFormAccessRequest;
 import de.metas.security.requests.RemoveProcessAccessRequest;
@@ -153,12 +150,6 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void createDocumentActionAccess(CreateDocActionAccessRequest request);
 
 	void deleteDocumentActionAccess(RemoveDocActionAccessRequest request);
-
-	void createRecordAccess(CreateRecordAccessRequest request);
-
-	void deleteRecordAccess(DeleteRecordAccessRequest request);
-
-	TableRecordPermissions retrieveRecordAccesses(int adTableId, int recordId, ClientId adClientId);
 
 	void createPrivateAccess(UserId adUserId, int adTableId, int recordId);
 

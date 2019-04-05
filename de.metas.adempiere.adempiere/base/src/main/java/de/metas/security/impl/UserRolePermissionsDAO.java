@@ -28,7 +28,6 @@ import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
@@ -39,7 +38,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Private_Access;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Access;
-import org.compiere.model.I_AD_Record_Access;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_Role_OrgAccess;
@@ -90,18 +88,13 @@ import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TableColumnResource;
 import de.metas.security.permissions.TablePermission;
 import de.metas.security.permissions.TablePermissions;
-import de.metas.security.permissions.TableRecordPermission;
-import de.metas.security.permissions.TableRecordPermissions;
-import de.metas.security.permissions.TableRecordResource;
 import de.metas.security.permissions.TableResource;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
-import de.metas.security.requests.CreateRecordAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
-import de.metas.security.requests.DeleteRecordAccessRequest;
 import de.metas.security.requests.RemoveDocActionAccessRequest;
 import de.metas.security.requests.RemoveFormAccessRequest;
 import de.metas.security.requests.RemoveProcessAccessRequest;
@@ -132,8 +125,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			I_AD_Task_Access.Table_Name,
 			I_AD_Document_Action_Access.Table_Name,
 			// Table/Record access
-			I_AD_Table_Access.Table_Name,
-			I_AD_Record_Access.Table_Name);
+			I_AD_Table_Access.Table_Name);
 
 	private final AtomicBoolean accountingModuleActive = new AtomicBoolean(false);
 
@@ -733,60 +725,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return builder.build();
 	}	// loadColumnAccess
 
-	@Cached(cacheName = I_AD_Record_Access.Table_Name + "#Accesses")
-	public TableRecordPermissions retrieveRecordPermissions(final RoleId adRoleId)
-	{
-		final Properties ctx = Env.getCtx();
-		final List<I_AD_Record_Access> accessesList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Record_Access.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Role_ID, adRoleId)
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_AD_Record_Access.COLUMNNAME_AD_Table_ID)
-				.endOrderBy()
-				.create()
-				.list();
-
-		return toTableRecordPermissions(accessesList);
-	}	// loadRecordAccess
-
-	@Override
-	public TableRecordPermissions retrieveRecordAccesses(final int adTableId, final int recordId, final ClientId adClientId)
-	{
-		final List<I_AD_Record_Access> records = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Record_Access.class)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Client_ID, adClientId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_AD_Record_Access.class);
-
-		return toTableRecordPermissions(records);
-	}
-
-	private TableRecordPermissions toTableRecordPermissions(final List<I_AD_Record_Access> records)
-	{
-		final ImmutableList<TableRecordPermission> permissionsList = records.stream()
-				.map(record -> toTableRecordPermission(record))
-				.collect(ImmutableList.toImmutableList());
-
-		return TableRecordPermissions.builder()
-				.addPermissions(permissionsList, CollisionPolicy.Fail)
-				.build();
-	}
-
-	private TableRecordPermission toTableRecordPermission(final I_AD_Record_Access record)
-	{
-		return TableRecordPermission.builder()
-				.roleId(RoleId.ofRepoId(record.getAD_Role_ID()))
-				.resource(TableRecordResource.of(record.getAD_Table_ID(), record.getRecord_ID()))
-				.readOnly(record.isReadOnly())
-				.exclude(record.isExclude())
-				.dependentEntities(record.isDependentEntities())
-				.build();
-	}
-
 	@Override
 	public void updateAccessRecordsForAllRoles()
 	{
@@ -1308,61 +1246,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		resetCacheAfterTrxCommit();
 	}
 
-	@Override
-	public void createRecordAccess(@NonNull final CreateRecordAccessRequest request)
-	{
-		final RoleId roleId = request.getRoleId();
-		final TableRecordReference recordRef = request.getRecordRef();
-		I_AD_Record_Access recordAccess = getRecordAccessOrNull(roleId, recordRef);
-		if (recordAccess == null)
-		{
-			final Role role = Services.get(IRoleDAO.class).getById(roleId);
-			recordAccess = InterfaceWrapperHelper.newInstance(I_AD_Record_Access.class);
-			InterfaceWrapperHelper.setValue(recordAccess, I_AD_Record_Access.COLUMNNAME_AD_Client_ID, role.getClientId().getRepoId());
-			recordAccess.setAD_Org_ID(role.getOrgId().getRepoId());
-			recordAccess.setAD_Role_ID(roleId.getRepoId());
-			recordAccess.setAD_Table_ID(recordRef.getAD_Table_ID());
-			recordAccess.setRecord_ID(recordRef.getRecord_ID());
-
-		}
-
-		recordAccess.setIsActive(true);
-		recordAccess.setIsExclude(request.isExclude());
-		recordAccess.setIsReadOnly(request.isReadOnly());
-		recordAccess.setIsDependentEntities(request.isConsiderDependentEntriesToo());
-
-		InterfaceWrapperHelper.save(recordAccess);
-
-		//
-		resetCacheAfterTrxCommit();
-	}
-
-	@Override
-	public void deleteRecordAccess(@NonNull final DeleteRecordAccessRequest request)
-	{
-		final RoleId roleId = request.getRoleId();
-		final TableRecordReference recordRef = request.getRecordRef();
-		I_AD_Record_Access record = getRecordAccessOrNull(roleId, recordRef);
-		if (record != null)
-		{
-			InterfaceWrapperHelper.delete(record);
-		}
-	}
-
-	private I_AD_Record_Access getRecordAccessOrNull(final RoleId roleId, final TableRecordReference recordRef)
-	{
-		final int adTableId = recordRef.getAD_Table_ID();
-		final int recordId = recordRef.getRecord_ID();
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Record_Access.class)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Role_ID, roleId)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
-				.create()
-				.firstOnly(I_AD_Record_Access.class);
-
-	}
 
 	@Override
 	public void createPrivateAccess(final UserId userId, final int adTableId, final int recordId)

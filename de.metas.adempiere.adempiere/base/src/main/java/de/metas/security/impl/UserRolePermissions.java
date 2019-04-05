@@ -79,7 +79,6 @@ import de.metas.security.permissions.Permission;
 import de.metas.security.permissions.StartupWindowConstraint;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TablePermissions;
-import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
@@ -126,9 +125,6 @@ class UserRolePermissions implements IUserRolePermissions
 	/** List of Column Access */
 	@Getter(AccessLevel.PACKAGE)
 	private final TableColumnPermissions columnPermissions;
-	/** List of Record Access (including dependent permissions) */
-	@Getter(AccessLevel.PACKAGE)
-	private final TableRecordPermissions recordPermissions;
 
 	/** Table Access Info */
 	private final TablesAccessInfo tablesAccessInfo = TablesAccessInfo.instance;
@@ -177,7 +173,6 @@ class UserRolePermissions implements IUserRolePermissions
 
 		tablePermissions = builder.getTablePermissions();
 		columnPermissions = builder.getColumnPermissions();
-		recordPermissions = builder.getRecordPermissions();
 		windowPermissions = builder.getWindowPermissions();
 		processPermissions = builder.getProcessPermissions();
 		taskPermissions = builder.getTaskPermissions();
@@ -212,7 +207,7 @@ class UserRolePermissions implements IUserRolePermissions
 		sb.append(Env.NL).append(Env.NL);
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
-				.appendTo(sb, miscPermissions, constraints, orgPermissions, tablePermissions, columnPermissions, recordPermissions
+				.appendTo(sb, miscPermissions, constraints, orgPermissions, tablePermissions, columnPermissions
 				// don't show followings because they could be to big, mainly when is not a manual role:
 				// , windowPermissions
 				// , processPermissions
@@ -457,12 +452,6 @@ class UserRolePermissions implements IUserRolePermissions
 		return orgPermissions.getAD_Org_IDs_AsSet();
 	}
 
-	/**
-	 * Can Report on table
-	 *
-	 * @param AD_Table_ID table
-	 * @return true if access
-	 */
 	@Override
 	public boolean isCanReport(final int AD_Table_ID)
 	{
@@ -479,12 +468,6 @@ class UserRolePermissions implements IUserRolePermissions
 		return getTablePermissions().isCanReport(AD_Table_ID);
 	}
 
-	/**
-	 * Can Export Table
-	 *
-	 * @param AD_Table_ID
-	 * @return true if access
-	 */
 	@Override
 	public boolean isCanExport(final int AD_Table_ID)
 	{
@@ -506,10 +489,6 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	/**
-	 * Access to Table
-	 *
-	 * @param AD_Table_ID table
-	 * @param ro check read only access otherwise read write access level
 	 * @return has RO/RW access to table
 	 */
 	@Override
@@ -535,14 +514,6 @@ class UserRolePermissions implements IUserRolePermissions
 		return tablePermissions.hasAccess(AD_Table_ID, access);
 	}
 
-	/**
-	 * Access to Column
-	 *
-	 * @param AD_Table_ID table
-	 * @param AD_Column_ID column
-	 * @param ro read only
-	 * @return true if access
-	 */
 	@Override
 	public boolean isColumnAccess(final int AD_Table_ID, final int AD_Column_ID, final Access access)
 	{
@@ -554,23 +525,8 @@ class UserRolePermissions implements IUserRolePermissions
 		return columnPermissions.isColumnAccess(AD_Table_ID, AD_Column_ID, access);
 	}
 
-	/**
-	 * Access to Record (no check of table)
-	 *
-	 * @param AD_Table_ID table
-	 * @param Record_ID record
-	 * @param ro read only
-	 * @return boolean
-	 */
 	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final Access access)
 	{
-		// if (!isTableAccess(AD_Table_ID, access)) // No Access to Table
-		// return false;
-		if (!recordPermissions.isRecordAccess(AD_Table_ID, Record_ID, access))
-		{
-			return false;
-		}
-
 		final UserGroupRecordAccessService userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
 		return userGroupRecordAccessService.hasRecordPermission(
 				getUserId(),

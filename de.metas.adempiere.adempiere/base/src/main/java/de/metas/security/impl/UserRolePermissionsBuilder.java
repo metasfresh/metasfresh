@@ -44,7 +44,6 @@ import de.metas.security.permissions.OrgPermissions;
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TablePermissions;
-import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -66,7 +65,6 @@ class UserRolePermissionsBuilder
 				.setOrgPermissions(permissions.getOrgPermissions())
 				.setTablePermissions(permissions.getTablePermissions())
 				.setColumnPermissions(permissions.getColumnPermissions())
-				.setRecordPermissions(permissions.getRecordPermissions())
 				.setWindowPermissions(permissions.getWindowPermissions())
 				.setProcessPermissions(permissions.getProcessPermissions())
 				.setTaskPermissions(permissions.getTaskPermissions())
@@ -98,7 +96,6 @@ class UserRolePermissionsBuilder
 	private OrgPermissions orgAccesses;
 	private TablePermissions tableAccesses;
 	private TableColumnPermissions columnAccesses;
-	private TableRecordPermissions recordAccesses;
 	private ElementPermissions windowAccesses;
 	private ElementPermissions processAccesses;
 	private ElementPermissions taskAccesses;
@@ -138,10 +135,6 @@ class UserRolePermissionsBuilder
 		if (columnAccesses == null)
 		{
 			columnAccesses = userRolePermissionsRepo.retrieveTableColumnPermissions(adRoleId);
-		}
-		if (recordAccesses == null)
-		{
-			recordAccesses = userRolePermissionsRepo.retrieveRecordPermissions(adRoleId);
 		}
 		if (windowAccesses == null)
 		{
@@ -187,7 +180,6 @@ class UserRolePermissionsBuilder
 			final OrgPermissions.Builder orgAccessesBuilder = orgAccesses.asNewBuilder();
 			final TablePermissions.Builder tableAccessesBuilder = tableAccesses.toBuilder();
 			final TableColumnPermissions.Builder columnAccessesBuilder = columnAccesses.asNewBuilder();
-			final TableRecordPermissions.Builder recordAccessesBuilder = recordAccesses.asNewBuilder();
 			final ElementPermissions.Builder windowAccessesBuilder = windowAccesses.asNewBuilder();
 			final ElementPermissions.Builder processAccessesBuilder = processAccesses.asNewBuilder();
 			final ElementPermissions.Builder taskAccessesBuilder = taskAccesses.asNewBuilder();
@@ -212,7 +204,6 @@ class UserRolePermissionsBuilder
 				orgAccessesBuilder.addPermissions(includedPermissions.getOrgPermissions(), collisionPolicy);
 				tableAccessesBuilder.addPermissions(includedPermissions.getTablePermissions(), collisionPolicy);
 				columnAccessesBuilder.addPermissions(includedPermissions.getColumnPermissions(), collisionPolicy);
-				recordAccessesBuilder.addPermissions(includedPermissions.getRecordPermissions(), collisionPolicy);
 				windowAccessesBuilder.addPermissions(includedPermissions.getWindowPermissions(), collisionPolicy);
 				processAccessesBuilder.addPermissions(includedPermissions.getProcessPermissions(), collisionPolicy);
 				taskAccessesBuilder.addPermissions(includedPermissions.getTaskPermissions(), collisionPolicy);
@@ -228,7 +219,6 @@ class UserRolePermissionsBuilder
 			orgAccesses = orgAccessesBuilder.build();
 			tableAccesses = tableAccessesBuilder.build();
 			columnAccesses = columnAccessesBuilder.build();
-			recordAccesses = recordAccessesBuilder.build();
 			windowAccesses = windowAccessesBuilder.build();
 			processAccesses = processAccessesBuilder.build();
 			taskAccesses = taskAccessesBuilder.build();
@@ -392,17 +382,6 @@ class UserRolePermissionsBuilder
 	public UserRolePermissionsBuilder setColumnPermissions(final TableColumnPermissions columnAccesses)
 	{
 		this.columnAccesses = columnAccesses;
-		return this;
-	}
-
-	public TableRecordPermissions getRecordPermissions()
-	{
-		return recordAccesses;
-	}
-
-	public UserRolePermissionsBuilder setRecordPermissions(final TableRecordPermissions recordAccesses)
-	{
-		this.recordAccesses = recordAccesses;
 		return this;
 	}
 
