@@ -42,7 +42,7 @@ public class UserGroupRecordAccess
 	UserId userId;
 	UserGroupId userGroupId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private UserGroupRecordAccess(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final Access access,
@@ -68,5 +68,15 @@ public class UserGroupRecordAccess
 		{
 			throw new AdempiereException("UserId or UserGroupId shall be set");
 		}
+	}
+
+	public UserGroupRecordAccess withRecordRef(@NonNull final TableRecordReference recordRef)
+	{
+		if (this.recordRef.equals(recordRef))
+		{
+			return this;
+		}
+
+		return toBuilder().recordRef(recordRef).build();
 	}
 }

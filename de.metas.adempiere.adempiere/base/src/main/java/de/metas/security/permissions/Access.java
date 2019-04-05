@@ -1,8 +1,15 @@
 package de.metas.security.permissions;
 
+import java.util.function.Function;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_AD_User_Record_Access;
+
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -13,34 +20,38 @@ import lombok.Value;
  *
  */
 @Value
-public final class Access
+public final class Access implements ReferenceListAwareEnum
 {
-	public static final Access LOGIN = new Access("LOGIN");
-	public static final Access READ = new Access("READ");
-	public static final Access WRITE = new Access("WRITE");
-	public static final Access REPORT = new Access("REPORT");
-	public static final Access EXPORT = new Access("EXPORT");
+	public static final Access LOGIN = new Access("LOGIN", null);
+	public static final Access READ = new Access("READ", X_AD_User_Record_Access.ACCESS_Read);
+	public static final Access WRITE = new Access("WRITE", X_AD_User_Record_Access.ACCESS_Write);
+	public static final Access REPORT = new Access("REPORT", X_AD_User_Record_Access.ACCESS_Report);
+	public static final Access EXPORT = new Access("EXPORT", X_AD_User_Record_Access.ACCESS_Export);
+	private static final ImmutableSet<Access> ALL_ACCESSES = ImmutableSet.of(LOGIN, READ, WRITE, REPORT, EXPORT);
 
-	private static final ImmutableMap<String, Access> accessesByName = ImmutableMap.<String, Access> builder()
-			.put(LOGIN.getName(), LOGIN)
-			.put(READ.getName(), READ)
-			.put(WRITE.getName(), WRITE)
-			.put(REPORT.getName(), REPORT)
-			.put(EXPORT.getName(), EXPORT)
-			.build();
+	private static final ImmutableMap<String, Access> accessesByCode = ALL_ACCESSES.stream()
+			.filter(access -> access.getCode() != null)
+			.collect(ImmutableMap.toImmutableMap(Access::getCode, Function.identity()));
 
-	public static Access ofName(@NonNull final String accessName)
+	public static Access ofCode(@NonNull final String code)
 	{
-		final Access access = accessesByName.get(accessName);
-		return access != null ? access : new Access(accessName);
+		final Access access = accessesByCode.get(code);
+		if (access == null)
+		{
+			throw new AdempiereException("No Access found for code: " + code);
+		}
+		return access;
 	}
 
 	private final String name;
+	private final String code;
 
-	private Access(@NonNull final String name)
+	private Access(@NonNull final String name, final String code)
 	{
 		Check.assumeNotEmpty(name, "name not empty");
+
 		this.name = name;
+		this.code = code;
 	}
 
 	@Override

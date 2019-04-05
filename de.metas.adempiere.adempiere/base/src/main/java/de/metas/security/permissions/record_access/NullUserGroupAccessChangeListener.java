@@ -10,26 +10,42 @@ package de.metas.security.permissions.record_access;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface UserGroupAccessChangeListener
+final class NullUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
-	default void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
+	public static final transient NullUserGroupAccessChangeListener instance = new NullUserGroupAccessChangeListener();
+
+	private NullUserGroupAccessChangeListener()
 	{
-		// override it only if you need it
 	}
 
-	void onAccessGranted(UserGroupRecordAccess request);
+	@Override
+	public void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
+	{
+		// nothing
+	}
 
-	void onAccessRevoked(UserGroupRecordAccess request);
+	@Override
+	public void onAccessGranted(final UserGroupRecordAccess request)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onAccessRevoked(final UserGroupRecordAccess request)
+	{
+		// nothing
+	}
+
 }

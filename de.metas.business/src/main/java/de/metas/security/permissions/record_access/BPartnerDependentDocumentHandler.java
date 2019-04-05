@@ -1,8 +1,15 @@
 package de.metas.security.permissions.record_access;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.bpartner.BPartnerId;
+
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -10,26 +17,23 @@ package de.metas.security.permissions.record_access;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface UserGroupAccessChangeListener
+interface BPartnerDependentDocumentHandler
 {
-	default void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
-	{
-		// override it only if you need it
-	}
+	String getDocumentTableName();
 
-	void onAccessGranted(UserGroupRecordAccess request);
+	Optional<BPartnerId> extractBPartnerIdFromDependentDocument(TableRecordReference documentRef);
 
-	void onAccessRevoked(UserGroupRecordAccess request);
+	Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId);
 }
