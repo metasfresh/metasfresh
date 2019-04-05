@@ -18,6 +18,7 @@
         <smooks.version>1.5.1</smooks.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb</jaxb.packageName>
         <jaxb.order.packageName>de.metas.edi.esb.pojo.order</jaxb.order.packageName>
+        <jaxb.invoice.packageName>de.metas.edi.esb.pojo.invoice</jaxb.invoice.packageName>
 
         <!-- Testing -->
         <junit.version>4.12</junit.version>
@@ -244,6 +245,20 @@
                             </sources>
 
                             <packageName>${jaxb.order.packageName}</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-schema-invoice</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/invoice</source>
+                            </sources>
+
+                            <packageName>${jaxb.invoice.packageName}</packageName>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>

@@ -22,19 +22,17 @@ package de.metas.edi.esb.route.exports;
  * #L%
  */
 
-
-import java.text.DecimalFormat;
-
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.spi.DataFormat;
-
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.EDIExpMInOutType;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
+
+import java.text.DecimalFormat;
 
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute
@@ -59,6 +57,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 				.choice()
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.to(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
+				//TODO check how to differentiate if this needs to have edi file or xml as output. maybe a new parameter
 					//
 					// Single InOut DESADV
 					.when(body().isInstanceOf(EDIExpMInOutType.class))

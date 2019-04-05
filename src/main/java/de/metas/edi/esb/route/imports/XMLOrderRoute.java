@@ -43,12 +43,12 @@ public class XMLOrderRoute extends AbstractEDIRoute
 {
 	private static final String XML_INPUT_ORDERS = "{{xml.edi.input.orders}}";
 
-	private static final String JAXB_STEPCOM_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
+	private static final String JAXB_ORDER_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
 	@Override
 	protected void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_STEPCOM_CONTEXTPATH);
+		JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_ORDER_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
 
 		ProcessorDefinition<?> ediToXMLOrdersRoute = from(XMLOrderRoute.XML_INPUT_ORDERS)

@@ -22,35 +22,28 @@ package de.metas.edi.esb.commons;
  * #L%
  */
 
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.Normalizer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
+import de.metas.edi.esb.commons.api.ILookupTemplate;
+import de.metas.edi.esb.commons.api.ILookupValue;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.impl.DefaultMessage;
 
-import de.metas.edi.esb.commons.api.ILookupTemplate;
-import de.metas.edi.esb.commons.api.ILookupValue;
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.Normalizer;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public final class Util
 {
@@ -99,6 +92,12 @@ public final class Util
 			}
 		}
 		return null;
+	}
+
+	public static String toFormattedStringDate(final Date date, final String datePattern)
+	{
+		SimpleDateFormat dateFormat = new SimpleDateFormat(datePattern);
+		return dateFormat.format(date);
 	}
 
 	public static Date toDate(final XMLGregorianCalendar xmlCalendar)
@@ -255,11 +254,7 @@ public final class Util
 		{
 			return true;
 		}
-		if (s.trim().isEmpty())
-		{
-			return true;
-		}
-		return false;
+		return s.trim().isEmpty();
 	}
 
 	/**
