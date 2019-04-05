@@ -1042,28 +1042,4 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		return hasPermission(PERMISSION_InfoWindow_Asset);
 	}
-
-	@Override
-	public boolean IsAutoRoleLogin()
-	{
-		return hasPermission(PERMISSION_AutoRoleLogin);
-	}
-
-	@Override
-	public boolean IsAllowedTrlBox()
-	{
-		return hasPermission(PERMISSION_TrlBox);
-	}
-
-	@Override
-	public boolean IsAllowedInvoicingPriority()
-	{
-		return hasPermission(PERMISSION_InvoicingPriority);
-	}
-
-	@Override
-	public boolean IsAllowedMigrationScripts()
-	{
-		return hasPermission(PERMISSION_MigrationScripts);
-	}
 }

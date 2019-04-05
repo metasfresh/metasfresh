@@ -36,9 +36,13 @@ public interface IUserRolePermissions
 	Permission PERMISSION_AllowLoginDateOverride = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowLoginDateOverride);
 	Permission PERMISSION_UseBetaFunctions = ResourceAsPermission.ofName("UseBetaFunctions");
 
+	@Deprecated
 	Permission PERMISSION_AutoRoleLogin = ResourceAsPermission.ofName("IsAutoRoleLogin");
+	@Deprecated
 	Permission PERMISSION_TrlBox = ResourceAsPermission.ofName("TrlBox");
+	@Deprecated
 	Permission PERMISSION_InvoicingPriority = ResourceAsPermission.ofName("InvoicingPriority");
+	@Deprecated
 	Permission PERMISSION_MigrationScripts = ResourceAsPermission.ofName("MigrationScripts");
 
 	Permission PERMISSION_InfoWindow_Product = InfoWindowPermission.ofInfoWindowKey("InfoProduct");
@@ -227,15 +231,6 @@ public interface IUserRolePermissions
 	boolean isCanExport();
 
 	boolean isCanReport();
-
-	// boolean isAccessAllOrgs();
-	boolean IsAutoRoleLogin();
-
-	boolean IsAllowedTrlBox();
-
-	boolean IsAllowedInvoicingPriority();
-
-	boolean IsAllowedMigrationScripts();
 
 	boolean isAllow_Info_Product();
 
