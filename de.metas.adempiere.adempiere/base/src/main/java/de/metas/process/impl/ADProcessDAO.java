@@ -70,7 +70,7 @@ public class ADProcessDAO implements IADProcessDAO
 	public AdProcessId retrieveProcessIdByClass(final Class<?> processClass)
 	{
 		final AdProcessId processId = retrieveProcessIdByClassIfUnique(processClass);
-		Check.errorIf(processId == null, "Could not retrieve a singe AD_Process_ID for processClass={}", processClass);
+		Check.errorIf(processId == null, "Could not retrieve a single AD_Process_ID for processClass={}", processClass);
 		return processId;
 	}
 
