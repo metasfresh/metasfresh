@@ -533,17 +533,25 @@ public class ADProcessDAO implements IADProcessDAO
 			return ImmutableSet.of(
 					of(adTableId, adWindowId, adTabId),
 					of(adTableId, AD_Window_ID_Any, AD_Tab_ID_Any),
-					of(AD_Table_ID_Any, adWindowId, adTabId));
+					of(AD_Table_ID_Any, adWindowId, adTabId),
+					ANY);
 		}
 
 		public static final RelatedProcessDescriptorKey of(final int adTableId, final AdWindowId adWindowId, final AdTabId adTabId)
 		{
+			if (adTableId <= 0 && adWindowId == null && adTabId == null)
+			{
+				return ANY;
+			}
+
 			return new RelatedProcessDescriptorKey(adTableId, adWindowId, adTabId);
 		}
 
 		private static final int AD_Table_ID_Any = 0;
 		private static final AdWindowId AD_Window_ID_Any = null;
 		private static final AdTabId AD_Tab_ID_Any = null;
+
+		public static final RelatedProcessDescriptorKey ANY = new RelatedProcessDescriptorKey(AD_Table_ID_Any, AD_Window_ID_Any, AD_Tab_ID_Any);
 
 		int adTableId;
 		AdWindowId adWindowId;
