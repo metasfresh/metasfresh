@@ -39,6 +39,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsEventBus;
 import de.metas.security.process.GrantUserGroupRecordAccess;
+import de.metas.security.process.RevokeUserGroupRecordAccess;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -90,6 +91,10 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
 		adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
 				.processId(adProcessesRepo.retrieveProcessIdByClass(GrantUserGroupRecordAccess.class))
+				.anyTable()
+				.build());
+		adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
+				.processId(adProcessesRepo.retrieveProcessIdByClass(RevokeUserGroupRecordAccess.class))
 				.anyTable()
 				.build());
 	}
