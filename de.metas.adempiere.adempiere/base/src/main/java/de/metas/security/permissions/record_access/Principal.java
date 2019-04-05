@@ -6,6 +6,7 @@ import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -33,6 +34,16 @@ import lombok.Value;
 @Value
 public class Principal
 {
+	public static final Principal userId(@NonNull final UserId userId)
+	{
+		return builder().userId(userId).build();
+	}
+
+	public static final Principal userGroupId(@NonNull final UserGroupId userGroupId)
+	{
+		return builder().userGroupId(userGroupId).build();
+	}
+
 	UserId userId;
 	UserGroupId userGroupId;
 

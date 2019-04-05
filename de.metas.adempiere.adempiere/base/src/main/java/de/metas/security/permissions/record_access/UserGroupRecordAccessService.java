@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,6 +20,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User_Record_Access;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ import de.metas.security.permissions.record_access.listeners.CompositeUserGroupA
 import de.metas.security.permissions.record_access.listeners.NullUserGroupAccessChangeListener;
 import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -63,15 +67,19 @@ import lombok.NonNull;
 public class UserGroupRecordAccessService
 {
 	private static final Logger logger = LogManager.getLogger(UserGroupRecordAccessService.class);
+
+	private final UserGroupRepository userGroupsRepo;
 	private final UserGroupAccessChangeListener listeners;
 
 	public UserGroupRecordAccessService(
+			@NonNull final UserGroupRepository userGroupsRepo,
 			@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners)
 	{
+		this.userGroupsRepo = userGroupsRepo;
+
 		this.listeners = listeners
 				.map(CompositeUserGroupAccessChangeListener::of)
 				.orElse(NullUserGroupAccessChangeListener.instance);
-
 		logger.info("Listeners: {}", this.listeners);
 	}
 
@@ -108,7 +116,7 @@ public class UserGroupRecordAccessService
 		deleteAndFire(accesses, repoIds);
 	}
 
-	public void copyAccess(@NonNull TableRecordReference to, @NonNull TableRecordReference from)
+	public void copyAccess(@NonNull final TableRecordReference to, @NonNull final TableRecordReference from)
 	{
 		final HashMap<UserGroupRecordAccess, I_AD_User_Record_Access> toAccessRecordsToCheck = queryByRecord(to)
 				.create()
@@ -204,20 +212,39 @@ public class UserGroupRecordAccessService
 			queryBuilder.addInArrayFilter(I_AD_User_Record_Access.COLUMN_Access, permissions);
 		}
 
-		if (query.getPrincipal() != null)
+		if (!query.getPrincipals().isEmpty())
 		{
-			final Principal principal = query.getPrincipal();
-			if (principal.getUserId() != null)
+			final Set<UserId> userIds = new HashSet<>();
+			final Set<UserGroupId> userGroupIds = new HashSet<>();
+
+			for (final Principal principal : query.getPrincipals())
 			{
-				queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_User_ID, principal.getUserId());
+				if (principal.getUserId() != null)
+				{
+					userIds.add(principal.getUserId());
+				}
+				else if (principal.getUserGroupId() != null)
+				{
+					userGroupIds.add(principal.getUserGroupId());
+				}
+				else
+				{
+					throw new AdempiereException("Invalid pricipal: " + principal); // shall not happen
+				}
 			}
-			else if (principal.getUserGroupId() != null)
+
+			if (!userIds.isEmpty() || !userGroupIds.isEmpty())
 			{
-				queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_UserGroup_ID, principal.getUserGroupId());
-			}
-			else
-			{
-				throw new AdempiereException("Invalid pricipal: " + principal); // shall not happen
+				final ICompositeQueryFilter<I_AD_User_Record_Access> principalsFilter = queryBuilder.addCompositeQueryFilter()
+						.setJoinOr();
+				if (!userIds.isEmpty())
+				{
+					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_User_ID, userIds);
+				}
+				if (!userGroupIds.isEmpty())
+				{
+					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_UserGroup_ID, userGroupIds);
+				}
 			}
 		}
 
@@ -272,17 +299,23 @@ public class UserGroupRecordAccessService
 				.build();
 	}
 
-	private static ImmutableSet<Integer> extractRepoIds(Collection<I_AD_User_Record_Access> accessRecords)
+	private static ImmutableSet<Integer> extractRepoIds(final Collection<I_AD_User_Record_Access> accessRecords)
 	{
 		return accessRecords.stream().map(I_AD_User_Record_Access::getAD_User_Record_Access_ID).collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static String buildUserGroupRecordAccessSqlWhereClause(
+	public String buildUserGroupRecordAccessSqlWhereClause(
+			final String tableName,
 			final int adTableId,
 			@NonNull final String keyColumnNameFQ,
 			@NonNull final UserId userId,
 			@NonNull final Set<UserGroupId> userGroupIds)
 	{
+		if (!isApplyUserGroupRecordAccess(tableName))
+		{
+			return null;
+		}
+
 		final StringBuilder sql = new StringBuilder();
 		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z "
 				+ " WHERE "
@@ -304,5 +337,48 @@ public class UserGroupRecordAccessService
 
 		//
 		return sql.toString();
+	}
+
+	private boolean isApplyUserGroupRecordAccess(final String tableName)
+	{
+		// if(true) return false;
+		// FIXME: HARDCODED
+		return I_C_BPartner.Table_Name.equals(tableName)
+				|| I_C_Order.Table_Name.equals(tableName);
+	}
+
+	public boolean hasRecordPermission(
+			@NonNull final UserId userId,
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final Access permission)
+	{
+		if (!isApplyUserGroupRecordAccess(recordRef.getTableName()))
+		{
+			return true;
+		}
+
+		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
+				.recordRef(recordRef)
+				.permission(permission)
+				.principals(getPrincipals(userId))
+				.build();
+
+		return query(query)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.match();
+	}
+
+	private Set<Principal> getPrincipals(@NonNull final UserId userId)
+	{
+		final ImmutableSet.Builder<Principal> principals = ImmutableSet.builder();
+		principals.add(Principal.userId(userId));
+
+		for (final UserGroupId userGroupId : userGroupsRepo.getAssignedGroupIdsByUserId(userId))
+		{
+			principals.add(Principal.userGroupId(userGroupId));
+		}
+
+		return principals.build();
 	}
 }

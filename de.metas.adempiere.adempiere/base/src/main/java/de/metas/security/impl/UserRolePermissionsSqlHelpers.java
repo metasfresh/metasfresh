@@ -5,8 +5,6 @@ import java.util.Set;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -49,12 +47,23 @@ final class UserRolePermissionsSqlHelpers
 
 	private final UserRolePermissions _role;
 	private final TablesAccessInfo _tablesAccessInfo = TablesAccessInfo.instance;
+	private UserGroupRecordAccessService _userGroupRecordAccessService; // lazy
 
-	private Set<UserGroupId> userGroupIds;
+	private Set<UserGroupId> userGroupIds; // lazt
 
 	UserRolePermissionsSqlHelpers(@NonNull final UserRolePermissions role)
 	{
 		_role = role;
+	}
+
+	private UserGroupRecordAccessService getUserGroupRecordAccessService()
+	{
+		UserGroupRecordAccessService result = _userGroupRecordAccessService;
+		if (result == null)
+		{
+			result = _userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
+		}
+		return result;
 	}
 
 	private UserId getUserId()
@@ -80,13 +89,6 @@ final class UserRolePermissionsSqlHelpers
 	private boolean hasAccessToPersonalDataOfOtherUsers()
 	{
 		return _role.isPersonalAccess();
-	}
-
-	private boolean isApplyUserGroupRecordAccess(final String tableName)
-	{
-		// FIXME: HARDCODED
-		return I_C_BPartner.Table_Name.equals(tableName)
-				|| I_C_Order.Table_Name.equals(tableName);
 	}
 
 	private boolean hasTableAccess(final int adTableId, final Access access)
@@ -312,14 +314,21 @@ final class UserRolePermissionsSqlHelpers
 
 		//
 		// User/Group record access
-		if (isApplyUserGroupRecordAccess(tableNameAndAlias.getTableName()))
 		{
-			final String sqlWhere = UserGroupRecordAccessService.buildUserGroupRecordAccessSqlWhereClause(adTableId, keyColumnNameFQ, userId, getUserGroupIds());
-			if (sqlWhereFinal.length() > 0)
+			final String sqlWhere = getUserGroupRecordAccessService().buildUserGroupRecordAccessSqlWhereClause(
+					tableNameAndAlias.getTableName(),
+					adTableId,
+					keyColumnNameFQ,
+					userId,
+					getUserGroupIds());
+			if (!Check.isEmpty(sqlWhere))
 			{
-				sqlWhereFinal.append(" AND ");
+				if (sqlWhereFinal.length() > 0)
+				{
+					sqlWhereFinal.append(" AND ");
+				}
+				sqlWhereFinal.append(sqlWhere);
 			}
-			sqlWhereFinal.append(sqlWhere);
 		}
 
 		//

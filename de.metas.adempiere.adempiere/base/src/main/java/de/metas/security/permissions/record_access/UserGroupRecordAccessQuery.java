@@ -2,8 +2,6 @@ package de.metas.security.permissions.record_access;
 
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
@@ -40,16 +38,16 @@ public class UserGroupRecordAccessQuery
 {
 	ImmutableSet<TableRecordReference> recordRefs;
 	ImmutableSet<Access> permissions;
-	Principal principal;
+	ImmutableSet<Principal> principals;
 
 	@Builder
 	private UserGroupRecordAccessQuery(
 			@Singular final Set<TableRecordReference> recordRefs,
 			@Singular final Set<Access> permissions,
-			@Nullable final Principal principal)
+			@Singular final Set<Principal> principals)
 	{
 		this.recordRefs = ImmutableSet.copyOf(recordRefs);
 		this.permissions = ImmutableSet.copyOf(permissions);
-		this.principal = principal;
+		this.principals = ImmutableSet.copyOf(principals);
 	}
 }

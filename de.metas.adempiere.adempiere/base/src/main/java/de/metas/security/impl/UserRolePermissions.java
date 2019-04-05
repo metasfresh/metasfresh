@@ -42,6 +42,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -80,6 +82,7 @@ import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableRecordPermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -563,7 +566,16 @@ class UserRolePermissions implements IUserRolePermissions
 	{
 		// if (!isTableAccess(AD_Table_ID, access)) // No Access to Table
 		// return false;
-		return recordPermissions.isRecordAccess(AD_Table_ID, Record_ID, access);
+		if (!recordPermissions.isRecordAccess(AD_Table_ID, Record_ID, access))
+		{
+			return false;
+		}
+
+		final UserGroupRecordAccessService userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
+		return userGroupRecordAccessService.hasRecordPermission(
+				getUserId(),
+				TableRecordReference.of(AD_Table_ID, Record_ID),
+				access);
 	}
 
 	/**
@@ -700,7 +712,6 @@ class UserRolePermissions implements IUserRolePermissions
 		return new UserRolePermissionsSqlHelpers(this)
 				.addAccessSQL(sql, tableNameIn, fullyQualified, access);
 	}
-
 
 	/**
 	 * VIEW - Can I view record in Table with given TableLevel. <code>
@@ -855,7 +866,6 @@ class UserRolePermissions implements IUserRolePermissions
 
 		return null; // OK
 	}
-
 
 	/**
 	 * Show (Value) Preference Menu
