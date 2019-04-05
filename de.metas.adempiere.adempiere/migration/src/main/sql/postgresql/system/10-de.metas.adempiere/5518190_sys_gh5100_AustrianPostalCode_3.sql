@@ -988,16 +988,6 @@ DELETE FROM AD_Index_Column WHERE AD_Index_Column_ID=540282
 UPDATE AD_Index_Column SET SeqNo=20,Updated=TO_TIMESTAMP('2019-04-04 14:26:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=540284
 ;
 
--- 2019-04-04T14:27:16.336
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DROP INDEX IF EXISTS c_postal_unique
-;
-
--- 2019-04-04T14:27:16.338
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX C_Postal_Unique ON C_Postal (C_Country_ID,Postal) WHERE IsActive='Y'
-;
-
 -- 2019-04-04T14:49:57.723
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Index_Table SET ErrorMsg='Duplicate Postal found in same Country.',Updated=TO_TIMESTAMP('2019-04-04 14:49:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540123
