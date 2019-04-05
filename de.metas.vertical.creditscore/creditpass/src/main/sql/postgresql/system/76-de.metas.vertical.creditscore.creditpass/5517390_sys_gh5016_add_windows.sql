@@ -3627,13 +3627,13 @@ INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Or
 
 -- 2019-03-20T14:38:51.704
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,574031,627902,0,53015,TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,574031,627902,0,53015,TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 2019-03-20T14:38:51.780
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,573918,627903,0,53016,TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,573918,627903,0,53016,TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-03-20 14:38:51','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 2019-03-20T14:38:51.877
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
