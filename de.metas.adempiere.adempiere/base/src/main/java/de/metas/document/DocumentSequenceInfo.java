@@ -1,12 +1,9 @@
 package de.metas.document;
 
-import org.compiere.model.I_AD_Sequence;
+import org.adempiere.ad.expression.api.IStringExpression;
 
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
-import de.metas.javaclasses.IJavaClassBL;
-import de.metas.javaclasses.JavaClassId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import lombok.Builder;
 import lombok.Value;
 
 /**
@@ -18,51 +15,42 @@ import lombok.Value;
 @Value
 public class DocumentSequenceInfo
 {
-	public static final DocumentSequenceInfo of(@NonNull final I_AD_Sequence adSequence)
-	{
-		return new DocumentSequenceInfo(adSequence);
-	}
-
 	private final int adSequenceId;
 	private final String name;
 
 	//
 	private final int incrementNo;
-	private final String prefix;
-	private final String suffix;
+	private final IStringExpression prefix;
+	private final IStringExpression suffix;
 	private final String decimalPattern;
-	private final boolean isAutoSequence;
-	private final boolean isStartNewYear;
+	private final boolean autoSequence;
+	private final boolean startNewYear;
 	private final String dateColumn;
 
-	private CustomSequenceNoProvider customSequenceNoProvider;
+	private final CustomSequenceNoProvider customSequenceNoProvider;
 
-	private DocumentSequenceInfo(@NonNull final I_AD_Sequence adSequence)
+	@Builder
+	private DocumentSequenceInfo(
+			final int adSequenceId,
+			final String name,
+			final int incrementNo,
+			final IStringExpression prefix,
+			final IStringExpression suffix,
+			final String decimalPattern,
+			final boolean autoSequence,
+			final boolean startNewYear,
+			final String dateColumn,
+			final CustomSequenceNoProvider customSequenceNoProvider)
 	{
-		adSequenceId = adSequence.getAD_Sequence_ID();
-		name = adSequence.getName();
-
-		//
-		incrementNo = adSequence.getIncrementNo();
-		prefix = adSequence.getPrefix();
-		suffix = adSequence.getSuffix();
-		decimalPattern = adSequence.getDecimalPattern();
-		isAutoSequence = adSequence.isAutoSequence();
-		isStartNewYear = adSequence.isStartNewYear();
-		dateColumn = adSequence.getDateColumn();
-
-		final CustomSequenceNoProvider customSequenceNoProvider;
-		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() > 0)
-		{
-			final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
-
-			final JavaClassId javaClassId = JavaClassId.ofRepoId(adSequence.getCustomSequenceNoProvider_JavaClass_ID());
-			customSequenceNoProvider = javaClassBL.newInstance(javaClassId);
-		}
-		else
-		{
-			customSequenceNoProvider = null;
-		}
+		this.adSequenceId = adSequenceId;
+		this.name = name;
+		this.incrementNo = incrementNo;
+		this.prefix = prefix != null ? prefix : IStringExpression.NULL;
+		this.suffix = suffix != null ? suffix : IStringExpression.NULL;
+		this.decimalPattern = decimalPattern;
+		this.autoSequence = autoSequence;
+		this.startNewYear = startNewYear;
+		this.dateColumn = dateColumn;
 		this.customSequenceNoProvider = customSequenceNoProvider;
 	}
 }

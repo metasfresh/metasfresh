@@ -49,7 +49,12 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_Attribute getAttributeById(int attributeId);
 
-	I_M_Attribute getAttributeById(AttributeId attributeId);
+	<T extends I_M_Attribute> T getAttributeById(AttributeId attributeId, Class<T> type);
+
+	default I_M_Attribute getAttributeById(AttributeId attributeId)
+	{
+		return getAttributeById(attributeId, I_M_Attribute.class);
+	}
 
 	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
 	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
