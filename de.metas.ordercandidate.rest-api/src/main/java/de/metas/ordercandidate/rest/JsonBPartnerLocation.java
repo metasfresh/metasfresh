@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -34,7 +33,6 @@ import lombok.Value;
  * #L%
  */
 
-//@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JsonBPartnerLocation
 {
@@ -70,7 +68,7 @@ public class JsonBPartnerLocation
 			@JsonProperty("postal") final String postal,
 			@JsonProperty("city") final String city,
 			@JsonProperty("state") final String state,
-			@JsonProperty("countryCode") @NonNull final String countryCode,
+			@JsonProperty("countryCode") @Nullable final String countryCode,
 			@JsonProperty("gln") @Nullable final String gln)
 	{
 		this.externalId = externalId;
@@ -79,7 +77,7 @@ public class JsonBPartnerLocation
 		this.postal = postal;
 		this.city = city;
 		this.state = state;
-		this.countryCode = countryCode;
+		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
 		this.gln = gln;
 	}
 }

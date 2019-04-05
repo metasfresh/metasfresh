@@ -62,9 +62,11 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifBPartnersExist,
+			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE", value = "Applied to the debitor only if it is the XML's insurance") //
+			@RequestParam final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE") @RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
+			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE", value = "Applied to the debitor only if it is the XML's insurance") //
+			@RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifProductsExist,
 
@@ -83,8 +85,8 @@ public class HealthcareChInvoice440RestController
 
 		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()
 				.xmlInvoiceFile(xmlInvoiceFile)
-				.orgSyncAdvise(bPartnerSyncAdvise) // wrt to the biller-bpartner's org, use the same advise as with the biller itself
-				.bPartnerSyncAdvise(bPartnerSyncAdvise)
+				.billerSyncAdvise(bPartnerSyncAdvise) // wrt to the biller-bpartner's org, use the same advise as with the biller itself
+				.debitorSyncAdvise(bPartnerSyncAdvise)
 				.productSyncAdvise(productSyncAdvise)
 				.build();
 
