@@ -191,8 +191,10 @@ public class UserGroupRecordAccessService
 					.setJoinOr();
 			for (final TableRecordReference recordRef : recordRefs)
 			{
-				recordRefsFilter.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID());
-				recordRefsFilter.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Record_ID, recordRef.getRecord_ID());
+				recordRefsFilter.addCompositeQueryFilter()
+						.setJoinAnd()
+						.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
+						.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Record_ID, recordRef.getRecord_ID());
 			}
 		}
 
