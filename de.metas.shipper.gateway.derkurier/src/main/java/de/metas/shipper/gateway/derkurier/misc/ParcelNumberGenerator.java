@@ -63,7 +63,7 @@ public class ParcelNumberGenerator
 
 		this.documentNoBuilder = Services.get(IDocumentNoBuilderFactory.class)
 				.createDocumentNoBuilder()
-				.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()))
+				.setClientId(Env.getClientId())
 				.setDocumentSequenceInfo(documentSeqInfo)
 				.setFailOnError(true);
 	}

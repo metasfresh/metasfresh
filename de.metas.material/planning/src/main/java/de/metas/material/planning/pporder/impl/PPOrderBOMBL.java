@@ -24,6 +24,7 @@ package de.metas.material.planning.pporder.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,6 +37,7 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -43,6 +45,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
@@ -568,5 +571,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return orderBOMLine.getQtyDelivered().signum() != 0
 				|| orderBOMLine.getQtyScrap().signum() != 0
 				|| orderBOMLine.getQtyReject().signum() != 0;
+	}
+
+	@Override
+	public Optional<DocSequenceId> getSerialNoSequenceId(@NonNull final PPOrderId ppOrderId)
+	{
+		final IPPOrderBOMDAO repo = Services.get(IPPOrderBOMDAO.class);
+		final I_PP_Order_BOM orderBOM = repo.getByOrderId(ppOrderId);
+		return DocSequenceId.optionalOfRepoId(orderBOM.getSerialNo_Sequence_ID());
 	}
 }

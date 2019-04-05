@@ -1,6 +1,6 @@
 package de.metas.document.sequenceno;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Evaluatee;
 
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -29,24 +29,34 @@ import lombok.NonNull;
 
 public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 {
-	/** @return {@code true} if the given {@code documentModel} has a non-null {@code POReference} value. */
+	private static final String PARAM_POReference = "POReference";
+
+	/** @return {@code true} if the given {@code context} has a non-null {@code POReference} value. */
 	@Override
-	public boolean isApplicable(@NonNull final Object documentModel)
+	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
-		final String poReference = getPOReferenceOrNull(documentModel);
-		return !Check.isEmpty(poReference, true);
+		return getPOReferenceOrNull(context) != null;
 	}
 
-	/** @return the given {@code documentModel}'s {@code POReference} value. */
+	/** @return the given {@code context}'s {@code POReference} value. */
 	@Override
-	public String provideSequenceNo(@NonNull final Object documentModel)
+	public String provideSequenceNo(@NonNull final Evaluatee context)
 	{
-		final String poReference = getPOReferenceOrNull(documentModel);
-		return Check.assumeNotEmpty(poReference.trim(), "The given documentModel needs to have a non-empty POreference value; documentModel={}", documentModel);
+		final String poReference = getPOReferenceOrNull(context);
+		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);
+
+		return poReference;
 	}
 
-	private String getPOReferenceOrNull(@NonNull final Object documentModel)
+	private static String getPOReferenceOrNull(@NonNull final Evaluatee context)
 	{
-		return InterfaceWrapperHelper.getValueOrNull(documentModel, "POReference");
+		String poReference = context.get_ValueAsString(PARAM_POReference);
+		if (poReference == null)
+		{
+			return null;
+		}
+
+		poReference = poReference.trim();
+		return !poReference.isEmpty() ? poReference : null;
 	}
 }
