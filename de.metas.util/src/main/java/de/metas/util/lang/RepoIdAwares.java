@@ -1,11 +1,17 @@
 package de.metas.util.lang;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntFunction;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -47,5 +53,90 @@ public class RepoIdAwares
 				.stream()
 				.map(RepoIdAware::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static <T extends RepoIdAware> T ofRepoId(final int repoId, Class<T> repoIdClass)
+	{
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+
+		@SuppressWarnings("unchecked")
+		final T id = (T)repoIdAwareDescriptor.getOfRepoIdFunction().apply(repoId);
+
+		return id;
+	}
+
+	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, Class<T> repoIdClass)
+	{
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+
+		@SuppressWarnings("unchecked")
+		final T id = (T)repoIdAwareDescriptor.getOfRepoIdOrNullFunction().apply(repoId);
+
+		return id;
+	}
+
+	private static RepoIdAwareDescriptor getRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
+	{
+		return repoIdAwareDescriptors.computeIfAbsent(repoIdClass, k -> createRepoIdAwareDescriptor(k));
+	}
+
+	private static RepoIdAwareDescriptor createRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
+	{
+		try
+		{
+			final Method ofRepoIdMethod = repoIdClass.getMethod("ofRepoId", int.class);
+			final Method ofRepoIdOrNullMethod = repoIdClass.getMethod("ofRepoIdOrNull", int.class);
+
+			return RepoIdAwareDescriptor.builder()
+					.ofRepoIdFunction(repoId -> {
+						try
+						{
+							return (RepoIdAware)ofRepoIdMethod.invoke(null, repoId);
+						}
+						catch (final Exception ex)
+						{
+							throw mkEx("Failed invoking " + ofRepoIdMethod + " with repoId=" + repoId, ex);
+						}
+					})
+					.ofRepoIdOrNullFunction(repoId -> {
+						try
+						{
+							return (RepoIdAware)ofRepoIdOrNullMethod.invoke(null, repoId);
+						}
+						catch (final Exception ex)
+						{
+							throw mkEx("Failed invoking " + ofRepoIdOrNullMethod + " with repoId=" + repoId, ex);
+						}
+					})
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			final RuntimeException ex2 = Check.newException("Failed extracting " + RepoIdAwareDescriptor.class + " from " + repoIdClass);
+			ex2.initCause(ex);
+			throw ex2;
+		}
+	}
+
+	private static final RuntimeException mkEx(final String msg, final Throwable cause)
+	{
+		final RuntimeException ex = Check.newException(msg);
+		if (cause != null)
+		{
+			ex.initCause(cause);
+		}
+		return ex;
+	}
+
+	private static ConcurrentHashMap<Class<? extends RepoIdAware>, RepoIdAwareDescriptor> repoIdAwareDescriptors = new ConcurrentHashMap<>();
+
+	@Value
+	@Builder
+	private static class RepoIdAwareDescriptor
+	{
+		@NonNull
+		IntFunction<RepoIdAware> ofRepoIdFunction;
+		@NonNull
+		IntFunction<RepoIdAware> ofRepoIdOrNullFunction;
 	}
 }
