@@ -27,7 +27,7 @@ import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.metas.util.StreamUtils;
+import de.metas.util.IOStreamUtils;
 
 public class JsonBeanEncoder implements IBeanEnconder
 {
@@ -57,7 +57,7 @@ public class JsonBeanEncoder implements IBeanEnconder
 		String str = null;
 		try
 		{
-			str = StreamUtils.toString(in);
+			str = IOStreamUtils.toString(in);
 			return mapper.readValue(str, clazz);
 		}
 		catch (final Exception e)
