@@ -16,12 +16,14 @@ import de.metas.security.impl.RolePermissionsNotFoundException;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateRecordPrivateAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
 import de.metas.security.requests.RemoveDocActionAccessRequest;
 import de.metas.security.requests.RemoveFormAccessRequest;
 import de.metas.security.requests.RemoveProcessAccessRequest;
+import de.metas.security.requests.RemoveRecordPrivateAccessRequest;
 import de.metas.security.requests.RemoveTaskAccessRequest;
 import de.metas.security.requests.RemoveWindowAccessRequest;
 import de.metas.security.requests.RemoveWorkflowAccessRequest;
@@ -151,11 +153,9 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	void deleteDocumentActionAccess(RemoveDocActionAccessRequest request);
 
-	void createPrivateAccess(UserId adUserId, int adTableId, int recordId);
+	void createPrivateAccess(CreateRecordPrivateAccessRequest request);
 
-	void deletePrivateAccess(UserId adUserId, int adTableId, int recordId);
-
-	Set<Integer> retrievePrivateAccessRecordIds(UserId adUserId, int adTableId);
+	void deletePrivateAccess(RemoveRecordPrivateAccessRequest request);
 
 	/**
 	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}

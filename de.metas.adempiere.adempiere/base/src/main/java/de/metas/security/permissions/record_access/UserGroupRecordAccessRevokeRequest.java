@@ -6,6 +6,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import lombok.Builder;

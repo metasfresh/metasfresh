@@ -1,9 +1,8 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.requests;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.security.Principal;
-import de.metas.security.permissions.Access;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,20 +30,12 @@ import lombok.Value;
  */
 
 @Value
-public class UserGroupRecordAccessGrantRequest
+@Builder
+public class RemoveRecordPrivateAccessRequest
 {
-	TableRecordReference recordRef;
-	Principal principal;
-	Access permission;
+	@NonNull
+	final TableRecordReference recordRef;
 
-	@Builder
-	private UserGroupRecordAccessGrantRequest(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final Principal principal,
-			@NonNull final Access permission)
-	{
-		this.recordRef = recordRef;
-		this.principal = principal;
-		this.permission = permission;
-	}
+	@NonNull
+	final Principal principal;
 }

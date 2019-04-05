@@ -5,6 +5,7 @@ import java.util.Set;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -48,7 +49,7 @@ final class UserRolePermissionsSqlHelpers
 	private final TablesAccessInfo _tablesAccessInfo = TablesAccessInfo.instance;
 	private UserGroupRecordAccessService _userGroupRecordAccessService; // lazy
 
-	private Set<UserGroupId> userGroupIds; // lazt
+	private Set<UserGroupId> _userGroupIds; // lazy
 
 	UserRolePermissionsSqlHelpers(@NonNull final UserRolePermissions role)
 	{
@@ -77,10 +78,10 @@ final class UserRolePermissionsSqlHelpers
 
 	private Set<UserGroupId> getUserGroupIds()
 	{
-		Set<UserGroupId> userGroupIds = this.userGroupIds;
+		Set<UserGroupId> userGroupIds = this._userGroupIds;
 		if (userGroupIds == null)
 		{
-			this.userGroupIds = userGroupIds = Adempiere.getBean(UserGroupRepository.class).getAssignedGroupIdsByUserId(getUserId());
+			this._userGroupIds = userGroupIds = Adempiere.getBean(UserGroupRepository.class).getAssignedGroupIdsByUserId(getUserId());
 		}
 		return userGroupIds;
 	}
@@ -325,14 +326,31 @@ final class UserRolePermissionsSqlHelpers
 		return sqlWhereFinal.toString();
 	}	// getRecordWhere
 
-	private static String buildPersonalDataRecordAccessSqlWhereClause(
+	private String buildPersonalDataRecordAccessSqlWhereClause(
 			final int adTableId,
 			@NonNull final String keyColumnNameFQ,
 			@NonNull final UserId userId)
 	{
-		return keyColumnNameFQ + " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
-				+ " WHERE AD_Table_ID = " + adTableId
-				+ " AND AD_User_ID <> " + userId.getRepoId()
-				+ " AND IsActive = 'Y' )";
+		final StringBuilder sql = new StringBuilder(" NOT EXISTS ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
+				+ " WHERE"
+				+ " IsActive='Y'"
+				+ " AND AD_Table_ID=" + adTableId
+				+ " AND Record_ID=" + keyColumnNameFQ);
+
+		//
+		// User
+		sql.append(" AND AD_User_ID <> " + userId.getRepoId());
+
+		//
+		// User Group
+		final Set<UserGroupId> userGroupIds = getUserGroupIds();
+		if (!userGroupIds.isEmpty())
+		{
+			sql.append(" AND NOT (").append(DB.buildSqlList("AD_UserGroup_ID", userGroupIds)).append(")");
+		}
+
+		//
+		sql.append(")");
+		return sql.toString();
 	}
 }

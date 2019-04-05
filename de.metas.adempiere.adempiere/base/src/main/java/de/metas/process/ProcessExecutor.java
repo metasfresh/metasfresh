@@ -22,7 +22,6 @@ import org.compiere.print.ReportCtl;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.compiere.wf.MWFProcess;
 import org.compiere.wf.MWorkflow;
@@ -334,7 +333,7 @@ public final class ProcessExecutor
 				pi.getRoleId(),
 				pi.getUserId(),
 				pi.getClientId(),
-				TimeUtil.asLocalDate(Env.getDate(pi.getCtx())));
+				Env.getLocalDate(pi.getCtx()));
 
 		if (!permissions.getRoleId().isSystem())
 		{

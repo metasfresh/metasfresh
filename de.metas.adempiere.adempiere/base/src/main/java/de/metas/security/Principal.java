@@ -1,4 +1,4 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security;
 
 import org.adempiere.exceptions.AdempiereException;
 

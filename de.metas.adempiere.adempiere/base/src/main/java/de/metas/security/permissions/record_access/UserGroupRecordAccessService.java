@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.record_access.listeners.CompositeUserGroupAccessChangeListener;
 import de.metas.security.permissions.record_access.listeners.NullUserGroupAccessChangeListener;

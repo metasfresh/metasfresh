@@ -1,8 +1,7 @@
 package de.metas.security.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -22,12 +22,12 @@ import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
@@ -71,6 +71,7 @@ import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Principal;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsEventBus;
@@ -92,15 +93,18 @@ import de.metas.security.permissions.TableResource;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateRecordPrivateAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
 import de.metas.security.requests.RemoveDocActionAccessRequest;
 import de.metas.security.requests.RemoveFormAccessRequest;
 import de.metas.security.requests.RemoveProcessAccessRequest;
+import de.metas.security.requests.RemoveRecordPrivateAccessRequest;
 import de.metas.security.requests.RemoveTaskAccessRequest;
 import de.metas.security.requests.RemoveWindowAccessRequest;
 import de.metas.security.requests.RemoveWorkflowAccessRequest;
+import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -1246,99 +1250,44 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		resetCacheAfterTrxCommit();
 	}
 
-
 	@Override
-	public void createPrivateAccess(final UserId userId, final int adTableId, final int recordId)
+	public void createPrivateAccess(final CreateRecordPrivateAccessRequest request)
 	{
-		changePrivateAccess(userId, adTableId, recordId, access -> {
-			access.setIsActive(true);
-		});
-	}
-
-	@Override
-	public void deletePrivateAccess(final UserId userId, final int adTableId, final int recordId)
-	{
-		changePrivateAccess(userId, adTableId, recordId, access -> {
-			access.setIsActive(false); // request to be deleted
-		});
-	}
-
-	private void changePrivateAccess(
-			@NonNull final UserId userId,
-			final int adTableId,
-			final int recordId,
-			@NonNull final Consumer<I_AD_Private_Access> updater)
-	{
-		Preconditions.checkArgument(adTableId > 0, "adTableId > 0");
-		Preconditions.checkArgument(recordId >= 0, "recordId >= 0");
-
-		I_AD_Private_Access privateAccess = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Private_Access.class)
-				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_User_ID, userId)
-				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_Record_ID, recordId)
+		I_AD_Private_Access accessRecord = queryPrivateAccess(request.getPrincipal(), request.getRecordRef())
 				.create()
 				.firstOnly(I_AD_Private_Access.class);
-
-		if (privateAccess == null)
+		if (accessRecord == null)
 		{
-			privateAccess = InterfaceWrapperHelper.newInstance(I_AD_Private_Access.class);
-			privateAccess.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_System);
-			privateAccess.setAD_User_ID(userId.getRepoId());
-			privateAccess.setAD_Table_ID(adTableId);
-			privateAccess.setRecord_ID(recordId);
+			accessRecord = InterfaceWrapperHelper.newInstance(I_AD_Private_Access.class);
+			accessRecord.setAD_User_ID(UserId.toRepoId(request.getPrincipal().getUserId()));
+			accessRecord.setAD_UserGroup_ID(UserGroupId.toRepoId(request.getPrincipal().getUserGroupId()));
+			accessRecord.setAD_Table_ID(request.getRecordRef().getAD_Table_ID());
+			accessRecord.setRecord_ID(request.getRecordRef().getRecord_ID());
 		}
 
-		updater.accept(privateAccess);
+		accessRecord.setAD_Org_ID(OrgId.ANY.getRepoId());
+		accessRecord.setIsActive(true);
 
-		if (privateAccess.isActive())
-		{
-			InterfaceWrapperHelper.save(privateAccess);
-		}
-		else
-		{
-			if (!InterfaceWrapperHelper.isNew(privateAccess))
-			{
-				InterfaceWrapperHelper.delete(privateAccess);
-			}
-		}
-
-		//
-		resetCacheAfterTrxCommit();
+		saveRecord(accessRecord);
 	}
 
 	@Override
-	public Set<Integer> retrievePrivateAccessRecordIds(final UserId userId, final int adTableId)
+	public void deletePrivateAccess(final RemoveRecordPrivateAccessRequest request)
 	{
-		final String sql = "SELECT Record_ID "
-				+ " FROM " + I_AD_Private_Access.Table_Name
-				+ " WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive=? "
-				+ " ORDER BY Record_ID";
-		final Object[] sqlParams = new Object[] { userId, adTableId, true };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
+		queryPrivateAccess(request.getPrincipal(), request.getRecordRef())
+				.create()
+				.delete();
+	}
 
-			final ImmutableSet.Builder<Integer> recordIds = ImmutableSet.builder();
-			while (rs.next())
-			{
-				final int recordId = rs.getInt(1);
-				recordIds.add(recordId);
-			}
-
-			return recordIds.build();
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+	private IQueryBuilder<I_AD_Private_Access> queryPrivateAccess(
+			@NonNull final Principal principal,
+			@NonNull final TableRecordReference recordRef)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Private_Access.class)
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_User_ID, principal.getUserId())
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_UserGroup_ID, principal.getUserGroupId())
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 	}
 }

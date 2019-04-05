@@ -2,6 +2,7 @@ package de.metas.security.permissions.record_access;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import lombok.Builder;
 import lombok.NonNull;
