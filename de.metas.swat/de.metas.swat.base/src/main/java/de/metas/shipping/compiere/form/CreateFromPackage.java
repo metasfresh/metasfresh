@@ -120,7 +120,7 @@ public class CreateFromPackage extends CreateFrom
 		//
 		log.debug(sql.toString());
 		
-		final String orgWhere = Env.getUserRolePermissions().getOrgWhere(Access.READ);
+		final String orgWhere = Env.getUserRolePermissions().getOrgWhere(I_M_Package.Table_Name, Access.READ);
 		if (!Check.isEmpty(orgWhere, true))
 		{
 			sql.append(" AND (p.");

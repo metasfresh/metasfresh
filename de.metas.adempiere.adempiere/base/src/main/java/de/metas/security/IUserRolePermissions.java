@@ -203,16 +203,6 @@ public interface IUserRolePermissions
 
 	String getClientWhere(String tableName, String tableAlias, Access access);
 
-	/**
-	 * Get Org Where Clause Value
-	 *
-	 * @param access
-	 * @return "AD_Org_ID=0" or "AD_Org_ID IN(0,1)" or null (if access all org)
-	 * @deprecated Please use {@link #getOrgWhere(String, boolean)}
-	 */
-	@Deprecated
-	String getOrgWhere(Access access);
-
 	String getOrgWhere(String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();

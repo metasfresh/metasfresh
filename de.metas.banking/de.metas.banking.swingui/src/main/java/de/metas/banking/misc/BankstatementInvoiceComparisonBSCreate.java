@@ -269,7 +269,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 	 */
 	private List<I_C_BP_BankAccount> getAllBankaccounts() {
 
-		final String whereClause = Env.getUserRolePermissions().getOrgWhere(Access.READ);
+		final String whereClause = Env.getUserRolePermissions().getOrgWhere(I_C_BP_BankAccount.Table_Name, Access.READ);
 
 		final List<I_C_BP_BankAccount> bankAccountList = new Query(Env.getCtx(),
 				I_C_BP_BankAccount.Table_Name, whereClause, null).setClient_ID()
@@ -283,7 +283,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 	 */
 	private List<MBankStatement> getOpenBankstatements() {
 
-		final String whereClause = Env.getUserRolePermissions().getOrgWhere(Access.READ)
+		final String whereClause = Env.getUserRolePermissions().getOrgWhere(I_C_BankStatement.Table_Name, Access.READ)
 				+ " AND docstatus = 'DR'";
 
 		final List<MBankStatement> bankStatementList = new Query(Env.getCtx(),

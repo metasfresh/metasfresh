@@ -367,13 +367,6 @@ class UserRolePermissions implements IUserRolePermissions
 		return clientsList;
 	}
 
-	@Deprecated
-	@Override
-	public String getOrgWhere(final Access access)
-	{
-		return getOrgWhere(null, access);
-	}
-
 	@Override
 	public String getOrgWhere(final String tableName, final Access access)
 	{
