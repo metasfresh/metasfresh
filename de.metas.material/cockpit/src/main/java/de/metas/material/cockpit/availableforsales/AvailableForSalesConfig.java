@@ -40,17 +40,25 @@ public class AvailableForSalesConfig
 
 	int salesOrderLookBehindHours;
 
+	boolean runAsync;
+
+	int asyncTimeoutMillis;
+
 	@Builder
 	private AvailableForSalesConfig(
-			@Nullable ColorId insufficientQtyAvailableForSalesColorId,
-			int shipmentDateLookAheadHours,
-			int salesOrderLookBehindHours,
-			boolean featureEnabled)
+			@Nullable final ColorId insufficientQtyAvailableForSalesColorId,
+			final int shipmentDateLookAheadHours,
+			final int salesOrderLookBehindHours,
+			final boolean featureEnabled,
+			final boolean runAsync,
+			final int asyncTimeoutMillis)
 	{
 		this.featureEnabled = featureEnabled;
 		this.insufficientQtyAvailableForSalesColorId = insufficientQtyAvailableForSalesColorId;
 		this.shipmentDateLookAheadHours = shipmentDateLookAheadHours;
 		this.salesOrderLookBehindHours = salesOrderLookBehindHours;
+		this.runAsync = runAsync;
+		this.asyncTimeoutMillis = asyncTimeoutMillis;
 
 		if (featureEnabled)
 		{

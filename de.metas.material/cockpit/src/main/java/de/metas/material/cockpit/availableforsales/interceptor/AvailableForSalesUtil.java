@@ -9,12 +9,26 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.adempiere.ad.service.IErrorManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.user.UserId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +36,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Maps;
 
+import de.metas.Profiles;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
@@ -33,6 +47,9 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
@@ -111,9 +128,7 @@ public class AvailableForSalesUtil
 		return true;
 	}
 
-	public List<CheckAvailableForSalesRequest> createRequests(
-			@NonNull final I_C_Order orderRecord,
-			@NonNull final AvailableForSalesConfig config)
+	public List<CheckAvailableForSalesRequest> createRequests(@NonNull final I_C_Order orderRecord)
 	{
 		final ImmutableList.Builder<CheckAvailableForSalesRequest> result = ImmutableList.builder();
 
@@ -122,15 +137,13 @@ public class AvailableForSalesUtil
 		{
 			if (isOrderLineEligibleForFeature(orderLineRecord))
 			{
-				result.add(createRequest(orderLineRecord, config));
+				result.add(createRequest(orderLineRecord));
 			}
 		}
 		return result.build();
 	}
 
-	public CheckAvailableForSalesRequest createRequest(
-			@NonNull final I_C_OrderLine orderLineRecord,
-			@NonNull final AvailableForSalesConfig config)
+	public CheckAvailableForSalesRequest createRequest(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final I_C_Order orderRecord = orderLineRecord.getC_Order();
 		final Timestamp preparationDate = coalesce(orderRecord.getPreparationDate(), orderRecord.getDatePromised());
@@ -141,9 +154,6 @@ public class AvailableForSalesUtil
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.preparationDate(preparationDate)
-				.insufficientQtyAvailableForSalesColorId(config.getInsufficientQtyAvailableForSalesColorId())
-				.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
-				.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
 				.build();
 	}
 
@@ -158,15 +168,104 @@ public class AvailableForSalesUtil
 		AttributeSetInstanceId attributeSetInstanceId;
 
 		Timestamp preparationDate;
-
-		ColorId insufficientQtyAvailableForSalesColorId;
-
-		int shipmentDateLookAheadHours;
-
-		int salesOrderLookBehindHours;
 	}
 
-	public ImmutableMultimap<AvailableForSalesQuery, OrderLineId> createQueries(@NonNull final List<CheckAvailableForSalesRequest> requests)
+	public void checkAndUpdateOrderLineRecords(
+			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final AvailableForSalesConfig config)
+	{
+		if (config.isRunAsync() && Adempiere.isSpringProfileActive(Profiles.PROFILE_Webui))
+		{
+			final UserId errorNotificationRecipient = UserId.ofRepoId(Env.getAD_User_ID());
+
+			Services.get(ITrxManager.class)
+					.getCurrentTrxListenerManagerOrAutoCommit()
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.invokeMethodJustOnce(true)
+					.registerHandlingMethod(committedTrx -> retrieveDataAndUpdateOrderLinesAsync(requests, config, errorNotificationRecipient));
+		}
+		else
+		{
+			retrieveDataAndUpdateOrderLines(requests, config);
+		}
+
+	}
+
+	/**
+	 * @param errorNotificationRecipient user to receive a notification if something goes wrong within the async thread
+	 */
+	private void retrieveDataAndUpdateOrderLinesAsync(
+			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final AvailableForSalesConfig config,
+			@NonNull final UserId errorNotificationRecipient)
+	{
+		// We cannot use a thread-inherited transaction that would otherwise be used by default.
+		// Because when this method is called, it means that the thread-inherited transaction is already committed
+		// Therefore, let's create our own trx to work in
+		final Runnable runnable = () -> Services.get(ITrxManager.class).run(innerTrx -> retrieveDataAndUpdateOrderLines(requests, config));
+
+		final ExecutorService executor = Executors.newSingleThreadExecutor();
+		final Future<?> future = executor.submit(runnable);
+		try
+		{
+			future.get(config.getAsyncTimeoutMillis(), TimeUnit.MILLISECONDS);
+		}
+		catch (InterruptedException | ExecutionException | TimeoutException e1)
+		{
+			handleAsyncException(errorNotificationRecipient, e1);
+		}
+	}
+
+	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull Exception e1)
+	{
+		final Throwable cause = AdempiereException.extractCause(e1);
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(cause);
+
+		final TargetRecordAction targetAction = TargetRecordAction
+				.ofRecordAndWindow(
+						TableRecordReference.of(I_AD_Issue.Table_Name, issue.getAD_Issue_ID()),
+						IErrorManager.AD_ISSUE_WINDOW_ID.getRepoId());
+
+		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+				.important(true)
+				.recipientUserId(errorNotificationRecipient)
+				.subjectADMessage(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.contentPlain(AdempiereException.extractMessage(cause))
+				.targetAction(targetAction)
+				.build();
+		Services.get(INotificationBL.class).send(userNotificationRequest);
+	}
+
+	@VisibleForTesting
+	void retrieveDataAndUpdateOrderLines(
+			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final AvailableForSalesConfig config)
+	{
+		final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> //
+		query2OrderLineIds = createQueries(requests, config);
+
+		final AvailableForSalesMultiQuery availableForSalesMultiQuery = AvailableForSalesMultiQuery
+				.builder()
+				.availableForSalesQueries(query2OrderLineIds.keySet())
+				.build();
+
+		// in here, the thread-inherited transaction is our *new* not-yet-committed/closed transaction
+		final ImmutableMap<OrderLineId, Quantities> //
+		qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
+
+		for (final Entry<OrderLineId, Quantities> entry : qtyIncludingSalesOrderLine.entrySet())
+		{
+			final OrderLineId orderLineId = entry.getKey();
+			final Quantities quantities = entry.getValue();
+			final ColorId insufficientQtyAvailableForSalesColorId = config.getInsufficientQtyAvailableForSalesColorId();
+
+			updateOrderLineRecord(orderLineId, quantities, insufficientQtyAvailableForSalesColorId);
+		}
+	}
+
+	private ImmutableMultimap<AvailableForSalesQuery, OrderLineId> createQueries(
+			@NonNull final List<CheckAvailableForSalesRequest> requests,
+			@NonNull final AvailableForSalesConfig config)
 	{
 		final ImmutableMultimap.Builder<AvailableForSalesQuery, OrderLineId> query2OrderLineId = ImmutableMultimap.builder();
 
@@ -183,57 +282,14 @@ public class AvailableForSalesUtil
 					.dateOfInterest(dateOfInterest)
 					.productId(productId)
 					.storageAttributesKey(storageAttributesKey)
-					.shipmentDateLookAheadHours(request.getShipmentDateLookAheadHours())
-					.salesOrderLookBehindHours(request.getSalesOrderLookBehindHours())
+					.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
+					.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
 					.build();
 
 			query2OrderLineId.put(availableForSalesQuery, request.getOrderLineId());
 		}
 
 		return query2OrderLineId.build();
-	}
-
-	public void checkAndUpdateOrderLineRecords(@NonNull final List<CheckAvailableForSalesRequest> requests)
-	{
-
-		// We cannot use the thread-inherited transaction that would otherwise be used by default.
-		// Because when this method is called, it means that the thread-inherited transaction is already committed
-		// Therefore, let's create our own trx to work in
-		Services.get(ITrxManager.class).run(trx -> {
-
-			retrieveDataAndUpdateOrderLines(requests);
-
-		});
-	}
-
-	@VisibleForTesting
-	void retrieveDataAndUpdateOrderLines(@NonNull final List<CheckAvailableForSalesRequest> requests)
-	{
-		final ImmutableMultimap<AvailableForSalesQuery, OrderLineId> //
-		query2OrderLineIds = createQueries(requests);
-
-		final ImmutableMap<OrderLineId, CheckAvailableForSalesRequest> //
-		orderLineId2Request = Maps.uniqueIndex(requests, CheckAvailableForSalesRequest::getOrderLineId);
-
-		final AvailableForSalesMultiQuery availableForSalesMultiQuery = AvailableForSalesMultiQuery
-				.builder()
-				.availableForSalesQueries(query2OrderLineIds.keySet())
-				.build();
-
-		// in here, the thread-inherited transaction is our *new* not-yet-committed/closed transaction
-		final ImmutableMap<OrderLineId, Quantities> //
-		qtyIncludingSalesOrderLine = retrieveAvailableQty(query2OrderLineIds, availableForSalesMultiQuery);
-
-		for (final Entry<OrderLineId, Quantities> entry : qtyIncludingSalesOrderLine.entrySet())
-		{
-			final OrderLineId orderLineId = entry.getKey();
-			final Quantities quantities = entry.getValue();
-
-			final CheckAvailableForSalesRequest request = orderLineId2Request.get(orderLineId);
-			final ColorId insufficientQtyAvailableForSalesColorId = request.getInsufficientQtyAvailableForSalesColorId();
-
-			updateOrderLineRecord(orderLineId, quantities, insufficientQtyAvailableForSalesColorId);
-		}
 	}
 
 	private ImmutableMap<OrderLineId, Quantities> retrieveAvailableQty(

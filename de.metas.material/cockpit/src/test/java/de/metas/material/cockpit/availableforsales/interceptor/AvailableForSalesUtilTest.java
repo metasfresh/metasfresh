@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
@@ -67,6 +68,7 @@ class AvailableForSalesUtilTest
 	private OrderLineId orderLineId;
 	private ProductId productId;
 	private CheckAvailableForSalesRequest request;
+	private AvailableForSalesConfig config;
 
 	@BeforeEach
 	public void beforeEach()
@@ -93,14 +95,19 @@ class AvailableForSalesUtilTest
 		saveRecord(orderLineRecord);
 		orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
 
+		config = AvailableForSalesConfig.builder()
+				.featureEnabled(true)
+				.insufficientQtyAvailableForSalesColorId(colorId)
+				.salesOrderLookBehindHours(3)
+				.shipmentDateLookAheadHours(72)
+				.runAsync(true)
+				.build();
+
 		request = CheckAvailableForSalesRequest.builder()
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.insufficientQtyAvailableForSalesColorId(colorId)
 				.orderLineId(orderLineId)
 				.preparationDate(TimeUtil.parseTimestamp("2019-04-04"))
 				.productId(productId)
-				.salesOrderLookBehindHours(3)
-				.shipmentDateLookAheadHours(72)
 				.build();
 
 		availableForSalesUtil = new AvailableForSalesUtil(new AvailableForSalesRepository());
@@ -114,7 +121,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(null, FOUR, null/* qtyOnHandStock */);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -130,7 +137,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(salesOrderLastUpdated, THREE, null/* qtyOnHandStock */);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -147,7 +154,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(null/* salesOrderLastUpdated */, THREE/* qtyToBeShipped */, FOUR/* qtyOnHandStock */);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -163,17 +170,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(salesOrderLastUpdated, THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
 		createQueryResultRecord(null/* salesOrderLastUpdated */, THREE/* qtyToBeShipped */, TEN/* qtyOnHandStock */);
 
-		final CheckAvailableForSalesRequest request = CheckAvailableForSalesRequest.builder()
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.insufficientQtyAvailableForSalesColorId(colorId)
-				.orderLineId(orderLineId)
-				.preparationDate(TimeUtil.parseTimestamp("2019-04-04"))
-				.productId(productId)
-				.salesOrderLookBehindHours(3)
-				.shipmentDateLookAheadHours(72)
-				.build();
-
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request));
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 

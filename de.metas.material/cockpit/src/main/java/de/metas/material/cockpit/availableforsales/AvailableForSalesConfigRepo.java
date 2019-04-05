@@ -85,6 +85,8 @@ public class AvailableForSalesConfigRepo
 				.insufficientQtyAvailableForSalesColorId(ColorId.ofRepoId(configRecord.getInsufficientQtyAvailableForSalesColor_ID()))
 				.salesOrderLookBehindHours(configRecord.getSalesOrderLookBehindHours())
 				.shipmentDateLookAheadHours(configRecord.getShipmentDateLookAheadHours())
+				.runAsync(configRecord.isAsync())
+				.asyncTimeoutMillis(configRecord.getAsyncTimeoutMillis())
 				.build();
 	}
 

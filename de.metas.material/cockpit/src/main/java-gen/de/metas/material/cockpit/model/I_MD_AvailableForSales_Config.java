@@ -69,6 +69,31 @@ public interface I_MD_AvailableForSales_Config
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Max. Wartezeit auf asynchrone Antwort (ms).
+	 * Maximale Zeit in Millisekunden, die bei einer asynchronen Abfrage gewartet wird, bevor ein mit einer Fehlermeldung abgebrochen wird.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAsyncTimeoutMillis (int AsyncTimeoutMillis);
+
+	/**
+	 * Get Max. Wartezeit auf asynchrone Antwort (ms).
+	 * Maximale Zeit in Millisekunden, die bei einer asynchronen Abfrage gewartet wird, bevor ein mit einer Fehlermeldung abgebrochen wird.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAsyncTimeoutMillis();
+
+    /** Column definition for AsyncTimeoutMillis */
+    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_AsyncTimeoutMillis = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "AsyncTimeoutMillis", null);
+    /** Column name AsyncTimeoutMillis */
+    public static final String COLUMNNAME_AsyncTimeoutMillis = "AsyncTimeoutMillis";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -122,20 +147,20 @@ public interface I_MD_AvailableForSales_Config
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set InsufficientQtyAvailableForSalesColor_ID.
+	 * Set Farbe für kurzfr. Verfügbarkeitsproblem.
 	 * Farbe, mit der Auftragszeilen markiert werden, wenn der derzeitige Lagerbestand abzüglich absehbarer Lieferungen nicht ausreicht, um die jeweilige Auftragsposition zu bedienen.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setInsufficientQtyAvailableForSalesColor_ID (int InsufficientQtyAvailableForSalesColor_ID);
 
 	/**
-	 * Get InsufficientQtyAvailableForSalesColor_ID.
+	 * Get Farbe für kurzfr. Verfügbarkeitsproblem.
 	 * Farbe, mit der Auftragszeilen markiert werden, wenn der derzeitige Lagerbestand abzüglich absehbarer Lieferungen nicht ausreicht, um die jeweilige Auftragsposition zu bedienen.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -174,6 +199,29 @@ public interface I_MD_AvailableForSales_Config
     public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Async.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAsync (boolean IsAsync);
+
+	/**
+	 * Get Async.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAsync();
+
+    /** Column definition for IsAsync */
+    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsAsync = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "IsAsync", null);
+    /** Column name IsAsync */
+    public static final String COLUMNNAME_IsAsync = "IsAsync";
 
 	/**
 	 * Set Feature aktivtiert.
@@ -223,7 +271,7 @@ public interface I_MD_AvailableForSales_Config
 
 	/**
 	 * Set Rückschauinterval Auftragspositionen in Bearb. (Std).
-	 * Interval bis zum Bereitstellungsdatum der aktuellen Auftrags, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
+	 * Interval in Stunden bis zum aktuellen Zeitpunkt, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -233,7 +281,7 @@ public interface I_MD_AvailableForSales_Config
 
 	/**
 	 * Get Rückschauinterval Auftragspositionen in Bearb. (Std).
-	 * Interval bis zum Bereitstellungsdatum der aktuellen Auftrags, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
+	 * Interval in Stunden bis zum aktuellen Zeitpunkt, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -248,7 +296,7 @@ public interface I_MD_AvailableForSales_Config
 
 	/**
 	 * Set Vorausschauinterval zu gepl. Lieferungen (Std).
-	 * Interval ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
+	 * Interval in Stunden ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -258,7 +306,7 @@ public interface I_MD_AvailableForSales_Config
 
 	/**
 	 * Get Vorausschauinterval zu gepl. Lieferungen (Std).
-	 * Interval ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
+	 * Interval in Stunden ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

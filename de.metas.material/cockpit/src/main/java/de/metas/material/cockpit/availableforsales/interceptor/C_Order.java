@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Order;
@@ -16,7 +14,6 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -78,13 +75,9 @@ public class C_Order
 		}
 
 		// has to contain everything that the method to be invoked after commit needs
-		final List<CheckAvailableForSalesRequest> requests = availableForSalesUtil.createRequests(orderRecord, config);
+		final List<CheckAvailableForSalesRequest> requests = availableForSalesUtil.createRequests(orderRecord);
 
-		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(true)
-				.registerHandlingMethod(trx -> availableForSalesUtil.checkAndUpdateOrderLineRecords(requests));
+		availableForSalesUtil.checkAndUpdateOrderLineRecords(requests, config);
 	}
 
 }

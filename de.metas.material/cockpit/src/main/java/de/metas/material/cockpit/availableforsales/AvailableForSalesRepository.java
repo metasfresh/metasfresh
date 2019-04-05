@@ -69,19 +69,24 @@ public class AvailableForSalesRepository
 			}
 
 			final AvailableForSalesQuery singleQuery = singleQueries.get(queryNo);
-
-			final AvailableForSalesResult result = AvailableForSalesResult
-					.builder()
-					.availableForSalesQuery(singleQuery)
-					.productId(singleQuery.getProductId())
-					.storageAttributesKey(singleQuery.getStorageAttributesKey())
-					.quantities(Quantities.builder()
-							.qtyOnHandStock(qtyOnHandStock)
-							.qtyToBeShipped(qtyToBeShipped).build())
-					.build();
+			final AvailableForSalesResult result = createSingleResult(qtyOnHandStock, qtyToBeShipped, singleQuery);
 			multiResult.availableForSalesResult(result);
 		}
 
 		return multiResult.build();
+	}
+
+	private AvailableForSalesResult createSingleResult(BigDecimal qtyOnHandStock, BigDecimal qtyToBeShipped, final AvailableForSalesQuery singleQuery)
+	{
+		final AvailableForSalesResult result = AvailableForSalesResult
+				.builder()
+				.availableForSalesQuery(singleQuery)
+				.productId(singleQuery.getProductId())
+				.storageAttributesKey(singleQuery.getStorageAttributesKey())
+				.quantities(Quantities.builder()
+						.qtyOnHandStock(qtyOnHandStock)
+						.qtyToBeShipped(qtyToBeShipped).build())
+				.build();
+		return result;
 	}
 }

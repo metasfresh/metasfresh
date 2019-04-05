@@ -14,7 +14,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1247520403L;
+	private static final long serialVersionUID = 1196897427L;
 
     /** Standard Constructor */
     public X_MD_AvailableForSales_Config (Properties ctx, int MD_AvailableForSales_Config_ID, String trxName)
@@ -22,7 +22,9 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
       super (ctx, MD_AvailableForSales_Config_ID, trxName);
       /** if (MD_AvailableForSales_Config_ID == 0)
         {
+			setAsyncTimeoutMillis (0); // 0
 			setInsufficientQtyAvailableForSalesColor_ID (0);
+			setIsAsync (false); // N
 			setIsFeatureActivated (true); // Y
 			setMD_AvailableForSales_Config_ID (0);
 			setSalesOrderLookBehindHours (0);
@@ -44,6 +46,28 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Max. Wartezeit auf asynchrone Antwort (ms).
+		@param AsyncTimeoutMillis 
+		Maximale Zeit in Millisekunden, die bei einer asynchronen Abfrage gewartet wird, bevor ein mit einer Fehlermeldung abgebrochen wird.
+	  */
+	@Override
+	public void setAsyncTimeoutMillis (int AsyncTimeoutMillis)
+	{
+		set_Value (COLUMNNAME_AsyncTimeoutMillis, Integer.valueOf(AsyncTimeoutMillis));
+	}
+
+	/** Get Max. Wartezeit auf asynchrone Antwort (ms).
+		@return Maximale Zeit in Millisekunden, die bei einer asynchronen Abfrage gewartet wird, bevor ein mit einer Fehlermeldung abgebrochen wird.
+	  */
+	@Override
+	public int getAsyncTimeoutMillis () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AsyncTimeoutMillis);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
@@ -73,7 +97,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 		set_ValueFromPO(COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID, org.compiere.model.I_AD_Color.class, InsufficientQtyAvailableForSalesColor);
 	}
 
-	/** Set InsufficientQtyAvailableForSalesColor_ID.
+	/** Set Farbe für kurzfr. Verfügbarkeitsproblem.
 		@param InsufficientQtyAvailableForSalesColor_ID 
 		Farbe, mit der Auftragszeilen markiert werden, wenn der derzeitige Lagerbestand abzüglich absehbarer Lieferungen nicht ausreicht, um die jeweilige Auftragsposition zu bedienen.
 	  */
@@ -86,7 +110,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 			set_Value (COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID, Integer.valueOf(InsufficientQtyAvailableForSalesColor_ID));
 	}
 
-	/** Get InsufficientQtyAvailableForSalesColor_ID.
+	/** Get Farbe für kurzfr. Verfügbarkeitsproblem.
 		@return Farbe, mit der Auftragszeilen markiert werden, wenn der derzeitige Lagerbestand abzüglich absehbarer Lieferungen nicht ausreicht, um die jeweilige Auftragsposition zu bedienen.
 	  */
 	@Override
@@ -96,6 +120,29 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Async.
+		@param IsAsync Async	  */
+	@Override
+	public void setIsAsync (boolean IsAsync)
+	{
+		set_Value (COLUMNNAME_IsAsync, Boolean.valueOf(IsAsync));
+	}
+
+	/** Get Async.
+		@return Async	  */
+	@Override
+	public boolean isAsync () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAsync);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Feature aktivtiert.
@@ -145,7 +192,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 
 	/** Set Rückschauinterval Auftragspositionen in Bearb. (Std).
 		@param SalesOrderLookBehindHours 
-		Interval bis zum Bereitstellungsdatum der aktuellen Auftrags, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
+		Interval in Stunden bis zum aktuellen Zeitpunkt, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
 	  */
 	@Override
 	public void setSalesOrderLookBehindHours (int SalesOrderLookBehindHours)
@@ -154,7 +201,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 	}
 
 	/** Get Rückschauinterval Auftragspositionen in Bearb. (Std).
-		@return Interval bis zum Bereitstellungsdatum der aktuellen Auftrags, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
+		@return Interval in Stunden bis zum aktuellen Zeitpunkt, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
 	  */
 	@Override
 	public int getSalesOrderLookBehindHours () 
@@ -167,7 +214,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 
 	/** Set Vorausschauinterval zu gepl. Lieferungen (Std).
 		@param ShipmentDateLookAheadHours 
-		Interval ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
+		Interval in Stunden ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
 	  */
 	@Override
 	public void setShipmentDateLookAheadHours (int ShipmentDateLookAheadHours)
@@ -176,7 +223,7 @@ public class X_MD_AvailableForSales_Config extends org.compiere.model.PO impleme
 	}
 
 	/** Get Vorausschauinterval zu gepl. Lieferungen (Std).
-		@return Interval ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
+		@return Interval in Stunden ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
 	  */
 	@Override
 	public int getShipmentDateLookAheadHours () 

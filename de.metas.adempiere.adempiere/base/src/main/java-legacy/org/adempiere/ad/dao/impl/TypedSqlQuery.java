@@ -19,8 +19,6 @@
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -62,6 +60,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 
 /**
  *
@@ -1213,14 +1212,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build and add UNION SQL queries
-		if (unions != null && !unions.isEmpty())
+		if (unions != null)
 		{
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
 				final boolean unionDistinct = union.isDistinct();
 
-				final String unionSql = unionQuery.buildSQL(selectClause, false); // useOrderByClause=false
+				final String unionSql = unionQuery.buildSQL(
+						null/* don't assume the union-query's select- and where-clause is identical! */,
+						false/* useOrderByClause */);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}

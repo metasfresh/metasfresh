@@ -2,8 +2,6 @@ package de.metas.material.cockpit.availableforsales.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.ModelValidator;
@@ -16,7 +14,6 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -63,7 +60,7 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
 	public void vaildateQtyAvailableForSale(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		if(!availableForSalesUtil.isOrderLineEligibleForFeature(orderLineRecord))
+		if (!availableForSalesUtil.isOrderLineEligibleForFeature(orderLineRecord))
 		{
 			return; // nothing to do
 		}
@@ -84,12 +81,9 @@ public class C_OrderLine
 		}
 
 		// has to contain everything that the method to be invoked after commit needs
-		final CheckAvailableForSalesRequest checkAvailableForSalesRequest = availableForSalesUtil.createRequest(orderLineRecord, config);
+		final CheckAvailableForSalesRequest checkAvailableForSalesRequest = availableForSalesUtil.createRequest(orderLineRecord);
 
-		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(true)
-				.registerHandlingMethod(trx -> availableForSalesUtil.checkAndUpdateOrderLineRecords(ImmutableList.of(checkAvailableForSalesRequest)));
+		availableForSalesUtil.checkAndUpdateOrderLineRecords(ImmutableList.of(checkAvailableForSalesRequest), config);
+
 	}
 }
