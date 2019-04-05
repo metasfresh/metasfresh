@@ -20,6 +20,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -98,7 +100,7 @@ public final class ProcessClassParamInfo
 
 		this.mandatory = mandatory;
 	}
-	
+
 	public Class<?> getFieldType()
 	{
 		return fieldTypeRef.getReferencedClass();
@@ -136,7 +138,7 @@ public final class ProcessClassParamInfo
 					return;
 				}
 			}
-			
+
 			final Class<?> fieldType = getFieldType();
 			if (fieldType.isPrimitive())
 			{
@@ -220,6 +222,13 @@ public final class ProcessClassParamInfo
 		else if (Instant.class.equals(fieldType))
 		{
 			value = TimeUtil.asInstant(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
+		}
+		else if (RepoIdAware.class.isAssignableFrom(fieldType))
+		{
+			final int valueInt = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
+			value = RepoIdAwares.ofRepoIdOrNull(valueInt, repoIdAwareType);
 		}
 		//
 		else if (fieldType.isAssignableFrom(String.class))
