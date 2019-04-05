@@ -57,17 +57,14 @@ export class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside, attributeWidget } = this.props;
+    const { handleFocus, disableOnClickOutside } = this.props;
     const { rawWidget } = this;
 
     if (rawWidget && rawWidget.focus) {
       rawWidget.focus();
     }
 
-    // don't disable onclickoutside for the attributes widget
-    if (!attributeWidget) {
-      disableOnClickOutside && disableOnClickOutside();
-    }
+    disableOnClickOutside && disableOnClickOutside();
     handleFocus && handleFocus();
   };
 
