@@ -1,4 +1,7 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.record_access.listeners;
+
+import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 
 /*
  * #%L

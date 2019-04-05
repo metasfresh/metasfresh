@@ -1,9 +1,9 @@
 package de.metas.security.permissions.record_access;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -23,9 +24,13 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.record_access.listeners.CompositeUserGroupAccessChangeListener;
+import de.metas.security.permissions.record_access.listeners.NullUserGroupAccessChangeListener;
+import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
@@ -76,24 +81,31 @@ public class UserGroupRecordAccessService
 		listeners.setUserGroupRecordAccessService(this);
 	}
 
-	public void grantAccess(@NonNull final UserGroupRecordAccess request)
+	public void grantAccess(@NonNull final UserGroupRecordAccessGrantRequest request)
 	{
-		I_AD_User_Record_Access existingRecord = query(request)
-				.create()
-				.firstOnly(I_AD_User_Record_Access.class);
-		updateSaveAndFire(request, existingRecord);
+		final UserGroupRecordAccess access = UserGroupRecordAccess.builder()
+				.recordRef(request.getRecordRef())
+				.principal(request.getPrincipal())
+				.permission(request.getPermission())
+				.build();
+
+		saveAndFire(access);
 	}
 
-	public void revokeAccess(@NonNull final UserGroupRecordAccess request)
+	public void revokeAccess(@NonNull final UserGroupRecordAccessRevokeRequest request)
 	{
-		final int deleteCount = query(request)
+		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
+				.recordRef(request.getRecordRef())
+				.principal(request.getPrincipal())
+				.permissions(request.isRevokeAllPermissions() ? ImmutableSet.of() : request.getPermissions())
+				.build();
+		final List<I_AD_User_Record_Access> accessRecords = query(query)
 				.create()
-				.delete();
+				.list();
 
-		if (deleteCount > 0)
-		{
-			listeners.onAccessRevoked(request);
-		}
+		final ImmutableSet<UserGroupRecordAccess> accesses = toUserGroupRecordAccessesSet(accessRecords);
+		final Set<Integer> repoIds = extractRepoIds(accessRecords);
+		deleteAndFire(accesses, repoIds);
 	}
 
 	public void copyAccess(@NonNull TableRecordReference to, @NonNull TableRecordReference from)
@@ -113,17 +125,36 @@ public class UserGroupRecordAccessService
 		for (final UserGroupRecordAccess fromAccess : fromAccesses)
 		{
 			final UserGroupRecordAccess toAccess = fromAccess.withRecordRef(to);
-			I_AD_User_Record_Access toAccessRecord = toAccessRecordsToCheck.remove(toAccess);
-			updateSaveAndFire(toAccess, toAccessRecord);
+			final I_AD_User_Record_Access toAccessRecord = toAccessRecordsToCheck.remove(toAccess);
+			saveAndFire(toAccess, toAccessRecord);
 		}
 
 		//
 		// Revoke accesses
-		deleteAll(toAccessRecordsToCheck.values());
-		toAccessRecordsToCheck.keySet().forEach(listeners::onAccessRevoked);
+		if (!toAccessRecordsToCheck.isEmpty())
+		{
+			deleteAndFire(
+					toAccessRecordsToCheck.keySet(),
+					extractRepoIds(toAccessRecordsToCheck.values()));
+		}
 	}
 
-	private void updateSaveAndFire(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
+	private void saveAndFire(@NonNull final UserGroupRecordAccess access)
+	{
+		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
+				.recordRef(access.getRecordRef())
+				.principal(access.getPrincipal())
+				.permission(access.getPermission())
+				.build();
+
+		final I_AD_User_Record_Access existingRecord = query(query)
+				.create()
+				.firstOnly(I_AD_User_Record_Access.class);
+
+		saveAndFire(access, existingRecord);
+	}
+
+	private void saveAndFire(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
 	{
 		final I_AD_User_Record_Access accessRecord = existingAccessRecord != null ? existingAccessRecord : newRecord();
 		updateRecord(accessRecord, access);
@@ -136,30 +167,56 @@ public class UserGroupRecordAccessService
 		listeners.onAccessGranted(access);
 	}
 
-	private IQueryBuilder<I_AD_User_Record_Access> queryByRecord(@NonNull final TableRecordReference recordRef)
+	private void deleteAndFire(final Set<UserGroupRecordAccess> accesses, final Set<Integer> repoIds)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_User_Record_Access.class)
-				.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
-				.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Record_ID, recordRef.getRecord_ID());
+		deleteByIds(repoIds);
+		accesses.forEach(listeners::onAccessRevoked);
 	}
 
-	private IQueryBuilder<I_AD_User_Record_Access> query(final UserGroupRecordAccess request)
+	private IQueryBuilder<I_AD_User_Record_Access> queryByRecord(@NonNull final TableRecordReference recordRef)
 	{
-		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = queryByRecord(request.getRecordRef())
-				.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Access, request.getAccess().getCode());
+		return query(UserGroupRecordAccessQuery.builder()
+				.recordRef(recordRef)
+				.build());
+	}
 
-		if (request.getUserId() != null)
+	private IQueryBuilder<I_AD_User_Record_Access> query(@NonNull final UserGroupRecordAccessQuery query)
+	{
+		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_User_Record_Access.class);
+
+		final ImmutableSet<TableRecordReference> recordRefs = query.getRecordRefs();
+		if (!recordRefs.isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_User_ID, request.getUserId());
+			final ICompositeQueryFilter<I_AD_User_Record_Access> recordRefsFilter = queryBuilder.addCompositeQueryFilter()
+					.setJoinOr();
+			for (final TableRecordReference recordRef : recordRefs)
+			{
+				recordRefsFilter.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID());
+				recordRefsFilter.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Record_ID, recordRef.getRecord_ID());
+			}
 		}
-		else if (request.getUserGroupId() != null)
+
+		final ImmutableSet<Access> permissions = query.getPermissions();
+		if (!permissions.isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_UserGroup_ID, request.getUserGroupId());
+			queryBuilder.addInArrayFilter(I_AD_User_Record_Access.COLUMN_Access, permissions);
 		}
-		else
+
+		if (query.getPrincipal() != null)
 		{
-			throw new AdempiereException("Invalid: " + request); // shall not happen
+			final Principal principal = query.getPrincipal();
+			if (principal.getUserId() != null)
+			{
+				queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_User_ID, principal.getUserId());
+			}
+			else if (principal.getUserGroupId() != null)
+			{
+				queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_UserGroup_ID, principal.getUserGroupId());
+			}
+			else
+			{
+				throw new AdempiereException("Invalid pricipal: " + principal); // shall not happen
+			}
 		}
 
 		return queryBuilder;
@@ -175,19 +232,47 @@ public class UserGroupRecordAccessService
 		toRecord.setIsActive(true);
 		toRecord.setAD_Table_ID(from.getRecordRef().getAD_Table_ID());
 		toRecord.setRecord_ID(from.getRecordRef().getRecord_ID());
-		toRecord.setAccess(from.getAccess().getCode());
-		toRecord.setAD_User_ID(UserId.toRepoId(from.getUserId()));
-		toRecord.setAD_UserGroup_ID(UserGroupId.toRepoId(from.getUserGroupId()));
+		toRecord.setAccess(from.getPermission().getCode());
+		toRecord.setAD_User_ID(UserId.toRepoId(from.getPrincipal().getUserId()));
+		toRecord.setAD_UserGroup_ID(UserGroupId.toRepoId(from.getPrincipal().getUserGroupId()));
+	}
+
+	private void deleteByIds(final Set<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return;
+		}
+
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Record_Access.class)
+				.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_User_Record_Access_ID, repoIds)
+				.create()
+				.delete();
+	}
+
+	private static ImmutableSet<UserGroupRecordAccess> toUserGroupRecordAccessesSet(final Collection<I_AD_User_Record_Access> accessRecords)
+	{
+		return accessRecords.stream()
+				.map(record -> toUserGroupRecordAccess(record))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private static UserGroupRecordAccess toUserGroupRecordAccess(final I_AD_User_Record_Access record)
 	{
 		return UserGroupRecordAccess.builder()
 				.recordRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
-				.access(Access.ofCode(record.getAccess()))
-				.userId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
-				.userGroupId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_ID()))
+				.principal(Principal.builder()
+						.userId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
+						.userGroupId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_ID()))
+						.build())
+				.permission(Access.ofCode(record.getAccess()))
 				.build();
+	}
+
+	private static ImmutableSet<Integer> extractRepoIds(Collection<I_AD_User_Record_Access> accessRecords)
+	{
+		return accessRecords.stream().map(I_AD_User_Record_Access::getAD_User_Record_Access_ID).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static String buildUserGroupRecordAccessSqlWhereClause(

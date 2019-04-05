@@ -1,4 +1,7 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.record_access.listeners;
+
+import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 
 /*
  * #%L
@@ -22,7 +25,7 @@ package de.metas.security.permissions.record_access;
  * #L%
  */
 
-final class NullUserGroupAccessChangeListener implements UserGroupAccessChangeListener
+public final class NullUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
 	public static final transient NullUserGroupAccessChangeListener instance = new NullUserGroupAccessChangeListener();
 

@@ -1,10 +1,16 @@
 package de.metas.security.permissions.record_access;
 
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.permissions.Access;
 import lombok.Builder;
-import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -17,12 +23,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,30 +36,20 @@ import lombok.Value;
  */
 
 @Value
-public class UserGroupRecordAccess
+public class UserGroupRecordAccessQuery
 {
-	TableRecordReference recordRef;
+	ImmutableSet<TableRecordReference> recordRefs;
+	ImmutableSet<Access> permissions;
 	Principal principal;
-	Access permission;
 
-	@Builder(toBuilder = true)
-	private UserGroupRecordAccess(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final Principal principal,
-			@NonNull final Access permission)
+	@Builder
+	private UserGroupRecordAccessQuery(
+			@Singular final Set<TableRecordReference> recordRefs,
+			@Singular final Set<Access> permissions,
+			@Nullable final Principal principal)
 	{
-		this.recordRef = recordRef;
+		this.recordRefs = ImmutableSet.copyOf(recordRefs);
+		this.permissions = ImmutableSet.copyOf(permissions);
 		this.principal = principal;
-		this.permission = permission;
-	}
-
-	public UserGroupRecordAccess withRecordRef(@NonNull final TableRecordReference recordRef)
-	{
-		if (this.recordRef.equals(recordRef))
-		{
-			return this;
-		}
-
-		return toBuilder().recordRef(recordRef).build();
 	}
 }

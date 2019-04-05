@@ -15,6 +15,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import lombok.NonNull;
 
 /*
@@ -84,25 +85,33 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 	}
 
 	@Override
-	public void onAccessGranted(@NonNull final UserGroupRecordAccess request)
+	public void onAccessGranted(@NonNull final UserGroupRecordAccess access)
 	{
-		if (request.getRecordRef().isOfType(I_C_BPartner.class))
+		if (access.getRecordRef().isOfType(I_C_BPartner.class))
 		{
-			final BPartnerId bpartnerId = extractBPartnerId(request);
+			final BPartnerId bpartnerId = extractBPartnerId(access);
 			streamBPartnerRelatedRecords(bpartnerId)
-					.map(request::withRecordRef)
+					.map(recordRef -> UserGroupRecordAccessGrantRequest.builder()
+							.recordRef(recordRef)
+							.principal(access.getPrincipal())
+							.permission(access.getPermission())
+							.build())
 					.forEach(service::grantAccess);
 		}
 	}
 
 	@Override
-	public void onAccessRevoked(@NonNull final UserGroupRecordAccess request)
+	public void onAccessRevoked(@NonNull final UserGroupRecordAccess access)
 	{
-		if (request.getRecordRef().isOfType(I_C_BPartner.class))
+		if (access.getRecordRef().isOfType(I_C_BPartner.class))
 		{
-			final BPartnerId bpartnerId = extractBPartnerId(request);
+			final BPartnerId bpartnerId = extractBPartnerId(access);
 			streamBPartnerRelatedRecords(bpartnerId)
-					.map(request::withRecordRef)
+					.map(recordRef -> UserGroupRecordAccessRevokeRequest.builder()
+							.recordRef(recordRef)
+							.principal(access.getPrincipal())
+							.permission(access.getPermission())
+							.build())
 					.forEach(service::revokeAccess);
 		}
 	}

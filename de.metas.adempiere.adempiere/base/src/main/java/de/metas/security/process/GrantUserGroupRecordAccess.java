@@ -9,7 +9,8 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.Principal;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
@@ -47,7 +48,7 @@ public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessP
 	private UserGroupId userGroupId;
 
 	@Param(parameterName = "Access", mandatory = true)
-	private String accessCode;
+	private String permissionCode;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -63,16 +64,31 @@ public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessP
 	@Override
 	protected String doIt()
 	{
-		final TableRecordReference recordRef = TableRecordReference.of(getTableName(), getRecord_ID());
-		final Access access = Access.ofCode(accessCode);
-
-		userGroupRecordAccessService.grantAccess(UserGroupRecordAccess.builder()
-				.recordRef(recordRef)
-				.access(access)
-				.userId(userId)
-				.userGroupId(userGroupId)
+		userGroupRecordAccessService.grantAccess(UserGroupRecordAccessGrantRequest.builder()
+				.recordRef(getRecordRef())
+				.principal(getPrincipal())
+				.permission(getPermissionToGrant())
 				.build());
 
 		return MSG_OK;
 	}
+
+	private TableRecordReference getRecordRef()
+	{
+		return TableRecordReference.of(getTableName(), getRecord_ID());
+	}
+
+	private Principal getPrincipal()
+	{
+		return Principal.builder()
+				.userId(userId)
+				.userGroupId(userGroupId)
+				.build();
+	}
+
+	private Access getPermissionToGrant()
+	{
+		return Access.ofCode(permissionCode);
+	}
+
 }

@@ -1,9 +1,11 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.record_access.listeners;
 
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -30,7 +32,7 @@ import lombok.ToString;
  */
 
 @ToString
-final class CompositeUserGroupAccessChangeListener implements UserGroupAccessChangeListener
+public final class CompositeUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
 	public static final UserGroupAccessChangeListener of(final List<UserGroupAccessChangeListener> listeners)
 	{

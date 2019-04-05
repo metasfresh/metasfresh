@@ -1,10 +1,16 @@
 package de.metas.security.permissions.record_access;
 
+import java.util.Set;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.security.permissions.Access;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -17,43 +23,47 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
-public class UserGroupRecordAccess
+public class UserGroupRecordAccessRevokeRequest
 {
 	TableRecordReference recordRef;
 	Principal principal;
-	Access permission;
 
-	@Builder(toBuilder = true)
-	private UserGroupRecordAccess(
+	boolean revokeAllPermissions;
+	ImmutableSet<Access> permissions;
+
+	@Builder
+	private UserGroupRecordAccessRevokeRequest(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull final Principal principal,
-			@NonNull final Access permission)
+			@NonNull Principal principal,
+			//
+			final boolean revokeAllPermissions,
+			@Singular final Set<Access> permissions)
 	{
 		this.recordRef = recordRef;
 		this.principal = principal;
-		this.permission = permission;
-	}
 
-	public UserGroupRecordAccess withRecordRef(@NonNull final TableRecordReference recordRef)
-	{
-		if (this.recordRef.equals(recordRef))
+		if (revokeAllPermissions)
 		{
-			return this;
+			this.revokeAllPermissions = true;
+			this.permissions = ImmutableSet.of();
 		}
-
-		return toBuilder().recordRef(recordRef).build();
+		else
+		{
+			Check.assumeNotEmpty(permissions, "permissions is not empty");
+			this.revokeAllPermissions = false;
+			this.permissions = ImmutableSet.copyOf(permissions);
+		}
 	}
 }
