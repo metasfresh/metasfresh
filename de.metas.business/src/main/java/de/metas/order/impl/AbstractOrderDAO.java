@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,6 +45,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.interfaces.I_C_OrderLine;
@@ -235,5 +237,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	public <T extends I_C_Order> List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(orderIds), clazz);
+	}
+
+	@Override
+	public Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(OrderId::ofRepoId)
+				.stream();
 	}
 }

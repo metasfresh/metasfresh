@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -158,4 +159,6 @@ public interface IOrderDAO extends ISingletonService
 	 * @return value in accounting currency
 	 */
 	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
+
+	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 }
