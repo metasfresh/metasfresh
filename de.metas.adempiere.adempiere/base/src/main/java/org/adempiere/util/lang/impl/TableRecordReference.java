@@ -486,4 +486,10 @@ public final class TableRecordReference implements ITableRecordReference
 				.map(ref -> ref.getModel(modelClass))
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public boolean isOfType(@NonNull final Class<?> modelClass)
+	{
+		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
+		return modelTableName != null && modelTableName.equals(getTableName());
+	}
 }
