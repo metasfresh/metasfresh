@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_UserGroup;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -40,6 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Repository
 public class UserGroupRepository
 {
 	private final CCache<UserId, UserGroupUserAssignmentsCollection> //
