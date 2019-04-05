@@ -22,20 +22,18 @@ package de.metas.vertical.creditscore.creditpass.repository;
  * #L%
  */
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.cache.CCache;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
-import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.*;
-import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.UserId;
-import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
@@ -47,26 +45,23 @@ import java.util.stream.Collectors;
 public class CreditPassConfigRepository
 {
 
-	private final CCache<BPartnerId, CreditPassConfig> configCache = CCache.<BPartnerId, CreditPassConfig>builder()
+	private final CCache<BPGroupId, CreditPassConfig> configCache = CCache.<BPGroupId, CreditPassConfig>builder()
 			.initialCapacity(1)
 			.tableName(I_CS_Creditpass_Config.Table_Name)
-			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_CP_Fallback.Table_Name)
-			.additionalTableNameToResetFor(I_CS_Transaction_Result.Table_Name)
-			.additionalTableNameToResetFor(I_C_Order.Table_Name)
+			.additionalTableNameToResetFor(I_CS_Creditpass_BP_Group.Table_Name)
 			.build();
 
 	public CreditPassConfig getConfigByBPartnerId(BPartnerId businessPartnerId)
 	{
-		return configCache.getOrLoad(businessPartnerId, () -> getByBPartnerId(businessPartnerId));
+		final IBPGroupDAO bpGroupRepo = Services.get(IBPGroupDAO.class);
+		final BPGroupId bpGroupId = bpGroupRepo.getBPGroupByBPartnerId(businessPartnerId);
+		return configCache.getOrLoad(bpGroupId, () -> getByBPGroupId(bpGroupId));
 	}
 
-	private CreditPassConfig getByBPartnerId(BPartnerId businessPartnerId)
+	private CreditPassConfig getByBPGroupId(BPGroupId bpGroupId)
 	{
-
-		final IBPGroupDAO bpGroupRepo = Services.get(IBPGroupDAO.class);
-		final I_C_BP_Group bpGroup = bpGroupRepo.getByBPartnerId(businessPartnerId);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -80,7 +75,7 @@ public class CreditPassConfigRepository
 						.addEqualsFilter(I_CS_Creditpass_BP_Group.COLUMN_CS_Creditpass_Config_ID, c.getCS_Creditpass_Config_ID())
 						.create().list()
 						.stream()
-						.allMatch(group -> group.getC_BP_Group_ID() != bpGroup.getC_BP_Group_ID()))
+						.allMatch(group -> group.getC_BP_Group_ID() != bpGroupId.getRepoId()))
 				.findFirst().orElse(null);
 
 		if (configRecord == null)
