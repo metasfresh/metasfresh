@@ -538,7 +538,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String keyColumnName = getKeyColumnName();
 
 		final StringBuilder selectClause = new StringBuilder("SELECT ").append(keyColumnName);
-		final StringBuilder fromClause = new StringBuilder("FROM ").append(getSqlFrom());
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 
 		final String sql = buildSQL(selectClause, fromClause, true);
 
@@ -664,9 +664,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					.append("(").append(sqlExpression).append(")");
 		}
 
-		final StringBuilder sqlFrom = new StringBuilder(" FROM ").append(getSqlFrom());
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(sqlSelect, sqlFrom, aggregateType.isUseOrderByClause());
+		final String sql = buildSQL(sqlSelect, fromClause, aggregateType.isUseOrderByClause());
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -811,21 +811,21 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public boolean match() throws DBException
 	{
 		final StringBuilder sqlSelect;
-		final StringBuilder sqlFrom;
+		final StringBuilder fromClause;
 		if (postQueryFilter != null)
 		{
 			// we expect to build the select with all columns
 			// because we will want to retrieve models and match them again our post-filter
 			sqlSelect = null;
-			sqlFrom = null;
+			fromClause = null;
 		}
 		else
 		{
 			setLimit(1); // no postQueryFilter => we don't need more than one row to decide if it matches
 			sqlSelect = new StringBuilder("SELECT 1 ");
-			sqlFrom = new StringBuilder(" FROM ").append(getSqlFrom());
+			fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
-		final String sql = buildSQL(sqlSelect, sqlFrom, false/* useOrderByClause */);
+		final String sql = buildSQL(sqlSelect, fromClause, false/* useOrderByClause */);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1211,7 +1211,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		if (fromClause == null)
 		{
-			fromClause = new StringBuilder("FROM ").append(getSqlFrom());
+			fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
 
 		final StringBuilder sqlBuffer = new StringBuilder(selectClause)
@@ -1326,7 +1326,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String keyColumnName = getKeyColumnName();
 
 		final StringBuilder selectClause = new StringBuilder("SELECT ").append(keyColumnName);
-		final StringBuilder fromClause = new StringBuilder("FROM ").append(getSqlFrom());
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		final String sql = buildSQL(selectClause, fromClause, true);
 
 		final List<Integer> list = new ArrayList<>();
