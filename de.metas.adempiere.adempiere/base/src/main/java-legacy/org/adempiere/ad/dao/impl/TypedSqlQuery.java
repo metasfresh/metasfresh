@@ -1196,27 +1196,30 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * Build SQL Clause
 	 *
 	 * @param selectClause optional; if null the select clause will be build according to POInfo
+	 * @param fromClause optional; if null the from clause will be build according to {@link #getSqlFrom()}
 	 * @param useOrderByClause true if ORDER BY clause shall be appended
 	 * @return final SQL
 	 */
 	public final String buildSQL(
-			@Nullable StringBuilder selectClause, // TODO make final
-			@Nullable StringBuilder fromClause,
+			@Nullable final StringBuilder selectClause, // TODO change to String
+			@Nullable final StringBuilder fromClause,
 			final boolean useOrderByClause)
 	{
-		if (selectClause == null)
+		StringBuilder selectClauseToUse=selectClause;
+		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
-			selectClause = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
+			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
 		}
-		if (fromClause == null)
+		StringBuilder fromClauseToUse=fromClause;
+		if (fromClauseToUse == null)
 		{
-			fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
 
-		final StringBuilder sqlBuffer = new StringBuilder(selectClause)
+		final StringBuilder sqlBuffer = new StringBuilder(selectClauseToUse)
 				.append(" ")
-				.append(fromClause);
+				.append(fromClauseToUse);
 
 		final String whereClauseEffective = getWhereClauseEffective();
 		if (whereClauseEffective != null && !whereClauseEffective.isEmpty())
@@ -1231,6 +1234,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
+
 				final boolean unionDistinct = union.isDistinct();
 
 				final String unionSql = unionQuery.buildSQL(
