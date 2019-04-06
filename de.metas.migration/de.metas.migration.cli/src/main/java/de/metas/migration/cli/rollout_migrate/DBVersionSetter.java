@@ -1,4 +1,4 @@
-package de.metas.migration.cli;
+package de.metas.migration.cli.rollout_migrate;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -43,7 +43,7 @@ import lombok.NonNull;
  *
  */
 @Builder
-public class DBVersionSetter
+class DBVersionSetter
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(DBVersionSetter.class);
 

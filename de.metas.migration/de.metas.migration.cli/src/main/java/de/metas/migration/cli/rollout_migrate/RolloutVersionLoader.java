@@ -1,8 +1,8 @@
-package de.metas.migration.cli;
+package de.metas.migration.cli.rollout_migrate;
 
 import java.util.Properties;
 
-import de.metas.migration.cli.PropertiesFileLoader.CantLoadPropertiesException;
+import de.metas.migration.cli.rollout_migrate.PropertiesFileLoader.CantLoadPropertiesException;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
@@ -35,7 +35,7 @@ import lombok.NonNull;
  *
  */
 @AllArgsConstructor
-public class RolloutVersionLoader
+class RolloutVersionLoader
 {
 	public static final String BUILD_INFO_FILENAME = "build-info.properties";
 

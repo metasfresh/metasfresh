@@ -1,4 +1,4 @@
-package de.metas.migration.cli;
+package de.metas.migration.cli.rollout_migrate;
 
 import java.util.Objects;
 
@@ -39,7 +39,7 @@ import lombok.NonNull;
  *
  */
 @Builder
-public class VersionChecker
+class VersionChecker
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(VersionChecker.class);
 
