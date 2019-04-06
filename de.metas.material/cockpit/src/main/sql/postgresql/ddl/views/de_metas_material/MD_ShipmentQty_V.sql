@@ -6,17 +6,24 @@ SELECT
   p.C_UOM_ID,
   p.M_Product_ID,
   sq.AttributesKey,
-  sq.PreparationDate,
+  sq.s_PreparationDate_Override,
+  sq.s_PreparationDate, 
+  sq.o_PreparationDate,
   sq.SalesOrderLastUpdated
 FROM
   M_Product p
   JOIN LATERAL (
     select 
         COALESCE(s.QtyToDeliver, ol.QtyOrdered) AS QtyToBeShipped,
+
         /* we expect relatively few rows to create the AttributesKey for, 
            because this view is invoked only for a certain SalesOrderLastUpdated /PreparationDate range */
         GenerateHUStorageASIKey( COALESCE(s.M_AttributeSetInstance_ID, ol.M_AttributeSetInstance_ID), '-1002'/*NONE*/) AS AttributesKey,
-        COALESCE(s_PreparationDate, o_PreparationDate) AS PreparationDate,
+
+        /* avoid COALESCE because we can't index on COALESCE expressions. so we want to have these columns in our whereclause */
+        s_PreparationDate_Override,
+        s_PreparationDate, 
+        o_PreparationDate,
         ol.Updated AS SalesOrderLastUpdated
     from 
     ( 
@@ -33,6 +40,7 @@ FROM
     FULL OUTER JOIN (
         select s.C_OrderLine_ID, 
             s.M_AttributeSetInstance_ID, 
+            s.PreparationDate_Override AS s_PreparationDate_Override, 
             s.PreparationDate AS s_PreparationDate, 
             s.QtyToDeliver
         from M_ShipmentSchedule s

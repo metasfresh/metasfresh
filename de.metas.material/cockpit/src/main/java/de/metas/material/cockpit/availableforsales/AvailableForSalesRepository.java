@@ -48,9 +48,7 @@ public class AvailableForSalesRepository
 
 		final List<I_MD_Available_For_Sales_QueryResult> records = dbQuery.list();
 
-		final AvailableForSalesMultiResultBuilder multiResult = AvailableForSalesMultiResult
-				.builder()
-				.availableForSalesMultiQuery(availableForSalesMultiQuery);
+		final AvailableForSalesMultiResultBuilder multiResult = AvailableForSalesMultiResult.builder();
 
 		final List<AvailableForSalesQuery> singleQueries = availableForSalesMultiQuery.getAvailableForSalesQueries();
 

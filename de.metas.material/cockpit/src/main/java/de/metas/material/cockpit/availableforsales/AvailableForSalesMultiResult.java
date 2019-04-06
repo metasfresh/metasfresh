@@ -3,7 +3,6 @@ package de.metas.material.cockpit.availableforsales;
 import java.util.List;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -33,9 +32,6 @@ import lombok.Value;
 @Builder
 public class AvailableForSalesMultiResult
 {
-	@NonNull
-	AvailableForSalesMultiQuery availableForSalesMultiQuery;
-
 	@Singular
 	List<AvailableForSalesResult> availableForSalesResults;
 }

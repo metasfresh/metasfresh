@@ -1,5 +1,7 @@
 package de.metas.material.cockpit.availableforsales;
 
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
+
 import javax.annotation.Nullable;
 
 import de.metas.util.Check;
@@ -58,7 +60,9 @@ public class AvailableForSalesConfig
 		this.shipmentDateLookAheadHours = shipmentDateLookAheadHours;
 		this.salesOrderLookBehindHours = salesOrderLookBehindHours;
 		this.runAsync = runAsync;
-		this.asyncTimeoutMillis = asyncTimeoutMillis;
+
+		// we allow zero so people can check the async-error-handling
+		this.asyncTimeoutMillis = assumeGreaterOrEqualToZero(asyncTimeoutMillis, "asyncTimeoutMillis");
 
 		if (featureEnabled)
 		{
