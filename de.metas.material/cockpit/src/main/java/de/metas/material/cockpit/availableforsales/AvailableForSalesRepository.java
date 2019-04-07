@@ -74,7 +74,10 @@ public class AvailableForSalesRepository
 		return multiResult.build();
 	}
 
-	private AvailableForSalesResult createSingleResult(BigDecimal qtyOnHandStock, BigDecimal qtyToBeShipped, final AvailableForSalesQuery singleQuery)
+	private AvailableForSalesResult createSingleResult(
+			@NonNull final BigDecimal qtyOnHandStock,
+			@NonNull final BigDecimal qtyToBeShipped,
+			@NonNull final AvailableForSalesQuery singleQuery)
 	{
 		final AvailableForSalesResult result = AvailableForSalesResult
 				.builder()

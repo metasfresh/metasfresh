@@ -8,8 +8,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
@@ -116,9 +114,8 @@ class AvailableForSalesUtilTest
 	@Test
 	void retrieveDataAndUpdateOrderLines_2resultRecords_0withStock()
 	{
-		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
-		createQueryResultRecord(salesOrderLastUpdated, THREE, null/* qtyOnHandStock */);
-		createQueryResultRecord(null, FOUR, null/* qtyOnHandStock */);
+		createQueryResultRecord(THREE, null/* qtyOnHandStock */);
+		createQueryResultRecord(FOUR, null/* qtyOnHandStock */);
 
 		// invoke the method under test
 		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
@@ -133,8 +130,7 @@ class AvailableForSalesUtilTest
 	@Test
 	void retrieveDataAndUpdateOrderLines_1resultRecord_0withtock()
 	{
-		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
-		createQueryResultRecord(salesOrderLastUpdated, THREE, null/* qtyOnHandStock */);
+		createQueryResultRecord(THREE, null/* qtyOnHandStock */);
 
 		// invoke the method under test
 		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
@@ -149,9 +145,8 @@ class AvailableForSalesUtilTest
 	@Test
 	void retrieveDataAndUpdateOrderLines_2resultRecords_1withStock()
 	{
-		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
-		createQueryResultRecord(salesOrderLastUpdated, THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
-		createQueryResultRecord(null/* salesOrderLastUpdated */, THREE/* qtyToBeShipped */, FOUR/* qtyOnHandStock */);
+		createQueryResultRecord(THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
+		createQueryResultRecord(THREE/* qtyToBeShipped */, FOUR/* qtyOnHandStock */);
 
 		// invoke the method under test
 		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
@@ -166,9 +161,8 @@ class AvailableForSalesUtilTest
 	@Test
 	void retrieveDataAndUpdateOrderLines_4()
 	{
-		final Timestamp salesOrderLastUpdated = TimeUtil.asTimestamp(LocalDateTime.parse("2019-04-04T10:15:30"));
-		createQueryResultRecord(salesOrderLastUpdated, THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
-		createQueryResultRecord(null/* salesOrderLastUpdated */, THREE/* qtyToBeShipped */, TEN/* qtyOnHandStock */);
+		createQueryResultRecord(THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
+		createQueryResultRecord(THREE/* qtyToBeShipped */, TEN/* qtyOnHandStock */);
 
 		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
@@ -180,7 +174,6 @@ class AvailableForSalesUtilTest
 	}
 
 	private void createQueryResultRecord(
-			@Nullable final Timestamp salesOrderLastUpdated,
 			@Nullable final BigDecimal qtyToBeShipped,
 			@Nullable final BigDecimal qtyOnHandStock)
 	{
@@ -194,8 +187,6 @@ class AvailableForSalesUtilTest
 		resultRecord1.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 		resultRecord1.setQtyToBeShipped(qtyToBeShipped);
 		resultRecord1.setQtyOnHandStock(qtyOnHandStock);
-		resultRecord1.setSalesOrderLastUpdated(salesOrderLastUpdated);
-		resultRecord1.setShipmentPreparationDate(TimeUtil.parseTimestamp("2019-04-04"));
 		saveRecord(resultRecord1);
 	}
 

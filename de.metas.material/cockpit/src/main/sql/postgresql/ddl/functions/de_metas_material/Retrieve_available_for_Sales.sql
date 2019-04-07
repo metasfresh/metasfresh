@@ -1,5 +1,4 @@
 
-
 DROP FUNCTION IF EXISTS de_metas_material.retrieve_available_for_sales(integer, numeric, character varying, timestamptz, integer, integer);
 CREATE FUNCTION de_metas_material.retrieve_available_for_sales(
   IN p_QueryNo integer,
@@ -14,20 +13,22 @@ RETURNS TABLE
   StorageAttributesKey character varying,
   QtyToBeShipped numeric,
   QtyOnHandStock numeric,
-  C_UOM_ID numeric,
-  SalesOrderLastUpdated timestamptz, 
-  ShipmentPreparationDate timestamptz
+  C_UOM_ID numeric
 )
 AS
 $BODY$
-  SELECT p_QueryNo, p_M_Product_ID, p_StorageAttributesKey, QtyToBeShipped, QtyOnHandStock, stock.C_UOM_ID, SalesOrderLastUpdated, ShipmentPreparationDate
+  SELECT 
+  	p_QueryNo, 
+	p_M_Product_ID, 
+	p_StorageAttributesKey,
+	QtyToBeShipped, 
+	QtyOnHandStock, 
+	stock.C_UOM_ID 
   FROM
   (
     SELECT 
       SUM(QtyToBeShipped) AS QtyToBeShipped, 
-      C_UOM_ID, 
-      SalesOrderLastUpdated, 
-      COALESCE(s_PreparationDate_Override, s_PreparationDate, o_PreparationDate) AS ShipmentPreparationDate
+      C_UOM_ID
     FROM de_metas_material.MD_ShipmentQty_V sq
     WHERE sq.M_Product_ID = p_M_Product_ID
       AND sq.AttributesKey ILIKE '%' || p_StorageAttributesKey || '%'
@@ -39,7 +40,7 @@ $BODY$
       AND (sq.SalesOrderLastUpdated IS NULL /*could have used COALESCE(sq.SalesOrderLastUpdated, now()), but i hope this makes it easier for the planner*/
         OR sq.SalesOrderLastUpdated >= (now() - (p_salesOrderLookBehindHours || ' hours')::INTERVAL) /*min updated value that is not yet too old for us to care */
       )
-    GROUP BY C_UOM_ID, SalesOrderLastUpdated, COALESCE(s_PreparationDate_Override, s_PreparationDate, o_PreparationDate)
+    GROUP BY C_UOM_ID
   ) sales
   FULL OUTER JOIN (
     SELECT SUM(QtyOnHand) AS QtyOnHandStock, p.C_UOM_ID

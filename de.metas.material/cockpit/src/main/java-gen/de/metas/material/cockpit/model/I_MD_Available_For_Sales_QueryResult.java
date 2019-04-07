@@ -152,52 +152,6 @@ public interface I_MD_Available_For_Sales_QueryResult
     public static final String COLUMNNAME_QueryNo = "QueryNo";
 
 	/**
-	 * Set SalesOrderLastUpdated.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSalesOrderLastUpdated (java.sql.Timestamp SalesOrderLastUpdated);
-
-	/**
-	 * Get SalesOrderLastUpdated.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getSalesOrderLastUpdated();
-
-    /** Column definition for SalesOrderLastUpdated */
-    public static final org.adempiere.model.ModelColumn<I_MD_Available_For_Sales_QueryResult, Object> COLUMN_SalesOrderLastUpdated = new org.adempiere.model.ModelColumn<I_MD_Available_For_Sales_QueryResult, Object>(I_MD_Available_For_Sales_QueryResult.class, "SalesOrderLastUpdated", null);
-    /** Column name SalesOrderLastUpdated */
-    public static final String COLUMNNAME_SalesOrderLastUpdated = "SalesOrderLastUpdated";
-
-	/**
-	 * Set ShipmentPreparationDate.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setShipmentPreparationDate (java.sql.Timestamp ShipmentPreparationDate);
-
-	/**
-	 * Get ShipmentPreparationDate.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getShipmentPreparationDate();
-
-    /** Column definition for ShipmentPreparationDate */
-    public static final org.adempiere.model.ModelColumn<I_MD_Available_For_Sales_QueryResult, Object> COLUMN_ShipmentPreparationDate = new org.adempiere.model.ModelColumn<I_MD_Available_For_Sales_QueryResult, Object>(I_MD_Available_For_Sales_QueryResult.class, "ShipmentPreparationDate", null);
-    /** Column name ShipmentPreparationDate */
-    public static final String COLUMNNAME_ShipmentPreparationDate = "ShipmentPreparationDate";
-
-	/**
 	 * Set StorageAttributesKey (technical).
 	 *
 	 * <br>Type: String

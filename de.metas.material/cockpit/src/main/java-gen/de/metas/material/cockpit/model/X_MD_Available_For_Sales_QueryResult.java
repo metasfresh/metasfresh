@@ -15,7 +15,7 @@ public class X_MD_Available_For_Sales_QueryResult extends org.compiere.model.PO 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1045877470L;
+	private static final long serialVersionUID = 384838790L;
 
     /** Standard Constructor */
     public X_MD_Available_For_Sales_QueryResult (Properties ctx, int MD_Available_For_Sales_QueryResult_ID, String trxName)
@@ -174,38 +174,6 @@ public class X_MD_Available_For_Sales_QueryResult extends org.compiere.model.PO 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set SalesOrderLastUpdated.
-		@param SalesOrderLastUpdated SalesOrderLastUpdated	  */
-	@Override
-	public void setSalesOrderLastUpdated (java.sql.Timestamp SalesOrderLastUpdated)
-	{
-		set_Value (COLUMNNAME_SalesOrderLastUpdated, SalesOrderLastUpdated);
-	}
-
-	/** Get SalesOrderLastUpdated.
-		@return SalesOrderLastUpdated	  */
-	@Override
-	public java.sql.Timestamp getSalesOrderLastUpdated () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_SalesOrderLastUpdated);
-	}
-
-	/** Set ShipmentPreparationDate.
-		@param ShipmentPreparationDate ShipmentPreparationDate	  */
-	@Override
-	public void setShipmentPreparationDate (java.sql.Timestamp ShipmentPreparationDate)
-	{
-		set_Value (COLUMNNAME_ShipmentPreparationDate, ShipmentPreparationDate);
-	}
-
-	/** Get ShipmentPreparationDate.
-		@return ShipmentPreparationDate	  */
-	@Override
-	public java.sql.Timestamp getShipmentPreparationDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ShipmentPreparationDate);
 	}
 
 	/** Set StorageAttributesKey (technical).
