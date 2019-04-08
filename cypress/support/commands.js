@@ -158,7 +158,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
     cy.get(path)
       .find('.input-checkbox-tick')
       .click()
-      .wait(['@patchCheckBox', '@getData']);
+      //.wait(['@patchCheckBox', '@getData']);
   });
 });
 

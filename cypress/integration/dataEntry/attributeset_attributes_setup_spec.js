@@ -14,32 +14,28 @@ describe('Create Attribute Masterdata for Automatic End2End Tests with cypress h
     cy.writeIntoStringField('Value', 'TestAttribute1');
     
     cy.selectInListField('AttributeValueType', 'List')
-    cy.clickOnCheckBox('IsInstanceAttribute')    
+    cy.clickOnCheckBox('IsInstanceAttribute')
     cy.clickOnCheckBox('IsPricingRelevant')  
     cy.clickOnCheckBox('IsStorageRelevant')  
     cy.clickOnCheckBox('IsAttrDocumentRelevant')  
 
-
-   //create AttributeValue1
+    //create AttributeValue1
     cy.get('#tab_M_AttributeValue').click(); 
     cy.pressAddNewButton();
     cy.writeIntoStringField('Name', 'TestAttributeName1',true);
     cy.writeIntoStringField('Value', 'TestAttributeValue1',true);
     cy.pressDoneButton();
 
-
-   //create AttributeSet1
-   cy.visitWindow('256', 'NEW');
-   cy.writeIntoStringField('Name', 'TestAttributeSet1');
-   cy.selectInListField('MandatoryType', 'Not Mandatary')
+    //create AttributeSet1
+    cy.visitWindow('256', 'NEW');
+    cy.writeIntoStringField('Name', 'TestAttributeSet1');
+    cy.selectInListField('MandatoryType', 'Not Mandatory')
    
-
-  //set AttributeValue
-   cy.get('#tab_M_AttributeUse').click(); 
-   cy.pressAddNewButton();
-   cy.selectInListField('M_Attribute_ID', 'TestAttribute1_TestAttribute1');
-   cy.pressDoneButton();
-
- });
+    //set AttributeValue
+    cy.get('#tab_M_AttributeUse').click(); 
+    cy.pressAddNewButton();
+    cy.selectInListField('M_Attribute_ID', 'TestAttribute1_TestAttribute1');
+    cy.pressDoneButton();
+  });
 });
 
