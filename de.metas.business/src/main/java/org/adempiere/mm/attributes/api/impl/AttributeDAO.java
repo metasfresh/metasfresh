@@ -97,9 +97,10 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
+	public <T extends I_M_Attribute> T getAttributeById(@NonNull final AttributeId attributeId, @NonNull Class<T> type)
 	{
-		return getAttributeById(attributeId.getRepoId());
+		// assume table level caching is enabled
+		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, type);
 	}
 
 	public List<I_M_Attribute> getAttributesByIds(final Collection<AttributeId> attributeIds)

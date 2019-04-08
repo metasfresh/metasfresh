@@ -13,11 +13,11 @@ package de.metas.migration.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,11 +42,6 @@ import de.metas.migration.scanner.impl.ScriptScannerProviderWrapper;
 public abstract class AbstractScriptsApplierTemplate implements Runnable
 {
 	private Logger _logger = LoggerFactory.getLogger(getClass());
-
-	public AbstractScriptsApplierTemplate()
-	{
-		super();
-	}
 
 	protected abstract IScriptFactory createScriptFactory();
 
@@ -84,7 +79,7 @@ public abstract class AbstractScriptsApplierTemplate implements Runnable
 
 		//
 		// Setup script executor
-		final IScriptExecutorFactory scriptExecutorFactory = new DefaultScriptExecutorFactory();
+		final IScriptExecutorFactory scriptExecutorFactory = createScriptExecutorFactory();
 		configureScriptExecutorFactory(scriptExecutorFactory);
 
 		//
@@ -135,11 +130,13 @@ public abstract class AbstractScriptsApplierTemplate implements Runnable
 		}
 	}
 
+	protected IScriptExecutorFactory createScriptExecutorFactory()
+	{
+		return new DefaultScriptExecutorFactory();
+	}
+
 	/**
-	 * Create and returns a new {@link ScriptsApplier} instance. Can be overridden in order to e.g. have no-op Scriptsapplier.
-	 *
-	 * @param database
-	 * @return
+	 * Create and returns a new {@link ScriptsApplier} instance. Can be overridden in order to e.g. have no-op Scripts applier.
 	 */
 	protected ScriptsApplier createScriptApplier(final IDatabase database)
 	{

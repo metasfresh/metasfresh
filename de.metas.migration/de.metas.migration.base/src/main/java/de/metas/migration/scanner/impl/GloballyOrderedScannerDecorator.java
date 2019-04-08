@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import org.apache.commons.lang.builder.CompareToBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -31,11 +32,11 @@ import de.metas.migration.scanner.IScriptScanner;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -60,7 +61,7 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 		public Iterator<IScript> get()
 		{
 			final List<IScript> lexiagraphicallySortedScripts = new ArrayList<>();
-			
+
 			Comparator<IScript> c = new Comparator<IScript>()
 			{
 				@Override
@@ -88,8 +89,8 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 
 			// note that we used to have a TreeSet here, but some times some scripts were not applied.
 			// I replaced the TreeSet with this list and pay the cost of the extra ordering step to rule out the possibility that some items are not added to the treeSet because the comparator considers them to be equal
-			Collections.sort(lexiagraphicallySortedScripts, c);			
-			//dumpTofile(lexiagraphicallySortedScripts);
+			Collections.sort(lexiagraphicallySortedScripts, c);
+			// dumpTofile(lexiagraphicallySortedScripts);
 
 			return lexiagraphicallySortedScripts.iterator();
 		}
@@ -152,7 +153,7 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 			writer = new FileWriter(GloballyOrderedScannerDecorator.class.getName() + "_sorted_scripts.txt");
 			for (final IScript script : lexiagraphicallySortedScripts)
 			{
-				writer.write(script.toString()+"\n");
+				writer.write(script.toString() + "\n");
 			}
 			writer.close();
 		}
@@ -165,6 +166,8 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 	@Override
 	public String toString()
 	{
-		return "GloballyOrderedScannerDecorator [getInternalScanner()=" + getInternalScanner() + "]";
+		return MoreObjects.toStringHelper(this)
+				.addValue(getInternalScanner())
+				.toString();
 	}
 }

@@ -38,12 +38,16 @@ import de.metas.migration.exception.ScriptExecutionException;
 import de.metas.migration.executor.IScriptExecutor;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.executor.impl.DefaultScriptExecutorFactory;
+import lombok.NonNull;
+import lombok.Setter;
 
 public class ScriptsApplier implements IScriptsApplier
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(ScriptsApplier.class);
 
 	private final IDatabase targetDatabase;
+	@Setter
+	private boolean skipExecutingAfterScripts = false;
 
 	private IScriptsApplierListener listener = NullScriptsApplierListener.instance;
 	private IScriptExecutorFactory scriptExecutorFactory = new DefaultScriptExecutorFactory();
@@ -57,14 +61,8 @@ public class ScriptsApplier implements IScriptsApplier
 		Applied, Ignored,
 	}
 
-	public ScriptsApplier(final IDatabase targetDatabase)
+	public ScriptsApplier(@NonNull final IDatabase targetDatabase)
 	{
-		super();
-
-		if (targetDatabase == null)
-		{
-			throw new IllegalArgumentException("targetDatabase shall not be null");
-		}
 		this.targetDatabase = targetDatabase;
 	}
 
@@ -150,7 +148,14 @@ public class ScriptsApplier implements IScriptsApplier
 
 		//
 		// Execute after migration scripts
-		getSqlExecutor().executeAfterScripts();
+		if (skipExecutingAfterScripts)
+		{
+			logger.info("Skip executing after migration scripts");
+		}
+		else
+		{
+			getSqlExecutor().executeAfterScripts();
+		}
 	}
 
 	/**

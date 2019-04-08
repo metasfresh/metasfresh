@@ -57,11 +57,9 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDate
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GarantType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InsuranceAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InvoiceType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayantType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PostalAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDRGType;
@@ -124,8 +122,8 @@ public class XmlToOLCandsService
 
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(
 				xmlInvoice,
-				createOLCandsRequest.getOrgSyncAdvise(),
-				createOLCandsRequest.getBPartnerSyncAdvise(),
+				createOLCandsRequest.getBillerSyncAdvise(),
+				createOLCandsRequest.getDebitorSyncAdvise(),
 				createOLCandsRequest.getProductSyncAdvise());
 
 		final ResponseEntity<JsonOLCandCreateBulkResponse> orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
@@ -144,8 +142,8 @@ public class XmlToOLCandsService
 	{
 		MultipartFile xmlInvoiceFile;
 
-		SyncAdvise orgSyncAdvise;
-		SyncAdvise bPartnerSyncAdvise;
+		SyncAdvise billerSyncAdvise;
+		SyncAdvise debitorSyncAdvise;
 		SyncAdvise productSyncAdvise;
 	}
 
@@ -212,7 +210,6 @@ public class XmlToOLCandsService
 		private static final long serialVersionUID = -4688552956794873772L;
 	}
 
-
 	@ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR, reason = "An error occurred while trying attach the XML data to the order line candidates")
 	public static class XmlInvoiceAttachException extends RuntimeException
 	{
@@ -222,8 +219,8 @@ public class XmlToOLCandsService
 	@VisibleForTesting
 	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
-			@NonNull final SyncAdvise orgSyncAdvise,
-			@NonNull final SyncAdvise bPartnersSyncAdvise,
+			@NonNull final SyncAdvise billerSyncAdvise,
+			@NonNull final SyncAdvise debitorSyncAdvise,
 			@NonNull final SyncAdvise productsSyncAdvise)
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
@@ -231,17 +228,18 @@ public class XmlToOLCandsService
 				.dataSourceInternalName(RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
 				.dataDestInternalName(InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
-		final List<JsonOLCandCreateRequestBuilder> requestBuilders = insertPayloadIntoBuilders(
-				requestBuilder,
-				xmlInvoice.getPayload());
+		final String invoiceRecipientEAN = extractRecipientEAN(xmlInvoice);
+		final HighLevelContext context = HighLevelContext.builder()
+				.billerSyncAdvise(billerSyncAdvise)
+				.debitorSyncAdvise(debitorSyncAdvise)
+				.productsSyncAdvise(productsSyncAdvise)
+				.invoiceRecipientEAN(invoiceRecipientEAN)
+				.build();
 
-		final ImmutableList<JsonOLCandCreateRequest> requests = requestBuilders
-				.stream()
-				.map(JsonOLCandCreateRequestBuilder::build)
-				.map(r -> r.withOrgSyncAdvise(orgSyncAdvise))
-				.map(r -> r.withBPartnersSyncAdvise(bPartnersSyncAdvise))
-				.map(r -> r.withProductsSyncAdvise(productsSyncAdvise))
-				.collect(ImmutableList.toImmutableList());
+		final List<JsonOLCandCreateRequest> requests = insertPayloadIntoBuilders(
+				requestBuilder,
+				xmlInvoice.getPayload(),
+				context);
 
 		return JsonOLCandCreateBulkRequest
 				.builder()
@@ -249,9 +247,38 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	private List<JsonOLCandCreateRequestBuilder> insertPayloadIntoBuilders(
+	/** Contains context-infos from high-up in the call-hierarchy */
+	@Value
+	@Builder
+	private static class HighLevelContext
+	{
+		@NonNull
+		String invoiceRecipientEAN;
+
+		@NonNull
+		SyncAdvise billerSyncAdvise;
+		@NonNull
+		SyncAdvise debitorSyncAdvise;
+		@NonNull
+		SyncAdvise productsSyncAdvise;
+	}
+
+	private String extractRecipientEAN(@NonNull final RequestType xmlInvoice)
+	{
+		final String invoiceRecipientEAN = xmlInvoice
+				.getProcessing()
+				.getTransport()
+				.getTo();
+		return invoiceRecipientEAN;
+	}
+
+	/**
+	 * @param requestBuilder serves as a prototype for the list of requestBuilders that are returned by this function
+	 */
+	private List<JsonOLCandCreateRequest> insertPayloadIntoBuilders(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-			@NonNull final PayloadType payload)
+			@NonNull final PayloadType payload,
+			@NonNull final HighLevelContext context)
 	{
 		final IPair<String, String> docSubTypeAndPOReference = createPOReference(payload);
 
@@ -261,10 +288,20 @@ public class XmlToOLCandsService
 
 		requestBuilder.externalHeaderId(createExternalHeaderId(payload));
 
-		insertInoviceIntoBuilder(requestBuilder, payload.getInvoice());
+		insertInoviceIntoBuilder(
+				requestBuilder,
+				payload.getInvoice());
 
-		final ImmutableList<JsonOLCandCreateRequestBuilder> builders = insertBodyIntoBuilders(requestBuilder, payload.getBody());
-		return builders;
+		final ImmutableList<JsonOLCandCreateRequestBuilder> builders = insertBodyIntoBuilders(
+				requestBuilder,
+				payload.getBody(),
+				context);
+
+		final ImmutableList<JsonOLCandCreateRequest> requests = builders
+				.stream()
+				.map(JsonOLCandCreateRequestBuilder::build)
+				.collect(ImmutableList.toImmutableList());
+		return requests;
 	}
 
 	private String createExternalHeaderId(@NonNull final PayloadType payload)
@@ -291,9 +328,9 @@ public class XmlToOLCandsService
 	}
 
 	/**
-	  * @return a pair consisting of invoice {@code DocSubType} and {@code POreference}.
-	  * TODO the hardcoded way of getting the invoice's {@code DocSubType} from the XML is not cool, but I want to keep it for now. Ideas of how to solve this in future are centered around linking the doc type to the invoice recipient
-	  */
+	 * @return a pair consisting of invoice {@code DocSubType} and {@code POreference}.
+	 *         TODO the hardcoded way of getting the invoice's {@code DocSubType} from the XML is not cool, but I want to keep it for now. Ideas of how to solve this in future are centered around linking the doc type to the invoice recipient
+	 */
 	private IPair<String, String> createPOReference(final PayloadType payload)
 	{
 		final InvoiceType invoice = payload.getInvoice();
@@ -329,7 +366,24 @@ public class XmlToOLCandsService
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertBodyIntoBuilders(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-			@NonNull final BodyType body)
+			@NonNull final BodyType body,
+			@NonNull final HighLevelContext context)
+	{
+		final ImmutableList<JsonOLCandCreateRequestBuilder> //
+		invoiceRecipientBuilders = insertInsuranceAndBillerIntoBuilder(
+				requestBuilder,
+				getInsuranceAndBiller(body),
+				context);
+
+		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilders(
+				invoiceRecipientBuilders,
+				body.getServices(),
+				context);
+
+		return allBuilders;
+	}
+
+	private InsuranceAndBiller getInsuranceAndBiller(@NonNull final BodyType body)
 	{
 		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
 		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
@@ -338,65 +392,61 @@ public class XmlToOLCandsService
 				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
 				tiersGarantIsSet, tiersPayantIsSet);
 
-		final ImmutableList<JsonOLCandCreateRequestBuilder> invoiceRecipientBuilders;
 		if (tiersGarantIsSet)
 		{
-			invoiceRecipientBuilders = insertTiersGarantIntoBuilders(requestBuilder, body.getTiersGarant());
-		}
-		else // tiersPayantIsSet
-		{
-			invoiceRecipientBuilders = insertTiersPayantIntoBuilders(requestBuilder, body.getTiersPayant());
+			return new InsuranceAndBiller(
+					body.getTiersGarant().getInsurance(),
+					body.getTiersGarant().getBiller());
 		}
 
-		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilders(invoiceRecipientBuilders, body.getServices());
-
-		return allBuilders;
+		// tiersPayantIsSet
+		return new InsuranceAndBiller(
+				body.getTiersPayant().getInsurance(),
+				body.getTiersPayant().getBiller());
 	}
 
-	private ImmutableList<JsonOLCandCreateRequestBuilder> insertTiersGarantIntoBuilders(
+	private ImmutableList<JsonOLCandCreateRequestBuilder> insertInsuranceAndBillerIntoBuilder(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-			@NonNull final GarantType tiersGarant)
+			@NonNull final InsuranceAndBiller insuranceAndBiller,
+			@NonNull final HighLevelContext context)
 	{
-		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
-		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getInsurance()));
+		final JsonBPartnerInfo recipientBPartnerInfo = createJsonBPartnerInfo(
+				insuranceAndBiller.getInsurance(),
+				context);
 
-		insuranceBuilder.org(createBillerOrg(tiersGarant.getBiller()));
+		final JsonOrganization billerOrgInfo = createBillerOrg(
+				insuranceAndBiller.getBiller(),
+				context);
 
-		// despite having patient mater data in the XML, there is no point creating the master data in metasfresh;
-		// we can't invoice patients with the given XML
-		// final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
-		// patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getPatient()));
-		// patientBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getPatient()));
+		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder)
+				.bpartner(recipientBPartnerInfo)
+				.org(billerOrgInfo);
 
-		// todo: what about "Gemeinde"?
-
-		return ImmutableList.of(insuranceBuilder/* , patientBuilder */);
+		return ImmutableList.of(insuranceBuilder);
 	}
 
-	private JsonOrganization createBillerOrg(@NonNull final BillerAddressType biller)
+	@Value
+	private static class InsuranceAndBiller
+	{
+		@NonNull
+		final InsuranceAddressType insurance;
+
+		@NonNull
+		final BillerAddressType biller;
+	}
+
+	private JsonOrganization createBillerOrg(
+			@NonNull final BillerAddressType biller,
+			@NonNull final HighLevelContext context)
 	{
 		final JsonOrganization org = JsonOrganization
 				.builder()
+				.syncAdvise(context.getBillerSyncAdvise())
 				.code(createBPartnerExternalId(biller))
 				.name(createNameString(biller))
-				.bpartner(createJsonBPartnerInfo(biller))
+				.bpartner(createJsonBPartnerInfo(biller, context))
 				.build();
 		return org;
-	}
-
-	private ImmutableList<JsonOLCandCreateRequestBuilder> insertTiersPayantIntoBuilders(
-			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-			@NonNull final PayantType tiersPayant)
-	{
-		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
-		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getInsurance()));
-
-		insuranceBuilder.org(createBillerOrg(tiersPayant.getBiller()));
-
-		// despite having patient mater data in the XML, there is no point creating the master data in metasfresh;
-		// we can't invoice patients with the given XML
-
-		return ImmutableList.of(insuranceBuilder /* , patientBuilder */);
 	}
 
 	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final String docSubType)
@@ -407,31 +457,52 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final InsuranceAddressType insurance)
+	private JsonBPartnerInfo createJsonBPartnerInfo(
+			@NonNull final InsuranceAddressType insurance,
+			@NonNull final HighLevelContext context)
 	{
 		final CompanyType company = insurance.getCompany();
-		final String insuranceBPartnerExternalId = createBPartnerExternalId(insurance);
+		final String insuranceExternalId = createBPartnerExternalId(insurance);
+		final String recipientExternalId = createBPartnerExternalId(context.getInvoiceRecipientEAN());
 
-		final JsonBPartnerLocation location = createJsonBPartnerLocation(insuranceBPartnerExternalId, insurance.getEanParty(), company.getPostal());
-
-		final JsonBPartner bPartner = JsonBPartner
+		final JsonBPartnerBuilder bPartner = JsonBPartner
 				.builder()
-				.name(company.getCompanyname())
-				.externalId(insuranceBPartnerExternalId)
+				.externalId(recipientExternalId);
+
+		final JsonBPartnerInfoBuilder bPartnerInfo = createJsonBPartnerInfoBuilder();
+
+		if (recipientExternalId.equals(insuranceExternalId))
+		{
+			final JsonBPartnerLocation location = createJsonBPartnerLocation(
+					insuranceExternalId,
+					insurance.getEanParty(),
+					company.getPostal());
+			bPartner.name(company.getCompanyname());
+
+			return bPartnerInfo
+					.syncAdvise(context.getDebitorSyncAdvise())
+					.bpartner(bPartner.build())
+					.location(location)
+					.build();
+		}
+
+		// build a "sparse" bPartner that is only suitable for lookup, because we don't have the masterdata needed to insert or update
+		final JsonBPartnerLocation location = JsonBPartnerLocation.builder()
+				.gln(context.getInvoiceRecipientEAN())
+				.externalId(createLocationExternalId(recipientExternalId))
 				.build();
 
-		// final JsonBPartnerContact contact = createJsonBPartnerContact(insurance.getPerson());
-
-		final JsonBPartnerInfo bPartnerInfo = createJsonBPartnerInfoBuilder()
-				// .contact(contact)
-				.bpartner(bPartner)
+		return bPartnerInfo
+				.syncAdvise(SyncAdvise.READ_ONLY)
+				.bpartner(bPartner.build())
 				.location(location)
 				.build();
 
-		return bPartnerInfo;
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final BillerAddressType biller)
+	private JsonBPartnerInfo createJsonBPartnerInfo(
+			@NonNull final BillerAddressType biller,
+			@NonNull final HighLevelContext context)
 	{
 		final String name = createNameString(biller);
 
@@ -474,6 +545,7 @@ public class XmlToOLCandsService
 				.build();
 
 		final JsonBPartnerInfo bPartnerInfo = createJsonBPartnerInfoBuilder()
+				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartnerBuilder.build())
 				.contact(contact)
 				.location(location)
@@ -505,6 +577,11 @@ public class XmlToOLCandsService
 		return online.getEmail().get(0);
 	}
 
+	private String createBPartnerExternalId(@NonNull final String eanParty)
+	{
+		return "EAN-" + eanParty;
+	}
+
 	private String createBPartnerExternalId(@NonNull final InsuranceAddressType insurance)
 	{
 		return "EAN-" + insurance.getEanParty();
@@ -520,8 +597,6 @@ public class XmlToOLCandsService
 			@NonNull final String gln,
 			@NonNull final PostalAddressType postal)
 	{
-		final JsonBPartnerLocationBuilder builder = JsonBPartnerLocation.builder();
-
 		final String street = StringUtils.trim(postal.getStreet());
 		final String pobox = StringUtils.trim(postal.getPobox());
 		final String city = StringUtils.trim(postal.getCity());
@@ -529,6 +604,8 @@ public class XmlToOLCandsService
 		final ZipType zip = postal.getZip();
 		final String statecode = zip != null ? StringUtils.trim(zip.getStatecode()) : null;
 		final String countrycode = zip != null ? StringUtils.trim(zip.getCountrycode()) : null;
+
+		final JsonBPartnerLocationBuilder builder = JsonBPartnerLocation.builder();
 
 		if (!Check.isEmpty(street, true))
 		{
@@ -546,7 +623,7 @@ public class XmlToOLCandsService
 		}
 
 		final JsonBPartnerLocation location = builder
-				.externalId(bPartnerExternalId + "_singleAddress") // TODO
+				.externalId(createLocationExternalId(bPartnerExternalId)) // TODO
 				.city(city)
 				.postal(zip.getValue())
 				.state(statecode)
@@ -554,6 +631,11 @@ public class XmlToOLCandsService
 				.countryCode(coalesce(countrycode, "CH")) // TODO
 				.build();
 		return location;
+	}
+
+	private String createLocationExternalId(final String bPartnerExternalId)
+	{
+		return bPartnerExternalId + "_singleAddress";
 	}
 
 	private JsonBPartnerInfoBuilder createJsonBPartnerInfoBuilder()
@@ -570,14 +652,15 @@ public class XmlToOLCandsService
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServicesIntoBuilders(
 			@NonNull final ImmutableList<JsonOLCandCreateRequestBuilder> invoiceRecipientBuilders,
-			@NonNull final ServicesType services)
+			@NonNull final ServicesType services,
+			@NonNull final HighLevelContext context)
 	{
 		final ImmutableList.Builder<JsonOLCandCreateRequestBuilder> result = ImmutableList.builder();
 
 		final List<Object> records = services.getRecordTarmedOrRecordDrgOrRecordLab();
 		for (final Object record : records)
 		{
-			result.addAll(insertServiceRecordIntoBuilders(invoiceRecipientBuilders, record));
+			result.addAll(insertServiceRecordIntoBuilders(invoiceRecipientBuilders, record, context));
 		}
 
 		return result.build();
@@ -585,7 +668,8 @@ public class XmlToOLCandsService
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServiceRecordIntoBuilders(
 			@NonNull final ImmutableList<JsonOLCandCreateRequestBuilder> invoiceRecipientBuilders,
-			@NonNull final Object record)
+			@NonNull final Object record,
+			@NonNull final HighLevelContext context)
 	{
 		final ImmutableList.Builder<JsonOLCandCreateRequestBuilder> result = ImmutableList.builder();
 
@@ -600,7 +684,7 @@ public class XmlToOLCandsService
 				final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordTarmedType.getRecordId());
-				product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName());
+				product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName(), context);
 				price = recordTarmedType.getAmount();
 				quantity = ONE;
 			}
@@ -609,7 +693,7 @@ public class XmlToOLCandsService
 				final RecordDRGType recordDRGType = (RecordDRGType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
-				product = createProduct(recordDRGType.getCode(), recordDRGType.getName());
+				product = createProduct(recordDRGType.getCode(), recordDRGType.getName(), context);
 				price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
 				quantity = recordDRGType.getQuantity();
 			}
@@ -618,7 +702,7 @@ public class XmlToOLCandsService
 				final RecordLabType recordLabType = (RecordLabType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
-				product = createProduct(recordLabType.getCode(), recordLabType.getName());
+				product = createProduct(recordLabType.getCode(), recordLabType.getName(), context);
 				price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
 				quantity = recordLabType.getQuantity();
 			}
@@ -627,7 +711,7 @@ public class XmlToOLCandsService
 				final RecordMigelType recordMigelType = (RecordMigelType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
-				product = createProduct(recordMigelType.getCode(), recordMigelType.getName());
+				product = createProduct(recordMigelType.getCode(), recordMigelType.getName(), context);
 				price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
 				quantity = recordMigelType.getQuantity();
 			}
@@ -636,7 +720,7 @@ public class XmlToOLCandsService
 				final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
-				product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName());
+				product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName(), context);
 				price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
 				quantity = recordParamedOtherType.getQuantity();
 			}
@@ -645,7 +729,7 @@ public class XmlToOLCandsService
 				final RecordDrugType recordDrugType = (RecordDrugType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
-				product = createProduct(recordDrugType.getCode(), recordDrugType.getName());
+				product = createProduct(recordDrugType.getCode(), recordDrugType.getName(), context);
 				price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
 				quantity = recordDrugType.getQuantity();
 			}
@@ -654,7 +738,7 @@ public class XmlToOLCandsService
 				final RecordOtherType recordOtherType = (RecordOtherType)record;
 
 				externalLineId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
-				product = createProduct(recordOtherType.getCode(), recordOtherType.getName());
+				product = createProduct(recordOtherType.getCode(), recordOtherType.getName(), context);
 				price = createPrice(recordOtherType);
 				quantity = recordOtherType.getQuantity();
 
@@ -698,9 +782,11 @@ public class XmlToOLCandsService
 
 	private JsonProductInfo createProduct(
 			@NonNull final String productCode,
-			@NonNull final String productName)
+			@NonNull final String productName,
+			@NonNull final HighLevelContext context)
 	{
 		final JsonProductInfo product = JsonProductInfo.builder()
+				.syncAdvise(context.getProductsSyncAdvise())
 				.code(productCode)
 				.name(productName)
 				.type(Type.SERVICE)

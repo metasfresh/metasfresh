@@ -1,11 +1,10 @@
 package de.metas.bpartner.service;
 
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_BP_Group;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.ISingletonService;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_BP_Group;
 
 /*
  * #%L
@@ -34,6 +33,8 @@ public interface IBPGroupDAO extends ISingletonService
 	I_C_BP_Group getById(BPGroupId bpGroupId);
 
 	I_C_BP_Group getByBPartnerId(BPartnerId bpartnerId);
+
+	BPGroupId getBPGroupByBPartnerId(BPartnerId bpartnerId);
 
 	I_C_BP_Group getDefaultByClientId(ClientId clientId);
 }
