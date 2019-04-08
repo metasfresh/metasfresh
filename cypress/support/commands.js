@@ -142,7 +142,7 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
-Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
+Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) => {
   describe('Click on a checkbox field', function() {
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
@@ -150,7 +150,20 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
     cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
     cy.route('GET', '/rest/api/window/**').as('getData');
 
-    const aliasName = `writeIntoStringField-${new Date().getTime()}`;
+    //const aliasName = `clickOnCheckBox-${new Date().getTime()}`;
+    /*
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+    */
+
+    cy.log(
+      `clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`
+    );
+
+    //cy.server();
+    //cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
@@ -159,6 +172,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
     cy.get(path)
       .find('.input-checkbox-tick')
       .click()
+      .waitForFieldValue(`@patchCheckBox`, fieldName, expectedPatchValue);
       //.wait(['@patchCheckBox', '@getData']);
   });
 });
@@ -294,7 +308,8 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
     cy.contains('.input-dropdown-list-option', listValue)
       .click()
-      .wait('@patchListField');
+      //.wait('@patchListField');
+      .waitForFieldValue(`@patchListField`, fieldName, listValue);
   });
 });
 
