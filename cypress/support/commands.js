@@ -26,6 +26,7 @@
 
 // https://www.cypress.io/blog/2018/01/16/end-to-end-snapshot-testing/#End-to-end-snapshot-testing
 require('@cypress/snapshot').register();
+import 'cypress-plugin-snapshots/commands';
 
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';

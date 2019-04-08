@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "cypress-plugin-snapshots": "^1.2.6",
     "immutable": "^4.0.0-rc.12",
     "luxon": "^1.11.4",
     "moment": "^2.24.0",
