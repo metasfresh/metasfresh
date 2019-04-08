@@ -150,20 +150,10 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
     cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
     cy.route('GET', '/rest/api/window/**').as('getData');
 
-    //const aliasName = `clickOnCheckBox-${new Date().getTime()}`;
-    /*
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
-    */
-
     cy.log(
       `clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`
     );
 
-    //cy.server();
-    //cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
@@ -173,7 +163,6 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
       .find('.input-checkbox-tick')
       .click()
       .waitForFieldValue(`@patchCheckBox`, fieldName, expectedPatchValue);
-      //.wait(['@patchCheckBox', '@getData']);
   });
 });
 
@@ -243,7 +232,6 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
     cy.get(path)
       .find('textarea')
       .type(`${stringValue}{enter}`);
-    //.wait(`@${aliasName}`);
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
 });
@@ -308,7 +296,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
     cy.contains('.input-dropdown-list-option', listValue)
       .click()
-      //.wait('@patchListField');
       .waitForFieldValue(`@patchListField`, fieldName, listValue);
   });
 });
