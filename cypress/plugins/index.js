@@ -14,6 +14,7 @@
 const webpackPre = require('@cypress/webpack-preprocessor');
 const webpack = require('webpack');
 const { initPlugin } = require('cypress-plugin-snapshots/plugin');
+const task = require('cypress-skip-and-only-ui/task');
 
 module.exports = (on, config) => {
   const options = {
@@ -32,6 +33,7 @@ module.exports = (on, config) => {
 
   options.webpackOptions.plugins = opts;
   on('file:preprocessor', webpackPre(options));
+  on('task', task);
 
   initPlugin(on, config);
 
