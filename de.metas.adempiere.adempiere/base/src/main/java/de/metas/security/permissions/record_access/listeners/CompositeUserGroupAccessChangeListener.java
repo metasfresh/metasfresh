@@ -34,8 +34,13 @@ import lombok.ToString;
 @ToString
 public final class CompositeUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
-	public static final UserGroupAccessChangeListener of(final List<UserGroupAccessChangeListener> listeners)
+	public static final UserGroupAccessChangeListener of(@NonNull final List<UserGroupAccessChangeListener> listeners)
 	{
+		if (listeners.isEmpty())
+		{
+			return NullUserGroupAccessChangeListener.instance;
+		}
+
 		return new CompositeUserGroupAccessChangeListener(listeners);
 	}
 

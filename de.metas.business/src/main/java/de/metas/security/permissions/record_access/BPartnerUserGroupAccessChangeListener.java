@@ -63,7 +63,7 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 	}
 
 	@Override
-	public void setUserGroupRecordAccessService(UserGroupRecordAccessService service)
+	public void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
 	{
 		this.service = service;
 	}
