@@ -10,6 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.99
+## Features
+* metasfresh
+  * [#5024](https://github.com/metasfresh/metasfresh/issues/5024) REST API for sales invoice payment status
+  * [#5095](https://github.com/metasfresh/metasfresh/issues/5095) Enable set/unset of BPartner narcotics pharma permission
+  * [#5118](https://github.com/metasfresh/metasfresh/issues/5118) Tool to run all migration scripts from developer workspace
+
+* metasfresh-e2e
+  * [#16](https://github.com/metasfresh/metasfresh-e2e/issues/16) Make our custom input commands more stable
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#2214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214) input field value sometimes swallowed
+  * [#2237](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2237) Scrollbars missing in modal overlays
+
 # metasfresh 5.98
 ## Features
 * metasfresh 
