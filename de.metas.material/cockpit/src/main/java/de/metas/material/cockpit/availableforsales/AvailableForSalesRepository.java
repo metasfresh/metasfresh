@@ -43,7 +43,7 @@ public class AvailableForSalesRepository
 {
 	public AvailableForSalesMultiResult getBy(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
 	{
-		final IQuery<I_MD_Available_For_Sales_QueryResult>//
+		final IQuery<I_MD_Available_For_Sales_QueryResult> //
 		dbQuery = AvailableForSalesSqlHelper.createDBQueryForAvailableForSalesMultiQuery(availableForSalesMultiQuery);
 
 		final List<I_MD_Available_For_Sales_QueryResult> records = dbQuery.list();

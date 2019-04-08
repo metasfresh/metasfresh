@@ -275,7 +275,7 @@ public class AvailableForSalesUtil
 			final int productId = request.getProductId().getRepoId();
 			final AttributesKey storageAttributesKey = AttributesKeys
 					.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId())
-					.orElse(AttributesKey.NONE);
+					.orElse(AttributesKey.ALL);
 
 			final AvailableForSalesQuery availableForSalesQuery = AvailableForSalesQuery
 					.builder()

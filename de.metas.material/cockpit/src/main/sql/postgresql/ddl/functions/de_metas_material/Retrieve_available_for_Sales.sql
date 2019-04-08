@@ -18,12 +18,12 @@ RETURNS TABLE
 AS
 $BODY$
   SELECT 
-  	p_QueryNo, 
-	p_M_Product_ID, 
-	p_StorageAttributesKey,
-	QtyToBeShipped, 
-	QtyOnHandStock, 
-	stock.C_UOM_ID 
+    p_QueryNo, 
+    p_M_Product_ID, 
+    p_StorageAttributesKey,
+    QtyToBeShipped, 
+    QtyOnHandStock, 
+    stock.C_UOM_ID 
   FROM
   (
     SELECT 

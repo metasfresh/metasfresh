@@ -38,7 +38,7 @@ public class AvailableForSalesQuery
 
 	@Default
 	@NonNull
-	AttributesKey storageAttributesKey = AttributesKey.NONE;
+	AttributesKey storageAttributesKey = AttributesKey.ALL;
 
 	@NonNull
 	Instant dateOfInterest;
