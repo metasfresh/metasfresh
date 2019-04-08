@@ -76,18 +76,19 @@ export class RawWidget extends Component {
     const el = e.target;
 
     dispatch(disableShortcut());
-
     listenOnKeysFalse && listenOnKeysFalse();
 
-    this.setState(
-      {
-        isEdited: true,
-        cachedValue: el.value,
-      },
-      () => {
-        handleFocus && handleFocus();
-      }
-    );
+    setTimeout(() => {
+      this.setState(
+        {
+          isEdited: true,
+          cachedValue: el.value,
+        },
+        () => {
+          handleFocus && handleFocus();
+        }
+      );
+    }, 0);
   };
 
   handleBlur = (widgetField, value, id) => {
@@ -117,8 +118,13 @@ export class RawWidget extends Component {
   };
 
   handleKeyDown = (e, property, value) => {
+    const { lastFormField } = this.props;
+
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      e.preventDefault();
+      if (!lastFormField) {
+        e.preventDefault();
+      }
+
       return this.handlePatch(property, value);
     }
   };

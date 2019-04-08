@@ -23,7 +23,7 @@ describe('RawWidget component', () => {
           widgetData: [{ ...fixtures.longText.data1 }],
         },
       );
-
+ 
       const wrapper = shallow(<RawWidget {...props} />);
       const html = wrapper.html();
 
@@ -141,6 +141,8 @@ describe('RawWidget component', () => {
     });
 
     it('correct handlers/prop functions are called on focus/blur', () => {
+      jest.useFakeTimers();
+
       const patchSpy = jest.fn();
       const blurSpy = jest.fn();
       const focusSpy = jest.fn();
@@ -170,9 +172,10 @@ describe('RawWidget component', () => {
 
       wrapper.find('textarea')
         .prop('onFocus')({ target: { value: '' } });
+      jest.runAllTimers();
 
-      expect(focusSpy).toHaveBeenCalled();
       expect(handleFocusSpy).toHaveBeenCalled();
+      expect(focusSpy).toHaveBeenCalled();
       expect(listenOnKeysFalseSpy).toHaveBeenCalled();
 
       wrapper.find('textarea')
