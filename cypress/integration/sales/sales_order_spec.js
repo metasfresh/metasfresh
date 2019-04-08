@@ -1,5 +1,6 @@
 import { getBreadcrumbs } from '../../support/apiRequests';
 import { salesOrders } from '../../page_objects/sales_orders';
+import config from '../../config';
 
 describe('New sales order test', function() {
   const windowId = 143;
@@ -103,9 +104,64 @@ describe('New sales order test', function() {
         .find('input')
         .should('not.have.value', '0');
 
+      const aliasName = `@addProduct-${new Date().getTime()}`;
+      const patchUrlPattern = '/rest/api/window/.*$';
+      cy.server();
+      cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
+
       cy.get('.panel-modal-header')
         .find('.btn')
         .click();
+
+      cy.wait(aliasName);
+    });
+
+    it('Add new product via Batch Entry', function() {
+      const addNewText = Cypress.messages.window.batchEntry.caption;
+
+      cy.get('.tabs-wrapper .form-flex-align .btn')
+        .toMatchSnapshot()
+        .contains(addNewText)
+        .should('exist')
+        .click();
+
+      cy.get('.quick-input-container').should('exist');
+      cy.get('.quick-input-container').snapshot({ name: 'Empty Quick Inp' });
+
+      cy.get('#lookup_M_Product_ID')
+        .find('input')
+        .type('C');
+
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', 'Convenience Salat').click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+
+      cy.focused()
+        .should('have.value', 'IFCO 6410 x 10 Stk')
+        .type('{tab}');
+
+      cy.get('.form-field-Qty', { timeout: 12000 })
+        .find('.input-body-container.focused')
+        .should('exist')
+        .find('i')
+        .eq(0)
+        .click();
+
+      cy.get('.form-field-Qty')
+        .find('input')
+        .should('have.value', '0.1')
+        .type('1{enter}');
+
+      const aliasName = `addProduct-${new Date().getTime()}`;
+      const patchUrlPattern = '/rest/api/window/.*$';
+      cy.server();
+      cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
+
+      cy.get('#lookup_M_Product_ID')
+        .find('input')
+        .should('have.value', '');
+
+      cy.wait(aliasName);
     });
 
     it('Change document status', function() {
