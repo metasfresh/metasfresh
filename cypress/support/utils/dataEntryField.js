@@ -109,7 +109,13 @@ function applyDataEntryField(dataEntryField) {
     cy.writeIntoLookupListField('DataEntry_Line_ID', dataEntryField.dataEntryLine, dataEntryField.dataEntryLine);
 
     if (dataEntryField.seqNo) {
-      cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryField.seqNo}`);
+      cy.getFieldValue('SeqNo').then(currentValue => {
+        if (currentValue !== dataEntryField.seqNo) {
+          cy.log(`applyDataEntryField - dataEntryGroup.seqNo=${dataEntryField.seqNo}; currentValue=${currentValue}`);
+          cy.clearField('SeqNo');
+          cy.writeIntoStringField('SeqNo', `${dataEntryField.seqNo}`);
+        }
+      });
     }
     if (dataEntryField.description) {
       cy.writeIntoTextField('Description', dataEntryField.description);
@@ -144,7 +150,15 @@ function applyDataEntryListValue(dataEntryListValue) {
 
   cy.writeIntoStringField('Name', dataEntryListValue.name, true /*modal*/);
   if (dataEntryListValue.seqNo) {
-    cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryListValue.seqNo}`, true /*modal*/);
+    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+      cy.log(
+        `applyDataEntryListValue - dataEntryGroup.seqNo=${dataEntryListValue.seqNo}; currentValue=${currentValue}`
+      );
+      if (currentValue !== dataEntryListValue.seqNo) {
+        cy.clearField('SeqNo', true /*modal*/);
+        cy.writeIntoStringField('SeqNo', `${dataEntryListValue.seqNo}`, true /*modal*/);
+      }
+    });
   }
   if (dataEntryListValue.description) {
     cy.writeIntoTextField('Description', dataEntryListValue.description, true /*modal*/);
