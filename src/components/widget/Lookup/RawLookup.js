@@ -382,7 +382,7 @@ export class RawLookup extends Component {
         },
         () => {
           const q = this.state.query;
-          if (q.length > this.minQueryLength) {
+          if (q.length >= this.minQueryLength) {
             this.autocompleteSearchDebounced();
           }
         }
@@ -472,7 +472,7 @@ export class RawLookup extends Component {
       tetherProps.target = parentElement;
     }
 
-    if (query.length > this.minQueryLength) {
+    if (query.length >= this.minQueryLength) {
       showDropdown = true;
     }
 
