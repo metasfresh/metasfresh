@@ -150,6 +150,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
     cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
     cy.route('GET', '/rest/api/window/**').as('getData');
 
+    const aliasName = `writeIntoStringField-${new Date().getTime()}`;
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
