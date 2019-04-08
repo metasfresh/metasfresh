@@ -62,17 +62,16 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE", value = "Applied to the debitor only if it is the XML's insurance") //
+			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE", value = "To the biller this is always applied, but to the debitor it's applied only if the debitor is the XML's insurance") //
 			@RequestParam final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE", value = "Applied to the debitor only if it is the XML's insurance") //
+			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE", value = "To the biller this is always applied, but to the debitor it's applied only if the debitor is the XML's insurance") //
 			@RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifProductsExist,
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE") @RequestParam final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
-
 		final SyncAdvise bPartnerSyncAdvise = SyncAdvise.builder()
 				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
