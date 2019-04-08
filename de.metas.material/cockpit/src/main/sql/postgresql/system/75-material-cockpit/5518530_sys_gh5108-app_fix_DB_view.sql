@@ -25,6 +25,7 @@ FROM
         s_PreparationDate, 
         o_PreparationDate,
         ol.Updated AS SalesOrderLastUpdated
+
     from 
     ( 
         select ol.C_OrderLine_ID, 
@@ -37,7 +38,7 @@ FROM
         where o.IsSOTrx='Y' AND ol.Processed='N'
             AND ol.M_Product_ID = p.M_Product_ID
     ) ol
-    FULL OUTER JOIN (
+    full outer join (
         select s.C_OrderLine_ID, 
             s.M_AttributeSetInstance_ID, 
             s.PreparationDate_Override AS s_PreparationDate_Override, 
