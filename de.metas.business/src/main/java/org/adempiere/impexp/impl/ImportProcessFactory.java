@@ -35,7 +35,14 @@ import org.adempiere.impexp.inventory.InventoryImportProcess;
 import org.adempiere.impexp.product.ProductImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.*;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.I_I_BPartner_GlobalID;
+import org.compiere.model.I_I_DiscountSchema;
+import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_I_Postal;
+import org.compiere.model.I_I_Product;
+import org.compiere.model.I_I_Request;
+import org.compiere.model.I_I_User;
 
 import com.google.common.base.Supplier;
 
