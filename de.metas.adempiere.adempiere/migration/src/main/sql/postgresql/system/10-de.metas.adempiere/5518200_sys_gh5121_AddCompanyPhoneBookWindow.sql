@@ -1,3 +1,8 @@
+-- 2019-04-05T11:07:12.488
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576561,0,TO_TIMESTAMP('2019-04-05 11:07:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Firmenverzeichnis','Firmenverzeichnis',TO_TIMESTAMP('2019-04-05 11:07:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
 -- 2019-04-05T11:07:12.497
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=576561 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
@@ -80,7 +85,7 @@ UPDATE AD_Menu SET   Name = 'Company Phone Book', Description = NULL, WEBUI_Name
 
 -- 2019-04-05T11:09:07.621
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsOneInstanceOnly,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth) VALUES (0,576561,0,540617,TO_TIMESTAMP('2019-04-05 11:09:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ke123','Y','N','N','N','N','Y','Company Phone Book','N',TO_TIMESTAMP('2019-04-05 11:09:07','YYYY-MM-DD HH24:MI:SS'),100,'M',0,0)
+INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsOneInstanceOnly,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth) VALUES (0,576561,0,540617,TO_TIMESTAMP('2019-04-05 11:09:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','Y','Company Phone Book','N',TO_TIMESTAMP('2019-04-05 11:09:07','YYYY-MM-DD HH24:MI:SS'),100,'M',0,0)
 ;
 
 -- 2019-04-05T11:09:07.627
@@ -110,12 +115,12 @@ INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Na
 
 -- 2019-04-05T11:09:54.498
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Tab SET EntityType='de.metas.ke123',Updated=TO_TIMESTAMP('2019-04-05 11:09:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541699
+UPDATE AD_Tab SET EntityType='D',Updated=TO_TIMESTAMP('2019-04-05 11:09:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541699
 ;
 
 -- 2019-04-05T11:10:10.037
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,212,578447,0,541699,TO_TIMESTAMP('2019-04-05 11:10:09','YYYY-MM-DD HH24:MI:SS'),100,'User within the system - Internal or Business Partner Contact',22,'de.metas.ke123','The User identifies a unique user in the system. This could be an internal user or a business partner contact','Y','N','N','N','N','N','N','N','Ansprechpartner',TO_TIMESTAMP('2019-04-05 11:10:09','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,212,578447,0,541699,TO_TIMESTAMP('2019-04-05 11:10:09','YYYY-MM-DD HH24:MI:SS'),100,'User within the system - Internal or Business Partner Contact',22,'D','The User identifies a unique user in the system. This could be an internal user or a business partner contact','Y','N','N','N','N','N','N','N','Ansprechpartner',TO_TIMESTAMP('2019-04-05 11:10:09','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.052
@@ -125,7 +130,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.167
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,213,578448,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'',60,'de.metas.ke123','','Y','N','N','N','N','N','N','N','Name',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,213,578448,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'',60,'D','','Y','N','N','N','N','N','N','N','Name',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.171
@@ -135,7 +140,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.270
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,214,578449,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Beschreibung',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,214,578449,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,255,'D','Y','N','N','N','N','N','N','N','Beschreibung',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.273
@@ -145,7 +150,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.381
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,417,578450,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'',255,'de.metas.ke123','The Password for this User.  Passwords are required to identify authorized users.  For metasfresh Users, you can change the password via the Process "Reset Password".','Y','N','N','N','N','N','N','N','Kennwort',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,417,578450,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'',255,'D','The Password for this User.  Passwords are required to identify authorized users.  For metasfresh Users, you can change the password via the Process "Reset Password".','Y','N','N','N','N','N','N','N','Kennwort',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.391
@@ -155,7 +160,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.494
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,422,578451,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Client/Tenant for this installation.',22,'de.metas.ke123','A Client is a company or a legal entity. You cannot share data between Clients. Tenant is a synonym for Client.','Y','N','N','N','N','N','N','N','Mandant',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,422,578451,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Client/Tenant for this installation.',22,'D','A Client is a company or a legal entity. You cannot share data between Clients. Tenant is a synonym for Client.','Y','N','N','N','N','N','N','N','Mandant',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.498
@@ -165,7 +170,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.602
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,423,578452,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten',22,'de.metas.ke123','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,423,578452,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten',22,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.603
@@ -175,7 +180,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.695
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,622,578453,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'The record is active in the system',1,'de.metas.ke123','There are two methods of making records unavailable in the system: One is to delete the record, the other is to de-activate the record. A de-activated record is not available for selection, but available for reports.
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,622,578453,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'The record is active in the system',1,'D','There are two methods of making records unavailable in the system: One is to delete the record, the other is to de-activate the record. A de-activated record is not available for selection, but available for reports.
 There are two reasons for de-activating and not deleting records:
 (1) The system requires the record for audit purposes.
 (2) The record is referenced by other records. E.g., you cannot delete a Business Partner, if there are invoices for this partner record existing. You de-activate the Business Partner and prevent that this record is used for future entries.','Y','N','N','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
@@ -188,7 +193,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.794
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,5396,578454,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',200,'de.metas.ke123','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.','Y','N','N','N','N','N','N','N','eMail',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,5396,578454,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',200,'D','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.','Y','N','N','N','N','N','N','N','eMail',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.795
@@ -198,7 +203,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:10.896
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,5397,578455,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Supervisor for this user/organization - used for escalation and approval',22,'de.metas.ke123','The Supervisor indicates who will be used for forwarding and escalating issues for this user - or for approvals.','Y','N','N','N','N','N','N','N','Vorgesetzter',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,5397,578455,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Supervisor for this user/organization - used for escalation and approval',22,'D','The Supervisor indicates who will be used for forwarding and escalating issues for this user - or for approvals.','Y','N','N','N','N','N','N','N','Vorgesetzter',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:10.899
@@ -208,7 +213,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.004
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,5844,578456,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Identifies a Business Partner',22,'de.metas.ke123','A Business Partner is anyone with whom you transact.  This can include Vendor, Customer, Employee or Salesperson','Y','N','N','N','N','N','N','N','Geschäftspartner',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,5844,578456,0,541699,TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100,'Identifies a Business Partner',22,'D','A Business Partner is anyone with whom you transact.  This can include Vendor, Customer, Employee or Salesperson','Y','N','N','N','N','N','N','N','Geschäftspartner',TO_TIMESTAMP('2019-04-05 11:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.007
@@ -218,7 +223,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.113
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,6314,578457,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Verarbeiten',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,6314,578457,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Verarbeiten',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.118
@@ -228,7 +233,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.221
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,7793,578458,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'User Name (ID) in the Mail System',60,'de.metas.ke123','The user name in the mail system is usually the string before the @ of your email address.  Required if the mail server requires authentification to send emails.','Y','N','N','N','N','N','N','N','EMail Nutzer-ID',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,7793,578458,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'User Name (ID) in the Mail System',60,'D','The user name in the mail system is usually the string before the @ of your email address.  Required if the mail server requires authentification to send emails.','Y','N','N','N','N','N','N','N','EMail Nutzer-ID',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.223
@@ -238,7 +243,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.319
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,7794,578459,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Passwort Ihrer EMail Nutzer-ID',20,'de.metas.ke123','Notwendig, wenn der EMail-Server eine Anmeldung vor dem Versenden von EMails verlangt.','Y','N','N','N','N','N','N','N','Passwort EMail-Nutzer',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,7794,578459,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Passwort Ihrer EMail Nutzer-ID',20,'D','Notwendig, wenn der EMail-Server eine Anmeldung vor dem Versenden von EMails verlangt.','Y','N','N','N','N','N','N','N','Passwort EMail-Nutzer',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.320
@@ -248,7 +253,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.418
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8743,578460,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Anrede zum Druck auf Korrespondenz',22,'de.metas.ke123','Anrede, die beim Druck auf Korrespondenz verwendet werden soll.','Y','N','N','N','N','N','N','N','Anrede (ID)',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8743,578460,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Anrede zum Druck auf Korrespondenz',22,'D','Anrede, die beim Druck auf Korrespondenz verwendet werden soll.','Y','N','N','N','N','N','N','N','Anrede (ID)',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.422
@@ -258,7 +263,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.516
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8744,578461,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Alternative Mobile Telefonnummer',40,'de.metas.ke123','"Telfon (alternativ)" gibt eine weitere Telefonnummer an.','Y','N','N','N','N','N','N','N','Mobil',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8744,578461,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Alternative Mobile Telefonnummer',40,'D','"Telfon (alternativ)" gibt eine weitere Telefonnummer an.','Y','N','N','N','N','N','N','N','Mobil',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.518
@@ -268,7 +273,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.616
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8745,578462,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Birthday or Anniversary day',7,'de.metas.ke123','Birthday or Anniversary day','Y','N','N','N','N','N','N','N','Geburtstag',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8745,578462,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Birthday or Anniversary day',7,'D','Birthday or Anniversary day','Y','N','N','N','N','N','N','N','Geburtstag',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.618
@@ -278,7 +283,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.707
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8746,578463,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Identifies the (ship to) address for this Business Partner',22,'de.metas.ke123','The Partner address indicates the location of a Business Partner','Y','N','N','N','N','N','N','N','Standort',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8746,578463,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Identifies the (ship to) address for this Business Partner',22,'D','The Partner address indicates the location of a Business Partner','Y','N','N','N','N','N','N','N','Standort',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.711
@@ -288,7 +293,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.821
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8747,578464,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Beschreibt eine Telefon Nummer',40,'de.metas.ke123','Beschreibt eine Telefon Nummer','Y','N','N','N','N','N','N','N','Telefon',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8747,578464,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Beschreibt eine Telefon Nummer',40,'D','Beschreibt eine Telefon Nummer','Y','N','N','N','N','N','N','N','Telefon',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.824
@@ -298,7 +303,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:11.915
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8748,578465,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Facsimile number',40,'de.metas.ke123','The Fax identifies a facsimile number for this Business Partner or  Location','Y','N','N','N','N','N','N','N','Fax',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8748,578465,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Facsimile number',40,'D','The Fax identifies a facsimile number for this Business Partner or  Location','Y','N','N','N','N','N','N','N','Fax',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:11.919
@@ -308,7 +313,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.022
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8751,578466,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Name this entity is referred to as',40,'de.metas.ke123','The Title indicates the name that an entity is referred to as.','Y','N','N','N','N','N','N','N','Titel',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8751,578466,0,541699,TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100,'Name this entity is referred to as',40,'D','The Title indicates the name that an entity is referred to as.','Y','N','N','N','N','N','N','N','Titel',TO_TIMESTAMP('2019-04-05 11:10:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.025
@@ -318,7 +323,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.126
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8752,578467,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Comments or additional information',2000,'de.metas.ke123','The Comments field allows for free form entry of additional information.','Y','N','N','N','N','N','N','N','Bemerkungen',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8752,578467,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Comments or additional information',2000,'D','The Comments field allows for free form entry of additional information.','Y','N','N','N','N','N','N','N','Bemerkungen',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.129
@@ -328,7 +333,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.244
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8976,578468,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Performing or initiating organization',22,'de.metas.ke123','The organization which performs or initiates this transaction (for another organization).  The owning Organization may not be the transaction organization in a service bureau environment, with centralized services, and inter-organization transactions.','Y','N','N','N','N','N','N','N','Buchende Organisation',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,8976,578468,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Performing or initiating organization',22,'D','The organization which performs or initiates this transaction (for another organization).  The owning Organization may not be the transaction organization in a service bureau environment, with centralized services, and inter-organization transactions.','Y','N','N','N','N','N','N','N','Buchende Organisation',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.248
@@ -338,7 +343,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.350
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,9884,578469,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Verification information of EMail Address',40,'de.metas.ke123','The field contains additional information how the EMail Address has been verified','Y','N','N','N','N','N','N','N','Überprüfung EMail',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,9884,578469,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Verification information of EMail Address',40,'D','The field contains additional information how the EMail Address has been verified','Y','N','N','N','N','N','N','N','Überprüfung EMail',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.353
@@ -348,7 +353,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.458
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,13600,578470,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Date Email was verified',7,'de.metas.ke123','Y','N','N','N','N','N','N','N','EMail überprüft',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,13600,578470,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Date Email was verified',7,'D','Y','N','N','N','N','N','N','N','EMail überprüft',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.462
@@ -358,7 +363,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.563
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,13773,578471,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Type of Notifications',1,'de.metas.ke123','Emails or Notification sent out for Request Updates, etc.','Y','N','N','N','N','N','N','N','Benachrichtigungs-Art',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,13773,578471,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Type of Notifications',1,'D','Emails or Notification sent out for Request Updates, etc.','Y','N','N','N','N','N','N','N','Benachrichtigungs-Art',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.565
@@ -368,7 +373,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.662
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,14336,578472,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'The user/contact has full access to Business Partner information and resources',1,'de.metas.ke123','If selected, the user has full access to the Business Partner (BP) information (Business Documents like Orders, Invoices - Requests) or resources (Assets, Downloads). If you deselet it, the user has no access rights unless, you explicitly grant it in tab "BP Access"','Y','N','N','N','N','N','N','N','Full BP Access',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,14336,578472,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'The user/contact has full access to Business Partner information and resources',1,'D','If selected, the user has full access to the Business Partner (BP) information (Business Documents like Orders, Invoices - Requests) or resources (Assets, Downloads). If you deselet it, the user has no access rights unless, you explicitly grant it in tab "BP Access"','Y','N','N','N','N','N','N','N','Full BP Access',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.666
@@ -378,7 +383,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.758
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,14396,578473,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Job Position',1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Position',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,14396,578473,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Job Position',1,'D','Y','N','N','N','N','N','N','N','Position',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.760
@@ -388,7 +393,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.854
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,14619,578474,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'How a Java Client connects to the server(s)',1,'de.metas.ke123','Depending on the connection profile, different protocols are used and tasks are performed on the server rather then the client. Usually the user can select different profiles, unless it is enforced by the User or Role definition. The User level profile overwrites the Role based profile.','Y','N','N','N','N','N','N','N','Verbindungsart',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,14619,578474,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'How a Java Client connects to the server(s)',1,'D','Depending on the connection profile, different protocols are used and tasks are performed on the server rather then the client. Usually the user can select different profiles, unless it is enforced by the User or Role definition. The User level profile overwrites the Role based profile.','Y','N','N','N','N','N','N','N','Verbindungsart',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:12.858
@@ -398,7 +403,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:12.963
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,15975,578475,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Search key for the record in the format required - must be unique',40,'de.metas.ke123','A search key allows you a fast method of finding a particular record.
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,15975,578475,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Search key for the record in the format required - must be unique',40,'D','A search key allows you a fast method of finding a particular record.
 If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).','Y','N','N','N','N','N','N','N','Suchschlüssel',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
@@ -409,7 +414,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.058
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,52066,578476,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,20,'de.metas.ke123','Y','N','N','N','N','N','N','N','Benutzer PIN',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,52066,578476,0,541699,TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100,20,'D','Y','N','N','N','N','N','N','N','Benutzer PIN',TO_TIMESTAMP('2019-04-05 11:10:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.061
@@ -419,7 +424,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.156
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,56294,578477,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,'Defined if any User Contact will be used for Calculate Payroll',1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Is In Payroll',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,56294,578477,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,'Defined if any User Contact will be used for Calculate Payroll',1,'D','Y','N','N','N','N','N','N','N','Is In Payroll',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.160
@@ -429,7 +434,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.264
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,59918,578478,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,40,'de.metas.ke123','Y','N','N','N','N','N','N','N','Code für Passwort-Änderung',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,59918,578478,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,40,'D','Y','N','N','N','N','N','N','N','Code für Passwort-Änderung',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.267
@@ -439,7 +444,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.375
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,500036,578479,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Standard-Ansprechpartner',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,500036,578479,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Standard-Ansprechpartner',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.379
@@ -449,7 +454,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.482
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541639,578480,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,'Included Tab in this Tab (Master Dateail)',1,'de.metas.ke123','You can include a Tab in a Tab. If displayed in single row record, the included tab is displayed as multi-row table.','Y','N','N','N','N','N','N','N','Included Tab',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541639,578480,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,'Included Tab in this Tab (Master Dateail)',1,'D','You can include a Tab in a Tab. If displayed in single row record, the included tab is displayed as multi-row table.','Y','N','N','N','N','N','N','N','Included Tab',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.485
@@ -459,7 +464,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.582
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541683,578481,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Nachname',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541683,578481,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,255,'D','Y','N','N','N','N','N','N','N','Nachname',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.583
@@ -469,7 +474,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.675
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541684,578482,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,'Vorname',255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Vorname',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541684,578482,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,'Vorname',255,'D','Y','N','N','N','N','N','N','N','Vorname',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.677
@@ -479,7 +484,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.777
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541897,578483,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','IsSubjectMatterContact',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541897,578483,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','IsSubjectMatterContact',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.779
@@ -489,7 +494,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.862
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541898,578484,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','IsSalesContact',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,541898,578484,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','IsSalesContact',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.864
@@ -499,7 +504,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:13.968
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542511,578485,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,100,'de.metas.ke123','Y','N','N','N','N','N','N','N','Handynummer',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542511,578485,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,100,'D','Y','N','N','N','N','N','N','N','Handynummer',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:13.972
@@ -509,7 +514,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.080
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542512,578486,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Kontakt Einschränkung',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542512,578486,0,541699,TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Kontakt Einschränkung',TO_TIMESTAMP('2019-04-05 11:10:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.081
@@ -519,7 +524,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.174
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542513,578487,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Begründung',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542513,578487,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,255,'D','Y','N','N','N','N','N','N','N','Begründung',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.177
@@ -529,7 +534,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.284
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542515,578488,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,40,'de.metas.ke123','Y','N','N','N','N','N','N','N','Portalpasswort',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,542515,578488,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,40,'D','Y','N','N','N','N','N','N','N','Portalpasswort',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.287
@@ -539,7 +544,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.395
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543402,578489,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,7,'de.metas.ke123','Y','N','N','N','N','N','N','N','Löschdatum',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543402,578489,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,7,'D','Y','N','N','N','N','N','N','N','Löschdatum',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.398
@@ -549,7 +554,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.503
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543407,578490,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Handelsregister',255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Handelsregister',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543407,578490,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Handelsregister',255,'D','Y','N','N','N','N','N','N','N','Handelsregister',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.506
@@ -559,7 +564,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.610
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543410,578491,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Anzahl Login Fehlversuche',2,'de.metas.ke123','Y','N','N','N','N','N','N','N','Anzahl Login Fehlversuche',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543410,578491,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Anzahl Login Fehlversuche',2,'D','Y','N','N','N','N','N','N','N','Anzahl Login Fehlversuche',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.611
@@ -569,7 +574,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.704
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543411,578492,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Kennzeichen das anzeigt ob der Zugang gesperrt wurde',1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Zugang gesperrt',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543411,578492,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Kennzeichen das anzeigt ob der Zugang gesperrt wurde',1,'D','Y','N','N','N','N','N','N','N','Zugang gesperrt',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.706
@@ -579,7 +584,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.791
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543412,578493,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Client IP address that was used when this account was locked ',20,'de.metas.ke123','Y','N','N','N','N','N','N','N','Sperrung von IP',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543412,578493,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Client IP address that was used when this account was locked ',20,'D','Y','N','N','N','N','N','N','N','Sperrung von IP',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.793
@@ -589,7 +594,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.885
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543413,578494,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Datum Login Fehler',20,'de.metas.ke123','Y','N','N','N','N','N','N','N','Datum Login Fehler',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543413,578494,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Datum Login Fehler',20,'D','Y','N','N','N','N','N','N','N','Datum Login Fehler',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.887
@@ -599,7 +604,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:14.983
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543414,578495,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Button that will call a process to unlock current selected account',15,'de.metas.ke123','Y','N','N','N','N','N','N','N','Zugang entsperren',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,543414,578495,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Button that will call a process to unlock current selected account',15,'D','Y','N','N','N','N','N','N','N','Zugang entsperren',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:14.985
@@ -609,7 +614,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.076
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,548983,578496,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Used for login. See Help.',255,'de.metas.ke123','task 04259','Y','N','N','N','N','N','N','N','Login',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,548983,578496,0,541699,TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100,'Used for login. See Help.',255,'D','task 04259','Y','N','N','N','N','N','N','N','Login',TO_TIMESTAMP('2019-04-05 11:10:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.078
@@ -619,7 +624,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.183
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,549001,578497,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Systembenutzer',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,549001,578497,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Systembenutzer',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.186
@@ -629,7 +634,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.284
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,549129,578498,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,'When data is imported from a an external datasource, this element can be used to identify the data record',255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Migration_Key',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,549129,578498,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,'When data is imported from a an external datasource, this element can be used to identify the data record',255,'D','Y','N','N','N','N','N','N','N','Migration_Key',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.287
@@ -639,7 +644,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.394
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,549866,578499,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Weihnachtsgeschenk',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,549866,578499,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Weihnachtsgeschenk',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.397
@@ -649,7 +654,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.500
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,550221,578500,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Einkaufskontakt',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,550221,578500,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Einkaufskontakt',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.503
@@ -659,7 +664,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.616
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551164,578501,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Weihnachtsgeschenk',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551164,578501,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Weihnachtsgeschenk',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.617
@@ -669,7 +674,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.718
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,552868,578502,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,'Person, die bei einem fachlichen Problem vom System informiert wird.',10,'de.metas.ke123','Y','N','N','N','N','N','N','N','Betreuer',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,552868,578502,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,'Person, die bei einem fachlichen Problem vom System informiert wird.',10,'D','Y','N','N','N','N','N','N','N','Betreuer',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.722
@@ -679,7 +684,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.815
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,554318,578503,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,'Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann',1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Mengenmeldung App',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,554318,578503,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,'Entscheidet, ob sich der betreffende Nutzer, sofern eine Mail-Adresse und eine Liefervereinbarung hinterlegt ist, bei der Mengenmeldung-WebUI anmelden kann',1,'D','Y','N','N','N','N','N','N','N','Mengenmeldung App',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.817
@@ -689,7 +694,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:15.908
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,554399,578504,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Login As HostKey ',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,554399,578504,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Login As HostKey ',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:15.912
@@ -699,7 +704,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.006
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,555109,578505,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Rechnung per eMail',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,555109,578505,0,541699,TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Rechnung per eMail',TO_TIMESTAMP('2019-04-05 11:10:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.009
@@ -709,7 +714,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.114
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556073,578506,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','IsSalesContact_Default',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556073,578506,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','IsSalesContact_Default',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.115
@@ -719,7 +724,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.222
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556074,578507,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','IsPurchaseContact_Default',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556074,578507,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','IsPurchaseContact_Default',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.226
@@ -729,7 +734,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.334
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556333,578508,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Bei einem automatischer Druck über das "Massendruck" Framework ist nicht der eigenentlich druckende Nutzer, sondern der jeweils als Druck-Empfänger eingerichtete Nutzer der Empfänger der Druckstücke.',10,'de.metas.ke123','Der eigenentlich druckende Nutzer braucht somit keine Druck-Konfiguration.','Y','N','N','N','N','N','N','N','Druck-Empfänger',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556333,578508,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Bei einem automatischer Druck über das "Massendruck" Framework ist nicht der eigenentlich druckende Nutzer, sondern der jeweils als Druck-Empfänger eingerichtete Nutzer der Empfänger der Druckstücke.',10,'D','Der eigenentlich druckende Nutzer braucht somit keine Druck-Konfiguration.','Y','N','N','N','N','N','N','N','Druck-Empfänger',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.337
@@ -739,7 +744,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.440
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556869,578509,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Sprache für diesen Eintrag',6,'de.metas.ke123','Definiert die Sprache für Anzeige und Aufbereitung','Y','N','N','N','N','N','N','N','Sprache',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556869,578509,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Sprache für diesen Eintrag',6,'D','Definiert die Sprache für Anzeige und Aufbereitung','Y','N','N','N','N','N','N','N','Sprache',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.442
@@ -749,7 +754,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.537
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556870,578510,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.ke123','Y','N','N','N','N','N','N','N','Avatar',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556870,578510,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Avatar',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.538
@@ -759,7 +764,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.638
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557164,578511,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Rechnungskontakt',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557164,578511,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Rechnungskontakt',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.640
@@ -769,7 +774,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.737
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557165,578512,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Lieferkontakt',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557165,578512,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Lieferkontakt',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.740
@@ -779,7 +784,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.836
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,559263,578513,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Template or container uses news channels',1,'de.metas.ke123','This content (container or template) uses news channels','Y','N','N','N','N','N','N','N','Uses News',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,559263,578513,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,'Template or container uses news channels',1,'D','This content (container or template) uses news channels','Y','N','N','N','N','N','N','N','Uses News',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.839
@@ -789,7 +794,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:16.944
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,559598,578514,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,100,'de.metas.ke123','Y','N','N','N','N','N','N','N','Position',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,559598,578514,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,100,'D','Y','N','N','N','N','N','N','N','Position',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:16.947
@@ -799,7 +804,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.051
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560058,578515,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Newsletter',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560058,578515,0,541699,TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Newsletter',TO_TIMESTAMP('2019-04-05 11:10:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.054
@@ -809,7 +814,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.159
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560071,578516,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Entscheider',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560071,578516,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Entscheider',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.163
@@ -819,7 +824,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.254
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560072,578517,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Geschäftsführer ',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560072,578517,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Geschäftsführer ',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.255
@@ -829,7 +834,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.356
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560073,578518,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,1,'de.metas.ke123','Y','N','N','N','N','N','N','N','Multiplikator',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560073,578518,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Multiplikator',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.358
@@ -839,7 +844,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.447
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560150,578519,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,'Memo Text',5000,'de.metas.ke123','Y','N','N','N','N','N','N','N','Memo',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560150,578519,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,'Memo Text',5000,'D','Y','N','N','N','N','N','N','N','Memo',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.450
@@ -849,7 +854,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.550
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560677,578520,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,255,'de.metas.ke123','Y','N','N','N','N','N','N','N','Passwort in Mengenmeldung App',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560677,578520,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,255,'D','Y','N','N','N','N','N','N','N','Passwort in Mengenmeldung App',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.553
@@ -859,7 +864,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-05T11:10:17.649
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560990,578521,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,255,'de.metas.ke123','Y','N','N','N','N','N','N','N','External ID',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,560990,578521,0,541699,TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100,255,'D','Y','N','N','N','N','N','N','N','External ID',TO_TIMESTAMP('2019-04-05 11:10:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T11:10:17.650
@@ -1634,7 +1639,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=578458
 
 -- 2019-04-05T11:23:07.590
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse,WEBUI_NameNew) VALUES ('W',0,576561,541234,0,540617,TO_TIMESTAMP('2019-04-05 11:23:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ke123','Company Phone Book','Y','Y','N','N','N','Company Phone Book',TO_TIMESTAMP('2019-04-05 11:23:07','YYYY-MM-DD HH24:MI:SS'),100,'Company Phone Book','Company Phone Book')
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse,WEBUI_NameNew) VALUES ('W',0,576561,541234,0,540617,TO_TIMESTAMP('2019-04-05 11:23:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Company Phone Book','Y','Y','N','N','N','Company Phone Book',TO_TIMESTAMP('2019-04-05 11:23:07','YYYY-MM-DD HH24:MI:SS'),100,'Company Phone Book','Company Phone Book')
 ;
 
 -- 2019-04-05T11:23:07.601
@@ -4004,7 +4009,7 @@ UPDATE AD_UI_ElementGroup SET UIStyle='',Updated=TO_TIMESTAMP('2019-04-05 11:37:
 
 -- 2019-04-05T12:25:55.674
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576562,0,'IsActivePartner',TO_TIMESTAMP('2019-04-05 12:25:55','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ke123','Y','Aktiv','Aktiv',TO_TIMESTAMP('2019-04-05 12:25:55','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576562,0,'IsActivePartner',TO_TIMESTAMP('2019-04-05 12:25:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Aktiv','Aktiv',TO_TIMESTAMP('2019-04-05 12:25:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T12:25:55.677
@@ -4014,7 +4019,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2019-04-05T12:26:08.919
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Reference_ID,DefaultValue,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,ColumnSQL,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,AD_Element_ID,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,EntityType,ColumnName,IsAutoApplyValidationRule,Name) VALUES (20,'N',1,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-04-05 12:26:08','YYYY-MM-DD HH24:MI:SS'),100,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2019-04-05 12:26:08','YYYY-MM-DD HH24:MI:SS'),100,'N','Y',114,'N',567635,'N','N','N','N','N','N','(select IsActive from C_BPartner bp where bp.C_BPartner_ID = AD_User.C_BPartner_ID)','N','N',0,0,576562,'N','N','de.metas.ke123','IsActivePartner','N','Aktiv')
+INSERT INTO AD_Column (AD_Reference_ID,DefaultValue,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,ColumnSQL,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,AD_Element_ID,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,EntityType,ColumnName,IsAutoApplyValidationRule,Name) VALUES (20,'N',1,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-04-05 12:26:08','YYYY-MM-DD HH24:MI:SS'),100,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2019-04-05 12:26:08','YYYY-MM-DD HH24:MI:SS'),100,'N','Y',114,'N',567635,'N','N','N','N','N','N','(select IsActive from C_BPartner bp where bp.C_BPartner_ID = AD_User.C_BPartner_ID)','N','N',0,0,576562,'N','N','D','IsActivePartner','N','Aktiv')
 ;
 
 -- 2019-04-05T12:26:08.939
@@ -4024,7 +4029,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-04-05T12:26:33.305
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,567635,578523,0,541699,0,TO_TIMESTAMP('2019-04-05 12:26:33','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.ke123',0,'Y','Y','Y','N','N','N','N','N','Aktiv',20,20,0,1,1,TO_TIMESTAMP('2019-04-05 12:26:33','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,567635,578523,0,541699,0,TO_TIMESTAMP('2019-04-05 12:26:33','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Aktiv',20,20,0,1,1,TO_TIMESTAMP('2019-04-05 12:26:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-05T12:26:33.307
