@@ -15,7 +15,7 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -566389782L;
+	private static final long serialVersionUID = -235112829L;
 
     /** Standard Constructor */
     public X_CS_Creditpass_Config (Properties ctx, int CS_Creditpass_Config_ID, String trxName)
@@ -65,26 +65,26 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 		return (java.lang.String)get_Value(COLUMNNAME_AuthId);
 	}
 
-	/** Set CS Creditpass Configuration.
-		@param CS_Creditpass_Config_ID CS Creditpass Configuration	  */
+	/** Get Creditpass Einstellung.
+		@return Creditpass Einstellung	  */
 	@Override
-	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
-	{
-		if (CS_Creditpass_Config_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
-	}
-
-	/** Get CS Creditpass Configuration.
-		@return CS Creditpass Configuration	  */
-	@Override
-	public int getCS_Creditpass_Config_ID () 
+	public int getCS_Creditpass_Config_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Creditpass Einstellung.
+		@param CS_Creditpass_Config_ID Creditpass Einstellung	  */
+	@Override
+	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
+	{
+		if (CS_Creditpass_Config_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
 	}
 
 	/** 
@@ -222,5 +222,27 @@ public class X_CS_Creditpass_Config extends org.compiere.model.PO implements I_C
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
 	}
 }

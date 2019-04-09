@@ -378,16 +378,25 @@ public class GridField
 			return false;
 
 		// Numeric Keys and Created/Updated as well as
-		// DocumentNo/Value/ASI ars not mandatory (persistency layer manages them)
+		// ASI/Created/Updated are not mandatory (persistence layer manages them)
 		if (m_gridTab != null &&  // if gridtab doesn't exist then it's not a window field (probably a process parameter field)
 				((m_vo.IsKey && m_vo.getColumnName().endsWith("_ID"))
 						|| m_vo.getColumnName().startsWith("Created") || m_vo.getColumnName().startsWith("Updated")
-						|| m_vo.getColumnName().equals("Value")
-						|| m_vo.getColumnName().equals("DocumentNo")
 						|| m_vo.getColumnName().equals("M_AttributeSetInstance_ID") 	// 0 is valid
 				))
+		{
 			return false;
-
+		}
+		
+		// DocumentNo/Value are not mandatory (persistence layer manages them)
+		if(m_gridTab != null
+				&& m_vo.isUseDocSequence()
+				&& (m_vo.getColumnName().equals("Value") || m_vo.getColumnName().equals("DocumentNo"))
+				)
+		{
+			return false;
+		}
+		
 		// Mandatory if displayed
 		return isDisplayed(checkContext);
 	}	// isMandatory

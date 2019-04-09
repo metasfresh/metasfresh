@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
@@ -74,18 +75,18 @@ public class CreditPassConfigRepository
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final IQuery<I_CS_Creditpass_BP_Group> queryGroups = queryBL
+				.createQueryBuilder(I_CS_Creditpass_BP_Group.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_CS_Creditpass_BP_Group.COLUMNNAME_C_BP_Group_ID, bpGroupId.getRepoId())
+				.create();
+
 		final I_CS_Creditpass_Config configRecord = queryBL
 				.createQueryBuilder(I_CS_Creditpass_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.orderBy(I_CS_Creditpass_Config.COLUMN_Created).create().list()
-				.stream().filter(c -> queryBL
-						.createQueryBuilder(I_CS_Creditpass_BP_Group.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_CS_Creditpass_BP_Group.COLUMN_CS_Creditpass_Config_ID, c.getCS_Creditpass_Config_ID())
-						.create().list()
-						.stream()
-						.allMatch(group -> group.getC_BP_Group_ID() != bpGroupId.getRepoId()))
-				.findFirst().orElse(null);
+				.orderBy(I_CS_Creditpass_Config.COLUMN_SeqNo)
+				.addNotInSubQueryFilter(I_CS_Creditpass_Config.COLUMN_CS_Creditpass_Config_ID, I_CS_Creditpass_BP_Group.COLUMN_CS_Creditpass_Config_ID, queryGroups)
+				.create().first();
 
 		if (configRecord == null)
 		{

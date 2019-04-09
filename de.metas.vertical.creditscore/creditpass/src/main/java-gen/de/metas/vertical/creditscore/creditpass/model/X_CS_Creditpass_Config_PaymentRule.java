@@ -15,7 +15,7 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1703304686L;
+	private static final long serialVersionUID = -1313795496L;
 
     /** Standard Constructor */
     public X_CS_Creditpass_Config_PaymentRule (Properties ctx, int CS_Creditpass_Config_PaymentRule_ID, String trxName)
@@ -94,21 +94,10 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 		set_ValueFromPO(COLUMNNAME_CS_Creditpass_Config_ID, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config.class, CS_Creditpass_Config);
 	}
 
-	/** Set CS Creditpass Configuration.
-		@param CS_Creditpass_Config_ID CS Creditpass Configuration	  */
+	/** Get Creditpass Einstellung.
+		@return Creditpass Einstellung	  */
 	@Override
-	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
-	{
-		if (CS_Creditpass_Config_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
-	}
-
-	/** Get CS Creditpass Configuration.
-		@return CS Creditpass Configuration	  */
-	@Override
-	public int getCS_Creditpass_Config_ID () 
+	public int getCS_Creditpass_Config_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_ID);
 		if (ii == null)
@@ -116,26 +105,37 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 		return ii.intValue();
 	}
 
-	/** Set CS Creditpass Configuration payment rule.
-		@param CS_Creditpass_Config_PaymentRule_ID CS Creditpass Configuration payment rule	  */
+	/** Set Creditpass Einstellung.
+		@param CS_Creditpass_Config_ID Creditpass Einstellung	  */
 	@Override
-	public void setCS_Creditpass_Config_PaymentRule_ID (int CS_Creditpass_Config_PaymentRule_ID)
+	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
 	{
-		if (CS_Creditpass_Config_PaymentRule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, Integer.valueOf(CS_Creditpass_Config_PaymentRule_ID));
+		if (CS_Creditpass_Config_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
 	}
 
-	/** Get CS Creditpass Configuration payment rule.
-		@return CS Creditpass Configuration payment rule	  */
+	/** Get Zahlungsart ID.
+		@return Zahlungsart ID	  */
 	@Override
-	public int getCS_Creditpass_Config_PaymentRule_ID () 
+	public int getCS_Creditpass_Config_PaymentRule_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zahlungsart ID.
+		@param CS_Creditpass_Config_PaymentRule_ID Zahlungsart ID	  */
+	@Override
+	public void setCS_Creditpass_Config_PaymentRule_ID (int CS_Creditpass_Config_PaymentRule_ID)
+	{
+		if (CS_Creditpass_Config_PaymentRule_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, Integer.valueOf(CS_Creditpass_Config_PaymentRule_ID));
 	}
 
 	/** 
@@ -196,22 +196,22 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 		return bd;
 	}
 
-	/** Set Preis der Überprüfung.
-		@param RequestPrice Preis der Überprüfung	  */
+	/** Get Preis per Überprüfung.
+		@return Preis per Überprüfung	  */
 	@Override
-	public void setRequestPrice (java.math.BigDecimal RequestPrice)
-	{
-		set_Value (COLUMNNAME_RequestPrice, RequestPrice);
-	}
-
-	/** Get Preis der Überprüfung.
-		@return Preis der Überprüfung	  */
-	@Override
-	public java.math.BigDecimal getRequestPrice () 
+	public java.math.BigDecimal getRequestPrice ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RequestPrice);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Preis per Überprüfung.
+		@param RequestPrice Preis per Überprüfung	  */
+	@Override
+	public void setRequestPrice (java.math.BigDecimal RequestPrice)
+	{
+		set_Value (COLUMNNAME_RequestPrice, RequestPrice);
 	}
 }
