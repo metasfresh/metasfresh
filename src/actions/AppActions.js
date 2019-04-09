@@ -2,6 +2,7 @@ import axios from 'axios';
 import Moment from 'moment';
 import { Settings } from 'luxon';
 import numeral from 'numeral';
+import config from '../../cypress/config';
 
 const LOCAL_LANG = 'metasfreshLanguage';
 
