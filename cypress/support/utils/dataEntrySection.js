@@ -81,7 +81,15 @@ function applyDataEntrySection(dataEntrySection) {
   cy.writeIntoStringField('SectionName', dataEntrySection.sectionName);
 
   if (dataEntrySection.seqNo) {
-    cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntrySection.seqNo}`);
+    cy.getFieldValue('SeqNo').then(currentValue => {
+      if (currentValue !== dataEntrySection.seqNo) {
+        cy.log(
+          `applyDataEntrySection - dataEntrySection.seqNo=${dataEntrySection.seqNo}; currentValue=${currentValue}`
+        );
+        cy.clearField('SeqNo');
+        cy.writeIntoStringField('SeqNo', `${dataEntrySection.seqNo}`);
+      }
+    });
   }
   if (dataEntrySection.description) {
     cy.writeIntoTextField('Description', dataEntrySection.description);
@@ -104,7 +112,13 @@ function applyDataEntryLine(dataEntryLine) {
   cy.pressAddNewButton();
 
   if (dataEntryLine.seqNo) {
-    cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntryLine.seqNo}`, true /*modal*/);
+    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+      cy.log(`applyDataEntryLine - dataEntryGroup.seqNo=${dataEntryLine.seqNo}; currentValue=${currentValue}`);
+      if (currentValue !== dataEntryLine.seqNo) {
+        cy.clearField('SeqNo', true /*modal*/);
+        cy.writeIntoStringField('SeqNo', `${dataEntryLine.seqNo}`, true /*modal*/);
+      }
+    });
   }
   if (!dataEntryLine.isActive) {
     cy.clickOnIsActive(true /*modal*/);

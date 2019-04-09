@@ -126,7 +126,7 @@ context('Reusable "login" custom command', function() {
  */
 Cypress.Commands.add('clearField', (fieldName, modal) => {
   describe('Clear field', function() {
-    cy.log(`clearField - fieldName=${fieldName}`);
+    cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -136,6 +136,22 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
     cy.get(path)
       .find('input')
       .clear();
+  });
+});
+
+Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    return cy
+      .get(path)
+      .find('input')
+      .invoke('val'); /* note: beats me why .its('value'); returned undefined */
   });
 });
 

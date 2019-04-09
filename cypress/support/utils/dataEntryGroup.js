@@ -94,8 +94,13 @@ function applyDataEntryGroup(dataEntryGroup) {
     cy.log(`applyDataEntryGroup - visitWindow yielded ${JSON.stringify(this.dataEntryGroupId)}`);
 
     if (dataEntryGroup.seqNo) {
-      cy.clearField('SeqNo');
-      cy.writeIntoStringField('SeqNo', `${dataEntryGroup.seqNo}`);
+      cy.getFieldValue('SeqNo').then(currentValue => {
+        if (currentValue !== dataEntryGroup.seqNo) {
+          cy.log(`applyDataEntryGroup - dataEntryGroup.seqNo=${dataEntryGroup.seqNo}; currentValue=${currentValue}`);
+          cy.clearField('SeqNo');
+          cy.writeIntoStringField('SeqNo', `${dataEntryGroup.seqNo}`);
+        }
+      });
     }
 
     cy.writeIntoStringField('Name', dataEntryGroup.name);
@@ -132,7 +137,13 @@ function applyDataEntrySubGroup(dataEntrySubGroup) {
   cy.writeIntoStringField('TabName', dataEntrySubGroup.tabName, true /*modal*/);
 
   if (dataEntrySubGroup.seqNo) {
-    cy.writeIntoStringField('SeqNo', `{selectall}{backspace}${dataEntrySubGroup.seqNo}`, true /*modal*/);
+    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+      cy.log(`applyDataEntrySubGroup - dataEntryGroup.seqNo=${dataEntrySubGroup.seqNo}; currentValue=${currentValue}`);
+      if (currentValue !== dataEntrySubGroup.seqNo) {
+        cy.clearField('SeqNo', true /*modal*/);
+        cy.writeIntoStringField('SeqNo', `${dataEntrySubGroup.seqNo}`, true /*modal*/);
+      }
+    });
   }
   if (dataEntrySubGroup.description) {
     cy.writeIntoTextField('Description', dataEntrySubGroup.description, true /*modal*/);

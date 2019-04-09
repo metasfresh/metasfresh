@@ -18,14 +18,14 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
     new DataEntryGroup(dataEntryGroupName, 'Business Partner')
       .setTabName('Group1-Tab1')
-      //.setSeqNo(20)
+      .setSeqNo('21')
       .setDescription(`Description of ${dataEntryGroupName}`)
       //.setActive(false) // you can set it to inactive, but then no subgroups can be added
       .addDataEntrySubGroup(
         new DataEntrySubGroup(dataEntrySubGroup1Name)
           .setTabName('Group1-Tab1-SubTab1')
           .setDescription(`${dataEntrySubGroup1Name} - Description`)
-        //.setSeqNo('10')
+          .setSeqNo('11')
       )
       .apply();
 
@@ -33,66 +33,54 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDescription(
         'Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!'
       )
-      //.setSeqNo(15)
-      .addDataEntryLine(
-        new DataEntryLine()
-        // .setSeqNo('10')
-      )
-      .addDataEntryLine(
-        new DataEntryLine()
-        // .setSeqNo('20')
-      )
-      .addDataEntryLine(
-        new DataEntryLine()
-        // .setSeqNo('30')
-      )
+      .setSeqNo('15')
+      .addDataEntryLine(new DataEntryLine().setSeqNo(11))
+      .addDataEntryLine(new DataEntryLine().setSeqNo(22))
+      .addDataEntryLine(new DataEntryLine().setSeqNo(33))
       .apply();
 
     const section1FieldBuilder = new DataEntryField(
       'Tab1-Section1-Line1-Field1',
-      `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`
+      `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_11`
     )
       .setDescription('Yes-No, single field in its line')
       .setMandatory(true)
       .setDataEntryRecordType('Yes-No')
-      .setPersonalDataCategory('Personal');
-    // .setSeqNo('10');
+      .setPersonalDataCategory('Personal')
+      .setSeqNo('11');
 
     section1FieldBuilder.apply();
     section1FieldBuilder
       .setName('Tab1-Section1-Line2-Field2')
-      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_20`)
+      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_22`)
       .setDescription('LongText, first field in its line')
       .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
       .setDataEntryRecordType('Long text')
-      // .setSeqNo('00000000000000010')
+      .setSeqNo('10')
       .apply();
     section1FieldBuilder
       .setName('Tab1-Section1-Line2-Field3')
       .setDescription('Yes-No, second fields in its line')
       .setDataEntryRecordType('Yes-No')
-      // .setSeqNo('00000000000000020')
+      .setSeqNo('20')
       .apply();
     section1FieldBuilder
       .setName('Tab1-Section1-Line3-Field4')
-      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_30`)
+      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_33`)
       .setDescription('Text, first field in its line')
       .setDataEntryRecordType('Text')
-      // .setSeqNo('00000000000000010')
+      .setSeqNo('10')
       .apply();
     section1FieldBuilder
       .setName('Tab1-Section1-Line3-Field5')
       .setDescription('Text, second field in its line')
-      // .setSeqNo('00000000000000020')
+      .setSeqNo('20')
       .apply();
 
     new DataEntrySection(dataEntrySection2Name, dataEntrySubGroup1Name)
       .setDescription('Section with one line; its two columns shall appear to be aligned with the first section')
-      // .setSeqNo(25)
-      .addDataEntryLine(
-        new DataEntryLine()
-        // .setSeqNo('000000000000000000010')
-      )
+      .setSeqNo('25')
+      .addDataEntryLine(new DataEntryLine().setSeqNo('10'))
       .apply();
 
     new DataEntryField(
@@ -102,7 +90,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDescription('Tab1-Section2-Field1 Description')
       .setMandatory(true)
       .setDataEntryRecordType('Date')
-      // .setSeqNo('000000000000000010')
+      .setSeqNo('10')
       .apply();
 
     new DataEntryField(
@@ -112,14 +100,12 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setDescription('Tab1-Section2-Field2 Description')
       .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
       .setDataEntryRecordType('List')
-      // .setSeqNo('000000000000000020')
+      .setSeqNo('22')
       .addDataEntryListValue(
-        new DataEntryListValue('ListItem 2').setDescription('ListItem 2 with SeqNo10')
-        // .setSeqNo('00000000000000020')
+        new DataEntryListValue('ListItem 2').setDescription('ListItem 2 with SeqNo10').setSeqNo('21')
       )
       .addDataEntryListValue(
-        new DataEntryListValue('ListItem 1').setDescription('ListItem 1 with SeqNo20')
-        // .setSeqNo('00000000000000010')
+        new DataEntryListValue('ListItem 1').setDescription('ListItem 1 with SeqNo20').setSeqNo('11')
       )
       .apply();
 
