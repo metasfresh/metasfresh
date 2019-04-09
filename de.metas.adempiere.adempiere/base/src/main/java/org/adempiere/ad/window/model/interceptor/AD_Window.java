@@ -1,18 +1,15 @@
 package org.adempiere.ad.window.model.interceptor;
 
-import java.sql.SQLException;
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.IADElementDAO;
+import org.adempiere.ad.element.api.IElementLinkBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
@@ -53,21 +50,30 @@ public class AD_Window
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
-	public void onElementIDChanged(final I_AD_Window window) throws SQLException
+	public void calloutOnElementIdChanged(final I_AD_Window window)
 	{
-		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
+		updateWindowFromElement(window);
+	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
+	public void onAfterWindowSave_WhenElementIdChanged(final I_AD_Window window)
+	{
+		updateWindowFromElement(window);
+		updateTranslationsForElement(window);
+		recreateElementLinkForWindow(window);
+	}
+
+	private void updateWindowFromElement(final I_AD_Window window)
+	{
+		// do not copy translations from element to window
 		if (!IElementTranslationBL.DYNATTR_AD_Window_UpdateTranslations.getValue(window, true))
 		{
-			// do not copy translations from element to window
 			return;
 		}
 
+		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
 		final I_AD_Element windowElement = adElementDAO.getById(window.getAD_Element_ID());
-
 		if (windowElement == null)
 		{
 			// nothing to do. It was not yet set
@@ -77,33 +83,11 @@ public class AD_Window
 		window.setName(windowElement.getName());
 		window.setDescription(windowElement.getDescription());
 		window.setHelp(windowElement.getHelp());
-
-		if (InterfaceWrapperHelper.isNew(window))
-		{
-			// nothing to do. Window was not yet saved
-			return;
-		}
-
-		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
-		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
-		adWindowDAO.createADElementLinkForWindowId(adWindowId);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void beforeDelete(final I_AD_Window window)
-	{
-		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
-
-		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-		adWindowDAO.deleteTabsByWindowId(adWindowId);
-		adWindowDAO.deleteExistingADElementLinkForWindowId(adWindowId);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
-	public void updateTranslationsForElement(final I_AD_Window window)
+	private void updateTranslationsForElement(final I_AD_Window window)
 	{
 		final AdElementId windowElementId = AdElementId.ofRepoIdOrNull(window.getAD_Element_ID());
-
 		if (windowElementId == null)
 		{
 			// nothing to do. It was not yet set
@@ -111,5 +95,24 @@ public class AD_Window
 		}
 
 		Services.get(IElementTranslationBL.class).updateWindowTranslationsFromElement(windowElementId);
+	}
+
+	private void recreateElementLinkForWindow(final I_AD_Window window)
+	{
+		final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(window.getAD_Window_ID());
+		if (adWindowId != null)
+		{
+			final IElementLinkBL elementLinksService = Services.get(IElementLinkBL.class);
+			elementLinksService.recreateADElementLinkForWindowId(adWindowId);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void onBeforeWindowDelete(final I_AD_Window window)
+	{
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(window.getAD_Window_ID());
+
+		final IElementLinkBL elementLinksService = Services.get(IElementLinkBL.class);
+		elementLinksService.deleteExistingADElementLinkForWindowId(adWindowId);
 	}
 }

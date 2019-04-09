@@ -55,6 +55,8 @@ public interface IElementTranslationBL extends ISingletonService
 	 * @throws SQLException
 	 */
 	void updateTranslations(ElementChangedEvent event);
+	
+	void updateColumnTranslationsFromElement(AdElementId adElementId);
 
 	/**
 	 * Update Fields translation for the fields that have the element given as parameter as AD_Name_ID, delete translation if AD_Name was deleted
