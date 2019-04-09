@@ -59,20 +59,13 @@ public class PostalCodeImportProcess extends AbstractImportProcess<I_I_Postal>
 	}
 
 	@Override
-	// folosit in caz ca
 	protected void updateAndValidateImportRecords()
 	{
-		//			 nu imi trebuie
 	}
 
 	@Override
 	protected String getImportOrderBySql()
 	{
-		// todo
-		// cand noi importam din tabelul de staging in tabelul real
-		// se sorteaza asc dupa coloana asta (ca practic noi importam record by record
-		// prqactic nu e relevant pentru miine daca un postal code e important inainte de altul
-
 		return I_I_Postal.COLUMNNAME_Postal;
 	}
 
@@ -93,6 +86,7 @@ public class PostalCodeImportProcess extends AbstractImportProcess<I_I_Postal>
 		// the current handling for duplicates (postal code + country) is nonexistent.
 		// we blindly try to insert in db, and if there are unique constraints failing the records will automatically be marked as failed.
 
+		//noinspection UnusedAssignment
 		ImportRecordResult importResult = ImportRecordResult.Nothing;
 
 		final I_C_Postal cPostal = createNewCPostalCode(importRecord);
@@ -113,9 +107,9 @@ public class PostalCodeImportProcess extends AbstractImportProcess<I_I_Postal>
 		cPostal.setPostal(importRecord.getPostal());
 		cPostal.setRegionName(importRecord.getRegionName());
 
-		// where are these 2 used?
-		//		importRecord.getValidFrom() ??
-		//		importRecord.getValidTo() ??
+		// these 2 are not yet used
+		//		importRecord.getValidFrom()
+		//		importRecord.getValidTo()
 
 		InterfaceWrapperHelper.save(cPostal);
 		return cPostal;
