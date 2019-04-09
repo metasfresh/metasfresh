@@ -27,14 +27,15 @@ FROM PP_Order pp
   
    -- Product and its translation
   JOIN M_product pbom on bom.m_product_id = pbom.m_product_id
-  LEFT OUTER JOIN M_Product_Trl pt ON bom.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive ='Y'
+  LEFT JOIN M_Product_Trl pt ON bom.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive ='Y'
   
   LEFT JOIN C_OrderLine ol on pp.c_orderline_id = ol.c_orderline_id
   LEFT JOIN c_order o on ol.C_Order_ID = o.c_order_id
-  LEFT OUTER JOIN C_DocType dt ON pp.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
-  LEFT OUTER JOIN C_DocType_Trl dtt
+  
+  LEFT JOIN C_DocType dt ON pp.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+  LEFT JOIN C_DocType_Trl dtt
     ON pp.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
-WHERE pp.PP_Order_ID = $1 AND o.isActive = 'Y'
+WHERE pp.PP_Order_ID = $1 AND pp.isActive = 'Y'
 $$
 LANGUAGE sql
 STABLE;
