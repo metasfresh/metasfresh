@@ -52,9 +52,9 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 	public static final String EP_EDI_INVOICE_XML_CONSUMER = "direct:edi.invoice.xml.consumer";
 
 	public static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
-	public static final String EDI_INVOICE_IS_TEST = "edi.props.invoice.isTest";
+	public static final String EDI_XML_INVOICE_IS_TEST = "edi.xml.props.invoice.isTest";
 
-	public final static QName EDIInvoiceFeedback_QNAME = new QName("", "EDI_Invoice_Feedback"); // FIXME see how to take it from object factory!
+	public final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	public static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
 	/**
@@ -77,7 +77,7 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 		final String invoiceXMLFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_INVOICE_XML_FILENAME_PATTERN);
 
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN);
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_INVOICE_IS_TEST);
+		final String isTest = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST);
 		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_ORDER_EDIMessageDatePattern);
 
 		from(XMLInvoiceRoute.EP_EDI_INVOICE_XML_CONSUMER)
@@ -85,7 +85,7 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(XMLInvoiceRoute.EDI_INVOICE_IS_TEST).constant(isTest)
+				.setProperty(XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST).constant(isTest)
 				.setProperty(XMLInvoiceRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")

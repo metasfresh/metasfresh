@@ -29,6 +29,7 @@ import de.metas.edi.esb.pojo.invoice.ObjectFactory;
 import de.metas.edi.esb.pojo.invoice.*;
 import de.metas.edi.esb.pojo.invoice.qualifier.*;
 import de.metas.edi.esb.route.AbstractEDIRoute;
+import de.metas.edi.esb.route.exports.XMLInvoiceRoute;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +46,7 @@ public class EDIXMLInvoiceBean
 
 	public static final String METHOD_createXMLEDIData = "createXMLEDIData";
 
-	public void createEDIData(final Exchange exchange)
+	public void createXMLEDIData(final Exchange exchange)
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 		final Document document = createDocument(exchange, xmlCctopInvoice);
@@ -56,12 +57,16 @@ public class EDIXMLInvoiceBean
 	private Document createDocument(Exchange exchange, EDICctopInvoicVType invoice)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
+		final String isTest = exchange.getProperty(XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST, String.class);
 
 		final ObjectFactory objectFactory = new ObjectFactory();
 		final Document document = objectFactory.createDocument();
 		final Xrech4H xrech4H = objectFactory.createXrech4H();
 
 		final HEADERXrech headerXrech = objectFactory.createHEADERXrech();
+		headerXrech.setTESTINDICATOR(isTest);
+		//TODO where to set sender
+		//final String senderGln = exchange.getProperty(XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN, String.class);
 		//TODO looks like it's wrong, where to set location ID
 		//headerXrech.setPARTNERID(invoice.getCbPartnerLocationID());
 		//TODO check how to set partner id and application id
@@ -105,7 +110,7 @@ public class EDIXMLInvoiceBean
 		docTrailer.setDOCUMENTID(documentId);
 		docTrailer.setCONTROLQUAL(ControlQual.LINE.name());
 		//TODO how to calculate
-		docTrailer.setCONTROLVALUE("1");
+		docTrailer.setCONTROLVALUE(formatNumber(invoice.getEDICctopInvoic500V().size(), decimalFormat));
 		mapTrailer(invoice, decimalFormat, objectFactory, headerXrech, documentId, docTrailer);
 
 		xrech4H.setHEADER(headerXrech);
@@ -119,7 +124,7 @@ public class EDIXMLInvoiceBean
 	{
 		//TODO check if different conditions need to be met
 		//TODO what if there are multiple currencies??? this could be misleading
-		if (invoice.getTotalLines().compareTo(BigDecimal.ZERO) == 1)
+		if (invoice.getTotalLines().compareTo(BigDecimal.ZERO) > 0)
 		{
 			final TAMOU1 trailerLinesAmount = objectFactory.createTAMOU1();
 			trailerLinesAmount.setDOCUMENTID(documentId);
@@ -148,7 +153,7 @@ public class EDIXMLInvoiceBean
 			}
 		}
 		//TODO should we calc that, from details or header? or where to get it from
-		if (alchAmount.compareTo(BigDecimal.ZERO) == 1)
+		if (alchAmount.compareTo(BigDecimal.ZERO) > 0)
 		{
 			final TAMOU1 trailerAlchAmount = objectFactory.createTAMOU1();
 			trailerAlchAmount.setDOCUMENTID(documentId);
@@ -164,7 +169,7 @@ public class EDIXMLInvoiceBean
 		docTrailer.getTAMOU1().add(trailerTaxAmount);
 
 		//TODO should we calc that, from details or header? or where to get it from
-		if (discountAmount.compareTo(BigDecimal.ZERO) == 1)
+		if (discountAmount.compareTo(BigDecimal.ZERO) > 0)
 		{
 			final TAMOU1 trailerDiscountAmount = objectFactory.createTAMOU1();
 			trailerDiscountAmount.setDOCUMENTID(documentId);
