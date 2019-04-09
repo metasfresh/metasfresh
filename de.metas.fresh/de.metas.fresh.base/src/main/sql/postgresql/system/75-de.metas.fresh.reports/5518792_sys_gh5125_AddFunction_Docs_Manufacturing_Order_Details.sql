@@ -11,7 +11,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing
     uomsymbol       character varying,
     value           character varying,
     vendorProductNo character varying,
-    description     character varying
+    description     character varying,
+	attributes     character varying
   )
 AS
 $$
@@ -22,7 +23,8 @@ SELECT
   COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
   p.value,
   coalesce(bpp.productno, p.value)        as vendorProductNo,
-  coalesce(pt.description, p.description) as description
+  coalesce(pt.description, p.description) as description,
+  Attributes.attributes_value
 FROM PP_Order_BOMLine bomLine
 
   -- Product and its translation
@@ -32,6 +34,7 @@ FROM PP_Order_BOMLine bomLine
   JOIN c_uom uom on bomLine.c_uom_id = uom.c_uom_id AND uom.isActive = 'Y'
   LEFT OUTER JOIN C_UOM_Trl uomt ON bomLine.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2
   LEFT JOIN getc_bpartner_product_vendor(p.m_product_id) bpp on 1 = 1
+  LEFT JOIN de_metas_endcustomer_fresh_reports.get_hu_attributes_value_for_pp_order_bomline(540034, bomLine.pp_order_bomline_id)  as Attributes on 1 = 1
 WHERE
   bomLine.PP_Order_ID = $1 AND bomLine.isActive = 'Y'
 ORDER BY
