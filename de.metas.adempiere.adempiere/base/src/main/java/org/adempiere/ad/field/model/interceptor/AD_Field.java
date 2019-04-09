@@ -12,7 +12,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -94,13 +93,6 @@ public class AD_Field
 		field.setName(fieldElement.getName());
 		field.setDescription(fieldElement.getDescription());
 		field.setHelp(fieldElement.getHelp());
-
-		// Make sure the translation fields are also updated
-		if (!InterfaceWrapperHelper.isNew(field))
-		{
-			final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
-			elementTranslationBL.updateFieldTranslationsFromAD_Name(fieldElementId);
-		}
 	}
 
 	private void updateTranslationsForElement(final I_AD_Field field)
