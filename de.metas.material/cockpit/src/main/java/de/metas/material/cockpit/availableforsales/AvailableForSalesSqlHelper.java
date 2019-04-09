@@ -1,10 +1,10 @@
 package de.metas.material.cockpit.availableforsales;
 
 import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeNotEmpty;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
@@ -46,16 +46,9 @@ public class AvailableForSalesSqlHelper
 {
 	public IQuery<I_MD_Available_For_Sales_QueryResult> createDBQueryForAvailableForSalesMultiQuery(@NonNull final AvailableForSalesMultiQuery multiQuery)
 	{
-		final List<AvailableForSalesQuery> availableForSalesQueries = multiQuery.getAvailableForSalesQueries();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		if (availableForSalesQueries.isEmpty())
-		{
-			return queryBL
-					.createQueryBuilder(I_MD_Available_For_Sales_QueryResult.class)
-					.filter(ConstantQueryFilter.of(false))
-					.create();
-		}
+		final List<AvailableForSalesQuery> availableForSalesQueries = assumeNotEmpty(
+				multiQuery.getAvailableForSalesQueries(),
+				"The given multiQuery may not be empty; multiQuery={}", multiQuery);
 
 		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = createDBQueryForAvailableForSalesQuery(0, availableForSalesQueries.get(0));
 		for (int i = 1; i < availableForSalesQueries.size(); i++)

@@ -43,12 +43,16 @@ public class AvailableForSalesRepository
 {
 	public AvailableForSalesMultiResult getBy(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
 	{
+		final AvailableForSalesMultiResultBuilder multiResult = AvailableForSalesMultiResult.builder();
+		if(availableForSalesMultiQuery.getAvailableForSalesQueries().isEmpty())
+		{
+			return multiResult.build(); // empty query => empty result
+		}
+
 		final IQuery<I_MD_Available_For_Sales_QueryResult> //
 		dbQuery = AvailableForSalesSqlHelper.createDBQueryForAvailableForSalesMultiQuery(availableForSalesMultiQuery);
 
 		final List<I_MD_Available_For_Sales_QueryResult> records = dbQuery.list();
-
-		final AvailableForSalesMultiResultBuilder multiResult = AvailableForSalesMultiResult.builder();
 
 		final List<AvailableForSalesQuery> singleQueries = availableForSalesMultiQuery.getAvailableForSalesQueries();
 

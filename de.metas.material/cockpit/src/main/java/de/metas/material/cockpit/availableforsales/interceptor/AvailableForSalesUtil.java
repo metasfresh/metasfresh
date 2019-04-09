@@ -174,6 +174,10 @@ public class AvailableForSalesUtil
 			@NonNull final List<CheckAvailableForSalesRequest> requests,
 			@NonNull final AvailableForSalesConfig config)
 	{
+		if (requests.isEmpty())
+		{
+			return; // nothing to do
+		}
 		if (config.isRunAsync() && Adempiere.isSpringProfileActive(Profiles.PROFILE_Webui))
 		{
 			final UserId errorNotificationRecipient = UserId.ofRepoId(Env.getAD_User_ID());
