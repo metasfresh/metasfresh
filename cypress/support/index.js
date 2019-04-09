@@ -13,12 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
+import 'cypress-skip-and-only-ui/support';
 import './commands';
 import nextTabbable from './nextTabbable';
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
 
 Cypress.on('uncaught:exception', () => {
   //(err, runnable) => {
