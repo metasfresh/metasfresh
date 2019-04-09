@@ -197,5 +197,3 @@ DELETE FROM AD_Element WHERE AD_Element_ID=2226
 
 
 
-drop table if exists AD_Record_Access;
-
