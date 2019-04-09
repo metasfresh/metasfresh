@@ -7,6 +7,7 @@ describe('Product DocumentNote test', function() {
     cy.visit('window/140/2005577');
     cy.waitForHeader();
     cy.openAdvancedEdit();
-    cy.writeIntoTextField('DocumentNote', 'blah-blah-blah');
+    cy.writeIntoTextField('DocumentNote', '{selectall}{backspace}blah-blah-blah');
+    cy.pressDoneButton();
   });
 });
