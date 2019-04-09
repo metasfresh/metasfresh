@@ -1,0 +1,25 @@
+{
+  "name": "Vendor 1554740384355",
+  "isVendor": true,
+  "vendorPricingSystem": "Testpreisliste Lieferanten",
+  "isCustomer": false,
+  "bPartnerLocations": [
+    {
+      "name": "Address1",
+      "city": "Cologne",
+      "country": "Deutschland"
+    }
+  ],
+  "contacts": [
+    {
+      "isDefaultContact": true,
+      "firstName": "Default",
+      "lastName": "Contact"
+    },
+    {
+      "isDefaultContact": false,
+      "firstName": "Secondary",
+      "lastName": "Contact"
+    }
+  ]
+}
