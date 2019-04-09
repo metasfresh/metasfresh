@@ -72,7 +72,7 @@ describe('New sales order test', function() {
       cy.writeIntoLookupListField('C_BPartner_ID', 'Cypress', 'Cypress Test Partner #1');
       //we need a fake click to close the opened dropdown
       cy.get('.header-breadcrumb-sitename').click();
-      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Warsaw', 'Warsaw, Potocka 1');
+      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Warsaw', 'Warsaw, Potocka 1', true);
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });
@@ -104,7 +104,7 @@ describe('New sales order test', function() {
         .find('input')
         .should('not.have.value', '0');
 
-      const aliasName = `@addProduct-${new Date().getTime()}`;
+      const aliasName = `addProduct-${new Date().getTime()}`;
       const patchUrlPattern = '/rest/api/window/.*$';
       cy.server();
       cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
@@ -113,14 +113,13 @@ describe('New sales order test', function() {
         .find('.btn')
         .click();
 
-      cy.wait(aliasName);
+      cy.wait(`@${aliasName}`);
     });
 
     it('Add new product via Batch Entry', function() {
       const addNewText = Cypress.messages.window.batchEntry.caption;
 
       cy.get('.tabs-wrapper .form-flex-align .btn')
-        .toMatchSnapshot()
         .contains(addNewText)
         .should('exist')
         .click();
@@ -128,40 +127,38 @@ describe('New sales order test', function() {
       cy.get('.quick-input-container').should('exist');
       cy.get('.quick-input-container').snapshot({ name: 'Empty Quick Inp' });
 
-      cy.get('#lookup_M_Product_ID')
-        .find('input')
-        .type('C');
+      cy.writeIntoLookupListField('M_Product_ID', 'C', 'Convenience Salat', true);
 
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'Convenience Salat').click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+      // cy.focused().type('{tab}');
+      // cy.tab();
 
-      cy.focused()
-        .should('have.value', 'IFCO 6410 x 10 Stk')
-        .type('{tab}');
+      // cy.focused()
+      //   .should('have.value', 'IFCO 6410 x 10 Stk')
+        // .type('{tab}');
 
       cy.get('.form-field-Qty', { timeout: 12000 })
+        .click()
         .find('.input-body-container.focused')
         .should('exist')
         .find('i')
         .eq(0)
         .click();
 
-      cy.get('.form-field-Qty')
-        .find('input')
-        .should('have.value', '0.1')
-        .type('1{enter}');
-
       const aliasName = `addProduct-${new Date().getTime()}`;
       const patchUrlPattern = '/rest/api/window/.*$';
       cy.server();
       cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
 
+      cy.get('.form-field-Qty')
+        .find('input')
+        .should('have.value', '0.1')
+        .type('1{enter}');
+
+      cy.wait(`@${aliasName}`);
+
       cy.get('#lookup_M_Product_ID')
         .find('input')
         .should('have.value', '');
-
-      cy.wait(aliasName);
     });
 
     it('Change document status', function() {
