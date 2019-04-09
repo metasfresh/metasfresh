@@ -60,6 +60,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final Logger log = LogManager.getLogger(ElementTranslationBL.class);
 
 	private static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
+	private static final String FUNCTION_Update_Column_Translation_From_AD_Name_Element = "update_Column_Translation_From_AD_Element";
 	private static final String FUNCTION_Update_FieldTranslation_From_AD_Name_Element = "update_FieldTranslation_From_AD_Name_Element";
 	private static final String FUNCTION_Update_Window_Translation_From_AD_Element = "update_window_translation_from_ad_element";
 	private static final String FUNCTION_Update_Tab_Translation_From_AD_Element = "update_tab_translation_from_ad_element";
@@ -109,6 +110,14 @@ public class ElementTranslationBL implements IElementTranslationBL
 		// Add the prefix DDL so the statement will appear in the migration script
 		// Usually, the select statements are not migrated ( see org.compiere.dbPort.Convert.logMigrationScript(String, String).dontLog())
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + "," + DB.TO_STRING(adLanguage) + ") ";
+	}
+
+	@Override
+	public void updateColumnTranslationsFromElement(final AdElementId adElementId)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Column_Translation_From_AD_Name_Element, adElementId), null);
 	}
 
 	@Override
