@@ -1,29 +1,18 @@
 package org.adempiere.ad.service.impl;
 
 import java.util.Properties;
-import java.util.Set;
 
-import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Message;
-import org.compiere.model.M_Element;
-import org.compiere.model.PO;
-import org.compiere.model.X_AD_Message;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import de.metas.cache.CacheMgt;
-import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -37,7 +26,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 	public static final DeveloperModeBL instance = new DeveloperModeBL();
 
 	public static final String SYSCONFIG_DeveloperMode = "de.metas.adempiere.debug";
-	
+
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	protected DeveloperModeBL()
@@ -59,7 +48,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			{
 				return true;
 			}
-			
+
 			if (!DB.isConnected())
 			{
 				return false;
@@ -74,199 +63,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 	}
 
 	@Override
-	public boolean createMessageOrElement(final String adLanguage, final String text, final boolean checkMessage, final boolean checkElement)
-	{
-		final boolean[] retValue = new boolean[] { false };
-		try
-		{
-			executeAsSystem(new ContextRunnable()
-			{
-
-				@Override
-				public void run(Properties sysCtx)
-				{
-					retValue[0] = createMessageOrElement0(sysCtx, adLanguage, text, checkMessage, checkElement);
-				}
-			});
-		}
-		catch (final Exception e)
-		{
-			logger.error(e.getLocalizedMessage(), e);
-			return false;
-		}
-
-		return retValue[0];
-	}
-
-	private boolean createMessageOrElement0(Properties ctx, final String adLanguage, final String text, boolean checkMessage, boolean checkElement)
-	{
-		final String trxName = null;
-
-		final I_AD_Message message = checkMessage ? Services.get(IADMessageDAO.class).retrieveByValue(ctx, text) : null;
-		if (message != null)
-		{
-			return checkInsertTrl(message, adLanguage);
-		}
-
-		final M_Element element = checkElement ? M_Element.get(ctx, text) : null;
-		if (element != null)
-		{
-			return checkInsertTrl(element, adLanguage);
-		}
-
-		boolean createMessage = checkMessage && isValidMessageValue(text);
-		boolean createElement = checkElement && isValidColumnName(text);
-
-		if (!createElement && !createMessage)
-		{
-			return false;
-		}
-
-		if (createElement && createMessage)
-		{
-			// TODO: ask developer what to do
-			createMessage = true;
-			createElement = false;
-		}
-
-		if (createMessage)
-		{
-			final I_AD_Message messageNew = InterfaceWrapperHelper.create(ctx, I_AD_Message.class, trxName);
-			messageNew.setValue(text);
-			messageNew.setMsgType(X_AD_Message.MSGTYPE_Information);
-			messageNew.setMsgText(text);
-			messageNew.setEntityType(getEntityType(ctx));
-			// The save will trigger CCache reset for "AD_Message" which will clear message from Msg class
-			InterfaceWrapperHelper.save(messageNew);
-			logger.warn("This is not an exception, just a warn message! Created: " + messageNew 
-					+ ", Value=" + messageNew.getValue() + ", EntityType=" + messageNew.getEntityType(), new Exception());
-		}
-		if (createElement)
-		{
-			final M_Element elementNew = new M_Element(ctx, 0, trxName);
-			elementNew.setColumnName(text);
-			elementNew.setName(text);
-			elementNew.setPrintName(text);
-			elementNew.setEntityType(getEntityType(ctx));
-			elementNew.saveEx();
-			logger.warn("\"This is not an exception, just a warn message! Created: " + element 
-					+ ", ColumnName=" + elementNew.getColumnName() + ", EntityType=" + elementNew.getEntityType(), new Exception());
-		}
-		return createMessage || createElement;
-	}
-
-	/**
-	 * Check and insert translation records if they don't exist
-	 * 
-	 * @param model
-	 * @param adLanguage
-	 * @return true if translations were inserted or they are already available
-	 */
-	private boolean checkInsertTrl(Object model, String adLanguage)
-	{
-		if (hasTranslation(model, adLanguage))
-		{
-			return true;
-		}
-
-		final PO po = InterfaceWrapperHelper.getPO(model);
-		final boolean changed = po.insertTranslations();
-		if (changed)
-		{
-			// Trigger org.compiere.util.Msg cache reset
-			CacheMgt.get().reset(I_AD_Message.Table_Name);
-		}
-		return changed;
-	}
-
-	private boolean isValidColumnName(String columnName)
-	{
-		return !Check.isEmpty(columnName, true)
-				&& columnName.indexOf(" ") == -1
-				&& columnName.indexOf(".") == -1
-				&& columnName.indexOf("?") == -1
-				&& columnName.indexOf("{") == -1
-				&& columnName.indexOf("}") == -1;
-	}
-
-	private boolean isValidMessageValue(String adMessage)
-	{
-		return !Check.isEmpty(adMessage, true)
-				&& adMessage.indexOf(" ") == -1;
-	}
-
-	private String getEntityType(Properties ctx)
-	{
-		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		boolean skipStackTraceElement = true;
-		for (StackTraceElement ste : stackTrace)
-		{
-			final String classnameFQ = ste.getClassName();
-			if (classnameFQ == null)
-			{
-				continue;
-			}
-
-			if (classnameFQ.startsWith(getClass().getName()))
-			{
-				skipStackTraceElement = false;
-				continue;
-			}
-			if (skipStackTraceElement
-					|| classnameFQ.startsWith("java.lang.")
-					|| classnameFQ.startsWith("sun."))
-			{
-				continue;
-			}
-
-			int idx = classnameFQ.lastIndexOf(".");
-			if (idx <= 0)
-				continue;
-
-			final String packageName = classnameFQ.substring(0, idx);
-			// final String className = classnameFQ.substring(idx);
-
-			String entityType = null;
-			//
-			// Get EntityType by PackageName
-			final Set<String> entityTypes = EntityTypesCache.instance.getEntityTypeNames();
-			for (String et : entityTypes)
-			{
-				String modelPackage = EntityTypesCache.instance.getModelPackage(et);
-				if (Check.isEmpty(modelPackage, true)
-						|| "org.compiere.model".equals(modelPackage)
-						|| "org.adempiere.model".equals(modelPackage))
-				{
-					continue;
-				}
-				if (modelPackage.endsWith(".model"))
-				{
-					modelPackage = modelPackage.substring(0, modelPackage.length() - ".model".length());
-				}
-				if (packageName.equals(modelPackage) || packageName.startsWith(modelPackage + "."))
-				{
-					entityType = et;
-					break;
-				}
-			}
-
-			if (entityType != null)
-			{
-				return entityType;
-			}
-
-		}
-
-		String entityType = Env.getContext(ctx, "#EntityType");
-		if (Check.isEmpty(entityType))
-		{
-			entityType = "U";
-		}
-		return entityType;
-	}
-
-	@Override
-	public void executeAsSystem(ContextRunnable runnable)
+	public void executeAsSystem(final ContextRunnable runnable)
 	{
 		final Properties sysCtx = Env.createSysContext(Env.getCtx());
 
@@ -276,7 +73,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 			DB.getConstraints().incMaxTrx(1);
-			
+
 			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 
 			runnable.run(sysCtx);
@@ -284,24 +81,8 @@ public class DeveloperModeBL implements IDeveloperModeBL
 		finally
 		{
 			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, logMigrationScriptsOld);
-			
+
 			DB.restoreConstraints();
 		}
-	}
-
-	private boolean hasTranslation(Object model, String adLanguage)
-	{
-		if (Language.isBaseLanguage(adLanguage))
-		{
-			return true;
-		}
-
-		final String trxName = null;
-		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		final int recordId = InterfaceWrapperHelper.getId(model);
-		final String sql = "SELECT COUNT(*) FROM " + tableName + "_Trl WHERE " + tableName + "_ID=? AND AD_Language=?";
-
-		int count = DB.getSQLValueEx(trxName, sql, recordId, adLanguage);
-		return count == 1;
 	}
 }
