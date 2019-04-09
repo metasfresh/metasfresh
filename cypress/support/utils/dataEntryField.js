@@ -130,7 +130,16 @@ function applyDataEntryField(dataEntryField) {
       cy.selectInListField('PersonalDataCategory', dataEntryField.personalDataCategory);
     }
     if (dataEntryField.dataEntryRecordType) {
-      cy.selectInListField('DataEntry_RecordType', dataEntryField.dataEntryRecordType);
+      cy.getFieldValue('DataEntry_RecordType').then(currentValue => {
+        if (currentValue !== dataEntryField.dataEntryRecordType) {
+          cy.log(
+            `applyDataEntryField - dataEntryField.dataEntryRecordType=${
+              dataEntryField.dataEntryRecordType
+            }; currentValue=${currentValue}`
+          );
+          cy.selectInListField('DataEntry_RecordType', dataEntryField.dataEntryRecordType);
+        }
+      });
     }
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
