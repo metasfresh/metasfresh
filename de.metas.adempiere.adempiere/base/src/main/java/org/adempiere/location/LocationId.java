@@ -1,5 +1,7 @@
 package org.adempiere.location;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -30,6 +32,7 @@ import lombok.Value;
 @Value
 public class LocationId implements RepoIdAware
 {
+	@JsonCreator
 	public static LocationId ofRepoId(final int repoId)
 	{
 		return new LocationId(repoId);
@@ -55,5 +58,11 @@ public class LocationId implements RepoIdAware
 	public static int toRepoIdOr(final LocationId locationId, final int defaultValue)
 	{
 		return locationId != null ? locationId.getRepoId() : defaultValue;
+	}
+
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
