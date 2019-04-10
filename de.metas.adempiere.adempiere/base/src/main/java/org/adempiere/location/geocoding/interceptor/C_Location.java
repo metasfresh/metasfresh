@@ -3,8 +3,14 @@ package org.adempiere.location.geocoding.interceptor;
 import de.metas.adempiere.model.I_C_Location;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.location.geocoding.GeographicalCoordinates;
+import org.adempiere.location.geocoding.GeographicalCoordinatesProvider;
+import org.adempiere.location.geocoding.GeographicalCoordinatesRequest;
 import org.compiere.model.ModelValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -32,9 +38,26 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_C_Location.class)
 public class C_Location
 {
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	@Autowired
+	GeographicalCoordinatesProvider geo;
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE})
 	public void onNewLocation(final  I_C_Location locationRecord)
 	{
+		final String address = locationRecord.getAddress1() +locationRecord.getAddress2() + locationRecord.getAddress3() + locationRecord.getAddress4();
+		GeographicalCoordinatesRequest coordinatesRequest = GeographicalCoordinatesRequest.builder()
+				.countryCode(locationRecord.getC_Country().getCountryCode())
+				.address(address)
+				.postal(locationRecord.getPostal())
+				.build();
 
+		final Optional<GeographicalCoordinates> xoy = geo.findBestCoordinates(coordinatesRequest);
+		System.out.printf("\n\n\n\n\n\n\n\n\n\n\\n\n\n%s\n\n\n\n\\n\n\n\n\n\n\n\n", xoy);
+
+		if (xoy.isPresent())
+		{
+			locationRecord.setLatitude(xoy.get().getLatitude());
+			locationRecord.setLongitude(xoy.get().getLongitude());
+		}
 	}
 }
