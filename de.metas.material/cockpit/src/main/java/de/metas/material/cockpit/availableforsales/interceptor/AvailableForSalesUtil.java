@@ -110,7 +110,7 @@ public class AvailableForSalesUtil
 
 	public boolean isOrderLineEligibleForFeature(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		if (orderLineRecord.getQtyOrdered().signum() <= 0)
+		if (orderLineRecord.getQtyEntered().signum() <= 0)
 		{
 			return false;
 		}
