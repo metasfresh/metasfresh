@@ -3,7 +3,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Or
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Description
 (IN record_id   numeric,
  IN p_m_attribute_id   numeric,
- IN ad_language character Varying(6))
+ IN p_ad_language character Varying(6))
 
   RETURNS TABLE
   (
@@ -30,11 +30,11 @@ FROM PP_Order pp
 
    -- Product and its translation
   JOIN M_product pbom on bom.m_product_id = pbom.m_product_id
-  LEFT JOIN M_Product_Trl pt ON bom.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = ad_language AND pt.isActive ='Y'
+  LEFT JOIN M_Product_Trl pt ON bom.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language AND pt.isActive ='Y'
 
   LEFT JOIN C_DocType dt ON pp.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
   LEFT JOIN C_DocType_Trl dtt
-    ON pp.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = ad_language AND dtt.isActive = 'Y'
+    ON pp.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_ad_language AND dtt.isActive = 'Y'
 WHERE pp.PP_Order_ID = record_id AND pp.isActive = 'Y'
 $$
 LANGUAGE sql

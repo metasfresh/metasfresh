@@ -3,7 +3,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Or
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Details
   (IN record_id   numeric,
    IN p_m_attribute_id numeric,
-   IN ad_language character Varying)
+   IN p_ad_language character Varying)
 
   RETURNS TABLE
   (
@@ -30,10 +30,10 @@ FROM PP_Order_BOMLine bomLine
 
   -- Product and its translation
   JOIN M_Product p ON bomLine.m_product_id = p.m_product_id AND p.isActive = 'Y'
-  LEFT OUTER JOIN M_Product_Trl pt ON bomLine.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = ad_language AND pt.isActive = 'Y'
+  LEFT OUTER JOIN M_Product_Trl pt ON bomLine.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language AND pt.isActive = 'Y'
   -- Unit of measurement and its translation
   JOIN c_uom uom on bomLine.c_uom_id = uom.c_uom_id AND uom.isActive = 'Y'
-  LEFT OUTER JOIN C_UOM_Trl uomt ON bomLine.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = ad_language
+  LEFT OUTER JOIN C_UOM_Trl uomt ON bomLine.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language
   LEFT JOIN getc_bpartner_product_vendor(p.m_product_id) bpp on 1 = 1
   LEFT JOIN de_metas_endcustomer_fresh_reports.get_hu_attribute_value_for_pp_order_and_pp_order_bomline(p_m_attribute_id, bomLine.pp_order_id, bomLine.pp_order_bomline_id)  as Attributes on 1=1
 WHERE
