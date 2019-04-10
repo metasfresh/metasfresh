@@ -3,9 +3,9 @@ package org.adempiere.location.geocoding.openstreetmap;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.adempiere.location.geocoding.GeoCoordinatesProvider;
 import org.adempiere.location.geocoding.GeographicalCoordinates;
-import org.adempiere.location.geocoding.GeographicalCoordinatesProvider;
-import org.adempiere.location.geocoding.GeographicalCoordinatesRequest;
+import org.adempiere.location.geocoding.GeoCoordinatesRequest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -41,7 +41,7 @@ import java.util.Optional;
  * #L%
  */
 @Component
-public class OSMGeographicalCoordinatesProviderImpl implements GeographicalCoordinatesProvider
+public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesProvider
 {
 
 	/**
@@ -63,7 +63,7 @@ public class OSMGeographicalCoordinatesProviderImpl implements GeographicalCoord
 
 	@NonNull
 	@Override
-	public Optional<GeographicalCoordinates> findBestCoordinates(final @NonNull GeographicalCoordinatesRequest request)
+	public Optional<GeographicalCoordinates> findBestCoordinates(final @NonNull GeoCoordinatesRequest request)
 	{
 		final List<GeographicalCoordinates> coords = findAllCoordinates(request);
 
@@ -75,7 +75,7 @@ public class OSMGeographicalCoordinatesProviderImpl implements GeographicalCoord
 	}
 
 	@VisibleForTesting
-	List<GeographicalCoordinates> findAllCoordinates(final @NonNull GeographicalCoordinatesRequest request)
+	List<GeographicalCoordinates> findAllCoordinates(final @NonNull GeoCoordinatesRequest request)
 	{
 		final Map<String, String> parameterList = prepareParameterList(request);
 
@@ -98,7 +98,7 @@ public class OSMGeographicalCoordinatesProviderImpl implements GeographicalCoord
 	}
 
 	@SuppressWarnings("SpellCheckingInspection")
-	@NonNull private Map<String, String> prepareParameterList(final @Nonnull GeographicalCoordinatesRequest request)
+	@NonNull private Map<String, String> prepareParameterList(final @Nonnull GeoCoordinatesRequest request)
 	{
 		String nonNullPostalCode = request.getPostal();
 		if (nonNullPostalCode == null)

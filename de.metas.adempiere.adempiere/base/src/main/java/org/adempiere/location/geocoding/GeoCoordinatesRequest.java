@@ -1,4 +1,4 @@
-package org.adempiere.location.geocoding.interceptor;
+package org.adempiere.location.geocoding;
 
 /*
  * #%L
@@ -22,13 +22,17 @@ package org.adempiere.location.geocoding.interceptor;
  * #L%
  */
 
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.location.LocationId;
 
-@Value(staticConstructor = "of")
-public class LocationGeoUpdateRequest
+@Value
+@Builder
+public class GeoCoordinatesRequest
 {
 	@NonNull
-	LocationId locationId;
+	String countryCode;
+
+	String postal;
+	String address;
 }

@@ -24,7 +24,7 @@ package org.adempiere.location.geocoding;
 
 import java.util.Optional;
 
-public interface GeographicalCoordinatesProvider
+public interface GeoCoordinatesProvider
 {
-	Optional<GeographicalCoordinates> findBestCoordinates(GeographicalCoordinatesRequest request);
+	Optional<GeographicalCoordinates> findBestCoordinates(GeoCoordinatesRequest request);
 }

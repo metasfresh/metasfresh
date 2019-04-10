@@ -1,4 +1,21 @@
-package org.adempiere.location.geocoding.interceptor;
+package org.adempiere.location.geocoding.asynchandler;
+
+import com.google.common.base.Joiner;
+import de.metas.Profiles;
+import de.metas.adempiere.service.ILocationDAO;
+import de.metas.event.IEventBusFactory;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.location.geocoding.GeoCoordinatesProvider;
+import org.adempiere.location.geocoding.GeographicalCoordinates;
+import org.adempiere.location.geocoding.GeoCoordinatesRequest;
+import org.adempiere.location.geocoding.interceptor.C_Location;
+import org.compiere.model.I_C_Location;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.Optional;
 
 /*
  * #%L
@@ -22,34 +39,17 @@ package org.adempiere.location.geocoding.interceptor;
  * #L%
  */
 
-import com.google.common.base.Joiner;
-import de.metas.Profiles;
-import de.metas.adempiere.service.ILocationDAO;
-import de.metas.event.IEventBusFactory;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.location.geocoding.GeographicalCoordinates;
-import org.adempiere.location.geocoding.GeographicalCoordinatesProvider;
-import org.adempiere.location.geocoding.GeographicalCoordinatesRequest;
-import org.compiere.model.I_C_Location;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.util.Optional;
-
 @Component
-//@Profile(Profiles.PROFILE_App)
-//@Profile(Profiles.PROFILE_Webui)
-class LocationGeoUpdateRequestHandler
+@Profile(Profiles.PROFILE_App)
+class LocationGeocodeEventHandler
 {
-	private final GeographicalCoordinatesProvider geo;
+	private final GeoCoordinatesProvider geo;
 
 	private final IEventBusFactory eventBusFactory;
 
-	public LocationGeoUpdateRequestHandler(
+	public LocationGeocodeEventHandler(
 			final IEventBusFactory eventBusFactory,
-			final GeographicalCoordinatesProvider geo)
+			final GeoCoordinatesProvider geo)
 	{
 		this.eventBusFactory = eventBusFactory;
 		this.geo = geo;
@@ -60,10 +60,10 @@ class LocationGeoUpdateRequestHandler
 	{
 		eventBusFactory
 				.getEventBus(C_Location.EVENTS_TOPIC)
-				.subscribeOn(LocationGeoUpdateRequest.class, this::handleEvent);
+				.subscribeOn(LocationGeocodeEventRequest.class, this::handleEvent);
 	}
 
-	private void handleEvent(@NonNull final LocationGeoUpdateRequest request)
+	private void handleEvent(@NonNull final LocationGeocodeEventRequest request)
 	{
 		final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 		final I_C_Location locationRecord = locationsRepo.getById(request.getLocationId());
@@ -72,7 +72,7 @@ class LocationGeoUpdateRequestHandler
 				.skipNulls()
 				.join(locationRecord.getAddress1(), locationRecord.getAddress2(), locationRecord.getAddress3(), locationRecord.getAddress4());
 
-		final GeographicalCoordinatesRequest coordinatesRequest = GeographicalCoordinatesRequest.builder()
+		final GeoCoordinatesRequest coordinatesRequest = GeoCoordinatesRequest.builder()
 				.countryCode(locationRecord.getC_Country().getCountryCode())
 				.address(address)
 				.postal(locationRecord.getPostal())

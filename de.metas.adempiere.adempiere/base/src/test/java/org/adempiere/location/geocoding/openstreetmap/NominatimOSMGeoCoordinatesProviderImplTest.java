@@ -1,7 +1,7 @@
 package org.adempiere.location.geocoding.openstreetmap;
 
 import org.adempiere.location.geocoding.GeographicalCoordinates;
-import org.adempiere.location.geocoding.GeographicalCoordinatesRequest;
+import org.adempiere.location.geocoding.GeoCoordinatesRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,14 +34,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-class OSMGeographicalCoordinatesProviderImplTest
+class NominatimOSMGeoCoordinatesProviderImplTest
 {
-	private OSMGeographicalCoordinatesProviderImpl coordinatesProvider;
+	private NominatimOSMGeoCoordinatesProviderImpl coordinatesProvider;
 
 	@BeforeEach
 	void beforeEach()
 	{
-		coordinatesProvider = new OSMGeographicalCoordinatesProviderImpl();
+		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl();
 	}
 
 	@Test
@@ -49,7 +49,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void singleCoordinate_CountryCodeNo_PostalNo_Addresszzzzzzzzzzzzzz()
 	{
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.address("zzzzzzzzzzzzzzzzzzzzzzzzzzz")
 						.countryCode("")
 						.build());
@@ -62,7 +62,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void bestCoordinatesFindsMetasROOnlyByPostal()
 	{
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.postal("300078")
 						.countryCode("")
 						.build());
@@ -79,7 +79,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void bestCoordinatesCannotFindMetasROByPostalAndWrongCountry()
 	{
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.postal("300078")
 						.countryCode("UK")
 						.build());
@@ -92,7 +92,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void bestCoordinatesFindsMetasROByPostalAndCorrectCountry()
 	{
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.postal("300078")
 						.countryCode("RO")
 						.build());
@@ -109,7 +109,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void shouldIgnoreTheAddressIfAPostalCodeExists()
 	{
 		final List<GeographicalCoordinates> coord = coordinatesProvider.findAllCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.postal("5081")
 						.countryCode("AT")
 						.address("gfvgdggsdfsdfgsdfgsdfgsdfgnull")
@@ -127,7 +127,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void shouldIgnoreTheAddressIfAPostalCodeExists2()
 	{
 		final List<GeographicalCoordinates> coord = coordinatesProvider.findAllCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.postal("5081")
 						.countryCode("AT")
 						.build());
@@ -144,7 +144,7 @@ class OSMGeographicalCoordinatesProviderImplTest
 	void searchForPostalCodeInWrongCountryHasNoResult()
 	{
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
-				GeographicalCoordinatesRequest.builder()
+				GeoCoordinatesRequest.builder()
 						.postal("5081")
 						.countryCode("RO")
 						.build());
