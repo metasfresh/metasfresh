@@ -11,11 +11,11 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -23,17 +23,18 @@ import org.compiere.model.I_AD_User_Record_Access;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.logging.LogManager;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.listeners.CompositeUserGroupAccessChangeListener;
-import de.metas.security.permissions.record_access.listeners.NullUserGroupAccessChangeListener;
+import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent;
+import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent.UserGroupAccessChangeEventBuilder;
+import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEventDispatcher;
 import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
@@ -67,27 +68,16 @@ import lombok.NonNull;
 @Service
 public class UserGroupRecordAccessService
 {
-	private static final Logger logger = LogManager.getLogger(UserGroupRecordAccessService.class);
-
 	private final UserGroupRepository userGroupsRepo;
-	private final UserGroupAccessChangeListener listeners;
+	private final IEventBus eventBus;
 
 	public UserGroupRecordAccessService(
+			@NonNull final IEventBusFactory eventBusFactory,
 			@NonNull final UserGroupRepository userGroupsRepo,
 			@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners)
 	{
 		this.userGroupsRepo = userGroupsRepo;
-
-		this.listeners = listeners
-				.map(CompositeUserGroupAccessChangeListener::of)
-				.orElse(NullUserGroupAccessChangeListener.instance);
-		logger.info("Listeners: {}", this.listeners);
-	}
-
-	@PostConstruct
-	private void postConstruct()
-	{
-		listeners.setUserGroupRecordAccessService(this);
+		eventBus = eventBusFactory.getEventBus(UserGroupAccessChangeEventDispatcher.TOPIC);
 	}
 
 	public void grantAccess(@NonNull final UserGroupRecordAccessGrantRequest request)
@@ -98,7 +88,8 @@ public class UserGroupRecordAccessService
 				.permission(request.getPermission())
 				.build();
 
-		saveAndFire(access);
+		save(access);
+		fireEvent(UserGroupAccessChangeEvent.accessGrant(access));
 	}
 
 	public void revokeAccess(@NonNull final UserGroupRecordAccessRevokeRequest request)
@@ -112,9 +103,11 @@ public class UserGroupRecordAccessService
 				.create()
 				.list();
 
-		final ImmutableSet<UserGroupRecordAccess> accesses = toUserGroupRecordAccessesSet(accessRecords);
 		final Set<Integer> repoIds = extractRepoIds(accessRecords);
-		deleteAndFire(accesses, repoIds);
+		deleteByIds(repoIds);
+
+		final ImmutableSet<UserGroupRecordAccess> accesses = toUserGroupRecordAccessesSet(accessRecords);
+		fireEvent(UserGroupAccessChangeEvent.accessRevokes(accesses));
 	}
 
 	public void copyAccess(@NonNull final TableRecordReference to, @NonNull final TableRecordReference from)
@@ -123,6 +116,8 @@ public class UserGroupRecordAccessService
 				.create()
 				.stream()
 				.collect(GuavaCollectors.toMapByKey(HashMap::new, record -> toUserGroupRecordAccess(record)));
+
+		final UserGroupAccessChangeEventBuilder eventsCollector = UserGroupAccessChangeEvent.builder();
 
 		//
 		// Grant accesses
@@ -135,20 +130,22 @@ public class UserGroupRecordAccessService
 		{
 			final UserGroupRecordAccess toAccess = fromAccess.withRecordRef(to);
 			final I_AD_User_Record_Access toAccessRecord = toAccessRecordsToCheck.remove(toAccess);
-			saveAndFire(toAccess, toAccessRecord);
+			save(toAccess, toAccessRecord);
+			eventsCollector.accessGrant(toAccess);
 		}
 
 		//
 		// Revoke accesses
 		if (!toAccessRecordsToCheck.isEmpty())
 		{
-			deleteAndFire(
-					toAccessRecordsToCheck.keySet(),
-					extractRepoIds(toAccessRecordsToCheck.values()));
+			deleteByIds(extractRepoIds(toAccessRecordsToCheck.values()));
+			eventsCollector.accessRevokes(toAccessRecordsToCheck.keySet());
 		}
+
+		fireEvent(eventsCollector.build());
 	}
 
-	private void saveAndFire(@NonNull final UserGroupRecordAccess access)
+	private void save(@NonNull final UserGroupRecordAccess access)
 	{
 		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
 				.recordRef(access.getRecordRef())
@@ -160,10 +157,10 @@ public class UserGroupRecordAccessService
 				.create()
 				.firstOnly(I_AD_User_Record_Access.class);
 
-		saveAndFire(access, existingRecord);
+		save(access, existingRecord);
 	}
 
-	private void saveAndFire(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
+	private void save(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
 	{
 		final I_AD_User_Record_Access accessRecord = existingAccessRecord != null ? existingAccessRecord : newRecord();
 		updateRecord(accessRecord, access);
@@ -173,13 +170,17 @@ public class UserGroupRecordAccessService
 		}
 
 		saveRecord(accessRecord);
-		listeners.onAccessGranted(access);
 	}
 
-	private void deleteAndFire(final Set<UserGroupRecordAccess> accesses, final Set<Integer> repoIds)
+	private void fireEvent(@NonNull final UserGroupAccessChangeEvent event)
 	{
-		deleteByIds(repoIds);
-		accesses.forEach(listeners::onAccessRevoked);
+		if (event.isEmpty())
+		{
+			return;
+		}
+
+		Services.get(ITrxManager.class)
+				.runAfterCommit(() -> eventBus.postObject(event));
 	}
 
 	private IQueryBuilder<I_AD_User_Record_Access> queryByRecord(@NonNull final TableRecordReference recordRef)

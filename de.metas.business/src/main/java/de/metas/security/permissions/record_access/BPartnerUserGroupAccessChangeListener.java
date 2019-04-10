@@ -44,12 +44,15 @@ import lombok.NonNull;
 class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerUserGroupAccessChangeListener.class);
+	private final UserGroupRecordAccessService service;
 	private final ImmutableMap<String, BPartnerDependentDocumentHandler> dependentDocumentHandlersByTableName;
-	private UserGroupRecordAccessService service;
 
 	public BPartnerUserGroupAccessChangeListener(
+			@NonNull final UserGroupRecordAccessService service,
 			@NonNull final List<BPartnerDependentDocumentHandler> dependentDocumentHandlers)
 	{
+		this.service = service;
+
 		dependentDocumentHandlersByTableName = Maps.uniqueIndex(dependentDocumentHandlers, BPartnerDependentDocumentHandler::getDocumentTableName);
 		logger.info("BPartnerDependentDocumentHandlers: {}", dependentDocumentHandlersByTableName);
 	}
@@ -62,18 +65,12 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 				.toString();
 	}
 
-	@Override
-	public void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
-	{
-		this.service = service;
-	}
-
 	public Set<String> getDependentDocumentTableNames()
 	{
 		return dependentDocumentHandlersByTableName.keySet();
 	}
 
-	public void onBPartnerDependentDocumentCreated(final TableRecordReference documentRef)
+	public void onBPartnerDependentDocumentCreated(@NonNull final TableRecordReference documentRef)
 	{
 		final BPartnerId bpartnerId = extractBPartnerIdFromDependentDocument(documentRef);
 		if (bpartnerId == null)
@@ -144,6 +141,6 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 
 	private static final TableRecordReference toTableRecordReference(final BPartnerId bpartnerId)
 	{
-		return TableRecordReference.of(I_C_BPartner.Table_Name, bpartnerId.getRepoId());
+		return TableRecordReference.of(I_C_BPartner.Table_Name, bpartnerId);
 	}
 }

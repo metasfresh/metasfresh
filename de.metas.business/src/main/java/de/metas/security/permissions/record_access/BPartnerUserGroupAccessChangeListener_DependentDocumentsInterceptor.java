@@ -3,10 +3,16 @@ package de.metas.security.permissions.record_access;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -34,19 +40,22 @@ import lombok.NonNull;
 @Component
 class BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor extends AbstractModelInterceptor
 {
-	private final BPartnerUserGroupAccessChangeListener listener;
+	private final ImmutableSet<String> dependentDocumentTableNames;
+	private final IEventBus eventBus;
 
 	public BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor(
-			@NonNull final BPartnerUserGroupAccessChangeListener listener)
+			@NonNull final BPartnerUserGroupAccessChangeListener listener,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
-		this.listener = listener;
+		this.dependentDocumentTableNames = ImmutableSet.copyOf(listener.getDependentDocumentTableNames());
+		eventBus = eventBusFactory
+				.getEventBus(BPartnerDependentDocumentCreatedEventDispatcher.EVENTS_TOPIC);
 	}
 
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		listener.getDependentDocumentTableNames()
-				.forEach(dependentTableName -> engine.addModelChange(dependentTableName, this));
+		dependentDocumentTableNames.forEach(dependentTableName -> engine.addModelChange(dependentTableName, this));
 	}
 
 	@Override
@@ -54,7 +63,10 @@ class BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor extend
 	{
 		if (changeType.isAfter() && changeType.isNew())
 		{
-			listener.onBPartnerDependentDocumentCreated(TableRecordReference.of(model));
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+			final BPartnerDependentDocumentCreatedEvent event = BPartnerDependentDocumentCreatedEvent.of(TableRecordReference.of(model));
+			trxManager.runAfterCommit(() -> eventBus.postObject(event));
 		}
 	}
 

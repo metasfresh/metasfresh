@@ -1,7 +1,6 @@
 package de.metas.security.permissions.record_access.listeners;
 
 import de.metas.security.permissions.record_access.UserGroupRecordAccess;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 
 /*
  * #%L
@@ -30,10 +29,4 @@ public interface UserGroupAccessChangeListener
 	void onAccessGranted(UserGroupRecordAccess request);
 
 	void onAccessRevoked(UserGroupRecordAccess request);
-
-	/** Called by API */
-	default void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
-	{
-		// override it only if you need it
-	}
 }

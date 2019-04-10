@@ -1,11 +1,11 @@
 package de.metas.security.permissions.record_access.listeners;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.security.permissions.record_access.UserGroupRecordAccess;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -34,6 +34,13 @@ import lombok.ToString;
 @ToString
 public final class CompositeUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
+	public static final UserGroupAccessChangeListener of(@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners)
+	{
+		return listeners
+				.map(CompositeUserGroupAccessChangeListener::of)
+				.orElse(NullUserGroupAccessChangeListener.instance);
+	}
+
 	public static final UserGroupAccessChangeListener of(@NonNull final List<UserGroupAccessChangeListener> listeners)
 	{
 		if (listeners.isEmpty())
@@ -49,15 +56,6 @@ public final class CompositeUserGroupAccessChangeListener implements UserGroupAc
 	private CompositeUserGroupAccessChangeListener(@NonNull final List<UserGroupAccessChangeListener> listeners)
 	{
 		this.listeners = ImmutableList.copyOf(listeners);
-	}
-
-	@Override
-	public void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
-	{
-		for (final UserGroupAccessChangeListener listener : listeners)
-		{
-			listener.setUserGroupRecordAccessService(service);
-		}
 	}
 
 	@Override

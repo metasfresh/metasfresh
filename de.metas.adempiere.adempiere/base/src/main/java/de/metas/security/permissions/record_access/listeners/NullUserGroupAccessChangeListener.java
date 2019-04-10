@@ -1,7 +1,6 @@
 package de.metas.security.permissions.record_access.listeners;
 
 import de.metas.security.permissions.record_access.UserGroupRecordAccess;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 
 /*
  * #%L
@@ -29,14 +28,14 @@ public final class NullUserGroupAccessChangeListener implements UserGroupAccessC
 {
 	public static final transient NullUserGroupAccessChangeListener instance = new NullUserGroupAccessChangeListener();
 
-	private NullUserGroupAccessChangeListener()
+	public static boolean isNull(final UserGroupAccessChangeListener listener)
 	{
+		return listener == null
+				|| listener instanceof NullUserGroupAccessChangeListener;
 	}
 
-	@Override
-	public void setUserGroupRecordAccessService(final UserGroupRecordAccessService service)
+	private NullUserGroupAccessChangeListener()
 	{
-		// nothing
 	}
 
 	@Override
