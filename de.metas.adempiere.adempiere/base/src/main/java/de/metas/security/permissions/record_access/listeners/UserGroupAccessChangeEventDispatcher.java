@@ -14,7 +14,6 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.record_access.UserGroupRecordAccess;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -48,12 +47,16 @@ public class UserGroupAccessChangeEventDispatcher
 	public static final Topic TOPIC = Topic.remote("de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent");
 
 	private final UserGroupAccessChangeListener listeners;
+	private final IEventBusFactory eventBusFactory;
 
 	public UserGroupAccessChangeEventDispatcher(
-			@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners)
+			@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		this.listeners = CompositeUserGroupAccessChangeListener.of(listeners);
 		logger.info("Listeners: {}", this.listeners);
+
+		this.eventBusFactory = eventBusFactory;
 	}
 
 	@PostConstruct
@@ -65,7 +68,6 @@ public class UserGroupAccessChangeEventDispatcher
 			return;
 		}
 
-		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 		eventBusFactory
 				.getEventBus(TOPIC)
 				.subscribeOn(UserGroupAccessChangeEvent.class, this::onEvent);
