@@ -10,6 +10,12 @@ export class BPartner {
     this.contacts = [];
   }
 
+  setName(name) {
+    cy.log(`BPartner - set name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
   setVendor(isVendor) {
     cy.log(`BPartner - set isVendor = ${isVendor}`);
     this.isVendor = isVendor;
@@ -149,13 +155,9 @@ function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
   //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  
-  // Location Name field is readonly (cannot be overwritten)
-  //cy.writeIntoStringField('Name', bPartnerLocation.name);
+  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`);
 
   cy.editAddress('C_Location_ID', function(url) {
-    //cy.writeIntoStringField('City', bPartnerLocation.city);
-    //cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country, null, url);
   });

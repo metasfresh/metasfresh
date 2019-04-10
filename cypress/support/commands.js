@@ -26,6 +26,7 @@
 
 // https://www.cypress.io/blog/2018/01/16/end-to-end-snapshot-testing/#End-to-end-snapshot-testing
 require('@cypress/snapshot').register();
+import 'cypress-plugin-snapshots/commands';
 
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
@@ -126,7 +127,7 @@ context('Reusable "login" custom command', function() {
  */
 Cypress.Commands.add('clearField', (fieldName, modal) => {
   describe('Clear field', function() {
-    cy.log(`clearField - fieldName=${fieldName}`);
+    cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -139,16 +140,36 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
   });
 });
 
+Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    return cy
+      .get(path)
+      .find('input')
+      .invoke('val'); /* note: beats me why .its('value'); returned undefined */
+  });
+});
+
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
-Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
+Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) => {
   describe('Click on a checkbox field', function() {
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
     cy.server();
     cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
     cy.route('GET', '/rest/api/window/**').as('getData');
+
+    cy.log(
+      `clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`
+    );
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -158,7 +179,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, modal) => {
     cy.get(path)
       .find('.input-checkbox-tick')
       .click()
-      .wait(['@patchCheckBox', '@getData']);
+      .waitForFieldValue(`@patchCheckBox`, fieldName, expectedPatchValue);
   });
 });
 
@@ -228,7 +249,6 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
     cy.get(path)
       .find('textarea')
       .type(`${stringValue}{enter}`);
-    //.wait(`@${aliasName}`);
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
 });
@@ -293,7 +313,7 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
     cy.contains('.input-dropdown-list-option', listValue)
       .click()
-      .wait('@patchListField');
+      .waitForFieldValue(`@patchListField`, fieldName, listValue);
   });
 });
 
