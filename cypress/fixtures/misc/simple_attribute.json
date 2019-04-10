@@ -3,11 +3,11 @@
     "description": "TestAttribute1",
     "value": "TestAttribute1",
     "attributeValueType": "List",
-    "isInstanceAttribute": "Y",
-    "isPricingRelevant": "Y",
-    "IsStorageRelevant": "Y",
-    "IsAttrDocumentRelevant": "Y",
-    "attributeValue": [
+    "isInstanceAttribute": true,
+    "isPricingRelevant": true,
+    "isStorageRelevant": true,
+    "isAttrDocumentRelevant": true,
+    "attributeValues": [
         {
           "name": "TestAttributeName1",
           "value": "TestAttributeValue1"
