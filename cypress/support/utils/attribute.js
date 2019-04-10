@@ -112,6 +112,9 @@ function applyAttribute(attribute) {
         applyAttributeValue(attributeValue);
       });
       cy.get('table tbody tr').should('have.length', attribute.attributeValues.length);
+
+      applyAttributeSet(attribute);
+      applyAttributeSetUse(attribute);
     }
   });
 }
@@ -121,5 +124,20 @@ function applyAttributeValue(attributeValue) {
   cy.pressAddNewButton();
   cy.writeIntoStringField('Value', attributeValue.value, true);
   cy.writeIntoStringField('Name', attributeValue.name, true);
+  cy.pressDoneButton();
+}
+
+function applyAttributeSet(attribute) {
+  describe(`Create new AttributeSet ${attribute.name}`, function() {
+    cy.visitWindow('256', 'NEW');
+    cy.writeIntoStringField('Name', attribute.name);
+    cy.selectInListField('MandatoryType', 'Not Mandatary');
+  });
+}
+
+function applyAttributeSetUse(attribute) {
+  cy.get('#tab_M_AttributeUse').click();
+  cy.pressAddNewButton();
+  cy.selectInListField('M_Attribute_ID', `${attribute.value}_${attribute.name}`);
   cy.pressDoneButton();
 }
