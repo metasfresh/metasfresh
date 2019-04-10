@@ -154,7 +154,8 @@ final class EventBus implements IEventBus
 	@Override
 	public void subscribe(@NonNull Consumer<Event> eventConsumer)
 	{
-		subscribe(eventConsumer::accept);
+		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
+		subscribe(listener);
 	}
 
 	@Override
