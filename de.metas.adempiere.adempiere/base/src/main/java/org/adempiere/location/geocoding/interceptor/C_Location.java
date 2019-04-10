@@ -1,8 +1,14 @@
 package org.adempiere.location.geocoding.interceptor;
 
+import com.google.common.base.Joiner;
 import de.metas.adempiere.model.I_C_Location;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.location.LocationId;
 import org.adempiere.location.geocoding.GeographicalCoordinates;
 import org.adempiere.location.geocoding.GeographicalCoordinatesProvider;
 import org.adempiere.location.geocoding.GeographicalCoordinatesRequest;
@@ -38,26 +44,28 @@ import java.util.Optional;
 @Interceptor(I_C_Location.class)
 public class C_Location
 {
-	@Autowired
-	GeographicalCoordinatesProvider geo;
+	static final Topic EVENTS_TOPIC = Topic.remote("org.adempiere.location.geocoding.events");
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE})
-	public void onNewLocation(final  I_C_Location locationRecord)
+	private final IEventBusFactory eventBusFactory;
+
+	public C_Location(final IEventBusFactory eventBusFactory)
 	{
-		final String address = locationRecord.getAddress1() +locationRecord.getAddress2() + locationRecord.getAddress3() + locationRecord.getAddress4();
-		GeographicalCoordinatesRequest coordinatesRequest = GeographicalCoordinatesRequest.builder()
-				.countryCode(locationRecord.getC_Country().getCountryCode())
-				.address(address)
-				.postal(locationRecord.getPostal())
-				.build();
+		this.eventBusFactory = eventBusFactory;
+	}
 
-		final Optional<GeographicalCoordinates> xoy = geo.findBestCoordinates(coordinatesRequest);
-		System.out.printf("\n\n\n\n\n\n\n\n\n\n\\n\n\n%s\n\n\n\n\\n\n\n\n\n\n\n\n", xoy);
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void onNewLocation(final I_C_Location locationRecord)
+	{
+		final LocationId locationId = LocationId.ofRepoId(locationRecord.getC_Location_ID());
 
-		if (xoy.isPresent())
-		{
-			locationRecord.setLatitude(xoy.get().getLatitude());
-			locationRecord.setLongitude(xoy.get().getLongitude());
-		}
+		Services.get(ITrxManager.class)
+				.runAfterCommit(()-> fireLocationGeoUpdateRequest(locationId));
+	}
+
+	private void fireLocationGeoUpdateRequest(final LocationId locationId)
+	{
+		eventBusFactory
+				.getEventBus(EVENTS_TOPIC)
+				.postObject(LocationGeoUpdateRequest.of(locationId));
 	}
 }
