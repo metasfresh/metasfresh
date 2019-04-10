@@ -1,16 +1,16 @@
 {
-    "name": "ListAttributeName",
-    "description": "TestAttribute1",
-    "value": "TestAttribute1",
-    "attributeValueType": "List",
-    "isInstanceAttribute": true,
-    "isPricingRelevant": true,
-    "isStorageRelevant": true,
-    "isAttrDocumentRelevant": true,
-    "attributeValues": [
-        {
-          "name": "TestAttributeName1",
-          "value": "TestAttributeValue1"
-        }
-    ]
+  "name": "ListAttributeName",
+  "description": "TestAttribute1",
+  "value": "TestAttribute1",
+  "attributeValueType": "List",
+  "isInstanceAttribute": true,
+  "isPricingRelevant": true,
+  "isStorageRelevant": true,
+  "isAttrDocumentRelevant": true,
+  "attributeValues": [
+    {
+      "name": "TestAttributeName1",
+      "value": "TestAttributeValue1"
+    }
+  ]
 }
