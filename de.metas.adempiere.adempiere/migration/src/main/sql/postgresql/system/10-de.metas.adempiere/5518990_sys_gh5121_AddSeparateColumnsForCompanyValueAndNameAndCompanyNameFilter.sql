@@ -186,6 +186,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 -- add company name in filter
-update ad_userquery set code='AND<^>Firstname<^> ILIKE /*icase*/ <^><^><~>AND<^>Lastname<^> ILIKE /*icase*/ <^><^><~>AND<^>EMail<^> ILIKE /*icase*/ <^><^><~>AND<^>Phone<^> ILIKE /*icase*/ <^><^><~>AND<^>MobilePhone<^> ILIKE /*icase*/ <^><^><~>AND<^>IsDefaultContact<^>=<^>Y<^><~>AND<^>Companyname<^> ILIKE /*icase*/ <^><^>'
+update ad_userquery set code='AND<^>Companyname<^> ILIKE /*icase*/ <^><^><~>AND<^>Firstname<^> ILIKE /*icase*/ <^><^><~>AND<^>Lastname<^> ILIKE /*icase*/ <^><^><~>AND<^>EMail<^> ILIKE /*icase*/ <^><^><~>AND<^>Phone<^> ILIKE /*icase*/ <^><^><~>AND<^>MobilePhone<^> ILIKE /*icase*/ <^><^><~>AND<^>IsDefaultContact<^>=<^><^>'
 where ad_userquery_id = 540051;
 
