@@ -217,7 +217,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     if (modal) {
       path = `.panel-modal ${path}`;
     }
-
+debugger
     cy.get(path)
       .find('input')
       .type(`${stringValue}`)
