@@ -57,7 +57,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 				.choice()
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.to(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
-				//TODO check how to differentiate if this needs to have edi file or xml as output. maybe a new parameter
+				//TODO use property - for diff
 					//
 					// Single InOut DESADV
 					.when(body().isInstanceOf(EDIExpMInOutType.class))
@@ -66,7 +66,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					// Aggregated InOut DESADV
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						.to(EDIDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
-				//TODO check how to differentiate if this needs to have edi file or xml as output. maybe a new parameter
+				//TODO use property - for diff
 				.end();
 				// @formatter:on
 	}

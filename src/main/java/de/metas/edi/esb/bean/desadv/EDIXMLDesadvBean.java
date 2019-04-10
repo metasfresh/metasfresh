@@ -69,34 +69,30 @@ public class EDIXMLDesadvBean
 		final Xlief4H xlief4H = objectFactory.createXlief4H();
 
 		final HEADERXlief header = objectFactory.createHEADERXlief();
-		//TODO doc no or desadv id?
 		final String documentId = xmlDesadv.getDocumentNo();
 		header.setDOCUMENTID(documentId);
+		//TODO use property
 		header.setPARTNERID(xmlDesadv.getCBPartnerID().getValue());
-		//TODO check where to get this from
+		//TODO check if edi.props.000.sender.gln can be used or create new prop
 		//header.setOWNERID();
 		header.setTESTINDICATOR(isTest);
-		//TODO check if this is another kind of reference
 		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		//TODO use proeprty
+		//header.setAPPLICATIONREF();
 		header.setDOCUMENTTYP(DocumentType.DADV.name());
 		header.setDOCUMENTFUNCTION(DocumentFunction.ORIG.name());
 
-		//TODO check mapping
 		mapDates(xmlDesadv, dateFormat, objectFactory, header, documentId);
 
-		//TODO check mapping
 		mapReferences(xmlDesadv, objectFactory, header, documentId);
 
-		//TODO check mapping
 		mapAddresses(xmlDesadv, objectFactory, header, documentId);
 
-		//TODO check mapping
 		mapPackaging(xmlDesadv, decimalFormat, objectFactory, header, documentId);
 
 		final TRAILR trailr = objectFactory.createTRAILR();
 		trailr.setDOCUMENTID(documentId);
 		trailr.setCONTROLQUAL(ControlQual.LINE.name());
-		//TODO check if control value is ok
 		trailr.setCONTROLVALUE(formatNumber(xmlDesadv.getEDIExpDesadvLine().size(), decimalFormat));
 
 		xlief4H.setHEADER(header);
@@ -131,15 +127,15 @@ public class EDIXMLDesadvBean
 		{
 			final PPACK1 packDetail = objectFactory.createPPACK1();
 			packDetail.setDOCUMENTID(documentId);
-			//TODO use this or hardcode to 1?
-			packDetail.setPACKAGINGDETAIL(ediExpDesadvLineType.getQtyItemCapacity().toString());
-			//TODO where to get this from???
+			//TODO comment why
+			packDetail.setPACKAGINGDETAIL("1");
+			//TODO property ISO1
 			//packDetail.setPACKAGINGCODE();
+			//TODO property OUTE
 			//packDetail.setPACKAGINGLEVEL();
 			packDetail.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.name());
 			final String sscc18Value = Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18());
 			packDetail.setIDENTIFICATIONCODE(sscc18Value);
-			//TODO do we have packaging measurements to map? PMESU1
 
 			mapDetail(decimalFormat, objectFactory, documentId, ediExpDesadvLineType, packDetail);
 			packaging.getPPACK1().add(packDetail);
@@ -182,7 +178,6 @@ public class EDIXMLDesadvBean
 			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PROD.name());
 			prodDescr.setPRODUCTDESCTEXT(ediExpDesadvLineType.getProductDescription());
 			detail.getDPRDE1().add(prodDescr);
-			//TODO anything else to set???
 		}
 
 		final DQUAN1 quantity = objectFactory.createDQUAN1();
@@ -195,33 +190,27 @@ public class EDIXMLDesadvBean
 			qtyDelivered = BigDecimal.ZERO;
 		}
 		quantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
-		// TODO check if this will match measure unit type
-		quantity.setQUANTITYQUAL(ediExpDesadvLineType.getCUOMID().getName());
+		// TODO map UOM from c_uom
+		quantity.setMEASUREMENTUNIT(ediExpDesadvLineType.getCUOMID().getX12DE355());
 		detail.getDQUAN1().add(quantity);
-		//TODO check if we also have invoiced quantity - maybe ediExpDesadvLineType.getQtyEntered()
-
-		//TODO check if we have best before dates to add - DDATE1
 
 		final DREFE1 detailRef = objectFactory.createDREFE1();
 		detailRef.setDOCUMENTID(documentId);
 		detailRef.setLINENUMBER(lineNumber);
 		detailRef.setREFERENCEQUAL(ReferenceQual.LIRN.name());
-		//TODO check what the reference line should be
+		//line number for now - but not sure
 		detailRef.setREFERENCELINE(lineNumber);
 		detail.getDREFE1().add(detailRef);
 
-		//TODO  check if we need DPLAC1, DMARK1
-
 		BigDecimal quantityDiff = ediExpDesadvLineType.getQtyEntered().subtract(qtyDelivered);
-		if (quantityDiff.intValue() > 0)
+		if (quantityDiff.signum() != 0)
 		{
 			final DQVAR1 varianceQuantity = objectFactory.createDQVAR1();
 			varianceQuantity.setDOCUMENTID(documentId);
 			varianceQuantity.setLINENUMBER(lineNumber);
 			varianceQuantity.setQUANTITY(formatNumber(quantityDiff, decimalFormat));
+			//TODO set OVSH  if negative diff
 			varianceQuantity.setDISCREPANCYCODE(getDiscrepancyCode(ediExpDesadvLineType).name());
-			//TODO where to get this from if discrepency code BFOL
-			//varianceQuantity.setDISCREPANCYDATE1();
 			detail.setDQVAR1(varianceQuantity);
 		}
 		packDetail.getDETAIL().add(detail);
@@ -245,22 +234,22 @@ public class EDIXMLDesadvBean
 		deliveryAddress.setDOCUMENTID(documentId);
 		deliveryAddress.setADDRESSQUAL(AddressQual.DELV.name());
 		deliveryAddress.setPARTYIDGLN(deliveryLocation.getGLN());
-		//TODO check if we have and when HRFAD1 info
 		header.getHADRE1().add(deliveryAddress);
 
 		final HADRE1 supplierAddress = objectFactory.createHADRE1();
 		supplierAddress.setDOCUMENTID(documentId);
 		supplierAddress.setADDRESSQUAL(AddressQual.SUPL.name());
-		//TODO is this the supplier??
-		supplierAddress.setPARTYIDGLN(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		//TODO use property
+		//supplierAddress.setPARTYIDGLN();
 		//TODO check where to take adiitional partner from
 		final HRFAD1 hrfad = objectFactory.createHRFAD1();
 		hrfad.setDOCUMENTID(documentId);
 		hrfad.setADDRESSQUAL(AddressQual.SUPL.name());
 		hrfad.setREFERENCEQUAL(ReferenceQual.APAI.name());
 		//	hrfad.setREFERENCE(xmlDesadv.getCBPartnerID().getValue());
-		//TODO add only if we have additional partner
+		//TODO use property
 		//	supplierAddress.setHRFAD1(hrfad);
+
 		//TODO check if we have a contact to map
 		//	supplierAddress.setHCTAD1();
 		header.getHADRE1().add(supplierAddress);
@@ -270,7 +259,6 @@ public class EDIXMLDesadvBean
 			HADRE1 ucAddress = objectFactory.createHADRE1();
 			ucAddress.setDOCUMENTID(documentId);
 			ucAddress.setADDRESSQUAL(AddressQual.ULCO.name());
-			//TODO is this the uc???
 			ucAddress.setPARTYIDGLN(xmlDesadv.getCBPartnerLocationID().getGLN());
 			header.getHADRE1().add(ucAddress);
 		}
@@ -290,12 +278,12 @@ public class EDIXMLDesadvBean
 		}
 		else
 		{
-			reference = Util.mkOwnOrderNumber(xmlDesadv.getDocumentNo());
+			reference = xmlDesadv.getDocumentNo();
 		}
 		orderReference.setREFERENCE(reference);
-		//TODO check if date ordered needs to be set
+		//TODO convert and set
 		//orderReference.setREFERENCEDATE1(xmlDesadv.getDateOrdered());
-		// TODO condition to create reference with a certain qualifier and in  certain cases two references if it's the case
+		// TODO map the same for ORIG as for ORBU
 		header.getHREFE1().add(orderReference);
 	}
 

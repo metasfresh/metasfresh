@@ -73,30 +73,28 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		BigDecimal cutuQty = BigDecimal.ZERO;
 		BigDecimal orderQty = BigDecimal.ZERO;
 		String orderUnit = StringUtils.EMPTY;
-		// TODO check later again
 		for (DQUAN1 dquan1 : detail.getDQUAN1())
 		{
 			QuantityQual quantityQual = QuantityQual.valueOf(dquan1.getQUANTITYQUAL());
 			switch (quantityQual)
 			{
-				//TODO what about the measurement unit if both types of quantity are there?
 				case CUTU:
 				{
 					final String quantityStr = dquan1.getQUANTITY();
 					cutuQty = cutuQty.add(new BigDecimal(quantityStr));
-					orderUnit = dquan1.getMEASUREMENTUNIT();
 					break;
 				}
 				case ORDR:
 				{
 					final String quantityStr = dquan1.getQUANTITY();
 					orderQty = orderQty.add(new BigDecimal(quantityStr));
+					//TODO explain
 					orderUnit = dquan1.getMEASUREMENTUNIT();
 					break;
 				}
 			}
 		}
-		if (cutuQty == BigDecimal.ZERO)
+		if (cutuQty.compareTo(BigDecimal.ZERO) == 0)
 		{
 			cutuQty = BigDecimal.ONE;
 		}
@@ -104,7 +102,7 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		p100.setOrderQty(orderQty.toString());
 		p100.setOrderUnit(orderUnit);
 
-		//TODO check mapping - very unsure here
+		//TODO get first price
 		BigDecimal price = BigDecimal.ZERO;
 		for (DPRIC1 dpric1 : detail.getDPRIC1())
 		{
@@ -115,7 +113,6 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		// ProductDescription
 		for (DPRDE1 dprde1 : detail.getDPRDE1())
 		{
-			//TODO check mapping, is another condition necessary?
 			if (ProductDescQual.valueOf(dprde1.getPRODUCTDESCQUAL()) == ProductDescQual.PROD)
 			{
 				final String productDescription = dprde1.getPRODUCTDESCTEXT();
@@ -128,7 +125,7 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		//TODO check mapping
 		for (DPRIN1 dprin1 : detail.getDPRIN1())
 		{
-			// upc, ean or ucc
+			//TODO order: EANT, UPCt, EANC, UPCC, GTIN
 			if (ProductQual.valueOf(dprin1.getPRODUCTQUAL()) == ProductQual.GTIN)
 			{
 				p100.setEanArtNo(dprin1.getPRODUCTID());
@@ -136,7 +133,6 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 			}
 		}
 
-		// TODO check mapping
 		if (header.getHCURR1() != null)
 		{
 			final String currency = header.getHCURR1().getCURRENCYCODE();
