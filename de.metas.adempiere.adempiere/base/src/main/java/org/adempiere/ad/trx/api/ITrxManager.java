@@ -320,6 +320,9 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void runOutOfTransaction(TrxRunnable r);
 
+	/** Run after current transaction is committed. If no transaction, the code is executed right away. */
+	void runAfterCommit(final Runnable runnable);
+
 	/**
 	 * Commit transaction for given <code>trxName</code>.
 	 *
