@@ -17,6 +17,7 @@
           "trailingComma": "es5",
           "tabWidth": 2,
           "printWidth": 120,
+          "endOfLine":"auto"
         }],
         "no-unused-expressions": 0,
         "chai-friendly/no-unused-expressions": 2,
