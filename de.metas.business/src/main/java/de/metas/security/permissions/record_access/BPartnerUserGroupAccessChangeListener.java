@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
@@ -48,7 +49,7 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 	private final ImmutableMap<String, BPartnerDependentDocumentHandler> dependentDocumentHandlersByTableName;
 
 	public BPartnerUserGroupAccessChangeListener(
-			@NonNull final UserGroupRecordAccessService service,
+			@NonNull @Lazy final UserGroupRecordAccessService service,
 			@NonNull final List<BPartnerDependentDocumentHandler> dependentDocumentHandlers)
 	{
 		this.service = service;
