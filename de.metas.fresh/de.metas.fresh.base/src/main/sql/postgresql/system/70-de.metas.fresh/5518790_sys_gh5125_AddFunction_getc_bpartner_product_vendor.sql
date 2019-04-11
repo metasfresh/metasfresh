@@ -6,7 +6,7 @@ stable
 language sql
 as $$
 SELECT
-  DISTINCT ON (iscurrentvendor, ProductNo, ProductName)
+  DISTINCT ON (iscurrentvendor)
   ProductNo,
   ProductName,
   C_BPartner_Product_ID
