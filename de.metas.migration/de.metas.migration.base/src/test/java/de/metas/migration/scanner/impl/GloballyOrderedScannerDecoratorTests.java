@@ -70,10 +70,10 @@ public class GloballyOrderedScannerDecoratorTests
 	public void testSupplier()
 	{
 		final InputStream is1 = new ByteArrayInputStream("somecommand".getBytes(StandardCharsets.UTF_8));
-		final IScript script1 = new LocalScript("10-test", "10-de.metas.adempiere", "5442050_sys_09628_add_AD_JavaClasses_and_JaxRs_Endpoints.sql", is1);
+		final IScript script1 = new LocalScript("10-de.metas.adempiere", "5442050_sys_09628_add_AD_JavaClasses_and_JaxRs_Endpoints.sql", is1);
 
 		final InputStream is2 = new ByteArrayInputStream("somecommand".getBytes(StandardCharsets.UTF_8));
-		final IScript script2 = new LocalScript("20-test", "20-de.metas.jax.rs", "5441640_sys_09848_add_table_AD_JAXRS_Endpoint.sql", is2);
+		final IScript script2 = new LocalScript("20-de.metas.jax.rs", "5441640_sys_09848_add_table_AD_JAXRS_Endpoint.sql", is2);
 
 
 		final GloballyOrderedScannerDecorator testee = new GloballyOrderedScannerDecorator(PlainListScriptScanner.fromScripts(ImmutableList.<IScript>of(script1, script2)));

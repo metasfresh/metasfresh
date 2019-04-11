@@ -32,6 +32,7 @@ import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
@@ -51,18 +52,21 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 		transactionResult.setResponseCodeEffective(resultOverride);
 
 		final I_C_Order order = load(transactionResult.getC_Order_ID(), I_C_Order.class);
-		if (ResultCode.fromName(resultOverride) == ResultCode.P)
+		if (order != null && StringUtils.equals(order.getPaymentRule(), transactionResult.getPaymentRule()))
 		{
-			order.setCreditpassFlag(false);
-			final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY);
-			order.setCreditpassStatus(message.translate(Env.getAD_Language()));
-		}
-		else
-		{
-			order.setCreditpassFlag(true);
-			final String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
-			final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
-			order.setCreditpassStatus(message.translate(Env.getAD_Language()));
+			if (ResultCode.fromName(resultOverride) == ResultCode.P)
+			{
+				order.setCreditpassFlag(false);
+				final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY);
+				order.setCreditpassStatus(message.translate(Env.getAD_Language()));
+			}
+			else
+			{
+				order.setCreditpassFlag(true);
+				final String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
+				final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
+				order.setCreditpassStatus(message.translate(Env.getAD_Language()));
+			}
 		}
 
 		save(transactionResult);
