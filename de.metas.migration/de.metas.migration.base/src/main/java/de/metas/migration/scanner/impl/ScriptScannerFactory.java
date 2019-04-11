@@ -1,5 +1,7 @@
 package de.metas.migration.scanner.impl;
 
+import java.io.File;
+
 /*
  * #%L
  * de.metas.migration.base
@@ -13,11 +15,11 @@ package de.metas.migration.scanner.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -93,6 +95,18 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 
 		final Class<? extends IScriptScanner> scannerClass = scriptScannerClasses.get(fileExtensionNorm);
 		return scannerClass;
+	}
+
+	@Override
+	public IScriptScanner createScriptScannerByFilename(final String filename)
+	{
+		final IFileRef fileRef = new FileRef(new File(filename));
+		final IScriptScanner scriptScanner = createScriptScanner(fileRef);
+		if (scriptScanner == null)
+		{
+			throw new RuntimeException("No script scanner found for " + filename);
+		}
+		return scriptScanner;
 	}
 
 	@Override

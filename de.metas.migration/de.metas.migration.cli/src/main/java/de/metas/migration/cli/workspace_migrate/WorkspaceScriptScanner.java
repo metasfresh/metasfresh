@@ -176,10 +176,9 @@ class WorkspaceScriptScanner implements IScriptScanner
 		for (final File subProjectDir : scriptsRootDir.listFiles(File::isDirectory))
 		{
 			final String projectName = subProjectDir.getName();
-			final String moduleName = null;
 			for (final File scriptFile : subProjectDir.listFiles(this::isSupportedScriptFile))
 			{
-				scripts.add(new LocalScript(projectName, moduleName, scriptFile));
+				scripts.add(new LocalScript(projectName, scriptFile));
 			}
 		}
 
@@ -187,8 +186,7 @@ class WorkspaceScriptScanner implements IScriptScanner
 		// Script files directly in .../src/main/sql/postgresql/system/ folder
 		for (final File scriptFile : scriptsRootDir.listFiles(File::isFile))
 		{
-			final String moduleName = null;
-			scripts.add(new LocalScript(defaultProjectName, moduleName, scriptFile));
+			scripts.add(new LocalScript(defaultProjectName, scriptFile));
 		}
 
 		logger.info("Considering {} ({} scripts)", projectDir, scripts.size());
