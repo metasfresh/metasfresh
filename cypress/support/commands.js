@@ -156,6 +156,22 @@ Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
   });
 });
 
+Cypress.Commands.add('isChecked', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    return cy
+      .get(path)
+      .find('[type="checkbox"]')
+      .should('be.checked');
+  });
+});
+
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
@@ -167,9 +183,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
     cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
     cy.route('GET', '/rest/api/window/**').as('getData');
 
-    cy.log(
-      `clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`
-    );
+    cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -217,7 +231,6 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     if (modal) {
       path = `.panel-modal ${path}`;
     }
-debugger
     cy.get(path)
       .find('input')
       .type(`${stringValue}`)
