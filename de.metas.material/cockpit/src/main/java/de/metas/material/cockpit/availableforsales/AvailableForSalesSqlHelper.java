@@ -84,14 +84,11 @@ public class AvailableForSalesSqlHelper
 		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), false/* dayOnly */);
 
 		final AttributesKey storageAttributesKey = availableForSalesQuery.getStorageAttributesKey();
-		final String storageAttributesKeyString = AttributesKey.ALL.equals(storageAttributesKey)
-				? "" /* with "", we also match "-1002" i.e. "none" */
-				: storageAttributesKey.getAsString();
 
 		final String sqlFrom = "de_metas_material.retrieve_available_for_sales("
 				+ "p_QueryNo => " + queryNo
 				+ ", p_M_Product_ID => " + availableForSalesQuery.getProductId()
-				+ ", p_StorageAttributesKey => '" + storageAttributesKeyString + "'"
+				+ ", p_StorageAttributesKey => '" + storageAttributesKey.getAsString() + "'"
 				+ ", p_PreparationDate => " + dateString
 				+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
 				+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()
