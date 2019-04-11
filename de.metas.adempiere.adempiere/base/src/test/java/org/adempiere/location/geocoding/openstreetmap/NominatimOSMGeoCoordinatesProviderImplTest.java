@@ -3,12 +3,14 @@ package org.adempiere.location.geocoding.openstreetmap;
 import org.adempiere.location.geocoding.GeographicalCoordinates;
 import org.adempiere.location.geocoding.GeoCoordinatesRequest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@Disabled("It makes real queries which can't be mocked so don't run it automatically.")
 class NominatimOSMGeoCoordinatesProviderImplTest
 {
 	private NominatimOSMGeoCoordinatesProviderImpl coordinatesProvider;
@@ -41,7 +44,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	@BeforeEach
 	void beforeEach()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl();
+		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", TimeUnit.SECONDS.toMillis(4), 100);
 	}
 
 	@Test

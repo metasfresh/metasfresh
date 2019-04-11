@@ -1,11 +1,17 @@
 package org.adempiere.location.geocoding.openstreetmap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.location.geocoding.GeoCoordinatesProvider;
-import org.adempiere.location.geocoding.GeographicalCoordinates;
 import org.adempiere.location.geocoding.GeoCoordinatesRequest;
+import org.adempiere.location.geocoding.GeographicalCoordinates;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -14,10 +20,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -43,23 +52,53 @@ import java.util.Optional;
 @Component
 public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesProvider
 {
+	private static final Logger logger = LogManager.getLogger(NominatimOSMGeoCoordinatesProviderImpl.class);
 
 	/**
 	 * Please observe the 2 URLs.
 	 * Issue with WRONG_BASE_URL is that when using <pre>search?q={address}&postalcode={postalcode}</pre>
 	 * Nominatim tries to search for BOTH a postal and an address. <br/>
-	 *
+	 * <p>
 	 * In some cases the address may be wrong so we get no response. <br>
-	 *
-	 * With the second BASE_URL Nominatim ignores the address and just searches for postal.
-	 *
+	 * <p>
+	 * With the second QUERY_STRING Nominatim ignores the address and just searches for postal.
+	 * <p>
 	 * Country is taken into account in both cases.
 	 */
-	//	private static final String WRONG_BASE_URL = "https://nominatim.openstreetmap.org/search?q={address}&postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
-	@SuppressWarnings("SpellCheckingInspection")
-	private static final String BASE_URL = "https://nominatim.openstreetmap.org/search/{address}?postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
+	//	private static final String WRONG_URL = "https://nominatim.openstreetmap.org/search?q={address}&postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
+	private static String BASE_URL = "https://nominatim.openstreetmap.org/search/";
+	@SuppressWarnings("SpellCheckingInspection") private static final String QUERY_STRING = "{address}?postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
 
 	private final RestTemplate restTemplate = new RestTemplateBuilder().build();
+
+	private final CCache<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>> coordinatesCache;
+
+	private final long millisBetweenRequests;
+	private Instant lastRequestTime;
+
+	NominatimOSMGeoCoordinatesProviderImpl(
+			@Value("${de.metas.location.geocoding.openstreetmap.baseUrl}") final String baseUrl,
+			@Value("${de.metas.location.geocoding.openstreetmap.millisBetweenRequests:2000}") final long millisBetweenRequests,
+			@Value("${de.metas.location.geocoding.openstreetmap.cacheCapacity:200}") final int cacheCapacity
+	)
+	{
+		if (!Check.isEmpty(baseUrl, true))
+		{
+			BASE_URL = baseUrl;
+		}
+		logger.info("baseUrl={}", BASE_URL);
+
+		lastRequestTime = Instant.now();
+
+		this.millisBetweenRequests = millisBetweenRequests;
+		logger.info("millisBetweenRequests={}", millisBetweenRequests);
+
+		logger.info("cacheCapacity={}", cacheCapacity);
+		coordinatesCache = CCache.<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>>builder()
+				.cacheMapType(CCache.CacheMapType.LRU)
+				.initialCapacity(cacheCapacity)
+				.build();
+	}
 
 	@NonNull
 	@Override
@@ -75,7 +114,29 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 	}
 
 	@VisibleForTesting
-	List<GeographicalCoordinates> findAllCoordinates(final @NonNull GeoCoordinatesRequest request)
+	ImmutableList<GeographicalCoordinates> findAllCoordinates(final @NonNull GeoCoordinatesRequest request)
+	{
+		final ImmutableList<GeographicalCoordinates> response = coordinatesCache.get(request);
+		if (response != null)
+		{
+			return response;
+		}
+		rateLimitAsNeeded();
+
+		return coordinatesCache.getOrLoad(request, this::queryAllCoordinates);
+	}
+
+	private synchronized void rateLimitAsNeeded()
+	{
+		final Instant shouldBeBeforeNow = lastRequestTime.plusMillis(millisBetweenRequests);
+		if (shouldBeBeforeNow.isAfter(Instant.now()))
+		{
+			final long timeToSleep = Duration.between(shouldBeBeforeNow, Instant.now()).toMillis();
+			sleepMillis(timeToSleep);
+		}
+	}
+
+	private ImmutableList<GeographicalCoordinates> queryAllCoordinates(final @NonNull GeoCoordinatesRequest request)
 	{
 		final Map<String, String> parameterList = prepareParameterList(request);
 
@@ -84,17 +145,19 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		//@formatter:on
 
 		final ResponseEntity<List<NominatimOSMGeographicalCoordinatesJSON>> exchange = restTemplate.exchange(
-				BASE_URL,
+				BASE_URL + QUERY_STRING,
 				HttpMethod.GET,
 				null,
 				returnType,
 				parameterList);
 
 		final List<NominatimOSMGeographicalCoordinatesJSON> coords = exchange.getBody();
+
+		lastRequestTime = Instant.now();
+
 		return coords.stream()
 				.map(it -> new GeographicalCoordinates(it.getLat(), it.getLon()))
 				.collect(GuavaCollectors.toImmutableList());
-
 	}
 
 	@SuppressWarnings("SpellCheckingInspection")
@@ -125,4 +188,15 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		return m;
 	}
 
+	private void sleepMillis(final long timeToSleep)
+	{
+		try
+		{
+			TimeUnit.MILLISECONDS.sleep(timeToSleep);
+		}
+		catch (final InterruptedException e)
+		{
+			// nothing to do here
+		}
+	}
 }
