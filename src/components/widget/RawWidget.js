@@ -121,10 +121,9 @@ export class RawWidget extends Component {
     const { lastFormField } = this.props;
 
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      if (!lastFormField) {
+      if (e.key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
-
       return this.handlePatch(property, value);
     }
   };
