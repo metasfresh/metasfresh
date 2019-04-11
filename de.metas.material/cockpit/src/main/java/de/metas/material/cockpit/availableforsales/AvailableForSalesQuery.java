@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -36,9 +35,8 @@ public class AvailableForSalesQuery
 {
 	int productId;
 
-	@Default
 	@NonNull
-	AttributesKey storageAttributesKey = AttributesKey.ALL;
+	AttributesKey storageAttributesKey;
 
 	@NonNull
 	Instant dateOfInterest;

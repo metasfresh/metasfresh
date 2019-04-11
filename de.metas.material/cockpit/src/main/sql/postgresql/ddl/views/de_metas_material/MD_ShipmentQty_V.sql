@@ -14,7 +14,7 @@ FROM
   M_Product p
   JOIN LATERAL (
     select 
-        COALESCE(s.QtyToDeliver, ol.QtyOrdered) AS QtyToBeShipped,
+        COALESCE(s.s_QtyReserved, ol.QtyOrdered) AS QtyToBeShipped,
 
         /* we expect relatively few rows to create the AttributesKey for, 
            because this view is invoked only for a certain SalesOrderLastUpdated /PreparationDate range */
@@ -34,7 +34,7 @@ FROM
             ol.Updated
         from C_OrderLine ol
         join C_Order o ON o.C_Order_ID=ol.C_Order_ID
-        where o.IsSOTrx='Y' AND ol.Processed='N'
+        where o.IsSOTrx='Y' /* don't exclude processed records; the shipment schedule might no be there just yet */
             AND ol.M_Product_ID = p.M_Product_ID
     ) ol
     FULL OUTER JOIN (
@@ -42,7 +42,7 @@ FROM
             s.M_AttributeSetInstance_ID, 
             s.PreparationDate_Override AS s_PreparationDate_Override, 
             s.PreparationDate AS s_PreparationDate, 
-            s.QtyToDeliver
+            GREATEST(COALESCE(s.QtyReserved, 0), 0) AS s_QtyReserved
         from M_ShipmentSchedule s
         where s.Processed='N'
             AND s.M_Product_ID = p.M_Product_ID
