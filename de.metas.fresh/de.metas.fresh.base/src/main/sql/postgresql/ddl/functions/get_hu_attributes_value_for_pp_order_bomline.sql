@@ -17,7 +17,7 @@ $$
 LANGUAGE sql
 STABLE;	
 comment on function de_metas_endcustomer_fresh_reports.get_hu_attribute_value_for_pp_order_and_pp_order_bomline( IN numeric, IN numeric, IN numeric )
-is 'This function returns a attribute value for matching PP_Order and pp_order_bomline.
-pp_order_bomline parameter can be bull and then the attribute value for the product produced is retrieved
-If multiple pp_order_bomline records match, is retrieved a string obatined by aggregating attribute values, separate by comma.
+is 'This function returns a attribute value for matching PP_Order and PP_Order_BomLine.
+p_pp_order_bomline_id parameter can be bull and then the attribute value for the product produced is retrieved
+If multiple pp_order_bomline records match, it retrieves a string obatined by aggregating attribute values, separated by comma.
 ';
