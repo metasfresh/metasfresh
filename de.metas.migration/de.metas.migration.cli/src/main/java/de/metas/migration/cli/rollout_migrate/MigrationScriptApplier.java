@@ -9,11 +9,10 @@ import de.metas.migration.IDatabase;
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.impl.AbstractScriptsApplierTemplate;
-import de.metas.migration.scanner.IFileRef;
 import de.metas.migration.scanner.IScriptFactory;
 import de.metas.migration.scanner.IScriptScanner;
 import de.metas.migration.scanner.IScriptScannerFactory;
-import de.metas.migration.scanner.impl.FileRef;
+import de.metas.migration.scanner.impl.CompositeScriptScanner;
 import de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -65,8 +64,6 @@ class MigrationScriptApplier
 		logger.info("Just mark the script as executed: " + config.isJustMarkScriptAsExecuted());
 		logger.info("Script file: " + config.getScriptFileName());
 
-		final File sqlDir = constructSqlDir(config.getRolloutDirName());
-
 		final AbstractScriptsApplierTemplate scriptApplier = new AbstractScriptsApplierTemplate()
 		{
 			@Override
@@ -84,28 +81,45 @@ class MigrationScriptApplier
 			@Override
 			protected IScriptScanner createScriptScanner(final IScriptScannerFactory scriptScannerFactory)
 			{
-				final String fileName;
+				final CompositeScriptScanner scriptScanners = new CompositeScriptScanner();
+
+				final File sqlDir = constructSqlDir(config.getRolloutDirName());
 				if (config.getScriptFileName() != null && !config.getScriptFileName().isEmpty())
 				{
 					if (new File(config.getScriptFileName()).exists())
 					{
-						fileName = config.getScriptFileName();
+						final String filename = config.getScriptFileName();
+						final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScannerByFilename(filename);
+						scriptScanners.addScriptScanner(scriptScanner);
 					}
 					else
 					{
-						fileName = sqlDir.getAbsolutePath() + File.separator + config.getScriptFileName();
+						final String filename = sqlDir.getAbsolutePath() + File.separator + config.getScriptFileName();
+						final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScannerByFilename(filename);
+						scriptScanners.addScriptScanner(scriptScanner);
 					}
 				}
 				else
 				{
-					fileName = sqlDir.getAbsolutePath();
+					final String filename = sqlDir.getAbsolutePath();
+					final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScannerByFilename(filename);
+					scriptScanners.addScriptScanner(scriptScanner);
 				}
 
-				final IFileRef fileRef = new FileRef(new File(fileName));
-				final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(fileRef);
+				//
+				config.getAdditionalSqlDirs()
+						.stream()
+						.forEach(file -> {
+							final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(file);
+							if (scriptScanner == null)
+							{
+								throw new RuntimeException("Cannot create script scanner from " + file);
+							}
+							logger.info("Additional SQL source: {}", file);
+							scriptScanners.addScriptScanner(scriptScanner);
+						});
 
-				final IScriptScanner result = new GloballyOrderedScannerDecorator(scriptScanner);
-				return result;
+				return new GloballyOrderedScannerDecorator(scriptScanners);
 			}
 
 			@Override
@@ -134,7 +148,7 @@ class MigrationScriptApplier
 		logger.info("Rollout directory: " + rolloutDir);
 
 		final File sqlDir = directoryChecker.checkDirectory("SQL Directory", new File(rolloutDir, "sql"));
-		logger.info("SQL directory: " + sqlDir);
+		logger.info("SQL directory: {}", sqlDir);
 
 		return sqlDir;
 	}

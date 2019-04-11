@@ -40,8 +40,6 @@ public class LocalScript implements IScript
 	@Getter
 	private final String projectName;
 	@Getter
-	private final String moduleName;
-	@Getter
 	private final String fileName;
 	@Getter
 	private final ScriptType type;
@@ -52,19 +50,17 @@ public class LocalScript implements IScript
 	@Setter
 	private long lastDurationMillis = -1;
 
-	public LocalScript(final String projectName, final String moduleName, final File file)
+	public LocalScript(final String projectName, final File file)
 	{
 		this.projectName = projectName;
-		this.moduleName = moduleName;
 		fileName = file.getName();
 		type = FileUtils.getScriptTypeByFilename(fileName);
 		localFile = file.getAbsoluteFile();
 	}
 
-	public LocalScript(final String projectName, final String moduleName, final String filename, final InputStream in)
+	public LocalScript(final String projectName, final String filename, final InputStream in)
 	{
 		this.projectName = projectName;
-		this.moduleName = moduleName;
 		this.fileName = filename;
 		type = FileUtils.getScriptTypeByFilename(filename);
 		localFile = FileUtils.createLocalFile(filename, in);

@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.URL;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -14,8 +15,14 @@ import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
 import de.metas.migration.cli.rollout_migrate.Config.ConfigBuilder;
+import de.metas.migration.scanner.IFileRef;
+import de.metas.migration.scanner.impl.FileRef;
+import de.metas.migration.util.FileUtils;
 
 /*
  * #%L
@@ -52,10 +59,12 @@ class CommandlineParams
 	private static final String OPTION_JustMarkScriptAsExecuted = "r";
 	private static final String OPTION_CreateNewDB = "n";
 	private static final String OPTION_Interactive = "a"; // "a" (from ask)
+
 	private static final String OPTION_DoNotCheckVersions = "v";
 	private static final String OPTION_DoNotStoreVersion = "u";
-
 	public static final String OPTION_DoNotFailIfRolloutIsGreaterThanDB = "i";
+
+	public static final String OPTION_LONG_AddSqlDir = "add-sql-dir";
 
 	private final Options options;
 
@@ -97,8 +106,8 @@ class CommandlineParams
 		{
 			final Option option = new Option(OPTION_SettingsFile,
 					"Name of the (s)ettings file that is needed to access the DB. May be an absolute file name (e.g. /home/metasfresh/rolloutdir/settings.properties).\n"
-					+ "If the given value can't be accessed as absolute file name, the tool will try again, prepending the rollout directory to the path.\n"
-					+ "If ommitted altogether, then "
+							+ "If the given value can't be accessed as absolute file name, the tool will try again, prepending the rollout directory to the path.\n"
+							+ "If ommitted altogether, then "
 							+ System.getProperty("user.home") + "/" + Config.DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
 			option.setArgs(1);
 			option.setArgName("Settings file");
@@ -151,6 +160,15 @@ class CommandlineParams
 			option.setRequired(false);
 			options.addOption(option);
 		}
+
+		{
+			final Option option = new Option(/* opt */null, "Adds additional SQL scripts directory or URL to be considered.");
+			option.setLongOpt(OPTION_LONG_AddSqlDir);
+			option.setArgs(1);
+			option.setRequired(false);
+			options.addOption(option);
+		}
+
 		return options;
 	}
 
@@ -220,15 +238,59 @@ class CommandlineParams
 			configBuilder.storeVersion(false);
 		}
 
+		configBuilder.additionalSqlDirs(extractAdditionalSqlDirs(cmd));
+
 		final Config config = configBuilder.canRun(true).build();
-		logger.info("config=" + config);
+		logger.info("config={}", config);
 
 		return config;
 	}
 
-	private String stripQuotes(final String rolloutDir)
+	private ImmutableSet<IFileRef> extractAdditionalSqlDirs(final CommandLine cmd)
 	{
-		if(rolloutDir==null)
+		final String[] additionalSqlDirs = cmd.getOptionValues(OPTION_LONG_AddSqlDir);
+		if (additionalSqlDirs == null || additionalSqlDirs.length == 0)
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet.Builder<IFileRef> result = ImmutableSet.builder();
+		for (String additionalSqlDir : additionalSqlDirs)
+		{
+			final URL url;
+			try
+			{
+				url = new URL(additionalSqlDir);
+			}
+			catch (Exception ex)
+			{
+				throw new IllegalArgumentException("Invalid " + OPTION_LONG_AddSqlDir + " argument : " + additionalSqlDir, ex);
+			}
+
+			final IFileRef localFile = downloadUrl(url);
+			result.add(localFile);
+		}
+
+		return result.build();
+	}
+
+	private IFileRef downloadUrl(final URL url)
+	{
+		logger.info("Downloading {}......", url);
+		Stopwatch stopwatch = Stopwatch.createStarted();
+
+		final File file = FileUtils.downloadUrl(url);
+		final FileRef fileRef = new FileRef(file);
+
+		stopwatch.stop();
+		logger.info("Downloaded {} in {}.", url, stopwatch);
+
+		return fileRef;
+	}
+
+	private static String stripQuotes(final String rolloutDir)
+	{
+		if (rolloutDir == null)
 		{
 			return null;
 		}
