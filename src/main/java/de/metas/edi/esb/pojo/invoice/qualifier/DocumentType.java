@@ -25,5 +25,5 @@ package de.metas.edi.esb.pojo.invoice.qualifier;
 
 public enum DocumentType
 {
-	CMIV, CRNO, DBNO
+	CMIV, CRNO, DBNO, CRNF, DBNF, CSIV, CSCN
 }

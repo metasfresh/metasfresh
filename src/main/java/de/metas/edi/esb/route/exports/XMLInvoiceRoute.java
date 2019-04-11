@@ -34,7 +34,6 @@ import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
@@ -45,22 +44,23 @@ import java.text.DecimalFormat;
 @Component
 public class XMLInvoiceRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "XML-Invoice-To-XML-EDI-Invoic";
+	private static final String ROUTE_ID = "XML-Invoice-To-XML-EDI-Invoic";
 
 	private static final String EDI_INVOICE_XML_FILENAME_PATTERN = "edi.file.invoice.xml.filename";
 
 	public static final String EP_EDI_INVOICE_XML_CONSUMER = "direct:edi.invoice.xml.consumer";
 
-	public static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
+	public static final String EDI_XML_PARTNER_ID = "edi.props.stepcom.partner.id";
+	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
+	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
+
+	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 	public static final String EDI_XML_INVOICE_IS_TEST = "edi.xml.props.invoice.isTest";
 
-	public final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
-	public static final String METHOD_setCInvoiceID = "setCInvoiceID";
+	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
+	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
-	/**
-	 * The FILE folder where the EDI file will be stored
-	 */
-	public static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoice.xml}}";
+	private static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoice.xml}}";
 
 	private static final String JAXB_INVOICE_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -78,6 +78,9 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN);
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST);
+		final String partnerId = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_PARTNER_ID);
+		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_OWNER_ID);
+		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_APPLICATION_REF);
 		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_ORDER_EDIMessageDatePattern);
 
 		from(XMLInvoiceRoute.EP_EDI_INVOICE_XML_CONSUMER)
@@ -86,22 +89,20 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST).constant(isTest)
+				.setProperty(XMLInvoiceRoute.EDI_XML_PARTNER_ID).constant(partnerId)
+				.setProperty(XMLInvoiceRoute.EDI_XML_OWNER_ID).constant(ownerId)
+				.setProperty(XMLInvoiceRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(XMLInvoiceRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
-				.process(new Processor()
-				{
-					@Override
-					public void process(final Exchange exchange)
-					{
-						// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
+				.process(exchange -> {
+					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
 
-						final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
+					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID());
-					}
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID());
 				})
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI XML Java Object...")
@@ -117,7 +118,7 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 				.to(XMLInvoiceRoute.EP_EDI_XML_FILE_INVOICE)
 
 				.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
-				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, XMLInvoiceRoute.EDIInvoiceFeedback_QNAME, XMLInvoiceRoute.METHOD_setCInvoiceID))
+				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, XMLInvoiceRoute.EDIInvoiceFeedback_QNAME, XMLInvoiceRoute.METHOD_setCInvoiceID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)

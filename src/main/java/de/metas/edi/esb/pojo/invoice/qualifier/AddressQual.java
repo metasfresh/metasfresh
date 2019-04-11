@@ -26,4 +26,5 @@ package de.metas.edi.esb.pojo.invoice.qualifier;
 public enum AddressQual
 {
 	SUPL, BUYR, DELV, IVCE, ULCO, ISSI
+
 }

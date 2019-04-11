@@ -23,12 +23,14 @@
 
 package de.metas.edi.esb.bean.order;
 
+import de.metas.edi.esb.pojo.common.MeasurementUnit;
 import de.metas.edi.esb.pojo.order.*;
 import de.metas.edi.esb.pojo.order.compudata.H000;
 import de.metas.edi.esb.pojo.order.compudata.H100;
 import de.metas.edi.esb.pojo.order.compudata.P100;
 import de.metas.edi.esb.pojo.order.qualifier.*;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,22 +43,22 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 	{
 		final List<OrderEDI> ediDocuments = new ArrayList<>();
 
-		OrderEDI orderEDI = new OrderEDI(new H000());
+		final OrderEDI orderEDI = new OrderEDI(new H000());
 		ediDocuments.add(orderEDI);
 		Document ordersDocument = (Document)orders.get(0);
 		for (final Xbest4H order : ordersDocument.getXbest4H())
 		{
-			HEADERXbest header = order.getHEADER();
+			final HEADERXbest header = order.getHEADER();
 			H100 h100 = mapToH100(header);
 
-			OrderHeader orderHeader = new OrderHeader(h100);
+			final OrderHeader orderHeader = new OrderHeader(h100);
 			orderEDI.addOrderHeader(orderHeader);
-			for (DETAILXbest detail : header.getDETAIL())
+			for (final DETAILXbest detail : header.getDETAIL())
 			{
 
-				P100 p100 = mapToP100(header, detail);
+				final P100 p100 = mapToP100(header, detail);
 
-				OrderLine orderLine = new OrderLine(p100);
+				final OrderLine orderLine = new OrderLine(p100);
 				orderHeader.addOrderLine(orderLine);
 
 			}
@@ -67,15 +69,15 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 
 	private P100 mapToP100(HEADERXbest header, DETAILXbest detail)
 	{
-		P100 p100 = new P100();
+		final P100 p100 = new P100();
 		p100.setPositionNo(detail.getLINENUMBER());
 
 		BigDecimal cutuQty = BigDecimal.ZERO;
 		BigDecimal orderQty = BigDecimal.ZERO;
 		String orderUnit = StringUtils.EMPTY;
-		for (DQUAN1 dquan1 : detail.getDQUAN1())
+		for (final DQUAN1 dquan1 : detail.getDQUAN1())
 		{
-			QuantityQual quantityQual = QuantityQual.valueOf(dquan1.getQUANTITYQUAL());
+			final QuantityQual quantityQual = QuantityQual.valueOf(dquan1.getQUANTITYQUAL());
 			switch (quantityQual)
 			{
 				case CUTU:
@@ -88,8 +90,12 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 				{
 					final String quantityStr = dquan1.getQUANTITY();
 					orderQty = orderQty.add(new BigDecimal(quantityStr));
-					//TODO explain
-					orderUnit = dquan1.getMEASUREMENTUNIT();
+					//using measurement unit from ORDR, supposing CUTU will not have measurement unit for now
+					MeasurementUnit measurementUnit = MeasurementUnit.valueOf(dquan1.getMEASUREMENTUNIT());
+					if (measurementUnit != null)
+					{
+						orderUnit = measurementUnit.getCuom();
+					}
 					break;
 				}
 			}
@@ -102,16 +108,16 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		p100.setOrderQty(orderQty.toString());
 		p100.setOrderUnit(orderUnit);
 
-		//TODO get first price
+		//using only first price
 		BigDecimal price = BigDecimal.ZERO;
-		for (DPRIC1 dpric1 : detail.getDPRIC1())
+		if (!CollectionUtils.isEmpty(detail.getDPRIC1()))
 		{
-			price = price.add(new BigDecimal(dpric1.getPRICE()));
+			price = new BigDecimal(detail.getDPRIC1().get(0).getPRICE());
 		}
 		p100.setBuyerPrice(price.toString());
 
 		// ProductDescription
-		for (DPRDE1 dprde1 : detail.getDPRDE1())
+		for (final DPRDE1 dprde1 : detail.getDPRDE1())
 		{
 			if (ProductDescQual.valueOf(dprde1.getPRODUCTDESCQUAL()) == ProductDescQual.PROD)
 			{
@@ -122,11 +128,30 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		}
 
 		// Product information
-		//TODO check mapping
 		for (DPRIN1 dprin1 : detail.getDPRIN1())
 		{
-			//TODO order: EANT, UPCt, EANC, UPCC, GTIN
-			if (ProductQual.valueOf(dprin1.getPRODUCTQUAL()) == ProductQual.GTIN)
+			final ProductQual productQual = ProductQual.valueOf(dprin1.getPRODUCTQUAL());
+			if (productQual == ProductQual.EANT)
+			{
+				p100.setEanArtNo(dprin1.getPRODUCTID());
+				break;
+			}
+			if (productQual == ProductQual.UPCT)
+			{
+				p100.setEanArtNo(dprin1.getPRODUCTID());
+				break;
+			}
+			if (productQual == ProductQual.EANC)
+			{
+				p100.setEanArtNo(dprin1.getPRODUCTID());
+				break;
+			}
+			if (productQual == ProductQual.UPCC)
+			{
+				p100.setEanArtNo(dprin1.getPRODUCTID());
+				break;
+			}
+			if (productQual == ProductQual.GTIN)
 			{
 				p100.setEanArtNo(dprin1.getPRODUCTID());
 				break;
@@ -145,9 +170,9 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 	{
 		H100 h100 = new H100();
 
-		for (HADRE1 hadre1 : header.getHADRE1())
+		for (final HADRE1 hadre1 : header.getHADRE1())
 		{
-			AddressQual addressQual = AddressQual.valueOf(hadre1.getADDRESSQUAL());
+			final AddressQual addressQual = AddressQual.valueOf(hadre1.getADDRESSQUAL());
 			switch (addressQual)
 			{
 				case SUPL:
@@ -178,9 +203,9 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 			}
 		}
 
-		for (HDATE1 hdate1 : header.getHDATE1())
+		for (final HDATE1 hdate1 : header.getHDATE1())
 		{
-			DateQual dateQual = DateQual.valueOf(hdate1.getDATEQUAL());
+			final DateQual dateQual = DateQual.valueOf(hdate1.getDATEQUAL());
 			switch (dateQual)
 			{
 				case CREA:

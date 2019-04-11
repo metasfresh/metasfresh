@@ -23,6 +23,7 @@ package de.metas.edi.esb.route.exports;
  */
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.EDIExpMInOutType;
@@ -37,9 +38,16 @@ import java.text.DecimalFormat;
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute
 {
+
+	public static final String EDI_INVOICE_IS_XML = "edi.props.invoice.isXML";
+
+	public static final String EDI_DESADV_IS_XML = "edi.props.desadv.isXML";
+
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
+		final String isXMLInvoice = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_XML);
+		final String isXMLDesadv = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_XML);
 		from(Constants.EP_AMQP_FROM_AD)
 				.routeId("XML-To-EDI-Common")
 
@@ -55,18 +63,25 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 
 				// @formatter:off
 				.choice()
+					// Invoice
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
-						.to(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
-				//TODO use property - for diff
-					//
+						.choice()
+							.when(isXML -> Boolean.valueOf(isXMLInvoice))
+								.to(XMLInvoiceRoute.EP_EDI_INVOICE_XML_CONSUMER)
+							.otherwise()
+								.to(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
+						.endChoice()
 					// Single InOut DESADV
 					.when(body().isInstanceOf(EDIExpMInOutType.class))
 						.to(EDIDesadvRoute.EP_EDI_DESADV_SINGLE_CONSUMER)
-					//
 					// Aggregated InOut DESADV
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
-						.to(EDIDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
-				//TODO use property - for diff
+						.choice()
+							.when(isXML -> Boolean.valueOf(isXMLDesadv))
+								.to(XMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
+							.otherwise()
+								.to(EDIDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
+						.endChoice()
 				.end();
 				// @formatter:on
 	}

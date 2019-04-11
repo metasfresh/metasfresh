@@ -25,5 +25,5 @@ package de.metas.edi.esb.pojo.desadv.qualifier;
 
 public enum DiscrepencyCode
 {
-	BFOL, BCOM
+	BFOL, BCOM, OVSH
 }
