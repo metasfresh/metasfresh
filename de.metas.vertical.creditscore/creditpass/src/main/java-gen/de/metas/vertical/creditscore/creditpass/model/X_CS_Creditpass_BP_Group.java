@@ -14,7 +14,7 @@ public class X_CS_Creditpass_BP_Group extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1683493190L;
+	private static final long serialVersionUID = -368452604L;
 
     /** Standard Constructor */
     public X_CS_Creditpass_BP_Group (Properties ctx, int CS_Creditpass_BP_Group_ID, String trxName)
@@ -114,25 +114,25 @@ public class X_CS_Creditpass_BP_Group extends org.compiere.model.PO implements I
 		set_ValueFromPO(COLUMNNAME_CS_Creditpass_Config_ID, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config.class, CS_Creditpass_Config);
 	}
 
-	/** Set CS Creditpass Configuration.
-		@param CS_Creditpass_Config_ID CS Creditpass Configuration	  */
+	/** Get Creditpass Einstellung.
+		@return Creditpass Einstellung	  */
 	@Override
-	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
-	{
-		if (CS_Creditpass_Config_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
-	}
-
-	/** Get CS Creditpass Configuration.
-		@return CS Creditpass Configuration	  */
-	@Override
-	public int getCS_Creditpass_Config_ID () 
+	public int getCS_Creditpass_Config_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Creditpass Einstellung.
+		@param CS_Creditpass_Config_ID Creditpass Einstellung	  */
+	@Override
+	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
+	{
+		if (CS_Creditpass_Config_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
 	}
 }

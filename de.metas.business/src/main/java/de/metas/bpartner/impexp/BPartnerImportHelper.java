@@ -93,6 +93,13 @@ import de.metas.util.Check;
 			bpartner.setURL(url);
 		}
 
+		final String url3 = importRecord.getURL3();
+
+		if(!Check.isEmpty(url3))
+		{
+			bpartner.setURL3(url3);
+		}
+
 		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartner, IImportInterceptor.TIMING_AFTER_IMPORT);
 		save(bpartner);
 		importRecord.setC_BPartner(bpartner);
@@ -226,12 +233,12 @@ import de.metas.util.Check;
 		{
 			bpartner.setPO_PaymentTerm_ID(importRecord.getPO_PaymentTerm_ID());
 		}
-		
+
 		if (importRecord.getC_PaymentTerm_ID() > 0)
 		{
 			bpartner.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		}
-		
+
 		if (importRecord.getPaymentRulePO() != null)
 		{
 			bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());

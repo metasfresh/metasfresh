@@ -102,20 +102,6 @@ public interface IADWindowDAO extends ISingletonService
 
 	I_AD_Tab getTabByIdInTrx(AdTabId tabId);
 
-	void createMissingADElementLinks();
-
-	void createADElementLinkForWindowId(AdWindowId adWindowId);
-
-	void deleteExistingADElementLinkForWindowId(AdWindowId adWindowId);
-
-	void createADElementLinkForTabId(AdTabId adTabId);
-
-	void deleteExistingADElementLinkForTabId(AdTabId adTabId);
-
-	void createADElementLinkForFieldId(AdFieldId adFieldId);
-
-	void deleteExistingADElementLinkForFieldId(AdFieldId adFieldId);
-
 	void deleteUIElementsByFieldId(AdFieldId adFieldId);
 
 	void deleteUISectionsByTabId(AdTabId adTabId);

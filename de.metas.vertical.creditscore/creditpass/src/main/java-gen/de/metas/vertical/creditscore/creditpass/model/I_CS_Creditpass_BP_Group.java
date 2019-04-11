@@ -9,7 +9,7 @@ public interface I_CS_Creditpass_BP_Group
 {
 
     /** TableName=CS_Creditpass_BP_Group */
-    public static final String Table_Name = "CS_Creditpass_BP_Group";
+	String Table_Name = "CS_Creditpass_BP_Group";
 
     /** AD_Table_ID=541198 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -21,6 +21,46 @@ public interface I_CS_Creditpass_BP_Group
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
+    /** Column definition for AD_Client_ID */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Client>(I_CS_Creditpass_BP_Group.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column definition for AD_Org_ID */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Org>(I_CS_Creditpass_BP_Group.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column definition for C_BP_Group_ID */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_C_BP_Group>(I_CS_Creditpass_BP_Group.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+    /** Column name C_BP_Group_ID */
+	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+    /** Column definition for Created */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "Created", null);
+    /** Column name Created */
+	String COLUMNNAME_Created = "Created";
+    /** Column definition for CreatedBy */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User>(I_CS_Creditpass_BP_Group.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CS_Creditpass_BP_Group_ID */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_CS_Creditpass_BP_Group_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "CS_Creditpass_BP_Group_ID", null);
+    /** Column name CS_Creditpass_BP_Group_ID */
+	String COLUMNNAME_CS_Creditpass_BP_Group_ID = "CS_Creditpass_BP_Group_ID";
+    /** Column definition for CS_Creditpass_Config_ID */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config> COLUMN_CS_Creditpass_Config_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config>(I_CS_Creditpass_BP_Group.class, "CS_Creditpass_Config_ID", de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config.class);
+    /** Column name CS_Creditpass_Config_ID */
+	String COLUMNNAME_CS_Creditpass_Config_ID = "CS_Creditpass_Config_ID";
+    /** Column definition for IsActive */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "IsActive", null);
+    /** Column name IsActive */
+	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for Updated */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "Updated", null);
+    /** Column name Updated */
+	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for UpdatedBy */
+	org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User>(I_CS_Creditpass_BP_Group.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Get Mandant.
@@ -30,24 +70,9 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Client>(I_CS_Creditpass_BP_Group.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-
-	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	org.compiere.model.I_AD_Client getAD_Client();
 
 	/**
 	 * Get Sektion.
@@ -57,26 +82,21 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_Org>(I_CS_Creditpass_BP_Group.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	int getAD_Org_ID();
 
 	/**
-	 * Set Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_Group_ID (int C_BP_Group_ID);
+	void setAD_Org_ID(int AD_Org_ID);
+
+	org.compiere.model.I_AD_Org getAD_Org();
+
+	void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
 	/**
 	 * Get Geschäftspartnergruppe.
@@ -86,16 +106,21 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_Group_ID();
+	int getC_BP_Group_ID();
 
-	public org.compiere.model.I_C_BP_Group getC_BP_Group();
+	/**
+	 * Set Geschäftspartnergruppe.
+	 * Geschäftspartnergruppe
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Group_ID(int C_BP_Group_ID);
 
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
+	org.compiere.model.I_C_BP_Group getC_BP_Group();
 
-    /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_C_BP_Group>(I_CS_Creditpass_BP_Group.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-    /** Column name C_BP_Group_ID */
-    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+	void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
 
 	/**
 	 * Get Erstellt.
@@ -105,12 +130,7 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	java.sql.Timestamp getCreated();
 
 	/**
 	 * Get Erstellt durch.
@@ -120,21 +140,7 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User>(I_CS_Creditpass_BP_Group.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set CS Creditpass business partner group.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setCS_Creditpass_BP_Group_ID (int CS_Creditpass_BP_Group_ID);
+	int getCreatedBy();
 
 	/**
 	 * Get CS Creditpass business partner group.
@@ -143,39 +149,38 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCS_Creditpass_BP_Group_ID();
-
-    /** Column definition for CS_Creditpass_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_CS_Creditpass_BP_Group_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "CS_Creditpass_BP_Group_ID", null);
-    /** Column name CS_Creditpass_BP_Group_ID */
-    public static final String COLUMNNAME_CS_Creditpass_BP_Group_ID = "CS_Creditpass_BP_Group_ID";
+	int getCS_Creditpass_BP_Group_ID();
 
 	/**
-	 * Set CS Creditpass Configuration.
+	 * Set CS Creditpass business partner group.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCS_Creditpass_BP_Group_ID(int CS_Creditpass_BP_Group_ID);
+
+	/**
+	 * Get Creditpass Einstellung.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID);
+	int getCS_Creditpass_Config_ID();
 
 	/**
-	 * Get CS Creditpass Configuration.
+	 * Set Creditpass Einstellung.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCS_Creditpass_Config_ID();
+	void setCS_Creditpass_Config_ID(int CS_Creditpass_Config_ID);
 
-	public de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config getCS_Creditpass_Config();
+	de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config getCS_Creditpass_Config();
 
-	public void setCS_Creditpass_Config(de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config CS_Creditpass_Config);
-
-    /** Column definition for CS_Creditpass_Config_ID */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config> COLUMN_CS_Creditpass_Config_ID = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config>(I_CS_Creditpass_BP_Group.class, "CS_Creditpass_Config_ID", de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config.class);
-    /** Column name CS_Creditpass_Config_ID */
-    public static final String COLUMNNAME_CS_Creditpass_Config_ID = "CS_Creditpass_Config_ID";
+	void setCS_Creditpass_Config(de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config CS_Creditpass_Config);
 
 	/**
 	 * Set Aktiv.
@@ -185,7 +190,7 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive(boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -195,12 +200,7 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
-
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	boolean isActive();
 
 	/**
 	 * Get Aktualisiert.
@@ -210,12 +210,7 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
-
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, Object>(I_CS_Creditpass_BP_Group.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	java.sql.Timestamp getUpdated();
 
 	/**
 	 * Get Aktualisiert durch.
@@ -225,10 +220,5 @@ public interface I_CS_Creditpass_BP_Group
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
-
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_CS_Creditpass_BP_Group, org.compiere.model.I_AD_User>(I_CS_Creditpass_BP_Group.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	int getUpdatedBy();
 }

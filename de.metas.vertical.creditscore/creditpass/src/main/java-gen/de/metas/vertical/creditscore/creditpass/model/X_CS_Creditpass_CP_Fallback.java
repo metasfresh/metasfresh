@@ -14,7 +14,7 @@ public class X_CS_Creditpass_CP_Fallback extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -772474754L;
+	private static final long serialVersionUID = 1077950722L;
 
     /** Standard Constructor */
     public X_CS_Creditpass_CP_Fallback (Properties ctx, int CS_Creditpass_CP_Fallback_ID, String trxName)
@@ -54,26 +54,26 @@ public class X_CS_Creditpass_CP_Fallback extends org.compiere.model.PO implement
 		set_ValueFromPO(COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config_PaymentRule.class, CS_Creditpass_Config_PaymentRule);
 	}
 
-	/** Set CS Creditpass Configuration payment rule.
-		@param CS_Creditpass_Config_PaymentRule_ID CS Creditpass Configuration payment rule	  */
+	/** Get Zahlungsart ID.
+		@return Zahlungsart ID	  */
 	@Override
-	public void setCS_Creditpass_Config_PaymentRule_ID (int CS_Creditpass_Config_PaymentRule_ID)
-	{
-		if (CS_Creditpass_Config_PaymentRule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, Integer.valueOf(CS_Creditpass_Config_PaymentRule_ID));
-	}
-
-	/** Get CS Creditpass Configuration payment rule.
-		@return CS Creditpass Configuration payment rule	  */
-	@Override
-	public int getCS_Creditpass_Config_PaymentRule_ID () 
+	public int getCS_Creditpass_Config_PaymentRule_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zahlungsart ID.
+		@param CS_Creditpass_Config_PaymentRule_ID Zahlungsart ID	  */
+	@Override
+	public void setCS_Creditpass_Config_PaymentRule_ID (int CS_Creditpass_Config_PaymentRule_ID)
+	{
+		if (CS_Creditpass_Config_PaymentRule_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, Integer.valueOf(CS_Creditpass_Config_PaymentRule_ID));
 	}
 
 	/** Set CS Creditpass Configuration payment rule fallback.

@@ -1,5 +1,6 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -7,7 +8,9 @@ import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
 
+import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -66,4 +69,24 @@ public class AD_Column
 			LogicExpressionCompiler.instance.compile(column.getMandatoryLogic());
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_AD_Element_ID })
+	public void onAfterSave_WhenElementChanged(final I_AD_Column column)
+	{
+		updateTranslationsForElement(column);
+	}
+
+	private void updateTranslationsForElement(final I_AD_Column column)
+	{
+		final AdElementId elementId = AdElementId.ofRepoIdOrNull(column.getAD_Element_ID());
+		if (elementId == null)
+		{
+			return;
+		}
+
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+		elementTranslationBL.updateColumnTranslationsFromElement(elementId);
+	}
+
 }
