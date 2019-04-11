@@ -303,20 +303,6 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			final AttributeId attributeId = AttributeId.ofRepoId(existingHUAttribute.getM_Attribute_ID());
 
 			//
-			// Update HU attribute from order's collected attribute
-			if (from.getByAttributeId(attributeId) != null)
-			{
-				final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
-
-				// TODO: shall we skip it if attribute is null and isTransferIfNull=false
-
-				existingHUAttribute.setValue(attributeWithValue.getValueString());
-				existingHUAttribute.setValueNumber(attributeWithValue.getValueNumber());
-				huAttributesRepo.save(existingHUAttribute);
-				logger.trace("Updated {}/{} from {}", hu, existingHUAttribute, attributeWithValue);
-			}
-
-			//
 			// SerialNo
 			if (serialNoAttributeId != null
 					&& serialNoAttributeId.equals(attributeId)
@@ -330,7 +316,25 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 					existingHUAttribute.setValueNumber(null);
 					huAttributesRepo.save(existingHUAttribute);
 					logger.trace("Updated SerialNo {}/{} to {}", hu, existingHUAttribute, serialNo);
+
+					// IMPORTANT: If we have a configured SerialNo we shall use it.
+					// In this case we shall ignore the SerialNo which was collected from issued HUs.
+					continue;
 				}
+			}
+
+			//
+			// Update HU attribute from order's collected attribute
+			if (from.getByAttributeId(attributeId) != null)
+			{
+				final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
+
+				// TODO: shall we skip it if attribute is null and isTransferIfNull=false
+
+				existingHUAttribute.setValue(attributeWithValue.getValueString());
+				existingHUAttribute.setValueNumber(attributeWithValue.getValueNumber());
+				huAttributesRepo.save(existingHUAttribute);
+				logger.trace("Updated {}/{} from {}", hu, existingHUAttribute, attributeWithValue);
 			}
 		}
 	}
