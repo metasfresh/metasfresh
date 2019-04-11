@@ -1,11 +1,12 @@
 package de.metas.migration.cli.rollout_migrate;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 
 import de.metas.migration.IDatabase;
 import lombok.AllArgsConstructor;
@@ -50,15 +51,15 @@ final class RolloutMigrate
 
 	public final void run(@NonNull final Config config)
 	{
-		final long ts = System.currentTimeMillis();
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
 			run0(config);
 		}
 		finally
 		{
-			final long ts2 = System.currentTimeMillis();
-			logger.info("Duration: " + (ts2 - ts) + "ms (" + new Date(ts2) + ")");
+			stopwatch.stop();
+			logger.info("Duration: " + stopwatch + " (" + ZonedDateTime.now() + ")");
 			logger.info("Done.");
 		}
 	}
