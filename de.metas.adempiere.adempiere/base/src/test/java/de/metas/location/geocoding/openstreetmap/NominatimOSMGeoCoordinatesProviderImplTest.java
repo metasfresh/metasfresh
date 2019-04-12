@@ -44,7 +44,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	@BeforeEach
 	void beforeEach()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", TimeUnit.SECONDS.toMillis(4), 100);
+		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", TimeUnit.SECONDS.toMillis(4), 0);
 	}
 
 	@Test
