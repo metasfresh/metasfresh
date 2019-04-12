@@ -1,7 +1,10 @@
 package de.metas.migration.cli.rollout_migrate;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.applier.impl.NullScriptsApplierListener;
+import de.metas.migration.scanner.IFileRef;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -82,4 +85,8 @@ class Config
 
 	@Default
 	String newDBName = null;
+
+	@Default
+	@NonNull
+	ImmutableSet<IFileRef> additionalSqlDirs = ImmutableSet.of();
 }

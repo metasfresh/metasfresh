@@ -54,6 +54,24 @@ import de.metas.migration.scanner.IScriptScanner;
  */
 public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdapter
 {
+	private static final Comparator<IScript> lexiographicallyOrderedComparator = new Comparator<IScript>()
+	{
+		@Override
+		public int compare(final IScript o1, final IScript o2)
+		{
+			final String o1SeqNo = extractSequenceNumber(o1.getFileName());
+			final String o2SeqNo = extractSequenceNumber(o2.getFileName());
+
+			return new CompareToBuilder()
+					.append(o1SeqNo, o2SeqNo)
+					.append(o1.getFileName(), o2.getFileName())
+
+					// make damn sure that two different scripts are both added
+					.append(System.identityHashCode(o1), System.identityHashCode(o2))
+					.toComparison();
+		}
+	};
+
 	@VisibleForTesting
 	/* package */final Supplier<Iterator<IScript>> lexiographicallyOrderedScriptsSupplier = Suppliers.memoize(new Supplier<Iterator<IScript>>()
 	{
@@ -61,26 +79,6 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 		public Iterator<IScript> get()
 		{
 			final List<IScript> lexiagraphicallySortedScripts = new ArrayList<>();
-
-			Comparator<IScript> c = new Comparator<IScript>()
-			{
-				@Override
-				public int compare(final IScript o1, final IScript o2)
-				{
-					final String o1SeqNo = extractSequenceNumber(o1.getFileName());
-					final String o2SeqNo = extractSequenceNumber(o2.getFileName());
-
-					return new CompareToBuilder()
-							.append(o1SeqNo, o2SeqNo)
-							.append(o1.getModuleName(), o2.getModuleName())
-							.append(o1.getFileName(), o2.getFileName())
-
-							// make damn sure that two different scripts are both added
-							.append(System.identityHashCode(o1), System.identityHashCode(o2))
-							.toComparison();
-				}
-			};
-
 			while (getInternalScanner().hasNext())
 			{
 				final IScript next = getInternalScanner().next();
@@ -89,7 +87,7 @@ public class GloballyOrderedScannerDecorator extends AbstractScriptDecoratorAdap
 
 			// note that we used to have a TreeSet here, but some times some scripts were not applied.
 			// I replaced the TreeSet with this list and pay the cost of the extra ordering step to rule out the possibility that some items are not added to the treeSet because the comparator considers them to be equal
-			Collections.sort(lexiagraphicallySortedScripts, c);
+			Collections.sort(lexiagraphicallySortedScripts, lexiographicallyOrderedComparator);
 			// dumpTofile(lexiagraphicallySortedScripts);
 
 			return lexiagraphicallySortedScripts.iterator();
