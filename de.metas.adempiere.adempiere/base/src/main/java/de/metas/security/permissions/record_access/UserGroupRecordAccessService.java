@@ -159,14 +159,6 @@ public class UserGroupRecordAccessService
 			eventsCollector.accessGrant(toAccess);
 		}
 
-		//
-		// Revoke accesses
-		if (!toAccessRecordsToCheck.isEmpty())
-		{
-			deleteByIds(extractRepoIds(toAccessRecordsToCheck.values()));
-			eventsCollector.accessRevokes(toAccessRecordsToCheck.keySet());
-		}
-
 		fireEvent(eventsCollector.build());
 	}
 
@@ -202,7 +194,8 @@ public class UserGroupRecordAccessService
 
 	private IQueryBuilder<I_AD_User_Record_Access> query(@NonNull final UserGroupRecordAccessQuery query)
 	{
-		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_User_Record_Access.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = queryBL.createQueryBuilder(I_AD_User_Record_Access.class);
 
 		final ImmutableSet<TableRecordReference> recordRefs = query.getRecordRefs();
 		if (!recordRefs.isEmpty())
