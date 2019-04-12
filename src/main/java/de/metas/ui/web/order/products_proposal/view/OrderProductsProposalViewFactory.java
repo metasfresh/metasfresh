@@ -3,7 +3,7 @@ package de.metas.ui.web.order.products_proposal.view;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
