@@ -90,10 +90,10 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		}
 		logger.info("baseUrl={}", BASE_URL);
 
-		lastRequestTime = Instant.now();
-
 		this.millisBetweenRequests = millisBetweenRequests;
 		logger.info("millisBetweenRequests={}", millisBetweenRequests);
+
+		lastRequestTime = Instant.now().minusMillis(this.millisBetweenRequests);
 
 		logger.info("cacheCapacity={}", cacheCapacity);
 		coordinatesCache = CCache.<GeoCoordinatesRequest, ImmutableList<GeographicalCoordinates>>builder()
@@ -133,7 +133,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		final Instant shouldBeBeforeNow = lastRequestTime.plusMillis(millisBetweenRequests);
 		if (shouldBeBeforeNow.isAfter(Instant.now()))
 		{
-			final long timeToSleep = Duration.between(shouldBeBeforeNow, Instant.now()).toMillis();
+			final long timeToSleep = Duration.between(Instant.now(), shouldBeBeforeNow).toMillis();
 			sleepMillis(timeToSleep);
 		}
 	}

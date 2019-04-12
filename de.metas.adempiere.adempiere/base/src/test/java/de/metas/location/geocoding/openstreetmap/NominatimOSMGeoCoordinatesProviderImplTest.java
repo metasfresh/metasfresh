@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -39,12 +41,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings("ArraysAsListWithZeroOrOneArgument") @Disabled("It makes real queries which can't be mocked so don't run it automatically.")
 class NominatimOSMGeoCoordinatesProviderImplTest
 {
+	public static final long MILLIS_BETWEEN_REQUESTS = TimeUnit.SECONDS.toMillis(20);
 	private NominatimOSMGeoCoordinatesProviderImpl coordinatesProvider;
 
 	@BeforeEach
 	void beforeEach()
 	{
-		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", TimeUnit.SECONDS.toMillis(4), 0);
+		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 0);
 	}
 
 	@Test
@@ -156,4 +159,49 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 				.isEmpty();
 	}
 
+	@Test
+	@DisplayName("2 different requests at the same time should be rate limited")
+	void expect2DifferentRequestsAtTheSameTimeShouldBeRateLimited()
+	{
+		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
+
+		final Instant start = Instant.now();
+		coordinatesProvider.findBestCoordinates(
+				GeoCoordinatesRequest.builder()
+						.postal("5081")
+						.countryCode("RO")
+						.build());
+
+		coordinatesProvider.findBestCoordinates(
+				GeoCoordinatesRequest.builder()
+						.postal("5082")
+						.countryCode("RO")
+						.build());
+
+		assertThat(Duration.between(start, Instant.now()))
+				.isGreaterThan(Duration.ofMillis(MILLIS_BETWEEN_REQUESTS))
+				.isBetween(Duration.ofMillis(MILLIS_BETWEEN_REQUESTS), Duration.ofMillis((long)(1.8 * MILLIS_BETWEEN_REQUESTS)));
+	}
+
+	@Test
+	@DisplayName("expect cache hit for duplicate requests")
+	void expectCacheHitForDuplicateRequests()
+	{
+		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
+		final GeoCoordinatesRequest req = GeoCoordinatesRequest.builder()
+				.postal("5081")
+				.countryCode("AT")
+				.build();
+		coordinatesProvider.findBestCoordinates(req);
+
+		final Instant start = Instant.now();
+
+		coordinatesProvider.findBestCoordinates(req);
+		coordinatesProvider.findBestCoordinates(req);
+		coordinatesProvider.findBestCoordinates(req);
+		coordinatesProvider.findBestCoordinates(req);
+
+		assertThat(Duration.between(start, Instant.now()))
+				.isLessThan(Duration.ofMillis(MILLIS_BETWEEN_REQUESTS));
+	}
 }
