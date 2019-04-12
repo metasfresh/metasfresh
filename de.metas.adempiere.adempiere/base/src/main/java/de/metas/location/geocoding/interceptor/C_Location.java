@@ -1,4 +1,4 @@
-package org.adempiere.location.geocoding.interceptor;
+package de.metas.location.geocoding.interceptor;
 
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.event.IEventBusFactory;
@@ -7,8 +7,8 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.location.LocationId;
-import org.adempiere.location.geocoding.asynchandler.LocationGeocodeEventRequest;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -34,11 +34,11 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-@Component("org.adempiere.location.geocoding.interceptor.C_Location")
+@Component("de.metas.location.geocoding.interceptor.C_Location")
 @Interceptor(I_C_Location.class)
 public class C_Location
 {
-	public static final Topic EVENTS_TOPIC = Topic.remote("org.adempiere.location.geocoding.events");
+	public static final Topic EVENTS_TOPIC = Topic.remote("de.metas.location.geocoding.events");
 
 	private final IEventBusFactory eventBusFactory;
 

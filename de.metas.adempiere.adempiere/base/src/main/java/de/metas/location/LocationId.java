@@ -1,4 +1,4 @@
-package org.adempiere.location;
+package de.metas.location;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

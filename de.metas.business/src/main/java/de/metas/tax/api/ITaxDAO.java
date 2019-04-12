@@ -25,7 +25,7 @@ package de.metas.tax.api;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;

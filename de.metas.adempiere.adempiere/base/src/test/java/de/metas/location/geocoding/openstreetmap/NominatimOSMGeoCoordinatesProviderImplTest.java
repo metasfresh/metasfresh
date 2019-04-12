@@ -1,7 +1,7 @@
-package org.adempiere.location.geocoding.openstreetmap;
+package de.metas.location.geocoding.openstreetmap;
 
-import org.adempiere.location.geocoding.GeographicalCoordinates;
-import org.adempiere.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;

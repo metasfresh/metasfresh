@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;

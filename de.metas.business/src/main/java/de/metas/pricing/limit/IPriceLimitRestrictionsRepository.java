@@ -3,7 +3,7 @@ package de.metas.pricing.limit;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import de.metas.util.ISingletonService;
 

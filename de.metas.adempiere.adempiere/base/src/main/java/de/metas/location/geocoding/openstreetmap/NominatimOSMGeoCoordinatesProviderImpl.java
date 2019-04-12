@@ -1,4 +1,4 @@
-package org.adempiere.location.geocoding.openstreetmap;
+package de.metas.location.geocoding.openstreetmap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -7,9 +7,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
-import org.adempiere.location.geocoding.GeoCoordinatesProvider;
-import org.adempiere.location.geocoding.GeoCoordinatesRequest;
-import org.adempiere.location.geocoding.GeographicalCoordinates;
+import de.metas.location.geocoding.GeoCoordinatesProvider;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;

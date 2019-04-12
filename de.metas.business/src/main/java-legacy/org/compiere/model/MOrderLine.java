@@ -27,7 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;

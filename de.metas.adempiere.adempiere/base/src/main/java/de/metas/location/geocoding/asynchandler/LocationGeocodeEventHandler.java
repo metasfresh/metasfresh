@@ -1,4 +1,4 @@
-package org.adempiere.location.geocoding.asynchandler;
+package de.metas.location.geocoding.asynchandler;
 
 import com.google.common.base.Joiner;
 import de.metas.Profiles;
@@ -6,10 +6,10 @@ import de.metas.adempiere.service.ILocationDAO;
 import de.metas.event.IEventBusFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.location.geocoding.GeoCoordinatesProvider;
-import org.adempiere.location.geocoding.GeographicalCoordinates;
-import org.adempiere.location.geocoding.GeoCoordinatesRequest;
-import org.adempiere.location.geocoding.interceptor.C_Location;
+import de.metas.location.geocoding.GeoCoordinatesProvider;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.interceptor.C_Location;
 import org.compiere.model.I_C_Location;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

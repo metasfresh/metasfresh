@@ -8,7 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;

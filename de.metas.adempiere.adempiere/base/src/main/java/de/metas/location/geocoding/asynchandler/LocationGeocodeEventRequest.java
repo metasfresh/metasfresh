@@ -1,4 +1,8 @@
-package org.adempiere.location.geocoding;
+package de.metas.location.geocoding.asynchandler;
+
+import lombok.NonNull;
+import lombok.Value;
+import de.metas.location.LocationId;
 
 /*
  * #%L
@@ -22,17 +26,9 @@ package org.adempiere.location.geocoding;
  * #L%
  */
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class GeoCoordinatesRequest
+@Value(staticConstructor = "of")
+public class LocationGeocodeEventRequest
 {
 	@NonNull
-	String countryCode;
-
-	String postal;
-	String address;
+	LocationId locationId;
 }

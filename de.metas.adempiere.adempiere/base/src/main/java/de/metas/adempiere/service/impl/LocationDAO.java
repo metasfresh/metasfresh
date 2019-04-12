@@ -10,7 +10,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.location.LocationId;
+import de.metas.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;

@@ -1,6 +1,7 @@
-package org.adempiere.location.geocoding.openstreetmap;
+package de.metas.location.geocoding;
 
-import lombok.Data;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -23,12 +24,11 @@ import lombok.Data;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@Data
-class NominatimOSMGeographicalCoordinatesJSON
+@Value
+public class GeographicalCoordinates
 {
-	private String display_name;
-	private String lat;
-	private String lon;
-
+	@NonNull
+	private String latitude;
+	@NonNull
+	private String longitude;
 }
