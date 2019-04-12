@@ -1,6 +1,7 @@
 package de.metas.location.geocoding.openstreetmap;
 
 import lombok.Data;
+import lombok.Value;
 
 /*
  * #%L
@@ -25,6 +26,7 @@ import lombok.Data;
  */
 
 @Data
+@Value
 class NominatimOSMGeographicalCoordinatesJSON
 {
 	private String display_name;
