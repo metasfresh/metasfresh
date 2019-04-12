@@ -38,21 +38,18 @@ import lombok.Value;
  */
 
 /**
- * Creates or updates inventory lines for
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Creates or updates inventory lines for a given {@link I_M_Inventory} record.
  */
 @Value
 public class DraftInventoryLines
 {
-	IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	transient IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
-	final I_M_Inventory inventoryRecord;
-	final HUsForInventoryStrategy strategy;
+	I_M_Inventory inventoryRecord;
+	HUsForInventoryStrategy strategy;
 
-	Map<HuId, I_M_InventoryLine> inventoryLinesByHU;
+	Map<HuId, I_M_InventoryLine> preExistingInventoryLinesByHU;
 
 	@Builder
 	private DraftInventoryLines(
@@ -63,11 +60,12 @@ public class DraftInventoryLines
 				documentBL.issDocumentDraftedOrInProgress(inventoryRecord),
 				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventoryRecord={}",
 				inventoryRecord.getDocStatus(), inventoryRecord);
+
 		this.inventoryRecord = inventoryRecord;
 		this.strategy = strategy;
 
 		// get existing lines' HuIds
-		this.inventoryLinesByHU = inventoryDAO
+		this.preExistingInventoryLinesByHU = inventoryDAO
 				.retrieveLinesForInventoryId(inventoryRecord.getM_Inventory_ID(), I_M_InventoryLine.class)
 				.stream()
 				.filter(line -> line.getM_HU_ID() > 0)

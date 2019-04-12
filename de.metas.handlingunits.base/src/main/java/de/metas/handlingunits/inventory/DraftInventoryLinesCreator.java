@@ -109,10 +109,10 @@ public class DraftInventoryLinesCreator
 
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
-		if (draftInventoryLines.getInventoryLinesByHU().containsKey(huId))
+		if (draftInventoryLines.getPreExistingInventoryLinesByHU().containsKey(huId))
 		{
 			// update line
-			inventoryLine = draftInventoryLines.getInventoryLinesByHU().get(huId);
+			inventoryLine = draftInventoryLines.getPreExistingInventoryLinesByHU().get(huId);
 		}
 		else
 		{
