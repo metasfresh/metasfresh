@@ -22,7 +22,7 @@ Here come the actual release notes:
 
 # Fixes
 * metasfresh-webui-frontend
-  * [#2214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214) input field value sometimes swallowed
+  * [#2214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214) Input field value sometimes swallowed
   * [#2237](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2237) Scrollbars missing in modal overlays
 
 # metasfresh 5.98
