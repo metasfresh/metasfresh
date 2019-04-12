@@ -48,14 +48,13 @@ class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 	@Override
 	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
 	{
-
 		final OrderId orderId = OrderId.ofRepoId(documentRef.getRecord_ID());
 		final I_C_Order order = ordersRepo.getById(orderId);
 		return BPartnerId.optionalOfRepoId(order.getC_BPartner_ID());
 	}
 
 	@Override
-	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId)
+	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
 	{
 		return ordersRepo.streamOrderIdsByBPartnerId(bpartnerId)
 				.map(orderId -> toTableRecordReference(orderId));
@@ -63,6 +62,6 @@ class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 
 	private static final TableRecordReference toTableRecordReference(final OrderId orderId)
 	{
-		return TableRecordReference.of(I_C_Order.Table_Name, orderId.getRepoId());
+		return TableRecordReference.of(I_C_Order.Table_Name, orderId);
 	}
 }

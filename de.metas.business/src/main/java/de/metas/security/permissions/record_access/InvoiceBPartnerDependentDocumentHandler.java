@@ -44,10 +44,16 @@ class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 		return I_C_Invoice.Table_Name;
 	}
 
+	private IInvoiceDAO getInvoicesRepo()
+	{
+		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
+		return invoicesRepo;
+	}
+
 	@Override
 	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
 	{
-		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
+		final IInvoiceDAO invoicesRepo = getInvoicesRepo();
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(documentRef.getRecord_ID());
 		final I_C_Invoice invoice = invoicesRepo.getByIdInTrx(invoiceId);
@@ -57,7 +63,7 @@ class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 	@Override
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId)
 	{
-		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
+		final IInvoiceDAO invoicesRepo = getInvoicesRepo();
 
 		return invoicesRepo.streamInvoiceIdsByBPartnerId(bpartnerId)
 				.map(invoiceId -> toTableRecordReference(invoiceId));
@@ -65,6 +71,6 @@ class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 
 	private static final TableRecordReference toTableRecordReference(final InvoiceId invoiceId)
 	{
-		return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId.getRepoId());
+		return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
 	}
 }
