@@ -12,9 +12,8 @@ public enum MeasurementUnit
 	SQMT("MTK"),
 	CBMT("MTQ"),
 	PIEC("PCE"),
-	PACK("CNP"), //TODO not sure
-	CART("KRT"),
-	BAGS("Bund"); //TODO not sure
+	PACK("TU"),
+	CART("KRT");
 
 	private final String cuom;
 

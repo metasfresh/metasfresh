@@ -47,13 +47,17 @@ public class EDIXMLInvoiceBean
 	public static final String METHOD_createXMLEDIData = "createXMLEDIData";
 
 	private static final ObjectFactory INVOICE_objectFactory = new ObjectFactory();
-	private static final int DOC_CREDIT_NOTE_ID = 83;
-	private static final int DOC_DEBIT_NOTE_ID = 380;
-	//Debit note  to financial adjustments
-	private static final int DOC_DBNF_ID = 382;
-	private static final int DOC_DBNF2_ID = 84;
-	//Credit note to financial adjustments
-	private static final int DOC_CRNF_ID = 381;
+
+	//Credit note - metasfresh "ARC" base doc type and "CR" sub doc type
+	private static final int DOC_CRNO_ID = 83;
+	//Credit note - metasfresh "ARC" base doc type and "CQ", "CS" sub doc types
+	private static final int DOC_CRNO2_ID = 381;
+	//Commercial invoice - metasfresh "ARI" base doc type
+	private static final int DOC_CMIV_ID = 380;
+	// Debit note - metasfresh "ARI" base doc type and "AQ" sub doc type
+	private static final int DOC_DBNO_ID = 383;
+	// Debit note - metasfresh "ARI" base doc type and "AP" sub doc type
+	private static final int DOC_DBNO2_ID = 84;
 
 	public void createXMLEDIData(final Exchange exchange)
 	{
@@ -126,21 +130,17 @@ public class EDIXMLInvoiceBean
 	{
 		int incomingDocType = Integer.parseInt(eancomDocType);
 		DocumentType documentType = null;
-		if (incomingDocType == DOC_CREDIT_NOTE_ID)
+		if (incomingDocType == DOC_CRNO_ID || incomingDocType == DOC_CRNO2_ID)
 		{
 			documentType = DocumentType.CRNO;
 		}
-		else if (incomingDocType == DOC_DEBIT_NOTE_ID)
+		else if (incomingDocType == DOC_DBNO_ID || incomingDocType == DOC_DBNO2_ID)
 		{
 			documentType = DocumentType.DBNO;
 		}
-		else if (incomingDocType == DOC_DBNF_ID || incomingDocType == DOC_DBNF2_ID)
+		else if (incomingDocType == DOC_CMIV_ID)
 		{
-			documentType = DocumentType.DBNF;
-		}
-		else if (incomingDocType == DOC_CRNF_ID)
-		{
-			documentType = DocumentType.CRNF;
+			documentType = DocumentType.CMIV;
 		}
 		return documentType;
 	}
@@ -489,7 +489,6 @@ public class EDIXMLInvoiceBean
 		final HDATE1 valueDate = INVOICE_objectFactory.createHDATE1();
 		valueDate.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		valueDate.setDATEQUAL(DateQual.VALU.name());
-		// not sure what value date is
 		valueDate.setDATEFROM(toFormattedStringDate(toDate(invoice.getDateInvoiced()), dateFormat));
 
 		headerXrech.getHDATE1().add(documentDate);
