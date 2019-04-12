@@ -79,7 +79,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 	private Instant lastRequestTime;
 
 	NominatimOSMGeoCoordinatesProviderImpl(
-			@Value("${de.metas.location.geocoding.openstreetmap.baseUrl}") final String baseUrl,
+			@Value("${de.metas.location.geocoding.openstreetmap.baseUrl:}") final String baseUrl,
 			@Value("${de.metas.location.geocoding.openstreetmap.millisBetweenRequests:2000}") final long millisBetweenRequests,
 			@Value("${de.metas.location.geocoding.openstreetmap.cacheCapacity:200}") final int cacheCapacity
 	)
