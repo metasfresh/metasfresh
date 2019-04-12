@@ -46,7 +46,7 @@ public class BPartnerDependentDocumentCreatedEvent
 
 	@JsonCreator
 	private BPartnerDependentDocumentCreatedEvent(
-			@NonNull final TableRecordReference documentRef)
+			@JsonProperty("documentRef") @NonNull final TableRecordReference documentRef)
 	{
 		this.documentRef = documentRef;
 	}
