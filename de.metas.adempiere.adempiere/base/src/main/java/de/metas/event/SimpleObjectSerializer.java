@@ -36,7 +36,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  *
  * @author metas-dev <dev@metasfresh.com>
  *
- * @deprecated In the future {@code de.metas.util.JSONObjectMapper} will be used. (Ref.: https://github.com/metasfresh/metasfresh/pull/5132#discussion_r274329633)
+ * @deprecated Please use {@code de.metas.util.JSONObjectMapper} instead.
  */
 @Deprecated
 public class SimpleObjectSerializer
