@@ -6,6 +6,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -38,7 +40,7 @@ public class LocationId implements RepoIdAware
 		return new LocationId(repoId);
 	}
 
-	public static LocationId ofRepoIdOrNull(final int repoId)
+	@Nullable public static LocationId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
@@ -50,7 +52,7 @@ public class LocationId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Location_ID");
 	}
 
-	public static int toRepoId(LocationId locationId)
+	public static int toRepoId(final LocationId locationId)
 	{
 		return toRepoIdOr(locationId, -1);
 	}
