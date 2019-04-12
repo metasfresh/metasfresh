@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-@Disabled("It makes real queries which can't be mocked so don't run it automatically.")
+@SuppressWarnings("ArraysAsListWithZeroOrOneArgument") @Disabled("It makes real queries which can't be mocked so don't run it automatically.")
 class NominatimOSMGeoCoordinatesProviderImplTest
 {
 	private NominatimOSMGeoCoordinatesProviderImpl coordinatesProvider;
