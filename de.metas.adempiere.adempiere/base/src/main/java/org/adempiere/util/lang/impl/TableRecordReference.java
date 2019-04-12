@@ -338,7 +338,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.omitNullValues()
 				.add("tableName", tableName)
 				.add("recordId", recordId)
-				.add(" (SoftReference-)model", modelRef.get())
+				// .add(" (SoftReference-)model", modelRef.get())
 				.toString();
 	}
 
