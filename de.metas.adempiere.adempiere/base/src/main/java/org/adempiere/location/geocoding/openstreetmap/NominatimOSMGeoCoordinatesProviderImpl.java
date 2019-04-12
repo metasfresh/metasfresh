@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -144,10 +146,14 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		final ParameterizedTypeReference<List<NominatimOSMGeographicalCoordinatesJSON>> returnType = new ParameterizedTypeReference<List<NominatimOSMGeographicalCoordinatesJSON>>(){};
 		//@formatter:on
 
+		final HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.USER_AGENT, "openstreetmapbot@metasfresh.com");
+		final HttpEntity<String> entity = new HttpEntity<>(headers);
+
 		final ResponseEntity<List<NominatimOSMGeographicalCoordinatesJSON>> exchange = restTemplate.exchange(
 				BASE_URL + QUERY_STRING,
 				HttpMethod.GET,
-				null,
+				entity,
 				returnType,
 				parameterList);
 
