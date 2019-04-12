@@ -121,7 +121,7 @@ public class DocumentPermissionsHelper
 		}
 		throw ex;
 	}
-	
+
 	public static void assertCanView(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
 		// In case document type is not Window, return OK because we cannot validate
@@ -138,15 +138,15 @@ public class DocumentPermissionsHelper
 			throw DocumentPermissionException.of(DocumentPermission.View, "no window read permission");
 		}
 
-		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
-		if (tableName == null)
+		final int adTableId = getAdTableId(document);
+		if (adTableId <= 0)
 		{
 			// cannot apply security because this is not table based
 			return;
 		}
 
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		final int recordId = document.getDocumentId().toIntOr(-1);
+		final int recordId = getRecordId(document);
+
 		final String errmsg = permissions.checkCanView(document.getClientId(), document.getOrgId(), adTableId, recordId);
 		if (errmsg != null)
 		{
@@ -157,11 +157,11 @@ public class DocumentPermissionsHelper
 	public static void assertCanEdit(final Document document)
 	{
 		// If running from a background thread, consider it editable
-		if(!UserSession.isWebuiThread())
+		if (!UserSession.isWebuiThread())
 		{
 			return;
 		}
-		
+
 		assertCanEdit(document, UserSession.getCurrentPermissions());
 	}
 
@@ -197,18 +197,40 @@ public class DocumentPermissionsHelper
 			return "no window edit permission";
 		}
 
+		final int adTableId = getAdTableId(document);
+		if (adTableId <= 0)
+		{
+			return null; // not table based => OK
+		}
+		final int recordId = getRecordId(document);
+
+		ClientId adClientId = document.getClientId();
+		OrgId adOrgId = document.getOrgId();
+		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+	}
+
+	private static int getAdTableId(final Document document)
+	{
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
 		{
 			// cannot apply security because this is not table based
-			return null; // OK
+			return -1; // OK
 		}
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		ClientId adClientId = document.getClientId();
-		OrgId adOrgId = document.getOrgId();
-		final int recordId = document.getDocumentId().toIntOr(-1);
-		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
+	}
+
+	private static int getRecordId(final Document document)
+	{
+		if (document.isNew())
+		{
+			return -1;
+		}
+		else
+		{
+			return document.getDocumentId().toIntOr(-1);
+		}
 	}
 
 }
