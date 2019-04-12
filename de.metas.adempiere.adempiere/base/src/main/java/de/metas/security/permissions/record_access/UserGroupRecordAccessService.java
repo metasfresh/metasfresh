@@ -82,14 +82,39 @@ public class UserGroupRecordAccessService
 
 	public void grantAccess(@NonNull final UserGroupRecordAccessGrantRequest request)
 	{
-		final UserGroupRecordAccess access = UserGroupRecordAccess.builder()
+		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
-				.permission(request.getPermission())
+				.permissions(request.getPermissions())
 				.build();
 
-		save(access);
-		fireEvent(UserGroupAccessChangeEvent.accessGrant(access));
+		final HashMap<UserGroupRecordAccess, I_AD_User_Record_Access> existingRecords = query(query)
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toMapByKey(HashMap::new, record -> toUserGroupRecordAccess(record)));
+
+		final List<UserGroupRecordAccess> accesses = toUserGroupRecordAccessesList(request);
+		for (final UserGroupRecordAccess access : accesses)
+		{
+			save(access, existingRecords.get(access));
+		}
+
+		fireEvent(UserGroupAccessChangeEvent.accessGrants(accesses));
+	}
+
+	private static List<UserGroupRecordAccess> toUserGroupRecordAccessesList(@NonNull final UserGroupRecordAccessGrantRequest request)
+	{
+		final ImmutableList.Builder<UserGroupRecordAccess> result = ImmutableList.builder();
+		for (final Access permission : request.getPermissions())
+		{
+			result.add(UserGroupRecordAccess.builder()
+					.recordRef(request.getRecordRef())
+					.principal(request.getPrincipal())
+					.permission(permission)
+					.build());
+		}
+
+		return result.build();
 	}
 
 	public void revokeAccess(@NonNull final UserGroupRecordAccessRevokeRequest request)
@@ -143,21 +168,6 @@ public class UserGroupRecordAccessService
 		}
 
 		fireEvent(eventsCollector.build());
-	}
-
-	private void save(@NonNull final UserGroupRecordAccess access)
-	{
-		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
-				.recordRef(access.getRecordRef())
-				.principal(access.getPrincipal())
-				.permission(access.getPermission())
-				.build();
-
-		final I_AD_User_Record_Access existingRecord = query(query)
-				.create()
-				.firstOnly(I_AD_User_Record_Access.class);
-
-		save(access, existingRecord);
 	}
 
 	private void save(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)

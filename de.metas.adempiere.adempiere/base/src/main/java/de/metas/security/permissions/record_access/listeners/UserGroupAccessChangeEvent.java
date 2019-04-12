@@ -45,6 +45,11 @@ public class UserGroupAccessChangeEvent
 		return builder().accessGrant(access).build();
 	}
 
+	public static UserGroupAccessChangeEvent accessGrants(final Collection<UserGroupRecordAccess> accesses)
+	{
+		return builder().accessGrants(accesses).build();
+	}
+
 	public static UserGroupAccessChangeEvent accessRevoke(final UserGroupRecordAccess access)
 	{
 		return builder().accessRevoke(access).build();
@@ -69,7 +74,7 @@ public class UserGroupAccessChangeEvent
 		this.accessGrants = accessGrants != null ? ImmutableSet.copyOf(accessGrants) : ImmutableSet.of();
 		this.accessRevokes = accessRevokes != null ? ImmutableSet.copyOf(accessRevokes) : ImmutableSet.of();
 	}
-	
+
 	public boolean isEmpty()
 	{
 		return accessGrants.isEmpty() && accessRevokes.isEmpty();

@@ -1,11 +1,17 @@
 package de.metas.security.permissions.record_access;
 
+import java.util.Set;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,16 +41,18 @@ public class UserGroupRecordAccessGrantRequest
 {
 	TableRecordReference recordRef;
 	Principal principal;
-	Access permission;
+	ImmutableSet<Access> permissions;
 
 	@Builder
 	private UserGroupRecordAccessGrantRequest(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final Principal principal,
-			@NonNull final Access permission)
+			@NonNull @Singular final Set<Access> permissions)
 	{
+		Check.assumeNotEmpty(permissions, "permissions is not empty");
+
 		this.recordRef = recordRef;
 		this.principal = principal;
-		this.permission = permission;
+		this.permissions = ImmutableSet.copyOf(permissions);
 	}
 }
