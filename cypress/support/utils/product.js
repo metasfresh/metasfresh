@@ -79,8 +79,9 @@ function applyProduct(product) {
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 
-    cy.clearField('Value');
-    cy.writeIntoStringField('Value', product.value);
+    // Value is readonly
+    //cy.clearField('Value');
+    //cy.writeIntoStringField('Value', product.value);
 
     cy.selectInListField('M_Product_Category_ID', product.m_product_category_id);
 

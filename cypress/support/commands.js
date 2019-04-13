@@ -167,9 +167,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
     cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
     cy.route('GET', '/rest/api/window/**').as('getData');
 
-    cy.log(
-      `clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`
-    );
+    cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -217,7 +215,6 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     if (modal) {
       path = `.panel-modal ${path}`;
     }
-debugger
     cy.get(path)
       .find('input')
       .type(`${stringValue}`)
