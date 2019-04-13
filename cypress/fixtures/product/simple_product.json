@@ -1,0 +1,16 @@
+{
+    "name": "ProductName",
+    "description": "TestProduct1",
+    "value": "TestProduct1",
+    "m_product_category_id": "06_Kartoffeln",
+    "isStocked": true,
+    "isPurchased": true,
+    "isSold": true,
+    "isDiverse": false,
+    "prices": [
+      {
+        "name": "Test1",
+        "value": "Test1"
+      }
+    ]
+  }
