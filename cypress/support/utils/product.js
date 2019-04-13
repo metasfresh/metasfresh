@@ -61,19 +61,6 @@ export class Product {
   }
 }
 
-export class ProductCategory {
-  constructor(name) {
-    cy.log(`Attribute - set name = ${name}`);
-    this.name = name;
-  }
-
-  setName(name) {
-    cy.log(`Attribute - set name = ${name}`);
-    this.name = name;
-    return this;
-  }
-}
-
 function applyProduct(product) {
   describe(`Create new Product ${product.name}`, function() {
     cy.visitWindow('140', 'NEW');
@@ -87,17 +74,48 @@ function applyProduct(product) {
 
     cy.writeIntoStringField('Description', product.description);
 
-    if (product.isStocked) {
+    if (product.isStocked && !cy.isChecked('IsStocked')) {
       cy.clickOnCheckBox('IsStocked');
     }
-    if (product.isPurchased) {
+    if (product.isPurchased && !cy.isChecked('IsPurchased')) {
       cy.clickOnCheckBox('IsPurchased');
     }
-    if (product.isSold) {
+    if (product.isSold && !cy.isChecked('IsSold')) {
       cy.clickOnCheckBox('IsSold');
     }
-    if (product.isDiverse) {
+    if (product.isDiverse && cy.isChecked('IsDiverse')) {
       cy.clickOnCheckBox('IsDiverse');
     }
+  });
+}
+
+export class ProductCategory {
+  constructor(name) {
+    cy.log(`Product Category - set name = ${name}`);
+    this.name = name;
+  }
+
+  setName(name) {
+    cy.log(`Product Category - set name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
+  apply() {
+    cy.log(`Product Category - apply - START (name=${this.name})`);
+    applyProductCategory(this);
+    cy.log(`Product Category - apply - END (name=${this.name})`);
+    return this;
+  }
+}
+
+function applyProductCategory(productCategory) {
+  describe(`Create new Product ${productCategory.name}`, function() {
+    cy.visitWindow('144', 'NEW');
+    cy.writeIntoStringField('Name', productCategory.name);
+
+    // Value is updateable
+    cy.clearField('Value');
+    cy.writeIntoStringField('Value', productCategory.value);
   });
 }

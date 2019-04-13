@@ -6,7 +6,7 @@
     "isStocked": true,
     "isPurchased": true,
     "isSold": true,
-    "isDiverse": true,
+    "isDiverse": false,
     "prices": [
       {
         "name": "Test1",
