@@ -156,6 +156,22 @@ Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
   });
 });
 
+Cypress.Commands.add('isChecked', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+
+    return cy
+      .get(path)
+      .find('[type="checkbox"]')
+      .should('be.checked');
+  });
+});
+
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
