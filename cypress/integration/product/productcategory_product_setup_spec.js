@@ -1,44 +1,31 @@
-describe('Create a Product Category and Products with Product Price', function() {
+import { Product, ProductCategory } from '../../support/utils/product';
+
+describe('Create Product Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/40', function() {
   before(function() {
     // login before each test
     cy.loginByForm();
   });
 
-  it('Create a new Product Category and Products', function() {
-    //create ProductCategory
-    cy.visitWindow('144', 'NEW');
-    cy.writeIntoStringField('Name', 'TestProductCategory1');
-    cy.clearField('Value');
-    cy.writeIntoStringField('Value', 'TestProductCategory1');
+  const timestamp = new Date().getTime(); // used in the document names, for ordering
+  const productName = `ProductName ${timestamp}`;
+  const productValue = `ProductNameValue ${timestamp}`;
+  const productCategoryName = `ProductCategoryName ${timestamp}`;
+  const productCategoryValue = `ProductNameValue ${timestamp}`;
 
-    //create AttributeSet to use
-    new AttributeSet(vendorName)
-      .setVendor(true)
-      .setVendorPricingSystem('Testpreisliste Lieferanten')
-      .setVendorDiscountSchema(discountSchemaName)
+  it('Create a new ProductCategory & Product', function() {
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
 
-      .addContact(
-        new BPartnerContact()
-          .setFirstName('Default')
-          .setLastName('Contact')
-          .setDefaultContact(true)
-      );
-
-    //set AttributeSet
-    cy.selectInListField('M_AttributeSet_ID', 'TestAttributeSet1');
-
-    //create Product
-    cy.visitWindow('140', 'NEW');
-    cy.writeIntoStringField('Name', 'TestProduct1');
-    cy.selectInListField('M_Product_Category_ID', 'TestProductCategory1_TestProductCategory1');
-
-    //set Product Price
-    cy.get('#tab_M_ProductPrice').click();
-    cy.pressAddNewButton();
-    cy.selectInListField('M_PriceList_Version_ID', 'TestPristList');
-    cy.clearField('PriceStd');
-    cy.writeIntoStringField('PriceStd', '2,00');
-    cy.selectInListField('C_TaxCategory_ID', 'Reduzierter Satz Waren/ DL');
-    cy.pressDoneButton();
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .apply();
+    });
   });
 });

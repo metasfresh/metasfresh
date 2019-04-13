@@ -63,6 +63,7 @@ export class Product {
 
 function applyProduct(product) {
   describe(`Create new Product ${product.name}`, function() {
+    debugger;
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 
@@ -98,6 +99,12 @@ export class ProductCategory {
   setName(name) {
     cy.log(`Product Category - set name = ${name}`);
     this.name = name;
+    return this;
+  }
+
+  setValue(value) {
+    cy.log(`Product Category - set value = ${value}`);
+    this.value = value;
     return this;
   }
 
