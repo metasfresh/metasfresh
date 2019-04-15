@@ -5,7 +5,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.location.LocationId;
+import de.metas.location.LocationId;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
 

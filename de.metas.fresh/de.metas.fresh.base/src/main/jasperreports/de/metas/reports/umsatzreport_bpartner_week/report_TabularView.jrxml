@@ -565,7 +565,7 @@
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{compperiodtotal_pc}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{compperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

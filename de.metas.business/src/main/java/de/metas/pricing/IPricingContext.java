@@ -27,7 +27,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;

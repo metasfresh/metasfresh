@@ -10,6 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.100
+## Features
+* metasfresh
+  * [#5114](https://github.com/metasfresh/metasfresh/issues/5114) Column Translation Insert
+  * [#5121](https://github.com/metasfresh/metasfresh/issues/5121) Create Company Directory window
+  * [#5123](https://github.com/metasfresh/metasfresh/issues/5123) Don't automatically generate AD_Message records for developers
+  * [#5131](https://github.com/metasfresh/metasfresh/issues/5131) sql rollout: consider additional URLs to download and run the migation scripts
+
+
+## Fixes
+* metasfresh
+  * [#5119](https://github.com/metasfresh/metasfresh/issues/5119) Fix AD_Element_Link related issues
+  * [#5128](https://github.com/metasfresh/metasfresh/issues/5128) Avoid generating values for "Value" column when dealing with application dictionary entities
+  * [#5134](https://github.com/metasfresh/metasfresh/issues/5134) Repair Umsatzreport Geschäftspartner Woche Excel
+
+* metasfresh-webui-frontend
+  * [#2241](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2241) Order line quick input not working
+  * [#2244](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2244) Fix tabbing
+
 # metasfresh 5.99
 ## Features
 * metasfresh
@@ -22,7 +41,7 @@ Here come the actual release notes:
 
 # Fixes
 * metasfresh-webui-frontend
-  * [#2214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214) input field value sometimes swallowed
+  * [#2214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214) Input field value sometimes swallowed
   * [#2237](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2237) Scrollbars missing in modal overlays
 
 # metasfresh 5.98

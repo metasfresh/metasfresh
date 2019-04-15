@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;

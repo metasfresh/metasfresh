@@ -6,7 +6,7 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;

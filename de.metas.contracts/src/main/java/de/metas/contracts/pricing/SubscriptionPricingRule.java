@@ -1,7 +1,7 @@
 package de.metas.contracts.pricing;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 

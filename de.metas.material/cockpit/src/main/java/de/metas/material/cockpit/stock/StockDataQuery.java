@@ -1,17 +1,16 @@
 package de.metas.material.cockpit.stock;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 import java.util.Set;
 
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L

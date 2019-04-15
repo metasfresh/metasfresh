@@ -10,12 +10,12 @@ package org.adempiere.util.concurrent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,7 +29,7 @@ import de.metas.util.Check;
 
 /**
  * Misc {@link Thread} helpers
- * 
+ *
  * @author tsa
  *
  */
@@ -37,12 +37,11 @@ public final class Threads
 {
 	private Threads()
 	{
-		super();
 	}
 
 	/**
 	 * Attempt to stop given thread.
-	 * 
+	 *
 	 * @param thread thread to be stopped.
 	 * @param timeoutMillis how many millis (maximum) to try stopping the thread; if ZERO it will try to stop infinitelly
 	 * @throws TimeoutException if thread could not be stopped in given time frame.
@@ -85,7 +84,7 @@ public final class Threads
 
 	/**
 	 * Convenient method to set a thread name and also get the previous name.
-	 * 
+	 *
 	 * @param thread
 	 * @param name
 	 * @return previous thread name
@@ -99,7 +98,7 @@ public final class Threads
 
 	/**
 	 * Convenient method to set a current thread's name and also get the previous name.
-	 * 
+	 *
 	 * @param thread
 	 * @param name
 	 * @return previous thread name

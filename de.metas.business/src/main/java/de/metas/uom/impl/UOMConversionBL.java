@@ -1,5 +1,7 @@
 package de.metas.uom.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -212,9 +214,24 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convertFromProductUOM(
-			final ProductId productId,
-			final I_C_UOM uomDest,
-			final BigDecimal qtyToConvert)
+			@Nullable final ProductId productId,
+			@Nullable final UomId destUomId,
+			@Nullable final BigDecimal qtyToConvert)
+	{
+		if (destUomId == null)
+		{
+			return qtyToConvert;
+		}
+
+		final I_C_UOM uomDest = load(destUomId, I_C_UOM.class);
+		return convertFromProductUOM(productId, uomDest, qtyToConvert);
+	}
+
+	@Override
+	public BigDecimal convertFromProductUOM(
+			@Nullable final ProductId productId,
+			@Nullable final I_C_UOM uomDest,
+			@Nullable final BigDecimal qtyToConvert)
 	{
 		if (qtyToConvert == null || qtyToConvert.signum() == 0 || productId == null || uomDest == null)
 		{

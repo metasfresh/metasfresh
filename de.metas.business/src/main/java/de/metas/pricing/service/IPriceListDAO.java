@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
