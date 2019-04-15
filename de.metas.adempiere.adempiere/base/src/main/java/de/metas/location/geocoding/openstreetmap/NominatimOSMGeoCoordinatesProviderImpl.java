@@ -68,7 +68,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 	 * Country is taken into account in both cases.
 	 */
 	//	private static final String WRONG_URL = "https://nominatim.openstreetmap.org/search?q={address}&postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
-	private static String BASE_URL = "https://nominatim.openstreetmap.org/search/";
+	private final static String BASE_URL = "https://nominatim.openstreetmap.org/search/";
 	@SuppressWarnings("SpellCheckingInspection") private static final String QUERY_STRING = "{address}?postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
 
 	private final RestTemplate restTemplate = new RestTemplateBuilder().build();
