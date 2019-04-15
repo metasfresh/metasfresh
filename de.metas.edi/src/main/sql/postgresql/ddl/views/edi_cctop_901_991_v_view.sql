@@ -3,7 +3,11 @@
 -- DROP VIEW IF EXISTS edi_cctop_901_991_v;
 
 CREATE OR REPLACE VIEW edi_cctop_901_991_v AS 
-  SELECT i.c_invoice_id AS edi_cctop_901_991_v_id, i.c_invoice_id, i.c_invoice_id AS edi_cctop_invoic_v_id, it.taxamt + it.taxbaseamt AS totalamt, it.taxamt, it.taxbaseamt, t.rate, i.ad_client_id, i.ad_org_id, i.created, i.createdby, i.updated, i.updatedby, i.isactive, rn.referenceNo AS ESRReferenceNumber
+  SELECT i.c_invoice_id AS edi_cctop_901_991_v_id, i.c_invoice_id, i.c_invoice_id AS edi_cctop_invoic_v_id, 
+  it.taxamt + it.taxbaseamt AS totalamt, 
+  it.taxamt, 
+  it.taxbaseamt, 
+  t.rate, i.ad_client_id, i.ad_org_id, i.created, i.createdby, i.updated, i.updatedby, i.isactive, rn.referenceNo AS ESRReferenceNumber
     FROM c_invoice i
     LEFT JOIN c_invoicetax it ON it.c_invoice_id = i.c_invoice_id
     LEFT JOIN c_tax t ON t.c_tax_id = it.c_tax_id
