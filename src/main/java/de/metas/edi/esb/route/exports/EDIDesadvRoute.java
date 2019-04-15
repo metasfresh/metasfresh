@@ -22,17 +22,6 @@ package de.metas.edi.esb.route.exports;
  * #L%
  */
 
-
-import java.text.DecimalFormat;
-
-import javax.xml.namespace.QName;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.DataFormat;
-import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
-
 import de.metas.edi.esb.bean.desadv.AbstractEDIDesadvCommonBean;
 import de.metas.edi.esb.bean.desadv.EDIDesadvAggregateBean;
 import de.metas.edi.esb.bean.desadv.EDIDesadvSingleBean;
@@ -45,7 +34,15 @@ import de.metas.edi.esb.jaxb.EDIInOutFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlSuccessFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
+import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.DataFormat;
+import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
+
+import javax.xml.namespace.QName;
+import java.text.DecimalFormat;
 
 @Component
 public class EDIDesadvRoute extends AbstractEDIRoute
@@ -66,10 +63,10 @@ public class EDIDesadvRoute extends AbstractEDIRoute
 	public static final String EDI_DESADV_IS_TEST = "edi.props.desadv.isTest";
 	public static final String EDI_DESADV_IS_AGGREGATE = "edi.props.desadv.isAggregate";
 
-	public final static QName EDIInOutFeedback_QNAME = new QName("", "EDI_InOut_Feedback"); // FIXME see how to take it from object factory!
+	public final static QName EDIInOutFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInOutFeedback(null).getName();
 	public static final String METHOD_setMInOutID = "setMInOutID";
 
-	public final static QName EDIDesadvFeedback_QNAME = new QName("", "EDI_Desadv_Feedback"); // FIXME see how to take it from object factory!
+	public final static QName EDIDesadvFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIDesadvFeedback(null).getName();
 	public static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
 	/**

@@ -22,11 +22,18 @@ package de.metas.edi.esb.bean.desadv;
  * #L%
  */
 
-
-import static de.metas.edi.esb.commons.Util.formatNumber;
-import static de.metas.edi.esb.commons.Util.toDate;
-import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.jaxb.EDIExpCBPartnerLocationType;
+import de.metas.edi.esb.jaxb.EDIExpCBPartnerType;
+import de.metas.edi.esb.jaxb.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.EDIExpDesadvType;
+import de.metas.edi.esb.pojo.desadv.compudata.*;
+import de.metas.edi.esb.pojo.desadv.compudata.join.JP060P100;
+import de.metas.edi.esb.route.exports.EDIDesadvRoute;
+import org.apache.camel.Exchange;
+import org.milyn.payload.JavaSource;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,25 +43,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
-import org.milyn.payload.JavaSource;
-
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.SystemTime;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerLocationType;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvType;
-import de.metas.edi.esb.pojo.desadv.compudata.H000;
-import de.metas.edi.esb.pojo.desadv.compudata.H100;
-import de.metas.edi.esb.pojo.desadv.compudata.P050;
-import de.metas.edi.esb.pojo.desadv.compudata.P060;
-import de.metas.edi.esb.pojo.desadv.compudata.P100;
-import de.metas.edi.esb.pojo.desadv.compudata.P102;
-import de.metas.edi.esb.pojo.desadv.compudata.join.JP060P100;
-import de.metas.edi.esb.route.exports.EDIDesadvRoute;
+import static de.metas.edi.esb.commons.Util.formatNumber;
+import static de.metas.edi.esb.commons.Util.toDate;
 
 public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 {
@@ -69,7 +59,8 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	@Override
 	public final void createEDIData(final Exchange exchange)
 	{
-		final EDIExpDesadvType xmlDesadv = validateExchange(exchange); // throw exceptions if mandatory fields are missing
+		final EDIDesadvValidation validation = new EDIDesadvValidation();
+		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		sortLines(xmlDesadv);
 
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
@@ -114,69 +105,6 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 		h000.setH100Lines(h100Lines);
 
 		return h000;
-	}
-
-	/**
-	 * Validate document, and throw {@link RuntimeCamelException} if mandatory fields or properties are missing or empty.
-	 *
-	 * @param exchange
-	 *
-	 * @return {@link EDIExpDesadvType} DESADV(aggregated M_InOuts) JAXB object
-	 */
-	private EDIExpDesadvType validateExchange(final Exchange exchange)
-	{
-		// validate mandatory exchange properties
-		validateString(exchange.getProperty(EDIDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property IsTest cannot be null or empty");
-
-		final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class);
-		validateObject(xmlDesadv, "@EDI.DESADV.XmlNotNull@"); // DESADV body shall not be null
-
-		// validate mandatory types (not null)
-		validateObject(xmlDesadv.getCBPartnerID(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_ID@");
-		validateObject(xmlDesadv.getBillLocationID(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @Bill_Location_ID@");
-		validateObject(xmlDesadv.getSequenceNoAttr(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @SequenceNoAttr@");
-		validateObject(xmlDesadv.getMovementDate(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @MovementDate@");
-		validateObject(xmlDesadv.getDateOrdered(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @DateOrdered@");
-		validateObject(xmlDesadv.getCBPartnerLocationID(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_Location_ID@");
-
-		validateObject(xmlDesadv.getCCurrencyID(), "@FillMandatory@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @C_Currency_ID@");
-
-		// validate strings (not null or empty)
-		validateString(xmlDesadv.getCBPartnerID().getEdiRecipientGLN(), "@FillMandatory@ @C_BPartner_ID@=" + xmlDesadv.getCBPartnerID().getValue() + " @EdiRecipientGLN@");
-		validateString(xmlDesadv.getCBPartnerLocationID().getGLN(), "@FillMandatory@ @C_BPartner_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
-		validateObject(xmlDesadv.getBillLocationID().getGLN(), "@FillMandatory@ @Bill_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
-
-		// Evaluate EDI_DesadvLines
-		final List<EDIExpDesadvLineType> ediExpDesadvLines = xmlDesadv.getEDIExpDesadvLine();
-		if (ediExpDesadvLines.isEmpty())
-		{
-			throw new RuntimeCamelException("@EDI.DESADV.ContainsDesadvLines@");
-		}
-
-		for (final EDIExpDesadvLineType xmlDesadvLine : ediExpDesadvLines)
-		{
-			// validate mandatory types (not null)
-			validateObject(xmlDesadvLine.getLine(), "@FillMandatory@  @EDI_DesadvLine_ID@ @Line@");
-
-			validateObject(xmlDesadvLine.getQtyDeliveredInUOM(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyDeliveredInUOM@");
-			validateObject(xmlDesadvLine.getCUOMID(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @C_UOM_ID@");
-			validateObject(xmlDesadvLine.getMProductID(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @M_Product_ID@");
-
-			validateObject(xmlDesadvLine.getQtyItemCapacity(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyItemCapacity@");
-			validateObject(xmlDesadvLine.getQtyEntered(), "@FillMandatory@ @EDI_DesadvLine_ID@=" + xmlDesadvLine.getLine() + " @QtyEntered@");
-
-			if (xmlDesadvLine.getQtyDeliveredInUOM().signum() > 0) // if it's a P102-line, then there can be no SSCC18 and that's OK
-			{
-				final String sscc18Value = Util.removePrecedingZeros(xmlDesadvLine.getIPASSCC18());
-				validateString(sscc18Value, "@FillMandatory@ SSCC18 in @EDI_DesadvLine_ID@ " + xmlDesadvLine.getLine());
-			}
-
-			validateString(xmlDesadvLine.getProductNo(), "@FillMandatory@ ProductNo in @EDI_DesadvLine_ID@ " + xmlDesadvLine.getLine());
-			validateString(xmlDesadvLine.getUPC(), "@FillMandatory@ UPC in @EDI_DesadvLine_ID@ " + xmlDesadvLine.getLine());
-			validateString(xmlDesadvLine.getProductDescription(), "@FillMandatory@ ProductDescription in @EDI_DesadvLine_ID@ " + xmlDesadvLine.getLine());
-		}
-
-		return xmlDesadv;
 	}
 
 	protected final List<H100> createH100LinesFromXmlDesadv(final EDIExpDesadvType xmlDesadv, final DecimalFormat decimalFormat)
@@ -379,7 +307,7 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 
 	/**
 	 * @param xmlDesadv
-	 * @param nullDeliveryLine
+	 * @param xmlDesadvLine
 	 * @return P102 line
 	 */
 	private P102 createP102Line(final EDIExpDesadvType xmlDesadv,

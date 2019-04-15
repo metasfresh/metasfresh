@@ -10,47 +10,40 @@ package de.metas.edi.esb.commons;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.Normalizer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
+import de.metas.edi.esb.commons.api.ILookupTemplate;
+import de.metas.edi.esb.commons.api.ILookupValue;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.impl.DefaultMessage;
 
-import de.metas.edi.esb.commons.api.ILookupTemplate;
-import de.metas.edi.esb.commons.api.ILookupValue;
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.Normalizer;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public final class Util
 {
@@ -101,6 +94,16 @@ public final class Util
 		return null;
 	}
 
+	public static String toFormattedStringDate(final Date date, final String datePattern)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+		SimpleDateFormat dateFormat = new SimpleDateFormat(datePattern);
+		return dateFormat.format(date);
+	}
+
 	public static Date toDate(final XMLGregorianCalendar xmlCalendar)
 	{
 		if (xmlCalendar == null)
@@ -115,7 +118,7 @@ public final class Util
 	/**
 	 * Creates an {@link XMLGregorianCalendar} date.<br />
 	 * If the isNewDateOverride is used, on exception, create today's date.
-	 * 
+	 *
 	 * @param date
 	 * @param isNewDateOverride
 	 * @param datePattern
@@ -146,7 +149,7 @@ public final class Util
 	 * See {@link #createCalendarDate(String, boolean, String)}<br />
 	 * <br />
 	 * Date pattern used: {@link Constants#ADEMPIERE_DATE_PATTERN}
-	 * 
+	 *
 	 * @param date
 	 * @param isNewDateOverride
 	 * @return {@link XMLGregorianCalendar} date
@@ -161,7 +164,7 @@ public final class Util
 	 * Assumes isNewDateOverride=false<br />
 	 * See {@link #createCalendarDate(String, boolean, String)}<br />
 	 * <br />
-	 * 
+	 *
 	 * @param date
 	 * @param datePattern
 	 * @return {@link XMLGregorianCalendar} date or null if the given date was null or empty
@@ -176,7 +179,7 @@ public final class Util
 	 * On exception, assumes isNewDateOverride=false (see {@link #createCalendarDate(String, boolean)}).<br />
 	 * <br />
 	 * Date pattern used: {@link Constants#ADEMPIERE_DATE_PATTERN}
-	 * 
+	 *
 	 * @param date
 	 * @param isNewDateOverride
 	 * @return {@link XMLGregorianCalendar} date
@@ -188,7 +191,7 @@ public final class Util
 
 	/**
 	 * Use UNIX line endings.
-	 * 
+	 *
 	 * @param s
 	 * @return String
 	 */
@@ -204,7 +207,7 @@ public final class Util
 
 	/**
 	 * Returns ADempiere-boolean String
-	 * 
+	 *
 	 * @param value
 	 * @return String "Y" or "N"
 	 */
@@ -230,7 +233,7 @@ public final class Util
 
 	/**
 	 * Returns ADempiere-boolean String
-	 * 
+	 *
 	 * @param value
 	 * @return String "Y" or "N"
 	 */
@@ -255,16 +258,12 @@ public final class Util
 		{
 			return true;
 		}
-		if (s.trim().isEmpty())
-		{
-			return true;
-		}
-		return false;
+		return s.trim().isEmpty();
 	}
 
 	/**
 	 * Set matching locale, otherwise throw exception.
-	 * 
+	 *
 	 * @param localeCodeISO3
 	 */
 	public static void initializeLocale(final String localeCodeISO3)
@@ -285,7 +284,7 @@ public final class Util
 
 	/**
 	 * Returns a {@link Message} with the body of a {@link JAXBElement}
-	 * 
+	 *
 	 * @param element
 	 * @return {@link Message}
 	 */
@@ -298,7 +297,7 @@ public final class Util
 
 	/**
 	 * Returns null if the string is null or the trimmed string is empty, or the trimmed string otherwise
-	 * 
+	 *
 	 * @param value
 	 * @return {@link String}
 	 */
@@ -321,9 +320,7 @@ public final class Util
 	/**
 	 * @param templateClass
 	 * @param lookupValues
-	 * 
 	 * @return generic lookup object
-	 * 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
@@ -400,7 +397,6 @@ public final class Util
 	/**
 	 * @param templateClass
 	 * @param lookupValues
-	 * 
 	 * @return generic lookup object
 	 */
 	public static <T> T resolveGenericLookup(final Class<T> templateClass, final ILookupValue<?>... lookupValues)
@@ -440,13 +436,12 @@ public final class Util
 
 	/**
 	 * Invoke setter method on object.
-	 * 
+	 *
 	 * @param objectType
 	 * @param object
 	 * @param value
 	 * @param valueType
 	 * @param methodName
-	 * 
 	 * @throws IllegalArgumentException
 	 * @throws SecurityException
 	 * @throws IllegalAccessException
@@ -473,12 +468,10 @@ public final class Util
 
 	/**
 	 * Invoke getter method on object.
-	 * 
+	 *
 	 * @param object
 	 * @param methodName
-	 * 
 	 * @return value
-	 * 
 	 * @throws IllegalArgumentException
 	 * @throws SecurityException
 	 * @throws IllegalAccessException
@@ -499,14 +492,13 @@ public final class Util
 			throw new IllegalArgumentException("Supplied lookup class does not contain " + methodName + " method", e);
 		}
 
-		@SuppressWarnings("unchecked")
-		final T result = (T)getterMethod.invoke(object);
+		@SuppressWarnings("unchecked") final T result = (T)getterMethod.invoke(object);
 		return result;
 	}
 
 	/**
 	 * Format number using decimal format.
-	 * 
+	 *
 	 * @param n
 	 * @param decimalFormat
 	 * @return formatted number, if not null, 0 otherwise
@@ -537,6 +529,7 @@ public final class Util
 	 * TODO: please check this and remove duplicates later...
 	 */
 	private static final Map<CharSequence, CharSequence> notNormalizableChars = new HashMap<CharSequence, CharSequence>();
+
 	static
 	{
 		Util.notNormalizableChars.put("â", "a");
@@ -621,7 +614,7 @@ public final class Util
 
 	/**
 	 * Special regular expression character ranges relevant for simplification
-	 * 
+	 *
 	 * @see <a href="http://docstore.mik.ua/orelly/perl/prog3/ch05_04.htm">InCombiningDiacriticalMarks: special marks that are part of "normal" ä, ö, î etc..</a>
 	 * @see <a href="http://www.fileformat.info/info/unicode/category/Sk/list.htm">IsSk: Symbol, Modifier</a>
 	 * @see <a href="http://www.fileformat.info/info/unicode/category/Lm/list.htm">IsLm: Letter, Modifier</a>
@@ -633,13 +626,11 @@ public final class Util
 	 * <br>
 	 * Normalize string using {@link Normalizer}, and replacing remaining special characters with "".<br>
 	 * <br>
-	 * 
+	 *
+	 * @param str
+	 * @return ASCII-friendly string
 	 * @see <a href="http://stackoverflow.com/questions/3322152/java-getting-rid-of-accents-and-converting-them-to-regular-letters">Reference 1</a>
 	 * @see <a href="http://stackoverflow.com/questions/2096667/convert-unicode-to-ascii-without-changing-the-string-length-in-java">Reference 2</a>
-	 * 
-	 * @param str
-	 * 
-	 * @return ASCII-friendly string
 	 */
 	public static String normalize(final String str)
 	{
@@ -659,10 +650,9 @@ public final class Util
 	}
 
 	/**
-	 * @see <a href="http://stackoverflow.com/questions/2800739/how-to-remove-leading-zeros-from-alphanumeric-text">Reference</a>
-	 * 
 	 * @param str
 	 * @return resulting string with preceding zeros removed. Or null, if the input was <code>null</code>.
+	 * @see <a href="http://stackoverflow.com/questions/2800739/how-to-remove-leading-zeros-from-alphanumeric-text">Reference</a>
 	 */
 	public static String removePrecedingZeros(final String str)
 	{
@@ -692,10 +682,10 @@ public final class Util
 				documentNo.length() <= 7 ? documentNo : documentNo.substring(documentNo.length() - 7);
 		return "006" + lpadZero(sevenDigitString, 7);
 	}
-	
+
 	/**
 	 * Remove trailing zeros after decimal separator
-	 * 
+	 *
 	 * @param bd
 	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be retu
 	 */
