@@ -11,12 +11,12 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
 import org.compiere.util.DB;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_Postal;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
