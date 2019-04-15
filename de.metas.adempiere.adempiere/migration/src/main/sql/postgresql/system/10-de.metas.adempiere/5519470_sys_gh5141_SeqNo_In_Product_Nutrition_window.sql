@@ -10,18 +10,10 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-04-15T17:06:09.451
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(566) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(566)
 ;
 
--- 2019-04-15T17:06:09.479
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=578848
-;
 
--- 2019-04-15T17:06:09.487
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(578848)
-;
 
 -- 2019-04-15T17:06:13.216
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -55,7 +47,18 @@ UPDATE AD_Field SET SeqNo=70,Updated=TO_TIMESTAMP('2019-04-15 17:06:29','YYYY-MM
 
 -- 2019-04-15T17:07:14.138
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,578848,0,541159,558366,541688,'F',TO_TIMESTAMP('2019-04-15 17:07:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'seqNo',10,0,0,TO_TIMESTAMP('2019-04-15 17:07:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,
+                           IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,
+
+                           Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy)
+
+                           VALUES (0,578848,0,541159,558366,541688,'F',TO_TIMESTAMP('2019-04-15 17:07:13','YYYY-MM-DD HH24:MI:SS'),100,'Y',
+                                   'N',
+                                   'N','Y',
+                                   'N',
+                                   'N',
+
+                                   'seqNo',10,0,0,TO_TIMESTAMP('2019-04-15 17:07:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-04-15T17:07:17.261
@@ -112,6 +115,10 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP(
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET DefaultValue='@SQL=SELECT COALESCE(MAX(seqno),0)+10 AS DefaultValue FROM M_Product_Nutrition WHERE M_Product_ID=@M_Product_ID/0@',Updated=TO_TIMESTAMP('2019-04-15 17:09:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=567668
 ;
+
+
+
+
 
 -- 2019-04-15T17:17:34.046
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
