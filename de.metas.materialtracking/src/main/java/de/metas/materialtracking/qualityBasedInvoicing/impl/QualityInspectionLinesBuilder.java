@@ -42,6 +42,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.util.QualityBasedInspectionUtils;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Creates {@link IQualityInspectionLine}s for a given {@link IQualityInspectionOrder}.
@@ -66,11 +67,10 @@ public class QualityInspectionLinesBuilder
 	 * @param qiOrder the instance for which we build the lines
 	 * @param buildWithAveragedValues decides if the averaged values of the given qiOrder shall be used or the actual values
 	 */
-	public QualityInspectionLinesBuilder(final IQualityInspectionOrder qiOrder, final boolean buildWithAveragedValues)
+	public QualityInspectionLinesBuilder(
+			@NonNull final IQualityInspectionOrder qiOrder,
+			final boolean buildWithAveragedValues)
 	{
-		super();
-
-		Check.assumeNotNull(qiOrder, "qiOrder not null");
 		_qiOrder = qiOrder;
 		_buildWithAveragedValues = buildWithAveragedValues; // task 08848
 	}
