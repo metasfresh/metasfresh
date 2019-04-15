@@ -19,8 +19,6 @@
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -62,6 +62,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 
 /**
  *
@@ -265,8 +266,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-
-
 	@Override
 	public TypedSqlQuery<T> setNotInSelection(final PInstanceId pinstanceId)
 	{
@@ -300,7 +299,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			list = new ArrayList<>();
 		}
 
-		final String sql = buildSQL(null, true);
+		final String sql = buildSQL(null, null, true);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -414,7 +413,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		// metas: end
 
-		final String sql = buildSQL(null/*selectClause*/, true/*useOrderByClause*/);
+		final String sql = buildSQL(null/* selectClause */, null/* fromClause */, true/* useOrderByClause */);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -473,6 +472,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		ET model = null;
 		final String sql = buildSQL(
 				null,    // selectClause: use default (i.e. all columns)
+				null, // fromClause
 				false // useOrderByClause=false because we expect only one record
 		);
 
@@ -537,10 +537,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		final String keyColumnName = getKeyColumnName();
 
-		final StringBuilder selectClause = new StringBuilder("SELECT ");
-		selectClause.append(keyColumnName);
-		selectClause.append(" FROM ").append(getSqlFrom());
-		final String sql = buildSQL(selectClause, true);
+		final StringBuilder selectClause = new StringBuilder("SELECT ").append(keyColumnName);
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sql = buildSQL(selectClause, fromClause, true);
 
 		int id = -1;
 		PreparedStatement pstmt = null;
@@ -580,7 +580,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 */
 	public String getSQL() throws DBException
 	{
-		return buildSQL(null, true);
+		return buildSQL(null, null, true);
 	}
 
 	/**
@@ -663,9 +663,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					.append(aggregateType.getSqlFunction())
 					.append("(").append(sqlExpression).append(")");
 		}
-		sqlSelect.append(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(sqlSelect, aggregateType.isUseOrderByClause());
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sql = buildSQL(sqlSelect, fromClause, aggregateType.isUseOrderByClause());
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -750,10 +751,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Build SQL query
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ")
 				.append(distinct ? " DISTINCT " : "")
-				.append(sqlColumnNames)
-				.append(" FROM ").append(getSqlFrom());
+				.append(sqlColumnNames);
+
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		final boolean useOrderByClause = !distinct;
-		final String sql = buildSQL(sqlSelect, useOrderByClause);
+		final String sql = buildSQL(sqlSelect, fromClause, useOrderByClause);
 
 		final List<Map<String, Object>> result = new ArrayList<>();
 		PreparedStatement pstmt = null;
@@ -809,19 +811,21 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public boolean match() throws DBException
 	{
 		final StringBuilder sqlSelect;
+		final StringBuilder fromClause;
 		if (postQueryFilter != null)
 		{
 			// we expect to build the select with all columns
 			// because we will want to retrieve models and match them again our post-filter
 			sqlSelect = null;
+			fromClause = null;
 		}
 		else
 		{
 			setLimit(1); // no postQueryFilter => we don't need more than one row to decide if it matches
-			sqlSelect = new StringBuilder("SELECT 1 FROM ")
-					.append(getSqlFrom());
+			sqlSelect = new StringBuilder("SELECT 1 ");
+			fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
-		final String sql = buildSQL(sqlSelect, false/*useOrderByClause*/);
+		final String sql = buildSQL(sqlSelect, fromClause, false/* useOrderByClause */);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -947,8 +951,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			sqlBuffer.append(keyColumnName);
 		}
 		sqlBuffer.insert(0, " SELECT ");
-		sqlBuffer.append(" FROM ").append(getSqlFrom());
-		final String sql = buildSQL(sqlBuffer, true);
+
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sql = buildSQL(sqlBuffer, fromClause, true);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -996,7 +1002,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public <ET> POResultSet<ET> scroll(final Class<ET> clazz) throws DBException
 	{
 		final String tableName = getTableName();
-		final String sql = buildSQL(null, true);
+		final String sql = buildSQL(null, null, true);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		POResultSet<ET> rsPO = null;
@@ -1190,20 +1196,30 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * Build SQL Clause
 	 *
 	 * @param selectClause optional; if null the select clause will be build according to POInfo
+	 * @param fromClause optional; if null the from clause will be build according to {@link #getSqlFrom()}
 	 * @param useOrderByClause true if ORDER BY clause shall be appended
 	 * @return final SQL
 	 */
-	public final String buildSQL(StringBuilder selectClause, final boolean useOrderByClause)
+	public final String buildSQL(
+			@Nullable final StringBuilder selectClause, // TODO change to String
+			@Nullable final StringBuilder fromClause,
+			final boolean useOrderByClause)
 	{
-		if (selectClause == null)
+		StringBuilder selectClauseToUse=selectClause;
+		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
-			selectClause = new StringBuilder()
-					.append("SELECT ").append(info.getSqlSelectColumns())
-					.append("\n FROM ").append(getSqlFrom());
+			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
+		}
+		StringBuilder fromClauseToUse=fromClause;
+		if (fromClauseToUse == null)
+		{
+			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
 
-		final StringBuilder sqlBuffer = new StringBuilder(selectClause);
+		final StringBuilder sqlBuffer = new StringBuilder(selectClauseToUse)
+				.append(" ")
+				.append(fromClauseToUse);
 
 		final String whereClauseEffective = getWhereClauseEffective();
 		if (whereClauseEffective != null && !whereClauseEffective.isEmpty())
@@ -1213,14 +1229,18 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build and add UNION SQL queries
-		if (unions != null && !unions.isEmpty())
+		if (unions != null)
 		{
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
+
 				final boolean unionDistinct = union.isDistinct();
 
-				final String unionSql = unionQuery.buildSQL(selectClause, false); // useOrderByClause=false
+				final String unionSql = unionQuery.buildSQL(
+						selectClause,
+						null/* don't assume the union-query's from-clause is identical! */,
+						false/* useOrderByClause */);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
@@ -1309,10 +1329,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		final String keyColumnName = getKeyColumnName();
 
-		final StringBuilder selectClause = new StringBuilder("SELECT ");
-		selectClause.append(keyColumnName);
-		selectClause.append(" FROM ").append(getSqlFrom());
-		final String sql = buildSQL(selectClause, true);
+		final StringBuilder selectClause = new StringBuilder("SELECT ").append(keyColumnName);
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+		final String sql = buildSQL(selectClause, fromClause, true);
 
 		final List<Integer> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
@@ -1568,10 +1587,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ")
 				.append(" SELECT ")
 				.append(pinstanceId.getRepoId())
-				.append(", ").append(keyColumnName)
-				.append(" FROM ").append(getSqlFrom());
+				.append(", ").append(keyColumnName);
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(selectClause, false);
+		final String sql = buildSQL(selectClause, fromClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
 		final int no = DB.executeUpdateEx(sql, params, trxName);
@@ -1597,8 +1616,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
-		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE FROM ").append(getTableName());
-		final String sql = buildSQL(sqlDeleteFrom, false); // useOrderByClause=false
+		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE ");
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getTableName());
+		final String sql = buildSQL(sqlDeleteFrom, fromClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
 		final int no = DB.executeUpdateEx(sql, params, trxName);
@@ -1695,10 +1715,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
 
-		final StringBuilder sqlUpdate = new StringBuilder("UPDATE ").append(getTableName())
+		final StringBuilder sqlUpdate = new StringBuilder("UPDATE ")
+				.append(getTableName())
 				.append(" SET ").append(sqlUpdateSet);
+		final StringBuilder fromClause = new StringBuilder("");
 
-		final String sql = buildSQL(sqlUpdate, false); // useOrderByClause=false
+		final String sql = buildSQL(sqlUpdate, fromClause, false); // useOrderByClause=false
 		final List<Object> sqlWhereClauseParams = getParametersEffective();
 		sqlParams.addAll(sqlWhereClauseParams);
 
@@ -1744,9 +1766,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			final StringBuilder sqlFrom_Select = new StringBuilder()
 					.append("\n SELECT ").append(info.getSqlSelectColumns())
-					.append("\n , ").append(keyColumnName).append(" as ZZ_RowId")
-					.append("\n FROM ").append(getSqlFrom());
-			final String sqlFrom = buildSQL(sqlFrom_Select, true);
+					.append("\n , ").append(keyColumnName).append(" as ZZ_RowId");
+
+			final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+			final String sqlFrom = buildSQL(sqlFrom_Select, fromClause, true);
 
 			sql.append("\n FROM (").append(sqlFrom).append(") f ");
 			sqlParams.addAll(getParametersEffective());
@@ -1802,10 +1826,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build sql: SELECT ... FROM ... WHERE ...
-		sqlFromSelectColumns.asStringBuilder()
-				.insert(0, "SELECT \n")
-				.append("\n FROM ").append(getSqlFrom());
-		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), false); // useOrderByClause=false
+		sqlFromSelectColumns.asStringBuilder().insert(0, "SELECT \n");
+
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), fromClause, false); // useOrderByClause=false
 		sqlParams.addAll(getParametersEffective());
 
 		//

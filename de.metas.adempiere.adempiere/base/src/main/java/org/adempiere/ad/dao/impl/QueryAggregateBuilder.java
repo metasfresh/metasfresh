@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -217,10 +217,11 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 			final IQuery<SourceModelType> sourceQuery = _sourceQueryBuilder.create();
 			final TypedSqlQuery<SourceModelType> sourceSqlQuery = (TypedSqlQuery<SourceModelType>)sourceQuery;
 			final StringBuilder sourceSqlSelect = StringUtils.toStringBuilder(sourceSqlColumns, "\n, ")
-					.insert(0, "SELECT\n")
-					.append("\nFROM ").append(sourceQuery.getTableName()).append("\n");
+					.insert(0, "SELECT\n");
 
-			sourceSql = new StringBuilder(sourceSqlQuery.buildSQL(sourceSqlSelect, false)); // useOrderBy=false (it's pointless)
+			final StringBuilder sourceSqlFrom = new StringBuilder("\nFROM ").append(sourceQuery.getTableName()).append("\n");
+
+			sourceSql = new StringBuilder(sourceSqlQuery.buildSQL(sourceSqlSelect, sourceSqlFrom, false)); // useOrderBy=false (it's pointless)
 			sqlParamsOut.addAll(sourceSqlQuery.getParametersEffective());
 
 			// Append GROUP BY

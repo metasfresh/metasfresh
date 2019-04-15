@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -73,6 +74,9 @@ public final class MFColor implements Serializable
 	private static final int DEFAULT_GradientRepeatDistance = 100;
 	/** Gradient repeat distance in points */
 	private final int gradientRepeatDistance;
+
+	/** Can be null if the color is not persisted in metasfresh */
+	private final ColorId id;
 
 	public static MFColor defaultOfType(@NonNull final MFColorType type)
 	{
@@ -175,6 +179,7 @@ public final class MFColor implements Serializable
 
 	@Builder(toBuilder = true, builderMethodName = "_builder")
 	private MFColor(
+			@Nullable final ColorId id,
 			@NonNull final MFColorType type,
 			//
 			final Color flatColor,
@@ -193,6 +198,7 @@ public final class MFColor implements Serializable
 			final Integer gradientStartPoint,
 			final Integer gradientRepeatDistance)
 	{
+		this.id = id;
 		this.type = type;
 
 		if (type == MFColorType.FLAT)

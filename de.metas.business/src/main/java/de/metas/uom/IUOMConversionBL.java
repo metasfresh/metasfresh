@@ -127,6 +127,8 @@ public interface IUOMConversionBL extends ISingletonService
 	 */
 	BigDecimal convertFromProductUOM(ProductId productId, I_C_UOM uomDest, BigDecimal qtyToConvert);
 
+	BigDecimal convertFromProductUOM(ProductId productId, UomId destUomId, BigDecimal qtyToConvert);
+
 	/**
 	 * Convert qty to target UOM and round.
 	 *

@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.compiere.util.Util.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,12 +12,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,7 +33,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -208,7 +209,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		if (sched.getC_Order_ID() > 0)
 		{
 			final I_C_Order order = sched.getC_Order();
-			return Util.coalesce(order.getPreparationDate(), order.getDatePromised());
+			return coalesce(order.getPreparationDate(), order.getDatePromised());
 		}
 
 		return SystemTime.asTimestamp();
