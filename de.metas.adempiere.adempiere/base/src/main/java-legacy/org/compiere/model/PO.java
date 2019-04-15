@@ -333,8 +333,6 @@ public abstract class PO
 	/** Zero Integer */
 	protected static final Integer I_ZERO = new Integer(0);
 	private static final Integer I_ZERO_NATIVESEQUENCE = new Integer(0);
-	/** Accounting Columns */
-	private List<String> s_acctColumns = null;
 
 	/** Trifon - Indicates that this record is created by replication functionality. */
 	private boolean m_isReplication = false;
@@ -4166,40 +4164,11 @@ public abstract class PO
 			final String acctBaseTable,
 			final String whereClause)
 	{
-		if (s_acctColumns == null	// cannot cache C_BP_*_Acct as there are 3
-				|| acctTable.startsWith("C_BP_"))
+		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
+		if(acctInfo == null)
 		{
-			s_acctColumns = new ArrayList<>();
-			final String sql = "SELECT c.ColumnName "
-					+ "FROM AD_Column c INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
-					+ "WHERE t.TableName=? AND c.IsActive='Y' AND c.AD_Reference_ID=25 ORDER BY c.ColumnName";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setString(1, acctTable);
-				rs = pstmt.executeQuery();
-				while (rs.next())
-				{
-					s_acctColumns.add(rs.getString(1));
-				}
-			}
-			catch (final Exception e)
-			{
-				log.error(acctTable, e);
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-			if (s_acctColumns.size() == 0)
-			{
-				log.error("No Columns for " + acctTable);
-				return false;
-			}
+			log.warn("No accounting info found for {}. Skipping", acctTable);
+			return false;
 		}
 
 		// Create SQL Statement - INSERT
@@ -4207,9 +4176,9 @@ public abstract class PO
 				.append(acctTable)
 				.append(" (").append(get_TableName())
 				.append("_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy ");
-		for (int i = 0; i < s_acctColumns.size(); i++)
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",").append(s_acctColumns.get(i));
+			sb.append(",").append(acctColumnName);
 		}
 		// .. SELECT
 		sb.append(") SELECT ")
@@ -4218,10 +4187,9 @@ public abstract class PO
 				.append(getUpdatedBy())
 				.append(",now(),")
 				.append(getUpdatedBy());
-
-		for (int i = 0; i < s_acctColumns.size(); i++)
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",p.").append(s_acctColumns.get(i));
+			sb.append(",p.").append(acctColumnName);
 		}
 		// .. FROM
 		sb.append(" FROM ").append(acctBaseTable)
@@ -5196,7 +5164,6 @@ public abstract class PO
 		poCopy.m_translations = m_translations;
 		poCopy.m_valueLoaded = this.m_valueLoaded == null ? null : Arrays.copyOf(this.m_valueLoaded, this.m_valueLoaded.length);
 		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<>(this.markedChangedColumns);
-		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<>(this.s_acctColumns);
 
 		//
 		// Manual User Action (i.e. if user loaded this PO from a window)
