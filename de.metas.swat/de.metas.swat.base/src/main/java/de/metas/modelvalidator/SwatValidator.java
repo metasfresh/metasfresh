@@ -53,6 +53,7 @@ import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidation
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_ElementValue;
@@ -320,6 +321,8 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
+		
+		cachingService.addTableCacheConfigIfAbsent(I_C_BP_Group.class);
 	}
 
 	@Override
