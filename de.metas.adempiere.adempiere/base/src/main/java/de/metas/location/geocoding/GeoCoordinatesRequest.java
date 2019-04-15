@@ -1,13 +1,8 @@
-package org.adempiere.location;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.location.geocoding;
 
 /*
  * #%L
- * de.metas.business
+ * metasfresh-pharma
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,25 +22,17 @@ import lombok.Value;
  * #L%
  */
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
-@Builder(toBuilder = true)
-public class Location
+@Builder
+public class GeoCoordinatesRequest
 {
-	LocationId id;
-
-	@Nullable
-	String address;
-
-	@Nullable
-	String postal;
-
-	@Nullable
-	String city;
-
-	@Nullable
+	@NonNull
 	String countryCode;
 
-	@Nullable
-	String streetAddress;
-
+	String postal;
+	String address;
 }

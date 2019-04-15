@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.LocationId;
+import de.metas.location.LocationId;
 import org.adempiere.user.UserId;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;

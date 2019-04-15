@@ -1,4 +1,4 @@
-package org.adempiere.location;
+package de.metas.location;
 
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
