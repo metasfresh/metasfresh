@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -25,7 +24,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.event.IEventBus;
@@ -33,9 +34,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent;
-import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent.UserGroupAccessChangeEventBuilder;
 import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEventDispatcher;
-import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
@@ -73,8 +72,7 @@ public class UserGroupRecordAccessService
 
 	public UserGroupRecordAccessService(
 			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull final UserGroupRepository userGroupsRepo,
-			@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners)
+			@NonNull final UserGroupRepository userGroupsRepo)
 	{
 		this.userGroupsRepo = userGroupsRepo;
 		eventBus = eventBusFactory.getEventBus(UserGroupAccessChangeEventDispatcher.TOPIC);
@@ -135,31 +133,90 @@ public class UserGroupRecordAccessService
 		fireEvent(UserGroupAccessChangeEvent.accessRevokes(accesses));
 	}
 
-	public void copyAccess(@NonNull final TableRecordReference to, @NonNull final TableRecordReference from)
+	public void copyAccess(
+			@NonNull final TableRecordReference target,
+			@Nullable final TableRecordReference grantFrom,
+			@Nullable final TableRecordReference revokeFrom)
 	{
-		final HashMap<UserGroupRecordAccess, I_AD_User_Record_Access> toAccessRecordsToCheck = queryByRecord(to)
+		if (grantFrom == null && revokeFrom == null)
+		{
+			return;
+		}
+
+		//
+		final HashSet<UserGroupRecordAccess> accessGrants = new HashSet<>();
+		final HashMap<UserGroupRecordAccess, Integer> accessRevokes = new HashMap<>();
+
+		//
+		// Fetch existing accesses of our target record
+		final ImmutableMap<UserGroupRecordAccess, I_AD_User_Record_Access> existingTargetAccessRecords = queryByRecord(target)
 				.create()
 				.stream()
-				.collect(GuavaCollectors.toMapByKey(HashMap::new, record -> toUserGroupRecordAccess(record)));
+				.collect(GuavaCollectors.toImmutableMapByKey(record -> toUserGroupRecordAccess(record)));
 
-		final UserGroupAccessChangeEventBuilder eventsCollector = UserGroupAccessChangeEvent.builder();
+		//
+		// Revoke accesses
+		if (revokeFrom != null)
+		{
+			final List<UserGroupRecordAccess> fromAccesses = queryByRecord(revokeFrom)
+					.create()
+					.stream()
+					.map(record -> toUserGroupRecordAccess(record))
+					.collect(ImmutableList.toImmutableList());
+			for (final UserGroupRecordAccess fromAccess : fromAccesses)
+			{
+				final UserGroupRecordAccess targetAccess = fromAccess.withRecordRef(target);
+				final I_AD_User_Record_Access targetAccessRecord = existingTargetAccessRecords.get(targetAccess);
+				if (targetAccessRecord != null)
+				{
+					accessRevokes.put(targetAccess, targetAccessRecord.getAD_User_Record_Access_ID());
+				}
+			}
+		}
 
 		//
 		// Grant accesses
-		final List<UserGroupRecordAccess> fromAccesses = queryByRecord(from)
-				.create()
-				.stream()
-				.map(record -> toUserGroupRecordAccess(record))
-				.collect(ImmutableList.toImmutableList());
-		for (final UserGroupRecordAccess fromAccess : fromAccesses)
+		if (grantFrom != null)
 		{
-			final UserGroupRecordAccess toAccess = fromAccess.withRecordRef(to);
-			final I_AD_User_Record_Access toAccessRecord = toAccessRecordsToCheck.remove(toAccess);
-			save(toAccess, toAccessRecord);
-			eventsCollector.accessGrant(toAccess);
+			final List<UserGroupRecordAccess> fromAccesses = queryByRecord(grantFrom)
+					.create()
+					.stream()
+					.map(record -> toUserGroupRecordAccess(record))
+					.collect(ImmutableList.toImmutableList());
+			for (final UserGroupRecordAccess fromAccess : fromAccesses)
+			{
+				final UserGroupRecordAccess targetAccess = fromAccess.withRecordRef(target);
+
+				final boolean wasJustRevoked = accessRevokes.remove(targetAccess) != null;
+
+				if (!existingTargetAccessRecords.containsKey(targetAccess)
+						&& !wasJustRevoked)
+				{
+					accessGrants.add(targetAccess);
+				}
+			}
 		}
 
-		fireEvent(eventsCollector.build());
+		//
+		// Stop here if nothing changed
+		if (accessGrants.isEmpty() && accessRevokes.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Persist to database
+		{
+			accessGrants.forEach(access -> save(access, null));
+			deleteByIds(accessRevokes.values());
+		}
+
+		//
+		// Fire event
+		fireEvent(UserGroupAccessChangeEvent.builder()
+				.accessGrants(accessGrants)
+				.accessRevokes(accessRevokes.keySet())
+				.build());
 	}
 
 	private void save(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
@@ -183,6 +240,16 @@ public class UserGroupRecordAccessService
 
 		Services.get(ITrxManager.class)
 				.runAfterCommit(() -> eventBus.postObject(event));
+	}
+
+	@VisibleForTesting
+	Set<UserGroupRecordAccess> getAccessesByRecord(@NonNull final TableRecordReference recordRef)
+	{
+		return queryByRecord(recordRef)
+				.create()
+				.stream()
+				.map(record -> toUserGroupRecordAccess(record))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private IQueryBuilder<I_AD_User_Record_Access> queryByRecord(@NonNull final TableRecordReference recordRef)
@@ -271,7 +338,7 @@ public class UserGroupRecordAccessService
 		toRecord.setAD_UserGroup_ID(UserGroupId.toRepoId(from.getPrincipal().getUserGroupId()));
 	}
 
-	private void deleteByIds(final Set<Integer> repoIds)
+	private void deleteByIds(final Collection<Integer> repoIds)
 	{
 		if (repoIds.isEmpty())
 		{

@@ -1,9 +1,9 @@
 package de.metas.security.permissions.record_access;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,17 +52,34 @@ class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 	}
 
 	@Override
-	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
-		final IInvoiceDAO invoicesRepo = getInvoicesRepo();
+		final I_C_Invoice invoiceRecord = InterfaceWrapperHelper.create(documentObj, I_C_Invoice.class);
+		final I_C_Invoice invoiceRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Invoice.class);
 
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Invoice invoice = invoicesRepo.getByIdInTrx(invoiceId);
-		return BPartnerId.optionalOfRepoId(invoice.getC_BPartner_ID());
+		return BPartnerDependentDocument.builder()
+				.documentRef(TableRecordReference.of(documentObj))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(invoiceRecordOld.getC_BPartner_ID()))
+				.build();
 	}
 
 	@Override
-	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(@NonNull final TableRecordReference documentRef)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(documentRef.getRecord_ID());
+		final I_C_Invoice invoiceRecord = getInvoicesRepo().getByIdInTrx(invoiceId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_ID());
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(documentRef)
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
+				.build();
+	}
+
+	@Override
+	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
 	{
 		final IInvoiceDAO invoicesRepo = getInvoicesRepo();
 

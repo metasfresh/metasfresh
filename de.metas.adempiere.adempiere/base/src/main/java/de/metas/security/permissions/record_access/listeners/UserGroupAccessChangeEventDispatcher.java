@@ -54,7 +54,7 @@ public class UserGroupAccessChangeEventDispatcher
 			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		this.listeners = CompositeUserGroupAccessChangeListener.of(listeners);
-		logger.info("Listeners: {}", this.listeners);
+		logger.info("{}", this.listeners);
 
 		this.eventBusFactory = eventBusFactory;
 	}

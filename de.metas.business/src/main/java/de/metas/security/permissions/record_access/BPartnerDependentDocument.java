@@ -1,12 +1,13 @@
 package de.metas.security.permissions.record_access;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jgoodies.common.base.Objects;
 
+import de.metas.bpartner.BPartnerId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,22 +34,19 @@ import lombok.Value;
  */
 
 @Value
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class BPartnerDependentDocumentCreatedEvent
+@Builder
+final class BPartnerDependentDocument
 {
-	public static BPartnerDependentDocumentCreatedEvent of(final TableRecordReference documentRef)
-	{
-		return new BPartnerDependentDocumentCreatedEvent(documentRef);
-	}
-
-	@JsonProperty("documentRef")
+	@NonNull
 	TableRecordReference documentRef;
 
-	@JsonCreator
-	private BPartnerDependentDocumentCreatedEvent(
-			@JsonProperty("documentRef") @NonNull final TableRecordReference documentRef)
-	{
-		this.documentRef = documentRef;
-	}
+	@Nullable
+	BPartnerId newBPartnerId;
+	@Nullable
+	BPartnerId oldBPartnerId;
 
+	public boolean isBPartnerChanged()
+	{
+		return !Objects.equals(getOldBPartnerId(), getNewBPartnerId());
+	}
 }

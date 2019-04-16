@@ -1,8 +1,8 @@
 package de.metas.security.permissions.record_access;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Component;
@@ -49,13 +49,30 @@ class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 	}
 
 	@Override
-	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
-		final IPaymentDAO paymentsRepo = getPaymentsRepo();
+		final I_C_Payment paymentRecord = InterfaceWrapperHelper.create(documentObj, I_C_Payment.class);
+		final I_C_Payment paymentRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Payment.class);
 
+		return BPartnerDependentDocument.builder()
+				.documentRef(TableRecordReference.of(documentObj))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecordOld.getC_BPartner_ID()))
+				.build();
+	}
+
+	@Override
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(TableRecordReference documentRef)
+	{
 		final PaymentId paymentId = PaymentId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Payment payment = paymentsRepo.getById(paymentId);
-		return BPartnerId.optionalOfRepoId(payment.getC_BPartner_ID());
+		final I_C_Payment paymentRecord = Services.get(IPaymentDAO.class).getById(paymentId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID());
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(documentRef)
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
+				.build();
 	}
 
 	@Override

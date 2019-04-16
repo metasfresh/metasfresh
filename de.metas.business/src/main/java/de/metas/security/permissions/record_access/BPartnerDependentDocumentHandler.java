@@ -1,6 +1,5 @@
 package de.metas.security.permissions.record_access;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -33,7 +32,10 @@ interface BPartnerDependentDocumentHandler
 {
 	String getDocumentTableName();
 
-	Optional<BPartnerId> extractBPartnerIdFromDependentDocument(TableRecordReference documentRef);
+	BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj);
+
+	BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(TableRecordReference documentRef);
 
 	Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId);
+
 }

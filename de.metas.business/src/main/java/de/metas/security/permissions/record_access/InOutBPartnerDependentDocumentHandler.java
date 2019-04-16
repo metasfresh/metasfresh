@@ -1,8 +1,8 @@
 package de.metas.security.permissions.record_access;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Component;
@@ -46,11 +46,30 @@ class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 	}
 
 	@Override
-	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	{
+		final I_M_InOut inoutRecord = InterfaceWrapperHelper.create(documentObj, I_M_InOut.class);
+		final I_M_InOut inoutRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_M_InOut.class);
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(TableRecordReference.of(documentObj))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(inoutRecord.getC_BPartner_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(inoutRecordOld.getC_BPartner_ID()))
+				.build();
+	}
+
+	@Override
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(final TableRecordReference documentRef)
 	{
 		final InOutId inoutId = InOutId.ofRepoId(documentRef.getRecord_ID());
-		final I_M_InOut inout = inoutsRepo.getById(inoutId);
-		return BPartnerId.optionalOfRepoId(inout.getC_BPartner_ID());
+		final I_M_InOut inoutRecord = inoutsRepo.getById(inoutId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(inoutRecord.getC_BPartner_ID());
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(documentRef)
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
+				.build();
 	}
 
 	@Override

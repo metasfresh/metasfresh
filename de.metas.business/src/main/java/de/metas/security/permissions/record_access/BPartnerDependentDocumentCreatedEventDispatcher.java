@@ -54,12 +54,12 @@ class BPartnerDependentDocumentCreatedEventDispatcher
 	{
 		eventBusFactory
 				.getEventBus(EVENTS_TOPIC)
-				.subscribeOn(BPartnerDependentDocumentCreatedEvent.class, this::onEvent);
+				.subscribeOn(BPartnerDependentDocumentEvent.class, this::onEvent);
 	}
 
-	private void onEvent(@NonNull final BPartnerDependentDocumentCreatedEvent event)
+	private void onEvent(@NonNull final BPartnerDependentDocumentEvent event)
 	{
-		listener.onBPartnerDependentDocumentCreated(event.getDocumentRef());
+		listener.onBPartnerDependentDocumentEvent(event);
 	}
 
 }

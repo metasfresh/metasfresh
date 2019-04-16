@@ -1,8 +1,8 @@
 package de.metas.security.permissions.record_access;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
@@ -46,11 +46,30 @@ class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 	}
 
 	@Override
-	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	{
+		final I_C_Order orderRecord = InterfaceWrapperHelper.create(documentObj, I_C_Order.class);
+		final I_C_Order orderRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Order.class);
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(TableRecordReference.of(documentObj))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecordOld.getC_BPartner_ID()))
+				.build();
+	}
+
+	@Override
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(final TableRecordReference documentRef)
 	{
 		final OrderId orderId = OrderId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Order order = ordersRepo.getById(orderId);
-		return BPartnerId.optionalOfRepoId(order.getC_BPartner_ID());
+		final I_C_Order orderRecord = ordersRepo.getById(orderId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(documentRef)
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
+				.build();
 	}
 
 	@Override

@@ -1,9 +1,10 @@
 package de.metas.security.permissions.record_access;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -11,11 +12,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.record_access.BPartnerDependentDocumentEvent.EventType;
 import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import lombok.NonNull;
 
@@ -46,7 +46,7 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerUserGroupAccessChangeListener.class);
 	private final UserGroupRecordAccessService service;
-	private final ImmutableMap<String, BPartnerDependentDocumentHandler> dependentDocumentHandlersByTableName;
+	private final BPartnerDependentDocumentHandlersMap dependentDocumentHandlers;
 
 	public BPartnerUserGroupAccessChangeListener(
 			@NonNull @Lazy final UserGroupRecordAccessService service,
@@ -54,32 +54,56 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 	{
 		this.service = service;
 
-		dependentDocumentHandlersByTableName = Maps.uniqueIndex(dependentDocumentHandlers, BPartnerDependentDocumentHandler::getDocumentTableName);
-		logger.info("BPartnerDependentDocumentHandlers: {}", dependentDocumentHandlersByTableName);
+		this.dependentDocumentHandlers = BPartnerDependentDocumentHandlersMap.of(dependentDocumentHandlers);
+		logger.info("{}", dependentDocumentHandlers);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("handlers", dependentDocumentHandlersByTableName)
+				.add("handlers", dependentDocumentHandlers)
 				.toString();
 	}
 
 	public Set<String> getDependentDocumentTableNames()
 	{
-		return dependentDocumentHandlersByTableName.keySet();
+		return dependentDocumentHandlers.getTableNames();
 	}
 
-	public void onBPartnerDependentDocumentCreated(@NonNull final TableRecordReference documentRef)
+	public void onBPartnerDependentDocumentEvent(@NonNull final BPartnerDependentDocumentEvent event)
 	{
-		final BPartnerId bpartnerId = extractBPartnerIdFromDependentDocument(documentRef);
-		if (bpartnerId == null)
+		final TableRecordReference documentRef = event.getDocumentRef();
+
+		final TableRecordReference grantFrom;
+		final TableRecordReference revokeFrom;
+
+		final EventType eventType = event.getEventType();
+		final BPartnerId newBPartnerId = event.getNewBPartnerId();
+		if (EventType.NEW_RECORD.equals(eventType))
+		{
+			grantFrom = toTableRecordReference(newBPartnerId);
+			revokeFrom = null;
+		}
+		else if (EventType.BPARTNER_CHANGED.equals(eventType))
+		{
+			final BPartnerId oldBPartnerId = event.getOldBPartnerId();
+
+			grantFrom = newBPartnerId != null ? toTableRecordReference(newBPartnerId) : null;
+			revokeFrom = oldBPartnerId != null ? toTableRecordReference(oldBPartnerId) : null;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown event type: " + eventType);
+		}
+
+		//
+		if (Objects.equals(grantFrom, revokeFrom))
 		{
 			return;
 		}
 
-		service.copyAccess(documentRef, toTableRecordReference(bpartnerId));
+		service.copyAccess(documentRef, grantFrom, revokeFrom);
 	}
 
 	@Override
@@ -88,7 +112,9 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 		if (access.getRecordRef().isOfType(I_C_BPartner.class))
 		{
 			final BPartnerId bpartnerId = extractBPartnerId(access);
-			streamBPartnerRelatedRecords(bpartnerId)
+
+			dependentDocumentHandlers
+					.streamBPartnerRelatedRecords(bpartnerId)
 					.map(recordRef -> UserGroupRecordAccessGrantRequest.builder()
 							.recordRef(recordRef)
 							.principal(access.getPrincipal())
@@ -104,7 +130,9 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 		if (access.getRecordRef().isOfType(I_C_BPartner.class))
 		{
 			final BPartnerId bpartnerId = extractBPartnerId(access);
-			streamBPartnerRelatedRecords(bpartnerId)
+
+			dependentDocumentHandlers
+					.streamBPartnerRelatedRecords(bpartnerId)
 					.map(recordRef -> UserGroupRecordAccessRevokeRequest.builder()
 							.recordRef(recordRef)
 							.principal(access.getPrincipal())
@@ -114,13 +142,6 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 		}
 	}
 
-	private Stream<TableRecordReference> streamBPartnerRelatedRecords(@NonNull final BPartnerId bpartnerId)
-	{
-		return dependentDocumentHandlersByTableName.values()
-				.stream()
-				.flatMap(handler -> handler.streamRelatedDocumentsByBPartnerId(bpartnerId));
-	}
-
 	private static final BPartnerId extractBPartnerId(final UserGroupRecordAccess request)
 	{
 		final TableRecordReference recordRef = request.getRecordRef();
@@ -128,19 +149,7 @@ class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeList
 		return BPartnerId.ofRepoId(recordRef.getRecord_ID());
 	}
 
-	private BPartnerId extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
-	{
-		final String documentTableName = documentRef.getTableName();
-		final BPartnerDependentDocumentHandler handler = dependentDocumentHandlersByTableName.get(documentTableName);
-		if (handler == null)
-		{
-			return null;
-		}
-
-		return handler.extractBPartnerIdFromDependentDocument(documentRef).orElse(null);
-	}
-
-	private static final TableRecordReference toTableRecordReference(final BPartnerId bpartnerId)
+	private static final TableRecordReference toTableRecordReference(@NonNull final BPartnerId bpartnerId)
 	{
 		return TableRecordReference.of(I_C_BPartner.Table_Name, bpartnerId);
 	}

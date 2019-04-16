@@ -1,10 +1,11 @@
 package de.metas.security.permissions.record_access;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
 
@@ -30,6 +31,7 @@ import de.metas.bpartner.BPartnerId;
  * #L%
  */
 
+@Component
 public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
@@ -40,10 +42,29 @@ public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDepen
 	}
 
 	@Override
-	public Optional<BPartnerId> extractBPartnerIdFromDependentDocument(final TableRecordReference documentRef)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(Object documentObj)
+	{
+		final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.create(documentObj, I_C_BPartner.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRecord.getC_BPartner_ID());
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(TableRecordReference.of(documentObj))
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
+				.build();
+	}
+
+	@Override
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(final TableRecordReference documentRef)
 	{
 		documentRef.assertTableName(I_C_BPartner.Table_Name);
-		return BPartnerId.optionalOfRepoId(documentRef.getRecord_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(documentRef.getRecord_ID());
+
+		return BPartnerDependentDocument.builder()
+				.documentRef(documentRef)
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
+				.build();
 	}
 
 	@Override
