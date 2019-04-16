@@ -42,10 +42,9 @@ import lombok.NonNull;
  */
 public class JSONObjectMapper<T>
 {
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static <T> JSONObjectMapper<T> forClass(@NonNull final Class<T> clazz)
 	{
-		return new JSONObjectMapper(clazz);
+		return new JSONObjectMapper<>(clazz);
 	}
 
 	private final static ObjectMapper jsonObjectMapper;
