@@ -15,16 +15,14 @@ import java.util.function.Consumer;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
 
 /**
  * Bus of {@link Event}s.
@@ -60,25 +58,24 @@ public interface IEventBus
 
 	/**
 	 * Subscribe to this bus.
-	 * 
-	 * @param eventConsumer
 	 */
 	void subscribe(Consumer<Event> eventConsumer);
 
+	<T> void subscribeOn(Class<T> type, Consumer<T> eventConsumer);
+
 	/**
-	 * Subscribe to this bus. Same as {@link #subscribe(IEventListener)} but this will register a weak reference to listener, so as long as the listener is no longer referenced, it will auto-magically
-	 * unregistered from this bus.
-	 *
-	 * @param listener
+	 * Subscribe to this bus. Same as {@link #subscribe(IEventListener)} but this will register a weak reference to listener,
+	 * so as long as the listener is no longer referenced, it will auto-magically unregistered from this bus.
 	 */
+	@Deprecated
 	void subscribeWeak(IEventListener listener);
 
 	/**
 	 * Post given event on this bus.
-	 *
-	 * @param event
 	 */
 	void postEvent(Event event);
+
+	void postObject(Object obj);
 
 	/**
 	 * @return true if the bus was destroyed and it no longer accepts events.

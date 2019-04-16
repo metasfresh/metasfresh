@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_M_PriceList;
 
 import com.google.common.base.Predicates;

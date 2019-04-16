@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.location.LocationId;
+import de.metas.location.LocationId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 

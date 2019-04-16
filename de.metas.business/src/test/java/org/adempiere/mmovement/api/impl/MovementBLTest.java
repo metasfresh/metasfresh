@@ -6,8 +6,6 @@ import java.util.Map;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.model.I_M_Warehouse;

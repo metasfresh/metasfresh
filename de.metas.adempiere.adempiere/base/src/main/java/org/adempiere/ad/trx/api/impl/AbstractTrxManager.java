@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxNameGenerator;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -983,6 +984,15 @@ public abstract class AbstractTrxManager implements ITrxManager
 				setThreadInheritedTrxName(trxNameBackup);
 			}
 		}
+	}
+
+	@Override
+	public void runAfterCommit(@NonNull final Runnable runnable)
+	{
+		getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(trx -> runnable.run());
 	}
 
 	@Override

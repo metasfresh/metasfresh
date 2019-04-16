@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;

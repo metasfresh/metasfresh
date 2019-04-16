@@ -25,7 +25,7 @@ package de.metas.pricing.service;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;

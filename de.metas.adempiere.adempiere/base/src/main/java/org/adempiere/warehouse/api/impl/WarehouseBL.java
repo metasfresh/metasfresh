@@ -24,7 +24,7 @@ package org.adempiere.warehouse.api.impl;
 
 import java.util.List;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;

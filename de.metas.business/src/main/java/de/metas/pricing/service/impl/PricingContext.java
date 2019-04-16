@@ -33,7 +33,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;

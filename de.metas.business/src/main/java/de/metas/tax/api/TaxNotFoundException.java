@@ -5,7 +5,7 @@ import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;

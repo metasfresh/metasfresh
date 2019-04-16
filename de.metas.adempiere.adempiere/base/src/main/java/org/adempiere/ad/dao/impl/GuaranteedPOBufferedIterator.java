@@ -1,7 +1,5 @@
 package org.adempiere.ad.dao.impl;
 
-import lombok.NonNull;
-
 import java.io.Closeable;
 
 /*
@@ -45,6 +43,7 @@ import com.google.common.collect.PeekingIterator;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
@@ -140,10 +139,12 @@ import de.metas.util.Check;
 					.append(" SELECT ")
 					.append(DB.TO_STRING(querySelectionUUID))
 					.append(", ").append(sqlRowNumber)
-					.append(", ").append(keyColumnNameFQ)
-					.append(" FROM ").append(tableName);
+					.append(", ").append(keyColumnNameFQ);
+
+			final StringBuilder sqlFromBuilder = new StringBuilder(" FROM ").append(tableName);
+
 			// be sure to only pass the "SELECT", not the "INSERT" sql to avoid invalid SQL when ORs are exploded to unions
-			final String sqlSelect = query.buildSQL(sqlSelectBuilder, true/*useOrderByClause*/);
+			final String sqlSelect = query.buildSQL(sqlSelectBuilder, sqlFromBuilder, true/*useOrderByClause*/);
 			final List<Object> params = query.getParametersEffective();
 
 			final String sql = sqlInsertIntoBuilder.append(sqlSelect).toString();

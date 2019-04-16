@@ -1,15 +1,17 @@
-package org.adempiere.location;
+package de.metas.material.cockpit.availableforsales;
 
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
+import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * metasfresh-available-for-sales
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,24 +30,28 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class Location
+@Builder
+public class AvailableForSalesResult
 {
-	LocationId id;
+	@NonNull
+	AvailableForSalesQuery availableForSalesQuery;
 
-	@Nullable
-	String address;
+	int productId;
 
-	@Nullable
-	String postal;
+	@NonNull
+	AttributesKey storageAttributesKey;
 
-	@Nullable
-	String city;
+	@NonNull
+	Quantities quantities;
 
-	@Nullable
-	String countryCode;
+	@Value
+	@Builder
+	public static class Quantities
+	{
+		@NonNull
+		BigDecimal qtyOnHandStock;
 
-	@Nullable
-	String streetAddress;
-
+		@NonNull
+		BigDecimal qtyToBeShipped;
+	}
 }

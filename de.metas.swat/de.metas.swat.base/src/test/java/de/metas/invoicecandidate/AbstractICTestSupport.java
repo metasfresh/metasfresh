@@ -34,7 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;

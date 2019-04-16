@@ -1,4 +1,4 @@
-package org.adempiere.location;
+package de.metas.location;
 
 import java.util.Objects;
 
