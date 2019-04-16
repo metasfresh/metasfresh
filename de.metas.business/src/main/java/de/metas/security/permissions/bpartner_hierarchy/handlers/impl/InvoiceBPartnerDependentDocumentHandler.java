@@ -1,15 +1,17 @@
-package de.metas.security.permissions.bpartner_hierarchy;
+package de.metas.security.permissions.bpartner_hierarchy.handlers.impl;
 
 import java.util.stream.Stream;
 
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
+import de.metas.invoice.InvoiceId;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.util.Services;
 
 /*
@@ -35,38 +37,45 @@ import de.metas.util.Services;
  */
 
 @Component
-class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
-	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
 	@Override
 	public String getDocumentTableName()
 	{
-		return I_C_Order.Table_Name;
+		return I_C_Invoice.Table_Name;
+	}
+
+	private IInvoiceDAO getInvoicesRepo()
+	{
+		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
+		return invoicesRepo;
 	}
 
 	@Override
 	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
-		final I_C_Order orderRecord = InterfaceWrapperHelper.create(documentObj, I_C_Order.class);
-		final I_C_Order orderRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Order.class);
+		final I_C_Invoice invoiceRecord = InterfaceWrapperHelper.create(documentObj, I_C_Invoice.class);
+		final I_C_Invoice invoiceRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Invoice.class);
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of(documentObj))
-				.newBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID()))
-				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecordOld.getC_BPartner_ID()))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(invoiceRecordOld.getC_BPartner_ID()))
 				.build();
 	}
 
 	@Override
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
 	{
-		return ordersRepo.streamOrderIdsByBPartnerId(bpartnerId)
-				.map(orderId -> toTableRecordReference(orderId));
+		final IInvoiceDAO invoicesRepo = getInvoicesRepo();
+
+		return invoicesRepo.streamInvoiceIdsByBPartnerId(bpartnerId)
+				.map(invoiceId -> toTableRecordReference(invoiceId));
 	}
 
-	private static final TableRecordReference toTableRecordReference(final OrderId orderId)
+	private static final TableRecordReference toTableRecordReference(final InvoiceId invoiceId)
 	{
-		return TableRecordReference.of(I_C_Order.Table_Name, orderId);
+		return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
 	}
 }

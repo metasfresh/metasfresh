@@ -1,16 +1,15 @@
-package de.metas.security.permissions.bpartner_hierarchy;
+package de.metas.security.permissions.bpartner_hierarchy.handlers.impl;
 
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.util.Services;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 
 /*
  * #%L
@@ -35,43 +34,32 @@ import de.metas.util.Services;
  */
 
 @Component
-class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
+
 	@Override
 	public String getDocumentTableName()
 	{
-		return I_C_Payment.Table_Name;
-	}
-
-	private IPaymentDAO getPaymentsRepo()
-	{
-		return Services.get(IPaymentDAO.class);
+		return I_C_BPartner.Table_Name;
 	}
 
 	@Override
-	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(Object documentObj)
 	{
-		final I_C_Payment paymentRecord = InterfaceWrapperHelper.create(documentObj, I_C_Payment.class);
-		final I_C_Payment paymentRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Payment.class);
+		final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.create(documentObj, I_C_BPartner.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRecord.getC_BPartner_ID());
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of(documentObj))
-				.newBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID()))
-				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecordOld.getC_BPartner_ID()))
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
 				.build();
 	}
 
 	@Override
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
 	{
-		final IPaymentDAO paymentsRepo = getPaymentsRepo();
-
-		return paymentsRepo.streamPaymentIdsByBPartnerId(bpartnerId)
-				.map(paymentId -> toTableRecordReference(paymentId));
-	}
-
-	private static final TableRecordReference toTableRecordReference(final PaymentId paymentId)
-	{
-		return TableRecordReference.of(I_C_Payment.Table_Name, paymentId);
+		// TODO fetch child BPartners from parent `bpartnerId`
+		return Stream.empty();
 	}
 }

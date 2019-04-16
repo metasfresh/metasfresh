@@ -34,18 +34,24 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Dispatches {@link BPartnerDependentDocumentEvent} to {@link BPartnerHierarchyUserGroupAccessChangeListener}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Component
 @Profile(Profiles.PROFILE_App)
 class BPartnerDependentDocumentCreatedEventDispatcher
 {
-	static final Topic EVENTS_TOPIC = Topic.remote("de.metas.security.permissions.record_access.BPartnerUserGroupAccessChangeListener.Events");
+	static final Topic EVENTS_TOPIC = Topic.remote("de.metas.security.permissions.bpartner_hierarchy.BPartnerDependentDocumentEvent");
 
 	private final IEventBusFactory eventBusFactory;
-	private final BPartnerUserGroupAccessChangeListener listener;
+	private final BPartnerHierarchyUserGroupAccessChangeListener listener;
 
 	public BPartnerDependentDocumentCreatedEventDispatcher(
 			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull BPartnerUserGroupAccessChangeListener listener)
+			@NonNull BPartnerHierarchyUserGroupAccessChangeListener listener)
 	{
 		this.eventBusFactory = eventBusFactory;
 		this.listener = listener;

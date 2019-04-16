@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

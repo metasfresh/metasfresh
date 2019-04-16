@@ -1,4 +1,4 @@
-package de.metas.security.permissions.bpartner_hierarchy;
+package de.metas.security.permissions.bpartner_hierarchy.handlers;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +38,7 @@ import lombok.ToString;
  */
 
 @ToString(of = "handlersByTableName")
-class BPartnerDependentDocumentHandlersMap
+public class BPartnerDependentDocumentHandlersMap
 {
 	public static BPartnerDependentDocumentHandlersMap of(@NonNull final List<BPartnerDependentDocumentHandler> handlers)
 	{

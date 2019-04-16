@@ -1,10 +1,15 @@
-package de.metas.security.permissions.bpartner_hierarchy;
+package de.metas.security.permissions.bpartner_hierarchy.handlers;
 
-import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.jgoodies.common.base.Objects;
+
 import de.metas.bpartner.BPartnerId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -16,23 +21,32 @@ import de.metas.bpartner.BPartnerId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-interface BPartnerDependentDocumentHandler
+@Value
+@Builder
+public final class BPartnerDependentDocument
 {
-	String getDocumentTableName();
+	@NonNull
+	TableRecordReference documentRef;
 
-	BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj);
+	@Nullable
+	BPartnerId newBPartnerId;
+	@Nullable
+	BPartnerId oldBPartnerId;
 
-	Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId);
+	public boolean isBPartnerChanged()
+	{
+		return !Objects.equals(getOldBPartnerId(), getNewBPartnerId());
+	}
 }

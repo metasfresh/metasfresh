@@ -17,6 +17,9 @@ import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.util.Services;
@@ -44,16 +47,19 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Intercepts BPartner related documents and fires {@link BPartnerDependentDocumentEvent} which will be dispatched asynchronously by {@link BPartnerDependentDocumentCreatedEventDispatcher}.
+ */
 @Component
-class BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor extends AbstractModelInterceptor
+class BPartnerDependentDocumentInterceptor extends AbstractModelInterceptor
 {
-	private static final Logger logger = LogManager.getLogger(BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor.class);
+	private static final Logger logger = LogManager.getLogger(BPartnerDependentDocumentInterceptor.class);
 
 	private final UserGroupRecordAccessService userGroupRecordAccessService;
 	private final BPartnerDependentDocumentHandlersMap dependentDocumentHandlers;
 	private final IEventBus eventBus;
 
-	public BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor(
+	public BPartnerDependentDocumentInterceptor(
 			@NonNull final UserGroupRecordAccessService userGroupRecordAccessService,
 			@NonNull final List<BPartnerDependentDocumentHandler> dependentDocumentHandlers,
 			@NonNull final IEventBusFactory eventBusFactory)

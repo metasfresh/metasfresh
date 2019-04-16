@@ -1,4 +1,4 @@
-package de.metas.security.permissions.bpartner_hierarchy;
+package de.metas.security.permissions.bpartner_hierarchy.handlers.impl;
 
 import java.util.stream.Stream;
 
@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.util.Services;
 
 /*

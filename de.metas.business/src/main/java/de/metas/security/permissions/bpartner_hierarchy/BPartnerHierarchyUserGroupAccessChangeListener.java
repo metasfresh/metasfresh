@@ -16,6 +16,8 @@ import com.google.common.base.MoreObjects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.bpartner_hierarchy.BPartnerDependentDocumentEvent.EventType;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
 import de.metas.security.permissions.record_access.UserGroupRecordAccess;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.UserGroupRecordAccessRevokeRequest;
@@ -46,13 +48,13 @@ import lombok.NonNull;
  */
 
 @Component
-class BPartnerUserGroupAccessChangeListener implements UserGroupAccessChangeListener
+class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
-	private static final Logger logger = LogManager.getLogger(BPartnerUserGroupAccessChangeListener.class);
+	private static final Logger logger = LogManager.getLogger(BPartnerHierarchyUserGroupAccessChangeListener.class);
 	private final UserGroupRecordAccessService service;
 	private final BPartnerDependentDocumentHandlersMap dependentDocumentHandlers;
 
-	public BPartnerUserGroupAccessChangeListener(
+	public BPartnerHierarchyUserGroupAccessChangeListener(
 			@NonNull @Lazy final UserGroupRecordAccessService service,
 			@NonNull final List<BPartnerDependentDocumentHandler> dependentDocumentHandlers)
 	{
