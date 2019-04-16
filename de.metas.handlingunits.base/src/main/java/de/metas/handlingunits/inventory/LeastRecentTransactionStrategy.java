@@ -62,8 +62,8 @@ import lombok.Value;
  * Builds up a list of HUs for (when maxLocators was specified):
  * <ul>
  * <li>list the locators, ordered by the date they were last inventoried</li>
- * <li> oldest first</li>
- * <li> if there are >1 products in one locator, then take the date from the one that wasn't inventoried for the longest time</li>
+ * <li>oldest first</li>
+ * <li>if there are >1 products in one locator, then take the date from the one that wasn't inventoried for the longest time</li>
  * <li>take the first <code>maxLocators</code> locators</li>
  * <li>take for all products from those locators</li>
  * <li>and stream HUs</li>
@@ -92,6 +92,9 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	@NonNull
 	LocalDate movementDate;
 
+	@NonNull
+	HuForInventoryLineFactory huForInventoryLineFactory;
+
 	static final Map<String, Integer> MOVEMENT_TYPE_ORDERING = ImmutableMap.<String, Integer> builder()
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryIn, 1)
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryOut, 2)
@@ -116,15 +119,20 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	final Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
 			.thenComparing(TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR);
 
-	private LeastRecentTransactionStrategy(final int maxLocators, final BigDecimal minimumPrice, final LocalDate movementDate)
+	private LeastRecentTransactionStrategy(
+			final int maxLocators,
+			final BigDecimal minimumPrice,
+			final LocalDate movementDate,
+			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory)
 	{
 		this.maxLocators = maxLocators;
 		this.minimumPrice = minimumPrice;
 		this.movementDate = movementDate;
+		this.huForInventoryLineFactory = huForInventoryLineFactory;
 	}
 
 	@Override
-	public Stream<I_M_HU> streamHus()
+	public Stream<HuForInventoryLine> streamHus()
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -153,7 +161,8 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 
 		return huQueryBuilder.createQuery()
 				.setOrderBy(queryOrderBy)
-				.iterateAndStream();
+				.iterateAndStream()
+				.flatMap(huForInventoryLineFactory::ofHURecord);
 	}
 
 	@Builder

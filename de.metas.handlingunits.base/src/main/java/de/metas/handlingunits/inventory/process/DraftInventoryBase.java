@@ -1,10 +1,16 @@
 package de.metas.handlingunits.inventory.process;
 
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.inventory.DraftInventoryLines;
 import de.metas.handlingunits.inventory.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.HUsForInventoryStrategy;
+import de.metas.handlingunits.inventory.InventoryLineAggregator;
+import de.metas.handlingunits.inventory.InventoryLineAggregatorFactory;
+import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -34,6 +40,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 
 public abstract class DraftInventoryBase extends JavaProcess implements IProcessPrecondition
 {
+	private final InventoryLineRepository inventoryLineRepository = Adempiere.getBean(InventoryLineRepository.class);
+
+	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = Adempiere.getBean(InventoryLineAggregatorFactory.class);
+
 	@Override
 	final public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -54,15 +64,21 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 	@Override
 	final protected String doIt()
 	{
-		final I_M_Inventory inventory = getRecord(I_M_Inventory.class);
+		final I_M_Inventory inventoryRecord = getRecord(I_M_Inventory.class);
+		final I_C_DocType docTypeRecord = inventoryRecord.getC_DocType();
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
-		final HUsForInventoryStrategy strategy = createStrategy(inventory);
+		final HUsForInventoryStrategy strategy = createStrategy(inventoryRecord);
+
+		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createFor(docBaseAndSubType);
 
 		final DraftInventoryLines draftLines = DraftInventoryLines.builder()
-				.inventoryRecord(inventory)
+				.inventoryRecord(inventoryRecord)
 				.strategy(strategy)
+				.inventoryLineRepository(inventoryLineRepository)
+				.inventoryLineAggregator(inventoryLineAggregator)
 				.build();
-		
+
 		final DraftInventoryLinesCreator draftLinesCreator = new DraftInventoryLinesCreator(draftLines);
 		draftLinesCreator.execute();
 

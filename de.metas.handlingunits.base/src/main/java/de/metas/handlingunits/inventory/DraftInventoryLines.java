@@ -1,13 +1,12 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.Map;
-
 import org.compiere.model.I_M_Inventory;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -38,7 +37,9 @@ import lombok.Value;
  */
 
 /**
- * Creates or updates inventory lines for a given {@link I_M_Inventory} record.
+ * Creates or updates unprocessed inventory lines for a given {@link I_M_Inventory} record.
+ *
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Value
 public class DraftInventoryLines
@@ -46,29 +47,38 @@ public class DraftInventoryLines
 	transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	transient IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
-	I_M_Inventory inventoryRecord;
+
+	InventoryId inventoryId;
 	HUsForInventoryStrategy strategy;
 
-	Map<HuId, I_M_InventoryLine> preExistingInventoryLinesByHU;
+	InventoryLineAggregator inventoryLineAggregator;
+
+	ImmutableMap<InventoryLineAggregationKey, InventoryLine> preExistingInventoryLines;
+	InventoryLineRepository inventoryLineRepository;
+
 
 	@Builder
 	private DraftInventoryLines(
+			@NonNull final InventoryLineAggregator inventoryLineAggregator,
+			@NonNull final InventoryLineRepository inventoryLineRepository,
 			@NonNull final I_M_Inventory inventoryRecord,
 			@NonNull final HUsForInventoryStrategy strategy)
 	{
+		this.inventoryLineRepository = inventoryLineRepository;
+		this.inventoryLineAggregator = inventoryLineAggregator;
 		Check.errorUnless(
 				documentBL.issDocumentDraftedOrInProgress(inventoryRecord),
 				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventoryRecord={}",
 				inventoryRecord.getDocStatus(), inventoryRecord);
 
-		this.inventoryRecord = inventoryRecord;
+		this.inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		this.strategy = strategy;
 
-		// get existing lines' HuIds
-		this.preExistingInventoryLinesByHU = inventoryDAO
-				.retrieveLinesForInventoryId(inventoryRecord.getM_Inventory_ID(), I_M_InventoryLine.class)
+		preExistingInventoryLines = inventoryLineRepository
+				.getByInventoryId(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()))
+
 				.stream()
-				.filter(line -> line.getM_HU_ID() > 0)
-				.collect(GuavaCollectors.toImmutableMapByKey(line -> HuId.ofRepoId(line.getM_HU_ID())));
+				.filter(il -> !il.getInventoryLineHUs().isEmpty())
+				.collect(GuavaCollectors.toImmutableMapByKey(inventoryLineAggregator::createAggregationKey));
 	}
 }

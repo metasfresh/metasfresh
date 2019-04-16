@@ -1,12 +1,15 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.stream.Stream;
+import de.metas.handlingunits.HuId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,16 +27,12 @@ import java.util.stream.Stream;
  * #L%
  */
 
-public interface HUsForInventoryStrategy
+@Value
+@Builder
+public class InventoryLineHU
 {
-	Stream<HuForInventoryLine> streamHus();
+	HuId huId;
 
-	/**
-	 * The number of different locators to look at when creating lines.
-	 * A value less that or equal to zero means "no restriction"
-	 */
-	default int getMaxLocatorsAllowed()
-	{
-		return 0;
-	}
+	Quantity bookQty;
+	Quantity countQty;
 }

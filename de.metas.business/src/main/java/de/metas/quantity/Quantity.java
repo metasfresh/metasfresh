@@ -27,14 +27,24 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -109,6 +119,26 @@ public final class Quantity implements Comparable<Quantity>
 			return ZERO;
 		}
 		return quantity.getAsBigDecimal();
+	}
+
+	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
+	{
+		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
+
+		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
+				.filter(Predicates.notNull())
+				.iterator();
+		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
+		if (uomIds2qties.isEmpty())
+		{
+			throw new AdempiereException("The given moneys may not be empty");
+		}
+
+		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
+		Check.errorIf(uomIds.size() > 1,
+				"at least two money instances have different uoms: {}", uomIds2qties);
+
+		return CollectionUtils.singleElement(uomIds.asList());
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
@@ -277,6 +307,11 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	public UomId getUomId()
+	{
+		return UomId.ofRepoId(uom.getC_UOM_ID());
+	}
+
 	public String getUOMSymbol()
 	{
 		return uom.getUOMSymbol();
@@ -361,7 +396,7 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return this;
 		}
-		
+
 		return new Quantity(qty.negate(), uom, sourceQty.negate(), sourceUom);
 	}
 
@@ -619,7 +654,7 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return this;
 		}
-		
+
 		return new Quantity(
 				qty.divide(divisor, uom.getStdPrecision(), RoundingMode.HALF_UP),
 				uom,

@@ -10,11 +10,11 @@ import org.adempiere.warehouse.WarehouseId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -40,7 +40,7 @@ import lombok.Value;
  */
 
 /**
- * Builds up a list of HUs for certain product, locator and warehouse, which have stock 
+ * Builds up a list of HUs for certain product, locator and warehouse, which have stock
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -54,14 +54,18 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 
 	ProductId productId;
 
+	HuForInventoryLineFactory huForInventoryLineFactory;
+
 	private LocatorAndProductStrategy(
 			@Nullable final LocatorId locatorId,
 			@Nullable final WarehouseId warehouseId,
-			@Nullable final ProductId productId)
+			@Nullable final ProductId productId,
+			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory)
 	{
 		this.locatorId = locatorId;
 		this.warehouseId = warehouseId;
 		this.productId = productId;
+		this.huForInventoryLineFactory = huForInventoryLineFactory;
 
 		if (warehouseId != null && locatorId != null)
 		{
@@ -72,7 +76,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	}
 
 	@Override
-	public Stream<I_M_HU> streamHus()
+	public Stream<HuForInventoryLine> streamHus()
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -97,6 +101,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 
 		return huQueryBuilder
 				.createQuery()
-				.iterateAndStream();
+				.iterateAndStream()
+				.flatMap(huForInventoryLineFactory::ofHURecord);
 	}
 }
