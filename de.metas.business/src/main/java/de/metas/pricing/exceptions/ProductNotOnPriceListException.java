@@ -3,7 +3,7 @@ package de.metas.pricing.exceptions;
 import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.bpartner.BPartnerId;

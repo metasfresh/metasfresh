@@ -3,8 +3,6 @@ package de.metas.material.dispo.commons.repository.repohelpers;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,6 +16,7 @@ import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L

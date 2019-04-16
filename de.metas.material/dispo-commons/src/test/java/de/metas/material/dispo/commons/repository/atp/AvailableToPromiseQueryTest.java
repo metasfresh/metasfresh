@@ -2,8 +2,6 @@ package de.metas.material.dispo.commons.repository.atp;
 
 import org.junit.Test;
 
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
-
 /*
  * #%L
  * metasfresh-material-dispo-commons

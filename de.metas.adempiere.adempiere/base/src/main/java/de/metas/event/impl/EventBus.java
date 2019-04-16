@@ -199,6 +199,7 @@ final class EventBus implements IEventBus
 		final String json = SimpleObjectSerializer.get().serialize(obj);
 		postEvent(Event.builder()
 				.putProperty(PROP_Body, json)
+				.storeEvent()
 				.build());
 	}
 

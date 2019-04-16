@@ -4,12 +4,11 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.location.LocationId;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
+import de.metas.location.LocationId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.Check;

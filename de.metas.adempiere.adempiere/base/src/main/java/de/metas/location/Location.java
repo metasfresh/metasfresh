@@ -1,7 +1,8 @@
-package org.adempiere.location;
+package de.metas.location;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import javax.annotation.Nullable;
+
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -26,34 +27,25 @@ import lombok.Value;
  * #L%
  */
 
-/** C_Location_ID */
 @Value
-public class LocationId implements RepoIdAware
+@Builder(toBuilder = true)
+public class Location
 {
-	public static LocationId ofRepoId(final int repoId)
-	{
-		return new LocationId(repoId);
-	}
+	LocationId id;
 
-	public static LocationId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
+	@Nullable
+	String address;
 
-	int repoId;
+	@Nullable
+	String postal;
 
-	private LocationId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Location_ID");
-	}
+	@Nullable
+	String city;
 
-	public static int toRepoId(LocationId locationId)
-	{
-		return toRepoIdOr(locationId, -1);
-	}
+	@Nullable
+	String countryCode;
 
-	public static int toRepoIdOr(final LocationId locationId, final int defaultValue)
-	{
-		return locationId != null ? locationId.getRepoId() : defaultValue;
-	}
+	@Nullable
+	String streetAddress;
+
 }

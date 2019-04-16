@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;

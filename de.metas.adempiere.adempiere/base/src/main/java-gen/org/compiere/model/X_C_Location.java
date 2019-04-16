@@ -14,7 +14,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 454342047L;
+	private static final long serialVersionUID = 686282458L;
 
     /** Standard Constructor */
     public X_C_Location (Properties ctx, int C_Location_ID, String trxName)
@@ -119,6 +119,25 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
 
+	/** Set C/O.
+		@param CareOf 
+		In care of
+	  */
+	@Override
+	public void setCareOf (java.lang.String CareOf)
+	{
+		set_Value (COLUMNNAME_CareOf, CareOf);
+	}
+
+	/** Get C/O.
+		@return In care of
+	  */
+	@Override
+	public java.lang.String getCareOf () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
+	}
+
 	@Override
 	public org.compiere.model.I_C_City getC_City() throws RuntimeException
 	{
@@ -193,6 +212,25 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return ii.intValue();
 	}
 
+	/** Set Ort.
+		@param City 
+		Identifies a City
+	  */
+	@Override
+	public void setCity (java.lang.String City)
+	{
+		set_Value (COLUMNNAME_City, City);
+	}
+
+	/** Get Ort.
+		@return Identifies a City
+	  */
+	@Override
+	public java.lang.String getCity () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_City);
+	}
+
 	/** Set Anschrift.
 		@param C_Location_ID 
 		Location or Address
@@ -219,15 +257,15 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	}
 
 	@Override
-	public de.metas.adempiere.model.I_C_Postal getC_Postal() throws RuntimeException
+	public org.compiere.model.I_C_Postal getC_Postal() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Postal_ID, de.metas.adempiere.model.I_C_Postal.class);
+		return get_ValueAsPO(COLUMNNAME_C_Postal_ID, org.compiere.model.I_C_Postal.class);
 	}
 
 	@Override
-	public void setC_Postal(de.metas.adempiere.model.I_C_Postal C_Postal)
+	public void setC_Postal(org.compiere.model.I_C_Postal C_Postal)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Postal_ID, de.metas.adempiere.model.I_C_Postal.class, C_Postal);
+		set_ValueFromPO(COLUMNNAME_C_Postal_ID, org.compiere.model.I_C_Postal.class, C_Postal);
 	}
 
 	/** Set Postal codes.
@@ -289,44 +327,6 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return ii.intValue();
 	}
 
-	/** Set C/O.
-		@param CareOf 
-		In care of
-	  */
-	@Override
-	public void setCareOf (java.lang.String CareOf)
-	{
-		set_Value (COLUMNNAME_CareOf, CareOf);
-	}
-
-	/** Get C/O.
-		@return In care of
-	  */
-	@Override
-	public java.lang.String getCareOf () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
-	}
-
-	/** Set Ort.
-		@param City 
-		Identifies a City
-	  */
-	@Override
-	public void setCity (java.lang.String City)
-	{
-		set_Value (COLUMNNAME_City, City);
-	}
-
-	/** Get Ort.
-		@return Identifies a City
-	  */
-	@Override
-	public java.lang.String getCity () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_City);
-	}
-
 	/** Set PLZ verifiziert.
 		@param IsPostalValidated 
 		Sagt aus, ob Postleitzahl der Adresse verifiziert wurde.
@@ -351,6 +351,44 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Latitude.
+		@param Latitude 
+		Geographical latitude 
+	  */
+	@Override
+	public void setLatitude (java.lang.String Latitude)
+	{
+		set_Value (COLUMNNAME_Latitude, Latitude);
+	}
+
+	/** Get Latitude.
+		@return Geographical latitude 
+	  */
+	@Override
+	public java.lang.String getLatitude () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Latitude);
+	}
+
+	/** Set Längengrad.
+		@param Longitude 
+		Geographical longitude
+	  */
+	@Override
+	public void setLongitude (java.lang.String Longitude)
+	{
+		set_Value (COLUMNNAME_Longitude, Longitude);
+	}
+
+	/** Get Längengrad.
+		@return Geographical longitude
+	  */
+	@Override
+	public java.lang.String getLongitude () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Longitude);
 	}
 
 	/** Set Postfach.

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import com.google.common.collect.Range;
 

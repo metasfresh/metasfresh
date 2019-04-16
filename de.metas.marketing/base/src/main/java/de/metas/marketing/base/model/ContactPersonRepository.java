@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.LocationId;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +22,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
+import de.metas.location.LocationId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import de.metas.user.UserId;
 import de.metas.util.Check;
