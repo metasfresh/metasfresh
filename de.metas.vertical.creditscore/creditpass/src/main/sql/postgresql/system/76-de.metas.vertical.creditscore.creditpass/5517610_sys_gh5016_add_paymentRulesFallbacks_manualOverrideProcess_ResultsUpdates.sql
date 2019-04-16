@@ -2273,6 +2273,11 @@ UPDATE AD_Column SET AD_Val_Rule_ID=540428,Updated=TO_TIMESTAMP('2019-03-29 15:3
 UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=540961, FieldLength=1,Updated=TO_TIMESTAMP('2019-03-29 15:40:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564606
 ;
 
+-- 2019-03-29T19:01:28.667
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+update cs_transaction_result set responsecode='0' where responsecode='-1'
+;
+
 -- 2019-03-29T15:40:07.983
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('cs_transaction_result','ResponseCode','CHAR(1)',null,null)
