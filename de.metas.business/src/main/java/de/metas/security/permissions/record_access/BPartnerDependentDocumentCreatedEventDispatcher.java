@@ -2,12 +2,14 @@ package de.metas.security.permissions.record_access;
 
 import javax.annotation.PostConstruct;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -59,7 +61,8 @@ class BPartnerDependentDocumentCreatedEventDispatcher
 
 	private void onEvent(@NonNull final BPartnerDependentDocumentEvent event)
 	{
-		listener.onBPartnerDependentDocumentEvent(event);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInThreadInheritedTrx(() -> listener.onBPartnerDependentDocumentEvent(event));
 	}
 
 }
