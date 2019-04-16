@@ -1,4 +1,4 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.bpartner_hierarchy;
 
 import javax.annotation.Nullable;
 

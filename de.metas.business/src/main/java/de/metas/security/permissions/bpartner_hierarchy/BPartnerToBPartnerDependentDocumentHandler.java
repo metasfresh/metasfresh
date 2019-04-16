@@ -1,16 +1,13 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.bpartner_hierarchy;
 
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -35,35 +32,33 @@ import de.metas.util.Services;
  */
 
 @Component
-class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
-	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
 	@Override
 	public String getDocumentTableName()
 	{
-		return I_C_Order.Table_Name;
+		return I_C_BPartner.Table_Name;
 	}
 
 	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(Object documentObj)
 	{
-		final I_C_Order orderRecord = InterfaceWrapperHelper.create(documentObj, I_C_Order.class);
-		final I_C_Order orderRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Order.class);
+		final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.create(documentObj, I_C_BPartner.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRecord.getC_BPartner_ID());
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of(documentObj))
-				.newBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID()))
-				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecordOld.getC_BPartner_ID()))
+				.newBPartnerId(bpartnerId)
+				.oldBPartnerId(bpartnerId)
 				.build();
 	}
 
 	@Override
 	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(final TableRecordReference documentRef)
 	{
-		final OrderId orderId = OrderId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Order orderRecord = ordersRepo.getById(orderId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+		documentRef.assertTableName(I_C_BPartner.Table_Name);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(documentRef.getRecord_ID());
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(documentRef)
@@ -75,12 +70,7 @@ class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 	@Override
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
 	{
-		return ordersRepo.streamOrderIdsByBPartnerId(bpartnerId)
-				.map(orderId -> toTableRecordReference(orderId));
-	}
-
-	private static final TableRecordReference toTableRecordReference(final OrderId orderId)
-	{
-		return TableRecordReference.of(I_C_Order.Table_Name, orderId);
+		// TODO fetch child BPartners from parent `bpartnerId`
+		return Stream.empty();
 	}
 }

@@ -1,17 +1,16 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.bpartner_hierarchy;
 
 import java.util.stream.Stream;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -36,40 +35,38 @@ import lombok.NonNull;
  */
 
 @Component
-class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
-
 	@Override
 	public String getDocumentTableName()
 	{
-		return I_C_Invoice.Table_Name;
+		return I_C_Payment.Table_Name;
 	}
 
-	private IInvoiceDAO getInvoicesRepo()
+	private IPaymentDAO getPaymentsRepo()
 	{
-		final IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
-		return invoicesRepo;
+		return Services.get(IPaymentDAO.class);
 	}
 
 	@Override
 	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
-		final I_C_Invoice invoiceRecord = InterfaceWrapperHelper.create(documentObj, I_C_Invoice.class);
-		final I_C_Invoice invoiceRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Invoice.class);
+		final I_C_Payment paymentRecord = InterfaceWrapperHelper.create(documentObj, I_C_Payment.class);
+		final I_C_Payment paymentRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Payment.class);
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of(documentObj))
-				.newBPartnerId(BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_ID()))
-				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(invoiceRecordOld.getC_BPartner_ID()))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecordOld.getC_BPartner_ID()))
 				.build();
 	}
 
 	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(@NonNull final TableRecordReference documentRef)
+	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(TableRecordReference documentRef)
 	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Invoice invoiceRecord = getInvoicesRepo().getByIdInTrx(invoiceId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_ID());
+		final PaymentId paymentId = PaymentId.ofRepoId(documentRef.getRecord_ID());
+		final I_C_Payment paymentRecord = Services.get(IPaymentDAO.class).getById(paymentId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID());
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(documentRef)
@@ -81,14 +78,14 @@ class InvoiceBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 	@Override
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
 	{
-		final IInvoiceDAO invoicesRepo = getInvoicesRepo();
+		final IPaymentDAO paymentsRepo = getPaymentsRepo();
 
-		return invoicesRepo.streamInvoiceIdsByBPartnerId(bpartnerId)
-				.map(invoiceId -> toTableRecordReference(invoiceId));
+		return paymentsRepo.streamPaymentIdsByBPartnerId(bpartnerId)
+				.map(paymentId -> toTableRecordReference(paymentId));
 	}
 
-	private static final TableRecordReference toTableRecordReference(final InvoiceId invoiceId)
+	private static final TableRecordReference toTableRecordReference(final PaymentId paymentId)
 	{
-		return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
+		return TableRecordReference.of(I_C_Payment.Table_Name, paymentId);
 	}
 }

@@ -1,4 +1,4 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.bpartner_hierarchy;
 
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +15,11 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
-import de.metas.security.permissions.record_access.BPartnerDependentDocumentEvent.EventType;
+import de.metas.security.permissions.bpartner_hierarchy.BPartnerDependentDocumentEvent.EventType;
+import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessRevokeRequest;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
 import lombok.NonNull;
 

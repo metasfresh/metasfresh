@@ -1,4 +1,4 @@
-package de.metas.security.permissions.record_access;
+package de.metas.security.permissions.bpartner_hierarchy;
 
 import java.util.List;
 
@@ -17,6 +17,8 @@ import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
+import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
 import de.metas.util.Services;
 import lombok.NonNull;
 
