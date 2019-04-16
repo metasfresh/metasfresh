@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 
