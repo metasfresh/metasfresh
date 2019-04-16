@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.product.process;
 
@@ -10,12 +10,18 @@ import java.util.List;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import de.metas.impexp.excel.ArrayExcelExporter;
 import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -27,12 +33,12 @@ import de.metas.process.JavaProcess;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +49,7 @@ import de.metas.process.JavaProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ExportProductSpecifications extends JavaProcess
+public class ExportProductSpecifications extends JavaProcess implements IProcessPrecondition
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
@@ -78,11 +84,16 @@ public class ExportProductSpecifications extends JavaProcess
 
 	private String getSql()
 	{
+
+		final I_M_Product product = Services.get(IProductDAO.class).getById(getRecord_ID());
+
 		final StringBuffer sb = new StringBuffer();
 		sb.append("SELECT productName, CustomerLabelName, additional_produktinfos, productValue, UPC, weight, country, piName, piQty, ")
 				.append("guaranteedaysmin, warehouse_temperature, productDecription, componentName, componentIngredients, qtybatch, ")
 				.append("allergen, nutritionName, nutritionqty FROM ")
 				.append(tableName)
+				.append(" WHERE ")
+				.append(tableName).append(".productValue = '").append(product.getValue()).append("'")
 				.append(" ORDER BY productValue ");
 
 		return sb.toString();
@@ -111,5 +122,16 @@ public class ExportProductSpecifications extends JavaProcess
 		columnHeaders.add("NutritionQty");
 
 		return columnHeaders;
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if(!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 }
