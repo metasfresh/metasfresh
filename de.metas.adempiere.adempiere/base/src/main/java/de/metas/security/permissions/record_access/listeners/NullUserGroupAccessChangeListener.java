@@ -24,7 +24,7 @@ import de.metas.security.permissions.record_access.UserGroupRecordAccess;
  * #L%
  */
 
-public final class NullUserGroupAccessChangeListener implements UserGroupAccessChangeListener
+final class NullUserGroupAccessChangeListener implements UserGroupAccessChangeListener
 {
 	public static final transient NullUserGroupAccessChangeListener instance = new NullUserGroupAccessChangeListener();
 
