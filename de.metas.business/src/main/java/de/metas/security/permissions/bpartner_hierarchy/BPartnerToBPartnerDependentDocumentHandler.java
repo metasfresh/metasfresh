@@ -32,7 +32,7 @@ import de.metas.bpartner.BPartnerId;
  */
 
 @Component
-public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
 	@Override

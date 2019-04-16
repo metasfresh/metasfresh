@@ -38,7 +38,7 @@ import lombok.ToString;
  */
 
 @ToString(of = "handlersByTableName")
-public class BPartnerDependentDocumentHandlersMap
+class BPartnerDependentDocumentHandlersMap
 {
 	public static BPartnerDependentDocumentHandlersMap of(@NonNull final List<BPartnerDependentDocumentHandler> handlers)
 	{

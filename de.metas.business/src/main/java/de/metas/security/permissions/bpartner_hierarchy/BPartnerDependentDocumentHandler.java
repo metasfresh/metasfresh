@@ -37,5 +37,4 @@ interface BPartnerDependentDocumentHandler
 	BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(TableRecordReference documentRef);
 
 	Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId);
-
 }
