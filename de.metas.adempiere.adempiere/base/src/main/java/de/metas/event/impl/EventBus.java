@@ -41,11 +41,11 @@ import de.metas.event.Event;
 import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
-import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Type;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
+import de.metas.util.JSONObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -69,6 +69,7 @@ final class EventBus implements IEventBus
 	};
 
 	private static final String PROP_Body = "body";
+	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
 
 	@Getter
 	private final String topicName;
@@ -196,26 +197,33 @@ final class EventBus implements IEventBus
 	@Override
 	public void postObject(@NonNull final Object obj)
 	{
-		final String json = SimpleObjectSerializer.get().serialize(obj);
+		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		postEvent(Event.builder()
 				.putProperty(PROP_Body, json)
 				.storeEvent()
 				.build());
 	}
 
-	@AllArgsConstructor
 	private static class TypedConsumerAsEventListener<T> implements IEventListener
 	{
 		@NonNull
-		private final Class<T> eventBodyType;
-		@NonNull
 		private final Consumer<T> eventConsumer;
+		@NonNull
+		private final JSONObjectMapper<T> jsonDeserializer;
+
+		public TypedConsumerAsEventListener(
+				@NonNull final Class<T> eventBodyType,
+				@NonNull final Consumer<T> eventConsumer)
+		{
+			this.jsonDeserializer = JSONObjectMapper.forClass(eventBodyType);
+			this.eventConsumer = eventConsumer;
+		}
 
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
 			final String json = event.getPropertyAsString(PROP_Body);
-			final T obj = SimpleObjectSerializer.get().deserialize(json, eventBodyType);
+			final T obj = jsonDeserializer.readValue(json);
 			eventConsumer.accept(obj);
 		}
 
