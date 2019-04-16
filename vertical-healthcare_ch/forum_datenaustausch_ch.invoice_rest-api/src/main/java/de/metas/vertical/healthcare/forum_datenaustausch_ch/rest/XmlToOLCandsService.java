@@ -20,10 +20,8 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -74,6 +72,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -156,7 +155,7 @@ public class XmlToOLCandsService
 		}
 		catch (final IOException e)
 		{
-			throw new XmlInvoiceInputStreamException();
+			throw new XmlInvoiceInputStreamException(e);
 		}
 
 		try
@@ -166,7 +165,7 @@ public class XmlToOLCandsService
 		}
 		catch (final RuntimeException e)
 		{
-			throw new XmlInvoiceUnmarshalException();
+			throw new XmlInvoiceUnmarshalException(e);
 		}
 	}
 
@@ -188,32 +187,52 @@ public class XmlToOLCandsService
 		}
 		catch (final IOException e)
 		{
-			throw new XmlInvoiceAttachException();
+			throw new XmlInvoiceAttachException(e);
 		}
 	}
 
-	@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "An error occurred while trying access the XML invoice inout stream")
 	public static class XmlInvoiceInputStreamException extends RuntimeException
 	{
 		private static final long serialVersionUID = 8216181888558013882L;
+
+		public XmlInvoiceInputStreamException(@NonNull final Throwable cause)
+		{
+			super("An error occurred while trying access the XML invoice input stream", cause);
+		}
 	}
 
-	@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "An error occurred while trying to unmarshal the invoice XML data")
 	public static class XmlInvoiceUnmarshalException extends RuntimeException
 	{
 		private static final long serialVersionUID = 8216181888558013882L;
+
+		public XmlInvoiceUnmarshalException(@NonNull final Throwable cause)
+		{
+			super("An error occurred while trying to unmarshal the invoice XML data", cause);
+		}
 	}
 
-	@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Invalid invoice request_id value; it has to start with KV_ or KT_")
 	public static class XmlInvalidRequestIdException extends RuntimeException
 	{
 		private static final long serialVersionUID = -4688552956794873772L;
+
+		@Getter
+		private final String invalidRequestId;
+
+		public XmlInvalidRequestIdException(@Nullable final String invalidRequestId)
+		{
+			super("Invalid invoice request_id=" + invalidRequestId + "; it has to start with KV_ or KT_");
+			this.invalidRequestId = invalidRequestId;
+		}
 	}
 
-	@ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR, reason = "An error occurred while trying attach the XML data to the order line candidates")
 	public static class XmlInvoiceAttachException extends RuntimeException
 	{
 		private static final long serialVersionUID = 2013021164753485741L;
+
+		public XmlInvoiceAttachException(@NonNull final Throwable cause)
+		{
+			super("An error occurred while trying attach the XML data to the order line candidates", cause);
+		}
 	}
 
 	@VisibleForTesting
@@ -331,7 +350,7 @@ public class XmlToOLCandsService
 	 * @return a pair consisting of invoice {@code DocSubType} and {@code POreference}.
 	 *         TODO the hardcoded way of getting the invoice's {@code DocSubType} from the XML is not cool, but I want to keep it for now. Ideas of how to solve this in future are centered around linking the doc type to the invoice recipient
 	 */
-	private IPair<String, String> createPOReference(final PayloadType payload)
+	private IPair<String, String> createPOReference(@NonNull final PayloadType payload)
 	{
 		final InvoiceType invoice = payload.getInvoice();
 
@@ -350,7 +369,7 @@ public class XmlToOLCandsService
 		}
 		else
 		{
-			throw new XmlInvalidRequestIdException();
+			throw new XmlInvalidRequestIdException(requestIdToUse);
 		}
 		return result;
 	}
