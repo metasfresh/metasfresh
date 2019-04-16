@@ -37,7 +37,7 @@ begin
     ;
     --
     GET DIAGNOSTICS sqlInsertCount = ROW_COUNT;
-    raise notice '% records added for missing AD_Tabs', sqlInsertCount;
+    raise notice '% AD_Element_Link records added for missing AD_Tabs', sqlInsertCount;
 end;
 $BODY$
 LANGUAGE plpgsql VOLATILE
