@@ -112,7 +112,7 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void validateCreditpassForOrder(final I_C_Order order)
 	{
-		if (order.getCreditpassFlag())
+		if (order.getCreditpassFlag() && order.isSOTrx())
 		{
 			final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.ORDER_COMPLETED_CREDITPASS_ERROR);
 			throw new AdempiereException(message);
