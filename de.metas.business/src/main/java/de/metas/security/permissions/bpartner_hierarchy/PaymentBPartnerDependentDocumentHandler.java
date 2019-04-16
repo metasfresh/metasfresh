@@ -49,7 +49,7 @@ class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 	}
 
 	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
 		final I_C_Payment paymentRecord = InterfaceWrapperHelper.create(documentObj, I_C_Payment.class);
 		final I_C_Payment paymentRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Payment.class);
@@ -58,20 +58,6 @@ class PaymentBPartnerDependentDocumentHandler implements BPartnerDependentDocume
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(paymentRecordOld.getC_BPartner_ID()))
-				.build();
-	}
-
-	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(TableRecordReference documentRef)
-	{
-		final PaymentId paymentId = PaymentId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Payment paymentRecord = Services.get(IPaymentDAO.class).getById(paymentId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(paymentRecord.getC_BPartner_ID());
-
-		return BPartnerDependentDocument.builder()
-				.documentRef(documentRef)
-				.newBPartnerId(bpartnerId)
-				.oldBPartnerId(bpartnerId)
 				.build();
 	}
 

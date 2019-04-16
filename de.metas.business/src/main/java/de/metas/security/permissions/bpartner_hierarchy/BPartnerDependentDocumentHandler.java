@@ -32,9 +32,7 @@ interface BPartnerDependentDocumentHandler
 {
 	String getDocumentTableName();
 
-	BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj);
-
-	BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(TableRecordReference documentRef);
+	BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj);
 
 	Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(BPartnerId bpartnerId);
 }

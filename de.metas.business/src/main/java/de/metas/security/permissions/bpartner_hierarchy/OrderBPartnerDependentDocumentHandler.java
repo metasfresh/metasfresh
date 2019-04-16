@@ -46,7 +46,7 @@ class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 	}
 
 	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
 		final I_C_Order orderRecord = InterfaceWrapperHelper.create(documentObj, I_C_Order.class);
 		final I_C_Order orderRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_Order.class);
@@ -55,20 +55,6 @@ class OrderBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(orderRecordOld.getC_BPartner_ID()))
-				.build();
-	}
-
-	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(final TableRecordReference documentRef)
-	{
-		final OrderId orderId = OrderId.ofRepoId(documentRef.getRecord_ID());
-		final I_C_Order orderRecord = ordersRepo.getById(orderId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
-
-		return BPartnerDependentDocument.builder()
-				.documentRef(documentRef)
-				.newBPartnerId(bpartnerId)
-				.oldBPartnerId(bpartnerId)
 				.build();
 	}
 

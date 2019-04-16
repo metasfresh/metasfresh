@@ -81,7 +81,7 @@ class BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor extend
 		{
 			if (changeType.isNew())
 			{
-				final BPartnerDependentDocument doc = dependentDocumentHandlers.extractOrderBPartnerDependentDocumentFromDocumentObj(model).orElse(null);
+				final BPartnerDependentDocument doc = dependentDocumentHandlers.extractBPartnerDependentDocumentFromDocumentObj(model).orElse(null);
 
 				// guard against null, shall not happen
 				if (doc == null)
@@ -94,7 +94,7 @@ class BPartnerUserGroupAccessChangeListener_DependentDocumentsInterceptor extend
 			}
 			else if (changeType.isChange())
 			{
-				final BPartnerDependentDocument doc = dependentDocumentHandlers.extractOrderBPartnerDependentDocumentFromDocumentObj(model).orElse(null);
+				final BPartnerDependentDocument doc = dependentDocumentHandlers.extractBPartnerDependentDocumentFromDocumentObj(model).orElse(null);
 
 				// guard against null, shall not happen
 				if (doc == null)

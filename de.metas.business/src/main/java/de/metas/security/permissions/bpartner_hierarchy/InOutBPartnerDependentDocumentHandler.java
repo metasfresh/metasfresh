@@ -46,7 +46,7 @@ class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 	}
 
 	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
 		final I_M_InOut inoutRecord = InterfaceWrapperHelper.create(documentObj, I_M_InOut.class);
 		final I_M_InOut inoutRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_M_InOut.class);
@@ -55,20 +55,6 @@ class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(inoutRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(inoutRecordOld.getC_BPartner_ID()))
-				.build();
-	}
-
-	@Override
-	public BPartnerDependentDocument extractOrderBPartnerDependentDocumentFromDocumentRef(final TableRecordReference documentRef)
-	{
-		final InOutId inoutId = InOutId.ofRepoId(documentRef.getRecord_ID());
-		final I_M_InOut inoutRecord = inoutsRepo.getById(inoutId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(inoutRecord.getC_BPartner_ID());
-
-		return BPartnerDependentDocument.builder()
-				.documentRef(documentRef)
-				.newBPartnerId(bpartnerId)
-				.oldBPartnerId(bpartnerId)
 				.build();
 	}
 

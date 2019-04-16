@@ -64,7 +64,7 @@ class BPartnerDependentDocumentHandlersMap
 				.flatMap(handler -> handler.streamRelatedDocumentsByBPartnerId(bpartnerId));
 	}
 
-	public Optional<BPartnerDependentDocument> extractOrderBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
+	public Optional<BPartnerDependentDocument> extractBPartnerDependentDocumentFromDocumentObj(final Object documentObj)
 	{
 		final String documentTableName = InterfaceWrapperHelper.getModelTableName(documentObj);
 		final BPartnerDependentDocumentHandler handler = handlersByTableName.get(documentTableName);
@@ -73,20 +73,7 @@ class BPartnerDependentDocumentHandlersMap
 			return Optional.empty();
 		}
 
-		final BPartnerDependentDocument doc = handler.extractOrderBPartnerDependentDocumentFromDocumentObj(documentObj);
-		return Optional.of(doc);
-	}
-
-	public Optional<BPartnerDependentDocument> extractOrderBPartnerDependentDocumentFromDocumentRef(@NonNull final TableRecordReference documentRef)
-	{
-		final String documentTableName = documentRef.getTableName();
-		final BPartnerDependentDocumentHandler handler = handlersByTableName.get(documentTableName);
-		if (handler == null)
-		{
-			return Optional.empty();
-		}
-
-		final BPartnerDependentDocument doc = handler.extractOrderBPartnerDependentDocumentFromDocumentRef(documentRef);
+		final BPartnerDependentDocument doc = handler.extractBPartnerDependentDocumentFromDocumentObj(documentObj);
 		return Optional.of(doc);
 	}
 }
