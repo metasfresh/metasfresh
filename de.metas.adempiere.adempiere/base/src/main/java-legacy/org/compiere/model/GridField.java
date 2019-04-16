@@ -1348,7 +1348,7 @@ public class GridField
 			else
 				m_parentValue = Boolean.valueOf(m_vo.getColumnName().equals(LinkColumnName));
 			if (m_parentValue)
-				log.info(m_parentValue
+				log.debug(m_parentValue
 						+ " - Link(" + LinkColumnName + ", W=" + m_vo.WindowNo + ",T=" + m_vo.TabNo
 						+ ") = " + m_vo.getColumnName());
 			else
@@ -1742,9 +1742,6 @@ public class GridField
 					if (m_vo.getColumnName().equals(linkColumn))
 					{
 						result = true;
-						log.info(result
-								+ " - Link(" + linkColumn + ", W=" + m_vo.WindowNo + ",T=" + m_vo.TabNo
-								+ ") = " + m_vo.getColumnName());
 					}
 					currentLevel = level;
 				}
