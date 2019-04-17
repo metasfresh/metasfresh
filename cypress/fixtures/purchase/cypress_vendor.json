@@ -1,0 +1,25 @@
+{
+  "name": "Cypress Test Partner #1",
+  "isVendor": true,
+  "vendorPricingSystem": "Testpreisliste Lieferanten",
+  "isCustomer": false,
+  "bPartnerLocations": [
+    {
+      "name": "Potocka 1",
+      "city": "Warsaw",
+      "country": "Poland"
+    }
+  ],
+  "contacts": [
+    {
+      "isDefaultContact": true,
+      "firstName": "Default",
+      "lastName": "Contact"
+    },
+    {
+      "isDefaultContact": false,
+      "firstName": "Secondary",
+      "lastName": "Contact"
+    }
+  ]
+}
