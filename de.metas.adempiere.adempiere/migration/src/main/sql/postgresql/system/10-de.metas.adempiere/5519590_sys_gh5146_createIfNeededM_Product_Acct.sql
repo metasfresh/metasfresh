@@ -1,6 +1,6 @@
-drop function IF EXISTS createIfNeededM_Product_Acct(numeric);
+drop function IF EXISTS m_product_acct_createIfNeeded(numeric);
 
-create function createIfNeededM_Product_Acct(p_productId numeric)
+create function m_product_acct_createIfNeeded(p_productId numeric)
 returns void
 language plpgsql
 as $$
