@@ -63,7 +63,6 @@ export class Product {
 
 function applyProduct(product) {
   describe(`Create new Product ${product.name}`, function() {
-    debugger;
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 
@@ -86,6 +85,13 @@ function applyProduct(product) {
     }
     if (product.isDiverse && cy.isChecked('IsDiverse')) {
       cy.clickOnCheckBox('IsDiverse');
+    }
+
+    if (product.prices.length > 0) {
+      product.prices.forEach(function(product) {
+        applyProductPrice(product);
+      });
+      cy.get('table tbody tr').should('have.length', product.prices.length);
     }
   });
 }
@@ -124,5 +130,22 @@ function applyProductCategory(productCategory) {
     // Value is updateable
     cy.clearField('Value');
     cy.writeIntoStringField('Value', productCategory.value);
+  });
+}
+
+function applyProductPrice(price) {
+  describe(`Create new Product Price ${price.m_pricelist_version_id}`, function() {
+    cy.get('#tab_M_ProductPrice').click();
+    cy.pressAddNewButton();
+    cy.writeIntoLookupListField(
+      'M_PriceList_Version_ID',
+      price.m_pricelist_version_id,
+      price.m_pricelist_version_id,
+      null
+    );
+    cy.clearField('PriceStd');
+    cy.writeIntoStringField('PriceStd', price.priceStd);
+    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory_id);
+    cy.pressDoneButton();
   });
 }
