@@ -1,3 +1,12 @@
+---
+name: developer task
+about: This template shall help with our standard dev workflow
+title: ''
+labels: eff:?, rel:?
+assignees: ''
+
+---
+
 This issue is related to
 * (e.g. a metasfresh-issue)
 * (e.g. a customer issue)
