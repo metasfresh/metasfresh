@@ -1,47 +1,49 @@
 import { getBreadcrumbs } from '../../support/apiRequests';
 import { salesOrders } from '../../page_objects/sales_orders';
 import config from '../../config';
+import { Product, ProductCategory } from '../../support/utils/product';
+// import { BPartner } from '../../support/utils/bpartner';
+import { SalesOrder } from '../../support/utils/sales_order';
 
 describe('New sales order test', function() {
   const windowId = 143;
-  const list = salesOrders;
   let headerCaption = '';
   let menuOption = '';
+  const timestamp = new Date().getTime();
 
   before(function() {
     cy.loginByForm();
 
-    getBreadcrumbs(windowId).then(({ option, caption }) => {
+    Cypress.Cookies.defaults({
+      whitelist: ['SESSION', 'isLogged']
+    });
+
+    getBreadcrumbs(windowId, '1000040-new').then(({ option, caption }) => {
       menuOption = option;
       headerCaption = caption;
     });
 
-    salesOrders.visit();
-    salesOrders.verifyElements();
-  });
+    const productName = `P002737_Convenience Salat 250g ${timestamp}`;
+    const productValue = `Convencience Salat ${timestamp}`;
+    const productCategoryName = `ProductCategoryName ${timestamp}`;
+    const productCategoryValue = `ProductNameValue ${timestamp}`;
 
-  describe('List tests', function() {
-    it('Test if rows get selected/deselected properly', function() {
-      list
-        .getRows()
-        .eq(1)
-        .find('td')
-        .eq(0)
-        .type('{shift}', { release: false })
-        .click();
-
-      list
-        .getRows()
-        .eq(2)
-        .find('td')
-        .eq(0)
-        .type('{shift}', { release: false })
-        .click();
-
-      list.getSelectedRows().should('have.length', 2);
-      list.clickListHeader();
-      list.getSelectedRows().should('have.length', 0);
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
     });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .apply();
+    });
+
+    salesOrders.visit();
   });
 
   describe('Create a new sales order', function() {
@@ -69,13 +71,28 @@ describe('New sales order test', function() {
     });
 
     it('Fill Business Partner', function() {
-      cy.writeIntoLookupListField('C_BPartner_ID', 'Cypress', 'Cypress Test Partner #1');
-      //we need a fake click to close the opened dropdown
-      cy.get('.header-breadcrumb-sitename').click();
-      cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Warsaw', 'Warsaw, Potocka 1', true);
+      cy.writeIntoLookupListField('C_BPartner_ID', 'G', 'G0001_Test');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });
+
+    // it('Create new Business Partner', function() {
+    //   cy.writeIntoLookupListField('C_BPartner_ID', 'New', 'New Business Partner', true);
+    //   cy.get('.panel-modal').should('exist');
+    //   cy.writeIntoStringField('Companyname', vendorName);
+    //   // cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
+    //   const aliasName = `addBP-${new Date().getTime()}`;
+    //   const patchUrlPattern = '/rest/api/window/.*$';
+    //   cy.server();
+    //   cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
+    //   cy.get('.panel-modal-header')
+    //     .find('.btn')
+    //     .click();
+    //   cy.wait(`@${aliasName}`);
+    //   // form-field-C_Location_ID click
+    //   // attributes-dropdown should.be.visible
+    //   // C_Country_ID Deu Germany - Deutschland
+    // });
 
     it('Fill order reference to differentiate cypress tests', function() {
       cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
@@ -127,16 +144,9 @@ describe('New sales order test', function() {
       cy.get('.quick-input-container').should('exist');
       cy.get('.quick-input-container').snapshot({ name: 'Empty Quick Inp' });
 
-      cy.writeIntoLookupListField('M_Product_ID', 'C', 'Convenience Salat', true);
+      cy.writeIntoLookupListField('M_Product_ID', 'C', 'Convenience Salat');
 
-      // cy.focused().type('{tab}');
-      // cy.tab();
-
-      // cy.focused()
-      //   .should('have.value', 'IFCO 6410 x 10 Stk')
-        // .type('{tab}');
-
-      cy.get('.form-field-Qty', { timeout: 12000 })
+      cy.get('.form-field-Qty')
         .click()
         .find('.input-body-container.focused')
         .should('exist')
@@ -199,3 +209,74 @@ describe('New sales order test', function() {
     });
   });
 });
+
+describe('List tests', function() {
+  const list = salesOrders;
+  const timestamp = new Date().getTime();
+
+  before(function() {
+    const salesReference = `Cypress Test ${timestamp}`;
+
+    cy.fixture('product/simple_product.json').then(() => {
+      new SalesOrder(salesReference)
+        .setBPartner('G0001_Test Kunde 1')
+        .setBPartnerLocation('Testadresse 3')
+        .apply();
+    });
+
+    salesOrders.visit();
+    salesOrders.verifyElements();
+  });
+
+  it('Test if rows get selected/deselected properly', function() {
+    list
+      .getRows()
+      .eq(0)
+      .find('td')
+      .eq(0)
+      .type('{shift}', { release: false })
+      .click();
+
+    list
+      .getRows()
+      .eq(1)
+      .find('td')
+      .eq(0)
+      .type('{shift}', { release: false })
+      .click();
+
+    list.getSelectedRows().should('have.length', 2);
+    list.clickListHeader();
+    list.getSelectedRows().should('have.length', 0);
+  });
+});
+
+/*
+ * Not implemented yet
+ *
+describe('Existing sales order', function() {
+  const timestamp = new Date().getTime();
+  const vendorName = `Cypress Test Partner #1 ${timestamp}`;
+
+  before(function() {
+    cy.loginByForm();
+
+    cy.fixture('purchase/cypress_vendor.json').then(() => {
+      new BPartner(vendorName).apply();
+    });
+
+    salesOrders.visit();
+    salesOrders.verifyElements();
+  });
+
+  it('Fill Business Partner', function() {
+    cy.writeIntoLookupListField('C_BPartner_ID', 'Cypress', 'Cypress Test Partner #1');
+    //we need a fake click to close the opened dropdown
+    cy.get('.header-breadcrumb-sitename').click();
+    cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Warsaw', 'Warsaw, Potocka 1', true);
+
+    cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
+  });
+
+});
+*/
