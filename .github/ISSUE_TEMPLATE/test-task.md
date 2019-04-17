@@ -1,8 +1,8 @@
 ---
-name: developer task
-about: This template shall help with our standard dev workflow
+name: test task
+about: This template shall help with our standard testing workflow
 title: ''
-labels: eff:?, rel:?
+labels: ''
 assignees: ''
 
 ---
