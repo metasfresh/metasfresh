@@ -9,8 +9,9 @@
     "isDiverse": false,
     "prices": [
       {
-        "name": "Test1",
-        "value": "Test1"
+        "priceStd": "2.00",
+        "m_pricelist_version_id": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
+        "c_taxcategory_id": "Reduzierter Satz Waren/ DL"
       }
     ]
   }
