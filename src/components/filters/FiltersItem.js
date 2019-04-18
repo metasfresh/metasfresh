@@ -358,61 +358,67 @@ class FiltersItem extends Component {
                 <span className="filter-active">{panelCaption}</span>
               </div>
               {isActive && (
-                <span
-                  className="filter-clear"
-                  onClick={() => this.handleClear()}
-                >
+                <span className="filter-clear" onClick={this.handleClear}>
                   {counterpart.translate('window.clearFilter.caption')}
                   <i className="meta-icon-trash" />
                 </span>
               )}
             </div>
-            <div className="form-group row filter-content">
+            <div
+              className={`form-group row filter-content filter-${
+                data.filterId
+              }`}
+            >
               <div className="col-sm-12">
                 {filter.parameters &&
-                  filter.parameters.map((item, index) => (
-                    <RawWidget
-                      entity="documentView"
-                      subentity="filter"
-                      subentityId={filter.filterId}
-                      handlePatch={(property, value, id, valueTo) =>
-                        this.setValue(
-                          property,
-                          value,
-                          id,
-                          valueTo,
-                          filter.filterId,
-                          item.defaultValue
-                        )
-                      }
-                      handleChange={(property, value, id, valueTo) =>
-                        this.setValue(
-                          property,
-                          value,
-                          id,
-                          valueTo,
-                          filter.filterId,
-                          item.defaultValue
-                        )
-                      }
-                      widgetType={item.widgetType}
-                      fields={[item]}
-                      type={item.type}
-                      widgetData={[item]}
-                      key={index}
-                      id={index}
-                      range={item.range}
-                      caption={item.caption}
-                      noLabel={false}
-                      filterWidget={true}
-                      {...{
-                        viewId,
-                        windowType,
-                        onShow,
-                        onHide,
-                      }}
-                    />
-                  ))}
+                  filter.parameters.map((item, index) => {
+                    // item.field = data.filterId;
+                    item.field = item.parameterName;
+
+                    return (
+                      <RawWidget
+                        entity="documentView"
+                        subentity="filter"
+                        subentityId={filter.filterId}
+                        handlePatch={(property, value, id, valueTo) =>
+                          this.setValue(
+                            property,
+                            value,
+                            id,
+                            valueTo,
+                            filter.filterId,
+                            item.defaultValue
+                          )
+                        }
+                        handleChange={(property, value, id, valueTo) =>
+                          this.setValue(
+                            property,
+                            value,
+                            id,
+                            valueTo,
+                            filter.filterId,
+                            item.defaultValue
+                          )
+                        }
+                        widgetType={item.widgetType}
+                        fields={[item]}
+                        type={item.type}
+                        widgetData={[item]}
+                        key={index}
+                        id={index}
+                        range={item.range}
+                        caption={item.caption}
+                        noLabel={false}
+                        filterWidget={true}
+                        {...{
+                          viewId,
+                          windowType,
+                          onShow,
+                          onHide,
+                        }}
+                      />
+                    );
+                  })}
               </div>
               <div className="col-sm-12 text-right">
                 {notValidFields && (
