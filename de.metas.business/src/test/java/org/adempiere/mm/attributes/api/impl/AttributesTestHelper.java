@@ -16,17 +16,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -48,6 +49,7 @@ import org.junit.Ignore;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Base context and helpers for {@link M_Attribute}s related tests.
@@ -114,10 +116,22 @@ public class AttributesTestHelper
 			final I_M_Attribute attribute,
 			final String value)
 	{
+		return createM_AttributeValue(attribute, null, value);
+	}
+
+	public I_M_AttributeValue createM_AttributeValue(
+			@NonNull final I_M_Attribute attribute,
+			@Nullable final Integer valueRepoId,
+			@NonNull final String value)
+	{
 		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
 		attributeValue.setM_Attribute(attribute);
 		attributeValue.setValue(value);
 		attributeValue.setName("Name_" + value);
+		if (valueRepoId != null)
+		{
+			attributeValue.setM_AttributeValue_ID(valueRepoId);
+		}
 		save(attributeValue);
 		return attributeValue;
 	}
@@ -155,7 +169,7 @@ public class AttributesTestHelper
 		return javaClassTypeDef;
 	}
 
-	public void createAD_Ref_List_Items(final int adReferenceId, final String ...values)
+	public void createAD_Ref_List_Items(final int adReferenceId, final String... values)
 	{
 		for (final String value : values)
 		{

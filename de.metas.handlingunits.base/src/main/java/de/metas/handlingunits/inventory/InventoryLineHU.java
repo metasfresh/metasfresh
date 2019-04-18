@@ -1,8 +1,14 @@
 package de.metas.handlingunits.inventory;
 
+import static de.metas.util.Check.assumeGreaterThanZero;
+
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,11 +34,52 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class InventoryLineHU
 {
+	/** Null if not yet persisted or if this is an inventory line's single InventoryLineHU. */
+	@Nullable
+	InventoryLineHUId id;
+
+	@NonNull
 	HuId huId;
 
+	@NonNull
 	Quantity bookQty;
+
+	@NonNull
 	Quantity countQty;
+
+	@Value
+	public static class InventoryLineHUId implements RepoIdAware
+	{
+		public static InventoryLineHUId ofRepoId(int repoId)
+		{
+			return new InventoryLineHUId(repoId);
+		}
+
+		int repoId;
+
+		private InventoryLineHUId(int repoId)
+		{
+			this.repoId = assumeGreaterThanZero(repoId, "inventoryLineHUId");
+		}
+	}
+
+	/**
+	 * @param countQtyToAdd needs to have the same UOM as this instance's current countQty.
+	 */
+	public InventoryLineHU addCountQty(@NonNull final Quantity countQtyToAdd)
+	{
+		return this.toBuilder()
+				.countQty(countQty.add(countQtyToAdd))
+				.build();
+	}
+
+	public InventoryLineHU zeroCountQty()
+	{
+		return this.toBuilder()
+				.countQty(countQty.toZero())
+				.build();
+	}
 }

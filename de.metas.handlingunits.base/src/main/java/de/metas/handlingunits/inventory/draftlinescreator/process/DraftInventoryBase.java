@@ -1,20 +1,24 @@
-package de.metas.handlingunits.inventory.process;
+package de.metas.handlingunits.inventory.draftlinescreator.process;
 
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.document.DocBaseAndSubType;
-import de.metas.handlingunits.inventory.DraftInventoryLines;
-import de.metas.handlingunits.inventory.DraftInventoryLinesCreator;
-import de.metas.handlingunits.inventory.HUsForInventoryStrategy;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inventory.InventoryLineAggregator;
 import de.metas.handlingunits.inventory.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
+import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -44,6 +48,8 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 
 	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = Adempiere.getBean(InventoryLineAggregatorFactory.class);
 
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 	@Override
 	final public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -72,8 +78,13 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 
 		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createFor(docBaseAndSubType);
 
-		final DraftInventoryLines draftLines = DraftInventoryLines.builder()
-				.inventoryRecord(inventoryRecord)
+		Check.errorUnless(
+				documentBL.issDocumentDraftedOrInProgress(inventoryRecord),
+				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventoryRecord={}",
+				inventoryRecord.getDocStatus(), inventoryRecord);
+
+		final InventoryLinesCreationCtx draftLines = InventoryLinesCreationCtx.builder()
+				.inventoryId(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()))
 				.strategy(strategy)
 				.inventoryLineRepository(inventoryLineRepository)
 				.inventoryLineAggregator(inventoryLineAggregator)

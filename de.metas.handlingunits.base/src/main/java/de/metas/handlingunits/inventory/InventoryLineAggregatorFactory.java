@@ -4,9 +4,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryLineAggregator.AggregationMode;
+import de.metas.handlingunits.inventory.InventoryLineAggregator.AggregationType;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -42,7 +45,7 @@ public class InventoryLineAggregatorFactory
 
 	public InventoryLineAggregator createFor(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		final AggregationMode aggegationMode = AggregationMode.getByDocType(docBaseAndSubType);
+		final AggregationType aggegationMode = AggregationType.getByDocType(docBaseAndSubType);
 		Check.assumeNotNull(aggegationMode, "Unexpected docBaseAndSubType={} with no registered aggegationMode", docBaseAndSubType);
 
 		switch (aggegationMode)
@@ -63,8 +66,8 @@ public class InventoryLineAggregatorFactory
 
 	public static class SingleHUInventoryLineAggregator implements InventoryLineAggregator
 	{
-
-		private static final SingleHUInventoryLineAggregator INSTANCE = new SingleHUInventoryLineAggregator();
+		@VisibleForTesting
+		public static final SingleHUInventoryLineAggregator INSTANCE = new SingleHUInventoryLineAggregator();
 
 		private SingleHUInventoryLineAggregator()
 		{
@@ -83,9 +86,9 @@ public class InventoryLineAggregatorFactory
 		}
 
 		@Override
-		public AggregationMode getAggregationMode()
+		public AggregationType getAggregationType()
 		{
-			return AggregationMode.SINGLE_HU;
+			return AggregationType.SINGLE_HU;
 		}
 
 		@Value
@@ -98,7 +101,8 @@ public class InventoryLineAggregatorFactory
 
 	public static class MultipleHUInventoryLineAggregator implements InventoryLineAggregator
 	{
-		private static final MultipleHUInventoryLineAggregator INSTANCE = new MultipleHUInventoryLineAggregator();
+		@VisibleForTesting
+		public static final MultipleHUInventoryLineAggregator INSTANCE = new MultipleHUInventoryLineAggregator();
 
 		private MultipleHUInventoryLineAggregator()
 		{
@@ -123,9 +127,9 @@ public class InventoryLineAggregatorFactory
 		}
 
 		@Override
-		public AggregationMode getAggregationMode()
+		public AggregationType getAggregationType()
 		{
-			return AggregationMode.MULTIPLE_HUS;
+			return AggregationType.MULTIPLE_HUS;
 		}
 
 		@Value

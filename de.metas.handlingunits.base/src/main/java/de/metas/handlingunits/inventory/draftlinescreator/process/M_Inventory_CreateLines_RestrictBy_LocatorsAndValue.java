@@ -1,11 +1,11 @@
-package de.metas.handlingunits.inventory.process;
+package de.metas.handlingunits.inventory.draftlinescreator.process;
 
 import java.math.BigDecimal;
 
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
 
-import de.metas.handlingunits.inventory.LeastRecentTransactionStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy;
 import de.metas.process.Param;
 import lombok.NonNull;
 

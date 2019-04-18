@@ -5,6 +5,7 @@ import org.compiere.model.X_C_DocType;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import lombok.Getter;
 
 /*
@@ -36,7 +37,7 @@ public interface InventoryLineAggregator
 	 * <li>list reference "HUAggregationType" {@code AD_Reference_ID=540976}
 	 * <li>list reference "C_DocType SubType" {@code AD_Reference_ID=148}
 	 */
-	public enum AggregationMode
+	public enum AggregationType
 	{
 		SINGLE_HU("S", DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, "SingleHUMaterialInventory")),
 
@@ -48,13 +49,13 @@ public interface InventoryLineAggregator
 		@Getter
 		private final DocBaseAndSubType docBaseAndSubType;
 
-		private static ImmutableMap<DocBaseAndSubType, AggregationMode> docType2aggregationMode = ImmutableMap
-				.<DocBaseAndSubType, AggregationMode> builder()
+		private static ImmutableMap<DocBaseAndSubType, AggregationType> docType2aggregationMode = ImmutableMap
+				.<DocBaseAndSubType, AggregationType> builder()
 				.put(SINGLE_HU.getDocBaseAndSubType(), SINGLE_HU)
 				.put(MULTIPLE_HUS.getDocBaseAndSubType(), MULTIPLE_HUS)
 				.build();
 
-		private AggregationMode(
+		private AggregationType(
 				String value,
 				DocBaseAndSubType docBaseAndSubType)
 		{
@@ -62,7 +63,7 @@ public interface InventoryLineAggregator
 			this.docBaseAndSubType = docBaseAndSubType;
 		}
 
-		public static AggregationMode getByDocType(DocBaseAndSubType docBaseAndSubType)
+		public static AggregationType getByDocType(DocBaseAndSubType docBaseAndSubType)
 		{
 			return docType2aggregationMode.get(docBaseAndSubType);
 		}
@@ -73,5 +74,5 @@ public interface InventoryLineAggregator
 
 	InventoryLineAggregationKey createAggregationKey(InventoryLine inventoryLine);
 
-	AggregationMode getAggregationMode();
+	AggregationType getAggregationType();
 }

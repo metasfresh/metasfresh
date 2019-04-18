@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inventory;
+package de.metas.handlingunits.inventory.draftlinescreator;
 
 import java.util.stream.Stream;
 

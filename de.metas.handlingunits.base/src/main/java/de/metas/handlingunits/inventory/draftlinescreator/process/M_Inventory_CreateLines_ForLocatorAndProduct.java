@@ -1,11 +1,11 @@
-package de.metas.handlingunits.inventory.process;
+package de.metas.handlingunits.inventory.draftlinescreator.process;
 
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.inventory.LocatorAndProductStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.Param;
 import de.metas.product.ProductId;

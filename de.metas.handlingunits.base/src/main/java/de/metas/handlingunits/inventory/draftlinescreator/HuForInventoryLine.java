@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inventory;
+package de.metas.handlingunits.inventory.draftlinescreator;
 
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
@@ -70,5 +70,4 @@ public class HuForInventoryLine
 		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
 	}
-
 }

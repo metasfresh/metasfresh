@@ -112,6 +112,7 @@ public class M_Inventory
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
 
 		executor.run((IHUContextProcessor)huContext -> {
+
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 

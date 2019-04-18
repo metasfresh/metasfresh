@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inventory;
+package de.metas.handlingunits.inventory.draftlinescreator;
 
 import java.util.stream.Stream;
 
@@ -13,7 +13,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
-import de.metas.handlingunits.inventory.HuForInventoryLine.HuForInventoryLineBuilder;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.event.commons.AttributesKey;

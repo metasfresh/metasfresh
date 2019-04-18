@@ -37,6 +37,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -145,9 +146,13 @@ public final class Quantity implements Comparable<Quantity>
 
 	// NOTE to dev: all fields shall be final because this is a immutable object. Please keep that logic if u are adding more fields
 	private final BigDecimal qty;
+
+	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM uom;
 
 	private final BigDecimal sourceQty;
+
+	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM sourceUom;
 
 	/**
@@ -392,7 +397,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity negate()
 	{
-		if(isZero())
+		if (isZero())
 		{
 			return this;
 		}
@@ -650,7 +655,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity divide(@NonNull final BigDecimal divisor)
 	{
-		if(BigDecimal.ONE.compareTo(divisor) == 0)
+		if (BigDecimal.ONE.compareTo(divisor) == 0)
 		{
 			return this;
 		}

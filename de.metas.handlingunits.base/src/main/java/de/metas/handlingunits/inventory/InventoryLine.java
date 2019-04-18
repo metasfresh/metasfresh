@@ -2,6 +2,7 @@ package de.metas.handlingunits.inventory;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 
 import com.google.common.collect.ImmutableList;
@@ -10,6 +11,7 @@ import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,8 +44,13 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class InventoryLine
 {
+	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will load and sync the respective {@code M_InventoryLine} record */
 	@Nullable
 	InventoryLineId id;
+
+	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}. */
+	@Nullable
+	AttributeSetInstanceId asiId;
 
 	@NonNull
 	InventoryId inventoryId;
@@ -66,4 +73,50 @@ public class InventoryLine
 
 	@Singular("inventoryLineHU")
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
+
+	public InventoryLine withCountQty(@NonNull final Quantity countQty)
+	{
+		final Quantity currentQtyCount = inventoryLineHUs
+				.stream()
+				.map(InventoryLineHU::getCountQty)
+				.reduce(countQty.toZero(), Quantity::add);
+
+		Quantity qtyDiffLeftToDistribute = countQty.subtract(currentQtyCount);
+
+		final InventoryLineBuilder builder = this.toBuilder().clearInventoryLineHUs();
+
+		for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
+		{
+			if (qtyDiffLeftToDistribute.signum() > 0)
+			{
+				builder.inventoryLineHU(
+						inventoryLineHU.addCountQty(qtyDiffLeftToDistribute));
+				qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.toZero();
+			}
+			else if (qtyDiffLeftToDistribute.signum() < 0)
+			{
+				final boolean qtyToSubtractIsGreaterThanLineQty = qtyDiffLeftToDistribute.negate()
+						.compareTo(inventoryLineHU.getCountQty()) > 0;
+
+				if (qtyToSubtractIsGreaterThanLineQty)
+				{
+					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.add(inventoryLineHU.getCountQty());
+
+					builder.inventoryLineHU(inventoryLineHU.zeroCountQty());
+				}
+				else
+				{
+					builder.inventoryLineHU(
+							inventoryLineHU.addCountQty(qtyDiffLeftToDistribute));
+					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.toZero();
+				}
+			}
+			else
+			{
+				builder.inventoryLineHU(inventoryLineHU); // add it unchanged
+			}
+		}
+
+		return builder.build();
+	}
 }

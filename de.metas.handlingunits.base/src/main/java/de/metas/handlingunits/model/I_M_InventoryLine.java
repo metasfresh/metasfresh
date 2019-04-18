@@ -2,6 +2,8 @@ package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 
+import ch.qos.logback.core.util.AggregationType;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -63,5 +65,13 @@ public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 	String COLUMNNAME_QualityNote = "QualityNote";
 	void setQualityNote(String QualityNote);
 	String getQualityNote();
+	// @formatter:on
+
+	// @formatter:off
+	// column QualityNote
+	String COLUMNNAME_HUAggregationType = "HUAggregationType";
+	/** See {@link AggregationType} for the different valid values */
+	void setHUAggregationType(String HUAggregationType);
+	String getHUAggregationType();
 	// @formatter:on
 }
