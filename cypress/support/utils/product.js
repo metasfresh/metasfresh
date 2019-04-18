@@ -63,6 +63,7 @@ export class Product {
 
 function applyProduct(product) {
   describe(`Create new Product ${product.name}`, function() {
+
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 

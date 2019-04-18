@@ -1,0 +1,9 @@
+exports[`New sales order test > Create a new sales order > Add new product via Batch Entry #0`] = `
+<button
+  class="btn btn-meta-outline-secondary btn-distance btn-sm"
+  tabindex="-1"
+  title=""
+>
+  Products Proposal
+</button>
+`;

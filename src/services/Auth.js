@@ -1,6 +1,6 @@
 import SockJs from 'sockjs-client';
-
 import Stomp from 'stompjs/lib/stomp.min.js';
+import config from '../../cypress/config';
 
 class Auth {
   constructor() {
