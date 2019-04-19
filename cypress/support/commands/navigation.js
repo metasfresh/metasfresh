@@ -19,18 +19,18 @@ Cypress.Commands.add('clickElementWithClass', selector => {
     .click();
 });
 
+Cypress.Commands.add('selectTab', tabName => {
+  describe('Select and activate the tab with a certain name', function() {
+    return cy.get(`#tab_${tabName}`).click();
+  });
+});
+
 Cypress.Commands.add('selectSingleTabRow', () => {
   describe('Select the only row in the currently selected tab', function() {
     cy.get('.table-flex-wrapper')
       .find('tbody tr')
       .should('exist')
       .click();
-  });
-});
-
-Cypress.Commands.add('selectTab', tabName => {
-  describe('Select and activate the tab with a certain name', function() {
-    return cy.get(`#tab_${tabName}`).click();
   });
 });
 
