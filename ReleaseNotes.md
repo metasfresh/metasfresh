@@ -16,7 +16,7 @@ Here come the actual release notes:
   * [#5114](https://github.com/metasfresh/metasfresh/issues/5114) Column Translation Insert
   * [#5121](https://github.com/metasfresh/metasfresh/issues/5121) Create Company Directory window
   * [#5123](https://github.com/metasfresh/metasfresh/issues/5123) Don't automatically generate AD_Message records for developers
-  * [#5131](https://github.com/metasfresh/metasfresh/issues/5131) sql rollout: consider additional URLs to download and run the migation scripts
+  * [#5131](https://github.com/metasfresh/metasfresh/issues/5131) SQL rollout: consider additional URLs to download and run the migation scripts
 
 
 ## Fixes
