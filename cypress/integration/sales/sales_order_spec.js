@@ -4,6 +4,7 @@ import config from '../../config';
 import { Product, ProductCategory } from '../../support/utils/product';
 // import { BPartner } from '../../support/utils/bpartner';
 import { SalesOrder } from '../../support/utils/sales_order';
+import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 
 describe('New sales order test', function() {
   const windowId = 143;
@@ -15,7 +16,7 @@ describe('New sales order test', function() {
     cy.loginByForm();
 
     Cypress.Cookies.defaults({
-      whitelist: ['SESSION', 'isLogged']
+      whitelist: ['SESSION', 'isLogged'],
     });
 
     getBreadcrumbs(windowId, '1000040-new').then(({ option, caption }) => {
@@ -248,6 +249,18 @@ describe('List tests', function() {
     list.getSelectedRows().should('have.length', 2);
     list.clickListHeader();
     list.getSelectedRows().should('have.length', 0);
+  });
+
+  it('Test if filtering works', function() {
+    list.getRows().should('not.have.length', 0);
+
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoStringField('DocumentNo', `${timestamp}`, false, null, true);
+
+    applyFilters();
+
+    list.getRows().should('have.length', 0);
   });
 });
 
