@@ -99,17 +99,22 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
  *
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
-Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl) => {
+Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   describe('Enter value into string field', function() {
     const aliasName = `writeIntoStringField-${new Date().getTime()}`;
+
     const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
     cy.log(
       `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
     );
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+
+    if (!noRequest) {
+      cy.server();
+      cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+    }
+
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
@@ -117,8 +122,11 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     cy.get(path)
       .find('input')
       .type(`${stringValue}`)
-      .type('{enter}')
-      .waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
+      .type('{enter}');
+
+    if (!noRequest) {
+      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
+    }
   });
 });
 
