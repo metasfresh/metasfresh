@@ -24,8 +24,8 @@
 - isChecked
 - clickOnIsActive
 - clickOnCheckBox
-- writeIntoStringField
-- writeIntoTextField
+- writeIntoStringField: insert text in text input
+- writeIntoTextField: insert text in a textarea
 - writeIntoLookupListField
 - selectInListField
 
