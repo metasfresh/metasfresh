@@ -14,6 +14,14 @@ class AttributesDropdown extends Component {
     };
   }
 
+  componentDidMount() {
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
@@ -26,7 +34,10 @@ class AttributesDropdown extends Component {
 
       if (intervalsLeft === 0) {
         window.clearInterval(requestsInterval);
-        onClickOutside();
+
+        if (this.mounted) {
+          onClickOutside();
+        }
       }
     }, 10);
   };
@@ -65,7 +76,7 @@ class AttributesDropdown extends Component {
       isModal,
     } = this.props;
 
-    if (layout) {
+    if (layout && this.mounted) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map(elem => data[elem.field] || -1);
         return (
