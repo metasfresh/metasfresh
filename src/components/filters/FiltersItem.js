@@ -461,7 +461,7 @@ class FiltersItem extends Component {
           </div>
         )}
         <ModalContextShortcuts
-          apply={this.handleApply}
+          done={this.handleApply}
           visibleFilter={openedFilter}
         />
       </div>

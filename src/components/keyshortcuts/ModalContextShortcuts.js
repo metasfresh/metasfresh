@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
 
-export default class ModalContextShortcuts extends Component {
+class ModalContextShortcuts extends Component {
   handlers = {
     DONE: event => {
       event.preventDefault();
 
-      const { visibleFilter, apply } = this.props;
+      const { visibleFilter, done } = this.props;
 
       this.blurActiveElement();
-      apply && apply();
+      done && done();
 
       // if filter is displayed, apply shortcut to filter first
       if (visibleFilter) {
@@ -41,3 +42,11 @@ export default class ModalContextShortcuts extends Component {
     ];
   }
 }
+
+ModalContextShortcuts.propTypes = {
+  visibleFilter: PropTypes.bool,
+  done: PropTypes.func,
+  cancel: PropTypes.func,
+};
+
+export default ModalContextShortcuts;

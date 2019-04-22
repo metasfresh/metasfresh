@@ -516,10 +516,7 @@ class Modal extends Component {
             {this.renderModalBody()}
           </div>
           {layout.layoutType !== 'singleOverlayField' && (
-            <ModalContextShortcuts
-              apply={applyHandler}
-              cancel={cancelHandler}
-            />
+            <ModalContextShortcuts done={applyHandler} cancel={cancelHandler} />
           )}
         </div>
       </div>
