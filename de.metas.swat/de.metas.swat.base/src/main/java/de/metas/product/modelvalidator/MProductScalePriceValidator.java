@@ -116,7 +116,7 @@ public class MProductScalePriceValidator implements ModelValidator
 					productScalePrice.setQty(BigDecimal.ZERO);
 				}
 
-				throw new AdempiereException("@MProductScalePrice.DuplicateQty@");
+				throw new AdempiereException("@MProductScalePrice.DuplicateQty@").markAsUserValidationError();
 			}
 		}
 
@@ -153,7 +153,7 @@ public class MProductScalePriceValidator implements ModelValidator
 				return null;
 			}
 
-			throw new AdempiereException("Didn't find M_Product_Price for M_ProductSalePrice with id " + productScalePrice.getM_ProductScalePrice_ID());
+			throw new AdempiereException("Didn't find M_Product_Price for M_ProductSalePrice with id " + productScalePrice.getM_ProductScalePrice_ID()).markAsUserValidationError();
 		}
 		catch (SQLException e)
 		{
