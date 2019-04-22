@@ -8,6 +8,7 @@ import { topActionsRequest } from '../../api';
 import { openModal } from '../../actions/WindowActions';
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
+import { TableFilterContextShortcuts } from '../keyshortcuts';
 
 class ActionButton extends Component {
   static propTypes = {
@@ -82,6 +83,52 @@ class TableFilter extends Component {
         });
       });
     }
+  };
+
+  handleClick = action => {
+    const { dispatch, docId } = this.props;
+
+    if (action.disabled) {
+      return;
+    }
+
+    dispatch(
+      openModal(
+        action.caption,
+        action.processId,
+        'process',
+        null,
+        null,
+        false,
+        null,
+        [docId],
+        null,
+        null,
+        null,
+        null
+      )
+    );
+  };
+
+  generateShortcuts = () => {
+    let { actions } = this.state;
+    const shortcutActions = [];
+
+    if (!actions) {
+      actions = [];
+    }
+
+    for (let i = 0; i < actions.length; i += 1) {
+      const action = actions[i];
+
+      shortcutActions.push({
+        name: `FILTER_ACTION_${i}`,
+        handler: () => this.handleClick(action),
+        shortcut: action.shortcut.replace('-', '+'),
+      });
+    }
+
+    return <TableFilterContextShortcuts shortcutActions={shortcutActions} />;
   };
 
   showTooltip = () => {
@@ -177,6 +224,7 @@ class TableFilter extends Component {
                   />
                 ))
               : null}
+            {!isBatchEntry && actions.length ? this.generateShortcuts() : null}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
