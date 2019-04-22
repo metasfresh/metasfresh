@@ -398,12 +398,7 @@ class Modal extends Component {
 
     const applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
-    const cancelHandler =
-      modalType === 'process'
-        ? this.handleClose
-        : isNewDoc
-        ? this.removeModal
-        : undefined;
+    const cancelHandler = isNewDoc ? this.removeModal : this.handleClose;
 
     return (
       <div className="modal-content-wrapper">
