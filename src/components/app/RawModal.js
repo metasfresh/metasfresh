@@ -18,10 +18,39 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 
+const ModalButton = props => {
+  const {
+    name,
+    onShowTooltip,
+    onHideTooltip,
+    children,
+    onClick,
+    tabIndex,
+  } = props;
+
+  const handleClick = () => onClick(name);
+  const handleShowTooltip = () => onShowTooltip(name);
+  const handleHideTooltip = () => onHideTooltip(name);
+
+  return (
+    <button
+      key={`rawmodal-button-${name}`}
+      name={name}
+      className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+      onClick={handleClick}
+      tabIndex={tabIndex}
+      onMouseEnter={handleShowTooltip}
+      onMouseLeave={handleHideTooltip}
+    >
+      {children}
+    </button>
+  );
+};
+
 class RawModal extends Component {
   state = {
     scrolled: false,
-    isTooltipShow: false,
+    visibleTooltips: {},
   };
 
   componentDidMount() {
@@ -53,15 +82,21 @@ class RawModal extends Component {
     }
   }
 
-  showTooltip = () => {
+  showTooltip = type => {
     this.setState({
-      isTooltipShow: true,
+      visibleTooltips: {
+        ...this.state.visibleTooltips,
+        [`${type}`]: true,
+      },
     });
   };
 
-  hideTooltip = () => {
+  hideTooltip = type => {
     this.setState({
-      isTooltipShow: false,
+      visibleTooltips: {
+        ...this.state.visibleTooltips,
+        [`${type}`]: false,
+      },
     });
   };
 
@@ -160,7 +195,6 @@ class RawModal extends Component {
     const { modalVisible, rawModal } = this.props;
     let { allowedCloseActions } = this.props;
     const rawModalVisible = rawModal.visible || false;
-    const { isTooltipShow } = this.state;
     const buttonsArray = [];
 
     if (!allowedCloseActions) {
@@ -169,34 +203,53 @@ class RawModal extends Component {
 
     for (let i = 0; i < allowedCloseActions.length; i += 1) {
       const name = allowedCloseActions[i];
+      const showTooltip = this.state.visibleTooltips[name];
       const selector = `modal.actions.${name.toLowerCase()}`;
 
       buttonsArray.push(
-        <button
-          key={`rawmodal-button-${name}`}
-          className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
-          onClick={() => this.handleClose(name)}
+        <ModalButton
+          name={name}
+          onClick={this.handleClose}
           tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
-          onMouseEnter={this.showTooltip}
-          onMouseLeave={this.hideTooltip}
+          onShowTooltip={this.showTooltip}
+          onHideTooltip={this.hideTooltip}
         >
           {counterpart.translate(selector)}
-          {isTooltipShow && (
+          {showTooltip && (
             <Tooltips
               name={keymap[name]}
               action={counterpart.translate(selector)}
               type={''}
             />
           )}
-        </button>
+        </ModalButton>
       );
     }
 
     return buttonsArray;
   };
 
+  generateShortcuts = () => {
+    let { allowedCloseActions } = this.props;
+    const shortcutActions = {};
+
+    if (!allowedCloseActions) {
+      shortcutActions.cancel = this.handleClose;
+
+      allowedCloseActions = [];
+    }
+
+    for (let i = 0; i < allowedCloseActions.length; i += 1) {
+      const name = allowedCloseActions[i];
+
+      shortcutActions[`${name.toLowerCase()}`] = () => this.handleClose(name);
+    }
+
+    return <ModalContextShortcuts {...shortcutActions} />;
+  };
+
   render() {
-    const { modalTitle, children, modalDescription, modalVisible } = this.props;
+    const { modalTitle, children, modalDescription } = this.props;
     const { scrolled } = this.state;
 
     if (!children) {
@@ -229,10 +282,7 @@ class RawModal extends Component {
             >
               {children}
             </div>
-            <ModalContextShortcuts
-              apply={modalVisible ? null : this.handleClose}
-              cancel={this.handleClose}
-            />
+            {this.generateShortcuts()}
           </div>
         </div>
       </div>
