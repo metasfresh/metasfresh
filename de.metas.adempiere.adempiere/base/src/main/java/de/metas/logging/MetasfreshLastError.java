@@ -38,6 +38,7 @@ import org.slf4j.Logger;
  *
  * @author metas-dev <dev@metasfresh.com>
  *
+ * @deprecated
  */
 public class MetasfreshLastError
 {
