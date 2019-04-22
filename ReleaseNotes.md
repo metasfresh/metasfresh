@@ -10,6 +10,23 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.101
+## Features
+* metasfresh
+  * [#5108](https://github.com/metasfresh/metasfresh/issues/5108) Short term availability check for sales orders
+  * [#5143](https://github.com/metasfresh/metasfresh/issues/5143) Product Specification process only for one selected product
+
+* metasfresh-e2e
+  * [#36](https://github.com/metasfresh/metasfresh-e2e/issues/36) Use fixtures for sales order
+
+* metasfresh-edi
+  * [#3](https://github.com/metasfresh/metasfresh-edi/issues/3) Process new data formats
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#2217](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2217) Console flooded with error "Cannot read property 'getInstance' of null"
+
+
 # metasfresh 5.100
 ## Features
 * metasfresh
