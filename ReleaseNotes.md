@@ -10,13 +10,30 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.101
+## Features
+* metasfresh
+  * [#5108](https://github.com/metasfresh/metasfresh/issues/5108) Short term availability check for sales orders
+  * [#5143](https://github.com/metasfresh/metasfresh/issues/5143) Product Specification process only for one selected product
+
+* metasfresh-e2e
+  * [#36](https://github.com/metasfresh/metasfresh-e2e/issues/36) Use fixtures for sales order
+
+* metasfresh-edi
+  * [#3](https://github.com/metasfresh/metasfresh-edi/issues/3) Process new data formats
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#2217](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2217) Console flooded with error "Cannot read property 'getInstance' of null"
+
+
 # metasfresh 5.100
 ## Features
 * metasfresh
   * [#5114](https://github.com/metasfresh/metasfresh/issues/5114) Column Translation Insert
   * [#5121](https://github.com/metasfresh/metasfresh/issues/5121) Create Company Directory window
   * [#5123](https://github.com/metasfresh/metasfresh/issues/5123) Don't automatically generate AD_Message records for developers
-  * [#5131](https://github.com/metasfresh/metasfresh/issues/5131) sql rollout: consider additional URLs to download and run the migation scripts
+  * [#5131](https://github.com/metasfresh/metasfresh/issues/5131) SQL rollout: consider additional URLs to download and run the migation scripts
 
 
 ## Fixes
