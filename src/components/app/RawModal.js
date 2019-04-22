@@ -98,7 +98,6 @@ class RawModal extends Component {
       requests,
       rawModal,
     } = this.props;
-
     const { isNew } = this.state;
 
     if (requests.length > 0) {
@@ -232,6 +231,7 @@ class RawModal extends Component {
             </div>
             <ModalContextShortcuts
               apply={modalVisible ? null : this.handleClose}
+              cancel={this.handleClose}
             />
           </div>
         </div>
