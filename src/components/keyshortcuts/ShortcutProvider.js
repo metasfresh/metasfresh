@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { Component } from 'react';
+import { connect } from 'react-redux';
 
 import { disabledWithFocus } from '../../shortcuts/keymap';
 
@@ -61,7 +62,8 @@ const codeToKey = {
   189: '-',
 };
 
-export default class ShortcutProvider extends Component {
+// export default class ShortcutProvider extends Component {
+class ShortcutProvider extends Component {
   static propTypes = {
     children: PropTypes.node,
     hotkeys: PropTypes.object.isRequired,
@@ -261,3 +263,13 @@ export default class ShortcutProvider extends Component {
     return this.props.children;
   }
 }
+
+function mapStateToProps({ appHandler }) {
+  return {
+    keymap: appHandler.keymap,
+    hotkeys: appHandler.hotkeys,
+  };
+}
+
+export default connect(mapStateToProps)(ShortcutProvider);
+export { ShortcutProvider };
