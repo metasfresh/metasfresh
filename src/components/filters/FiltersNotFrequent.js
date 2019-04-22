@@ -75,11 +75,11 @@ class FiltersNotFrequent extends Component {
     }
 
     return (
-      <div className="filter-wrapper">
+      <div className="filter-wrapper filters-not-frequent">
         <button
           onClick={() => this.toggleDropdown(true)}
           className={classnames(
-            'btn btn-filter btn-meta-outline-secondary',
+            'btn btn-filter btn-meta-outline-secondary toggle-filters',
             'btn-distance btn-sm',
             {
               'btn-select': isOpenDropdown,
@@ -114,6 +114,7 @@ class FiltersNotFrequent extends Component {
               <ul className="filter-menu">
                 {data.map((item, index) => (
                   <li
+                    className={`filter-option-${item.filterId}`}
                     key={index}
                     onClick={() => this.toggleFilter(item.filterId)}
                   >

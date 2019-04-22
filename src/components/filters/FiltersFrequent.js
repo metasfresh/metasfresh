@@ -11,7 +11,8 @@ import FiltersItem from './FiltersItem';
 import InlineFilterItem from './InlineFilterItem';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
-const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
+const classes = `btn btn-filter
+btn-meta-outline-secondary btn-sm toggle-filters`;
 
 class FiltersFrequent extends PureComponent {
   state = { openFilterId: null };
@@ -63,7 +64,7 @@ class FiltersFrequent extends PureComponent {
     const { openFilterId } = this.state;
 
     return (
-      <div className="filter-wrapper">
+      <div className="filter-wrapper filters-frequent">
         {data.map((item, index) => {
           const parameter = item.parameters[0];
           const filterType = parameter.widgetType;
@@ -83,7 +84,7 @@ class FiltersFrequent extends PureComponent {
 
           if (item.inlineRenderMode === 'button') {
             return (
-              <div className="filter-wrapper" key={index}>
+              <div className="filter-wrapper filter-inline" key={index}>
                 {dateStepper && (
                   <FiltersDateStepper
                     active={this.findActiveFilter(item.filterId)}
