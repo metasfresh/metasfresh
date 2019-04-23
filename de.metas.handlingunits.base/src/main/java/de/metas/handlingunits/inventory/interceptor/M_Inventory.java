@@ -66,10 +66,10 @@ public class M_Inventory
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_M_Inventory.COLUMNNAME_C_DocType_ID)
-	public void updateLineHUAggregationservice(@NonNull final I_M_Inventory inventoryRecord)
+	public void updateLineHUAggregationType(@NonNull final I_M_Inventory inventoryRecord)
 	{
 		// don't allow change if there are lines with diverting HU-aggregation types, because we don't want to switch the HUAggragationType of existing lines
-		inventoryLineRecordService.updateHUAggregationType(inventoryRecord);
+		inventoryLineRecordService.updateHUAggregationTypeIfAllowed(inventoryRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)

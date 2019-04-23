@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -45,6 +48,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
@@ -79,6 +84,9 @@ import lombok.NonNull;
 @Service
 public class InventoryLineRecordService
 {
+
+	private static final String MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = "de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType";
+
 	private InventoryLineRepository inventoryLineRepository;
 
 	private InventoryLineRecordService(@NonNull final InventoryLineRepository inventoryLineRepository)
@@ -367,13 +375,16 @@ public class InventoryLineRecordService
 		}
 	}
 
-	public void updateHUAggregationType(@NonNull final I_M_Inventory inventoryRecord)
+	public void updateHUAggregationTypeIfAllowed(@NonNull final I_M_Inventory inventoryRecord)
 	{
+		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(inventoryRecord);
+
+		// note that the loaded lines' M_Inventory's docType is still the old one
 		final ImmutableList<InventoryLine> inventoryLines = inventoryLineRepository.getByInventoryId(createInventoryId(inventoryRecord));
 		for (final InventoryLine inventoryLine : inventoryLines)
 		{
 			final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
-			updateHUAggregationTypeIfAllowed(inventoryLineRecord);
+			updateHUAggregationTypeIfAllowed(inventoryLineRecord, docBaseAndSubType);
 			saveRecord(inventoryLineRecord);
 		}
 	}
@@ -385,23 +396,36 @@ public class InventoryLineRecordService
 
 	public void updateHUAggregationTypeIfAllowed(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		if (inventoryLineRecord.getM_Inventory_ID() <= 0)
+		final DocBaseAndSubType baseAndSubType = extractDocBaseAndSubType(inventoryLineRecord.getM_Inventory());
+
+		updateHUAggregationTypeIfAllowed(inventoryLineRecord, baseAndSubType);
+	}
+
+	private DocBaseAndSubType extractDocBaseAndSubType(@Nullable final I_M_Inventory inventoryRecord)
+	{
+		if (inventoryRecord == null || inventoryRecord.getC_DocType_ID() <= 0)
 		{
-			return; // nothing to do
-		}
-		final I_M_Inventory inventoryRecord = inventoryLineRecord.getM_Inventory();
-		if (inventoryRecord.getC_DocType_ID() <= 0)
-		{
-			return; // nothing to do
+			return null; // nothing to extract
 		}
 
 		final I_C_DocType docTypeRecord = inventoryRecord.getC_DocType();
 		final DocBaseAndSubType baseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+		return baseAndSubType;
+	}
+
+	private void updateHUAggregationTypeIfAllowed(
+			@NonNull final I_M_InventoryLine inventoryLineRecord,
+			@Nullable final DocBaseAndSubType baseAndSubType)
+	{
+		if (baseAndSubType == null)
+		{
+			return; // nothing to do
+		}
 
 		final String refListValueToUse = Optional
 				.ofNullable(AggregationType.getByDocType(baseAndSubType))
 				.map(AggregationType::getRefListValue)
-				.orElse(HUAggregationType_SINGLE_HU); // default
+				.orElse(HUAggregationType_SINGLE_HU); // the default
 
 		if (Objects.equals(refListValueToUse, inventoryLineRecord.getHUAggregationType()))
 		{
@@ -410,8 +434,10 @@ public class InventoryLineRecordService
 
 		if (!Check.isEmpty(inventoryLineRecord.getHUAggregationType(), true))
 		{
-			// this line already has a different aggratation type
-			// TODO throw user-friendly exception
+			// this line already has a different aggregation type
+			final ITranslatableString message = Services.get(IMsgBL.class)
+					.getTranslatableMsgText(MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE);
+			throw new AdempiereException(message).markAsUserValidationError();
 		}
 
 		inventoryLineRecord.setHUAggregationType(refListValueToUse);

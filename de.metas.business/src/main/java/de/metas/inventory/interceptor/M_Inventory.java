@@ -45,7 +45,7 @@ import de.metas.util.Services;
 @Component("de.metas.inventory.interceptor.M_Inventory")
 public class M_Inventory
 {
-	public static final String MSG_NOT_ALL_LINES_COUNTED = "de.metas.inventory.model.interceptor.NotAllLinesCounted";
+	public static final String MSG_NOT_ALL_LINES_COUNTED = "de.metas.inventory.interceptor.NotAllLinesCounted";
 
 	@Init
 	public void onInit()

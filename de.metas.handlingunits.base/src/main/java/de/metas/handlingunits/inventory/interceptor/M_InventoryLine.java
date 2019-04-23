@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inventory.interceptor;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -8,9 +9,11 @@ import org.springframework.stereotype.Component;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.inventory.InventoryConstants;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -49,12 +52,10 @@ public class M_InventoryLine
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)
 	public void distributeQuantityToHUs(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		final boolean isSingleHU = InventoryConstants.HUAggregationType_SINGLE_HU.equals(inventoryLineRecord.getHUAggregationType());
-		if(isSingleHU)
+		if (extractIsSingleHU(inventoryLineRecord))
 		{
 			return; // nothing to do
 		}
-
 
 		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 		final InventoryLine inventoryLine = inventoryLineRepository.getById(inventoryLineId);
@@ -63,5 +64,20 @@ public class M_InventoryLine
 		inventoryLine.withCountQty(qtyCount);
 
 		inventoryLineRepository.save(inventoryLine);
+	}
+
+	private boolean extractIsSingleHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		return InventoryConstants.HUAggregationType_SINGLE_HU.equals(inventoryLineRecord.getHUAggregationType());
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteInventoryLineHURecords(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMN_M_InventoryLine_ID, inventoryLineRecord.getM_InventoryLine_ID())
+				.create()
+				.delete();
 	}
 }
