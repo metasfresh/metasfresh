@@ -211,7 +211,7 @@ public interface I_M_Shipment_Declaration_Line
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Shipment Declaration.
+	 * Set Abgabemeldung.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -220,7 +220,7 @@ public interface I_M_Shipment_Declaration_Line
 	public void setM_Shipment_Declaration_ID (int M_Shipment_Declaration_ID);
 
 	/**
-	 * Get Shipment Declaration.
+	 * Get Abgabemeldung.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -263,20 +263,20 @@ public interface I_M_Shipment_Declaration_Line
 	/**
 	 * Set Pck. Gr..
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageSize (java.math.BigDecimal PackageSize);
+	public void setPackageSize (java.lang.String PackageSize);
 
 	/**
 	 * Get Pck. Gr..
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPackageSize();
+	public java.lang.String getPackageSize();
 
     /** Column definition for PackageSize */
     public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Line, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Line, Object>(I_M_Shipment_Declaration_Line.class, "PackageSize", null);

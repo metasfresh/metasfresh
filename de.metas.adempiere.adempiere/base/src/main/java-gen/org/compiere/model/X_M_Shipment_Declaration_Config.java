@@ -4,31 +4,31 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for M_Shipment_Declaration_Creator
+/** Generated Model for M_Shipment_Declaration_Config
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_M_Shipment_Declaration_Creator extends org.compiere.model.PO implements I_M_Shipment_Declaration_Creator, org.compiere.model.I_Persistent 
+public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO implements I_M_Shipment_Declaration_Config, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1544570035L;
+	private static final long serialVersionUID = 1708373363L;
 
     /** Standard Constructor */
-    public X_M_Shipment_Declaration_Creator (Properties ctx, int M_Shipment_Declaration_Creator_ID, String trxName)
+    public X_M_Shipment_Declaration_Config (Properties ctx, int M_Shipment_Declaration_Config_ID, String trxName)
     {
-      super (ctx, M_Shipment_Declaration_Creator_ID, trxName);
-      /** if (M_Shipment_Declaration_Creator_ID == 0)
+      super (ctx, M_Shipment_Declaration_Config_ID, trxName);
+      /** if (M_Shipment_Declaration_Config_ID == 0)
         {
 			setDocumentLinesNumber (0); // 0
-			setM_Shipment_Declaration_Creator_ID (0);
+			setM_Shipment_Declaration_Config_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_M_Shipment_Declaration_Creator (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Shipment_Declaration_Config (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -98,23 +98,23 @@ public class X_M_Shipment_Declaration_Creator extends org.compiere.model.PO impl
 		return ii.intValue();
 	}
 
-	/** Set M_Shipment_Declaration_Creator.
-		@param M_Shipment_Declaration_Creator_ID M_Shipment_Declaration_Creator	  */
+	/** Set M_Shipment_Declaration_Config.
+		@param M_Shipment_Declaration_Config_ID M_Shipment_Declaration_Config	  */
 	@Override
-	public void setM_Shipment_Declaration_Creator_ID (int M_Shipment_Declaration_Creator_ID)
+	public void setM_Shipment_Declaration_Config_ID (int M_Shipment_Declaration_Config_ID)
 	{
-		if (M_Shipment_Declaration_Creator_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Shipment_Declaration_Creator_ID, null);
+		if (M_Shipment_Declaration_Config_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Shipment_Declaration_Config_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Shipment_Declaration_Creator_ID, Integer.valueOf(M_Shipment_Declaration_Creator_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Shipment_Declaration_Config_ID, Integer.valueOf(M_Shipment_Declaration_Config_ID));
 	}
 
-	/** Get M_Shipment_Declaration_Creator.
-		@return M_Shipment_Declaration_Creator	  */
+	/** Get M_Shipment_Declaration_Config.
+		@return M_Shipment_Declaration_Config	  */
 	@Override
-	public int getM_Shipment_Declaration_Creator_ID () 
+	public int getM_Shipment_Declaration_Config_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipment_Declaration_Creator_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipment_Declaration_Config_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

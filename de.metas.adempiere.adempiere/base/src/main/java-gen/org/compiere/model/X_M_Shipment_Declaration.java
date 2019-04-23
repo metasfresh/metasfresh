@@ -14,7 +14,7 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -295653764L;
+	private static final long serialVersionUID = -1854385161L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration (Properties ctx, int M_Shipment_Declaration_ID, String trxName)
@@ -275,6 +275,25 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
+	/** Set Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
+	{
+		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	/** Get Nr..
+		@return Document sequence number of the document
+	  */
+	@Override
+	public java.lang.String getDocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+	}
+
 	@Override
 	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
 	{
@@ -312,8 +331,8 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
-	/** Set Shipment Declaration.
-		@param M_Shipment_Declaration_ID Shipment Declaration	  */
+	/** Set Abgabemeldung.
+		@param M_Shipment_Declaration_ID Abgabemeldung	  */
 	@Override
 	public void setM_Shipment_Declaration_ID (int M_Shipment_Declaration_ID)
 	{
@@ -323,8 +342,8 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 			set_ValueNoCheck (COLUMNNAME_M_Shipment_Declaration_ID, Integer.valueOf(M_Shipment_Declaration_ID));
 	}
 
-	/** Get Shipment Declaration.
-		@return Shipment Declaration	  */
+	/** Get Abgabemeldung.
+		@return Abgabemeldung	  */
 	@Override
 	public int getM_Shipment_Declaration_ID () 
 	{

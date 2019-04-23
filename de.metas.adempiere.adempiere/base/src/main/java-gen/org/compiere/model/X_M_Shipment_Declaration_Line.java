@@ -15,7 +15,7 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 328532024L;
+	private static final long serialVersionUID = 872009237L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration_Line (Properties ctx, int M_Shipment_Declaration_Line_ID, String trxName)
@@ -166,8 +166,8 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 		set_ValueFromPO(COLUMNNAME_M_Shipment_Declaration_ID, org.compiere.model.I_M_Shipment_Declaration.class, M_Shipment_Declaration);
 	}
 
-	/** Set Shipment Declaration.
-		@param M_Shipment_Declaration_ID Shipment Declaration	  */
+	/** Set Abgabemeldung.
+		@param M_Shipment_Declaration_ID Abgabemeldung	  */
 	@Override
 	public void setM_Shipment_Declaration_ID (int M_Shipment_Declaration_ID)
 	{
@@ -177,8 +177,8 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 			set_Value (COLUMNNAME_M_Shipment_Declaration_ID, Integer.valueOf(M_Shipment_Declaration_ID));
 	}
 
-	/** Get Shipment Declaration.
-		@return Shipment Declaration	  */
+	/** Get Abgabemeldung.
+		@return Abgabemeldung	  */
 	@Override
 	public int getM_Shipment_Declaration_ID () 
 	{
@@ -213,7 +213,7 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 	/** Set Pck. Gr..
 		@param PackageSize Pck. Gr.	  */
 	@Override
-	public void setPackageSize (java.math.BigDecimal PackageSize)
+	public void setPackageSize (java.lang.String PackageSize)
 	{
 		set_Value (COLUMNNAME_PackageSize, PackageSize);
 	}
@@ -221,12 +221,9 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 	/** Get Pck. Gr..
 		@return Pck. Gr.	  */
 	@Override
-	public java.math.BigDecimal getPackageSize () 
+	public java.lang.String getPackageSize () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_PackageSize);
 	}
 
 	/** Set Menge.

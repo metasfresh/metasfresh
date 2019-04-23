@@ -259,6 +259,31 @@ public interface I_M_Shipment_Declaration
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
+	 * Set Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocumentNo();
+
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, Object>(I_M_Shipment_Declaration.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -313,7 +338,7 @@ public interface I_M_Shipment_Declaration
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Shipment Declaration.
+	 * Set Abgabemeldung.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -322,7 +347,7 @@ public interface I_M_Shipment_Declaration
 	public void setM_Shipment_Declaration_ID (int M_Shipment_Declaration_ID);
 
 	/**
-	 * Get Shipment Declaration.
+	 * Get Abgabemeldung.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
