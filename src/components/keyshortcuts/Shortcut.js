@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
 import { PureComponent } from 'react';
 
-import keymap from '../../shortcuts/keymap';
-
 export default class Shortcut extends PureComponent {
   static contextTypes = {
     shortcuts: PropTypes.shape({
@@ -12,7 +10,7 @@ export default class Shortcut extends PureComponent {
   };
 
   static propTypes = {
-    name: PropTypes.oneOf(Object.keys(keymap)).isRequired,
+    name: PropTypes.string.isRequired,
     handler: PropTypes.func.isRequired,
   };
 

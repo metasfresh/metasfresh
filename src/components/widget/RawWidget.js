@@ -57,17 +57,14 @@ export class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside, attributeWidget } = this.props;
+    const { handleFocus, disableOnClickOutside } = this.props;
     const { rawWidget } = this;
 
     if (rawWidget && rawWidget.focus) {
       rawWidget.focus();
     }
 
-    // don't disable onclickoutside for the attributes widget
-    if (!attributeWidget) {
-      disableOnClickOutside && disableOnClickOutside();
-    }
+    disableOnClickOutside && disableOnClickOutside();
     handleFocus && handleFocus();
   };
 
@@ -76,16 +73,19 @@ export class RawWidget extends Component {
     const el = e.target;
 
     dispatch(disableShortcut());
+    listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
-      this.setState({
-        isEdited: true,
-        cachedValue: el.value,
-      });
+      this.setState(
+        {
+          isEdited: true,
+          cachedValue: el.value,
+        },
+        () => {
+          handleFocus && handleFocus();
+        }
+      );
     }, 0);
-
-    listenOnKeysFalse && listenOnKeysFalse();
-    handleFocus && handleFocus();
   };
 
   handleBlur = (widgetField, value, id) => {
@@ -99,7 +99,6 @@ export class RawWidget extends Component {
     this.setState(
       {
         isEdited: false,
-        cachedValue: undefined,
       },
       () => {
         enableOnClickOutside && enableOnClickOutside();
@@ -118,11 +117,13 @@ export class RawWidget extends Component {
   handleKeyDown = (e, property, value, widgetType) => {
     const textField = widgetType.search(/text/i) > -1;
     const key = e.key;
+//     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
+//       if (key === 'Enter' && textField) {
+// =======
+    const { lastFormField } = this.props;
 
-    console.log('KEY: ', property, textField, key)
-
-    if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
-      if (key === 'Enter' && textField) {
+    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
+      if (e.key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
       return this.handlePatch(property, value);
@@ -192,9 +193,9 @@ export class RawWidget extends Component {
 
     let allowPatching =
       (isValue &&
-        (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
-          JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
-      JSON.stringify(cachedValue) !== JSON.stringify(value);
+        (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
+          JSON.stringify(fieldData.valueTo) != JSON.stringify(valueTo))) ||
+      JSON.stringify(cachedValue) != JSON.stringify(value);
 
     return allowPatching;
   };
@@ -526,7 +527,7 @@ export class RawWidget extends Component {
             subentityId={subentityId}
             defaultValue={fields[0].emptyText}
             selected={widgetData[0].value || null}
-            properties={fields}
+            properties={fields[0]}
             readonly={readonly}
             mandatory={widgetData[0].mandatory}
             windowType={windowType}
@@ -565,10 +566,14 @@ export class RawWidget extends Component {
       case 'Text':
         return (
           <div
-            className={
-              this.getClassNames({ icon: true }) +
-              (isEdited ? 'input-focused ' : '')
-            }
+            className={classnames(
+              this.getClassNames({
+                icon: true,
+              }),
+              {
+                'input-focused': isEdited,
+              }
+            )}
           >
             <input {...widgetProperties} type="text" />
             {icon && <i className="meta-icon-edit input-icon-right" />}
@@ -577,12 +582,15 @@ export class RawWidget extends Component {
       case 'LongText':
         return (
           <div
-            className={
+            className={classnames(
               this.getClassNames({
                 icon: false,
                 forcedPrimary: true,
-              }) + (isEdited ? 'input-focused ' : '')
-            }
+              }),
+              {
+                'input-focused': isEdited,
+              }
+            )}
           >
             <textarea {...widgetProperties} />
           </div>
@@ -591,10 +599,14 @@ export class RawWidget extends Component {
         return (
           <div className="input-inner-container">
             <div
-              className={
-                this.getClassNames({ icon: true }) +
-                (isEdited ? 'input-focused ' : '')
-              }
+              className={classnames(
+                this.getClassNames({
+                  icon: true,
+                }),
+                {
+                  'input-focused': isEdited,
+                }
+              )}
             >
               <input
                 {...widgetProperties}
@@ -623,9 +635,9 @@ export class RawWidget extends Component {
       case 'Quantity':
         return (
           <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '') + ' number-field'
-            }
+            className={classnames(this.getClassNames(), 'number-field', {
+              'input-focused': isEdited,
+            })}
           >
             {subentity === 'quickInput' ? (
               <NumericInput
@@ -643,9 +655,9 @@ export class RawWidget extends Component {
       case 'CostPrice':
         return (
           <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '') + ' number-field'
-            }
+            className={classnames(this.getClassNames(), 'number-field', {
+              'input-focused': isEdited,
+            })}
           >
             <input {...widgetProperties} type="number" />
           </div>
@@ -865,8 +877,14 @@ export class RawWidget extends Component {
       handlePatch,
       widgetType,
       handleZoomInto,
+      dataEntry,
     } = this.props;
-    const { errorPopup, clearedFieldWarning, tooltipToggled } = this.state;
+    const {
+      errorPopup,
+      clearedFieldWarning,
+      tooltipToggled,
+      isEdited,
+    } = this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
 
@@ -900,6 +918,26 @@ export class RawWidget extends Component {
       .map(field => 'form-field-' + field.field)
       .join(' ');
 
+    let labelClass = dataEntry ? 'col-sm-5' : '';
+    if (!labelClass) {
+      labelClass =
+        type === 'primary' && !oneLineException
+          ? 'col-sm-12 panel-title'
+          : type === 'primaryLongLabels'
+          ? 'col-sm-6'
+          : 'col-sm-3';
+    }
+
+    let fieldClass = dataEntry ? 'col-sm-7' : '';
+    if (!fieldClass) {
+      fieldClass =
+        ((type === 'primary' || noLabel) && !oneLineException
+          ? 'col-sm-12 '
+          : type === 'primaryLongLabels'
+          ? 'col-sm-6'
+          : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+    }
+
     return (
       <div
         className={classnames(
@@ -914,14 +952,7 @@ export class RawWidget extends Component {
         {!noLabel && caption && (
           <div
             key="title"
-            className={
-              'form-control-label ' +
-              (type === 'primary' && !oneLineException
-                ? 'col-sm-12 panel-title'
-                : type === 'primaryLongLabels'
-                ? 'col-sm-6'
-                : 'col-sm-3 ')
-            }
+            className={classnames('form-control-label', labelClass)}
             title={description || caption}
           >
             {fields[0].supportZoomInto ? (
@@ -937,13 +968,7 @@ export class RawWidget extends Component {
           </div>
         )}
         <div
-          className={
-            ((type === 'primary' || noLabel) && !oneLineException
-              ? 'col-sm-12 '
-              : type === 'primaryLongLabels'
-              ? 'col-sm-6'
-              : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex ' : '')
-          }
+          className={fieldClass}
           onMouseEnter={() => this.handleErrorPopup(true)}
           onMouseLeave={() => this.handleErrorPopup(false)}
         >
@@ -967,7 +992,12 @@ export class RawWidget extends Component {
             </div>
           )}
 
-          <div className="input-body-container" title={valueDescription}>
+          <div
+            className={classnames('input-body-container', {
+              focused: isEdited,
+            })}
+            title={valueDescription}
+          >
             <ReactCSSTransitionGroup
               transitionName="fade"
               transitionEnterTimeout={200}

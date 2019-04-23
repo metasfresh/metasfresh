@@ -8,16 +8,49 @@ import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
 import { deleteView } from '../../api';
 import { addNotification } from '../../actions/AppActions';
-import { closeModal, closeRawModal } from '../../actions/WindowActions';
+import {
+  closeModal,
+  closeRawModal,
+  openRawModal,
+} from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 
+const ModalButton = props => {
+  const {
+    name,
+    onShowTooltip,
+    onHideTooltip,
+    children,
+    onClick,
+    tabIndex,
+  } = props;
+
+  const handleClick = () => onClick(name);
+  const handleShowTooltip = () => onShowTooltip(name);
+  const handleHideTooltip = () => onHideTooltip(name);
+
+  return (
+    <button
+      key={`rawmodal-button-${name}`}
+      name={name}
+      className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
+      onClick={handleClick}
+      tabIndex={tabIndex}
+      onMouseEnter={handleShowTooltip}
+      onMouseLeave={handleHideTooltip}
+    >
+      {children}
+    </button>
+  );
+};
+
 class RawModal extends Component {
   state = {
     scrolled: false,
-    isTooltipShow: false,
+    visibleTooltips: {},
   };
 
   componentDidMount() {
@@ -49,9 +82,21 @@ class RawModal extends Component {
     }
   }
 
-  toggleTooltip = visible => {
+  showTooltip = type => {
     this.setState({
-      isTooltipShow: visible,
+      visibleTooltips: {
+        ...this.state.visibleTooltips,
+        [`${type}`]: true,
+      },
+    });
+  };
+
+  hideTooltip = type => {
+    this.setState({
+      visibleTooltips: {
+        ...this.state.visibleTooltips,
+        [`${type}`]: false,
+      },
     });
   };
 
@@ -86,8 +131,8 @@ class RawModal extends Component {
       viewId,
       windowType,
       requests,
+      rawModal,
     } = this.props;
-
     const { isNew } = this.state;
 
     if (requests.length > 0) {
@@ -111,13 +156,19 @@ class RawModal extends Component {
       }
     }
 
-    if (closeCallback) {
-      await closeCallback(isNew);
+    if (type === 'BACK') {
+      await dispatch(
+        openRawModal(rawModal.parentWindowId, rawModal.parentViewId)
+      );
+    } else {
+      if (closeCallback) {
+        await closeCallback(isNew);
+      }
+
+      await this.removeModal();
+
+      await deleteView(windowType, viewId, type);
     }
-
-    await this.removeModal();
-
-    await deleteView(windowType, viewId, type);
   };
 
   removeModal = async () => {
@@ -141,45 +192,64 @@ class RawModal extends Component {
   };
 
   renderButtons = () => {
-    const { modalVisible, rawModalVisible } = this.props;
+    const { modalVisible, rawModal } = this.props;
     let { allowedCloseActions } = this.props;
-    const { isTooltipShow } = this.state;
+    const rawModalVisible = rawModal.visible || false;
     const buttonsArray = [];
 
     if (!allowedCloseActions) {
-      allowedCloseActions = ['DONE'];
+      allowedCloseActions = [];
     }
 
     for (let i = 0; i < allowedCloseActions.length; i += 1) {
       const name = allowedCloseActions[i];
+      const showTooltip = this.state.visibleTooltips[name];
       const selector = `modal.actions.${name.toLowerCase()}`;
 
       buttonsArray.push(
-        <button
-          key={`rawmodal-button-${name}`}
-          className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
-          onClick={() => this.handleClose(name)}
+        <ModalButton
+          name={name}
+          onClick={this.handleClose}
           tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
-          onMouseEnter={() => this.toggleTooltip(true)}
-          onMouseLeave={() => this.toggleTooltip(false)}
+          onShowTooltip={this.showTooltip}
+          onHideTooltip={this.hideTooltip}
         >
           {counterpart.translate(selector)}
-          {isTooltipShow && (
+          {showTooltip && (
             <Tooltips
               name={keymap[name]}
               action={counterpart.translate(selector)}
               type={''}
             />
           )}
-        </button>
+        </ModalButton>
       );
     }
 
     return buttonsArray;
   };
 
+  generateShortcuts = () => {
+    let { allowedCloseActions } = this.props;
+    const shortcutActions = {};
+
+    if (!allowedCloseActions) {
+      shortcutActions.cancel = this.handleClose;
+
+      allowedCloseActions = [];
+    }
+
+    for (let i = 0; i < allowedCloseActions.length; i += 1) {
+      const name = allowedCloseActions[i];
+
+      shortcutActions[`${name.toLowerCase()}`] = () => this.handleClose(name);
+    }
+
+    return <ModalContextShortcuts {...shortcutActions} />;
+  };
+
   render() {
-    const { modalTitle, children, modalDescription, modalVisible } = this.props;
+    const { modalTitle, children, modalDescription } = this.props;
     const { scrolled } = this.state;
 
     if (!children) {
@@ -212,9 +282,7 @@ class RawModal extends Component {
             >
               {children}
             </div>
-            <ModalContextShortcuts
-              apply={modalVisible ? null : this.handleClose}
-            />
+            {this.generateShortcuts()}
           </div>
         </div>
       </div>
@@ -224,7 +292,7 @@ class RawModal extends Component {
 
 const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible || false,
-  rawModalVisible: windowHandler.rawModal.visible || false,
+  rawModal: windowHandler.rawModal,
   requests: windowHandler.patches.requests,
   success: windowHandler.patches.success,
 });
@@ -239,7 +307,7 @@ RawModal.propTypes = {
   modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
-  rawModalVisible: PropTypes.bool,
+  rawModal: PropTypes.object.isRequired,
   requests: PropTypes.object.isRequired,
   success: PropTypes.bool.isRequired,
 };

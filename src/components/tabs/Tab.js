@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { addRowData, getTab } from '../../actions/WindowActions';
+import {
+  addRowData,
+  updateMasterData,
+  getTab,
+} from '../../actions/WindowActions';
 
 class Tab extends Component {
   constructor(props) {
@@ -10,9 +14,11 @@ class Tab extends Component {
 
     const {
       dispatch,
-      tabid,
-      windowType,
+      tabId,
+      windowId,
+      onChange,
       queryOnActivate,
+      singleRowView,
       docId,
       orderBy,
     } = this.props;
@@ -22,9 +28,20 @@ class Tab extends Component {
         ? (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
         : '';
 
-      getTab(tabid, windowType, docId, query).then(res => {
-        dispatch(addRowData({ [tabid]: res }, 'master'));
-      });
+      if (singleRowView) {
+        getTab(tabId, windowId, docId).then(res => {
+          if (res.length) {
+            dispatch(updateMasterData(res[0]));
+            dispatch(addRowData({ [tabId]: res }, 'master'));
+            onChange && onChange();
+          }
+        });
+      } else {
+        getTab(tabId, windowId, docId, query).then(res => {
+          dispatch(addRowData({ [tabId]: res }, 'master'));
+          onChange && onChange();
+        });
+      }
     }
   }
 
@@ -37,6 +54,12 @@ class Tab extends Component {
 
 Tab.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onChange: PropTypes.func,
+  children: PropTypes.any,
+  singleRowView: PropTypes.bool,
+  windowId: PropTypes.string,
+  tabId: PropTypes.string,
+  docId: PropTypes.string,
 };
 
 export default connect()(Tab);

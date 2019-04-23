@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
@@ -147,9 +148,17 @@ class Lookup extends Component {
           //     property: nextProp.field,
           //   });
           // } else {
-          this.setState({
-            property: nextProp.field,
-          });
+          // this.setState({
+          //   property: nextProp.field,
+          // });
+          this.setState(
+            {
+              property: nextProp.field,
+            },
+            () => {
+              onBlurWidget && onBlurWidget();
+            }
+          );
           // }
         } else if (widgetData[widgetData.length - 1].field === prop) {
           this.setState(
@@ -295,7 +304,7 @@ class Lookup extends Component {
             className="btn btn-sm btn-meta-success btn-scanner"
             onClick={() => onScanBarcode(true)}
           >
-            Scan using camera
+            {counterpart.translate('widget.scanFromCamera.caption')}
           </button>
         ) : null}
         <i
@@ -389,6 +398,7 @@ class Lookup extends Component {
       >
         {properties &&
           properties.map((item, index) => {
+            // if (index < 2 && this.props.properties[0].field === "C_BPartner_ID") {
             // TODO: This is really not how we should be doing this. Backend should send
             // us info which fields are usable with barcode scanner
             showBarcodeScannerBtn = item.field === 'M_LocatorTo_ID';
@@ -521,23 +531,23 @@ class Lookup extends Component {
                         this.linkedList.push(c.getWrappedInstance());
                       }
                     }}
+                    field={item.field}
                     clearable={false}
                     readonly={disabled || widgetData[index].readonly}
                     lookupList={true}
                     autoFocus={isCurrentProperty}
                     doNotOpenOnFocus={false}
-                    properties={[item]}
-                    mainProperty={[item]}
+                    properties={item}
+                    mainProperty={item}
                     defaultValue={defaultValue ? defaultValue : ''}
                     initialFocus={isFirstProperty ? initialFocus : false}
-                    blur={!property ? true : false}
                     emptyText={placeholder}
                     mandatory={widgetData[index].mandatory}
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
-                    onFocus={() => this.handleListFocus(item.field)}
-                    onBlur={() => this.handleListBlur(item.field)}
+                    onFocus={this.handleListFocus}
+                    onBlur={this.handleListBlur}
                     {...{
                       dataId,
                       entity,

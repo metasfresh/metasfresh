@@ -1,15 +1,24 @@
 import React, { Component } from 'react';
 import BarcodeScanner from './BarcodeScanner';
 
+import currentDevice from 'current-device';
+
 function addBarcodeScanner(WrappedComponent) {
   return class BarcodeScannerWidget extends Component {
     constructor(props) {
       super(props);
 
-      this.state = {
-        scanning: false,
-        codeSelected: null,
-      };
+      if (props.data && props.data.Barcode && currentDevice.type === 'mobile') {
+        this.state = {
+          scanning: true,
+          codeSelected: null,
+        };
+      } else {
+        this.state = {
+          scanning: false,
+          codeSelected: null,
+        };
+      }
     }
 
     scanBarcode = val => {
@@ -27,6 +36,8 @@ function addBarcodeScanner(WrappedComponent) {
     };
 
     renderScanner = () => {
+      const { closeOverlay } = this.props;
+
       return (
         <div className="row barcode-scanner-widget">
           <div className="col-sm-12">
@@ -35,6 +46,10 @@ function addBarcodeScanner(WrappedComponent) {
               onClose={val => {
                 const value = typeof val !== 'undefined' ? val : false;
                 this.scanBarcode(value);
+
+                if (currentDevice.type === 'mobile') {
+                  closeOverlay();
+                }
               }}
             />
           </div>

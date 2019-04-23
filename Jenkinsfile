@@ -23,7 +23,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
 
-		booleanParam(defaultValue: true, description: 'Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere',
+		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere.<br>
+<b>Important:</b> metasfreseh-e2e is always triggered''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
 
 		booleanParam(defaultValue: false,
@@ -55,7 +56,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 		stage('Set versions and build metasfresh-webui-frontend')
 		{
-			def scmVars = checkout scm
+			final def scmVars = checkout scm
 			BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
 			sh 'git clean -d --force -x' // clean the workspace
 
@@ -76,7 +77,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	else 
 	{
 		withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
-			sh 'yarn test --ci --testResultsProcessor="jest-junit"'
+			sh 'yarn test --ci --reporters="default" --reporters="jest-junit"'
 		}
 		junit 'jest-test-results.xml'
 	}
@@ -156,47 +157,31 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
 <li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(MF_UPSTREAM_BRANCH)}_LATEST</code></li>
 </ul>"""
+
+	// gh #968: set docker image name to be available to a possible upstream job that might have called us
+	env.MF_DOCKER_IMAGE=publishedDockerImageName
+
  } // node
 
-if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
+
+stage('Invoke downstream jobs')
 {
-	stage('Invoke downstream jobs')
-	{
-		final misc = new de.metas.jenkins.Misc()
+		final def misc = new de.metas.jenkins.Misc()
 		final String metasfreshJobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH)
-		final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
+		final def metasfreshBuildResult = build job: metasfreshJobName,
+			parameters: [
+				string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+				string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
+				string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
+				string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
+				booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+				booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+			],
+			wait: true
 
-		parallel (
-			metasfresh : {
-				build job: metasfreshJobName,
-					parameters: [
-						string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-						string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
-						string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-						string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
-						booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
-						booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-					],
-					wait: false
-			},
-			metasfresh_e2e : {
-				final def buildResult = build job: metasfreshE2eJobName,
-					parameters: [
-						string(name: 'MF_WEBUI_FRONTEND_REVISION', value: BUILD_GIT_SHA1)
-					], 
-					wait: true,
-					propagate: false
-
-				currentBuild.description="""${currentBuild.description}
+		currentBuild.description="""${currentBuild.description}
 <p/>
-This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${buildResult.absoluteUrl}">${buildResult.displayName}</a>
-				"""
-			}
-		)
-	}
-}
-else
-{
-	echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
+This build triggered the <b>metasfresh</b> jenkins job <a href="${metasfreshBuildResult.absoluteUrl}">${metasfreshBuildResult.displayName}</a>
+"""
 }
 } // timestamps

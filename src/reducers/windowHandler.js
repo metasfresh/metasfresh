@@ -1,6 +1,8 @@
 import update from 'immutability-helper';
 import { Map, List, Set } from 'immutable';
 import _ from 'lodash';
+import { createSelector } from 'reselect';
+import uuid from 'uuid/v4';
 
 import {
   ACTIVATE_TAB,
@@ -41,6 +43,7 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
@@ -74,6 +77,7 @@ const initialState = {
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
+    staticModalType: '',
   },
   overlay: {
     visible: false,
@@ -110,6 +114,7 @@ const initialState = {
   latestNewDocument: null,
   viewId: null,
   selections: {},
+  selectionsHash: null,
   patches: {
     requests: {
       length: 0,
@@ -121,13 +126,37 @@ const initialState = {
 };
 
 export const NO_SELECTION = [];
-export const getSelection = ({ state, windowType, viewId }) => {
-  const windowTypeSelections = state.windowHandler.selections[windowType];
 
-  return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
+/* This is an improved function for getting selected rows, as it immediately reacts
+ * to any changes to the selectionsHash variable in the state. This variable is set
+ * with a random uuid hash whenever table row is selected/deleted.
+ */
+/* eslint-disable no-unused-vars */
+export const getSelectionData = (
+  state,
+  { windowId, windowType, viewId },
+  hash
+) => {
+  const winId = windowId || windowType;
+  const windowTypeSelections = state.windowHandler.selections[winId];
+  const id = viewId || winId;
+
+  return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
 };
-export const getSelectionDirect = (selections, windowType, viewId) => {
-  const windowTypeSelections = selections[windowType];
+
+export const getSelectionInstant = createSelector(
+  [getSelectionData],
+  items => items
+);
+
+export const getSelection = ({ state, windowId, viewId }) => {
+  const windowTypeSelections = state.windowHandler.selections[windowId];
+  const id = viewId || windowId;
+
+  return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
+};
+export const getSelectionDirect = (selections, windowId, viewId) => {
+  const windowTypeSelections = selections[windowId];
 
   return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
 };
@@ -146,6 +175,7 @@ export default function windowHandler(state = initialState, action) {
           ...state.modal,
           visible: true,
           type: action.windowType,
+          staticModalType: action.staticModalType,
           dataId: action.dataId,
           tabId: action.tabId,
           rowId: action.rowId,
@@ -279,6 +309,17 @@ export default function windowHandler(state = initialState, action) {
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
+        },
+      };
+    case UPDATE_MASTER_DATA:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          data: {
+            ...state.master.data,
+            ...action.payload,
+          },
         },
       };
     case CLEAR_MASTER_DATA:
@@ -520,17 +561,20 @@ export default function windowHandler(state = initialState, action) {
     case SELECT_TABLE_ITEMS: {
       const { windowType, viewId, ids } = action.payload;
 
-      if (!ids || !ids.length) {
+      if (!ids) {
         return state;
       }
 
+      const checkedIds = ids.length && ids[0] === undefined ? null : ids;
+
       return {
         ...state,
+        selectionsHash: uuid(),
         selections: {
           ...state.selections,
           [windowType]: {
             ...state.selections[windowType],
-            [viewId]: ids,
+            [viewId]: checkedIds,
           },
         },
       };
@@ -545,6 +589,7 @@ export default function windowHandler(state = initialState, action) {
 
       return {
         ...state,
+        selectionsHash: uuid(),
         selections: {
           ...state.selections,
           [windowType]: {
@@ -564,6 +609,7 @@ export default function windowHandler(state = initialState, action) {
 
       return {
         ...state,
+        selectionsHash: uuid(),
         selections: {
           ...state.selections,
           [windowType]: { ...windowSelections },

@@ -64,10 +64,19 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleKeyDown = e => {
-    const { changeListenOnTrue, widgetData, property } = this.props;
-    const { listenOnKeys, edited } = this.state;
+  handleDoubleClick = () => {
+    const { rowId, onDoubleClick, supportOpenRecord } = this.props;
 
+    if (supportOpenRecord) {
+      onDoubleClick && onDoubleClick(rowId);
+    }
+  };
+
+//   handleKeyDown = e => {
+//     const { changeListenOnTrue, widgetData, property } = this.props;
+  handleKeyDown = (e, property, widgetData) => {
+    const { changeListenOnTrue } = this.props;
+    const { listenOnKeys, edited } = this.state;
     console.log('TableItem handleKeyDown');
 
     switch (e.key) {
@@ -222,7 +231,7 @@ class TableItem extends PureComponent {
     const {
       cols,
       fieldsByName,
-      type,
+      windowId,
       docId,
       rowId,
       tabId,
@@ -254,7 +263,7 @@ class TableItem extends PureComponent {
     } else {
       return (
         cols &&
-        cols.map(item => {
+        cols.map((item, colIdx) => {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
@@ -306,9 +315,10 @@ class TableItem extends PureComponent {
                 {...{
                   getSizeClass,
                   entity,
-                  type,
+                  windowId,
                   docId,
                   rowId,
+                  colIdx,
                   tabId,
                   item,
                   widgetData,
@@ -484,7 +494,6 @@ class TableItem extends PureComponent {
       key,
       isSelected,
       onClick,
-      onDoubleClick,
       odd,
       indentSupported,
       indent,
@@ -500,7 +509,7 @@ class TableItem extends PureComponent {
       <tr
         key={key}
         onClick={onClick}
-        onDoubleClick={onDoubleClick}
+        onDoubleClick={this.handleDoubleClick}
         className={classnames({
           'row-selected': isSelected,
           'tr-odd': odd,

@@ -38,6 +38,7 @@ function mapStateToProps(state) {
 
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
+  isDocumentNotSaved: PropTypes.bool,
 };
 
 export default connect(mapStateToProps)(Indicator);

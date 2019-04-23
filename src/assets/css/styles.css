@@ -1107,7 +1107,7 @@ td.pulse-off input {
     right: 0;
     top: 100%;
     min-width: 100px;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     margin-top: .2rem;
     padding: .3rem;
@@ -1420,6 +1420,10 @@ td.pulse-off input {
     white-space: nowrap;
     color: $brand-font-color-weak;
     font-size: 15px;
+
+    &.collapsible {
+        cursor: pointer;
+    }
 }
 
 .avatar {

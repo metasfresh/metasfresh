@@ -36,7 +36,7 @@ export const RawWidgetPropTypes = {
   subentityId: PropTypes.string,
   tabIndex: PropTypes.number,
   dropdownOpenCallback: PropTypes.func,
-  fullScreen: PropTypes.string,
+  fullScreen: PropTypes.bool,
   widgetType: PropTypes.string,
   fields: PropTypes.array,
   icon: PropTypes.string,
@@ -51,6 +51,8 @@ export const RawWidgetPropTypes = {
   noLabel: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
+  dataEntry: PropTypes.bool,
+  lastFormField: PropTypes.bool,
 };
 
 export const RawWidgetDefaultProps = {

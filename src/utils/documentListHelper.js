@@ -5,7 +5,7 @@ import Moment from 'moment';
 import { DateTime } from 'luxon';
 // import { isLuxonObject } from './index';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
-import { getSelection } from '../reducers/windowHandler';
+import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
 
 const DLpropTypes = {
   // from parent
@@ -29,11 +29,11 @@ const DLcontextTypes = {
 
 const DLmapStateToProps = (state, props) => ({
   selections: state.windowHandler.selections,
-  selected: getSelection({
+  selected: getSelectionInstant(
     state,
-    windowType: props.windowType,
-    viewId: props.defaultViewId,
-  }),
+    { ...props, windowId: props.windowType, viewId: props.defaultViewId },
+    state.windowHandler.selectionsHash
+  ),
   childSelected:
     props.includedView && props.includedView.windowType
       ? getSelection({
@@ -207,7 +207,7 @@ export function removeRows(rowsList, changedRows) {
   changedRows.forEach(id => {
     const idx = rowsList.findIndex(row => row.id === id);
 
-    if (idx === -1) {
+    if (idx !== -1) {
       rowsList = rowsList.delete(idx);
       removedRows.push(id);
     }
@@ -225,8 +225,11 @@ export function mergeRows({
   columnInfosByFieldName = {},
   changedIds,
 }) {
-  if (!fromRows) {
-    return toRows;
+  if (!fromRows && !changedIds) {
+    return {
+      rows: toRows,
+      removedRows: [],
+    };
   } else if (!fromRows.length) {
     return removeRows(toRows, changedIds);
   }

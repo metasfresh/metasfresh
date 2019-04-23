@@ -3,6 +3,8 @@ import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import { isEqual } from 'lodash';
+
 import SelectionDropdown from '../SelectionDropdown';
 
 /*
@@ -83,10 +85,7 @@ export class RawList extends PureComponent {
 
     // If data in the list changed, we either opened or closed the selection dropdown.
     // If we're closing it (bluring), then we don't care about the whole thing.
-    if (
-      listHash !== prevProps.listHash ||
-      (!listHash && this.props.isFocused !== prevProps.isFocused)
-    ) {
+    if (listHash && !prevProps.listHash) {
       dropdownList = list;
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.push({
@@ -114,7 +113,7 @@ export class RawList extends PureComponent {
       if (!changedValues.selected && dropdownList.size > 0) {
         let newSelected = null;
 
-        if (prevProps.selected !== selected) {
+        if (!isEqual(prevProps.selected, selected)) {
           newSelected = selected;
         }
 
@@ -264,7 +263,7 @@ export class RawList extends PureComponent {
   };
 
   focusDropdown() {
-    this.dropdown.focus();
+    this.props.onFocus();
   }
 
   render() {
@@ -285,7 +284,6 @@ export class RawList extends PureComponent {
       lookupList,
       isToggled,
       isFocused,
-      onFocus,
       clearable,
     } = this.props;
 
@@ -324,6 +322,7 @@ export class RawList extends PureComponent {
             'input-disabled': readonly,
             'input-dropdown-container-static': rowId,
             'input-table': rowId && !isModal,
+            'input-empty': !value,
             'lookup-dropdown': lookupList,
             'select-dropdown': !lookupList,
             focused: isFocused,
@@ -331,7 +330,7 @@ export class RawList extends PureComponent {
             'input-mandatory': !lookupList && mandatory && !selected,
           })}
           tabIndex={tabIndex}
-          onFocus={readonly ? null : onFocus}
+          onFocus={readonly ? null : this.focusDropdown}
           onClick={readonly ? null : this.handleClick}
           onKeyDown={this.handleKeyDown}
           onKeyUp={this.handleKeyUp}

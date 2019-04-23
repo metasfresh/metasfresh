@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { shallowWithStore } from 'enzyme-redux';
 import { createMockStore } from 'redux-test-utils';
 
-import ShortcutProvider from '../../components/keyshortcuts/ShortcutProvider';
+import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
 import { QuickActions } from '../../components/app/QuickActions';
 import fixtures from '../../../test_setup/fixtures/quickactions.json';
 

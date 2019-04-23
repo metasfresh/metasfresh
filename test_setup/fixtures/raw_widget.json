@@ -34,5 +34,70 @@
       "viewEditorRenderMode": "never",
       "widgetType": "LongText"
     }
+  },
+  "text": {
+    "data1": {
+      "displayed": true,
+      "field": "Name",
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "Name"
+      },
+      "fieldName": "Name",
+      "initialValue": true,
+      "valid": true,
+      "value": "Apricotest",
+      "viewEditorRenderMode": "always",
+      "widgetType": "Text"
+    },
+    "layout1": {
+      "caption": "Name",
+      "description": "",
+      "fields": [
+        {
+          "field": "Name",
+          "emptyText": "none"
+        }
+      ],
+      "size": "L",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Text"
+    }
+  },
+  "integer": {
+    "data1": {
+      "displayed": true,
+      "field": "SeqNo",
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "SeqNo"
+      },
+      "fieldName": "SeqNo",
+      "initialValue": true,
+      "valid": true,
+      "value": "21",
+      "viewEditorRenderMode": "always",
+      "widgetType": "Integer"
+    },
+    "layout1": {
+      "caption": "Reihenfolge",
+      "description": "Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst",
+      "fields": [
+        {
+          "field": "SeqNo",
+          "emptyText": "none"
+        }
+      ],
+      "emptyText": "none",
+      "field": "SeqNo",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Integer"
+    }
   }
 }

@@ -279,3 +279,7 @@
     display: inline-block;
     min-width: 14px;
 }
+.meta-icon-flip-horizontally {
+  display: block;
+  transform: rotate(180deg);
+}

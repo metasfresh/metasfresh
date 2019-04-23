@@ -488,7 +488,7 @@ input:checked + .input-slider:before {
     position: relative;
     display: inline-block;
     padding-right: 0.5rem;
-    border-radius: 3px;
+    border-radius: 0;
 }
 
 .input-icon-right{
@@ -530,6 +530,10 @@ input:checked + .input-slider:before {
         margin: 0;
         padding-top: .3rem;
         border-bottom: 1px solid transparent;
+
+        &.input-empty {
+            border-bottom: 1px solid $brand-light-color;
+        }
 
         &.input-mandatory {
             border: 2px solid $brand-mandatory-color;

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
+import { debounce } from 'throttle-debounce';
 
 import {
   autocompleteRequest,
@@ -30,8 +31,18 @@ export class RawLookup extends Component {
       parentElement: undefined,
     };
 
+    const debounceTime = props.item.lookupSearchStartDelayMillis || 100;
+    this.minQueryLength = props.item.lookupSearchStringMinLength || 0;
+
     this.handleBlur = this.handleBlur.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
     this.handleValueChanged = this.handleValueChanged.bind(this);
+    this.typeaheadRequest = this.typeaheadRequest.bind(this);
+
+    this.autocompleteSearchDebounced = debounce(
+      debounceTime,
+      this.typeaheadRequest
+    );
   }
 
   componentDidMount() {
@@ -234,7 +245,7 @@ export class RawLookup extends Component {
     );
   }
 
-  handleFocus(mouse) {
+  handleFocus(mouse = true) {
     const { mandatory } = this.props;
 
     if (mouse && this.state.isFocused) {
@@ -253,9 +264,8 @@ export class RawLookup extends Component {
     }
   }
 
-  handleChange = (handleChangeOnFocus, allowEmpty) => {
+  typeaheadRequest = () => {
     const {
-      recent,
       windowType,
       dataId,
       filterWidget,
@@ -267,12 +277,86 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
-      handleInputEmptyStatus,
-      enableAutofocus,
       isModal,
       newRecordCaption,
       mandatory,
       placeholder,
+    } = this.props;
+    const inputValue = this.inputSearch.value;
+
+    let typeaheadRequest;
+    const typeaheadParams = {
+      docId: filterWidget ? viewId : dataId,
+      propertyName: filterWidget ? parameterName : mainProperty[0].field,
+      query: inputValue,
+      rowId,
+      tabId,
+    };
+
+    if (entity === 'documentView' && !filterWidget) {
+      typeaheadRequest = getViewAttributeTypeahead(
+        windowType,
+        viewId,
+        dataId,
+        mainProperty[0].field,
+        inputValue
+      );
+    } else if (viewId && !filterWidget) {
+      typeaheadRequest = autocompleteModalRequest({
+        ...typeaheadParams,
+        docType: windowType,
+        entity: 'documentView',
+        viewId,
+      });
+    } else {
+      typeaheadRequest = autocompleteRequest({
+        ...typeaheadParams,
+        docType: windowType,
+        entity,
+        subentity,
+        subentityId,
+      });
+    }
+
+    typeaheadRequest.then(response => {
+      let values = response.data.values || [];
+      let list = null;
+      const newState = {
+        loading: false,
+      };
+
+      if (values.length === 0 && !isModal) {
+        const optionNew = { key: 'NEW', caption: newRecordCaption };
+        list = [optionNew];
+
+        newState.forceEmpty = true;
+        newState.selected = optionNew;
+      } else {
+        list = values;
+
+        newState.forceEmpty = false;
+        newState.selected = values[0];
+      }
+
+      if (!mandatory) {
+        list.push({
+          caption: placeholder,
+          key: null,
+        });
+      }
+      newState.list = [...list];
+
+      this.setState({ ...newState });
+    });
+  };
+
+  handleChange = (handleChangeOnFocus, allowEmpty) => {
+    const {
+      recent,
+      handleInputEmptyStatus,
+      enableAutofocus,
+      isOpen,
+      onDropdownListToggle,
     } = this.props;
 
     enableAutofocus();
@@ -286,78 +370,23 @@ export class RawLookup extends Component {
     if (inputValue || allowEmpty) {
       !allowEmpty && handleInputEmptyStatus && handleInputEmptyStatus(false);
 
-      this.setState({
-        isInputEmpty: false,
-        loading: true,
-        query: inputValue,
-      });
-
-      this.props.onDropdownListToggle(true);
-
-      let typeaheadRequest;
-      const typeaheadParams = {
-        docId: filterWidget ? viewId : dataId,
-        propertyName: filterWidget ? parameterName : mainProperty[0].field,
-        query: inputValue,
-        rowId,
-        tabId,
-      };
-
-      if (entity === 'documentView' && !filterWidget) {
-        typeaheadRequest = getViewAttributeTypeahead(
-          windowType,
-          viewId,
-          dataId,
-          mainProperty[0].field,
-          inputValue
-        );
-      } else if (viewId && !filterWidget) {
-        typeaheadRequest = autocompleteModalRequest({
-          ...typeaheadParams,
-          docType: windowType,
-          entity: 'documentView',
-          viewId,
-        });
-      } else {
-        typeaheadRequest = autocompleteRequest({
-          ...typeaheadParams,
-          docType: windowType,
-          entity,
-          subentity,
-          subentityId,
-        });
+      if (!isOpen) {
+        onDropdownListToggle(true);
       }
 
-      typeaheadRequest.then(response => {
-        let values = response.data.values || [];
-        let list = null;
-        const newState = {
-          loading: false,
-        };
-
-        if (values.length === 0 && !isModal) {
-          const optionNew = { key: 'NEW', caption: newRecordCaption };
-          list = [optionNew];
-
-          newState.forceEmpty = true;
-          newState.selected = optionNew;
-        } else {
-          list = values;
-
-          newState.forceEmpty = false;
-          newState.selected = values[0];
+      this.setState(
+        {
+          isInputEmpty: false,
+          loading: true,
+          query: inputValue,
+        },
+        () => {
+          const q = this.state.query;
+          if (q.length >= this.minQueryLength) {
+            this.autocompleteSearchDebounced();
+          }
         }
-
-        if (!mandatory) {
-          list.push({
-            caption: placeholder,
-            key: null,
-          });
-        }
-        newState.list = [...list];
-
-        this.setState({ ...newState });
-      });
+      );
     } else {
       this.setState({
         isInputEmpty: true,
@@ -434,11 +463,17 @@ export class RawLookup extends Component {
       forceEmpty,
       isFocused,
       parentElement,
+      query,
     } = this.state;
     const tetherProps = {};
+    let showDropdown = false;
 
     if (parentElement) {
       tetherProps.target = parentElement;
+    }
+
+    if (query.length >= this.minQueryLength) {
+      showDropdown = true;
     }
 
     return (
@@ -482,12 +517,12 @@ export class RawLookup extends Component {
                   tabIndex={tabIndex}
                   placeholder={placeholder}
                   onChange={this.handleChange}
-                  onClick={() => this.handleFocus(true)}
+                  onClick={this.handleFocus}
                 />
               </div>
             </div>
           </div>
-          {isOpen && !isInputEmpty && (
+          {showDropdown && isOpen && !isInputEmpty && (
             <SelectionDropdown
               loading={loading}
               options={list}
