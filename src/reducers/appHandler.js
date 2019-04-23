@@ -12,6 +12,8 @@ const initialState = {
     notifications: [],
     unreadCount: 0,
   },
+  keymap: {},
+  hotkeys: {},
 };
 
 export default function appHandler(state = initialState, action) {
@@ -195,6 +197,33 @@ export default function appHandler(state = initialState, action) {
       return {
         ...state,
         processStatus: 'saved',
+      };
+
+    case types.INIT_KEYMAP:
+      return {
+        ...state,
+        keymap: action.payload,
+      };
+    case types.UPDATE_KEYMAP:
+      return {
+        ...state,
+        keymap: {
+          ...state.keymap,
+          ...action.payload,
+        },
+      };
+    case types.INIT_HOTKEYS:
+      return {
+        ...state,
+        hotkeys: action.payload,
+      };
+    case types.UPDATE_HOTKEYS:
+      return {
+        ...state,
+        hotkeys: {
+          ...state.hotkeys,
+          ...action.payload,
+        },
       };
 
     default:

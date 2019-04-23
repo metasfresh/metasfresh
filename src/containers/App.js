@@ -11,6 +11,8 @@ import {
   languageSuccess,
   logoutSuccess,
   setProcessSaved,
+  initHotkeys,
+  initKeymap,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
@@ -157,6 +159,9 @@ export default class App extends Component {
 
     counterpart.setMissingEntryGenerator(() => '');
 
+    store.dispatch(initKeymap(keymap));
+    store.dispatch(initHotkeys(hotkeys));
+
     if (APP_PLUGINS.length) {
       const plugins = APP_PLUGINS.map(plugin => {
         const waitForChunk = () =>
@@ -210,7 +215,7 @@ export default class App extends Component {
 
     return (
       <Provider store={store}>
-        <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <ShortcutProvider>
           <Translation>
             <NotificationHandler>
               <CustomRouter store={store} history={history} auth={this.auth} />
