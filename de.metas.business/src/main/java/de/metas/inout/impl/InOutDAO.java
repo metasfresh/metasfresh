@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -41,9 +42,13 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
@@ -257,5 +262,16 @@ public class InOutDAO implements IInOutDAO
 		final I_M_InOut receipt = load(inOutId, I_M_InOut.class);
 
 		return receipt;
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLinesForInOutId(final InOutId inOutId)
+	{
+		final I_M_InOut inOut = load(inOutId.getRepoId(), I_M_InOut.class);
+
+		return retrieveLines(inOut)
+				.stream()
+				.map(line -> InOutAndLineId.ofRepoId(inOut.getM_InOut_ID(), line.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

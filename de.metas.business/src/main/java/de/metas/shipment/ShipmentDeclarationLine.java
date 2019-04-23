@@ -1,5 +1,7 @@
 package de.metas.shipment;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.OrgId;
 
 import de.metas.inout.InOutLineId;
@@ -52,6 +54,6 @@ public class ShipmentDeclarationLine
 	@NonNull
 	Quantity quantity;
 
-	@NonNull
+	@Nullable
 	String packageSize;
 }

@@ -1,16 +1,14 @@
-package de.metas.shipment.service;
+package de.metas.shipment.repo;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Shipment_Declaration;
-import org.compiere.model.I_M_Shipment_Declaration_Config;
 import org.compiere.model.I_M_Shipment_Declaration_Line;
-import org.compiere.model.X_M_Shipment_Declaration;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +16,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -28,11 +27,9 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipment.ShipmentDeclaration;
 import de.metas.shipment.ShipmentDeclarationConfig;
-import de.metas.shipment.ShipmentDeclarationConfigId;
 import de.metas.shipment.ShipmentDeclarationId;
 import de.metas.shipment.ShipmentDeclarationLine;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -58,23 +55,8 @@ import lombok.NonNull;
 @Repository
 public class ShipmentDeclarationRepository
 {
-	public ShipmentDeclarationConfig getConfigById(@NonNull final ShipmentDeclarationConfigId configId)
+	public void createAndCompleteShipmentDeclaration(final ShipmentDeclarationConfig config, final InOutId shipmentId, final Set<InOutAndLineId> inOutLinesForShipmentDeclaration)
 	{
-		final I_M_Shipment_Declaration_Config config = load(configId, I_M_Shipment_Declaration_Config.class);
-
-		return ShipmentDeclarationConfig.builder()
-				.docTypeId(DocTypeId.ofRepoId(config.getC_DocType_ID()))
-				.documentLinesNumber(config.getDocumentLinesNumber())
-				.shipmentDeclarationConfigId(configId)
-				.build();
-	}
-
-	public void createAndCompleteShipmentDeclaration(ShipmentDeclarationConfig config, List<InOutAndLineId> inOutLinesForShipmentDeclaration)
-	{
-		final InOutAndLineId inOutAndLineId = inOutLinesForShipmentDeclaration.get(0);
-
-		final InOutId shipmentId = inOutAndLineId.getInOutId();
-
 		final I_M_InOut shipment = load(shipmentId, I_M_InOut.class);
 
 		final ShipmentDeclaration shipmentDeclaration = ShipmentDeclaration.builder()
@@ -83,6 +65,8 @@ public class ShipmentDeclarationRepository
 				.shipmentDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipmentId(shipmentId)
+				.docAction(IDocument.ACTION_Complete)
+				.docStatus(IDocument.STATUS_Drafted)
 				.build();
 
 		final I_M_Shipment_Declaration shipmentDeclarationRecord = createAndSaveShipmentDeclaration(shipmentDeclaration);
@@ -91,7 +75,7 @@ public class ShipmentDeclarationRepository
 				ShipmentDeclarationId.ofRepoId(shipmentDeclarationRecord.getM_Shipment_Declaration_ID()),
 				line));
 
-		Services.get(IDocumentBL.class).processEx(shipmentDeclarationRecord, X_M_Shipment_Declaration.DOCACTION_Complete, X_M_Shipment_Declaration.DOCSTATUS_Completed);
+		Services.get(IDocumentBL.class).processEx(shipmentDeclarationRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 	}
 
@@ -162,6 +146,9 @@ public class ShipmentDeclarationRepository
 
 		final InOutId shipmentId = shipmentDeclaration.getShipmentId();
 		shipmentDeclarationRecord.setM_InOut_ID(shipmentId.getRepoId());
+
+		shipmentDeclarationRecord.setDocAction(shipmentDeclaration.getDocAction());
+		shipmentDeclarationRecord.setDocStatus(shipmentDeclaration.getDocStatus());
 
 		saveRecord(shipmentDeclarationRecord);
 

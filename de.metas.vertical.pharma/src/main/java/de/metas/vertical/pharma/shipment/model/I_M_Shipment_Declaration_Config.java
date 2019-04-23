@@ -1,10 +1,8 @@
-package de.metas.shipment;
-
-import de.metas.inout.InOutAndLineId;
+package de.metas.vertical.pharma.shipment.model;
 
 /*
  * #%L
- * de.metas.business
+ * metasfresh-pharma
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -23,16 +21,10 @@ import de.metas.inout.InOutAndLineId;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@FunctionalInterface
-public interface ShipmentDeclarationVetoer
+
+public interface I_M_Shipment_Declaration_Config extends org.compiere.model.I_M_Shipment_Declaration_Config
 {
-
-	public enum OnShipmentDeclarationConfig
-	{
-		I_VETO,
-
-		I_DONT_CARE
-	}
-
-	public OnShipmentDeclarationConfig foundShipmentLineForConfig(InOutAndLineId shipmentLineId, ShipmentDeclarationConfig shipmentDeclarationConfig);
+	public static final String COLUMNNAME_IsOnlyNarcoticProducts = "IsOnlyNarcoticProducts";
+    public void setIsOnlyNarcoticProducts(boolean IsOnlyNarcoticProducts);
+	public boolean isOnlyNarcoticProducts();
 }

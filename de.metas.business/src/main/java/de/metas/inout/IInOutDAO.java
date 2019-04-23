@@ -27,6 +27,7 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
@@ -105,4 +106,6 @@ public interface IInOutDAO extends ISingletonService
 	LocalDate getLastInOutDate(BPartnerId bpartnerId, ProductId productId, SOTrx soTrx);
 
 	I_M_InOut retrieveInOut(List<I_M_InOutLine> receiptLines);
+
+	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 }

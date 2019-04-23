@@ -1,11 +1,10 @@
-package de.metas.shipment;
+package de.metas.shipment.document;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.compiere.model.I_M_Shipment_Declaration;
+import org.springframework.stereotype.Component;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
 
 /*
  * #%L
@@ -28,27 +27,19 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-public class ShipmentDeclarationConfigId implements RepoIdAware
+@Component
+public class ShipmentDeclarationDocumentHandlerProvider implements DocumentHandlerProvider
 {
-	@JsonCreator
-	public static ShipmentDeclarationConfigId ofRepoId(final int repoId)
-	{
-		return new ShipmentDeclarationConfigId(repoId);
-	}
 
-	int repoId;
-
-	private ShipmentDeclarationConfigId(final int repoId)
+	@Override
+	public String getHandledTableName()
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Shipment_Declaration_Config_ID");
+		return I_M_Shipment_Declaration.Table_Name;
 	}
 
 	@Override
-	@JsonValue
-	public int getRepoId()
+	public DocumentHandler provideForDocument(final Object model_NOTUSED)
 	{
-		return repoId;
+		return new ShipmentDeclarationDocumentHandler();
 	}
-
 }
