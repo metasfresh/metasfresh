@@ -1,6 +1,4 @@
-package de.metas.handlingunits.inventory;
-
-import org.springframework.stereotype.Service;
+package de.metas.handlingunits.inventory.draftlinescreator;
 
 /*
  * #%L
@@ -24,8 +22,6 @@ import org.springframework.stereotype.Service;
  * #L%
  */
 
-@Service
-public class InventoryLineHUService
+public interface InventoryLineAggregationKey
 {
-
 }

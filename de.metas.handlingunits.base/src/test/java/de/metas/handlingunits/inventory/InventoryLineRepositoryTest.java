@@ -7,6 +7,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 
@@ -30,6 +32,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.inventory.InventoryConstants;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -68,7 +72,6 @@ class InventoryLineRepositoryTest
 	private I_C_UOM uomRecord;
 	private I_M_Locator locatorRecord;
 
-
 	private AttributeSetInstanceId asiId;
 
 	@BeforeAll
@@ -88,7 +91,6 @@ class InventoryLineRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
@@ -103,8 +105,6 @@ class InventoryLineRepositoryTest
 
 		inventoryLineRepository = new InventoryLineRepository();
 	}
-
-
 
 	@Test
 	void save()
@@ -134,14 +134,14 @@ class InventoryLineRepositoryTest
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))
-						.countQty(Quantity.of(ONE, uomRecord))
-						.bookQty(Quantity.of(TEN, uomRecord))
+						.qtyCount(Quantity.of(ONE, uomRecord))
+						.qtyBook(Quantity.of(TEN, uomRecord))
 						.build())
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(200))
-						.countQty(Quantity.of(TWO, uomRecord))
-						.bookQty(Quantity.of(TWENTY, uomRecord))
+						.qtyCount(Quantity.of(TWO, uomRecord))
+						.qtyBook(Quantity.of(TWENTY, uomRecord))
 						.build())
 				.build();
 
@@ -150,6 +150,55 @@ class InventoryLineRepositoryTest
 
 		final ImmutableList<InventoryLine> reloadedResult = inventoryLineRepository.getByInventoryId(inventoryId);
 		expect(reloadedResult).toMatchSnapshot();
+	}
+
+	@Test
+	void getById_multiHU_empty()
+	{
+		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		saveRecord(inventoryRecord);
+
+		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
+		inventoryLineRecord.setM_Inventory(inventoryRecord);
+		inventoryLineRecord.setHUAggregationType(InventoryConstants.HUAggregationType_MULTI_HU);
+		inventoryLineRecord.setC_UOM(uomRecord);
+		inventoryLineRecord.setM_Locator(locatorRecord);
+		inventoryLineRecord.setM_Product_ID(40);
+		saveRecord(inventoryLineRecord);
+
+		final Quantity zero = Quantity.zero(uomRecord);
+
+		final InventoryLine result = inventoryLineRepository.getById(InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID()));
+		assertThat(result.getInventoryLineHUs())
+				.extracting("huId", "qtyBook", "qtyCount")
+				.containsOnly(tuple(null, zero, zero));
+	}
+
+	@Test
+	void getById_multiHU_nullHuId()
+	{
+		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		saveRecord(inventoryRecord);
+
+		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
+		inventoryLineRecord.setM_Inventory(inventoryRecord);
+		inventoryLineRecord.setHUAggregationType(InventoryConstants.HUAggregationType_MULTI_HU);
+		inventoryLineRecord.setC_UOM(uomRecord);
+		inventoryLineRecord.setM_Locator(locatorRecord);
+		inventoryLineRecord.setM_Product_ID(40);
+		saveRecord(inventoryLineRecord);
+
+		final I_M_InventoryLine_HU inventoryLineHURecord = newInstance(I_M_InventoryLine_HU.class);
+		inventoryLineHURecord.setM_InventoryLine(inventoryLineRecord);
+		inventoryLineHURecord.setQtyBook(TWO);
+		inventoryLineHURecord.setQtyCount(TEN);
+		inventoryLineHURecord.setC_UOM(uomRecord);
+		saveRecord(inventoryLineHURecord);
+
+		final InventoryLine result = inventoryLineRepository.getById(InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID()));
+		assertThat(result.getInventoryLineHUs())
+				.extracting("huId", "qtyBook", "qtyCount")
+				.containsOnly(tuple(null, Quantity.of(TWO, uomRecord), Quantity.of(TEN, uomRecord)));
 	}
 
 }

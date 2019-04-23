@@ -32,12 +32,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineAggregator;
-import de.metas.handlingunits.inventory.InventoryLineAggregatorFactory.MultipleHUInventoryLineAggregator;
-import de.metas.handlingunits.inventory.InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.MultipleHUInventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator;
 import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;

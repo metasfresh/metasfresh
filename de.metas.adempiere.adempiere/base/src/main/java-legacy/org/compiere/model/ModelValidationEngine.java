@@ -694,12 +694,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param tableName table name
 	 * @param listener listener
 	 */
-	public void removeModelChange(String tableName, ModelValidator listener)
+	public void removeModelChange(
+			@Nullable final String tableName,
+			@Nullable final ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
 		{
 			return;
 		}
+
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)

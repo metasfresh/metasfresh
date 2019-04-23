@@ -6,11 +6,11 @@ import org.compiere.model.I_M_Inventory;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.inventory.InventoryLineAggregator;
-import de.metas.handlingunits.inventory.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;

@@ -124,6 +124,20 @@ class InventoryLineTest
 						tuple(HuId.ofRepoId(200), qtyTwenty, qtyOne));
 	}
 
+	@Test
+	void withCountQty_empty_plus_19()
+	{
+		final InventoryLine inventoryLine = createInventoryLine().toBuilder().clearInventoryLineHUs().build();
+		assertThat(inventoryLine.getInventoryLineHUs()).isEmpty();
+
+		// invoke the method under test
+		final InventoryLine result = inventoryLine.withCountQty(qtyNineTeen);
+
+		assertThat(result.getInventoryLineHUs())
+				.extracting("huId", "qtyBook", "qtyCount")
+				.containsOnly(tuple(null, qtyZero, qtyNineTeen));
+	}
+
 	private InventoryLine createInventoryLine()
 	{
 		final InventoryLine inventoryLine = InventoryLine
@@ -137,14 +151,14 @@ class InventoryLineTest
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))
-						.bookQty(qtyTen)
-						.countQty(qtyOne)
+						.qtyBook(qtyTen)
+						.qtyCount(qtyOne)
 						.build())
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(200))
-						.bookQty(qtyTwenty)
-						.countQty(qtyTwo)
+						.qtyBook(qtyTwenty)
+						.qtyCount(qtyTwo)
 						.build())
 				.build();
 		return inventoryLine;

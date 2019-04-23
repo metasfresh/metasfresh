@@ -180,9 +180,6 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
-		// Inventory
-		engine.addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(), client);
-
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);
 		// replace the default implementation with our own HU-aware one
 		Services.registerService(IShipmentScheduleInvalidateBL.class, new HUShipmentScheduleInvalidateBL());

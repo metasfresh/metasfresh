@@ -13,18 +13,19 @@ package de.metas.adempiere.callout;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -39,6 +40,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_M_Inventory;
 import de.metas.inventory.IInventoryBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Callout for {@link I_M_Inventory} table
@@ -46,7 +48,7 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
-//FIXME: adapt to webui
+// FIXME: adapt to webui
 public class M_Inventory extends CalloutEngine
 {
 
@@ -60,9 +62,12 @@ public class M_Inventory extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
+		if (mTab == null)
+		{
+			return NO_ERROR;
+		}
 
 		evalQuickInput(ctx, WindowNo, mTab);
-
 		selectFocus(mTab);
 
 		return NO_ERROR;
@@ -71,16 +76,23 @@ public class M_Inventory extends CalloutEngine
 	/**
 	 * On {@link I_M_Inventory#COLUMNNAME_QuickInput_QtyInternalGain} changes.
 	 */
-	public String onQuickInput_QtyInternalUse(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField field, final Object value)
+	public String onQuickInput_QtyInternalUse(
+			final Properties ctx,
+			final int WindowNo,
+			@Nullable final GridTab mTab,
+			final GridField field,
+			final Object value)
 	{
 		if (isCalloutActive())
 		{
 			return NO_ERROR;
 		}
+		if (mTab == null)
+		{
+			return NO_ERROR;
+		}
 
 		evalQuickInput(ctx, WindowNo, mTab);
-
 		selectFocus(mTab);
 
 		return NO_ERROR;
@@ -89,10 +101,12 @@ public class M_Inventory extends CalloutEngine
 	/**
 	 * Evaluates {@link I_M_Inventory} table and if possible creates a new {@link I_M_InventoryLine} and clears quick input fields
 	 */
-	private void evalQuickInput(final Properties ctx, final int WindowNo, final GridTab mTab)
+	private void evalQuickInput(
+			final Properties ctx,
+			final int WindowNo,
+			@NonNull final GridTab mTab)
 	{
 		final I_M_Inventory inventory = InterfaceWrapperHelper.create(mTab, I_M_Inventory.class);
-
 		final int productId = inventory.getQuickInput_Product_ID();
 		if (productId <= 0)
 		{
@@ -151,7 +165,7 @@ public class M_Inventory extends CalloutEngine
 	 *
 	 * @param mTab
 	 */
-	private void selectFocus(final GridTab mTab)
+	private void selectFocus(@NonNull final GridTab mTab)
 	{
 		final I_M_Inventory inventory = InterfaceWrapperHelper.create(mTab, I_M_Inventory.class);
 

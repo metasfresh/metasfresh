@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -346,4 +349,21 @@ public final class CollectionUtils
 		//
 		return values;
 	}
+
+	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(
+			@NonNull final Stream<V> stream,
+			@NonNull final Function<? super V, ? extends K> keyFunction)
+	{
+		// thx to https://reversecoding.net/java-8-list-to-map/
+		final LinkedHashMap<K, V> inventoryLineRecords = stream
+				.collect(Collectors.toMap(
+						keyFunction,
+						Function.identity(),
+						(u, v) -> {
+							throw new IllegalStateException(String.format("Duplicate key %s", u));
+						},
+						LinkedHashMap::new));
+		return inventoryLineRecords;
+	}
+
 }

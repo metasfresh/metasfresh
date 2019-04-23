@@ -42,7 +42,7 @@ import lombok.NonNull;
 public interface IAttributeSet
 {
 	/**
-	 * @return collection of available attributes in this set
+	 * @return collection of available attributes in this set. Never return {@code null}.
 	 */
 	Collection<I_M_Attribute> getAttributes();
 

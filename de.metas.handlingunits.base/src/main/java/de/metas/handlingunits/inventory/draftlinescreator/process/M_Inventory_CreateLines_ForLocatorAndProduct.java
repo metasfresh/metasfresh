@@ -2,9 +2,11 @@ package de.metas.handlingunits.inventory.draftlinescreator.process;
 
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.Param;
@@ -41,6 +43,8 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID)
 	private int productId;
 
+	private final HuForInventoryLineFactory huForInventoryLineFactory = Adempiere.getBean(HuForInventoryLineFactory.class);
+
 	@Override
 	protected LocatorAndProductStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
 	{
@@ -51,6 +55,7 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
 				.productId(ProductId.ofRepoIdOrNull(productId))
+				.huForInventoryLineFactory(huForInventoryLineFactory)
 				.build();
 		return strategy;
 	}

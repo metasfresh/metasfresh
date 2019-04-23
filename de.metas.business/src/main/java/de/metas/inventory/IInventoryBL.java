@@ -32,11 +32,8 @@ public interface IInventoryBL extends ISingletonService
 	boolean isInternalUseInventory(I_M_InventoryLine inventoryLine);
 
 	/**
-	 * Get Movement Qty (absolute value)
 	 * <li>negative value means outgoing trx
 	 * <li>positive value means incoming trx
-	 *
-	 * @return movement qty
 	 */
 	Quantity getMovementQty(I_M_InventoryLine inventoryLine);
 

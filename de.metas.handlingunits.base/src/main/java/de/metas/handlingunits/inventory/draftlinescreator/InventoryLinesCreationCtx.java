@@ -6,8 +6,6 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineAggregationKey;
-import de.metas.handlingunits.inventory.InventoryLineAggregator;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;

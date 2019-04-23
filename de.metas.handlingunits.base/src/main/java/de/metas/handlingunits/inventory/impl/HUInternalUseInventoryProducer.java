@@ -24,7 +24,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
-import de.metas.inventory.event.InventoryUserNotificationsProducer;
+import de.metas.inventory.InventoryUserNotificationsProducer;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -66,26 +66,40 @@ public class InventoryLine
 
 	boolean singleHUAggregation;
 
+	@Singular("inventoryLineHU")
+	ImmutableList<InventoryLineHU> inventoryLineHUs;
+
 	public InventoryLineHU getSingleHU()
 	{
 		return CollectionUtils.singleElement(inventoryLineHUs);
 	}
 
-	@Singular("inventoryLineHU")
-	ImmutableList<InventoryLineHU> inventoryLineHUs;
-
-	public InventoryLine withCountQty(@NonNull final Quantity countQty)
+	public InventoryLine withCountQty(@NonNull final Quantity qtyCount)
 	{
-		final Quantity currentQtyCount = inventoryLineHUs
-				.stream()
-				.map(InventoryLineHU::getCountQty)
-				.reduce(countQty.toZero(), Quantity::add);
+		final ImmutableList<InventoryLineHU> inventoryLineHUsToIerate;
+		if (inventoryLineHUs.isEmpty())
+		{
+			inventoryLineHUsToIerate = ImmutableList.of(InventoryLineHU
+					.builder()
+					.qtyBook(qtyCount.toZero())
+					.qtyCount(qtyCount.toZero())
+					.build());
+		}
+		else
+		{
+			inventoryLineHUsToIerate = inventoryLineHUs;
+		}
 
-		Quantity qtyDiffLeftToDistribute = countQty.subtract(currentQtyCount);
+		final Quantity currentQtyCount = inventoryLineHUsToIerate
+				.stream()
+				.map(InventoryLineHU::getQtyCount)
+				.reduce(qtyCount.toZero(), Quantity::add);
+
+		Quantity qtyDiffLeftToDistribute = qtyCount.subtract(currentQtyCount);
 
 		final InventoryLineBuilder builder = this.toBuilder().clearInventoryLineHUs();
 
-		for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
+		for (final InventoryLineHU inventoryLineHU : inventoryLineHUsToIerate)
 		{
 			if (qtyDiffLeftToDistribute.signum() > 0)
 			{
@@ -96,13 +110,14 @@ public class InventoryLine
 			else if (qtyDiffLeftToDistribute.signum() < 0)
 			{
 				final boolean qtyToSubtractIsGreaterThanLineQty = qtyDiffLeftToDistribute.negate()
-						.compareTo(inventoryLineHU.getCountQty()) > 0;
+						.compareTo(inventoryLineHU.getQtyCount()) > 0;
 
 				if (qtyToSubtractIsGreaterThanLineQty)
 				{
-					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.add(inventoryLineHU.getCountQty());
+					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.add(
+							inventoryLineHU.getQtyCount());
 
-					builder.inventoryLineHU(inventoryLineHU.zeroCountQty());
+					builder.inventoryLineHU(inventoryLineHU.zeroQtyCount());
 				}
 				else
 				{
@@ -113,10 +128,9 @@ public class InventoryLine
 			}
 			else
 			{
-				builder.inventoryLineHU(inventoryLineHU); // add it unchanged
+				builder.inventoryLineHU(inventoryLineHU); // just add it unchanged
 			}
 		}
-
 		return builder.build();
 	}
 }

@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Attribute;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,7 @@ public class HuForInventoryLineFactory
 	{
 		final HuForInventoryLineBuilder builder = HuForInventoryLine
 				.builder()
+				.orgId(OrgId.ofRepoId(huRecord.getAD_Org_ID()))
 				.locatorId(LocatorId.ofRecord(huRecord.getM_Locator()));
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

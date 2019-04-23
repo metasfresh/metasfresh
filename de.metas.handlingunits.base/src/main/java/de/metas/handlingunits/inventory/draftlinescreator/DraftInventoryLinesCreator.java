@@ -12,8 +12,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
-import de.metas.handlingunits.inventory.InventoryLineAggregationKey;
-import de.metas.handlingunits.inventory.InventoryLineAggregator.AggregationType;
+import de.metas.inventory.AggregationType;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
 import lombok.Getter;
@@ -55,7 +54,7 @@ public class DraftInventoryLinesCreator
 
 	private final Set<LocatorId> seenLocatorIds = new HashSet<>();
 
-	final HashMap<InventoryLineAggregationKey, InventoryLine> createdOrUpdatedLines = new HashMap<>();
+	private final HashMap<InventoryLineAggregationKey, InventoryLine> createdOrUpdatedLines = new HashMap<>();
 
 	@NonFinal
 	@Getter
@@ -132,8 +131,8 @@ public class DraftInventoryLinesCreator
 		final InventoryLineHU inventoryLineHU = InventoryLineHU
 				.builder()
 				.huId(huForInventoryLine.getHuId())
-				.bookQty(huForInventoryLine.getQuantity())
-				.countQty(huForInventoryLine.getQuantity())
+				.qtyBook(huForInventoryLine.getQuantity())
+				.qtyCount(huForInventoryLine.getQuantity())
 				.build();
 
 		inventoryLineBuilder

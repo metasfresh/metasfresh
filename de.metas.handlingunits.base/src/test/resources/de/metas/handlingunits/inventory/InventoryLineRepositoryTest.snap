@@ -1,35 +1,35 @@
 de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
   [
     {
-      "id": 100016,
+      "id": 100013,
       "asiId": {
-        "repoId": 100011,
+        "repoId": 100008,
         "none": false,
         "regular": true
       },
-      "inventoryId": 100015,
+      "inventoryId": 100012,
       "productId": 40,
       "storageAttributesKey": "10§&§11§&§12",
       "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
+        "repoId": 100003,
+        "warehouseId": 100002
       },
       "singleHUAggregation": false,
       "inventoryLineHUs": [
         {
           "id": {
-            "repoId": 100017
+            "repoId": 100014
           },
           "huId": {
             "repoId": 100
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 10,
             "sourceQty": 10,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 1,
             "sourceQty": 1,
             "infinite": false,
@@ -38,18 +38,18 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
         },
         {
           "id": {
-            "repoId": 100018
+            "repoId": 100015
           },
           "huId": {
             "repoId": 200
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 20,
             "sourceQty": 20,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 2,
             "sourceQty": 2,
             "infinite": false,

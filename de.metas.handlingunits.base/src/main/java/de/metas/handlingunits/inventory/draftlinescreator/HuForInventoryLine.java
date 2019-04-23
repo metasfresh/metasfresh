@@ -33,6 +33,7 @@ import lombok.Value;
  * #L%
  */
 
+/** Instances are created by a {@link HUsForInventoryStrategy} and can be turned into drafted inventory lines. */
 @Value
 public class HuForInventoryLine
 {

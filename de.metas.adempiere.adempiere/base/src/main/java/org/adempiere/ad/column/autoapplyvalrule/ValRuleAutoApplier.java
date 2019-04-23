@@ -1,35 +1,31 @@
-package org.adempiere.ad.column.model.interceptor;
+package org.adempiere.ad.column.autoapplyvalrule;
 
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.modelvalidator.IModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,68 +43,32 @@ import de.metas.util.Services;
  * #L%
  */
 
-@ToString(exclude = { "m_AD_Client_ID", "engine" })
-public class AD_Column_AutoApplyValidationRule implements IModelInterceptor
+@ToString
+public class ValRuleAutoApplier
 {
-	private int m_AD_Client_ID = -1;
-	private IModelValidationEngine engine;
-
+	@Getter
 	private final String tableName;
 
 	private final ImmutableMap<String, I_AD_Column> columns;
 
-	public AD_Column_AutoApplyValidationRule(
+	public ValRuleAutoApplier(
 			@NonNull final String tableName,
-			@NonNull final ImmutableList<I_AD_Column> columns)
+			@NonNull final Collection<I_AD_Column> columns)
 	{
 		this.tableName = tableName;
 		this.columns = Maps.uniqueIndex(columns, I_AD_Column::getColumnName);
 	}
 
-	@Override
-	public void initialize(
-			@NonNull final IModelValidationEngine engine,
-			@NonNull final I_AD_Client client)
+	/**
+	 *
+	 * @param recordModel the record in question; generally not yet be persisted in DB.
+	 */
+	public void handleRecord(@NonNull final Object recordModel)
 	{
-		if (this.engine != null)
-		{
-			throw new IllegalStateException("Validator " + this + " was already registered to another validation engine: " + engine);
-		}
-		this.engine = engine;
-
-		if (client != null)
-		{
-			m_AD_Client_ID = client.getAD_Client_ID();
-		}
-	}
-
-	@Override
-	public int getAD_Client_ID()
-	{
-		return m_AD_Client_ID;
-	}
-
-	@Override
-	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
-	{
-		// nothing
-	}
-
-	@Override
-	public void onModelChange(
-			@NonNull final Object recordModel,
-			@NonNull final ModelChangeType changeType)
-	{
-		if (!ModelChangeType.BEFORE_NEW.equals(changeType))
-		{
-			return;
-		}
-
 		for (final String columnName : columns.keySet())
 		{
 			handleColumn(recordModel, columnName);
 		}
-
 	}
 
 	private void handleColumn(
@@ -172,11 +132,5 @@ public class AD_Column_AutoApplyValidationRule implements IModelInterceptor
 			tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(column.getColumnName());
 		}
 		return tableRefInfo;
-	}
-
-	@Override
-	public void onDocValidate(Object model, DocTimingType timing) throws Exception
-	{
-		// nothing
 	}
 }

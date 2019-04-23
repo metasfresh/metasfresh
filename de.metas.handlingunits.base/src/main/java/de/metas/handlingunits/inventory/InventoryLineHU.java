@@ -41,14 +41,15 @@ public class InventoryLineHU
 	@Nullable
 	InventoryLineHUId id;
 
-	@NonNull
+	/** Null if this instance does not yet have a persisted HU */
+	@Nullable
 	HuId huId;
 
 	@NonNull
-	Quantity bookQty;
+	Quantity qtyBook;
 
 	@NonNull
-	Quantity countQty;
+	Quantity qtyCount;
 
 	@Value
 	public static class InventoryLineHUId implements RepoIdAware
@@ -67,19 +68,19 @@ public class InventoryLineHU
 	}
 
 	/**
-	 * @param countQtyToAdd needs to have the same UOM as this instance's current countQty.
+	 * @param qtyCountToAdd needs to have the same UOM as this instance's current qtyCount.
 	 */
-	public InventoryLineHU addCountQty(@NonNull final Quantity countQtyToAdd)
+	public InventoryLineHU addCountQty(@NonNull final Quantity qtyCountToAdd)
 	{
 		return this.toBuilder()
-				.countQty(countQty.add(countQtyToAdd))
+				.qtyCount(qtyCount.add(qtyCountToAdd))
 				.build();
 	}
 
-	public InventoryLineHU zeroCountQty()
+	public InventoryLineHU zeroQtyCount()
 	{
 		return this.toBuilder()
-				.countQty(countQty.toZero())
+				.qtyCount(qtyCount.toZero())
 				.build();
 	}
 }

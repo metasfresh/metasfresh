@@ -1,4 +1,4 @@
-package de.metas.inventory.event;
+package de.metas.inventory;
 
 import java.util.Collection;
 import java.util.List;
