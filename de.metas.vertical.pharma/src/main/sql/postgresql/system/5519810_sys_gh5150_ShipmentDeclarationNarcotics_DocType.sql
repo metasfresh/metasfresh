@@ -33,3 +33,6 @@ UPDATE AD_Sequence SET CurrentNext=1, IsAutoSequence='Y',Updated=TO_TIMESTAMP('2
 UPDATE C_DocType SET DocNoSequence_ID=555005,Updated=TO_TIMESTAMP('2019-04-19 16:25:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=540970
 ;
 
+
+
+update c_doctype set isSOTrx = 'Y' where c_doctype_id = 540970;
