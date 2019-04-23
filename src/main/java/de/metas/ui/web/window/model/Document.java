@@ -130,7 +130,7 @@ public final class Document
 
 	//
 	// Callouts
-	private ITabCallout documentCallout = ITabCallout.NULL; // will be set from builder, after document it's initialized
+	private ITabCallout documentCallout = ITabCallout.NULL; // will be set from builder, after document is initialized
 	private final ICalloutExecutor fieldCalloutExecutor;
 	private DocumentAsCalloutRecord _calloutRecord; // lazy
 
