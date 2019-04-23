@@ -56,7 +56,7 @@ class Prompt extends Component {
           </div>
         </div>
         <ModalContextShortcuts
-          apply={this.props.onSubmitClick}
+          done={this.props.onSubmitClick}
           cancel={this.props.onCancelClick}
         />
       </div>
