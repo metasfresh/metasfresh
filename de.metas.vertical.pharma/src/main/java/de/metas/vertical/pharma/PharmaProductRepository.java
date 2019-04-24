@@ -1,11 +1,10 @@
 package de.metas.vertical.pharma;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Repository;
 
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -54,7 +53,8 @@ public class PharmaProductRepository
 
 	public boolean isLineForNarcoticProduct(final InOutAndLineId inOutLineId)
 	{
-		final I_M_InOutLine inOutLine = load(inOutLineId.getInOutLineId(), I_M_InOutLine.class);
+		final IInOutDAO inOutRepo = Services.get(IInOutDAO.class);
+		final I_M_InOutLine inOutLine = inOutRepo.getLineById(inOutLineId.getInOutLineId());
 
 		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 
