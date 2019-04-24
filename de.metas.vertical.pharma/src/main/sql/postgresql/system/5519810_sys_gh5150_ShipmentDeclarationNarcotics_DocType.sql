@@ -36,3 +36,16 @@ UPDATE C_DocType SET DocNoSequence_ID=555005,Updated=TO_TIMESTAMP('2019-04-19 16
 
 
 update c_doctype set isSOTrx = 'Y' where c_doctype_id = 540970;
+
+
+
+-- 2019-04-24T16:07:36.418
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType_Trl SET IsTranslated='Y', Name='Betäubungsmittel Abgabemeldung', PrintName='Betäubungsmittel Abgabemeldung',Updated=TO_TIMESTAMP('2019-04-24 16:07:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=540970
+;
+
+-- 2019-04-24T16:07:42.466
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType_Trl SET IsTranslated='Y', Name='Betäubungsmittel Abgabemeldung', PrintName='Betäubungsmittel Abgabemeldung',Updated=TO_TIMESTAMP('2019-04-24 16:07:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=540970
+;
+
