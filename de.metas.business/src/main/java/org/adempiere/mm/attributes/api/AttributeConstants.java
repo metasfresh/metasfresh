@@ -1,8 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
 import lombok.experimental.UtilityClass;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
@@ -42,10 +41,13 @@ public final class AttributeConstants
 
 	public static final String ATTR_TE = "HU_TE";
 	public static final String ATTR_DateReceived = "HU_DateReceived";
+	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
+	public static final String ATTR_Scanned = "HU_Scanned";
 
 	//
 	public static final String ATTR_SubProducerBPartner_Value = "SubProducerBPartner";
-	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
-	
+
 	public static final String ATTR_SerialNo = "SerialNo";
+	public static final String ATTR_LotNr = "Lot-Nummer";
+
 }

@@ -169,6 +169,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.securpharm</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>
 			<version>${metasfresh.version}</version>

@@ -185,9 +185,11 @@
 		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
 		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>
 
+		<module>de.metas.vertical.pharma.securpharm</module>
+
 		<module>vertical-healthcare_ch</module>
 
-	</modules>
+    </modules>
 
 	<dependencyManagement>
 		<dependencies>
