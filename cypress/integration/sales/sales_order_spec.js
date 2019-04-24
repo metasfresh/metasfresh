@@ -13,12 +13,6 @@ describe('New sales order test', function() {
   const timestamp = new Date().getTime();
 
   before(function() {
-    cy.loginByForm();
-
-    Cypress.Cookies.defaults({
-      whitelist: ['SESSION', 'isLogged'],
-    });
-
     getBreadcrumbs(windowId, '1000040-new').then(({ option, caption }) => {
       menuOption = option;
       headerCaption = caption;

@@ -30,3 +30,11 @@ Cypress.on('uncaught:exception', () => {
 Cypress.on('emit:counterpartTranslations', messages => {
   Cypress.messages = messages;
 });
+
+before(function() {
+  cy.loginByForm();
+
+  Cypress.Cookies.defaults({
+    whitelist: ['SESSION', 'isLogged'],
+  });
+});
