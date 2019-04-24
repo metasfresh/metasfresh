@@ -300,7 +300,6 @@ public class ProductDAO implements IProductDAO
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 		if (productId == null)
