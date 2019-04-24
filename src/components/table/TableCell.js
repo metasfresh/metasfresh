@@ -1,7 +1,7 @@
+import React, { PureComponent } from 'react';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
-import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
@@ -158,6 +158,7 @@ class TableCell extends PureComponent {
       item,
       windowId,
       rowId,
+      cellIdx,
       tabId,
       handleDoubleClick,
       handleKeyDown,
@@ -172,6 +173,7 @@ class TableCell extends PureComponent {
       handleRightClick,
       mainTable,
       onCellChange,
+      onCellFocused,
       viewId,
       modalVisible,
       onClickOutside,
@@ -228,6 +230,13 @@ class TableCell extends PureComponent {
         ref={c => (this.cell = c)}
         onDoubleClick={handleDoubleClick}
         onKeyDown={handleKeyDown}
+        onFocus={e => {
+          const el = this.cell.getElementsByTagName('input');
+
+          if (el && el.length) {
+            onCellFocused(e, el[0], rowId, cellIdx);
+          }
+        }}
         onContextMenu={handleRightClick}
         className={classnames(
           {

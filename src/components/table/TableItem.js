@@ -184,9 +184,11 @@ class TableItem extends PureComponent {
     return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
   };
 
-  onCellChange = (rowId, property, value, ret) => {
+  handleCellChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
     const editedCells = { ...this.state.editedCells };
+
+    console.log('handleCellChange');
 
     // this is something we're not doing usually as all field
     // layouts come from the server. But in cases of modals
@@ -212,6 +214,10 @@ class TableItem extends PureComponent {
     } else {
       onItemChange(rowId, property, value);
     }
+  };
+
+  handleCellFocused = (e, element, row, col) => {
+    element.focus();
   };
 
   handleCellExtend = () => {
@@ -342,8 +348,9 @@ class TableItem extends PureComponent {
                   }
                 }}
                 onClickOutside={this.handleClickOutside}
-                onCellChange={this.onCellChange}
+                onCellChange={this.handleCellChange}
                 onCellExtend={this.handleCellExtend}
+                onCellFocused={this.handleCellFocused}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 handleKeyDown={this.handleKeyDown}
