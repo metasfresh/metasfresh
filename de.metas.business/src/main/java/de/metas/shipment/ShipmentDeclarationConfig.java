@@ -1,5 +1,7 @@
 package de.metas.shipment;
 
+import javax.annotation.Nullable;
+
 import de.metas.document.DocTypeId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -35,13 +37,15 @@ public class ShipmentDeclarationConfig
 	String name;
 	int documentLinesNumber;
 	DocTypeId docTypeId;
+	DocTypeId docTypeCorrectionId;
 
 	@Builder
 	private ShipmentDeclarationConfig(
 			@NonNull final ShipmentDeclarationConfigId id,
 			@NonNull final String name,
 			final int documentLinesNumber,
-			@NonNull final DocTypeId docTypeId)
+			@NonNull final DocTypeId docTypeId,
+			@Nullable final DocTypeId docTypeCorrectionId)
 	{
 		Check.assume(documentLinesNumber > 0, "documentLinesNumber > 0");
 
@@ -49,5 +53,6 @@ public class ShipmentDeclarationConfig
 		this.name = name;
 		this.documentLinesNumber = documentLinesNumber;
 		this.docTypeId = docTypeId;
+		this.docTypeCorrectionId = docTypeCorrectionId;
 	}
 }
