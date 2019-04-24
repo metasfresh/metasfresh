@@ -69,6 +69,33 @@ public interface I_M_Shipment_Declaration_Config
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Belegart korrektur.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocType_Correction_ID (int C_DocType_Correction_ID);
+
+	/**
+	 * Get Belegart korrektur.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocType_Correction_ID();
+
+	public org.compiere.model.I_C_DocType getC_DocType_Correction();
+
+	public void setC_DocType_Correction(org.compiere.model.I_C_DocType C_DocType_Correction);
+
+    /** Column definition for C_DocType_Correction_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Config, org.compiere.model.I_C_DocType> COLUMN_C_DocType_Correction_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Config, org.compiere.model.I_C_DocType>(I_M_Shipment_Declaration_Config.class, "C_DocType_Correction_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_Correction_ID */
+    public static final String COLUMNNAME_C_DocType_Correction_ID = "C_DocType_Correction_ID";
+
+	/**
 	 * Set Belegart.
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
@@ -176,7 +203,7 @@ public interface I_M_Shipment_Declaration_Config
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set M_Shipment_Declaration_Config.
+	 * Set Abgabemeldung Konfiguration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -185,7 +212,7 @@ public interface I_M_Shipment_Declaration_Config
 	public void setM_Shipment_Declaration_Config_ID (int M_Shipment_Declaration_Config_ID);
 
 	/**
-	 * Get M_Shipment_Declaration_Config.
+	 * Get Abgabemeldung Konfiguration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
