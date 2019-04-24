@@ -69,11 +69,40 @@ public interface I_M_Shipment_Declaration
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_User_ID();
+
+	public org.compiere.model.I_AD_User getAD_User();
+
+	public void setAD_User(org.compiere.model.I_AD_User AD_User);
+
+    /** Column definition for AD_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, org.compiere.model.I_AD_User>(I_M_Shipment_Declaration.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
@@ -83,7 +112,7 @@ public interface I_M_Shipment_Declaration
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
@@ -102,7 +131,7 @@ public interface I_M_Shipment_Declaration
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
@@ -112,7 +141,7 @@ public interface I_M_Shipment_Declaration
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
@@ -131,7 +160,7 @@ public interface I_M_Shipment_Declaration
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_DocType_ID (int C_DocType_ID);
@@ -141,7 +170,7 @@ public interface I_M_Shipment_Declaration
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
@@ -189,7 +218,7 @@ public interface I_M_Shipment_Declaration
 	 * Set Lieferdatum.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setDeliveryDate (java.sql.Timestamp DeliveryDate);
@@ -198,7 +227,7 @@ public interface I_M_Shipment_Declaration
 	 * Get Lieferdatum.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getDeliveryDate();
@@ -263,7 +292,7 @@ public interface I_M_Shipment_Declaration
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setDocumentNo (java.lang.String DocumentNo);
@@ -273,7 +302,7 @@ public interface I_M_Shipment_Declaration
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getDocumentNo();
@@ -313,7 +342,7 @@ public interface I_M_Shipment_Declaration
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setM_InOut_ID (int M_InOut_ID);
@@ -323,7 +352,7 @@ public interface I_M_Shipment_Declaration
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_InOut_ID();

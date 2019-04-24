@@ -15,7 +15,7 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 872009237L;
+	private static final long serialVersionUID = -1679308079L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration_Line (Properties ctx, int M_Shipment_Declaration_Line_ID, String trxName)
@@ -23,8 +23,13 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
       super (ctx, M_Shipment_Declaration_Line_ID, trxName);
       /** if (M_Shipment_Declaration_Line_ID == 0)
         {
+			setC_UOM_ID (0);
+			setLineNo (0); // 0
+			setM_InOutLine_ID (0);
+			setM_Product_ID (0);
 			setM_Shipment_Declaration_ID (0);
 			setM_Shipment_Declaration_Line_ID (0);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -75,6 +80,28 @@ public class X_M_Shipment_Declaration_Line extends org.compiere.model.PO impleme
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Position.
+		@param LineNo 
+		Zeile Nr.
+	  */
+	@Override
+	public void setLineNo (int LineNo)
+	{
+		set_Value (COLUMNNAME_LineNo, Integer.valueOf(LineNo));
+	}
+
+	/** Get Position.
+		@return Zeile Nr.
+	  */
+	@Override
+	public int getLineNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LineNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

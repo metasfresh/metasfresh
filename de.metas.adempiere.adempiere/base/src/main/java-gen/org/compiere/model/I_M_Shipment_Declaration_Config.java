@@ -73,7 +73,7 @@ public interface I_M_Shipment_Declaration_Config
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_DocType_ID (int C_DocType_ID);
@@ -83,7 +83,7 @@ public interface I_M_Shipment_Declaration_Config
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
@@ -197,6 +197,29 @@ public interface I_M_Shipment_Declaration_Config
     public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Config, Object> COLUMN_M_Shipment_Declaration_Config_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Config, Object>(I_M_Shipment_Declaration_Config.class, "M_Shipment_Declaration_Config_ID", null);
     /** Column name M_Shipment_Declaration_Config_ID */
     public static final String COLUMNNAME_M_Shipment_Declaration_Config_ID = "M_Shipment_Declaration_Config_ID";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName();
+
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Config, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration_Config, Object>(I_M_Shipment_Declaration_Config.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Get Aktualisiert.

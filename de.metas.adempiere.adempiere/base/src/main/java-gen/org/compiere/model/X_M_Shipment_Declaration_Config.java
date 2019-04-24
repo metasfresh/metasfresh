@@ -14,7 +14,7 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1708373363L;
+	private static final long serialVersionUID = 1990507879L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration_Config (Properties ctx, int M_Shipment_Declaration_Config_ID, String trxName)
@@ -22,8 +22,10 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
       super (ctx, M_Shipment_Declaration_Config_ID, trxName);
       /** if (M_Shipment_Declaration_Config_ID == 0)
         {
-			setDocumentLinesNumber (0); // 0
+			setC_DocType_ID (0);
+			setDocumentLinesNumber (0); // 6
 			setM_Shipment_Declaration_Config_ID (0);
+			setName (null);
         } */
     }
 
@@ -118,5 +120,21 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Name.
+		@param Name Name	  */
+	@Override
+	public void setName (java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	/** Get Name.
+		@return Name	  */
+	@Override
+	public java.lang.String getName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 }

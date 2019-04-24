@@ -14,7 +14,7 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1854385161L;
+	private static final long serialVersionUID = -1647423946L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration (Properties ctx, int M_Shipment_Declaration_ID, String trxName)
@@ -22,8 +22,14 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
       super (ctx, M_Shipment_Declaration_ID, trxName);
       /** if (M_Shipment_Declaration_ID == 0)
         {
+			setC_BPartner_ID (0);
+			setC_BPartner_Location_ID (0);
+			setC_DocType_ID (0);
+			setDeliveryDate (new Timestamp( System.currentTimeMillis() ));
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
+			setDocumentNo (null);
+			setM_InOut_ID (0);
 			setM_Shipment_Declaration_ID (0);
 			setProcessed (false); // N
         } */
@@ -43,6 +49,43 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+	}
+
+	/** Set Ansprechpartner.
+		@param AD_User_ID 
+		User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public void setAD_User_ID (int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+	}
+
+	/** Get Ansprechpartner.
+		@return User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public int getAD_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
