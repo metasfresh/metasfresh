@@ -2,12 +2,16 @@ package de.metas.shipment.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.InOutId;
+import de.metas.shipment.repo.ShipmentDeclarationRepository;
 import de.metas.shipment.service.ShipmentDeclarationCreator;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -36,11 +40,16 @@ import lombok.NonNull;
 @Component("de.metas.shipment.model.interceptor.M_InOut")
 public class M_InOut
 {
-	private final ShipmentDeclarationCreator shipmentDeclarationCreator;
+	private static final String ERR_ShipmentDeclaration = "de.metas.shipment.model.interceptor.M_InOut.ERR_ShipmentDeclaration";
 
-	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator)
+	private final ShipmentDeclarationCreator shipmentDeclarationCreator;
+	private final ShipmentDeclarationRepository shipmentDeclarationRepo;
+
+	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator,
+			@NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
 	{
 		this.shipmentDeclarationCreator = shipmentDeclarationCreator;
+		this.shipmentDeclarationRepo = shipmentDeclarationRepo;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -55,6 +64,27 @@ public class M_InOut
 		final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
 
 		shipmentDeclarationCreator.createShipmentDeclarationsIfNeeded(shipmentId);
+
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
+	public void forbidReactivateOnCompletedShipmentDeclaration(final I_M_InOut inout)
+	{
+		if (!inout.isSOTrx())
+		{
+			// Only applies to shipments
+			return;
+		}
+
+		final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
+
+		if (shipmentDeclarationRepo.existCompletedShipmentDeclarationsForShipmentId(shipmentId))
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			msgBL.getTranslatableMsgText(ERR_ShipmentDeclaration);
+			throw new AdempiereException(ERR_ShipmentDeclaration).markAsUserValidationError();
+		}
 
 	}
 

@@ -55,6 +55,7 @@ import lombok.NonNull;
 @Repository
 public class ShipmentDeclarationRepository
 {
+
 	public I_M_Shipment_Declaration save(final ShipmentDeclaration shipmentDeclaration)
 	{
 		final I_M_Shipment_Declaration shipmentDeclarationRecord;
@@ -157,6 +158,16 @@ public class ShipmentDeclarationRepository
 		saveRecord(record);
 
 		line.setId(ShipmentDeclarationLineId.ofRepoId(record.getM_Shipment_Declaration_ID(), record.getM_Shipment_Declaration_Line_ID()));
+	}
+
+	public boolean existCompletedShipmentDeclarationsForShipmentId(final InOutId shipmentId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Shipment_Declaration.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Shipment_Declaration.COLUMN_M_InOut_ID, shipmentId)
+				.create()
+				.match();
 	}
 
 }
