@@ -8,6 +8,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.InOutId;
 import de.metas.shipment.repo.ShipmentDeclarationRepository;
 import de.metas.shipment.service.ShipmentDeclarationCreator;
@@ -82,8 +83,8 @@ public class M_InOut
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-			msgBL.getTranslatableMsgText(ERR_ShipmentDeclaration);
-			throw new AdempiereException(ERR_ShipmentDeclaration).markAsUserValidationError();
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(ERR_ShipmentDeclaration);
+			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 
 	}
