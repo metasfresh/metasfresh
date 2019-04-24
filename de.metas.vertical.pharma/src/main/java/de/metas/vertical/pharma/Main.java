@@ -7,8 +7,8 @@ import org.compiere.model.I_AD_Client;
 
 import de.metas.impexp.bpartner.IFABPartnerImportProcess;
 import de.metas.impexp.bpartner.PharmaImportPartnerInterceptor;
-import de.metas.impexp.product.PharmaImportProductInterceptor;
 import de.metas.impexp.product.IFAProductImportProcess;
+import de.metas.impexp.product.PharmaImportProductInterceptor;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_BPartner;
