@@ -2,13 +2,13 @@ package de.metas.shipment.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.inout.InOutId;
 import de.metas.shipment.service.ShipmentDeclarationCreator;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,6 +36,12 @@ import de.metas.shipment.service.ShipmentDeclarationCreator;
 @Component("de.metas.shipment.model.interceptor.M_InOut")
 public class M_InOut
 {
+	private final ShipmentDeclarationCreator shipmentDeclarationCreator;
+
+	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator)
+	{
+		this.shipmentDeclarationCreator = shipmentDeclarationCreator;
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createShipmentDeclarationIfNeeded(final I_M_InOut inout)
@@ -47,8 +53,6 @@ public class M_InOut
 		}
 
 		final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
-
-		final ShipmentDeclarationCreator shipmentDeclarationCreator = Adempiere.getBean(ShipmentDeclarationCreator.class);
 
 		shipmentDeclarationCreator.createShipmentDeclarationsIfNeeded(shipmentId);
 

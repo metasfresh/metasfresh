@@ -7,9 +7,13 @@ import org.adempiere.service.OrgId;
 import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -32,15 +36,17 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
+@Data
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ShipmentDeclarationLine
 {
+	@NonFinal
+	ShipmentDeclarationLineId id;
 
-	@NonNull
-	ShipmentDeclarationId shipmentDeclarationId;
-
-	public ShipmentDeclarationLineId shipmentDeclarationLineId;
+	@NonFinal
+	@Setter(AccessLevel.PACKAGE)
+	int lineNo;
 
 	@NonNull
 	OrgId orgId;

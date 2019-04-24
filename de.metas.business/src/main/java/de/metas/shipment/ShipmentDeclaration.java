@@ -2,7 +2,10 @@ package de.metas.shipment;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.OrgId;
+import org.adempiere.user.UserId;
 
 import com.google.common.collect.ImmutableList;
 
@@ -11,9 +14,10 @@ import de.metas.document.DocTypeId;
 import de.metas.inout.InOutId;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -36,12 +40,13 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
+@Data
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ShipmentDeclaration
 {
-
-	ShipmentDeclarationId shipmentDeclarationId;
+	@NonFinal
+	ShipmentDeclarationId id;
 
 	@NonNull
 	OrgId orgId;
@@ -51,6 +56,9 @@ public class ShipmentDeclaration
 
 	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;
+
+	@Nullable
+	UserId userId;
 
 	@NonNull
 	DocTypeId docTypeId;
@@ -64,7 +72,16 @@ public class ShipmentDeclaration
 	@NonNull
 	String docStatus;
 
-	@Getter(AccessLevel.PRIVATE)
-	ImmutableList<ShipmentDeclarationLineId> lines;
+	@NonNull
+	ImmutableList<ShipmentDeclarationLine> lines;
 
+	public void updateLineNos()
+	{
+		int nextLineNo = 10;
+		for (ShipmentDeclarationLine line : lines)
+		{
+			line.setLineNo(nextLineNo);
+			nextLineNo += 10;
+		}
+	}
 }

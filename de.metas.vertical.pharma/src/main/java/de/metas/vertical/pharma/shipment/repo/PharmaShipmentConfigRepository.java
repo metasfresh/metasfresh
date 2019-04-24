@@ -21,11 +21,11 @@ import de.metas.vertical.pharma.shipment.model.I_M_Shipment_Declaration_Config;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,12 +35,9 @@ public class PharmaShipmentConfigRepository
 
 	public boolean isOnlyNarcoticProducts(final ShipmentDeclarationConfig config)
 	{
-		final ShipmentDeclarationConfigId configId = config.getShipmentDeclarationConfigId();
+		final ShipmentDeclarationConfigId configId = config.getId();
 		final I_M_Shipment_Declaration_Config configRecord = load(configId, I_M_Shipment_Declaration_Config.class);
 
-		final boolean isOnlyNarcoticProducts = configRecord.isOnlyNarcoticProducts();
-
-		return isOnlyNarcoticProducts;
-
+		return configRecord.isOnlyNarcoticProducts();
 	}
 }

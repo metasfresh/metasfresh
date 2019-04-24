@@ -1,26 +1,48 @@
 package de.metas.shipment.service;
 
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.adempiere.service.OrgId;
+import org.adempiere.user.UserId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipment_Declaration;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.shipment.ShipmentDeclaration;
 import de.metas.shipment.ShipmentDeclarationConfig;
-import de.metas.shipment.ShipmentDeclarationConfigId;
+import de.metas.shipment.ShipmentDeclarationLine;
 import de.metas.shipment.ShipmentDeclarationVetoer;
 import de.metas.shipment.repo.ShipmentDeclarationConfigRepository;
 import de.metas.shipment.repo.ShipmentDeclarationRepository;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,63 +68,136 @@ import de.metas.util.Services;
 @Service
 public class ShipmentDeclarationCreator
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentDeclarationCreator.class);
 
-	@Autowired
-	ShipmentDeclarationRepository shipmentDeclarationRepo;
+	private final ShipmentDeclarationRepository shipmentDeclarationRepo;
+	private final ShipmentDeclarationConfigRepository shipmentDeclarationConfigRepo;
+	private final ImmutableSet<ShipmentDeclarationVetoer> shipmentDeclarationVetoers;
 
-	@Autowired
-	ShipmentDeclarationConfigRepository shipmentDeclarationConfigRepo;
-
-	private Set<ShipmentDeclarationVetoer> shipmentDeclarationVetoers = new HashSet<>();
-
-	public void registerVetoer(final ShipmentDeclarationVetoer shipmentDeclarationVetoer)
+	public ShipmentDeclarationCreator(
+			@NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo,
+			@NonNull final ShipmentDeclarationConfigRepository shipmentDeclarationConfigRepo,
+			@NonNull final Optional<List<ShipmentDeclarationVetoer>> shipmentDeclarationVetoers)
 	{
-		shipmentDeclarationVetoers.add(shipmentDeclarationVetoer);
+		this.shipmentDeclarationRepo = shipmentDeclarationRepo;
+		this.shipmentDeclarationConfigRepo = shipmentDeclarationConfigRepo;
+
+		this.shipmentDeclarationVetoers = shipmentDeclarationVetoers
+				.map(ImmutableSet::copyOf)
+				.orElseGet(ImmutableSet::of);
+		logger.info("{}", shipmentDeclarationVetoers);
 	}
 
-	public void generateShipmentDeclarations(final ShipmentDeclarationConfigId shipmentDeclarationConfigId, final InOutId shipmentId, final List<InOutAndLineId> shipmentLineIds)
+	public void createShipmentDeclarationsIfNeeded(final InOutId shipmentId)
 	{
-
-		final ShipmentDeclarationConfig config = shipmentDeclarationConfigRepo.getConfigById(shipmentDeclarationConfigId);
-
-		final int documentLinesNumber = config.getDocumentLinesNumber().intValue();
-		Check.assumeGreaterThanZero(documentLinesNumber, "documentLinesNumber");
-
-		Iterator<List<InOutAndLineId>> inoutLineIdsSubsets = Lists.partition(shipmentLineIds, documentLinesNumber).iterator();
-
-		while (inoutLineIdsSubsets.hasNext())
+		final Collection<ShipmentDeclarationConfig> configs = shipmentDeclarationConfigRepo.getAll();
+		if (configs.isEmpty())
 		{
-
-			final Set<InOutAndLineId> inOutLinesForShipmentDeclaration =
-					inoutLineIdsSubsets.next()
-					.stream()
-					.collect(ImmutableSet.toImmutableSet());
-
-			shipmentDeclarationRepo.createAndCompleteShipmentDeclaration(config, shipmentId, inOutLinesForShipmentDeclaration);
+			return;
 		}
-	}
 
-	public void createShipmentDeclarationsIfNeeded(final InOutId inoutId)
-	{
-		for (final ShipmentDeclarationConfig config : shipmentDeclarationConfigRepo.retrieveShipmentDeclarationConfigs())
+		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+		final Set<InOutAndLineId> allShipmentLineIds = inoutsRepo.retrieveLinesForInOutId(shipmentId);
+
+		for (final ShipmentDeclarationConfig config : configs)
 		{
-			final Set<InOutAndLineId> inOutLinesForShipmentDeclaration = new HashSet<>();
-
-			for (ShipmentDeclarationVetoer vetoer : shipmentDeclarationVetoers)
+			final List<InOutAndLineId> eligibleShipmentLineIds = new ArrayList<>();
+			for (InOutAndLineId shipmentLineId : allShipmentLineIds)
 			{
-				final Set<InOutAndLineId> linesForInOutId = Services.get(IInOutDAO.class).retrieveLinesForInOutId(inoutId);
-
-				for (InOutAndLineId inOutAndLineId : linesForInOutId)
+				if (isShipmentLineEligibleForShipmentDeclaration(shipmentLineId, config))
 				{
-					if (ShipmentDeclarationVetoer.OnShipmentDeclarationConfig.I_VETO.equals(vetoer.foundShipmentLineForConfig(inOutAndLineId, config)))
-					{
-						inOutLinesForShipmentDeclaration.add(inOutAndLineId);
-					}
+					eligibleShipmentLineIds.add(shipmentLineId);
 				}
 			}
 
-			shipmentDeclarationRepo.createAndCompleteShipmentDeclaration(config, inoutId, inOutLinesForShipmentDeclaration);
+			if (eligibleShipmentLineIds.isEmpty())
+			{
+				continue;
+			}
+
+			generateShipmentDeclarations(config, eligibleShipmentLineIds);
+		}
+	}
+
+	private boolean isShipmentLineEligibleForShipmentDeclaration(final InOutAndLineId shipmentLineId, final ShipmentDeclarationConfig config)
+	{
+		for (ShipmentDeclarationVetoer vetoer : shipmentDeclarationVetoers)
+		{
+			if (ShipmentDeclarationVetoer.OnShipmentDeclarationConfig.I_VETO.equals(vetoer.foundShipmentLineForConfig(shipmentLineId, config)))
+			{
+				return true;
+			}
 		}
 
+		return false;
 	}
+
+	private void generateShipmentDeclarations(
+			@NonNull final ShipmentDeclarationConfig config,
+			@NonNull final List<InOutAndLineId> shipmentLineIds)
+	{
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		final int documentLinesNumber = config.getDocumentLinesNumber();
+
+		for (final List<InOutAndLineId> shipmentLineIdsPartition : Lists.partition(shipmentLineIds, documentLinesNumber))
+		{
+			final ShipmentDeclaration shipmentDeclaration = createShipmentDeclaration(config, ImmutableSet.copyOf(shipmentLineIdsPartition));
+			final I_M_Shipment_Declaration shipmentDeclarationRecord = shipmentDeclarationRepo.save(shipmentDeclaration);
+
+			documentBL.processEx(shipmentDeclarationRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
+	}
+
+	private ShipmentDeclaration createShipmentDeclaration(
+			@NonNull final ShipmentDeclarationConfig config,
+			@NonNull final Set<InOutAndLineId> shipmentAndLineIds)
+	{
+		Check.assumeNotEmpty(shipmentAndLineIds, "shipmentAndLineIds is not empty");
+
+		final InOutId shipmentId = CollectionUtils.extractSingleElement(shipmentAndLineIds, InOutAndLineId::getInOutId);
+		final I_M_InOut shipment = Services.get(IInOutDAO.class).getById(shipmentId);
+
+		final ImmutableList<ShipmentDeclarationLine> shipmentDeclarationLines = shipmentAndLineIds
+				.stream()
+				.map(shipmentAndLineId -> createShipmentDeclarationLine(shipmentAndLineId))
+				.collect(ImmutableList.toImmutableList());
+
+		final ShipmentDeclaration shipmentDeclaration = ShipmentDeclaration.builder()
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()))
+				.userId(UserId.ofRepoIdOrNull(shipment.getAD_User_ID()))
+				.docTypeId(config.getDocTypeId())
+				.shipmentDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
+				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
+				.shipmentId(shipmentId)
+				.docAction(IDocument.ACTION_Complete)
+				.docStatus(IDocument.STATUS_Drafted)
+				.lines(shipmentDeclarationLines)
+				.build();
+
+		shipmentDeclaration.updateLineNos();
+
+		return shipmentDeclaration;
+	}
+
+	private ShipmentDeclarationLine createShipmentDeclarationLine(final InOutAndLineId shipmentAndLineId)
+	{
+		final InOutLineId shipmentLineId = shipmentAndLineId.getInOutLineId();
+
+		final I_M_InOutLine shipmentLineRecord = Services.get(IInOutDAO.class).getLineById(shipmentLineId);
+
+		final ProductId productId = ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(shipmentLineRecord.getC_UOM_ID());
+
+		return ShipmentDeclarationLine.builder()
+				.orgId(OrgId.ofRepoId(shipmentLineRecord.getAD_Org_ID()))
+				.packageSize(product.getPackageSize())
+				.productId(productId)
+				.quantity(Quantity.of(shipmentLineRecord.getMovementQty(), uom))
+				.shipmentLineId(shipmentLineId)
+				.build();
+	}
+
 }

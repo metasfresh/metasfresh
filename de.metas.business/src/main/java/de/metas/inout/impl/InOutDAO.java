@@ -61,6 +61,12 @@ import lombok.NonNull;
 public class InOutDAO implements IInOutDAO
 {
 	@Override
+	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	{
+		return load(inoutId, I_M_InOut.class);
+	}
+
+	@Override
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);

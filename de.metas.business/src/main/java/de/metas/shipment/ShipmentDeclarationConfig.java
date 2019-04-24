@@ -1,6 +1,7 @@
 package de.metas.shipment;
 
 import de.metas.document.DocTypeId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -28,16 +29,25 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class ShipmentDeclarationConfig
 {
-
-	@NonNull
-	ShipmentDeclarationConfigId shipmentDeclarationConfigId;
-
-	@NonNull
-	Integer documentLinesNumber;
-
-	@NonNull
+	ShipmentDeclarationConfigId id;
+	String name;
+	int documentLinesNumber;
 	DocTypeId docTypeId;
+
+	@Builder
+	private ShipmentDeclarationConfig(
+			@NonNull final ShipmentDeclarationConfigId id,
+			@NonNull final String name,
+			final int documentLinesNumber,
+			@NonNull final DocTypeId docTypeId)
+	{
+		Check.assume(documentLinesNumber > 0, "documentLinesNumber > 0");
+
+		this.id = id;
+		this.name = name;
+		this.documentLinesNumber = documentLinesNumber;
+		this.docTypeId = docTypeId;
+	}
 }

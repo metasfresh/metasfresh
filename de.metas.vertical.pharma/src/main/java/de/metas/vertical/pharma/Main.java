@@ -3,7 +3,6 @@ package de.metas.vertical.pharma;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.impexp.bpartner.IFABPartnerImportProcess;
@@ -11,14 +10,12 @@ import de.metas.impexp.bpartner.PharmaImportPartnerInterceptor;
 import de.metas.impexp.product.IFAProductImportProcess;
 import de.metas.impexp.product.PharmaImportProductInterceptor;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.shipment.service.ShipmentDeclarationCreator;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_I_Product;
 import de.metas.vertical.pharma.pricing.PharmaPriceLimitRule;
-import de.metas.vertical.pharma.shipment.NarcoticShipmentDeclarationVetoer;
 
 /*
  * #%L
@@ -63,8 +60,5 @@ public class Main extends AbstractModuleInterceptor
 	{
 		engine.addImportInterceptor(I_I_BPartner.Table_Name, PharmaImportPartnerInterceptor.instance);
 		engine.addImportInterceptor(I_I_Product.Table_Name, PharmaImportProductInterceptor.instance);
-
-		final ShipmentDeclarationCreator shipmentDeclarationCreator = Adempiere.getBean(ShipmentDeclarationCreator.class);
-		shipmentDeclarationCreator.registerVetoer(new NarcoticShipmentDeclarationVetoer());
 	}
 }
