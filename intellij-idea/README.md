@@ -1,6 +1,6 @@
 The settings here should be copied into the `.idea/` folder of your project.
 
-Note that if you have multiple `.idea/` folders, you imported the project incorrectly. There should only be a single `.idea/` folder and the tree should look as follows:
+Note that if you have multiple `.idea/` folders, you imported the project incorrectly. There should only be a single `.idea/` folder and the directory tree should look as follows:
 
 ```    
 C:\work-metas
