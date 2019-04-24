@@ -77,7 +77,7 @@ class TableItem extends PureComponent {
   handleKeyDown = (e, property, widgetData) => {
     const { changeListenOnTrue } = this.props;
     const { listenOnKeys, edited } = this.state;
-    console.log('TableItem handleKeyDown');
+    console.log('TableItem handleKeyDown: ', e.key);
 
     switch (e.key) {
       case 'Enter':

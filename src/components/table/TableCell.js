@@ -107,6 +107,7 @@ class TableCell extends PureComponent {
 
     this.state = {
       tooltipToggled: false,
+      widgetBlurred: false,
     };
   }
 
@@ -125,6 +126,12 @@ class TableCell extends PureComponent {
       updateRow();
     }
   }
+
+  setBlurWidget = () => {
+    this.setState({
+      widgetBlurred: false,
+    });
+  };
 
   widgetTooltipToggle = (field, value) => {
     const curVal = this.state.tooltipToggled;
@@ -147,6 +154,21 @@ class TableCell extends PureComponent {
         this.props.onClickOutside();
       }
     }
+  };
+
+  handlePatch = () => {
+    const { onCellChange, mainTable } = this.props;
+
+    this.setState(
+      {
+        widgetBlurred: true,
+      },
+      () => {
+        this.cell.focus();
+
+        mainTable && onCellChange && onCellChange();
+      }
+    );
   };
 
   render() {
@@ -172,7 +194,6 @@ class TableCell extends PureComponent {
       getSizeClass,
       handleRightClick,
       mainTable,
-      onCellChange,
       onCellFocused,
       viewId,
       modalVisible,
@@ -180,7 +201,7 @@ class TableCell extends PureComponent {
       showWidget,
     } = this.props;
     const docId = `${this.props.docId}`;
-    const { tooltipToggled } = this.state;
+    const { tooltipToggled, widgetBlurred } = this.state;
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -231,10 +252,14 @@ class TableCell extends PureComponent {
         onDoubleClick={handleDoubleClick}
         onKeyDown={handleKeyDown}
         onFocus={e => {
-          const el = this.cell.getElementsByTagName('input');
+          if (!widgetBlurred) {
+            const el = this.cell.getElementsByTagName('input');
 
-          if (el && el.length) {
-            onCellFocused(e, el[0], rowId, cellIdx);
+            if (el && el.length) {
+              onCellFocused(e, el[0], rowId, cellIdx);
+            }
+          } else {
+            this.setBlurWidget();
           }
         }}
         onContextMenu={handleRightClick}
@@ -265,13 +290,14 @@ class TableCell extends PureComponent {
             viewId={viewId}
             tabId={mainTable ? null : tabId}
             noLabel={true}
+            tabIndex={-1}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
             onClickOutside={onClickOutside}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}
-            onChange={mainTable ? onCellChange : null}
+            onChange={this.handlePatch}
             closeTableField={closeTableField}
             isOpenDatePicker={isOpenDatePicker}
             ref={c => {
