@@ -65,7 +65,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 	protected void prepare()
 	{
 		final IRangeAwareParams parameterAsIParams = getParameterAsIParams();
-		p_M_Warehouse_ID = parameterAsIParams.getParameterAsInt("M_Warehouse_ID");
+		p_M_Warehouse_ID = parameterAsIParams.getParameterAsInt("M_Warehouse_ID", -1);
 		p_huWhereClause = parameterAsIParams.getParameterAsString("WhereClause");
 		p_MovementDate = parameterAsIParams.getParameterAsTimestamp("MovementDate");
 		p_Description = parameterAsIParams.getParameterAsString("Description");
