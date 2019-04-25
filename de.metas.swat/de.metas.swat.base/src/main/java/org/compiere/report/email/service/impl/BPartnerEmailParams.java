@@ -57,7 +57,7 @@ public final class BPartnerEmailParams implements IEmailParameters
 		}
 
 		// find the C_BPartner_ID parameter
-		final int bpartnerId = params.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+		final int bpartnerId = params.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 		if (bpartnerId <= 0)
 		{
 			logger.info("Process parameter " + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " didn't contain a value");

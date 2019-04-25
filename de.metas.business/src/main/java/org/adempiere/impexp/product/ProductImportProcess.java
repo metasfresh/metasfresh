@@ -39,7 +39,6 @@ import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MProduct;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.DB;
@@ -197,7 +196,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		int priceListVersionId = imp.getM_PriceList_Version_ID();
 		if (priceListVersionId <= 0)
 		{
-			priceListVersionId = getParameters().getParameterAsInt(PARAM_M_PriceList_Version_ID);
+			priceListVersionId = getParameters().getParameterAsInt(PARAM_M_PriceList_Version_ID, -1);
 		}
 		if (priceListVersionId <= 0)
 		{

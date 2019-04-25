@@ -185,7 +185,9 @@ public final class ProcessClassParamInfo
 		}
 		else if (fieldType.isAssignableFrom(int.class))
 		{
-			value = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			value = parameterTo
+					? source.getParameter_ToAsInt(parameterName, 0)
+					: source.getParameterAsInt(parameterName, 0);
 		}
 		else if (boolean.class.equals(fieldType))
 		{
@@ -225,7 +227,9 @@ public final class ProcessClassParamInfo
 		}
 		else if (RepoIdAware.class.isAssignableFrom(fieldType))
 		{
-			final int valueInt = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			final int valueInt = parameterTo
+					? source.getParameter_ToAsInt(parameterName, -1)
+					: source.getParameterAsInt(parameterName, -1);
 			@SuppressWarnings("unchecked")
 			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
 			value = RepoIdAwares.ofRepoIdOrNull(valueInt, repoIdAwareType);
@@ -237,7 +241,9 @@ public final class ProcessClassParamInfo
 		}
 		else if (InterfaceWrapperHelper.isModelInterface(fieldType))
 		{
-			final int id = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			final int id = parameterTo
+					? source.getParameter_ToAsInt(parameterName, -1)
+					: source.getParameterAsInt(parameterName, -1);
 			if (id <= 0)
 			{
 				value = null;

@@ -82,7 +82,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 		Check.assumeNotNull(importTableName, "importTableName not null");
 
 		// Make sure we have a selection defined. It will be used by the import processor.
-		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID);
+		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID, -1);
 		Check.assume(selectionId > 0, "selectionId > 0");
 
 		final IImportProcess<Object> importProcessor = Services.get(IImportProcessFactory.class).newImportProcessForTableName(importTableName);

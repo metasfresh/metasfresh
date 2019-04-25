@@ -1635,7 +1635,7 @@ public final class ProcessInfo implements Serializable
 				if (parametersList != null && !parametersList.isEmpty())
 				{
 					final ProcessParams parameters = new ProcessParams(parametersList);
-					final int bpartnerId = parameters.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+					final int bpartnerId = parameters.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 					if (bpartnerId > 0)
 					{
 						final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
