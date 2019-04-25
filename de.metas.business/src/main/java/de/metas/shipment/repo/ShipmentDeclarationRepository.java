@@ -73,6 +73,8 @@ public class ShipmentDeclarationRepository
 					.collect(GuavaCollectors.toHashMapByKey(lineRecord -> ShipmentDeclarationLineId.ofRepoId(lineRecord.getM_Shipment_Declaration_ID(), lineRecord.getM_Shipment_Declaration_Line_ID())));
 		}
 
+		shipmentDeclarationRecord.setDocumentNo(shipmentDeclaration.getDocumentNo());
+
 		final OrgId orgId = shipmentDeclaration.getOrgId();
 		shipmentDeclarationRecord.setAD_Org_ID(orgId.getRepoId());
 
