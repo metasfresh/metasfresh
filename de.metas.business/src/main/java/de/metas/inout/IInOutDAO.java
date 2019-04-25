@@ -27,6 +27,7 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -41,7 +42,7 @@ import de.metas.util.ISingletonService;
 
 public interface IInOutDAO extends ISingletonService
 {
-	I_M_InOut getById(final InOutId inoutId);
+	I_M_InOut getById(InOutId inoutId);
 
 	I_M_InOutLine getLineById(InOutLineId inoutLineId);
 
@@ -110,4 +111,6 @@ public interface IInOutDAO extends ISingletonService
 	I_M_InOut retrieveInOut(List<I_M_InOutLine> receiptLines);
 
 	Stream<InOutId> streamInOutIdsByBPartnerId(BPartnerId bpartnerId);
+
+	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 }
