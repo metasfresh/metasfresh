@@ -47,6 +47,28 @@ class TableItem extends PureComponent {
     }
   }
 
+  isCellEditable = item => {
+    const { fieldsByName } = this.props;
+    const { editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
+    const property = item.fields[0].field;
+
+    return (
+      (cells &&
+        cells[property] &&
+        cells[property].viewEditorRenderMode ===
+          VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
+      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
+    );
+  };
+
+  prepareWidgetData = item => {
+    const { fieldsByName } = this.props;
+    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
+
+    return widgetData;
+  };
+
   initPropertyEditor = fieldName => {
     const { cols, fieldsByName } = this.props;
 
@@ -64,38 +86,6 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleDoubleClick = () => {
-    const { rowId, onDoubleClick, supportOpenRecord } = this.props;
-
-    if (supportOpenRecord) {
-      onDoubleClick && onDoubleClick(rowId);
-    }
-  };
-
-//   handleKeyDown = e => {
-//     const { changeListenOnTrue, widgetData, property } = this.props;
-  handleKeyDown = (e, property, widgetData) => {
-    const { changeListenOnTrue } = this.props;
-    const { listenOnKeys, edited } = this.state;
-    console.log('TableItem handleKeyDown: ', e.key);
-
-    switch (e.key) {
-      case 'Enter':
-        if (listenOnKeys) {
-          this.handleEditProperty(e, property, true, widgetData[0]);
-        }
-        break;
-      case 'Tab':
-      case 'Escape':
-        if (edited === property) {
-          e.stopPropagation();
-          this.handleEditProperty(e);
-          changeListenOnTrue();
-        }
-        break;
-    }
-  };
-
   handleEditProperty = (e, property, callback, item) => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
@@ -107,13 +97,6 @@ class TableItem extends PureComponent {
     }
 
     this.editProperty(e, property, callback, item);
-  };
-
-  prepareWidgetData = item => {
-    const { fieldsByName } = this.props;
-    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
-
-    return widgetData;
   };
 
   editProperty = (e, property, callback, item) => {
@@ -153,6 +136,40 @@ class TableItem extends PureComponent {
     }
   };
 
+  handleDoubleClick = () => {
+    const { rowId, onDoubleClick, supportOpenRecord } = this.props;
+
+    if (supportOpenRecord) {
+      onDoubleClick && onDoubleClick(rowId);
+    }
+  };
+
+//   handleKeyDown = e => {
+//     const { changeListenOnTrue, widgetData, property } = this.props;
+  handleKeyDown = (e, property, widgetData) => {
+    const { changeListenOnTrue } = this.props;
+    const { listenOnKeys, edited } = this.state;
+    console.log('TableItem handleKeyDown: ', e.key, property, widgetData);
+
+    switch (e.key) {
+      case 'Enter':
+        if (listenOnKeys) {
+          console.log('TableItem ENTER: ', property, widgetData)
+          // this.handleEditProperty(e, property, true, widgetData[0]);
+          this.handleEditProperty(e, property, null, widgetData[0]);
+        }
+        break;
+      case 'Tab':
+      case 'Escape':
+        if (edited === property) {
+          e.stopPropagation();
+          this.handleEditProperty(e);
+          changeListenOnTrue();
+        }
+        break;
+    }
+  };
+
   listenOnKeysTrue = () => {
     const { changeListenOnTrue } = this.props;
 
@@ -184,11 +201,14 @@ class TableItem extends PureComponent {
     return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
   };
 
-  handleCellChange = (rowId, property, value, ret) => {
+  /*
+   * This function is called when cell's value changes
+   */
+  handleCellValueChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
     const editedCells = { ...this.state.editedCells };
 
-    console.log('handleCellChange');
+    console.log('handleCellValueChange');
 
     // this is something we're not doing usually as all field
     // layouts come from the server. But in cases of modals
@@ -217,6 +237,9 @@ class TableItem extends PureComponent {
   };
 
   handleCellFocused = (e, element, row, col) => {
+    // if (isEditable) {
+    //   this.handleEditProperty(e, property, true, widgetData[0]);
+    // }
     element.focus();
   };
 
@@ -274,18 +297,14 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
+
             let showWidget =
               (cells &&
                 cells[property] &&
                 cells[property].viewEditorRenderMode ===
                   VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-            let isEditable =
-              (cells &&
-                cells[property] &&
-                cells[property].viewEditorRenderMode ===
-                  VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
-              item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
+            let isEditable = this.isCellEditable(item);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
 
@@ -347,8 +366,9 @@ class TableItem extends PureComponent {
                     this.handleEditProperty(e, property, true, widgetData[0]);
                   }
                 }}
+                handleDoubleClick={this.handleCellFocused}
                 onClickOutside={this.handleClickOutside}
-                onCellChange={this.handleCellChange}
+                onCellChange={this.handleCellValueChange}
                 onCellExtend={this.handleCellExtend}
                 onCellFocused={this.handleCellFocused}
                 updatedRow={updatedRow || newRow}
