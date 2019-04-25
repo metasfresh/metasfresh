@@ -209,7 +209,7 @@ public class ShipmentDeclarationCreator
 
 		final ShipmentDeclaration shipmentDeclaration = ShipmentDeclaration.builder()
 				.docTypeId(docTypeId)
-				.documentNo(reserveDocumentNo(docTypeId))
+				.documentNo(documentNo)
 				//
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()))
 				.userId(UserId.ofRepoIdOrNull(shipment.getAD_User_ID()))
