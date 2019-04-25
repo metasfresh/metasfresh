@@ -285,7 +285,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public Set<InOutAndLineId> retrieveLinesForInOutId(final InOutId inOutId)
 	{
-		final I_M_InOut inOut = load(inOutId.getRepoId(), I_M_InOut.class);
+		final I_M_InOut inOut = getById(inOutId);
 
 		return retrieveLines(inOut)
 				.stream()
