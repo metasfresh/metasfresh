@@ -196,7 +196,7 @@ public final class ProcessInfoParameter implements Serializable
 
 	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Function<Integer, T> mapper)
 	{
-		return mapper.apply(getParameterAsInt());
+		return mapper.apply(getParameterAsInt(-1));
 	}
 
 	public int getParameter_ToAsInt()
