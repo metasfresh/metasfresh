@@ -367,6 +367,60 @@ public interface I_M_Shipment_Declaration
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
+	 * Set M_Shipment_Declaration_Base_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipment_Declaration_Base_ID (int M_Shipment_Declaration_Base_ID);
+
+	/**
+	 * Get M_Shipment_Declaration_Base_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipment_Declaration_Base_ID();
+
+	public org.compiere.model.I_M_Shipment_Declaration getM_Shipment_Declaration_Base();
+
+	public void setM_Shipment_Declaration_Base(org.compiere.model.I_M_Shipment_Declaration M_Shipment_Declaration_Base);
+
+    /** Column definition for M_Shipment_Declaration_Base_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, org.compiere.model.I_M_Shipment_Declaration> COLUMN_M_Shipment_Declaration_Base_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, org.compiere.model.I_M_Shipment_Declaration>(I_M_Shipment_Declaration.class, "M_Shipment_Declaration_Base_ID", org.compiere.model.I_M_Shipment_Declaration.class);
+    /** Column name M_Shipment_Declaration_Base_ID */
+    public static final String COLUMNNAME_M_Shipment_Declaration_Base_ID = "M_Shipment_Declaration_Base_ID";
+
+	/**
+	 * Set M_Shipment_Declaration_Correction_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipment_Declaration_Correction_ID (int M_Shipment_Declaration_Correction_ID);
+
+	/**
+	 * Get M_Shipment_Declaration_Correction_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipment_Declaration_Correction_ID();
+
+	public org.compiere.model.I_M_Shipment_Declaration getM_Shipment_Declaration_Correction();
+
+	public void setM_Shipment_Declaration_Correction(org.compiere.model.I_M_Shipment_Declaration M_Shipment_Declaration_Correction);
+
+    /** Column definition for M_Shipment_Declaration_Correction_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, org.compiere.model.I_M_Shipment_Declaration> COLUMN_M_Shipment_Declaration_Correction_ID = new org.adempiere.model.ModelColumn<I_M_Shipment_Declaration, org.compiere.model.I_M_Shipment_Declaration>(I_M_Shipment_Declaration.class, "M_Shipment_Declaration_Correction_ID", org.compiere.model.I_M_Shipment_Declaration.class);
+    /** Column name M_Shipment_Declaration_Correction_ID */
+    public static final String COLUMNNAME_M_Shipment_Declaration_Correction_ID = "M_Shipment_Declaration_Correction_ID";
+
+	/**
 	 * Set Abgabemeldung.
 	 *
 	 * <br>Type: ID

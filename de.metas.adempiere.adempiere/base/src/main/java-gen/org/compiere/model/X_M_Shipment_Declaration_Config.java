@@ -14,7 +14,7 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1990507879L;
+	private static final long serialVersionUID = -874398582L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration_Config (Properties ctx, int M_Shipment_Declaration_Config_ID, String trxName)
@@ -43,6 +43,40 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType_Correction() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_Correction_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType_Correction(org.compiere.model.I_C_DocType C_DocType_Correction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_Correction_ID, org.compiere.model.I_C_DocType.class, C_DocType_Correction);
+	}
+
+	/** Set Belegart korrektur.
+		@param C_DocType_Correction_ID Belegart korrektur	  */
+	@Override
+	public void setC_DocType_Correction_ID (int C_DocType_Correction_ID)
+	{
+		if (C_DocType_Correction_ID < 1) 
+			set_Value (COLUMNNAME_C_DocType_Correction_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_Correction_ID, Integer.valueOf(C_DocType_Correction_ID));
+	}
+
+	/** Get Belegart korrektur.
+		@return Belegart korrektur	  */
+	@Override
+	public int getC_DocType_Correction_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_Correction_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
@@ -100,8 +134,8 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
 		return ii.intValue();
 	}
 
-	/** Set M_Shipment_Declaration_Config.
-		@param M_Shipment_Declaration_Config_ID M_Shipment_Declaration_Config	  */
+	/** Set Abgabemeldung Konfiguration.
+		@param M_Shipment_Declaration_Config_ID Abgabemeldung Konfiguration	  */
 	@Override
 	public void setM_Shipment_Declaration_Config_ID (int M_Shipment_Declaration_Config_ID)
 	{
@@ -111,8 +145,8 @@ public class X_M_Shipment_Declaration_Config extends org.compiere.model.PO imple
 			set_ValueNoCheck (COLUMNNAME_M_Shipment_Declaration_Config_ID, Integer.valueOf(M_Shipment_Declaration_Config_ID));
 	}
 
-	/** Get M_Shipment_Declaration_Config.
-		@return M_Shipment_Declaration_Config	  */
+	/** Get Abgabemeldung Konfiguration.
+		@return Abgabemeldung Konfiguration	  */
 	@Override
 	public int getM_Shipment_Declaration_Config_ID () 
 	{

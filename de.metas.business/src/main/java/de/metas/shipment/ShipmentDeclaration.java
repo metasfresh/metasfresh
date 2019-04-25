@@ -72,6 +72,14 @@ public class ShipmentDeclaration
 	@NonNull
 	String docStatus;
 
+	@Nullable
+	@NonFinal
+	ShipmentDeclarationId baseShipmentDeclarationId;
+
+	@Nullable
+	@NonFinal
+	ShipmentDeclarationId correctionShipmentDeclarationId;
+
 	@NonNull
 	ImmutableList<ShipmentDeclarationLine> lines;
 

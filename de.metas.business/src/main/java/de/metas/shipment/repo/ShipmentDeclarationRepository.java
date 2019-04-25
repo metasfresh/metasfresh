@@ -94,6 +94,10 @@ public class ShipmentDeclarationRepository
 		shipmentDeclarationRecord.setDocAction(shipmentDeclaration.getDocAction());
 		shipmentDeclarationRecord.setDocStatus(shipmentDeclaration.getDocStatus());
 
+		shipmentDeclarationRecord.setM_Shipment_Declaration_Base_ID(ShipmentDeclarationId.toRepoId(shipmentDeclaration.getBaseShipmentDeclarationId()));
+
+		shipmentDeclarationRecord.setM_Shipment_Declaration_Correction_ID(ShipmentDeclarationId.toRepoId(shipmentDeclaration.getCorrectionShipmentDeclarationId()));
+
 		saveRecord(shipmentDeclarationRecord);
 
 		final ShipmentDeclarationId shipmentDeclarationId = ShipmentDeclarationId.ofRepoId(shipmentDeclarationRecord.getM_Shipment_Declaration_ID());
