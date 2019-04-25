@@ -289,7 +289,12 @@ public class InOutDAO implements IInOutDAO
 
 		return retrieveLines(inOut)
 				.stream()
-				.map(line -> InOutAndLineId.ofRepoId(inOut.getM_InOut_ID(), line.getM_InOutLine_ID()))
+				.map(this::extractInOutAndLineId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
+	{
+		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
 	}
 }
