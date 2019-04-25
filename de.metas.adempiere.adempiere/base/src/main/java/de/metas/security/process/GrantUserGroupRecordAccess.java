@@ -10,8 +10,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
+import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
+import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 
@@ -39,7 +39,7 @@ import de.metas.user.UserId;
 
 public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessPrecondition
 {
-	private final UserGroupRecordAccessService userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
+	private final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
 
 	@Param(parameterName = "AD_User_ID", mandatory = false)
 	private UserId userId;
@@ -64,7 +64,7 @@ public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessP
 	@Override
 	protected String doIt()
 	{
-		userGroupRecordAccessService.grantAccess(UserGroupRecordAccessGrantRequest.builder()
+		userGroupRecordAccessService.grantAccess(RecordAccessGrantRequest.builder()
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
 				.permission(getPermissionToGrant())

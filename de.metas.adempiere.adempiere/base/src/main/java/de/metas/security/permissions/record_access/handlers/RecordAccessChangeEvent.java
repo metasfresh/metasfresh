@@ -1,4 +1,4 @@
-package de.metas.security.permissions.record_access.listeners;
+package de.metas.security.permissions.record_access.handlers;
 
 import java.util.Collection;
 import java.util.Set;
@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.RecordAccess;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -38,38 +38,38 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class UserGroupAccessChangeEvent
+public class RecordAccessChangeEvent
 {
-	public static UserGroupAccessChangeEvent accessGrant(final UserGroupRecordAccess access)
+	public static RecordAccessChangeEvent accessGrant(final RecordAccess access)
 	{
 		return builder().accessGrant(access).build();
 	}
 
-	public static UserGroupAccessChangeEvent accessGrants(final Collection<UserGroupRecordAccess> accesses)
+	public static RecordAccessChangeEvent accessGrants(final Collection<RecordAccess> accesses)
 	{
 		return builder().accessGrants(accesses).build();
 	}
 
-	public static UserGroupAccessChangeEvent accessRevoke(final UserGroupRecordAccess access)
+	public static RecordAccessChangeEvent accessRevoke(final RecordAccess access)
 	{
 		return builder().accessRevoke(access).build();
 	}
 
-	public static UserGroupAccessChangeEvent accessRevokes(final Collection<UserGroupRecordAccess> accesses)
+	public static RecordAccessChangeEvent accessRevokes(final Collection<RecordAccess> accesses)
 	{
 		return builder().accessRevokes(accesses).build();
 	}
 
 	@JsonProperty("accessGrants")
-	private ImmutableSet<UserGroupRecordAccess> accessGrants;
+	private ImmutableSet<RecordAccess> accessGrants;
 	@JsonProperty("accessRevokes")
-	private ImmutableSet<UserGroupRecordAccess> accessRevokes;
+	private ImmutableSet<RecordAccess> accessRevokes;
 
 	@JsonCreator
 	@Builder
-	private UserGroupAccessChangeEvent(
-			@JsonProperty("accessGrants") @Singular final Set<UserGroupRecordAccess> accessGrants,
-			@JsonProperty("accessRevokes") @Singular final Set<UserGroupRecordAccess> accessRevokes)
+	private RecordAccessChangeEvent(
+			@JsonProperty("accessGrants") @Singular final Set<RecordAccess> accessGrants,
+			@JsonProperty("accessRevokes") @Singular final Set<RecordAccess> accessRevokes)
 	{
 		this.accessGrants = accessGrants != null ? ImmutableSet.copyOf(accessGrants) : ImmutableSet.of();
 		this.accessRevokes = accessRevokes != null ? ImmutableSet.copyOf(accessRevokes) : ImmutableSet.of();

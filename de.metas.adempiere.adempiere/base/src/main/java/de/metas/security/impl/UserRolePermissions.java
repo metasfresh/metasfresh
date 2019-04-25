@@ -81,7 +81,7 @@ import de.metas.security.permissions.TableColumnPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
+import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -520,9 +520,10 @@ class UserRolePermissions implements IUserRolePermissions
 
 	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final Access access)
 	{
-		final UserGroupRecordAccessService userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
+		final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
 		return userGroupRecordAccessService.hasRecordPermission(
 				getUserId(),
+				getRoleId(),
 				TableRecordReference.of(AD_Table_ID, Record_ID),
 				access);
 	}

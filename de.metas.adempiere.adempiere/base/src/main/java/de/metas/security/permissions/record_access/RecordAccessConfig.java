@@ -1,6 +1,11 @@
-package de.metas.security.permissions.record_access.listeners;
+package de.metas.security.permissions.record_access;
 
-import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.handlers.CompositeRecordAccessHandler;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,9 +29,20 @@ import de.metas.security.permissions.record_access.UserGroupRecordAccess;
  * #L%
  */
 
-public interface UserGroupAccessChangeListener
+@Value
+@Builder
+public class RecordAccessConfig
 {
-	void onAccessGranted(UserGroupRecordAccess request);
+	public static final RecordAccessConfig EMPTY = RecordAccessConfig.builder()
+			.handlers(CompositeRecordAccessHandler.EMPTY)
+			.build();
 
-	void onAccessRevoked(UserGroupRecordAccess request);
+	@NonNull
+	@Getter(AccessLevel.NONE)
+	CompositeRecordAccessHandler handlers;
+
+	public boolean isTableHandled(final String tableName)
+	{
+		return handlers.isTableHandled(tableName);
+	}
 }

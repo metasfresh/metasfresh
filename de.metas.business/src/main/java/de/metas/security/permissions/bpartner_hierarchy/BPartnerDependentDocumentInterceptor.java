@@ -20,8 +20,9 @@ import de.metas.security.permissions.Access;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
+import de.metas.security.permissions.record_access.RecordAccessFeature;
+import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
+import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -48,28 +49,28 @@ import lombok.NonNull;
  */
 
 /**
- * Intercepts BPartner related documents and fires {@link BPartnerDependentDocumentEvent} which will be dispatched asynchronously by {@link BPartnerDependentDocumentCreatedEventDispatcher}.
+ * Intercepts BPartner related documents and fires {@link BPartnerDependentDocumentEvent} which will be dispatched asynchronously by {@link BPartnerDependentDocumentEventDispatcher}.
  */
 @Component
 class BPartnerDependentDocumentInterceptor extends AbstractModelInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerDependentDocumentInterceptor.class);
 
-	private final UserGroupRecordAccessService userGroupRecordAccessService;
+	private final RecordAccessService recordAccessService;
 	private final BPartnerDependentDocumentHandlersMap dependentDocumentHandlers;
 	private final IEventBus eventBus;
 
 	public BPartnerDependentDocumentInterceptor(
-			@NonNull final UserGroupRecordAccessService userGroupRecordAccessService,
+			@NonNull final RecordAccessService recordAccessService,
 			@NonNull final List<BPartnerDependentDocumentHandler> dependentDocumentHandlers,
 			@NonNull final IEventBusFactory eventBusFactory)
 	{
-		this.userGroupRecordAccessService = userGroupRecordAccessService;
+		this.recordAccessService = recordAccessService;
 
 		this.dependentDocumentHandlers = BPartnerDependentDocumentHandlersMap.of(dependentDocumentHandlers);
-		logger.info("{}", dependentDocumentHandlers);
+		logger.info("{}", this.dependentDocumentHandlers);
 
-		eventBus = eventBusFactory.getEventBus(BPartnerDependentDocumentCreatedEventDispatcher.EVENTS_TOPIC);
+		eventBus = eventBusFactory.getEventBus(BPartnerDependentDocumentEventDispatcher.EVENTS_TOPIC);
 	}
 
 	@Override
@@ -80,9 +81,19 @@ class BPartnerDependentDocumentInterceptor extends AbstractModelInterceptor
 				.forEach(dependentTableName -> engine.addModelChange(dependentTableName, this));
 	}
 
+	private boolean isEnabled()
+	{
+		return recordAccessService.isFeatureEnabled(RecordAccessFeature.BPARTNER_HIERARCHY);
+	}
+
 	@Override
 	public void onModelChange(final Object model, final ModelChangeType changeType)
 	{
+		if (!isEnabled())
+		{
+			return;
+		}
+
 		if (changeType.isAfter())
 		{
 			if (changeType.isNew())
@@ -120,7 +131,7 @@ class BPartnerDependentDocumentInterceptor extends AbstractModelInterceptor
 
 	private void grantReadWritePermissionsToCreator(final TableRecordReference documentRef)
 	{
-		userGroupRecordAccessService.grantAccess(UserGroupRecordAccessGrantRequest.builder()
+		recordAccessService.grantAccess(RecordAccessGrantRequest.builder()
 				.recordRef(documentRef)
 				.principal(Principal.userId(Env.getLoggedUserId()))
 				.permission(Access.READ)
@@ -133,5 +144,4 @@ class BPartnerDependentDocumentInterceptor extends AbstractModelInterceptor
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runAfterCommit(() -> eventBus.postObject(event));
 	}
-
 }

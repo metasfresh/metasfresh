@@ -35,14 +35,14 @@ import lombok.Value;
  */
 
 @Value
-public class UserGroupRecordAccessQuery
+public class RecordAccessQuery
 {
 	ImmutableSet<TableRecordReference> recordRefs;
 	ImmutableSet<Access> permissions;
 	ImmutableSet<Principal> principals;
 
 	@Builder
-	private UserGroupRecordAccessQuery(
+	private RecordAccessQuery(
 			@Singular final Set<TableRecordReference> recordRefs,
 			@Singular final Set<Access> permissions,
 			@Singular final Set<Principal> principals)

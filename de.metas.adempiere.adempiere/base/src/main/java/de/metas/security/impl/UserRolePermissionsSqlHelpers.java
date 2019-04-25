@@ -9,10 +9,11 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.security.RoleId;
 import de.metas.security.impl.ParsedSql.SqlSelect;
 import de.metas.security.impl.ParsedSql.TableNameAndAlias;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
+import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
@@ -47,7 +48,7 @@ final class UserRolePermissionsSqlHelpers
 
 	private final UserRolePermissions _role;
 	private final TablesAccessInfo _tablesAccessInfo = TablesAccessInfo.instance;
-	private UserGroupRecordAccessService _userGroupRecordAccessService; // lazy
+	private RecordAccessService _userGroupRecordAccessService; // lazy
 
 	private Set<UserGroupId> _userGroupIds; // lazy
 
@@ -56,12 +57,12 @@ final class UserRolePermissionsSqlHelpers
 		_role = role;
 	}
 
-	private UserGroupRecordAccessService getUserGroupRecordAccessService()
+	private RecordAccessService getUserGroupRecordAccessService()
 	{
-		UserGroupRecordAccessService result = _userGroupRecordAccessService;
+		RecordAccessService result = _userGroupRecordAccessService;
 		if (result == null)
 		{
-			result = _userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
+			result = _userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
 		}
 		return result;
 	}
@@ -69,6 +70,11 @@ final class UserRolePermissionsSqlHelpers
 	private UserId getUserId()
 	{
 		return _role.getUserId();
+	}
+
+	private RoleId getRoleId()
+	{
+		return _role.getRoleId();
 	}
 
 	private boolean hasAccessAllOrgs()
@@ -311,7 +317,9 @@ final class UserRolePermissionsSqlHelpers
 					adTableId,
 					keyColumnNameFQ,
 					userId,
-					getUserGroupIds());
+					getUserGroupIds(),
+					getRoleId());
+
 			if (!Check.isEmpty(sqlWhere))
 			{
 				if (sqlWhereFinal.length() > 0)

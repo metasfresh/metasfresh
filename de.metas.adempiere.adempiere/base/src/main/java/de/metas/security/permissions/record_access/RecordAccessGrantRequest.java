@@ -35,36 +35,24 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Value
-public class UserGroupRecordAccessRevokeRequest
+public class RecordAccessGrantRequest
 {
 	TableRecordReference recordRef;
 	Principal principal;
-
-	boolean revokeAllPermissions;
 	ImmutableSet<Access> permissions;
 
 	@Builder
-	private UserGroupRecordAccessRevokeRequest(
+	private RecordAccessGrantRequest(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull Principal principal,
-			//
-			final boolean revokeAllPermissions,
-			@Singular final Set<Access> permissions)
+			@NonNull final Principal principal,
+			@NonNull @Singular final Set<Access> permissions)
 	{
+		Check.assumeNotEmpty(permissions, "permissions is not empty");
+
 		this.recordRef = recordRef;
 		this.principal = principal;
-
-		if (revokeAllPermissions)
-		{
-			this.revokeAllPermissions = true;
-			this.permissions = ImmutableSet.of();
-		}
-		else
-		{
-			Check.assumeNotEmpty(permissions, "permissions is not empty");
-			this.revokeAllPermissions = false;
-			this.permissions = ImmutableSet.copyOf(permissions);
-		}
+		this.permissions = ImmutableSet.copyOf(permissions);
 	}
 }

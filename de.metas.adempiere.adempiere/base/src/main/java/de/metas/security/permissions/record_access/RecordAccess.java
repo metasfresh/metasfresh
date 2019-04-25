@@ -31,14 +31,14 @@ import lombok.Value;
  */
 
 @Value
-public class UserGroupRecordAccess
+public class RecordAccess
 {
 	TableRecordReference recordRef;
 	Principal principal;
 	Access permission;
 
 	@Builder(toBuilder = true)
-	private UserGroupRecordAccess(
+	private RecordAccess(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final Principal principal,
 			@NonNull final Access permission)
@@ -48,7 +48,7 @@ public class UserGroupRecordAccess
 		this.permission = permission;
 	}
 
-	public UserGroupRecordAccess withRecordRef(@NonNull final TableRecordReference recordRef)
+	public RecordAccess withRecordRef(@NonNull final TableRecordReference recordRef)
 	{
 		if (this.recordRef.equals(recordRef))
 		{

@@ -1,7 +1,4 @@
-package de.metas.security.permissions.record_access.listeners;
-
-import java.util.List;
-import java.util.Optional;
+package de.metas.security.permissions.record_access.handlers;
 
 import javax.annotation.PostConstruct;
 
@@ -13,7 +10,8 @@ import de.metas.Profiles;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
-import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import de.metas.security.permissions.record_access.RecordAccess;
+import de.metas.security.permissions.record_access.RecordAccessConfigService;
 import lombok.NonNull;
 
 /*
@@ -40,49 +38,47 @@ import lombok.NonNull;
 
 @Component
 @Profile(Profiles.PROFILE_App)
-public class UserGroupAccessChangeEventDispatcher
+public class RecordAccessChangeEventDispatcher
 {
-	private static final Logger logger = LogManager.getLogger(UserGroupAccessChangeEventDispatcher.class);
+	private static final Logger logger = LogManager.getLogger(RecordAccessChangeEventDispatcher.class);
 
-	public static final Topic TOPIC = Topic.remote("de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent");
+	public static final Topic TOPIC = Topic.remote("de.metas.security.permissions.record_access.RecordAccessChangeEvent");
 
-	private final UserGroupAccessChangeListener listeners;
+	private final CompositeRecordAccessHandler handlers;
 	private final IEventBusFactory eventBusFactory;
 
-	public UserGroupAccessChangeEventDispatcher(
-			@NonNull final Optional<List<UserGroupAccessChangeListener>> listeners,
+	public RecordAccessChangeEventDispatcher(
+			@NonNull final RecordAccessConfigService configs,
 			@NonNull final IEventBusFactory eventBusFactory)
 	{
-		this.listeners = CompositeUserGroupAccessChangeListener.of(listeners);
-		logger.info("{}", this.listeners);
-
+		this.handlers = configs.getAllHandlers();
 		this.eventBusFactory = eventBusFactory;
 	}
 
 	@PostConstruct
 	private void postConstruct()
 	{
-		if (NullUserGroupAccessChangeListener.isNull(listeners))
+		if (handlers.isEmpty())
 		{
-			logger.warn("No listeners registered so we won't subscribe to {}", TOPIC);
+			logger.warn("No handler registered so we won't subscribe to {}", TOPIC);
 			return;
 		}
 
 		eventBusFactory
 				.getEventBus(TOPIC)
-				.subscribeOn(UserGroupAccessChangeEvent.class, this::onEvent);
+				.subscribeOn(RecordAccessChangeEvent.class, this::onEvent);
 	}
 
-	private void onEvent(@NonNull final UserGroupAccessChangeEvent event)
+	private void onEvent(@NonNull final RecordAccessChangeEvent event)
 	{
-		for (final UserGroupRecordAccess accessGrant : event.getAccessGrants())
+		for (final RecordAccess accessGrant : event.getAccessGrants())
 		{
-			listeners.onAccessGranted(accessGrant);
+			handlers.onAccessGranted(accessGrant);
 		}
 
-		for (final UserGroupRecordAccess accessRevoke : event.getAccessRevokes())
+		for (final RecordAccess accessRevoke : event.getAccessRevokes())
 		{
-			listeners.onAccessRevoked(accessRevoke);
+			handlers.onAccessRevoked(accessRevoke);
 		}
 	}
 }

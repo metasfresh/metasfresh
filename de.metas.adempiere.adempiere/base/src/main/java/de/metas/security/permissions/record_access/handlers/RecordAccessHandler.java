@@ -1,6 +1,9 @@
-package de.metas.security.permissions.record_access.listeners;
+package de.metas.security.permissions.record_access.handlers;
 
-import de.metas.security.permissions.record_access.UserGroupRecordAccess;
+import java.util.Set;
+
+import de.metas.security.permissions.record_access.RecordAccessFeature;
+import de.metas.security.permissions.record_access.RecordAccess;
 
 /*
  * #%L
@@ -12,42 +15,25 @@ import de.metas.security.permissions.record_access.UserGroupRecordAccess;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-final class NullUserGroupAccessChangeListener implements UserGroupAccessChangeListener
+public interface RecordAccessHandler
 {
-	public static final transient NullUserGroupAccessChangeListener instance = new NullUserGroupAccessChangeListener();
+	Set<RecordAccessFeature> getHandledFeatures();
+	
+	Set<String> getHandledTableNames();
 
-	public static boolean isNull(final UserGroupAccessChangeListener listener)
-	{
-		return listener == null
-				|| listener instanceof NullUserGroupAccessChangeListener;
-	}
+	void onAccessGranted(RecordAccess request);
 
-	private NullUserGroupAccessChangeListener()
-	{
-	}
-
-	@Override
-	public void onAccessGranted(final UserGroupRecordAccess request)
-	{
-		// nothing
-	}
-
-	@Override
-	public void onAccessRevoked(final UserGroupRecordAccess request)
-	{
-		// nothing
-	}
-
+	void onAccessRevoked(RecordAccess request);
 }

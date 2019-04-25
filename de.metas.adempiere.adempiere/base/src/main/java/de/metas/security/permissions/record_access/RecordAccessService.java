@@ -19,8 +19,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User_Record_Access;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -32,9 +30,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.security.Principal;
+import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEvent;
-import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeEventDispatcher;
+import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEvent;
+import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEventDispatcher;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
@@ -65,47 +64,56 @@ import lombok.NonNull;
  */
 
 @Service
-public class UserGroupRecordAccessService
+public class RecordAccessService
 {
+	private final RecordAccessConfigService configs;
 	private final UserGroupRepository userGroupsRepo;
 	private final IEventBus eventBus;
 
-	public UserGroupRecordAccessService(
-			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull final UserGroupRepository userGroupsRepo)
+	public RecordAccessService(
+			@NonNull final RecordAccessConfigService configs,
+			@NonNull final UserGroupRepository userGroupsRepo,
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		this.userGroupsRepo = userGroupsRepo;
-		eventBus = eventBusFactory.getEventBus(UserGroupAccessChangeEventDispatcher.TOPIC);
+		this.configs = configs;
+
+		eventBus = eventBusFactory.getEventBus(RecordAccessChangeEventDispatcher.TOPIC);
 	}
 
-	public void grantAccess(@NonNull final UserGroupRecordAccessGrantRequest request)
+	public boolean isFeatureEnabled(@NonNull final RecordAccessFeature feature)
 	{
-		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
+		return configs.isFeatureEnabled(feature);
+	}
+
+	public void grantAccess(@NonNull final RecordAccessGrantRequest request)
+	{
+		final RecordAccessQuery query = RecordAccessQuery.builder()
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.permissions(request.getPermissions())
 				.build();
 
-		final HashMap<UserGroupRecordAccess, I_AD_User_Record_Access> existingRecords = query(query)
+		final HashMap<RecordAccess, I_AD_User_Record_Access> existingRecords = query(query)
 				.create()
 				.stream()
 				.collect(GuavaCollectors.toMapByKey(HashMap::new, record -> toUserGroupRecordAccess(record)));
 
-		final List<UserGroupRecordAccess> accesses = toUserGroupRecordAccessesList(request);
-		for (final UserGroupRecordAccess access : accesses)
+		final List<RecordAccess> accesses = toUserGroupRecordAccessesList(request);
+		for (final RecordAccess access : accesses)
 		{
 			save(access, existingRecords.get(access));
 		}
 
-		fireEvent(UserGroupAccessChangeEvent.accessGrants(accesses));
+		fireEvent(RecordAccessChangeEvent.accessGrants(accesses));
 	}
 
-	private static List<UserGroupRecordAccess> toUserGroupRecordAccessesList(@NonNull final UserGroupRecordAccessGrantRequest request)
+	private static List<RecordAccess> toUserGroupRecordAccessesList(@NonNull final RecordAccessGrantRequest request)
 	{
-		final ImmutableList.Builder<UserGroupRecordAccess> result = ImmutableList.builder();
+		final ImmutableList.Builder<RecordAccess> result = ImmutableList.builder();
 		for (final Access permission : request.getPermissions())
 		{
-			result.add(UserGroupRecordAccess.builder()
+			result.add(RecordAccess.builder()
 					.recordRef(request.getRecordRef())
 					.principal(request.getPrincipal())
 					.permission(permission)
@@ -115,9 +123,9 @@ public class UserGroupRecordAccessService
 		return result.build();
 	}
 
-	public void revokeAccess(@NonNull final UserGroupRecordAccessRevokeRequest request)
+	public void revokeAccess(@NonNull final RecordAccessRevokeRequest request)
 	{
-		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
+		final RecordAccessQuery query = RecordAccessQuery.builder()
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.permissions(request.isRevokeAllPermissions() ? ImmutableSet.of() : request.getPermissions())
@@ -129,8 +137,8 @@ public class UserGroupRecordAccessService
 		final Set<Integer> repoIds = extractRepoIds(accessRecords);
 		deleteByIds(repoIds);
 
-		final ImmutableSet<UserGroupRecordAccess> accesses = toUserGroupRecordAccessesSet(accessRecords);
-		fireEvent(UserGroupAccessChangeEvent.accessRevokes(accesses));
+		final ImmutableSet<RecordAccess> accesses = toUserGroupRecordAccessesSet(accessRecords);
+		fireEvent(RecordAccessChangeEvent.accessRevokes(accesses));
 	}
 
 	public void copyAccess(
@@ -144,12 +152,12 @@ public class UserGroupRecordAccessService
 		}
 
 		//
-		final HashSet<UserGroupRecordAccess> accessGrants = new HashSet<>();
-		final HashMap<UserGroupRecordAccess, Integer> accessRevokes = new HashMap<>();
+		final HashSet<RecordAccess> accessGrants = new HashSet<>();
+		final HashMap<RecordAccess, Integer> accessRevokes = new HashMap<>();
 
 		//
 		// Fetch existing accesses of our target record
-		final ImmutableMap<UserGroupRecordAccess, I_AD_User_Record_Access> existingTargetAccessRecords = queryByRecord(target)
+		final ImmutableMap<RecordAccess, I_AD_User_Record_Access> existingTargetAccessRecords = queryByRecord(target)
 				.create()
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(record -> toUserGroupRecordAccess(record)));
@@ -158,14 +166,14 @@ public class UserGroupRecordAccessService
 		// Revoke accesses
 		if (revokeFrom != null)
 		{
-			final List<UserGroupRecordAccess> fromAccesses = queryByRecord(revokeFrom)
+			final List<RecordAccess> fromAccesses = queryByRecord(revokeFrom)
 					.create()
 					.stream()
 					.map(record -> toUserGroupRecordAccess(record))
 					.collect(ImmutableList.toImmutableList());
-			for (final UserGroupRecordAccess fromAccess : fromAccesses)
+			for (final RecordAccess fromAccess : fromAccesses)
 			{
-				final UserGroupRecordAccess targetAccess = fromAccess.withRecordRef(target);
+				final RecordAccess targetAccess = fromAccess.withRecordRef(target);
 				final I_AD_User_Record_Access targetAccessRecord = existingTargetAccessRecords.get(targetAccess);
 				if (targetAccessRecord != null)
 				{
@@ -178,14 +186,14 @@ public class UserGroupRecordAccessService
 		// Grant accesses
 		if (grantFrom != null)
 		{
-			final List<UserGroupRecordAccess> fromAccesses = queryByRecord(grantFrom)
+			final List<RecordAccess> fromAccesses = queryByRecord(grantFrom)
 					.create()
 					.stream()
 					.map(record -> toUserGroupRecordAccess(record))
 					.collect(ImmutableList.toImmutableList());
-			for (final UserGroupRecordAccess fromAccess : fromAccesses)
+			for (final RecordAccess fromAccess : fromAccesses)
 			{
-				final UserGroupRecordAccess targetAccess = fromAccess.withRecordRef(target);
+				final RecordAccess targetAccess = fromAccess.withRecordRef(target);
 
 				final boolean wasJustRevoked = accessRevokes.remove(targetAccess) != null;
 
@@ -213,13 +221,13 @@ public class UserGroupRecordAccessService
 
 		//
 		// Fire event
-		fireEvent(UserGroupAccessChangeEvent.builder()
+		fireEvent(RecordAccessChangeEvent.builder()
 				.accessGrants(accessGrants)
 				.accessRevokes(accessRevokes.keySet())
 				.build());
 	}
 
-	private void save(@NonNull final UserGroupRecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
+	private void save(@NonNull final RecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
 	{
 		final I_AD_User_Record_Access accessRecord = existingAccessRecord != null ? existingAccessRecord : newRecord();
 		updateRecord(accessRecord, access);
@@ -231,7 +239,7 @@ public class UserGroupRecordAccessService
 		saveRecord(accessRecord);
 	}
 
-	private void fireEvent(@NonNull final UserGroupAccessChangeEvent event)
+	private void fireEvent(@NonNull final RecordAccessChangeEvent event)
 	{
 		if (event.isEmpty())
 		{
@@ -243,7 +251,7 @@ public class UserGroupRecordAccessService
 	}
 
 	@VisibleForTesting
-	Set<UserGroupRecordAccess> getAccessesByRecord(@NonNull final TableRecordReference recordRef)
+	Set<RecordAccess> getAccessesByRecord(@NonNull final TableRecordReference recordRef)
 	{
 		return queryByRecord(recordRef)
 				.create()
@@ -254,12 +262,12 @@ public class UserGroupRecordAccessService
 
 	private IQueryBuilder<I_AD_User_Record_Access> queryByRecord(@NonNull final TableRecordReference recordRef)
 	{
-		return query(UserGroupRecordAccessQuery.builder()
+		return query(RecordAccessQuery.builder()
 				.recordRef(recordRef)
 				.build());
 	}
 
-	private IQueryBuilder<I_AD_User_Record_Access> query(@NonNull final UserGroupRecordAccessQuery query)
+	private IQueryBuilder<I_AD_User_Record_Access> query(@NonNull final RecordAccessQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = queryBL.createQueryBuilder(I_AD_User_Record_Access.class);
@@ -328,7 +336,7 @@ public class UserGroupRecordAccessService
 		return newInstance(I_AD_User_Record_Access.class);
 	}
 
-	private void updateRecord(@NonNull final I_AD_User_Record_Access toRecord, @NonNull final UserGroupRecordAccess from)
+	private void updateRecord(@NonNull final I_AD_User_Record_Access toRecord, @NonNull final RecordAccess from)
 	{
 		toRecord.setIsActive(true);
 		toRecord.setAD_Table_ID(from.getRecordRef().getAD_Table_ID());
@@ -352,16 +360,16 @@ public class UserGroupRecordAccessService
 				.delete();
 	}
 
-	private static ImmutableSet<UserGroupRecordAccess> toUserGroupRecordAccessesSet(final Collection<I_AD_User_Record_Access> accessRecords)
+	private static ImmutableSet<RecordAccess> toUserGroupRecordAccessesSet(final Collection<I_AD_User_Record_Access> accessRecords)
 	{
 		return accessRecords.stream()
 				.map(record -> toUserGroupRecordAccess(record))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static UserGroupRecordAccess toUserGroupRecordAccess(final I_AD_User_Record_Access record)
+	private static RecordAccess toUserGroupRecordAccess(final I_AD_User_Record_Access record)
 	{
-		return UserGroupRecordAccess.builder()
+		return RecordAccess.builder()
 				.recordRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.principal(Principal.builder()
 						.userId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
@@ -381,9 +389,10 @@ public class UserGroupRecordAccessService
 			final int adTableId,
 			@NonNull final String keyColumnNameFQ,
 			@NonNull final UserId userId,
-			@NonNull final Set<UserGroupId> userGroupIds)
+			@NonNull final Set<UserGroupId> userGroupIds,
+			@NonNull final RoleId roleId)
 	{
-		if (!isApplyUserGroupRecordAccess(tableName))
+		if (!isApplyUserGroupRecordAccess(roleId, tableName))
 		{
 			return null;
 		}
@@ -411,25 +420,27 @@ public class UserGroupRecordAccessService
 		return sql.toString();
 	}
 
-	private boolean isApplyUserGroupRecordAccess(final String tableName)
+	private boolean isApplyUserGroupRecordAccess(
+			@NonNull final RoleId roleId,
+			@NonNull final String tableName)
 	{
-		// if(true) return false;
-		// FIXME: HARDCODED
-		return I_C_BPartner.Table_Name.equals(tableName)
-				|| I_C_Order.Table_Name.equals(tableName);
+		return configs
+				.getByRoleId(roleId)
+				.isTableHandled(tableName);
 	}
 
 	public boolean hasRecordPermission(
 			@NonNull final UserId userId,
+			@NonNull final RoleId roleId,
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final Access permission)
 	{
-		if (!isApplyUserGroupRecordAccess(recordRef.getTableName()))
+		if (!isApplyUserGroupRecordAccess(roleId, recordRef.getTableName()))
 		{
 			return true;
 		}
 
-		final UserGroupRecordAccessQuery query = UserGroupRecordAccessQuery.builder()
+		final RecordAccessQuery query = RecordAccessQuery.builder()
 				.recordRef(recordRef)
 				.permission(permission)
 				.principals(getPrincipals(userId))

@@ -14,8 +14,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessRevokeRequest;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
+import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
+import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -44,7 +44,7 @@ import de.metas.util.Check;
 
 public class RevokeUserGroupRecordAccess extends JavaProcess implements IProcessPrecondition
 {
-	private final UserGroupRecordAccessService userGroupRecordAccessService = Adempiere.getBean(UserGroupRecordAccessService.class);
+	private final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
 
 	@Param(parameterName = "AD_User_ID", mandatory = false)
 	private UserId userId;
@@ -69,7 +69,7 @@ public class RevokeUserGroupRecordAccess extends JavaProcess implements IProcess
 	@Override
 	protected String doIt()
 	{
-		userGroupRecordAccessService.revokeAccess(UserGroupRecordAccessRevokeRequest.builder()
+		userGroupRecordAccessService.revokeAccess(RecordAccessRevokeRequest.builder()
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
 				.revokeAllPermissions(isRevokeAllPermissions())

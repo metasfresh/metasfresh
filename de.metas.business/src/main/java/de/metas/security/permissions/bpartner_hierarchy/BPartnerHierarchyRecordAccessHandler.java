@@ -12,17 +12,19 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.bpartner_hierarchy.BPartnerDependentDocumentEvent.EventType;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
-import de.metas.security.permissions.record_access.UserGroupRecordAccess;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessGrantRequest;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessRevokeRequest;
-import de.metas.security.permissions.record_access.UserGroupRecordAccessService;
-import de.metas.security.permissions.record_access.listeners.UserGroupAccessChangeListener;
+import de.metas.security.permissions.record_access.RecordAccess;
+import de.metas.security.permissions.record_access.RecordAccessFeature;
+import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
+import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
+import de.metas.security.permissions.record_access.RecordAccessService;
+import de.metas.security.permissions.record_access.handlers.RecordAccessHandler;
 import lombok.NonNull;
 
 /*
@@ -48,14 +50,15 @@ import lombok.NonNull;
  */
 
 @Component
-class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessChangeListener
+class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 {
-	private static final Logger logger = LogManager.getLogger(BPartnerHierarchyUserGroupAccessChangeListener.class);
-	private final UserGroupRecordAccessService service;
+	private static final Logger logger = LogManager.getLogger(BPartnerHierarchyRecordAccessHandler.class);
+
+	private final RecordAccessService service;
 	private final BPartnerDependentDocumentHandlersMap dependentDocumentHandlers;
 
-	public BPartnerHierarchyUserGroupAccessChangeListener(
-			@NonNull @Lazy final UserGroupRecordAccessService service,
+	public BPartnerHierarchyRecordAccessHandler(
+			@NonNull @Lazy final RecordAccessService service,
 			@NonNull final List<BPartnerDependentDocumentHandler> dependentDocumentHandlers)
 	{
 		this.service = service;
@@ -72,7 +75,19 @@ class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessC
 				.toString();
 	}
 
-	public Set<String> getDependentDocumentTableNames()
+	boolean isEnabled()
+	{
+		return service.isFeatureEnabled(RecordAccessFeature.BPARTNER_HIERARCHY);
+	}
+
+	@Override
+	public Set<RecordAccessFeature> getHandledFeatures()
+	{
+		return ImmutableSet.of(RecordAccessFeature.BPARTNER_HIERARCHY);
+	}
+
+	@Override
+	public Set<String> getHandledTableNames()
 	{
 		return dependentDocumentHandlers.getTableNames();
 	}
@@ -113,7 +128,7 @@ class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessC
 	}
 
 	@Override
-	public void onAccessGranted(@NonNull final UserGroupRecordAccess access)
+	public void onAccessGranted(@NonNull final RecordAccess access)
 	{
 		if (access.getRecordRef().isOfType(I_C_BPartner.class))
 		{
@@ -121,7 +136,7 @@ class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessC
 
 			dependentDocumentHandlers
 					.streamBPartnerRelatedRecords(bpartnerId)
-					.map(recordRef -> UserGroupRecordAccessGrantRequest.builder()
+					.map(recordRef -> RecordAccessGrantRequest.builder()
 							.recordRef(recordRef)
 							.principal(access.getPrincipal())
 							.permission(access.getPermission())
@@ -131,7 +146,7 @@ class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessC
 	}
 
 	@Override
-	public void onAccessRevoked(@NonNull final UserGroupRecordAccess access)
+	public void onAccessRevoked(@NonNull final RecordAccess access)
 	{
 		if (access.getRecordRef().isOfType(I_C_BPartner.class))
 		{
@@ -139,7 +154,7 @@ class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessC
 
 			dependentDocumentHandlers
 					.streamBPartnerRelatedRecords(bpartnerId)
-					.map(recordRef -> UserGroupRecordAccessRevokeRequest.builder()
+					.map(recordRef -> RecordAccessRevokeRequest.builder()
 							.recordRef(recordRef)
 							.principal(access.getPrincipal())
 							.permission(access.getPermission())
@@ -148,7 +163,7 @@ class BPartnerHierarchyUserGroupAccessChangeListener implements UserGroupAccessC
 		}
 	}
 
-	private static final BPartnerId extractBPartnerId(final UserGroupRecordAccess request)
+	private static final BPartnerId extractBPartnerId(final RecordAccess request)
 	{
 		final TableRecordReference recordRef = request.getRecordRef();
 		recordRef.assertTableName(I_C_BPartner.Table_Name);

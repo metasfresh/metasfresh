@@ -3,12 +3,14 @@ package de.metas.security.permissions.bpartner_hierarchy;
 import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -35,23 +37,25 @@ import lombok.NonNull;
  */
 
 /**
- * Dispatches {@link BPartnerDependentDocumentEvent} to {@link BPartnerHierarchyUserGroupAccessChangeListener}.
+ * Dispatches {@link BPartnerDependentDocumentEvent} to {@link BPartnerHierarchyRecordAccessHandler}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Component
 @Profile(Profiles.PROFILE_App)
-class BPartnerDependentDocumentCreatedEventDispatcher
+class BPartnerDependentDocumentEventDispatcher
 {
 	static final Topic EVENTS_TOPIC = Topic.remote("de.metas.security.permissions.bpartner_hierarchy.BPartnerDependentDocumentEvent");
 
-	private final IEventBusFactory eventBusFactory;
-	private final BPartnerHierarchyUserGroupAccessChangeListener listener;
+	private static final Logger logger = LogManager.getLogger(BPartnerDependentDocumentEventDispatcher.class);
 
-	public BPartnerDependentDocumentCreatedEventDispatcher(
+	private final IEventBusFactory eventBusFactory;
+	private final BPartnerHierarchyRecordAccessHandler listener;
+
+	public BPartnerDependentDocumentEventDispatcher(
 			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull BPartnerHierarchyUserGroupAccessChangeListener listener)
+			@NonNull BPartnerHierarchyRecordAccessHandler listener)
 	{
 		this.eventBusFactory = eventBusFactory;
 		this.listener = listener;
@@ -67,6 +71,14 @@ class BPartnerDependentDocumentCreatedEventDispatcher
 
 	private void onEvent(@NonNull final BPartnerDependentDocumentEvent event)
 	{
+		// Do nothing if not enabled.
+		// Usually this shall not happen because in case the feature is not enabled no events will be sent.
+		if (!listener.isEnabled())
+		{
+			logger.debug("Skip event because feature is not enabled: {}", event);
+			return;
+		}
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.runInThreadInheritedTrx(() -> listener.onBPartnerDependentDocumentEvent(event));
 	}

@@ -3,6 +3,8 @@ package de.metas.security.permissions.record_access;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -19,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.record_access.handlers.RecordAccessHandler;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -50,7 +53,7 @@ public class UserGroupRecordAccessServiceTest
 {
 	private static final Principal userId = Principal.userId(UserId.ofRepoId(1));
 
-	private UserGroupRecordAccessService userGroupRecordAccessService;
+	private RecordAccessService userGroupRecordAccessService;
 
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
@@ -60,9 +63,10 @@ public class UserGroupRecordAccessServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		userGroupRecordAccessService = new UserGroupRecordAccessService(
-				new PlainEventBusFactory(),
-				new UserGroupRepository());
+		userGroupRecordAccessService = new RecordAccessService(
+				new RecordAccessConfigService(Optional.<List<RecordAccessHandler>> empty()),
+				new UserGroupRepository(),
+				new PlainEventBusFactory());
 	}
 
 	@Test
@@ -76,7 +80,7 @@ public class UserGroupRecordAccessServiceTest
 	{
 		Check.assumeNotEmpty(accesses, "accesses is not empty");
 
-		userGroupRecordAccessService.grantAccess(UserGroupRecordAccessGrantRequest.builder()
+		userGroupRecordAccessService.grantAccess(RecordAccessGrantRequest.builder()
 				.recordRef(recordRef)
 				.principal(userId)
 				.permissions(Arrays.asList(accesses))
@@ -85,15 +89,15 @@ public class UserGroupRecordAccessServiceTest
 		assertRecordAccesses(recordRef).isEqualTo(userGroupRecordAccesses(recordRef, accesses));
 	}
 
-	private IterableAssert<UserGroupRecordAccess> assertRecordAccesses(final TableRecordReference recordRef)
+	private IterableAssert<RecordAccess> assertRecordAccesses(final TableRecordReference recordRef)
 	{
 		return assertThat(userGroupRecordAccessService.getAccessesByRecord(recordRef));
 	}
 
-	private ImmutableSet<UserGroupRecordAccess> userGroupRecordAccesses(@NonNull final TableRecordReference recordRef, final Access... accesses)
+	private ImmutableSet<RecordAccess> userGroupRecordAccesses(@NonNull final TableRecordReference recordRef, final Access... accesses)
 	{
 		return Stream.of(accesses)
-				.map(access -> UserGroupRecordAccess.builder()
+				.map(access -> RecordAccess.builder()
 						.recordRef(recordRef)
 						.principal(userId)
 						.permission(access)
