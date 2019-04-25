@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
@@ -20,8 +21,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -84,8 +83,7 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 
 	private String getSql()
 	{
-
-		final I_M_Product product = Services.get(IProductDAO.class).getById(getRecord_ID());
+		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(getRecord_ID(), I_M_Product.class);
 
 		final StringBuffer sb = new StringBuffer();
 		sb.append("SELECT productName, CustomerLabelName, additional_produktinfos, productValue, UPC, weight, country, piName, piQty, ")
