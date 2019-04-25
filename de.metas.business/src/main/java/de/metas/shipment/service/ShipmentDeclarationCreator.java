@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.user.UserId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -40,6 +39,7 @@ import de.metas.shipment.ShipmentDeclarationVetoer;
 import de.metas.shipment.repo.ShipmentDeclarationConfigRepository;
 import de.metas.shipment.repo.ShipmentDeclarationRepository;
 import de.metas.uom.IUOMDAO;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;

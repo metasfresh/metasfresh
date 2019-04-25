@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.OrgId;
-import org.adempiere.user.UserId;
 import org.compiere.model.I_M_Shipment_Declaration;
 import org.compiere.model.I_M_Shipment_Declaration_Line;
 import org.compiere.util.TimeUtil;
@@ -27,6 +26,7 @@ import de.metas.shipment.ShipmentDeclaration;
 import de.metas.shipment.ShipmentDeclarationId;
 import de.metas.shipment.ShipmentDeclarationLine;
 import de.metas.shipment.ShipmentDeclarationLineId;
+import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
