@@ -33,7 +33,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.*;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.SecurPharmConstants;
-import de.metas.vertical.pharma.securpharm.model.AttributeScannedValue;
+import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
@@ -52,7 +52,7 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	@Param(parameterName = SecurPharmConstants.SCAN_PROCESS_DATAMATRIX_PARAM)
+	@Param(mandatory = true, parameterName = SecurPharmConstants.SCAN_PROCESS_DATAMATRIX_PARAM)
 	private String dataMatrix;
 
 	@Override
@@ -68,10 +68,15 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		return getRecord(I_M_HU.class);
 	}
 
+	protected String getDataMatrix()
+	{
+		return dataMatrix;
+	}
+
 	private void scanAndUpdate(@NonNull final I_M_HU handlingUnit) throws Exception
 	{
 		final HuId huId = HuId.ofRepoId(handlingUnit.getM_HU_ID());
-		final SecurPharmProductDataResult result = securPharmService.getAndSaveProductData(dataMatrix, huId);
+		final SecurPharmProductDataResult result = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
 		final IAttributeStorage attributeStorage = getAttributeStorage(handlingUnit);
 		if (!result.isError() && result.getProductData() != null)
 		{
@@ -81,17 +86,17 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 				//TODO check if it fits current data and split otherwise
 				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productData.getExpirationDate());
 				attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productData.getLot());
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, AttributeScannedValue.Y);
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.Y);
 			}
 			else
 			{
 				attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productData.getSerialNumber());
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, AttributeScannedValue.E);
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E);
 				//TODO HU split
 			}
 			attributeStorage.saveChangesIfNeeded();
 		}else{
-			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, AttributeScannedValue.E);
+			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E);
 		}
 	}
 
@@ -119,7 +124,7 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
-		I_M_HU handlingUnit = context.getSelectedModel(I_M_HU.class);
+		final I_M_HU handlingUnit = context.getSelectedModel(I_M_HU.class);
 		if (StringUtils.equals(handlingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed) || StringUtils.equals(handlingUnit.getHUStatus(), X_M_HU.HUSTATUS_Shipped))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("handling unit status not appropriate");
@@ -130,7 +135,6 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
 		}
-		//TODO check if vendor != manufacturer - this is in material receipt
 		return ProcessPreconditionsResolution.accept();
 	}
 

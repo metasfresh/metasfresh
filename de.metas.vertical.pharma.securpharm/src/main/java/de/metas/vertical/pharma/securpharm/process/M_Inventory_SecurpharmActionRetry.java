@@ -76,7 +76,7 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
-		I_M_Inventory inventory = context.getSelectedModel(I_M_Inventory.class);
+		final I_M_Inventory inventory = context.getSelectedModel(I_M_Inventory.class);
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
 		final SecurPharmActionResult actionResult = resultRepository.getActionResultByInventoryId(inventoryId, DecommissionAction.DESTROY);
 		if (actionResult == null)

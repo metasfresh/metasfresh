@@ -5442,6 +5442,58 @@ UPDATE AD_TreeNodeMM SET Parent_ID=541012, SeqNo=9, Updated=now(), UpdatedBy=100
 UPDATE AD_TreeNodeMM SET Parent_ID=541012, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541076 AND AD_Tree_ID=10
 ;
 
+-- 2019-04-25T14:57:33.231
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2019-04-25 14:57:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558931
+;
+
+-- 2019-04-25T14:57:46.890
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2019-04-25 14:57:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558941
+;
+
+-- 2019-04-25T14:57:54.667
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2019-04-25 14:57:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558942
+;
+
+-- 2019-04-25T14:58:05.403
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2019-04-25 14:58:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558943
+;
+
+-- 2019-04-25T14:58:13.519
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2019-04-25 14:58:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558940
+;
+
+-- 2019-04-25T14:58:19.865
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2019-04-25 14:58:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558939
+;
+
+-- 2019-04-25T15:06:06.605
+-- URL zum Konzept
+UPDATE AD_Table_Process SET WEBUI_IncludedTabTopAction='Y',Updated=TO_TIMESTAMP('2019-04-25 15:06:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540707
+;
+
+-- 2019-04-25T15:07:17.648
+-- URL zum Konzept
+UPDATE AD_Process_Para SET EntityType='de.metas.vertical.pharma.securpharm',Updated=TO_TIMESTAMP('2019-04-25 15:07:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541422
+;
+
+-- 2019-04-25T15:50:45.112
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='dataMatrix',Updated=TO_TIMESTAMP('2019-04-25 15:50:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541422
+;
+
+-- 2019-04-25T18:23:45.134
+-- URL zum Konzept
+UPDATE M_AttributeValue SET IsNullFieldValue='N',Updated=TO_TIMESTAMP('2019-04-25 18:23:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_AttributeValue_ID=540001
+;
+
+
+
 
 
 

@@ -21,9 +21,9 @@
  *
  */
 
-package de.metas.vertical.pharma.securpharm.model;
+package de.metas.vertical.pharma.securpharm.attribute;
 
-public enum AttributeScannedValue
+public enum ScannedAttributeValue
 {
 	N, Y, E
 }

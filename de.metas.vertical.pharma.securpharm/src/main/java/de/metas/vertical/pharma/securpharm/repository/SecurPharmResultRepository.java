@@ -61,7 +61,7 @@ public class SecurPharmResultRepository
 			productDataResultRecord.setSerialNumber(productData.getSerialNumber());
 		}
 		productDataResultRecord.setM_HU_ID(productDataResult.getHuId().getRepoId());
-		productDataResultRecord.setIsError(productDataResultRecord.isError());
+		productDataResultRecord.setIsError(productDataResult.isError());
 		productDataResultRecord.setRequestUrl(logData.getRequestUrl());
 		productDataResultRecord.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
 		productDataResultRecord.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
@@ -179,14 +179,13 @@ public class SecurPharmResultRepository
 		else
 		{
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			final SecurPharmProductDataResult productDataResult = queryBL
+			return queryBL
 					.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
 					.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId.get().getRepoId())
 					.create().stream().findFirst().map(productResult -> {
 						final SecurPharmProductDataResult result = new SecurPharmProductDataResult();
 						return ofRecord(productResult, result);
 					}).get().orElse(null);
-			return productDataResult;
 		}
 	}
 

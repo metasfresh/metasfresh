@@ -24,23 +24,34 @@
 package de.metas.vertical.pharma.securpharm.process;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.impl.HandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.SecurPharmConstants;
 import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result;
 
 public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 {
 
-	private final HandlingUnitsDAO handlingUnitsBL = Services.get(HandlingUnitsDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsBL = Services.get(IHandlingUnitsDAO.class);
+
+	@Param(mandatory = true, parameterName = SecurPharmConstants.SCAN_PROCESS_DATAMATRIX_PARAM)
+	private String dataMatrix;
 
 	@Override
 	protected I_M_HU getHandlingUnit()
 	{
-		I_M_Securpharm_Productdata_Result resultEntity = getRecord(I_M_Securpharm_Productdata_Result.class);
+		final I_M_Securpharm_Productdata_Result resultEntity = getRecord(I_M_Securpharm_Productdata_Result.class);
 		return handlingUnitsBL.getById(HuId.ofRepoId(resultEntity.getM_HU_ID()));
+	}
+
+	@Override
+	protected String getDataMatrix()
+	{
+		return dataMatrix;
 	}
 
 	@Override
@@ -59,7 +70,7 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
-		I_M_Securpharm_Productdata_Result productData = context.getSelectedModel(I_M_Securpharm_Productdata_Result.class);
+		final I_M_Securpharm_Productdata_Result productData = context.getSelectedModel(I_M_Securpharm_Productdata_Result.class);
 		if (!productData.isError() && productData.getM_HU_ID() <= 0)
 		{
 			ProcessPreconditionsResolution.reject();
