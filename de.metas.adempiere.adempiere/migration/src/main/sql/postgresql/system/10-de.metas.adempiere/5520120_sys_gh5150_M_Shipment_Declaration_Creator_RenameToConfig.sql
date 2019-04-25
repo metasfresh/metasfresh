@@ -8,10 +8,7 @@ UPDATE AD_Table SET Name='M_Shipment_Declaration_Config', TableName='M_Shipment_
 UPDATE AD_Sequence SET Name='M_Shipment_Declaration_Config',Updated=TO_TIMESTAMP('2019-04-23 11:32:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555007
 ;
 
--- 2019-04-23T11:32:32.168
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE M_Shipment_Declaration_Creator_SEQ RENAME TO M_Shipment_Declaration_Config_SEQ
-;
+
 
 -- 2019-04-23T11:32:49.258
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
