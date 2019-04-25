@@ -41,7 +41,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
-import de.metas.user.UserRepository;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
