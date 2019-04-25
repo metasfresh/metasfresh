@@ -41,12 +41,15 @@ import lombok.experimental.NonFinal;
  * #L%
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ShipmentDeclaration
 {
 	@NonFinal
 	ShipmentDeclarationId id;
+
+	@NonNull
+	String documentNo;
 
 	@NonNull
 	OrgId orgId;
@@ -91,5 +94,22 @@ public class ShipmentDeclaration
 			line.setLineNo(nextLineNo);
 			nextLineNo += 10;
 		}
+	}
+
+	public ShipmentDeclaration copyToNew(
+			@NonNull final DocTypeId newDocTypeId,
+			@NonNull final String newDocAction)
+	{
+		final ImmutableList<ShipmentDeclarationLine> newLines = getLines()
+				.stream()
+				.map(ShipmentDeclarationLine::copyToNew)
+				.collect(ImmutableList.toImmutableList());
+
+		return toBuilder()
+				.id(null)
+				.docTypeId(newDocTypeId)
+				.docAction(newDocAction)
+				.lines(newLines)
+				.build();
 	}
 }

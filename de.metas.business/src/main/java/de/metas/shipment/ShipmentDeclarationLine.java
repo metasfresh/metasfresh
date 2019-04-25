@@ -37,7 +37,7 @@ import lombok.experimental.NonFinal;
  * #L%
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ShipmentDeclarationLine
 {
@@ -62,4 +62,11 @@ public class ShipmentDeclarationLine
 
 	@Nullable
 	String packageSize;
+
+	public ShipmentDeclarationLine copyToNew()
+	{
+		return toBuilder()
+				.id(null)
+				.build();
+	}
 }
