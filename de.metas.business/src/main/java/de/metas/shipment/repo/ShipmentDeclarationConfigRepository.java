@@ -82,7 +82,7 @@ public class ShipmentDeclarationConfigRepository
 		return ShipmentDeclarationConfig.builder()
 				.id(ShipmentDeclarationConfigId.ofRepoId(record.getM_Shipment_Declaration_Config_ID()))
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
-				.docTypeCorrectionId(DocTypeId.ofRepoId(record.getC_DocType_Correction_ID()))
+				.docTypeCorrectionId(DocTypeId.ofRepoIdOrNull(record.getC_DocType_Correction_ID()))
 				.documentLinesNumber(record.getDocumentLinesNumber())
 				.name(record.getName())
 				.build();
