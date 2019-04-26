@@ -122,6 +122,8 @@ export class RawWidget extends Component {
 // =======
     const { lastFormField } = this.props;
 
+    console.log('RawWidget handleKeyDown: ', e.key)
+
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
       if (e.key === 'Enter' && !lastFormField) {
         e.preventDefault();
@@ -130,8 +132,9 @@ export class RawWidget extends Component {
     }
 
     if (!textField && (key === 'ArrowUp' || key === 'ArrowDown')) {
-      console.log('PREVENT !')
-      e.preventDefault();
+      // console.log('PREVENT !')
+      // e.preventDefault();
+      console.log('NOT PREVENT')
     }
   };
 
@@ -635,7 +638,7 @@ export class RawWidget extends Component {
       case 'Quantity':
         return (
           <div
-            className={classnames(this.getClassNames(), 'number-field', {
+            className={classnames(this.getClassNames(), '_number-field', {
               'input-focused': isEdited,
             })}
           >
@@ -655,7 +658,7 @@ export class RawWidget extends Component {
       case 'CostPrice':
         return (
           <div
-            className={classnames(this.getClassNames(), 'number-field', {
+            className={classnames(this.getClassNames(), '_number-field', {
               'input-focused': isEdited,
             })}
           >

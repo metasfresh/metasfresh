@@ -62,6 +62,8 @@ class TableItem extends PureComponent {
     );
   };
 
+  getCell = colIdx => this.props.cols[colIdx];
+
   prepareWidgetData = item => {
     const { fieldsByName } = this.props;
     const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
@@ -86,20 +88,22 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleEditProperty = (e, property, callback, item) => {
+  handleEditProperty = (e, property, focusWidget, item) => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
+    // TODO: this won't be necessary
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
+    // if (activeCell !== elem) {
       this.setState({
         activeCell: elem,
       });
     }
 
-    this.editProperty(e, property, callback, item);
+    this.editProperty(e, property, focusWidget, item);
   };
 
-  editProperty = (e, property, callback, item) => {
+  editProperty = (e, property, focusWidget, item) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property) e && e.stopPropagation();
 
@@ -108,10 +112,12 @@ class TableItem extends PureComponent {
           edited: property,
         },
         () => {
-          if (callback) {
+          if (focusWidget) {
             const elem = document.activeElement.getElementsByClassName(
               'js-input-field'
             )[0];
+
+            // TODO: We need to focus attributes button if it exists
 
             if (elem) {
               elem.focus();
@@ -149,14 +155,13 @@ class TableItem extends PureComponent {
   handleKeyDown = (e, property, widgetData) => {
     const { changeListenOnTrue } = this.props;
     const { listenOnKeys, edited } = this.state;
-    console.log('TableItem handleKeyDown: ', e.key, property, widgetData);
+    console.log('TableItem handleKeyDown: ', e.key, listenOnKeys, property, widgetData);
 
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
           console.log('TableItem ENTER: ', property, widgetData)
-          // this.handleEditProperty(e, property, true, widgetData[0]);
-          this.handleEditProperty(e, property, null, widgetData[0]);
+          this.handleEditProperty(e, property, true, widgetData[0]);
         }
         break;
       case 'Tab':
@@ -197,9 +202,8 @@ class TableItem extends PureComponent {
     activeCell && activeCell.focus();
   };
 
-  isAllowedFieldEdit = item => {
-    return item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
-  };
+  isAllowedFieldEdit = item =>
+    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
 
   /*
    * This function is called when cell's value changes
@@ -236,11 +240,18 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleCellFocused = (e, element, row, col) => {
+  handleCellFocused = (e, widgetData, row, col) => {
+    // console.log('ELEMENT: ', element);
+    const cell = this.getCell(col);
+    const property = cell.fields[0].field;
+    const isEditable = this.isCellEditable(cell);
+
+    console.log('TableItem handleCellFocused: ', isEditable, cell)
+
+    // element.focus();
     // if (isEditable) {
-    //   this.handleEditProperty(e, property, true, widgetData[0]);
+      this.handleEditProperty(e, property, true, widgetData);
     // }
-    element.focus();
   };
 
   handleCellExtend = () => {
@@ -297,6 +308,9 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
+            let isEditable = this.isCellEditable(item);
+            const isEdited = edited === property;
+            const extendLongText = multilineText ? multilineTextLines : 0;
 
             let showWidget =
               (cells &&
@@ -304,9 +318,6 @@ class TableItem extends PureComponent {
                 cells[property].viewEditorRenderMode ===
                   VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-            let isEditable = this.isCellEditable(item);
-            const isEdited = edited === property;
-            const extendLongText = multilineText ? multilineTextLines : 0;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -366,7 +377,7 @@ class TableItem extends PureComponent {
                     this.handleEditProperty(e, property, true, widgetData[0]);
                   }
                 }}
-                handleDoubleClick={this.handleCellFocused}
+                _handleDoubleClick={this.handleCellFocused}
                 onClickOutside={this.handleClickOutside}
                 onCellChange={this.handleCellValueChange}
                 onCellExtend={this.handleCellExtend}

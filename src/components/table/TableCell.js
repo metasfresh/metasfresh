@@ -166,9 +166,20 @@ class TableCell extends PureComponent {
       () => {
         this.cell.focus();
 
+        console.log('TableCell handlePatch')
+
         mainTable && onCellChange && onCellChange();
       }
     );
+  };
+
+  handleKeyDown = e => {
+    const { property, handleKeyDown, widgetData } = this.props;
+    // const el = this.cell.getElementsByTagName('input');
+    console.log('TableCell handleKeyDown')
+
+    // handleKeyDown(e, this.cell, property, widgetData);
+    handleKeyDown(e, property, widgetData);
   };
 
   render() {
@@ -180,10 +191,9 @@ class TableCell extends PureComponent {
       item,
       windowId,
       rowId,
-      cellIdx,
+      colIdx,
       tabId,
       handleDoubleClick,
-      handleKeyDown,
       updatedRow,
       tabIndex,
       entity,
@@ -250,14 +260,15 @@ class TableCell extends PureComponent {
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
         onDoubleClick={handleDoubleClick}
-        onKeyDown={handleKeyDown}
+        onKeyDown={this.handleKeyDown}
         onFocus={e => {
           if (!widgetBlurred) {
-            const el = this.cell.getElementsByTagName('input');
+            // const el = this.cell.getElementsByTagName('input');
 
-            if (el && el.length) {
-              onCellFocused(e, el[0], rowId, cellIdx);
-            }
+            // if (el && el.length) {
+            //   onCellFocused(e, el[0], rowId, cellIdx);
+            // }
+            onCellFocused(e, widgetData, rowId, colIdx);
           } else {
             this.setBlurWidget();
           }
