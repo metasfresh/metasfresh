@@ -134,7 +134,10 @@ class TableItem extends PureComponent {
               this.listenOnKeysTrue();
               this.handleEditProperty(e);
             } else {
-              this.listenOnKeysFalse();
+              console.log('ABAB')
+              if (elem) {
+                this.listenOnKeysFalse();
+              }
             }
           }
         }
@@ -162,6 +165,8 @@ class TableItem extends PureComponent {
         if (listenOnKeys) {
           console.log('TableItem ENTER: ', property, widgetData)
           this.handleEditProperty(e, property, true, widgetData[0]);
+        } else {
+          this.listenOnKeysTrue();
         }
         break;
       case 'Tab':
@@ -169,7 +174,8 @@ class TableItem extends PureComponent {
         if (edited === property) {
           e.stopPropagation();
           this.handleEditProperty(e);
-          changeListenOnTrue();
+          // changeListenOnTrue();
+          this.listenOnKeysTrue();
         }
         break;
     }
@@ -177,6 +183,8 @@ class TableItem extends PureComponent {
 
   listenOnKeysTrue = () => {
     const { changeListenOnTrue } = this.props;
+
+    console.log('TableItem listenOnKeysTrue');
 
     this.setState({
       listenOnKeys: true,
@@ -186,6 +194,8 @@ class TableItem extends PureComponent {
 
   listenOnKeysFalse = () => {
     const { changeListenOnFalse } = this.props;
+
+    console.log('TableItem listenOnKeysFalse');
 
     this.setState({
       listenOnKeys: false,

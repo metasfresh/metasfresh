@@ -127,10 +127,25 @@ class TableCell extends PureComponent {
     }
   }
 
-  setBlurWidget = () => {
+  setBlurWidgetFalse = () => {
     this.setState({
       widgetBlurred: false,
     });
+  };
+
+  setBlurWidgetTrue = callback => {
+    this.setState(
+      {
+        widgetBlurred: true,
+      },
+      () => {
+        this.cell.focus();
+
+        console.log('TableCell blurwidgettrue')
+
+        callback && callback();
+      }
+    );
   };
 
   widgetTooltipToggle = (field, value) => {
@@ -158,28 +173,44 @@ class TableCell extends PureComponent {
 
   handlePatch = () => {
     const { onCellChange, mainTable } = this.props;
-
-    this.setState(
-      {
-        widgetBlurred: true,
-      },
-      () => {
-        this.cell.focus();
-
-        console.log('TableCell handlePatch')
-
-        mainTable && onCellChange && onCellChange();
-      }
-    );
+    // this.setState(
+    //   {
+    //     widgetBlurred: true,
+    //   },
+    //   () => {
+    //     this.cell.focus();
+    //     console.log('TableCell handlePatch')
+    //     mainTable && onCellChange && onCellChange();
+    //   }
+    // );
+    this.setBlurWidgetTrue(() => {
+      console.log('TableCell handlePatch')
+      mainTable && onCellChange && onCellChange();   
+    });
+    // this.setBlurWidget(() => {
+    //   this.cell.focus();
+    //   console.log('TableCell handlePatch');
+    //   mainTable && onCellChange && onCellChange();
+    // });
   };
 
   handleKeyDown = e => {
     const { property, handleKeyDown, widgetData } = this.props;
+    // const { widgetBlurred } = this.state;
+    const { key } = e;
     // const el = this.cell.getElementsByTagName('input');
-    console.log('TableCell handleKeyDown')
-
+    console.log('TableCell handleKeyDown: ', key)
     // handleKeyDown(e, this.cell, property, widgetData);
+    // if (!widgetBlurred) {
+    if (['Enter', 'Tab', 'Escape'].includes(key)) {
+      this.setBlurWidgetTrue();
+    }
+    // this.cell.focus();
     handleKeyDown(e, property, widgetData);
+    // }
+    // else {
+    //   this.setBlurWidget();
+    // }
   };
 
   render() {
@@ -264,13 +295,14 @@ class TableCell extends PureComponent {
         onFocus={e => {
           if (!widgetBlurred) {
             // const el = this.cell.getElementsByTagName('input');
-
             // if (el && el.length) {
             //   onCellFocused(e, el[0], rowId, cellIdx);
             // }
+            console.log('TableCell onFocus')
+
             onCellFocused(e, widgetData, rowId, colIdx);
           } else {
-            this.setBlurWidget();
+            this.setBlurWidgetFalse();
           }
         }}
         onContextMenu={handleRightClick}
