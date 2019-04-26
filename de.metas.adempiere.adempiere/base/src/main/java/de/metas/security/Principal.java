@@ -2,6 +2,12 @@ package de.metas.security;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -32,6 +38,7 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Principal
 {
 	public static final Principal userId(@NonNull final UserId userId)
@@ -44,13 +51,19 @@ public class Principal
 		return builder().userGroupId(userGroupId).build();
 	}
 
+	@JsonProperty("userId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	UserId userId;
+
+	@JsonProperty("userGroupId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	UserGroupId userGroupId;
 
 	@Builder(toBuilder = true)
+	@JsonCreator
 	private Principal(
-			final UserId userId,
-			final UserGroupId userGroupId)
+			@JsonProperty("userId") final UserId userId,
+			@JsonProperty("userGroupId") final UserGroupId userGroupId)
 	{
 		if (userId != null)
 		{

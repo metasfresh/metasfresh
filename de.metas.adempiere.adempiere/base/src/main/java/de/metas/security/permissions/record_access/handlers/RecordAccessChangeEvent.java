@@ -61,9 +61,9 @@ public class RecordAccessChangeEvent
 	}
 
 	@JsonProperty("accessGrants")
-	private ImmutableSet<RecordAccess> accessGrants;
+	private Set<RecordAccess> accessGrants;
 	@JsonProperty("accessRevokes")
-	private ImmutableSet<RecordAccess> accessRevokes;
+	private Set<RecordAccess> accessRevokes;
 
 	@JsonCreator
 	@Builder

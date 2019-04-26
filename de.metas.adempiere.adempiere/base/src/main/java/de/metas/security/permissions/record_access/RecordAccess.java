@@ -2,6 +2,11 @@ package de.metas.security.permissions.record_access;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import lombok.Builder;
@@ -31,17 +36,24 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class RecordAccess
 {
+	@JsonProperty("recordRef")
 	TableRecordReference recordRef;
+
+	@JsonProperty("principal")
 	Principal principal;
+
+	@JsonProperty("permission")
 	Access permission;
 
 	@Builder(toBuilder = true)
+	@JsonCreator
 	private RecordAccess(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final Principal principal,
-			@NonNull final Access permission)
+			@JsonProperty("recordRef") @NonNull final TableRecordReference recordRef,
+			@JsonProperty("principal") @NonNull final Principal principal,
+			@JsonProperty("permission") @NonNull final Access permission)
 	{
 		this.recordRef = recordRef;
 		this.principal = principal;

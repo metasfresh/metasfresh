@@ -5,6 +5,8 @@ import java.util.function.Function;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_User_Record_Access;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -33,6 +35,7 @@ public final class Access implements ReferenceListAwareEnum
 			.filter(access -> access.getCode() != null)
 			.collect(ImmutableMap.toImmutableMap(Access::getCode, Function.identity()));
 
+	@JsonCreator
 	public static Access ofCode(@NonNull final String code)
 	{
 		final Access access = accessesByCode.get(code);
@@ -58,6 +61,13 @@ public final class Access implements ReferenceListAwareEnum
 	public String toString()
 	{
 		return getName();
+	}
+
+	@Override
+	@JsonValue
+	public String getCode()
+	{
+		return code;
 	}
 
 	public boolean isReadOnly()
