@@ -10,6 +10,19 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.102
+## Features
+* metasfresh 
+  * [#5151](https://github.com/metasfresh/metasfresh/issues/5151) Allow to delete Scale Prices
+  * [#5157](https://github.com/metasfresh/metasfresh/issues/5157) Reduce log-output of sequence checks when running migration-script
+
+* metasfresh-webui-frontend
+  * [#2180](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2180) Shortcut shall work for Cancel button in Modal view
+  * [#2195](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2195) Tab top actions: use provided shortcut if any
+
+* metasfresh-e2e
+  * [#53](https://github.com/metasfresh/metasfresh-e2e/issues/53) Add repeatable actions for working with filters
+
 # metasfresh 5.101
 ## Features
 * metasfresh
