@@ -159,7 +159,14 @@ function applyLocation(bPartnerLocation) {
 
   cy.editAddress('C_Location_ID', function(url) {
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
-    cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country, null, url);
+    cy.writeIntoLookupListField(
+      'C_Country_ID',
+      bPartnerLocation.country,
+      bPartnerLocation.country,
+      false /*typeList */,
+      false /*modal */,
+      url
+    );
   });
   cy.get('.form-field-Address').should('contain', bPartnerLocation.city);
   cy.pressDoneButton();
