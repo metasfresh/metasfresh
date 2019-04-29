@@ -12,11 +12,7 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
   describe('Clear field', function() {
     cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
-
+    const path = createFieldPath(fieldName, modal);
     cy.get(path)
       .find('input')
       .clear();
@@ -27,17 +23,30 @@ Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
   describe('Get field value', function() {
     cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
-
+    const path = createFieldPath(fieldName, modal);
     return cy
       .get(path)
       .find('input')
       .invoke('val'); /* note: beats me why .its('value'); returned undefined */
   });
 });
+
+Cypress.Commands.add('assertFieldNotShown', (fieldName, modal) => {
+  describe('Assert that a vield is not shown', function() {
+    cy.log(`assertFieldNotShown - fieldName=${fieldName}; modal=${modal}`);
+
+    const path = createFieldPath(fieldName, modal);
+    return cy.get(path).should('not.exist');
+  });
+});
+
+function createFieldPath(fieldName, modal) {
+  let path = `.form-field-${fieldName}`;
+  if (modal) {
+    path = `.panel-modal ${path}`;
+  }
+  return path;
+}
 
 Cypress.Commands.add('isChecked', (fieldName, modal) => {
   describe('Get field value', function() {
