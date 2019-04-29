@@ -113,8 +113,8 @@ public class AttributesTestHelper
 	}
 
 	public I_M_AttributeValue createM_AttributeValue(
-			final I_M_Attribute attribute,
-			final String value)
+			@NonNull final I_M_Attribute attribute,
+			@Nullable final String value)
 	{
 		return createM_AttributeValue(attribute, null, value);
 	}
@@ -122,7 +122,7 @@ public class AttributesTestHelper
 	public I_M_AttributeValue createM_AttributeValue(
 			@NonNull final I_M_Attribute attribute,
 			@Nullable final Integer valueRepoId,
-			@NonNull final String value)
+			@Nullable final String value)
 	{
 		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
 		attributeValue.setM_Attribute(attribute);

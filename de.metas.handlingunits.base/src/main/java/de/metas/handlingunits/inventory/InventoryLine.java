@@ -74,7 +74,7 @@ public class InventoryLine
 		return CollectionUtils.singleElement(inventoryLineHUs);
 	}
 
-	public InventoryLine withCountQty(@NonNull final Quantity qtyCount)
+	public InventoryLine withQtyCount(@NonNull final Quantity qtyCount)
 	{
 		final ImmutableList<InventoryLineHU> inventoryLineHUsToIerate;
 		if (inventoryLineHUs.isEmpty())

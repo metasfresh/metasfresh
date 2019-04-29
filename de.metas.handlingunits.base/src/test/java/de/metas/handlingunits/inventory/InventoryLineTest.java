@@ -83,55 +83,55 @@ class InventoryLineTest
 	}
 
 	@Test
-	void withCountQty_3_plus_19()
+	void withQtyCount_3_plus_19()
 	{
 
 		final InventoryLine inventoryLine = createInventoryLine();
 		assertThat(inventoryLine.getInventoryLineHUs()) // guard
-				.extracting("huId", "bookQty", "countQty")
+				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
 						tuple(HuId.ofRepoId(100), qtyTen, qtyOne),
 						tuple(HuId.ofRepoId(200), qtyTwenty, qtyTwo));
 
 		// invoke the method under test
-		final InventoryLine result = inventoryLine.withCountQty(qtyNineTeen);
+		final InventoryLine result = inventoryLine.withQtyCount(qtyNineTeen);
 
 		assertThat(result.getInventoryLineHUs())
-				.extracting("huId", "bookQty", "countQty")
+				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
 						tuple(HuId.ofRepoId(100), qtyTen, qtySeventeen),
 						tuple(HuId.ofRepoId(200), qtyTwenty, qtyTwo));
 	}
 
 	@Test
-	void withCountQty_3_minus_2()
+	void withQtyCount_3_minus_2()
 	{
 
 		final InventoryLine inventoryLine = createInventoryLine();
 		assertThat(inventoryLine.getInventoryLineHUs()) // guard
-				.extracting("huId", "bookQty", "countQty")
+				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
 						tuple(HuId.ofRepoId(100), qtyTen, qtyOne),
 						tuple(HuId.ofRepoId(200), qtyTwenty, qtyTwo));
 
 		// invoke the method under test
-		final InventoryLine result = inventoryLine.withCountQty(qtyOne);
+		final InventoryLine result = inventoryLine.withQtyCount(qtyOne);
 
 		assertThat(result.getInventoryLineHUs())
-				.extracting("huId", "bookQty", "countQty")
+				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
 						tuple(HuId.ofRepoId(100), qtyTen, qtyZero),
 						tuple(HuId.ofRepoId(200), qtyTwenty, qtyOne));
 	}
 
 	@Test
-	void withCountQty_empty_plus_19()
+	void withQtyCount_empty_plus_19()
 	{
 		final InventoryLine inventoryLine = createInventoryLine().toBuilder().clearInventoryLineHUs().build();
 		assertThat(inventoryLine.getInventoryLineHUs()).isEmpty();
 
 		// invoke the method under test
-		final InventoryLine result = inventoryLine.withCountQty(qtyNineTeen);
+		final InventoryLine result = inventoryLine.withQtyCount(qtyNineTeen);
 
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")

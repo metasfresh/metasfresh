@@ -23,13 +23,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           "huId": {
             "repoId": 100
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 10,
             "sourceQty": 10,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 10,
             "sourceQty": 10,
             "infinite": false,
@@ -43,13 +43,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           "huId": {
             "repoId": 200
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 1,
             "sourceQty": 1,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 1,
             "sourceQty": 1,
             "infinite": false,
@@ -81,13 +81,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           "huId": {
             "repoId": 300
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 2,
             "sourceQty": 2,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 2,
             "sourceQty": 2,
             "infinite": false,
@@ -122,13 +122,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           "huId": {
             "repoId": 300
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 2,
             "sourceQty": 2,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 2,
             "sourceQty": 2,
             "infinite": false,
@@ -157,13 +157,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           "huId": {
             "repoId": 100
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 10,
             "sourceQty": 10,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 10,
             "sourceQty": 10,
             "infinite": false,
@@ -192,13 +192,13 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           "huId": {
             "repoId": 200
           },
-          "bookQty": {
+          "qtyBook": {
             "qty": 1,
             "sourceQty": 1,
             "infinite": false,
             "zero": false
           },
-          "countQty": {
+          "qtyCount": {
             "qty": 1,
             "sourceQty": 1,
             "infinite": false,

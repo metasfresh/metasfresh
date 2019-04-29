@@ -61,7 +61,7 @@ public class M_InventoryLine
 		final InventoryLine inventoryLine = inventoryLineRepository.getById(inventoryLineId);
 
 		final Quantity qtyCount = Quantity.of(inventoryLineRecord.getQtyCount(), inventoryLineRecord.getC_UOM());
-		inventoryLine.withCountQty(qtyCount);
+		inventoryLine.withQtyCount(qtyCount);
 
 		inventoryLineRepository.save(inventoryLine);
 	}
