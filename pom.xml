@@ -658,6 +658,47 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			</build>
 		</profile>
 		
+		<profile>
+			<!-- If there is a sql directory, then this profile will activate and 
+				zip up the migration SQL files in that directory. Note the property "migration-sql-basedir" 
+				needs to be defined in that case -->
+			<id>postgres</id>
+			<activation>
+				<file>
+					<exists>src/main/sql/postgresql/system</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,10.0.0]</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
+								<phase>package</phase> <!-- bind to the packaging phase -->
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<descriptorRefs>
+										<descriptorRef>migration_postgresql_system</descriptorRef>
+									</descriptorRefs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
 		<!-- 
 			If the environment variable MF_VERSION is not set, it means that
 			we are not building on jenkins, so we substitute the value "LOCAL-NO-RELEASE" instead. 
