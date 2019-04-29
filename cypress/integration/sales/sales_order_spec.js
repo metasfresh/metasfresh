@@ -136,7 +136,7 @@ describe('New sales order test', function() {
         .click();
 
       cy.get('.quick-input-container').should('exist');
-      cy.get('.quick-input-container').snapshot({ name: 'Empty Quick Inp' });
+      cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
 
       cy.writeIntoLookupListField('M_Product_ID', 'C', 'Convenience Salat');
 
