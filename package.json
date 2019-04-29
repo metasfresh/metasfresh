@@ -17,7 +17,6 @@
     "@babel/preset-env": "7.3.1",
     "@babel/preset-react": "7.0.0",
     "@babel/register": "7.0.0",
-    "@cypress/snapshot": "^2.0.1",
     "@cypress/webpack-preprocessor": "^4.0.3",
     "babel-eslint": "10.0.1",
     "babel-loader": "8.0.5",
