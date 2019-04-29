@@ -58,6 +58,12 @@ public class Invoice440RequestConversionServiceTest
 	}
 
 	@Test
+	public void file()
+	{
+		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
+	}
+
+	@Test
 	public void exampleFile_440_tg_ivg_de()
 	{
 		testWithPublicExampleXmlFile("md_440_tg_ivg_de.xml");
