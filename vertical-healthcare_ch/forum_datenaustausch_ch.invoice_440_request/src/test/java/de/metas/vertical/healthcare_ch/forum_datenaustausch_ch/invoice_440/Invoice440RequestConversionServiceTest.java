@@ -10,6 +10,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
@@ -58,7 +59,8 @@ public class Invoice440RequestConversionServiceTest
 	}
 
 	@Test
-	public void file()
+	@Ignore
+	public void localFile()
 	{
 		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
 	}

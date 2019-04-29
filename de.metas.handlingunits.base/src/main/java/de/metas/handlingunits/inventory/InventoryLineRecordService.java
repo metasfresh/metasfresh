@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inventory;
 
 import static de.metas.inventory.InventoryConstants.HUAggregationType_SINGLE_HU;
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
@@ -432,7 +433,7 @@ public class InventoryLineRecordService
 			return; // nothing to do
 		}
 
-		if (!Check.isEmpty(inventoryLineRecord.getHUAggregationType(), true))
+		if (!isNew(inventoryLineRecord) && !Check.isEmpty(inventoryLineRecord.getHUAggregationType(), true))
 		{
 			// this line already has a different aggregation type
 			final ITranslatableString message = Services.get(IMsgBL.class)
