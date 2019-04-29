@@ -1,6 +1,6 @@
 * This file lists all available commands for reference
 
-** General (commands.js)
+** General (general.js)
 
 - loginByForm: reusable form login
 - tab: emulates tab
@@ -9,7 +9,7 @@
 - visitWindow: visit metasfresh and wait for layout
 - waitForFieldValue: wait for field data from request
 
-** Navigation (navigation_commands.js)
+** Navigation (navigation.js)
 
 - clickButtonWithText: click button with given text
 - clickElementWithClass: click element with given selector
@@ -17,7 +17,7 @@
 - selectSingleTabRow: select row in active tab
 - selectReference
 
-** Forms (form_commands.js)
+** Forms (form.js)
 
 - clearField
 - getFieldValue
@@ -36,7 +36,7 @@
 - executeHeaderActionWithDialog
 - executeQuickAction
 
-** Test specific (test_commands.js)
+** Test specific (test.js)
 
 - editAddress
 - pressStartButton

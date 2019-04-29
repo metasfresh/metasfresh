@@ -1,6 +1,6 @@
 {
     "name": "TestAttributeSet",
-    "mandatoryType": "Not Mandatory",
+    "mandatoryType": "Optional",
     "attributeUse": [
         {
           "m_attribute_id": "ListAttributeName_TestAttribute1",

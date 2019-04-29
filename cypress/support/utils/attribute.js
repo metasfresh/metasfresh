@@ -131,7 +131,7 @@ function applyAttributeSet(attribute) {
   describe(`Create new AttributeSet ${attribute.name}`, function() {
     cy.visitWindow('256', 'NEW');
     cy.writeIntoStringField('Name', attribute.name);
-    cy.selectInListField('MandatoryType', 'Not Mandatary');
+    cy.selectInListField('MandatoryType', 'Optional');
   });
 }
 
