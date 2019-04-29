@@ -20,6 +20,8 @@ describe('Create test: payment term, https://github.com/metasfresh/metasfresh-e2
     cy.clearField('GraceDays');
     cy.writeIntoStringField('GraceDays', '3');
 
-    cy.isChecked('IsValid');
+    cy.isChecked('IsValid').then(isValidValue => {
+      expect(isValidValue).to.equal(true);
+    });
   });
 });

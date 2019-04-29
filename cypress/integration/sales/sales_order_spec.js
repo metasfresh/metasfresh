@@ -2,12 +2,11 @@ import { getBreadcrumbs } from '../../support/apiRequests';
 import { salesOrders } from '../../page_objects/sales_orders';
 import config from '../../config';
 import { Product, ProductCategory } from '../../support/utils/product';
-// import { BPartner } from '../../support/utils/bpartner';
 import { SalesOrder } from '../../support/utils/sales_order';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 
 describe('New sales order test', function() {
-  const windowId = 143;
+  const windowId = salesOrders.windowId;
   let headerCaption = '';
   let menuOption = '';
   const timestamp = new Date().getTime();

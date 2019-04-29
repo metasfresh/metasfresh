@@ -207,28 +207,40 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 });
 
 Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = 'visitedDocumentId') => {
-  describe('Open metasfresh window and wait for layout and data', function() {
-    cy.server();
-    const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
-    cy.route('GET', `/rest/api/window/${windowId}/layout`).as(layoutAliasName);
-    const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
-    cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
-
-    cy.visit(`/window/${windowId}/${recordId}`)
-      .wait(`@${layoutAliasName}`, {
-        requestTimeout: 20000,
-        responseTimeout: 20000,
-      })
-      .wait(`@${dataAliasName}`, {
-        requestTimeout: 20000,
-        responseTimeout: 20000,
-      })
-      .then(xhr => {
-        return { documentId: xhr.response.body[0].id };
-      })
-      .as(documentIdAliasName);
+  describe('Open metasfresh single-record window and wait for layout and data', function() {
+    if (recordId == null) {
+      // null == undefined, thx to https://stackoverflow.com/a/2647888/1012103
+      visitTableWindow(windowId);
+    } else {
+      visitDetailWindow(windowId, recordId, documentIdAliasName);
+    }
   });
 });
+
+function visitTableWindow(windowId) {
+  cy.visit(`/window/${windowId}`);
+}
+
+function visitDetailWindow(windowId, recordId, documentIdAliasName) {
+  cy.server();
+  const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
+  cy.route('GET', `/rest/api/window/${windowId}/layout`).as(layoutAliasName);
+  const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
+  cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
+  cy.visit(`/window/${windowId}/${recordId}`)
+    .wait(`@${layoutAliasName}`, {
+      requestTimeout: 20000,
+      responseTimeout: 20000,
+    })
+    .wait(`@${dataAliasName}`, {
+      requestTimeout: 20000,
+      responseTimeout: 20000,
+    })
+    .then(xhr => {
+      return { documentId: xhr.response.body[0].id };
+    })
+    .as(documentIdAliasName);
+}
 
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112

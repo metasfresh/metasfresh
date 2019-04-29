@@ -21,22 +21,14 @@ describe('purchase - vendor spec', function() {
       .setVendor(true)
       .setVendorPricingSystem('Testpreisliste Lieferanten')
       .setVendorDiscountSchema(discountSchemaName)
-      .addLocation(
-        new BPartnerLocation('Address1')
-          .setCity('Cologne')
-          .setCountry('Deutschland')
-      )
+      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
       .addContact(
         new BPartnerContact()
           .setFirstName('Default')
           .setLastName('Contact')
           .setDefaultContact(true)
       )
-      .addContact(
-        new BPartnerContact()
-          .setFirstName('Secondary')
-          .setLastName('Contact')
-      )
+      .addContact(new BPartnerContact().setFirstName('Secondary').setLastName('Contact'))
       .apply();
 
     cy.log('Now going to verify all fields were set correctly');
@@ -71,7 +63,7 @@ describe('purchase - vendor spec', function() {
         delete bpartnerJson[0].fieldsByName.V$DocumentSummary;
         delete bpartnerJson[0].websocketEndpoint;
         // snapshot the invariant result
-        cy.wrap(bpartnerJson).snapshot(`purchase_create_vendor_bpartner - apiUrl=${apiUrl}`);
+        cy.wrap(bpartnerJson).toMatchSnapshot(`purchase_create_vendor_bpartner - apiUrl=${apiUrl}`);
       });
 
       // TODO look into making this work too
