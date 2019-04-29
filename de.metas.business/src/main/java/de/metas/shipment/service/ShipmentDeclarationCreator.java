@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 import org.adempiere.user.UserId;
 import org.compiere.model.I_C_UOM;
@@ -13,6 +14,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipment_Declaration;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -22,8 +24,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -142,16 +147,55 @@ public class ShipmentDeclarationCreator
 
 		for (final List<InOutAndLineId> shipmentLineIdsPartition : Lists.partition(shipmentLineIds, documentLinesNumber))
 		{
-			final ShipmentDeclaration shipmentDeclaration = createShipmentDeclaration(config, ImmutableSet.copyOf(shipmentLineIdsPartition));
+
+			final DocTypeId docTypeId = config.getDocTypeId();
+			final String documentNo = reserveDocumentNo(docTypeId);
+
+			final ShipmentDeclaration shipmentDeclaration = createShipmentDeclaration(docTypeId,
+					ImmutableSet.copyOf(shipmentLineIdsPartition),
+					IDocument.ACTION_Complete,
+					documentNo);
 			final I_M_Shipment_Declaration shipmentDeclarationRecord = shipmentDeclarationRepo.save(shipmentDeclaration);
 
+			if (config.getDocTypeCorrectionId() != null)
+			{
+				final ShipmentDeclaration shipmentDeclarationCorrection = shipmentDeclaration.copyToNew(
+						config.getDocTypeCorrectionId(),
+						IDocument.ACTION_Void);
+				shipmentDeclarationCorrection.setBaseShipmentDeclarationId(shipmentDeclaration.getId());
+				shipmentDeclarationRepo.save(shipmentDeclarationCorrection);
+
+				shipmentDeclaration.setCorrectionShipmentDeclarationId(shipmentDeclarationCorrection.getId());
+				shipmentDeclarationRepo.save(shipmentDeclaration);
+			}
+
 			documentBL.processEx(shipmentDeclarationRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
 		}
 	}
 
+	private String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
+	{
+		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+
+		final String documentNo = documentNoFactory.forDocType(docTypeId.getRepoId(), /* useDefiniteSequence */false)
+				.setClientId(Env.getClientId())
+				.setFailOnError(true)
+				.build();
+
+		if (documentNo == null || documentNo == IDocumentNoBuilder.NO_DOCUMENTNO)
+		{
+			throw new AdempiereException("Cannot fetch documentNo for " + docTypeId);
+		}
+
+		return documentNo;
+	}
+
 	private ShipmentDeclaration createShipmentDeclaration(
-			@NonNull final ShipmentDeclarationConfig config,
-			@NonNull final Set<InOutAndLineId> shipmentAndLineIds)
+			@NonNull final DocTypeId docTypeId,
+			@NonNull final Set<InOutAndLineId> shipmentAndLineIds,
+			@NonNull final String docAction,
+			@NonNull final String documentNo)
 	{
 		Check.assumeNotEmpty(shipmentAndLineIds, "shipmentAndLineIds is not empty");
 
@@ -164,15 +208,21 @@ public class ShipmentDeclarationCreator
 				.collect(ImmutableList.toImmutableList());
 
 		final ShipmentDeclaration shipmentDeclaration = ShipmentDeclaration.builder()
+				.docTypeId(docTypeId)
+				.documentNo(documentNo)
+				//
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()))
 				.userId(UserId.ofRepoIdOrNull(shipment.getAD_User_ID()))
-				.docTypeId(config.getDocTypeId())
+				//
 				.shipmentDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipmentId(shipmentId)
-				.docAction(IDocument.ACTION_Complete)
+				//
 				.docStatus(IDocument.STATUS_Drafted)
+				.docAction(docAction)
+				//
 				.lines(shipmentDeclarationLines)
+				//
 				.build();
 
 		shipmentDeclaration.updateLineNos();

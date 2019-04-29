@@ -73,6 +73,8 @@ public class ShipmentDeclarationRepository
 					.collect(GuavaCollectors.toHashMapByKey(lineRecord -> ShipmentDeclarationLineId.ofRepoId(lineRecord.getM_Shipment_Declaration_ID(), lineRecord.getM_Shipment_Declaration_Line_ID())));
 		}
 
+		shipmentDeclarationRecord.setDocumentNo(shipmentDeclaration.getDocumentNo());
+
 		final OrgId orgId = shipmentDeclaration.getOrgId();
 		shipmentDeclarationRecord.setAD_Org_ID(orgId.getRepoId());
 
@@ -93,6 +95,10 @@ public class ShipmentDeclarationRepository
 
 		shipmentDeclarationRecord.setDocAction(shipmentDeclaration.getDocAction());
 		shipmentDeclarationRecord.setDocStatus(shipmentDeclaration.getDocStatus());
+
+		shipmentDeclarationRecord.setM_Shipment_Declaration_Base_ID(ShipmentDeclarationId.toRepoId(shipmentDeclaration.getBaseShipmentDeclarationId()));
+
+		shipmentDeclarationRecord.setM_Shipment_Declaration_Correction_ID(ShipmentDeclarationId.toRepoId(shipmentDeclaration.getCorrectionShipmentDeclarationId()));
 
 		saveRecord(shipmentDeclarationRecord);
 

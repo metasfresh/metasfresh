@@ -51,4 +51,9 @@ public class ShipmentDeclarationId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(final ShipmentDeclarationId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
 }

@@ -14,7 +14,7 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1647423946L;
+	private static final long serialVersionUID = 1169427355L;
 
     /** Standard Constructor */
     public X_M_Shipment_Declaration (Properties ctx, int M_Shipment_Declaration_ID, String trxName)
@@ -369,6 +369,74 @@ public class X_M_Shipment_Declaration extends org.compiere.model.PO implements I
 	public int getM_InOut_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipment_Declaration getM_Shipment_Declaration_Base() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipment_Declaration_Base_ID, org.compiere.model.I_M_Shipment_Declaration.class);
+	}
+
+	@Override
+	public void setM_Shipment_Declaration_Base(org.compiere.model.I_M_Shipment_Declaration M_Shipment_Declaration_Base)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipment_Declaration_Base_ID, org.compiere.model.I_M_Shipment_Declaration.class, M_Shipment_Declaration_Base);
+	}
+
+	/** Set M_Shipment_Declaration_Base_ID.
+		@param M_Shipment_Declaration_Base_ID M_Shipment_Declaration_Base_ID	  */
+	@Override
+	public void setM_Shipment_Declaration_Base_ID (int M_Shipment_Declaration_Base_ID)
+	{
+		if (M_Shipment_Declaration_Base_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipment_Declaration_Base_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipment_Declaration_Base_ID, Integer.valueOf(M_Shipment_Declaration_Base_ID));
+	}
+
+	/** Get M_Shipment_Declaration_Base_ID.
+		@return M_Shipment_Declaration_Base_ID	  */
+	@Override
+	public int getM_Shipment_Declaration_Base_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipment_Declaration_Base_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipment_Declaration getM_Shipment_Declaration_Correction() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipment_Declaration_Correction_ID, org.compiere.model.I_M_Shipment_Declaration.class);
+	}
+
+	@Override
+	public void setM_Shipment_Declaration_Correction(org.compiere.model.I_M_Shipment_Declaration M_Shipment_Declaration_Correction)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipment_Declaration_Correction_ID, org.compiere.model.I_M_Shipment_Declaration.class, M_Shipment_Declaration_Correction);
+	}
+
+	/** Set M_Shipment_Declaration_Correction_ID.
+		@param M_Shipment_Declaration_Correction_ID M_Shipment_Declaration_Correction_ID	  */
+	@Override
+	public void setM_Shipment_Declaration_Correction_ID (int M_Shipment_Declaration_Correction_ID)
+	{
+		if (M_Shipment_Declaration_Correction_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipment_Declaration_Correction_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipment_Declaration_Correction_ID, Integer.valueOf(M_Shipment_Declaration_Correction_ID));
+	}
+
+	/** Get M_Shipment_Declaration_Correction_ID.
+		@return M_Shipment_Declaration_Correction_ID	  */
+	@Override
+	public int getM_Shipment_Declaration_Correction_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipment_Declaration_Correction_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
