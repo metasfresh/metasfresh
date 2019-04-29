@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 const Checkbox = props => {
+  const rawWidget = useRef(null);
   const {
     widgetData,
     disabled,
@@ -27,16 +28,15 @@ const Checkbox = props => {
           (widgetData[0].readonly || disabled ? 'input-disabled ' : '')
         }
         tabIndex={fullScreen ? -1 : tabIndex}
-        ref={c => (this.rawWidget = c)}
         onKeyDown={e => {
           if (e.key === ' ') {
             e.preventDefault();
-            this.rawWidget && this.rawWidget.click();
+            rawWidget.current && rawWidget.current.click();
           }
         }}
       >
         <input
-          ref={c => (this.rawWidget = c)}
+          ref={rawWidget}
           type="checkbox"
           checked={widgetData[0].value}
           disabled={widgetData[0].readonly || disabled}
@@ -65,6 +65,11 @@ const Checkbox = props => {
 };
 
 Checkbox.propTypes = {
+  widgetData: PropTypes.array.isRequired,
+  disabled: PropTypes.bool,
+  fullScreen: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  filterWidget: PropTypes.bool,
   handlePatch: PropTypes.func,
   widgetField: PropTypes.string,
   id: PropTypes.string,
