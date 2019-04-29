@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import classnames from 'classnames';
 
 class Checkbox extends Component {
   constructor(props) {
@@ -21,6 +22,12 @@ class Checkbox extends Component {
       id,
       filterWidget,
     } = this.props;
+
+    const props = {};
+
+    if (widgetData[0].value) {
+      props.checked = true;
+    }
 
     return (
       <div>
@@ -47,12 +54,11 @@ class Checkbox extends Component {
             tabIndex="-1"
           />
           <div
-            className={
-              'input-checkbox-tick ' +
-              (widgetData[0].value === false && filterWidget
-                ? 'input-state-false '
-                : '')
-            }
+            className={classnames('input-checkbox-tick', {
+              'input-state-false':
+                widgetData[0].value === false && filterWidget,
+              checked: widgetData[0].value,
+            })}
           />
         </label>
         {filterWidget &&
