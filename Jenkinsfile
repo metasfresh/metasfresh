@@ -88,9 +88,12 @@ timestamps
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSION ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
 
+	final def misc = new de.metas.jenkins.Misc();
+	
+	final String fallbackDockerTag =  misc.mkDockerTag("${MF_UPSTREAM_BRANCH}_LATEST")
 	final MF_DOCKER_IMAGES = [:];
-	MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE ?: "${MF_UPSTREAM_BRANCH}_LATEST"
-	MF_DOCKER_IMAGES['metasfresh-edi'] = params.MF_METASFRESH_EDI_DOCKER_IMAGE ?: "${MF_UPSTREAM_BRANCH}_LATEST"
+	MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE ?: "nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:${fallbackDockerTag}"
+	MF_DOCKER_IMAGES['metasfresh-edi'] = params.MF_METASFRESH_EDI_DOCKER_IMAGE ?: "nexus.metasfresh.com:6001/metasfresh/de-metas-edi-esb-camel:${fallbackDockerTag}"
 
 	final MF_ARTIFACT_URLS = [:];
 	String dbInitDockerImageName; // will be set if and when the docker image is created
@@ -100,7 +103,6 @@ timestamps
 	final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
 	currentBuild.displayName = "artifact-version ${MF_VERSION}";
 
-	final def misc = new de.metas.jenkins.Misc();
 	final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
 
 node('agent && linux')
