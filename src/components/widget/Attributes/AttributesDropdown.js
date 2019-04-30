@@ -14,14 +14,6 @@ class AttributesDropdown extends Component {
     };
   }
 
-  componentDidMount() {
-    this.mounted = true;
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
@@ -34,18 +26,15 @@ class AttributesDropdown extends Component {
 
       if (intervalsLeft === 0) {
         window.clearInterval(requestsInterval);
-
-        if (this.mounted) {
-          onClickOutside();
-        }
+        onClickOutside();
       }
     }, 10);
   };
 
-  handlePatch = (prop, value, attrId) => {
-    const { handlePatch } = this.props;
+  handlePatch = (prop, value, id) => {
+    const { handlePatch, attrId } = this.props;
     const { patchCallbacks } = this.state;
-    const updatedCallbacks = patchCallbacks.set(attrId, true);
+    const updatedCallbacks = patchCallbacks.set(id, true);
 
     this.setState(
       {
@@ -53,7 +42,7 @@ class AttributesDropdown extends Component {
       },
       () => {
         handlePatch(prop, value, attrId, () => {
-          const resolvedCallbacks = this.state.patchCallbacks.delete(attrId);
+          const resolvedCallbacks = this.state.patchCallbacks.delete(id);
 
           this.setState({
             patchCallbacks: resolvedCallbacks,
@@ -76,7 +65,7 @@ class AttributesDropdown extends Component {
       isModal,
     } = this.props;
 
-    if (layout && this.mounted) {
+    if (layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map(elem => data[elem.field] || -1);
         return (
@@ -90,7 +79,7 @@ class AttributesDropdown extends Component {
             key={idx}
             type={item.type}
             caption={item.caption}
-            handlePatch={(prop, value) => this.handlePatch(prop, value, attrId)}
+            handlePatch={(prop, value) => this.handlePatch(prop, value, idx)}
             handleChange={handleChange}
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}
