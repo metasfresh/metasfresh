@@ -58,6 +58,7 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
 	}
 
+	/** Ignored; un-ignore if you have a local (private) file you want to run a quick test with. */
 	@Test
 	@Ignore
 	public void localFile()
