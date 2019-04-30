@@ -261,7 +261,7 @@ exports[`Aggregated inventory test > Create a new aggreagted-HUs inventory doc #
       "widgetType": "Date"
     },
     "Posted": {
-      "displayed": false,
+      "displayed": "WE_DONT_CARE_IN_THIS_SPEC",
       "field": "Posted",
       "lookupValuesStale": true,
       "mandatory": true,

@@ -25,6 +25,7 @@ class Inventory extends Metasfresh {
         inventoryJson.fieldsByName.V$DocumentSummary = 'REPLACED_WITH_CONST';
         inventoryJson.fieldsByName.ID.value = 'REPLACED_WITH_CONST';
         inventoryJson.fieldsByName.MovementDate.value = 'REPLACED_WITH_CONST';
+        inventoryJson.fieldsByName.Posted.displayed = 'WE_DONT_CARE_IN_THIS_SPEC';
         cy.wrap(inventoryJson).toMatchSnapshot(`${labelPrefix}_header`);
       }
     );

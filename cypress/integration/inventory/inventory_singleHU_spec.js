@@ -15,7 +15,7 @@ describe('Aggregated inventory test', function() {
   });
 
   const timestamp = new Date().getTime();
-  const productName = `InventoryProduct ${timestamp}`;
+  const productName = `SingleHUInventory ${timestamp}`;
   const productValue = `${timestamp}`;
   before(function() {
     setSingleHUsDocTypeAsDefault();
@@ -81,7 +81,7 @@ function setSingleHUsDocTypeAsDefault() {
   doctypes.visit(inventory.docTypeInventoryWithMultipleHUs);
   cy.isChecked('IsDefault').then(isDefaultValue => {
     cy.log(`isDefaultValue=${isDefaultValue}`);
-    if (!isDefaultValue) {
+    if (isDefaultValue) {
       cy.clickOnCheckBox('IsDefault');
     }
   });
