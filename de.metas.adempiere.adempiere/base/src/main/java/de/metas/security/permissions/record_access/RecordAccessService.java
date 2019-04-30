@@ -369,11 +369,19 @@ public class RecordAccessService
 
 	private static RecordAccess toUserGroupRecordAccess(final I_AD_User_Record_Access record)
 	{
+		final UserId userId = InterfaceWrapperHelper.isNull(record, I_AD_User_Record_Access.COLUMNNAME_AD_User_ID)
+				? null
+				: UserId.ofRepoId(record.getAD_User_ID());
+
+		final UserGroupId userGroupId = InterfaceWrapperHelper.isNull(record, I_AD_User_Record_Access.COLUMNNAME_AD_UserGroup_ID)
+				? null
+				: UserGroupId.ofRepoId(record.getAD_UserGroup_ID());
+
 		return RecordAccess.builder()
 				.recordRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.principal(Principal.builder()
-						.userId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
-						.userGroupId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_ID()))
+						.userId(userId)
+						.userGroupId(userGroupId)
 						.build())
 				.permission(Access.ofCode(record.getAccess()))
 				.build();
