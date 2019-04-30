@@ -10,6 +10,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
@@ -57,7 +58,9 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
 	}
 
+	/** Ignored; un-ignore if you have a local (private) file you want to run a quick test with. */
 	@Test
+	@Ignore
 	public void file()
 	{
 		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
