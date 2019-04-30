@@ -112,9 +112,10 @@ declare namespace Cypress {
      * Write a string into an input field. Assert that the frontend performs a PATCH request with the given value.
      * 
      * @param fieldName name of the field is question
-     * @param stringValue the string to write. This command prepends "{enter}" to that string. Also works for date fields, e.g. '01/01/2018'.
+     * @param stringValue the string to write. This command prepends "{enter}" to that string. Also works for number or date fields, e.g. '01/01/2018' when invoked with noRequest=true.
      * @param modal optional - set true if the field in question is assumed to be in a modal/overlay dialog.
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
+     * @param noRequest optional - set true if the command shall not very that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
      * 
      * @example
      * ```
@@ -124,7 +125,7 @@ declare namespace Cypress {
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoStringField('Description', 'myname', true)
      */
-    writeIntoStringField(fieldName: string, stringValue: string, modal: boolean): Chainable<any>
+    writeIntoStringField(fieldName: string, stringValue: string, modal: boolean, rewriteUrl: string, noRequest: boolean): Chainable<any>
 
     /**
      * Write a string into a text area

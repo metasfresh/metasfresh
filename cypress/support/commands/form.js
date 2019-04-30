@@ -105,11 +105,6 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
   });
 });
 
-/**
- * Should also work for date columns, e.g. '01/01/2018{enter}'.
- *
- * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
- */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   describe('Enter value into string field', function() {
     const aliasName = `writeIntoStringField-${new Date().getTime()}`;
