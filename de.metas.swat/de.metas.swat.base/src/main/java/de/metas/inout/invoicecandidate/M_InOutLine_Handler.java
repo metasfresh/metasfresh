@@ -1,5 +1,6 @@
 package de.metas.inout.invoicecandidate;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
@@ -294,7 +295,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Handler Customer/Verdor Returns
-		BigDecimal qtyMultiplier = BigDecimal.ONE;
+		BigDecimal qtyMultiplier = ONE;
 		if (inOutBL.isReturnMovementType(inOut.getMovementType()))
 		{
 			qtyMultiplier = qtyMultiplier.negate();
@@ -313,9 +314,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			ic.setM_Product_ID(productId.getRepoId());
 			ic.setC_Charge_ID(chargeId);
-
-			setC_UOM_ID(ic);
-			ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
+			ic.setQtyToInvoice(ZERO); // to be computed
 		}
 
 		//
@@ -342,7 +341,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 			else
 			{
-				ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Sofort); // Immediate
+				ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
 			}
 		}
 
@@ -445,13 +444,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 		final String movementType = inout.getMovementType();
 
-		BigDecimal multiplier = BigDecimal.ONE;
 		if (inOutBL.isReturnMovementType(movementType))
 		{
-			multiplier = multiplier.negate();
+			ONE.negate();
 		}
-
-		return multiplier;
+		return ONE;
 	}
 
 	/**
@@ -468,7 +465,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		// we won't create another IC, so the method we call needs to allocate it all to the given IC
 		final boolean callerCanCreateAdditionalICs = false;
-		setOrderedData(ic, null, callerCanCreateAdditionalICs);
+		setOrderedData(ic, null/*forceQtyOrdered*/, callerCanCreateAdditionalICs);
 	}
 
 	private void setOrderedData(
@@ -493,6 +490,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setDateOrdered(inOut.getMovementDate());
 		}
 
+		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
+
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
@@ -503,11 +502,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final BigDecimal qtyDelivered = qtyOrdered.multiply(qtyMultiplier);
 			ic.setQtyOrdered(qtyDelivered);
+
+			final BigDecimal qtyEntered = inOutLine.getQtyEntered().multiply(qtyMultiplier);
+			ic.setQtyEntered(qtyEntered);
 		}
 		else
 		{
 			// not yet delivered (e.g. IP), reversed, voided etc. Set qty to zero.
-			ic.setQtyOrdered(BigDecimal.ZERO);
+			ic.setQtyOrdered(ZERO);
+			ic.setQtyEntered(ZERO);
 		}
 	}
 
@@ -748,13 +751,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_BPartner(billBPartner);
 		ic.setBill_Location(billBPLocation);
 		ic.setBill_User(billBPContact);
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
-		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
 	}
 
 	@Override

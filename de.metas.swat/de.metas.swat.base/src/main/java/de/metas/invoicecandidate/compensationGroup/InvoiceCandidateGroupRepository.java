@@ -32,7 +32,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -141,7 +140,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		final BigDecimal price = invoiceCandidate.getPriceEntered();
 		final BigDecimal qty = invoiceCandidate.getQtyToInvoice();
 		final BigDecimal lineNetAmt = price.multiply(qty);
-
+//TODO check what to do ..e.g. go with priceUOM or whatever..
 		return GroupCompensationLine.builder()
 				.repoId(extractLineId(invoiceCandidate))
 				.seqNo(invoiceCandidate.getLine())
