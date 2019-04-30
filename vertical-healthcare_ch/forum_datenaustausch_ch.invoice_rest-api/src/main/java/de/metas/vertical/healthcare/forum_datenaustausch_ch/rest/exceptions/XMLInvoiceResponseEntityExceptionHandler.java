@@ -1,11 +1,15 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions;
 
-import lombok.NonNull;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvalidRequestIdException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvoiceAttachException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvoiceInputStreamException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvoiceUnmarshalException;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,4 +41,29 @@ public class XMLInvoiceResponseEntityExceptionHandler
 	{
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 	}
+
+	@ExceptionHandler(XmlInvalidRequestIdException.class)
+	public ResponseEntity<String> handleXmlInvalidRequestIdException(@NonNull final XmlInvalidRequestIdException e)
+	{
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
+	@ExceptionHandler(XmlInvoiceInputStreamException.class)
+	public ResponseEntity<String> handleXmlInvoiceInputStreamException(@NonNull final XmlInvoiceInputStreamException e)
+	{
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
+	@ExceptionHandler(XmlInvoiceUnmarshalException.class)
+	public ResponseEntity<String> handleXmlInvoiceUnmarshalException(@NonNull final XmlInvoiceUnmarshalException e)
+	{
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
+	@ExceptionHandler(XmlInvoiceAttachException.class)
+	public ResponseEntity<String> handleXmlInvoiceAttachException(@NonNull final XmlInvoiceAttachException e)
+	{
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
 }
