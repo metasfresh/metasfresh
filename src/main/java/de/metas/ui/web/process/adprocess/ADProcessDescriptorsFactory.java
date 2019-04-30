@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -326,7 +327,8 @@ import lombok.NonNull;
 		}
 		else
 		{
-			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(adProcessParamRecord.getAD_Element(), I_AD_Element.class);
+			final I_AD_Element element = Services.get(IADElementDAO.class).getById(adProcessParamRecord.getAD_Element_ID());
+			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(element, I_AD_Element.class);
 			paramDescriptorBuilder
 					.setCaption(elementTrl.getName())
 					.setDescription(elementTrl.getDescription());
