@@ -50,8 +50,8 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 	public static final transient FullTextSearchSqlDocumentFilterConverter instance = new FullTextSearchSqlDocumentFilterConverter();
 
 	public static final String FILTER_ID = "full-text-search";
-	public static final String PARAM_SearchText = "Search";
-	public static final String PARAM_Context = "Context";
+	static final String PARAM_SearchText = "Search";
+	static final String PARAM_Context = "Context";
 
 	private static final Logger logger = LogManager.getLogger(FullTextSearchSqlDocumentFilterConverter.class);
 
