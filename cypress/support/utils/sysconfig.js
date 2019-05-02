@@ -23,6 +23,11 @@ export class SysConfig {
         this.value = value;
         return this;
       }
+      setDescription(description) {
+        cy.log(`BPartner - set description = ${description}`);
+        this.description = description;
+        return this;
+      }
 
       build() {
         return new SysConfig(this);
