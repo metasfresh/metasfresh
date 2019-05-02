@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
@@ -53,7 +54,7 @@ public class AttributesKeysTest
 	}
 
 	@Test
-	public void test_createAttributesKeyFromASI()
+	public void createAttributesKeyFromASIStorageAttributes()
 	{
 		final I_M_Attribute attr1 = createStorageRelevantAttribute("test1");
 		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
@@ -68,11 +69,12 @@ public class AttributesKeysTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
+		// invoke the method under test
 		final Optional<AttributesKey> result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asi.getM_AttributeSetInstance_ID());
 		assertThat(result).isPresent();
 
 		final AttributesKey expectedResult = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
-		assertThat(result.get()).isEqualTo(expectedResult);
+		assertThat(result).contains(expectedResult);
 	}
 
 	private final I_M_Attribute createStorageRelevantAttribute(@NonNull final String name)
@@ -82,4 +84,25 @@ public class AttributesKeysTest
 		save(attribute);
 		return attribute;
 	}
+
+	@Test
+	public void createAttributeSetInstanceFromAttributesKey()
+	{
+		final I_M_Attribute attr1 = createStorageRelevantAttribute("test1");
+		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
+
+		final I_M_Attribute attr2 = createStorageRelevantAttribute("test2");
+		final I_M_AttributeValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "testValue2");
+
+		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(
+				attributeValue1.getM_AttributeValue_ID(),
+				attributeValue2.getM_AttributeValue_ID());
+
+		// invoke the method under test
+		final AttributeSetInstanceId result = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
+
+		final Optional<AttributesKey> reloadedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(result);
+		assertThat(reloadedAttributesKey).isPresent().contains(attributesKey);
+	}
+
 }
