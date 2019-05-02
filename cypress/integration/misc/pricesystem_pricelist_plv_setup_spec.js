@@ -1,9 +1,4 @@
 describe('Create Pricing Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/14', function() {
-  before(function() {
-    // login before each test
-    cy.loginByForm();
-  });
-
   it('Create a new Pricesystem and Pricelist with PLV', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
 
