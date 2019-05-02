@@ -146,7 +146,7 @@ class TableItem extends PureComponent {
         console.log('stop propagation');
         e && e.stopPropagation();
       }
-      console.log('ITEM: ', item);
+      // console.log('ITEM: ', item);
       // console.log('EDIT PROPERTY: ', property, this.state.edited)
       this.setState(
         {
@@ -194,11 +194,12 @@ class TableItem extends PureComponent {
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
-          console.log('TableItem handleKeyDown ENTER 1: ', property, widgetData)
+          // console.log('TableItem handleKeyDown ENTER 1: ', property, widgetData)
           this.handleEditProperty(e, property, widgetData[0]);
         } else {
           console.log('TableItem handleKeyDown ENTER 2')
           this.listenOnKeysTrue();
+          // this.handleEditProperty(e, property, widgetData[0]);
         }
         break;
       case 'Tab':
@@ -217,7 +218,7 @@ class TableItem extends PureComponent {
   listenOnKeysTrue = () => {
     const { changeListenOnTrue } = this.props;
 
-    console.log('TableItem listenOnKeysTrue');
+    // console.log('TableItem listenOnKeysTrue');
 
     this.setState({
       listenOnKeys: true,
@@ -228,7 +229,7 @@ class TableItem extends PureComponent {
   listenOnKeysFalse = () => {
     const { changeListenOnFalse } = this.props;
 
-    console.log('TableItem listenOnKeysFalse');
+    // console.log('TableItem listenOnKeysFalse');
 
     this.setState({
       listenOnKeys: false,
@@ -253,7 +254,7 @@ class TableItem extends PureComponent {
     const { onItemChange } = this.props;
     const editedCells = { ...this.state.editedCells };
 
-    console.log('handleCellValueChange');
+    // console.log('handleCellValueChange');
 
     // this is something we're not doing usually as all field
     // layouts come from the server. But in cases of modals
@@ -286,7 +287,7 @@ class TableItem extends PureComponent {
     // const cell = this.getCell(col);
     // const property = cell.fields[0].field;
     // const showOnEdit = this.isEditableOnDemand(cell);
-    console.log('TableItem handleCellFocused: ', property);//, showOnEdit, cell)
+    // console.log('TableItem handleCellFocused: ', property);//, showOnEdit, cell)
     this.handleEditProperty(e, property, widgetData[0]);
   };
 

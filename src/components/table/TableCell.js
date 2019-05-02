@@ -186,7 +186,7 @@ class TableCell extends PureComponent {
     //   }
     // );
     this.setBlurWidgetTrue(() => {
-      console.log('TableCell handlePatch')
+      // console.log('TableCell handlePatch')
       mainTable && onCellChange && onCellChange();
     });
     // this.setBlurWidget(() => {
@@ -296,7 +296,7 @@ class TableCell extends PureComponent {
         onDoubleClick={handleDoubleClick}
         onKeyDown={this.handleKeyDown}
         onFocus={e => {
-          console.log('TableCell onFocus: ', widgetBlurred)
+          // console.log('TableCell onFocus: ', widgetBlurred)
 
           if (!widgetBlurred) {
             // const el = this.cell.getElementsByTagName('input');

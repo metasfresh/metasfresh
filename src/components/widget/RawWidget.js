@@ -131,11 +131,11 @@ export class RawWidget extends Component {
       return this.handlePatch(property, value);
     }
 
-    if (!textField && (key === 'ArrowUp' || key === 'ArrowDown')) {
-      // console.log('PREVENT !')
-      // e.preventDefault();
-      console.log('NOT PREVENT')
-    }
+    // if (!textField && (key === 'ArrowUp' || key === 'ArrowDown')) {
+    //   // console.log('PREVENT !')
+    //   // e.preventDefault();
+    //   console.log('NOT PREVENT')
+    // }
   };
 
   // isForce will be used for Datepicker
