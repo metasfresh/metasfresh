@@ -55,8 +55,6 @@ class InventoryLineTest
 
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 
-	private I_C_UOM uomRecord;
-
 	private Quantity qtyZero;
 	private Quantity qtyOne;
 	private Quantity qtyTwo;
@@ -70,7 +68,7 @@ class InventoryLineTest
 	{
 		AdempiereTestHelper.get().init();
 
-		uomRecord = newInstance(I_C_UOM.class);
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
 		qtyZero = Quantity.of(ZERO, uomRecord);

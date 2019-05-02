@@ -76,8 +76,6 @@ class DraftInventoryLinesCreatorTest
 
 	private LocatorId locatorId;
 
-	private I_C_UOM uomRecord;
-
 	private InventoryLineRepository inventoryLineRepository;
 	private InventoryId inventoryId;
 
@@ -98,7 +96,7 @@ class DraftInventoryLinesCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		uomRecord = newInstance(I_C_UOM.class);
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);

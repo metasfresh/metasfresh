@@ -67,7 +67,7 @@ public class M_Inventory extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		evalQuickInput(ctx, WindowNo, mTab);
+		evalQuickInput(WindowNo, mTab);
 		selectFocus(mTab);
 
 		return NO_ERROR;
@@ -92,7 +92,7 @@ public class M_Inventory extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		evalQuickInput(ctx, WindowNo, mTab);
+		evalQuickInput(WindowNo, mTab);
 		selectFocus(mTab);
 
 		return NO_ERROR;
@@ -102,7 +102,6 @@ public class M_Inventory extends CalloutEngine
 	 * Evaluates {@link I_M_Inventory} table and if possible creates a new {@link I_M_InventoryLine} and clears quick input fields
 	 */
 	private void evalQuickInput(
-			final Properties ctx,
 			final int WindowNo,
 			@NonNull final GridTab mTab)
 	{
