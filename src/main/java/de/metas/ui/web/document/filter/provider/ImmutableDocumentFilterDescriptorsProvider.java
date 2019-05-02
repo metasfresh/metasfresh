@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.filter;
+package de.metas.ui.web.document.filter.provider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +17,7 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import lombok.NonNull;
 import lombok.ToString;
 

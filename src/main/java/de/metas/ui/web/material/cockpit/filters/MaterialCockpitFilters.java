@@ -18,8 +18,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.util.Services;
 import lombok.NonNull;

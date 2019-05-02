@@ -1,35 +1,30 @@
-package de.metas.ui.web.document.filter;
+package de.metas.ui.web.document.filter.provider.userQuery;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.search.IUserQuery;
-import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.I_AD_UserQuery;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
@@ -55,33 +50,16 @@ import lombok.NonNull;
  * #L%
  */
 
-final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
+class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
 
 	private final UserQueryRepository repository;
 	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
 
-	public UserQueryDocumentFilterDescriptorsProvider(
-			@NonNull final AdTabId adTabId, 
-			final String tableName, 
-			final Collection<DocumentFieldDescriptor> fields)
+	public UserQueryDocumentFilterDescriptorsProvider(@NonNull UserQueryRepository repository)
 	{
-		Check.assumeNotEmpty(tableName, "tableName is not empty");
-
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-
-		final List<IUserQueryField> searchFields = fields
-				.stream()
-				.map(field -> UserQueryField.of(field))
-				.collect(GuavaCollectors.toImmutableList());
-
-		repository = UserQueryRepository.builder()
-				.setAD_Tab_ID(adTabId.getRepoId())
-				.setAD_Table_ID(adTableId)
-				.setAD_User_ID(100) // FIXME: hardcoded, see https://github.com/metasfresh/metasfresh-webui/issues/162
-				.setSearchFields(searchFields)
-				.build();
+		this.repository = repository;
 	}
 
 	@Override
@@ -174,80 +152,5 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		}
 
 		return filter.build();
-	}
-
-	private static final class UserQueryField implements IUserQueryField
-	{
-		public static final UserQueryField of(final DocumentFieldDescriptor field)
-		{
-			return new UserQueryField(field);
-		}
-
-		public static final UserQueryField cast(final IUserQueryField userQueryField)
-		{
-			return (UserQueryField)userQueryField;
-		}
-
-		private final String fieldName;
-		private final ITranslatableString displayName;
-		private final DocumentFieldWidgetType widgetType;
-		private final Optional<LookupDescriptor> lookupDescriptor;
-
-		private UserQueryField(final DocumentFieldDescriptor field)
-		{
-			// NOTE: don't store the reference to "field" because we want to make this class as light as possible
-			fieldName = field.getFieldName();
-			displayName = field.getCaption();
-			widgetType = field.getWidgetType();
-			lookupDescriptor = field.getLookupDescriptor();
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper("documentField")
-					.addValue(fieldName)
-					.toString();
-		}
-
-		@Override
-		public String getColumnName()
-		{
-			return fieldName;
-		}
-
-		@Override
-		public ITranslatableString getDisplayName()
-		{
-			return displayName;
-		}
-
-		@Override
-		public String getColumnSQL()
-		{
-			return null; // shall not be needed
-		}
-
-		public DocumentFieldWidgetType getWidgetType()
-		{
-			return widgetType;
-		}
-
-		@Override
-		public String getValueDisplay(final Object value)
-		{
-			return null; // not needed
-		}
-
-		@Override
-		public Object convertValueToFieldType(final Object valueObj)
-		{
-			return valueObj;
-		}
-
-		public Optional<LookupDescriptor> getLookupDescriptor()
-		{
-			return lookupDescriptor;
-		}
 	}
 }
