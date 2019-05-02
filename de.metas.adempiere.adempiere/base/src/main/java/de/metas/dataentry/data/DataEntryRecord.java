@@ -58,8 +58,7 @@ public class DataEntryRecord
 
 	ITableRecordReference mainRecord;
 
-	@Getter(AccessLevel.NONE)
-	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
+	@Getter(AccessLevel.NONE) final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
 
 	@Builder
 	private DataEntryRecord(
@@ -67,7 +66,7 @@ public class DataEntryRecord
 			final boolean isNew,
 			@NonNull final ITableRecordReference mainRecord,
 			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
-			@NonNull final List<DataEntryRecordField<?>> fields)
+			@Nullable final List<DataEntryRecordField<?>> fields)
 	{
 		this.id = Optional.ofNullable(id);
 		this.isNew = isNew;
@@ -75,9 +74,13 @@ public class DataEntryRecord
 		this.dataEntrySubGroupId = dataEntrySubGroupId;
 
 		this.fields = new HashMap<>();
-		for (final DataEntryRecordField<?> i : fields)
+
+		if (fields != null)
 		{
-			this.fields.put(i.getDataEntryFieldId(), i);
+			for (final DataEntryRecordField<?> field : fields)
+			{
+				this.fields.put(field.getDataEntryFieldId(), field);
+			}
 		}
 	}
 
@@ -86,7 +89,9 @@ public class DataEntryRecord
 		fields.clear();
 	}
 
-	/** @return {@code true} if the given value is different from the previous one. */
+	/**
+	 * @return {@code true} if the given value is different from the previous one.
+	 */
 	public boolean setRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final UserId updatedBy,
@@ -114,7 +119,7 @@ public class DataEntryRecord
 		}
 
 		final DataEntryRecordField<?> //
-		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
+				dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
 
 		fields.put(dataEntryFieldId, dataEntryRecordField);
 		return true;

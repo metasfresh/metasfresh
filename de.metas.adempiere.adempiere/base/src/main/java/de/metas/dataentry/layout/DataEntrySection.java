@@ -41,7 +41,7 @@ public class DataEntrySection
 
 	String internalName;
 
-	boolean initallyClosed;
+	boolean initallyClosed; 			// fixme: typo!
 
 	List<DataEntryLine> dataEntryLines;
 
