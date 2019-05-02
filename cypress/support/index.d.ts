@@ -101,12 +101,12 @@ declare namespace Cypress {
      * 
      * @param fieldName name of the field is question
      * @param partialValue string to enter into the lookup field
-     * @param listValue (sub-)string of the expected item to show up in the lookup list when the partial value was entered
+     * @param expectedListValue (sub-)string of the expected item to show up in the lookup list when the partial value was entered
      * @param typeList optional, default = false; use true when selecting value from a list not lookup field.
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch.
      */
-    writeIntoLookupListField(fieldName: String, partialValue: String, listValue: String, typeList: boolean, modal:boolean, rewriteUrl:String): Chainable<any>
+    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList: boolean, modal:boolean, rewriteUrl:String): Chainable<any>
 
     /**
      * Write a string into an input field. Assert that the frontend performs a PATCH request with the given value.

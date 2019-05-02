@@ -47,9 +47,9 @@ export class Product {
     return this;
   }
 
-  setProductCategory(m_product_category_id) {
-    cy.log(`Product - set Product Category = ${m_product_category_id}`);
-    this.m_product_category_id = m_product_category_id;
+  setProductCategory(m_product_category) {
+    cy.log(`Product - set Product Category = ${m_product_category}`);
+    this.m_product_category = m_product_category;
     return this;
   }
 
@@ -63,7 +63,6 @@ export class Product {
 
 function applyProduct(product) {
   describe(`Create new Product ${product.name}`, function() {
-
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 
@@ -71,7 +70,7 @@ function applyProduct(product) {
     //cy.clearField('Value');
     //cy.writeIntoStringField('Value', product.value);
 
-    cy.selectInListField('M_Product_Category_ID', product.m_product_category_id);
+    cy.selectInListField('M_Product_Category_ID', product.m_product_category);
 
     cy.writeIntoStringField('Description', product.description);
 
@@ -135,18 +134,19 @@ function applyProductCategory(productCategory) {
 }
 
 function applyProductPrice(price) {
-  describe(`Create new Product Price ${price.m_pricelist_version_id}`, function() {
+  describe(`Create new Product Price ${price.m_pricelist_version}`, function() {
     cy.get('#tab_M_ProductPrice').click();
     cy.pressAddNewButton();
     cy.writeIntoLookupListField(
       'M_PriceList_Version_ID',
-      price.m_pricelist_version_id,
-      price.m_pricelist_version_id,
-      null
+      price.m_pricelist_version,
+      price.m_pricelist_version,
+      false /*typeList*/,
+      true /*modal*/
     );
     cy.clearField('PriceStd');
     cy.writeIntoStringField('PriceStd', price.priceStd);
-    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory_id);
+    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory);
     cy.pressDoneButton();
   });
 }
