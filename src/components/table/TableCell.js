@@ -131,6 +131,8 @@ class TableCell extends PureComponent {
     this.setState({
       widgetBlurred: false,
     });
+
+    console.log('TableCell blurwidgetfalse')
   };
 
   setBlurWidgetTrue = callback => {
@@ -185,7 +187,7 @@ class TableCell extends PureComponent {
     // );
     this.setBlurWidgetTrue(() => {
       console.log('TableCell handlePatch')
-      mainTable && onCellChange && onCellChange();   
+      mainTable && onCellChange && onCellChange();
     });
     // this.setBlurWidget(() => {
     //   this.cell.focus();
@@ -222,7 +224,7 @@ class TableCell extends PureComponent {
       item,
       windowId,
       rowId,
-      colIdx,
+      property,
       tabId,
       handleDoubleClick,
       updatedRow,
@@ -240,6 +242,7 @@ class TableCell extends PureComponent {
       modalVisible,
       onClickOutside,
       showWidget,
+      isEditable,
     } = this.props;
     const docId = `${this.props.docId}`;
     const { tooltipToggled, widgetBlurred } = this.state;
@@ -293,14 +296,16 @@ class TableCell extends PureComponent {
         onDoubleClick={handleDoubleClick}
         onKeyDown={this.handleKeyDown}
         onFocus={e => {
+          console.log('TableCell onFocus: ', widgetBlurred)
+
           if (!widgetBlurred) {
             // const el = this.cell.getElementsByTagName('input');
             // if (el && el.length) {
             //   onCellFocused(e, el[0], rowId, cellIdx);
             // }
-            console.log('TableCell onFocus')
+            // console.log('TableCell onFocus')
 
-            onCellFocused(e, widgetData, rowId, colIdx);
+            onCellFocused(e, property, widgetData);
           } else {
             this.setBlurWidgetFalse();
           }
@@ -320,7 +325,7 @@ class TableCell extends PureComponent {
           }
         )}
       >
-        {isEdited || showWidget ? (
+        {(isEditable && isEdited) || showWidget ? (
           <MasterWidget
             {...item}
             entity={mainTable ? 'window' : entity}
@@ -384,6 +389,8 @@ TableCell.propTypes = {
   onCellChange: PropTypes.func,
   onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
+  isEditable: PropTypes.bool,
+  showWidget: PropTypes.bool,
 };
 
 export default connect(state => ({

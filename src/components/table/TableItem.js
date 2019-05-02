@@ -47,11 +47,14 @@ class TableItem extends PureComponent {
     }
   }
 
-  isCellEditable = item => {
+  isEditableOnDemand = item => {
     const { fieldsByName } = this.props;
     const { editedCells } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
-    const property = item.fields[0].field;
+    const property = item.fields ? item.fields[0].field : item.field;
+    // const property = item.field ? item.field : item.fields[0].field;
+
+    // console.log('isEditableOnDemand: ', cells[property], item)
 
     return (
       (cells &&
@@ -61,6 +64,25 @@ class TableItem extends PureComponent {
       item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
     );
   };
+
+  shouldShowWidget = item => {
+    const { fieldsByName } = this.props;
+    const { editedCells } = this.state;
+    const cells = merge({}, fieldsByName, editedCells);
+    // const property = item.field ? item.field : item.fields[0].field;
+    const property = item.fields ? item.fields[0].field : item.field;
+
+    return (
+      (cells &&
+        cells[property] &&
+        cells[property].viewEditorRenderMode ===
+          VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
+      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS
+    );
+  };
+
+  isAllowedFieldEdit = item =>
+    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
 
   getCell = colIdx => this.props.cols[colIdx];
 
@@ -75,71 +97,81 @@ class TableItem extends PureComponent {
     const { cols, fieldsByName } = this.props;
 
     if (cols && fieldsByName) {
-      cols.map(item => {
+      cols.map((item, idx) => {
         const property = item.fields[0].field;
         if (property === fieldName) {
           const widgetData = this.prepareWidgetData(item);
 
           if (widgetData) {
-            this.handleEditProperty(null, property, true, widgetData[0]);
+            this.handleEditProperty(null, property, widgetData[0], idx);
           }
         }
       });
     }
   };
 
-  handleEditProperty = (e, property, focusWidget, item) => {
+  handleEditProperty = (e, property, item) => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
+    let showWidget = false;
 
-    // TODO: this won't be necessary
+    if (item) {
+      // const cell = this.getCell(col);
+      // const property = cell.fields[0].field;
+      const showOnEdit = this.shouldShowWidget(item);
+      const isEditable = this.isEditableOnDemand(item);
+      showWidget = showOnEdit || isEditable;
+    }
+
+    // @TODO: this won't be necessary ?
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
     // if (activeCell !== elem) {
       this.setState({
         activeCell: elem,
       });
     }
-
-    this.editProperty(e, property, focusWidget, item);
+    // const { fieldsByName } = this.props;
+    // const { editedCells } = this.state;
+    // const cells = merge({}, fieldsByName, editedCells);
+    // // const property = item.field ? item.field : item.fields[0].field;
+    // // const property = item.fields ? item.fields[0].field : item.field;
+    // console.log('TableItem hatdleEditProperty: ', showOnEdit, isEditable, item, cells[property]);
+    this.editProperty(e, property, item, showWidget);
   };
 
-  editProperty = (e, property, focusWidget, item) => {
-    if (item ? !item.readonly : true) {
-      if (this.state.edited === property) e && e.stopPropagation();
-
+  editProperty = (e, property, item, showWidget) => {
+    // if (item ? !item.readonly : true) {
+    if (showWidget) {
+      if (this.state.edited === property) {
+        console.log('stop propagation');
+        e && e.stopPropagation();
+      }
+      console.log('ITEM: ', item);
+      // console.log('EDIT PROPERTY: ', property, this.state.edited)
       this.setState(
         {
           edited: property,
         },
         () => {
-          if (focusWidget) {
-            const elem = document.activeElement.getElementsByClassName(
-              'js-input-field'
-            )[0];
+          const elem = document.activeElement.getElementsByClassName(
+            'js-input-field'
+          )[0];
 
-            // TODO: We need to focus attributes button if it exists
+          // TODO: We need to focus attributes button if it exists
+          console.log('INNER edit property: ', elem);
 
-            if (elem) {
-              elem.focus();
-            }
+          // const disabled = elem && elem.className.includes('input-disabled');
+          const disabled = elem && elem.hasAttribute('disabled');
+          const readonly = elem && elem.className.includes('disabled');
 
-            const disabled = document.activeElement.querySelector(
-              '.input-disabled'
-            );
-            const readonly = document.activeElement.querySelector(
-              '.input-readonly'
-            );
-
-            if (disabled || readonly) {
-              this.listenOnKeysTrue();
-              this.handleEditProperty(e);
-            } else {
-              console.log('ABAB')
-              if (elem) {
-                this.listenOnKeysFalse();
-              }
-            }
+          if (elem && !disabled && !readonly) {
+            elem.focus();
+            // console.log('ABAB');
+            this.listenOnKeysFalse();
           }
+          // if (disabled || readonly) {
+          //   // this.listenOnKeysTrue();
+          //   // this.handleEditProperty(e);
         }
       );
     }
@@ -152,20 +184,20 @@ class TableItem extends PureComponent {
       onDoubleClick && onDoubleClick(rowId);
     }
   };
-
 //   handleKeyDown = e => {
 //     const { changeListenOnTrue, widgetData, property } = this.props;
   handleKeyDown = (e, property, widgetData) => {
-    const { changeListenOnTrue } = this.props;
+    // const { changeListenOnTrue } = this.props;
     const { listenOnKeys, edited } = this.state;
     console.log('TableItem handleKeyDown: ', e.key, listenOnKeys, property, widgetData);
 
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
-          console.log('TableItem ENTER: ', property, widgetData)
-          this.handleEditProperty(e, property, true, widgetData[0]);
+          console.log('TableItem handleKeyDown ENTER 1: ', property, widgetData)
+          this.handleEditProperty(e, property, widgetData[0]);
         } else {
+          console.log('TableItem handleKeyDown ENTER 2')
           this.listenOnKeysTrue();
         }
         break;
@@ -173,6 +205,7 @@ class TableItem extends PureComponent {
       case 'Escape':
         if (edited === property) {
           e.stopPropagation();
+          // @TODO This should be done differently
           this.handleEditProperty(e);
           // changeListenOnTrue();
           this.listenOnKeysTrue();
@@ -206,14 +239,12 @@ class TableItem extends PureComponent {
   closeTableField = e => {
     const { activeCell } = this.state;
 
+    // @TODO This should be done differently
     this.handleEditProperty(e);
     this.listenOnKeysTrue();
 
     activeCell && activeCell.focus();
   };
-
-  isAllowedFieldEdit = item =>
-    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
 
   /*
    * This function is called when cell's value changes
@@ -250,18 +281,13 @@ class TableItem extends PureComponent {
     }
   };
 
-  handleCellFocused = (e, widgetData, row, col) => {
+  handleCellFocused = (e, property, widgetData) => {
     // console.log('ELEMENT: ', element);
-    const cell = this.getCell(col);
-    const property = cell.fields[0].field;
-    const isEditable = this.isCellEditable(cell);
-
-    console.log('TableItem handleCellFocused: ', isEditable, cell)
-
-    // element.focus();
-    // if (isEditable) {
-      this.handleEditProperty(e, property, true, widgetData);
-    // }
+    // const cell = this.getCell(col);
+    // const property = cell.fields[0].field;
+    // const showOnEdit = this.isEditableOnDemand(cell);
+    console.log('TableItem handleCellFocused: ', property);//, showOnEdit, cell)
+    this.handleEditProperty(e, property, widgetData[0]);
   };
 
   handleCellExtend = () => {
@@ -271,10 +297,15 @@ class TableItem extends PureComponent {
   };
 
   handleClickOutside = e => {
-    const { changeListenOnTrue } = this.props;
-
-    this.handleEditProperty(e);
-    changeListenOnTrue();
+    // const { changeListenOnTrue, rowId, isSelected } = this.props;
+    console.log('handleclickoutside')
+    // if (isSelected) {
+    //   console.log('THIS: ', rowId, this);
+    //   this.handleEditProperty(e);
+    //   changeListenOnTrue();
+    // } else {
+    //   console.log('NOT SELECTED: ', rowId)
+    // }
   };
 
   renderCells = () => {
@@ -316,26 +347,24 @@ class TableItem extends PureComponent {
         cols.map((item, colIdx) => {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
-            const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
-            let isEditable = this.isCellEditable(item);
-            const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
 
-            let showWidget =
-              (cells &&
-                cells[property] &&
-                cells[property].viewEditorRenderMode ===
-                  VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
-              item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+            // @TODO: This should be replaced by showOnEdit only ?
+            const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
+            let showOnEdit = this.isEditableOnDemand(item);
+            let showWidget = this.shouldShowWidget(item);
+            const isEdited = edited === property;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
                 let cellWidget = cells[prop.field] || -1;
 
                 if (
-                  isEditable ||
-                  (supportFieldEdit && typeof cellWidget === 'object')
+                  showOnEdit ||
+                  // @TODO: Use showWidget and remove the second check ?
+                  // (supportFieldEdit && typeof cellWidget === 'object')
+                  showWidget
                 ) {
                   cellWidget = {
                     ...cellWidget,
@@ -351,9 +380,8 @@ class TableItem extends PureComponent {
             // HACK: Color fields should always be readonly
             if (item.widgetType === 'Color') {
               showWidget = false;
-              isEditable = false;
+              showOnEdit = false;
             }
-
             // console.log('isEditable: ', isEditable, cells[property], item.viewEditorRenderMode, showWidget)
 
             return (
@@ -374,20 +402,17 @@ class TableItem extends PureComponent {
                   mainTable,
                   viewId,
                   extendLongText,
-                  isEditable,
                   showWidget,
                   cellsExtended,
                   isEdited,
                   property,
                 }}
+                isEditable={showOnEdit}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 handleDoubleClick={e => {
-                  if (isEditable) {
-                    this.handleEditProperty(e, property, true, widgetData[0]);
-                  }
+                  this.handleEditProperty(e, property, widgetData[0]);
                 }}
-                _handleDoubleClick={this.handleCellFocused}
                 onClickOutside={this.handleClickOutside}
                 onCellChange={this.handleCellValueChange}
                 onCellExtend={this.handleCellExtend}
@@ -556,7 +581,10 @@ class TableItem extends PureComponent {
     return (
       <tr
         key={key}
-        onClick={onClick}
+        onClick={(e) => {
+          console.log('TR click')
+          onClick(e);
+        }}
         onDoubleClick={this.handleDoubleClick}
         className={classnames({
           'row-selected': isSelected,
@@ -587,6 +615,13 @@ TableItem.propTypes = {
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
   isSelected: PropTypes.bool,
+  fieldsByName: PropTypes.object,
+  cols: PropTypes.array,
+  odd: PropTypes.number,
+  key: PropTypes.string,
+  indent: PropTypes.array,
+  onItemChange: PropTypes.func,
+  rowId: PropTypes.string,
 };
 
 export default connect(
