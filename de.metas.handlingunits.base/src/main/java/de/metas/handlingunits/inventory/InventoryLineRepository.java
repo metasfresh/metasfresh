@@ -327,6 +327,7 @@ public class InventoryLineRepository
 				.createQueryBuilder(I_M_InventoryLine_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, inventoryLineRecord.getM_InventoryLine_ID())
+				.orderBy(I_M_InventoryLine_HU.COLUMN_M_HU_ID) // oldest HUs first
 				.create();
 	}
 
