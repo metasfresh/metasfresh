@@ -5,13 +5,14 @@ describe('New subscription flatrate conditions Test', function() {
   it('Create a discount schema record', function() {
     describe('Create a new discount schema record', function() {
       cy.visit('/window/233/NEW');
-      cy.writeIntoStringField('Name', `${discountschemaName}`);
+      cy.writeIntoStringField('Name', discountschemaName, false);
       cy.selectInListField('DiscountType', 'Breaks');
-      cy.writeIntoStringField('ValidFrom', '01/01/2018{enter}');
+      cy.writeIntoStringField('ValidFrom', '01/01/2019', false, '', true);
+      cy.writeIntoStringField('Description', `Description for ${discountschemaName}`, false);
     });
 
-    describe('Create break records', function() {
-      addBreakRecord('P002737', '0', '0');
+    describe(`Create new break records for ${discountschemaName}`, function() {
+      addBreakRecord('P002737', '1', '10');
       addBreakRecord('P002737', '50', '20');
     });
   });
@@ -19,8 +20,9 @@ describe('New subscription flatrate conditions Test', function() {
 
 function addBreakRecord(productValue, breakValue, breakDiscount) {
   cy.pressAddNewButton();
-  cy.writeIntoLookupListField('M_Product_ID', productValue, productValue);
-  cy.writeIntoStringField('BreakValue', breakValue);
-  cy.writeIntoStringField('BreakDiscount', breakDiscount);
-  cy.get('.items-row-2 > .btn').click();
+  cy.selectInListField('PriceBase', 'Fixed', true);
+  cy.writeIntoLookupListField('M_Product_ID', productValue, productValue, true);
+  cy.clearField('BreakValue').writeIntoStringField('BreakValue', breakValue, true);
+  cy.clearField('BreakValue').writeIntoStringField('BreakDiscount', breakDiscount, true);
+  cy.pressDoneButton();
 }
