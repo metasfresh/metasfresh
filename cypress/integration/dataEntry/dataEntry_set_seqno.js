@@ -1,11 +1,6 @@
 import { DataEntryGroup } from '../../support/utils/dataEntryGroup';
 
 describe('Reproduce issue https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214', function() {
-  before(function() {
-    // login before each test and open the flatrate conditions window
-    cy.loginByForm();
-  });
-
   it('Create dataEntry group with SeqNo 21', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const dataEntryGroupName = `Group1 ${timestamp}`;

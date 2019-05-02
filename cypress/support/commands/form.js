@@ -100,7 +100,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
 
     cy.get(path)
       .find('.input-checkbox-tick')
-      .click()
+      .click({ force: true }) // we don't care if the checkbox scrolled out of view
       .waitForFieldValue(`@patchCheckBox`, fieldName, expectedPatchValue);
   });
 });
