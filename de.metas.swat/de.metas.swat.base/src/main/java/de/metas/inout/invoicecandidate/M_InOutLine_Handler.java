@@ -446,7 +446,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (inOutBL.isReturnMovementType(movementType))
 		{
-			ONE.negate();
+			return ONE.negate();
 		}
 		return ONE;
 	}
@@ -673,7 +673,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate ic)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		//
 		// Get delivered quantity and then set it to IC
