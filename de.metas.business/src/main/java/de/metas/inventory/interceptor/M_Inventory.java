@@ -16,7 +16,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.IInventoryDAO;
-import de.metas.inventory.InventoryUserNotificationsProducer;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.util.Services;
 
 /*

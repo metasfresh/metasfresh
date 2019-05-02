@@ -45,10 +45,10 @@ public class InventoryLineAggregatorFactory
 
 	public InventoryLineAggregator createFor(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		final AggregationType aggegationMode = AggregationType.getByDocType(docBaseAndSubType);
-		Check.assumeNotNull(aggegationMode, "Unexpected docBaseAndSubType={} with no registered aggegationMode", docBaseAndSubType);
+		final AggregationType aggregationMode = AggregationType.getByDocType(docBaseAndSubType);
+		Check.assumeNotNull(aggregationMode, "Unexpected docBaseAndSubType={} with no registered aggegationMode", docBaseAndSubType);
 
-		switch (aggegationMode)
+		switch (aggregationMode)
 		{
 			case SINGLE_HU:
 				return SingleHUInventoryLineAggregator.INSTANCE;
@@ -60,7 +60,7 @@ public class InventoryLineAggregatorFactory
 				final String message = StringUtils.formatMessage("Unexpected aggegationMode for docBaseAndSubType={}", docBaseAndSubType);
 				throw new AdempiereException(message)
 						.appendParametersToMessage()
-						.setParameter("aggegationMode", aggegationMode);
+						.setParameter("aggegationMode", aggregationMode);
 		}
 	}
 

@@ -132,12 +132,12 @@ public final class Quantity implements Comparable<Quantity>
 		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
 		if (uomIds2qties.isEmpty())
 		{
-			throw new AdempiereException("The given moneys may not be empty");
+			throw new AdempiereException("The given quantities may not be empty");
 		}
 
 		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
 		Check.errorIf(uomIds.size() > 1,
-				"at least two money instances have different uoms: {}", uomIds2qties);
+				"at least two quantity instances have different uoms: {}", uomIds2qties);
 
 		return CollectionUtils.singleElement(uomIds.asList());
 	}
@@ -157,9 +157,6 @@ public final class Quantity implements Comparable<Quantity>
 
 	/**
 	 * Constructs a quantity object without source quantity/uom. More preciselly, source quantity/uom will be set so same values as quantity/uom.
-	 *
-	 * @param qty
-	 * @param uom
 	 */
 	public Quantity(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
