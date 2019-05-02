@@ -48,10 +48,17 @@ export class DiscountBreak {
 
 function applyDiscountSchema(discountSchema) {
   describe(`Create new dicscount schema ${discountSchema.name}`, function() {
-    cy.visit('/window/233/NEW');
+    cy.visitWindow(233, 'NEW');
     cy.selectInListField('DiscountType', 'Breaks');
     cy.writeIntoStringField('Name', discountSchema.name);
-    cy.writeIntoStringField('ValidFrom', `${discountSchema.validFrom}{enter}`);
+
+    cy.writeIntoStringField(
+      'ValidFrom',
+      discountSchema.validFrom,
+      false /*modal*/,
+      null /*rewriteUrl*/,
+      true /*noRequest*/
+    );
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
     if (discountSchema.discountBreaks.length > 0) {

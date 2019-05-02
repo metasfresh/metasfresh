@@ -2,6 +2,7 @@
 
 import { BPartner, BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
+import config from '../../config';
 
 describe('purchase - vendor spec', function() {
   before(function() {
