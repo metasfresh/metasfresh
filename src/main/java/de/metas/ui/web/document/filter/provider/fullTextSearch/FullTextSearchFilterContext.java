@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.elasticsearch.client.Client;

@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.descriptor;
+package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
 import java.util.List;
 import java.util.Map;
