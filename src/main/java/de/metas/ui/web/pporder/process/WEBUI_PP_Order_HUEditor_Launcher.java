@@ -161,10 +161,24 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 				.listIds()
 				.stream()
 				.map(HuId::ofRepoId)
-				.filter(huId -> !SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
-				.filter(huId -> !huOrderCandidatesRepo.isHuIdIssued(huId))
+				.filter(this::isEligibleHuToIssue)
 				.collect(ImmutableList.toImmutableList());
 		return availableHUsIDs;
+	}
+
+	private boolean isEligibleHuToIssue(final HuId huId)
+	{
+		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
+		{
+			return false;
+		}
+
+		if (huOrderCandidatesRepo.isHuIdIssued(huId))
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	private RelatedProcessDescriptor createIssueTopLevelHusDescriptor()
