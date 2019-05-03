@@ -28,9 +28,8 @@ package de.metas.payment.sepa.api.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
-import org.compiere.util.Env;
 
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.location.ICountryDAO;
 import de.metas.payment.sepa.api.IBBANStructureBL;
 import de.metas.payment.sepa.api.IBBANStructureBuilder;
 import de.metas.payment.sepa.wrapper.BBANStructure;
@@ -48,12 +47,12 @@ public class BBANStructureBL implements IBBANStructureBL
 	@Override
 	public BBANStructure getBBANStructureForCountry(final String countryCode)
 	{
-		final I_C_Country countryPO = Services.get(ILocationBL.class).getCountryByCode(Env.getCtx(), countryCode);
-
-		if (countryPO == null || countryPO.getC_Country_ID() <= 0)
+		if(countryCode == null)
 		{
 			return null;
 		}
+		
+		final I_C_Country countryPO = Services.get(ICountryDAO.class).retrieveCountryByCountryCode(countryCode);
 
 		final de.metas.payment.sepa.interfaces.I_C_Country country = InterfaceWrapperHelper.create(countryPO, de.metas.payment.sepa.interfaces.I_C_Country.class);
 

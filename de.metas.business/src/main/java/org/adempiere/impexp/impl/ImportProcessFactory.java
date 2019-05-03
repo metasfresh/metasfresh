@@ -25,7 +25,8 @@ package org.adempiere.impexp.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.metas.postal.impexp.PostalCodeImportProcess;
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.ADUserImportProcess;
 import org.adempiere.impexp.IImportProcess;
@@ -48,10 +49,9 @@ import com.google.common.base.Supplier;
 
 import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
+import de.metas.location.impexp.PostalCodeImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
 import de.metas.util.Check;
-
-import javax.annotation.Nullable;
 
 public class ImportProcessFactory implements IImportProcessFactory
 {

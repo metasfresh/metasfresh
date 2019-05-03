@@ -1,15 +1,15 @@
 package de.metas.location.geocoding.openstreetmap;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeographicalCoordinates;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -21,14 +21,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nonnull;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.cache.CCache;
+import de.metas.location.geocoding.GeoCoordinatesProvider;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -189,7 +192,7 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 		final Map<String, String> m = new HashMap<>();
 		m.put("address", nonNullAddress);
 		m.put("postalcode", nonNullPostalCode);
-		m.put("countrycodes", request.getCountryCode());
+		m.put("countrycodes", request.getCountryCode2());
 		m.put("format", "json");
 		m.put("dedupe", "1");
 		m.put("email", "openstreetmapbot@metasfresh.com");

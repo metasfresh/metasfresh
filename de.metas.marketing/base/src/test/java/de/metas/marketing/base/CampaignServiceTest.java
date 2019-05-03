@@ -16,10 +16,10 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Location;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.interfaces.I_C_BPartner;

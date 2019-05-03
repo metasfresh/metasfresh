@@ -34,6 +34,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -45,8 +46,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
-import de.metas.adempiere.service.ILocationBL;
-import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerAware;
@@ -54,6 +53,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.location.ILocationBL;
+import de.metas.location.impl.AddressBuilder;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -115,9 +116,11 @@ public class BPartnerBL implements IBPartnerBL
 			final I_AD_User user,
 			final String trxName)
 	{
-		return new AddressBuilder(bPartner.getAD_Org())
-				.setLanguage(bPartner.getAD_Language())
-				.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		final AddressBuilder addressBuilder = AddressBuilder.builder()
+				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
+				.adLanguage(bPartner.getAD_Language())
+				.build();
+		return addressBuilder.buildBPartnerFullAddressString(bPartner, location, user, trxName);
 	}
 
 	@Override

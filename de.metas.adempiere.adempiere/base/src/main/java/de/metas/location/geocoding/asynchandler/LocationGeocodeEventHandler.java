@@ -1,21 +1,26 @@
 package de.metas.location.geocoding.asynchandler;
 
-import com.google.common.base.Joiner;
-import de.metas.Profiles;
-import de.metas.adempiere.service.ILocationDAO;
-import de.metas.event.IEventBusFactory;
-import de.metas.util.Services;
-import lombok.NonNull;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
-import de.metas.location.geocoding.GeographicalCoordinates;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.interceptor.C_Location;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+
 import org.compiere.model.I_C_Location;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.Optional;
+import com.google.common.base.Joiner;
+
+import de.metas.Profiles;
+import de.metas.event.IEventBusFactory;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
+import de.metas.location.geocoding.GeoCoordinatesProvider;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.location.geocoding.interceptor.C_Location;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,8 +48,9 @@ import java.util.Optional;
 @Profile(Profiles.PROFILE_App)
 class LocationGeocodeEventHandler
 {
+	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final GeoCoordinatesProvider geo;
-
 	private final IEventBusFactory eventBusFactory;
 
 	public LocationGeocodeEventHandler(
@@ -65,26 +71,34 @@ class LocationGeocodeEventHandler
 
 	private void handleEvent(@NonNull final LocationGeocodeEventRequest request)
 	{
-		final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 		final I_C_Location locationRecord = locationsRepo.getById(request.getLocationId());
 
-		final String address = Joiner.on(" ")
-				.skipNulls()
-				.join(locationRecord.getAddress1(), locationRecord.getAddress2(), locationRecord.getAddress3(), locationRecord.getAddress4());
-
-		final GeoCoordinatesRequest coordinatesRequest = GeoCoordinatesRequest.builder()
-				.countryCode(locationRecord.getC_Country().getCountryCode())
-				.address(address)
-				.postal(locationRecord.getPostal())
-				.build();
+		final GeoCoordinatesRequest coordinatesRequest = createGeoCoordinatesRequest(locationRecord);
 
 		final Optional<GeographicalCoordinates> xoy = geo.findBestCoordinates(coordinatesRequest);
-
 		if (xoy.isPresent())
 		{
 			locationRecord.setLatitude(xoy.get().getLatitude());
 			locationRecord.setLongitude(xoy.get().getLongitude());
 			locationsRepo.save(locationRecord);
 		}
+	}
+
+	private GeoCoordinatesRequest createGeoCoordinatesRequest(final I_C_Location locationRecord)
+	{
+		final String countryCode2 = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
+
+		final String address = Joiner.on(" ")
+				.skipNulls()
+				.join(locationRecord.getAddress1(), locationRecord.getAddress2(), locationRecord.getAddress3(), locationRecord.getAddress4());
+
+		final String postal = locationRecord.getPostal();
+
+		final GeoCoordinatesRequest coordinatesRequest = GeoCoordinatesRequest.builder()
+				.countryCode2(countryCode2)
+				.address(address)
+				.postal(postal)
+				.build();
+		return coordinatesRequest;
 	}
 }
