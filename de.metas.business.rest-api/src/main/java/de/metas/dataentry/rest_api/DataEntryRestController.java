@@ -152,7 +152,7 @@ public class DataEntryRestController
 					.id(layoutSection.getId())
 					.caption(layoutSection.getCaption().translate(adLanguage))
 					.description(layoutSection.getDescription().translate(adLanguage))
-					.initiallyClosed(layoutSection.isInitallyClosed())
+					.initiallyClosed(layoutSection.isInitiallyClosed())
 					.lines(lines)
 					.build();
 		}

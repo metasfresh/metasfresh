@@ -41,7 +41,7 @@ public class DataEntrySection
 
 	String internalName;
 
-	boolean initallyClosed; 			// fixme: typo!
+	boolean initiallyClosed;
 
 	List<DataEntryLine> dataEntryLines;
 
@@ -51,14 +51,14 @@ public class DataEntrySection
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
-			final boolean initallyClosed,
+			final boolean initiallyClosed,
 			@Singular final List<DataEntryLine> dataEntryLines)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
-		this.initallyClosed = initallyClosed;
+		this.initiallyClosed = initiallyClosed;
 		this.dataEntryLines = dataEntryLines;
 	}
 }

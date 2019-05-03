@@ -35,7 +35,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                 "anyLanguage": true
               },
               "internalName": "DataEntry_Section_ID-100010",
-              "initallyClosed": true,
+              "initiallyClosed": true,
               "dataEntryLines": [
                 {
                   "dataEntryFields": [
@@ -163,7 +163,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                 "anyLanguage": true
               },
               "internalName": "DataEntry_Section_ID-100005",
-              "initallyClosed": false,
+              "initiallyClosed": false,
               "dataEntryLines": [
                 {
                   "dataEntryFields": [
