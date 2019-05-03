@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -14,12 +12,12 @@ import java.util.stream.Collector;
 
 import javax.annotation.concurrent.Immutable;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -44,7 +42,6 @@ import lombok.ToString;
  */
 
 @Immutable
-@ToString
 public final class ImmutableDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	public static final ImmutableDocumentFilterDescriptorsProvider of(final List<DocumentFilterDescriptor> descriptors)
@@ -54,15 +51,6 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 			return EMPTY;
 		}
 		return new ImmutableDocumentFilterDescriptorsProvider(descriptors);
-	}
-
-	public static final ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor descriptor)
-	{
-		if (descriptor == null)
-		{
-			return EMPTY;
-		}
-		return new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of(descriptor));
 	}
 
 	public static final ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor... descriptors)
@@ -82,7 +70,7 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 	public static final Collector<DocumentFilterDescriptor, ?, ImmutableDocumentFilterDescriptorsProvider> collector()
 	{
 		final Supplier<List<DocumentFilterDescriptor>> supplier = ArrayList::new;
-		final BiConsumer<List<DocumentFilterDescriptor>, DocumentFilterDescriptor> accumulator = (list, filter) -> list.add(filter);
+		final BiConsumer<List<DocumentFilterDescriptor>, DocumentFilterDescriptor> accumulator = List::add;
 		final BinaryOperator<List<DocumentFilterDescriptor>> combiner = (list1, list2) -> {
 			list1.addAll(list2);
 			return list1;
@@ -92,14 +80,26 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	private static final ImmutableDocumentFilterDescriptorsProvider EMPTY = new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of());
+	private static final ImmutableDocumentFilterDescriptorsProvider EMPTY = new ImmutableDocumentFilterDescriptorsProvider();
 
-	private final Map<String, DocumentFilterDescriptor> descriptorsByFilterId;
+	private final ImmutableMap<String, DocumentFilterDescriptor> descriptorsByFilterId;
 
 	private ImmutableDocumentFilterDescriptorsProvider(final List<DocumentFilterDescriptor> descriptors)
 	{
-		super();
-		descriptorsByFilterId = Maps.uniqueIndex(descriptors, descriptor -> descriptor.getFilterId());
+		descriptorsByFilterId = Maps.uniqueIndex(descriptors, DocumentFilterDescriptor::getFilterId);
+	}
+
+	private ImmutableDocumentFilterDescriptorsProvider()
+	{
+		descriptorsByFilterId = ImmutableMap.of();
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(descriptorsByFilterId.keySet())
+				.toString();
 	}
 
 	@Override
@@ -109,11 +109,16 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 	}
 
 	@Override
-	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId) throws NoSuchElementException
+	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{
-		final DocumentFilterDescriptor descriptor = descriptorsByFilterId.get(filterId);
-		return descriptor;
+		return descriptorsByFilterId.get(filterId);
 	}
+
+	//
+	//
+	//
+	//
+	//
 
 	public static class Builder
 	{
@@ -154,7 +159,5 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 			addDescriptors(provider.getAll());
 			return this;
 		}
-
 	}
-
 }
