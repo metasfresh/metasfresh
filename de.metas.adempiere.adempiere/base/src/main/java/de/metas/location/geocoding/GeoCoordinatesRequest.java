@@ -30,8 +30,9 @@ import lombok.Value;
 @Builder
 public class GeoCoordinatesRequest
 {
+	/** Country Code (2 letters) */
 	@NonNull
-	String countryCode;
+	String countryCode2;
 
 	String postal;
 	String address;

@@ -14,7 +14,7 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1166864290L;
+	private static final long serialVersionUID = 1336882306L;
 
     /** Standard Constructor */
     public X_C_Country (Properties ctx, int C_Country_ID, String trxName)
@@ -24,8 +24,7 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
         {
 			setC_Country_ID (0);
 			setCountryCode (null);
-			setDisplaySequence (null);
-// @C@, @R@ @P@
+			setDisplaySequence (null); // @C@, @R@ @P@
 			setHasPostal_Add (false);
 			setHasRegion (false);
 			setIsAddressLinesLocalReverse (false);
@@ -466,108 +465,6 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 		return false;
 	}
 
-	/** Set Use Postcode Lookup.
-		@param IsPostcodeLookup 
-		Does this country have a post code web service
-	  */
-	@Override
-	public void setIsPostcodeLookup (boolean IsPostcodeLookup)
-	{
-		set_Value (COLUMNNAME_IsPostcodeLookup, Boolean.valueOf(IsPostcodeLookup));
-	}
-
-	/** Get Use Postcode Lookup.
-		@return Does this country have a post code web service
-	  */
-	@Override
-	public boolean isPostcodeLookup () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsPostcodeLookup);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Lookup ClassName.
-		@param LookupClassName 
-		The class name of the postcode lookup plugin
-	  */
-	@Override
-	public void setLookupClassName (java.lang.String LookupClassName)
-	{
-		set_Value (COLUMNNAME_LookupClassName, LookupClassName);
-	}
-
-	/** Get Lookup ClassName.
-		@return The class name of the postcode lookup plugin
-	  */
-	@Override
-	public java.lang.String getLookupClassName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LookupClassName);
-	}
-
-	/** Set Lookup Client ID.
-		@param LookupClientID 
-		The ClientID or Login submitted to the Lookup URL
-	  */
-	@Override
-	public void setLookupClientID (java.lang.String LookupClientID)
-	{
-		set_Value (COLUMNNAME_LookupClientID, LookupClientID);
-	}
-
-	/** Get Lookup Client ID.
-		@return The ClientID or Login submitted to the Lookup URL
-	  */
-	@Override
-	public java.lang.String getLookupClientID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LookupClientID);
-	}
-
-	/** Set Lookup Password.
-		@param LookupPassword 
-		The password submitted to the Lookup URL
-	  */
-	@Override
-	public void setLookupPassword (java.lang.String LookupPassword)
-	{
-		set_Value (COLUMNNAME_LookupPassword, LookupPassword);
-	}
-
-	/** Get Lookup Password.
-		@return The password submitted to the Lookup URL
-	  */
-	@Override
-	public java.lang.String getLookupPassword () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LookupPassword);
-	}
-
-	/** Set Lookup URL.
-		@param LookupUrl 
-		The URL of the web service that the plugin connects to in order to retrieve postcode data
-	  */
-	@Override
-	public void setLookupUrl (java.lang.String LookupUrl)
-	{
-		set_Value (COLUMNNAME_LookupUrl, LookupUrl);
-	}
-
-	/** Get Lookup URL.
-		@return The URL of the web service that the plugin connects to in order to retrieve postcode data
-	  */
-	@Override
-	public java.lang.String getLookupUrl () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LookupUrl);
-	}
-
 	/** Set Media Size.
 		@param MediaSize 
 		Java Media Size
@@ -588,9 +485,7 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -598,8 +493,7 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
