@@ -11,7 +11,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;

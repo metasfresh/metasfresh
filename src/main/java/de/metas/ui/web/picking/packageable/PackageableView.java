@@ -13,7 +13,7 @@ import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
-import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;

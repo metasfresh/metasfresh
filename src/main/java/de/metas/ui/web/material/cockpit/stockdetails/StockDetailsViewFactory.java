@@ -21,7 +21,7 @@ import de.metas.handlingunits.stock.HUStockInfoRepository;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
-import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
 import de.metas.ui.web.view.CreateViewRequest;

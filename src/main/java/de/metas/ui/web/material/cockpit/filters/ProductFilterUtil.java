@@ -23,7 +23,6 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,7 +74,7 @@ public class ProductFilterUtil
 				.setFieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForScope(LookupScope.DocumentFilter))
+				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
 				.setOperator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()

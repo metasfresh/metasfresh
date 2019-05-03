@@ -7,7 +7,7 @@ import java.util.Set;
 import org.adempiere.exceptions.DBException;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;

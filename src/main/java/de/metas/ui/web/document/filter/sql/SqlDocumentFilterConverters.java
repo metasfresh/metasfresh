@@ -2,6 +2,7 @@ package de.metas.ui.web.document.filter.sql;
 
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -31,12 +32,9 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public final class SqlDocumentFilterConverters
 {
-	private SqlDocumentFilterConverters()
-	{
-	}
-
 	/**
 	 * Convenient method to create the effective converter instance from the given <code>entityBinding</code>.
 	 * It will use

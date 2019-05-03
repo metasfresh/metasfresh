@@ -9,6 +9,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 
 /*
  * #%L

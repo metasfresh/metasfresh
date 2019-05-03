@@ -1,20 +1,14 @@
-package de.metas.ui.web.window.descriptor;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.elasticsearch.client.Client;
-
-import com.google.common.collect.ImmutableSet;
+package de.metas.ui.web.document.filter.provider.locationAreaSearch;
 
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,31 +28,15 @@ import lombok.Value;
 
 @Value
 @Builder
-public class FullTextSearchFilterContext
+final class LocationAreaSearchDescriptor
 {
 	@NonNull
-	final Client elasticsearchClient;
+	LocationColumnNameType type;
 	@NonNull
-	final String modelTableName;
-	@NonNull
-	final String esIndexName;
-	@NonNull
-	@Singular
-	final ImmutableSet<String> esSearchFieldNames;
+	String locationColumnName;
 
-	public String[] getEsSearchFieldNamesAsArray()
+	enum LocationColumnNameType
 	{
-		return esSearchFieldNames.toArray(new String[esSearchFieldNames.size()]);
+		LocationId, BPartnerLocationId, BPartnerId,
 	}
-
-	public String getKeyColumnName()
-	{
-		return InterfaceWrapperHelper.getKeyColumnName(getModelTableName());
-	}
-
-	public String getEsKeyColumnName()
-	{
-		return getKeyColumnName();
-	}
-
 }
