@@ -34,6 +34,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
+import de.metas.location.CountryId;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
@@ -520,7 +521,7 @@ public class BPartnerMasterDataProvider
 	{
 		final I_C_Location location = Check.assumeNotNull(bpLocationRecord.getC_Location(), "The given bpLocationRecord needs to have a C_Location; bpLocationRecord={}", bpLocationRecord);
 
-		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
+		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(location.getC_Country_ID()));
 
 		return JsonBPartnerLocation.builder()
 				.externalId(bpLocationRecord.getExternalId())

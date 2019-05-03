@@ -16,7 +16,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
@@ -40,6 +39,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -246,13 +246,13 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public String retrieveCountryCode2ByCountryId(final int countryId)
+	public String retrieveCountryCode2ByCountryId(@NonNull final CountryId countryId)
 	{
-		return getIndexedCountries().getById(CountryId.ofRepoId(countryId)).getCountryCode();
+		return getIndexedCountries().getById(countryId).getCountryCode();
 	}
 
 	@Override
-	public String retrieveCountryCode3ByCountryId(final int countryId)
+	public String retrieveCountryCode3ByCountryId(@NonNull final CountryId countryId)
 	{
 		final String countryCode2 = retrieveCountryCode2ByCountryId(countryId);
 		final String countryCode3 = alpha2to3CountryCodes.get(countryCode2);

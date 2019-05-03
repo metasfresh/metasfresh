@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import de.metas.location.CountryId;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 
@@ -96,9 +96,9 @@ public interface ICountryDAO extends ISingletonService
 
 	int getCountryIdByCountryCode(String countryCode);
 
-	String retrieveCountryCode2ByCountryId(int countryId);
+	String retrieveCountryCode2ByCountryId(CountryId countryId);
 
-	String retrieveCountryCode3ByCountryId(int countryId);
+	String retrieveCountryCode3ByCountryId(CountryId countryId);
 
 	ITranslatableString getCountryNameById(CountryId id);
 
