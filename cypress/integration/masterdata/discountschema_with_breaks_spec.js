@@ -20,9 +20,9 @@ describe('New subscription flatrate conditions Test', function() {
 
 function addBreakRecord(productValue, breakValue, breakDiscount) {
   cy.pressAddNewButton();
-  cy.selectInListField('PriceBase', 'Fixed', true);
-  cy.writeIntoLookupListField('M_Product_ID', productValue, productValue, true);
-  cy.clearField('BreakValue').writeIntoStringField('BreakValue', breakValue, true);
-  cy.clearField('BreakValue').writeIntoStringField('BreakDiscount', breakDiscount, true);
+  cy.selectInListField('PriceBase', 'Fixed', true /*modal*/);
+  cy.writeIntoLookupListField('M_Product_ID', productValue, productValue, true /*modal*/);
+  cy.clearField('BreakValue').writeIntoStringField('BreakValue', breakValue, true /*modal*/);
+  cy.clearField('BreakDiscount').writeIntoStringField('BreakDiscount', breakDiscount, true /*modal*/);
   cy.pressDoneButton();
 }
