@@ -485,7 +485,7 @@ public class BPartnerMasterDataProvider
 			{
 				throw new MissingPropertyException("Missing propery CountryCode; JsonBPartnerLocation={}", json);
 			}
-			final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
+			final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
 			final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
@@ -493,7 +493,7 @@ public class BPartnerMasterDataProvider
 			locationRecord.setAddress2(json.getAddress2());
 			locationRecord.setPostal(locationRecord.getPostal());
 			locationRecord.setCity(locationRecord.getCity());
-			locationRecord.setC_Country_ID(countryId);
+			locationRecord.setC_Country_ID(countryId.getRepoId());
 
 			locationsRepo.save(locationRecord);
 

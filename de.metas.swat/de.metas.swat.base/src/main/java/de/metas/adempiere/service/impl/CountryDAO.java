@@ -240,7 +240,7 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public int getCountryIdByCountryCode(final String countryCode)
+	public CountryId getCountryIdByCountryCode(final String countryCode)
 	{
 		return getIndexedCountries().getIdByCountryCode(countryCode);
 	}
@@ -261,12 +261,6 @@ public class CountryDAO implements ICountryDAO
 			throw new AdempiereException("No country code alpha3 found for '" + countryCode2 + "'");
 		}
 		return countryCode3;
-	}
-
-	@Override
-	public ITranslatableString getCountryNameById(final int countryId)
-	{
-		return getCountryNameById(CountryId.ofRepoId(countryId));
 	}
 
 	@Override
@@ -339,9 +333,10 @@ public class CountryDAO implements ICountryDAO
 			return country;
 		}
 
-		public int getIdByCountryCode(final String countryCode)
+		public CountryId getIdByCountryCode(final String countryCode)
 		{
-			return getByCountryCode(countryCode).getC_Country_ID();
+			final I_C_Country country = getByCountryCode(countryCode);
+			return CountryId.ofRepoId(country.getC_Country_ID());
 		}
 
 	}
