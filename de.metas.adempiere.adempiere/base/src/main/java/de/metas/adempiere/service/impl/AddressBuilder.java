@@ -38,10 +38,10 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Greeting;
+import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_Location;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
@@ -370,38 +370,15 @@ public class AddressBuilder
 			{
 				if (location != null)
 				{
-					if (location.isPOBoxNum())
+					// if we have box number, added it as it is
+					if (!Check.isEmpty(location.getPOBox(), true))
 					{
-						if (Check.isEmpty(location.getPOBox(), true))
+						outStr.append(location.getPOBox());
+						// add an automatic new line
+						if (!explicitBreaks)
 						{
-							// if we have new line, don't add empty field
-							if (outStr.lastIndexOf("\n") != -1 && outStr.lastIndexOf("\n") == outStr.length() - 1)
-							{
-								outStr.append("");
-							}
-							// add an empty field, so that if we have a text between brackets, to be printed
-							else
-							{
-								// add an automatic new line
-								if (!explicitBreaks)
-								{
-									outStr.append('\n');
-								}
-								// outStr.append(" ");
-							}
-
+							outStr.append('\n');
 						}
-						// if we have box number, added it as it is
-						else
-						{
-							outStr.append(location.getPOBox());
-							// add an automatic new line
-							if (!explicitBreaks)
-							{
-								outStr.append('\n');
-							}
-						}
-
 					}
 				}
 			}

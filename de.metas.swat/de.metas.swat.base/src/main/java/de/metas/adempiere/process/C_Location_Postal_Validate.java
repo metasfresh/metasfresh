@@ -71,9 +71,8 @@ public class C_Location_Postal_Validate extends JavaProcess
 	{
 		try
 		{
-			de.metas.adempiere.model.I_C_Location loc = InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_Location.class);
-			Services.get(ILocationBL.class).validatePostal(loc);
-			InterfaceWrapperHelper.save(loc);
+			Services.get(ILocationBL.class).validatePostal(location);
+			InterfaceWrapperHelper.save(location);
 			cnt_ok++;
 		}
 		catch (Exception e)

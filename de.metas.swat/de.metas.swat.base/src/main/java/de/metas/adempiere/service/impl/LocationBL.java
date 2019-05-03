@@ -665,10 +665,9 @@ public class LocationBL implements ILocationBL
 		}
 
 		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, orgId, I_AD_Org.class, ITrx.TRXNAME_None);
-		final de.metas.adempiere.model.I_C_Location loc = InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_Location.class);
 		return new AddressBuilder(org)
 				.setLanguage(adLanguage)
-				.buildAddressString(loc, isLocalAddress, bPartnerBlock, userBlock);
+				.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock);
 	}
 
 	@Override
