@@ -86,7 +86,7 @@ class LocationGeocodeEventHandler
 
 	private GeoCoordinatesRequest createGeoCoordinatesRequest(final I_C_Location locationRecord)
 	{
-		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
+		final String countryCode2 = countryDAO.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
 
 		final String address = Joiner.on(" ")
 				.skipNulls()
@@ -95,7 +95,7 @@ class LocationGeocodeEventHandler
 		final String postal = locationRecord.getPostal();
 
 		final GeoCoordinatesRequest coordinatesRequest = GeoCoordinatesRequest.builder()
-				.countryCode(countryCode)
+				.countryCode2(countryCode2)
 				.address(address)
 				.postal(postal)
 				.build();
