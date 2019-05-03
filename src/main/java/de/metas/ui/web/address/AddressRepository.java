@@ -13,9 +13,9 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.service.ILocationBL;
-import de.metas.adempiere.service.ILocationDAO;
 import de.metas.cache.CCache;
+import de.metas.location.ILocationBL;
+import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;

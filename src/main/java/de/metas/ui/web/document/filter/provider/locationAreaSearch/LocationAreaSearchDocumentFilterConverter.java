@@ -8,8 +8,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
-import de.metas.adempiere.service.ICountryDAO;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.location.geocoding.GeoCoordinatesProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeographicalCoordinates;
