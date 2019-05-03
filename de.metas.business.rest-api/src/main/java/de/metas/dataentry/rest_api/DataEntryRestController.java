@@ -1,5 +1,6 @@
 package de.metas.dataentry.rest_api;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
@@ -14,12 +15,15 @@ import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
-import de.metas.dataentry.rest_api.dto.JsonData;
+import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryGroup;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
+import de.metas.dataentry.rest_api.dto.JsonDataEntryListValue;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySection;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySubGroup;
+import de.metas.logging.LogManager;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
@@ -27,6 +31,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,10 +69,14 @@ public class DataEntryRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
 
+	protected final transient Logger log = LogManager.getLogger(getClass());
+
 	private static AdWindowId bpartnerWindowId = AdWindowId.ofRepoId(123); // FIXME: HARDCODED for now
 
 	private final DataEntryLayoutRepository layoutRepo;
 	private final DataEntryRecordRepository recordRepo;
+
+	// TODO: add caching which is somehow linked with the tables, so cache expiration is automatic
 
 	public DataEntryRestController(
 			@NonNull final DataEntryLayoutRepository layoutRepo,
@@ -78,23 +87,24 @@ public class DataEntryRestController
 	}
 
 	@GetMapping("/byBPartnerValue/{bpartnerValue}")
-	public JsonData getByBPartnerValue(@PathVariable("bpartnerValue") final String bpartnerValue)
+	public JsonDataEntry getByBPartnerValue(@PathVariable("bpartnerValue") final String bpartnerValue)
+	{
+		Stopwatch w = Stopwatch.createStarted();
+		final JsonDataEntry jsonDataEntry = getJsonDataEntry(bpartnerValue);
+		w.stop();
+		log.info("getByBPartnerValue for bpartner '{}' duration: {}", bpartnerValue, w.toString());
+		return jsonDataEntry;
+	}
+
+	private JsonDataEntry getJsonDataEntry(@PathVariable("bpartnerValue") final String bpartnerValue)
 	{
 		final String adLanguage = Env.getAD_Language();
-
-		final ImmutableList<DataEntryGroup> layout = layoutRepo.getByWindowId(bpartnerWindowId);
-
 		final BPartnerId bpartnerId = Services.get(IBPartnerDAO.class).getBPartnerIdByValue(bpartnerValue);
 
-		////		JSONObjectMapper.forClass()
-		//
-		//		JsonDataEntryGroup groupDTO = new JsonDataEntryGroup();
-		//		groupDTO
-		//
-
+		final ImmutableList<DataEntryGroup> layout = layoutRepo.getByWindowId(bpartnerWindowId);
 		final ImmutableList<JsonDataEntryGroup> groups = getJsonDataEntryGroups(adLanguage, layout, bpartnerId);
 
-		JsonData jd = JsonData.builder()
+		final JsonDataEntry jd = JsonDataEntry.builder()
 				.groups(groups)
 				.build();
 
@@ -112,7 +122,6 @@ public class DataEntryRestController
 					.id(layoutGroup.getId())
 					.caption(layoutGroup.getCaption().translate(adLanguage))
 					.description(layoutGroup.getDescription().translate(adLanguage))
-					.documentLinkColumnName(layoutGroup.getDocumentLinkColumnName())
 					.subGroups(subGroups)
 					.build();
 			groups.add(group);
@@ -131,7 +140,7 @@ public class DataEntryRestController
 					.id(layoutSubGroup.getId())
 					.caption(layoutSubGroup.getCaption().translate(adLanguage))
 					.description(layoutSubGroup.getDescription().translate(adLanguage))
-					.jsonDataEntrySections(sections)
+					.sections(sections)
 					.build();
 			subGroups.add(subGroup);
 		}
@@ -148,13 +157,14 @@ public class DataEntryRestController
 		{
 			final ImmutableList<JsonDataEntryLine> lines = getJsonDataEntryLines(adLanguage, record, layoutSection);
 
-			JsonDataEntrySection.builder()
+			final JsonDataEntrySection section = JsonDataEntrySection.builder()
 					.id(layoutSection.getId())
 					.caption(layoutSection.getCaption().translate(adLanguage))
 					.description(layoutSection.getDescription().translate(adLanguage))
 					.initiallyClosed(layoutSection.isInitiallyClosed())
 					.lines(lines)
 					.build();
+			sections.add(section);
 		}
 		return sections.build();
 	}
@@ -166,9 +176,10 @@ public class DataEntryRestController
 		{
 			final ImmutableList<JsonDataEntryField> fields = getJsonDataEntryFields(adLanguage, record, layoutLine);
 
-			JsonDataEntryLine.builder()
+			final JsonDataEntryLine line = JsonDataEntryLine.builder()
 					.fields(fields)
 					.build();
+			lines.add(line);
 		}
 		return lines.build();
 	}
@@ -186,8 +197,7 @@ public class DataEntryRestController
 					// 		the customer sends 2 character strings, so maybe we should also return the same?
 					.type(layoutField.getType())
 					.mandatory(layoutField.isMandatory())
-					// fixme: what should we return for listvalues?
-					.listValues(layoutField.getListValues())
+					.listValues(getDataEntryFieldListValues(layoutField, adLanguage))
 					.value(record.getFieldValue(layoutField.getId()).orElse(null))
 					.build();
 			fields.add(field);
@@ -204,6 +214,17 @@ public class DataEntryRestController
 						.mainRecord(bpartnerRef)
 						.dataEntrySubGroupId(subGroupId)
 						.build());
+	}
+
+	private ImmutableList<JsonDataEntryListValue> getDataEntryFieldListValues(final DataEntryField layoutField, final String adLanguage)
+	{
+		return layoutField.getListValues().stream()
+				.map(it -> JsonDataEntryListValue.builder()
+						.id(it.getId())
+						.name(it.getName().translate(adLanguage))
+						.description(it.getDescription().translate(adLanguage))
+						.build())
+				.collect(GuavaCollectors.toImmutableList());
 	}
 }
 
