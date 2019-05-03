@@ -22,6 +22,7 @@ package de.metas.dataentry.rest_api.dto;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.dataentry.DataEntrySubGroupId;
 import lombok.Builder;
 import lombok.Value;
@@ -32,10 +33,14 @@ import java.util.List;
 @Value
 public class JsonDataEntrySubGroup
 {
+	@JsonProperty("id")
 	DataEntrySubGroupId id;
 
+	@JsonProperty("caption")
 	String caption;
+	@JsonProperty("description")
 	String description;
 
-	List<JsonDataEntrySection> jsonDataEntrySections;
+	@JsonProperty("sections")
+	List<JsonDataEntrySection> sections;
 }

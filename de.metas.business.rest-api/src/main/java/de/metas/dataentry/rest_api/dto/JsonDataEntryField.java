@@ -22,9 +22,10 @@ package de.metas.dataentry.rest_api.dto;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.FieldType;
-import de.metas.dataentry.layout.DataEntryListValue;
 import lombok.Builder;
 import lombok.Value;
 
@@ -34,16 +35,26 @@ import java.util.List;
 @Value
 public class JsonDataEntryField
 {
+	@JsonProperty("id")
 	DataEntryFieldId id;
 
+	@JsonProperty("caption")
 	String caption;
+	@JsonProperty("description")
 	String description;
 
+	@JsonProperty("type")
 	FieldType type;
+	@JsonProperty("mandatory")
 	boolean mandatory;
 
-	/** empty, unless type=list */
-	List<DataEntryListValue> listValues;
+	/**
+	 * empty, unless type=list
+	 */
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonProperty("list_values")
+	List<JsonDataEntryListValue> listValues;
 
+	@JsonProperty("value")
 	Object value;
 }

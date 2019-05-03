@@ -22,14 +22,21 @@ package de.metas.dataentry.rest_api.dto;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.dataentry.DataEntryListValueId;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.List;
-
 @Builder
 @Value
-public class JsonData
+public class JsonDataEntryListValue
 {
-	List<JsonDataEntryGroup> groups;
+	@JsonProperty("id")
+	DataEntryListValueId id;
+
+	@JsonProperty("name")
+	String name;
+
+	@JsonProperty("description")
+	String description;
 }

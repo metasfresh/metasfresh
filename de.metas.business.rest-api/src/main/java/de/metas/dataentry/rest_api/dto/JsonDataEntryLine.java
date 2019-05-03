@@ -22,6 +22,7 @@ package de.metas.dataentry.rest_api.dto;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -31,5 +32,6 @@ import java.util.List;
 @Value
 public class JsonDataEntryLine
 {
+	@JsonProperty("fields")
 	List<JsonDataEntryField> fields;
 }

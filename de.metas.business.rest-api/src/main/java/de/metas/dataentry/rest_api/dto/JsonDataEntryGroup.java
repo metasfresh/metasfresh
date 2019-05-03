@@ -22,8 +22,8 @@ package de.metas.dataentry.rest_api.dto;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.dataentry.DataEntryGroupId;
-import de.metas.dataentry.layout.DataEntryGroup;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,12 +33,14 @@ import java.util.List;
 @Value
 public class JsonDataEntryGroup
 {
+	@JsonProperty("id")
 	DataEntryGroupId id;
 
+	@JsonProperty("caption")
 	String caption;
+	@JsonProperty("description")
 	String description;
 
-	DataEntryGroup.DocumentLinkColumnName documentLinkColumnName;
-
+	@JsonProperty("subgroups")
 	List<JsonDataEntrySubGroup> subGroups;
 }
