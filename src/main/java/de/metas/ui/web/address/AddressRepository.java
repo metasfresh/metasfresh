@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.adempiere.service.ILocationDAO;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
@@ -183,7 +184,7 @@ public class AddressRepository
 						.getDataBindingNotNull(AddressFieldBinding.class)
 						.writeValue(locationRecord, locationField));
 
-		InterfaceWrapperHelper.save(locationRecord);
+		Services.get(ILocationDAO.class).save(locationRecord);
 
 		return locationRecord;
 	}
