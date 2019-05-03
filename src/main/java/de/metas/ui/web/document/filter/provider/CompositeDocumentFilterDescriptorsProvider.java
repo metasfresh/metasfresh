@@ -1,13 +1,14 @@
-package de.metas.ui.web.document.filter;
+package de.metas.ui.web.document.filter.provider;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Stream;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,6 +32,7 @@ import de.metas.util.GuavaCollectors;
  * #L%
  */
 
+@ToString
 class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	public static DocumentFilterDescriptorsProvider compose(final DocumentFilterDescriptorsProvider... providers)
@@ -41,8 +43,8 @@ class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		}
 
 		final ImmutableList<DocumentFilterDescriptorsProvider> providersList = Stream.of(providers)
-				.filter(provider -> !NullDocumentFilterDescriptorsProvider.isNull(provider))
-				.collect(GuavaCollectors.toImmutableList());
+				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
+				.collect(ImmutableList.toImmutableList());
 
 		if (providersList.isEmpty())
 		{
@@ -56,19 +58,11 @@ class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		return new CompositeDocumentFilterDescriptorsProvider(providersList);
 	}
 
-	private final List<DocumentFilterDescriptorsProvider> providers;
+	private final ImmutableList<DocumentFilterDescriptorsProvider> providers;
 
-	private CompositeDocumentFilterDescriptorsProvider(final ImmutableList<DocumentFilterDescriptorsProvider> providersList)
+	private CompositeDocumentFilterDescriptorsProvider(@NonNull final ImmutableList<DocumentFilterDescriptorsProvider> providers)
 	{
-		this.providers = providersList;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper("composite")
-				.addValue(providers)
-				.toString();
+		this.providers = providers;
 	}
 
 	@Override
@@ -92,5 +86,4 @@ class CompositeDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 				.findFirst()
 				.orElse(null);
 	}
-
 }

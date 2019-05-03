@@ -22,7 +22,6 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -276,6 +275,11 @@ public final class DocumentFilterDescriptor
 			final Function<List<DocumentFilterParamDescriptor.Builder>, Builder> finisher = (params) -> addParameters(params);
 
 			return Collector.of(supplier, accumulator, combiner, finisher);
+		}
+
+		public Builder addInternalParameter(final String parameterName, final Object constantValue)
+		{
+			return addInternalParameter(DocumentFilterParam.ofNameEqualsValue(parameterName, constantValue));
 		}
 
 		public Builder addInternalParameter(final DocumentFilterParam parameter)

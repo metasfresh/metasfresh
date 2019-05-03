@@ -18,7 +18,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilters;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;

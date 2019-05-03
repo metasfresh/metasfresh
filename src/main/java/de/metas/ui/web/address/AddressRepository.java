@@ -7,14 +7,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.model.I_C_Location;
-import de.metas.adempiere.service.ILocationBL;
 import de.metas.cache.CCache;
+import de.metas.location.ILocationBL;
+import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -28,8 +29,8 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.util.Services;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -183,7 +184,7 @@ public class AddressRepository
 						.getDataBindingNotNull(AddressFieldBinding.class)
 						.writeValue(locationRecord, locationField));
 
-		InterfaceWrapperHelper.save(locationRecord);
+		Services.get(ILocationDAO.class).save(locationRecord);
 
 		return locationRecord;
 	}
