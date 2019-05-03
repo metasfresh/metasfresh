@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.element.api.AdTabId;
 
 import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchDocumentFilterDescriptorsProviderFactory;
+import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.standard.StandardDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.userQuery.UserQueryDocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -55,6 +56,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 		return CompositeDocumentFilterDescriptorsProvider.compose(
 				UserQueryDocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields),
 				StandardDocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields),
-				FullTextSearchDocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields));
+				FullTextSearchDocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields),
+				LocationAreaSearchDocumentFilterDescriptorsProviderFactory.instance.createFiltersProvider(adTabId, tableName, fields));
 	}
 }
