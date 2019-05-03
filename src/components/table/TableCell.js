@@ -197,7 +197,7 @@ class TableCell extends PureComponent {
   };
 
   handleKeyDown = e => {
-    if (document.activeElement === this.cell) {
+    // if (document.activeElement === this.cell) {
       const { property, handleKeyDown, widgetData } = this.props;
       // const { widgetBlurred } = this.state;
       const { key } = e;
@@ -214,7 +214,7 @@ class TableCell extends PureComponent {
       // else {
       //   this.setBlurWidget();
       // }
-    }
+    // }
   };
 
   render() {
