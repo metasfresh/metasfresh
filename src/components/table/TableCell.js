@@ -132,7 +132,7 @@ class TableCell extends PureComponent {
       widgetBlurred: false,
     });
 
-    console.log('TableCell blurwidgetfalse')
+    // console.log('TableCell blurwidgetfalse')
   };
 
   setBlurWidgetTrue = callback => {
@@ -143,7 +143,7 @@ class TableCell extends PureComponent {
       () => {
         this.cell.focus();
 
-        console.log('TableCell blurwidgettrue')
+        // console.log('TableCell blurwidgettrue')
 
         callback && callback();
       }
@@ -197,22 +197,24 @@ class TableCell extends PureComponent {
   };
 
   handleKeyDown = e => {
-    const { property, handleKeyDown, widgetData } = this.props;
-    // const { widgetBlurred } = this.state;
-    const { key } = e;
-    // const el = this.cell.getElementsByTagName('input');
-    console.log('TableCell handleKeyDown: ', key)
-    // handleKeyDown(e, this.cell, property, widgetData);
-    // if (!widgetBlurred) {
-    if (['Enter', 'Tab', 'Escape'].includes(key)) {
-      this.setBlurWidgetTrue();
+    if (document.activeElement === this.cell) {
+      const { property, handleKeyDown, widgetData } = this.props;
+      // const { widgetBlurred } = this.state;
+      const { key } = e;
+      // const el = this.cell.getElementsByTagName('input');
+      // console.log('TableCell handleKeyDown: ', key)
+      // handleKeyDown(e, this.cell, property, widgetData);
+      // if (!widgetBlurred) {
+      if (['Enter', 'Tab', 'Escape'].includes(key)) {
+        this.setBlurWidgetTrue();
+      }
+      // this.cell.focus();
+      handleKeyDown(e, property, widgetData);
+      // }
+      // else {
+      //   this.setBlurWidget();
+      // }
     }
-    // this.cell.focus();
-    handleKeyDown(e, property, widgetData);
-    // }
-    // else {
-    //   this.setBlurWidget();
-    // }
   };
 
   render() {
@@ -299,12 +301,6 @@ class TableCell extends PureComponent {
           // console.log('TableCell onFocus: ', widgetBlurred)
 
           if (!widgetBlurred) {
-            // const el = this.cell.getElementsByTagName('input');
-            // if (el && el.length) {
-            //   onCellFocused(e, el[0], rowId, cellIdx);
-            // }
-            // console.log('TableCell onFocus')
-
             onCellFocused(e, property, widgetData);
           } else {
             this.setBlurWidgetFalse();

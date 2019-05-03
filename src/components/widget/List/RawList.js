@@ -361,7 +361,7 @@ export class RawList extends PureComponent {
                     'input-disabled': disabled,
                   }
                 )}
-                readOnly
+                _readOnly
                 tabIndex={-1}
                 placeholder={placeholder}
                 value={value}

@@ -143,7 +143,7 @@ class TableItem extends PureComponent {
     // if (item ? !item.readonly : true) {
     if (showWidget) {
       if (this.state.edited === property) {
-        console.log('stop propagation');
+        // console.log('stop propagation');
         e && e.stopPropagation();
       }
       // console.log('ITEM: ', item);
@@ -158,11 +158,14 @@ class TableItem extends PureComponent {
           )[0];
 
           // TODO: We need to focus attributes button if it exists
-          console.log('INNER edit property: ', elem);
+          // console.log('INNER edit property: ', elem);
 
           // const disabled = elem && elem.className.includes('input-disabled');
           const disabled = elem && elem.hasAttribute('disabled');
-          const readonly = elem && elem.className.includes('disabled');
+          const readonly =
+            elem &&
+            (elem.hasAttribute('readonly') ||
+              elem.className.includes('disabled'));
 
           if (elem && !disabled && !readonly) {
             elem.focus();
@@ -189,7 +192,8 @@ class TableItem extends PureComponent {
   handleKeyDown = (e, property, widgetData) => {
     // const { changeListenOnTrue } = this.props;
     const { listenOnKeys, edited } = this.state;
-    console.log('TableItem handleKeyDown: ', e.key, listenOnKeys, property, widgetData);
+    // console.log('TableItem handleKeyDown: ', e.key, listenOnKeys, property, widgetData);
+    // console.log('TableItem handleKeyDown: ', document.activeElement);
 
     switch (e.key) {
       case 'Enter':
@@ -197,7 +201,7 @@ class TableItem extends PureComponent {
           // console.log('TableItem handleKeyDown ENTER 1: ', property, widgetData)
           this.handleEditProperty(e, property, widgetData[0]);
         } else {
-          console.log('TableItem handleKeyDown ENTER 2')
+          // console.log('TableItem handleKeyDown ENTER 2')
           this.listenOnKeysTrue();
           // this.handleEditProperty(e, property, widgetData[0]);
         }
@@ -299,7 +303,7 @@ class TableItem extends PureComponent {
 
   handleClickOutside = e => {
     // const { changeListenOnTrue, rowId, isSelected } = this.props;
-    console.log('handleclickoutside')
+    // console.log('handleclickoutside')
     // if (isSelected) {
     //   console.log('THIS: ', rowId, this);
     //   this.handleEditProperty(e);

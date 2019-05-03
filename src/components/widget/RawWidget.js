@@ -122,7 +122,7 @@ export class RawWidget extends Component {
 // =======
     const { lastFormField } = this.props;
 
-    console.log('RawWidget handleKeyDown: ', e.key)
+    // console.log('RawWidget handleKeyDown: ', e.key)
 
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
       if (e.key === 'Enter' && !lastFormField) {

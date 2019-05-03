@@ -311,12 +311,12 @@ class Table extends Component {
   };
 
   setListenTrue = () => {
-    console.log('Table setListenTrue');
+    // console.log('Table setListenTrue');
     this.setState({ listenOnKeys: true });
   };
 
   setListenFalse = () => {
-    console.log('Table setListenFalse');
+    // console.log('Table setListenFalse');
     this.setState({ listenOnKeys: false });
   };
 
@@ -523,6 +523,8 @@ class Table extends Component {
   handleKeyDown = e => {
     const { keyProperty, mainTable, readonly, closeOverlays } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
+
+    console.log('Table handleKeyDown: ', listenOnKeys);
 
     if (!listenOnKeys) {
       return;
@@ -1012,6 +1014,7 @@ class Table extends Component {
           tabId={tabId}
           onDoubleClick={this.handleDoubleClick}
           onClick={e => {
+            console.log('Table clicked on row')
             const selected = this.handleClick(e, keyProperty, item);
 
             if (openIncludedViewOnSelect) {
