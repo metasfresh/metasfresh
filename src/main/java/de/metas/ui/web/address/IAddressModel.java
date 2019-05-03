@@ -1,9 +1,8 @@
 package de.metas.ui.web.address;
 
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Postal;
 import org.compiere.model.I_C_Region;
-
-import de.metas.adempiere.model.I_C_Postal;
 
 /*
  * #%L
