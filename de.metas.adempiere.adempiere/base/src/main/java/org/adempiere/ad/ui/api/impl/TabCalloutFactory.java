@@ -30,6 +30,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class TabCalloutFactory implements ITabCalloutFactory
 {
@@ -173,8 +174,8 @@ public class TabCalloutFactory implements ITabCalloutFactory
 				{
 					final Class<?> tabCalloutClass = (Class<?>)tabCalloutObj;
 					final ITabCallout tabCalloutInstance = Util.newInstance(ITabCallout.class, tabCalloutClass);
-					
-					if(tabCalloutInstance instanceof IStatefulTabCallout)
+
+					if (tabCalloutInstance instanceof IStatefulTabCallout)
 					{
 						((IStatefulTabCallout)tabCalloutInstance).onInit(calloutRecord);
 					}
@@ -201,10 +202,20 @@ public class TabCalloutFactory implements ITabCalloutFactory
 	}
 
 	@Override
-	public void registerTabCalloutForTable(final String tableName, final Class<? extends ITabCallout> tabCalloutClass)
+	public void registerTabCalloutForTable(
+			@NonNull final String tableName,
+			@NonNull final Class<? extends ITabCallout> tabCalloutClass)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-		Check.assumeNotNull(tabCalloutClass, "tabCalloutClass not null");
 		tableName2tabCalloutClasses.put(tableName, tabCalloutClass);
+	}
+
+	@Override
+	public void unregisterTabCalloutForTable(
+			@NonNull final String tableName,
+			@NonNull final Class<? extends ITabCallout> tabCalloutClass)
+	{
+		Check.assumeNotEmpty(tableName, "tableName not empty");
+		tableName2tabCalloutClasses.remove(tableName, tabCalloutClass);
 	}
 }
