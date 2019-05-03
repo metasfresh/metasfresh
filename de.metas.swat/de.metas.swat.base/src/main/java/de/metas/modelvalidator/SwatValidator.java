@@ -76,7 +76,6 @@ import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
 import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
-import de.metas.adempiere.modelvalidator.C_CountryArea_Assign;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
@@ -177,8 +176,6 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
-		engine.addModelValidator(new CLocationValidator(), client); // us786
-		engine.addModelValidator(new C_CountryArea_Assign(), client);
 
 		engine.addModelValidator(new InOutCandidateValidator(), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);

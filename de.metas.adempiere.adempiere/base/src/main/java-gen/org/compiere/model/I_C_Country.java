@@ -603,131 +603,6 @@ public interface I_C_Country
     public static final String COLUMNNAME_IsAddressLinesReverse = "IsAddressLinesReverse";
 
 	/**
-	 * Set Use Postcode Lookup.
-	 * Does this country have a post code web service
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setIsPostcodeLookup (boolean IsPostcodeLookup);
-
-	/**
-	 * Get Use Postcode Lookup.
-	 * Does this country have a post code web service
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public boolean isPostcodeLookup();
-
-    /** Column definition for IsPostcodeLookup */
-    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_IsPostcodeLookup = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "IsPostcodeLookup", null);
-    /** Column name IsPostcodeLookup */
-    public static final String COLUMNNAME_IsPostcodeLookup = "IsPostcodeLookup";
-
-	/**
-	 * Set Lookup ClassName.
-	 * The class name of the postcode lookup plugin
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLookupClassName (java.lang.String LookupClassName);
-
-	/**
-	 * Get Lookup ClassName.
-	 * The class name of the postcode lookup plugin
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getLookupClassName();
-
-    /** Column definition for LookupClassName */
-    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_LookupClassName = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "LookupClassName", null);
-    /** Column name LookupClassName */
-    public static final String COLUMNNAME_LookupClassName = "LookupClassName";
-
-	/**
-	 * Set Lookup Client ID.
-	 * The ClientID or Login submitted to the Lookup URL
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLookupClientID (java.lang.String LookupClientID);
-
-	/**
-	 * Get Lookup Client ID.
-	 * The ClientID or Login submitted to the Lookup URL
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getLookupClientID();
-
-    /** Column definition for LookupClientID */
-    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_LookupClientID = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "LookupClientID", null);
-    /** Column name LookupClientID */
-    public static final String COLUMNNAME_LookupClientID = "LookupClientID";
-
-	/**
-	 * Set Lookup Password.
-	 * The password submitted to the Lookup URL
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLookupPassword (java.lang.String LookupPassword);
-
-	/**
-	 * Get Lookup Password.
-	 * The password submitted to the Lookup URL
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getLookupPassword();
-
-    /** Column definition for LookupPassword */
-    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_LookupPassword = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "LookupPassword", null);
-    /** Column name LookupPassword */
-    public static final String COLUMNNAME_LookupPassword = "LookupPassword";
-
-	/**
-	 * Set Lookup URL.
-	 * The URL of the web service that the plugin connects to in order to retrieve postcode data
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLookupUrl (java.lang.String LookupUrl);
-
-	/**
-	 * Get Lookup URL.
-	 * The URL of the web service that the plugin connects to in order to retrieve postcode data
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getLookupUrl();
-
-    /** Column definition for LookupUrl */
-    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_LookupUrl = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "LookupUrl", null);
-    /** Column name LookupUrl */
-    public static final String COLUMNNAME_LookupUrl = "LookupUrl";
-
-	/**
 	 * Set Media Size.
 	 * Java Media Size
 	 *
@@ -754,7 +629,6 @@ public interface I_C_Country
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -764,7 +638,6 @@ public interface I_C_Country
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
