@@ -1,9 +1,10 @@
-package org.adempiere.ad.column.model.interceptor;
+package org.adempiere.ad.column.autoapplyvalrule.interceptor;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.ad.column.autoapplyvalrule.ValRuleAutoApplier;
+import org.adempiere.ad.column.autoapplyvalrule.ValRuleAutoApplierService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -11,6 +12,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
@@ -46,16 +48,25 @@ import lombok.NonNull;
 
 @Interceptor(I_AD_Column.class)
 @Component("org.adempiere.ad.column.model.interceptor.AD_Column_AutoApplyValidationRuleConfig")
-public class AD_Column_AutoApplyValidationRuleConfig
+public class AD_Column_AutoApplyValRuleConfig
 {
 	private IModelValidationEngine engine;
 
-	private Map<String, AD_Column_AutoApplyValidationRule> tableName2validator;
+	private final ValRuleAutoApplierService valRuleAutoApplierService;
+
+	private AD_Column_AutoApplyValRuleInterceptor autoApplyValRuleInterceptor;
+
+	public AD_Column_AutoApplyValRuleConfig(@NonNull final ValRuleAutoApplierService valRuleAutoApplierService)
+	{
+		this.valRuleAutoApplierService = valRuleAutoApplierService;
+	}
 
 	@Init
 	public void initialize(@NonNull final IModelValidationEngine engine)
 	{
 		this.engine = engine;
+
+		this.autoApplyValRuleInterceptor = new AD_Column_AutoApplyValRuleInterceptor(valRuleAutoApplierService);
 
 		// TODO move into a DAO; let the DAO retrieve pojo(s) with tableNAme
 		final IQueryBuilder<I_AD_Column> queryBuilder = createQueryBuilder();
@@ -81,14 +92,14 @@ public class AD_Column_AutoApplyValidationRuleConfig
 	{
 		final String tableName = column.getAD_Table().getTableName();
 
-		if (tableName2validator != null)
-		{
-			final AD_Column_AutoApplyValidationRule interceptorToRemove = tableName2validator.remove(tableName);
-			if (interceptorToRemove != null)
-			{
-				engine.removeModelChange(tableName, interceptorToRemove);
-			}
-		}
+		valRuleAutoApplierService.unregisterForTableName(tableName);
+
+		final ITabCalloutFactory tabCalloutFactory = Services.get(ITabCalloutFactory.class);
+
+
+		// createAndRegisterForQuery might add it again
+		engine.removeModelChange(tableName, autoApplyValRuleInterceptor);
+		tabCalloutFactory.unregisterTabCalloutForTable(tableName, AD_Column_AutoApplyValRuleTabCallout.class);
 
 		final IQueryBuilder<I_AD_Column> queryBuilder = createQueryBuilder().addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, column.getAD_Table_ID());
 
@@ -99,19 +110,28 @@ public class AD_Column_AutoApplyValidationRuleConfig
 			@NonNull final IModelValidationEngine engine,
 			@NonNull final IQuery<I_AD_Column> query)
 	{
+		final HashSet<String> tableNamesWithRegisteredColumn = new HashSet<>();
+
 		final List<I_AD_Column> columnsToHandle = query.list();
 
 		final ImmutableListMultimap<Integer, I_AD_Column> tableId2columns = Multimaps.index(columnsToHandle, I_AD_Column::getAD_Table_ID);
 
-		tableName2validator = new ConcurrentHashMap<>();
-
 		for (final int adTableId : tableId2columns.keySet())
 		{
 			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
-			final AD_Column_AutoApplyValidationRule autoApplyValidationRule = new AD_Column_AutoApplyValidationRule(tableName, tableId2columns.get(adTableId));
 
-			engine.addModelChange(tableName, autoApplyValidationRule);
-			tableName2validator.put(tableName, autoApplyValidationRule);
+			final ValRuleAutoApplier valRuleAutoApplier = new ValRuleAutoApplier(tableName, columnsToHandle);
+			valRuleAutoApplierService.registerApplier(valRuleAutoApplier);
+
+			tableNamesWithRegisteredColumn.add(tableName);
 		}
+
+		final ITabCalloutFactory tabCalloutFactory = Services.get(ITabCalloutFactory.class);
+		tableNamesWithRegisteredColumn
+				.forEach(tableNameWithRegisteredColum -> {
+
+					engine.addModelChange(tableNameWithRegisteredColum, autoApplyValRuleInterceptor);
+					tabCalloutFactory.registerTabCalloutForTable(tableNameWithRegisteredColum, AD_Column_AutoApplyValRuleTabCallout.class);
+				});
 	}
 }
