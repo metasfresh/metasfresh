@@ -8,6 +8,7 @@
     "isPurchased": true,
     "isSold": true,
     "isDiverse": false,
+    "productType": "Item",
     "prices": [
       {
         "priceStd": "2.00",
