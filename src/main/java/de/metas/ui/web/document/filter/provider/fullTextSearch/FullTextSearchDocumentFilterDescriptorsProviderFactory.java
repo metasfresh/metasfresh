@@ -14,7 +14,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -88,7 +87,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory
 						.setFieldName(FullTextSearchSqlDocumentFilterConverter.PARAM_SearchText)
 						.setDisplayName(caption)
 						.setWidgetType(DocumentFieldWidgetType.Text))
-				.addInternalParameter(DocumentFilterParam.ofNameEqualsValue(FullTextSearchSqlDocumentFilterConverter.PARAM_Context, context))
+				.addInternalParameter(FullTextSearchSqlDocumentFilterConverter.PARAM_Context, context)
 				.build();
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor);
