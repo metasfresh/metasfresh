@@ -63,7 +63,6 @@ export class Product {
 
 function applyProduct(product) {
   describe(`Create new Product ${product.name}`, function() {
-
     cy.visitWindow('140', 'NEW');
     cy.writeIntoStringField('Name', product.name);
 
@@ -75,18 +74,26 @@ function applyProduct(product) {
 
     cy.writeIntoStringField('Description', product.description);
 
-    if (product.isStocked && !cy.isChecked('IsStocked')) {
-      cy.clickOnCheckBox('IsStocked');
-    }
-    if (product.isPurchased && !cy.isChecked('IsPurchased')) {
-      cy.clickOnCheckBox('IsPurchased');
-    }
-    if (product.isSold && !cy.isChecked('IsSold')) {
-      cy.clickOnCheckBox('IsSold');
-    }
-    if (product.isDiverse && cy.isChecked('IsDiverse')) {
-      cy.clickOnCheckBox('IsDiverse');
-    }
+    cy.isChecked('IsStocked').then(isIsStockedValue => {
+      if (product.isStocked && !isIsStockedValue) {
+        cy.clickOnCheckBox('IsStocked');
+      }
+    });
+    cy.isChecked('IsPurchased').then(isPurchasedValue => {
+      if (product.isPurchased && !isPurchasedValue) {
+        cy.clickOnCheckBox('IsPurchased');
+      }
+    });
+    cy.isChecked('IsSold').then(isSoldValue => {
+      if (product.isSold && !isSoldValue) {
+        cy.clickOnCheckBox('IsSold');
+      }
+    });
+    cy.isChecked('IsDiverse').then(isDiverseValue => {
+      if (product.isDiverse && !isDiverseValue) {
+        cy.clickOnCheckBox('IsDiverse');
+      }
+    });
 
     if (product.prices.length > 0) {
       product.prices.forEach(function(product) {

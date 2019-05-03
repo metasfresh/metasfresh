@@ -46,9 +46,6 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
   });
 });
 
-/**
- * @param expectedStatus - optional; if given, the command verifies the status
- */
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
     cy.log(`Execute doc action ${action}`);

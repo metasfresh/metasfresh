@@ -19,6 +19,7 @@
 
 ** Forms (form.js)
 
+- assertFieldNotShown
 - clearField
 - getFieldValue
 - isChecked
