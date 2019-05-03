@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 /*
  * #%L
@@ -29,12 +29,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_CountryArea_Assign;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_CountryArea_Assign;
-import de.metas.adempiere.service.ICountryAreaBL;
+import de.metas.location.ICountryAreaBL;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;

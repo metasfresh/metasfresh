@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -10,12 +10,13 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+
+import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
 
-import de.metas.adempiere.service.ILocationDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 

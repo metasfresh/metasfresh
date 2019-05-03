@@ -49,8 +49,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
-import de.metas.adempiere.service.ILocationBL;
-import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerAware;
@@ -58,6 +56,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.location.ILocationBL;
+import de.metas.location.impl.AddressBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

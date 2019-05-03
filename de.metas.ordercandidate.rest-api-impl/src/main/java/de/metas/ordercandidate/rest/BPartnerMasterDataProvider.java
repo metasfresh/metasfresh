@@ -26,8 +26,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -35,6 +33,8 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;

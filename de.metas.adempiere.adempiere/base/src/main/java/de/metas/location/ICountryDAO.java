@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.adempiere.service;
+package de.metas.location;
 
 /*
  * #%L
@@ -35,7 +35,6 @@ import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 
@@ -54,7 +53,7 @@ public interface ICountryDAO extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	ICountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName);
+	CountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName);
 
 	/**
 	 * Get Default Country

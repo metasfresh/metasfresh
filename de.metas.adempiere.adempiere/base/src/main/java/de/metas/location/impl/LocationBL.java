@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 /*
  * #%L
@@ -40,9 +40,9 @@ import org.slf4j.Logger;
 import com.akunagroup.uk.postcode.AddressInterface;
 
 import de.metas.adempiere.model.I_C_Postal;
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationBL;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;

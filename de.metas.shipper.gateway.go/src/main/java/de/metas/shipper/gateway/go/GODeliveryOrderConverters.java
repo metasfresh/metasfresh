@@ -10,7 +10,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.service.ICountryDAO;
+import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.Address;

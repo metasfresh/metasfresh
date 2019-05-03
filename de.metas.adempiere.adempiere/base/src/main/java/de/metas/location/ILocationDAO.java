@@ -1,11 +1,10 @@
-package de.metas.adempiere.service;
+package de.metas.location;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import de.metas.location.LocationId;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
 

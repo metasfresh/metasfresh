@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,14 +34,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.adempiere.service.CountrySequences;
-import de.metas.adempiere.service.ICountryCustomInfo;
-import de.metas.adempiere.service.ICountryDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
+import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
+import de.metas.location.CountrySequences;
+import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -83,7 +83,7 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public ICountryCustomInfo retriveCountryCustomInfo(final Properties ctx, final String trxName)
+	public CountryCustomInfo retriveCountryCustomInfo(final Properties ctx, final String trxName)
 	{
 		final I_C_Country country = getDefault(ctx);
 
@@ -98,7 +98,10 @@ public class CountryDAO implements ICountryDAO
 
 		if (info != null)
 		{
-			return new CountryCustomInfoImpl(info.getCaptureSequence(), info.getC_Country_ID());
+			return CountryCustomInfo.builder()
+					.countryId(CountryId.ofRepoId(info.getC_Country_ID()))
+					.captureSequence(info.getCaptureSequence())
+					.build();
 		}
 
 		return null;

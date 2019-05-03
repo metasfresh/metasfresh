@@ -30,7 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.location.ILocationBL;
 import de.metas.payment.sepa.api.IBBANStructureBL;
 import de.metas.payment.sepa.api.IBBANStructureBuilder;
 import de.metas.payment.sepa.wrapper.BBANStructure;

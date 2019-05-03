@@ -1,7 +1,10 @@
 /**
  * 
  */
-package de.metas.adempiere.service;
+package de.metas.location;
+
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -16,22 +19,19 @@ package de.metas.adempiere.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-/**
- * @author cg
- * 
- */
-public interface ICountryCustomInfo
+@Value
+@Builder
+public class CountryCustomInfo
 {
-	public String getCaptureSequence();
-	public int getC_Country_ID();
+	String captureSequence;
+	CountryId countryId;
 }

@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 /*
  * #%L
@@ -33,13 +33,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_CountryArea;
+import org.compiere.model.I_C_CountryArea_Assign;
 
-import de.metas.adempiere.model.I_C_CountryArea;
-import de.metas.adempiere.model.I_C_CountryArea_Assign;
-import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryAreaBL;
+import de.metas.location.ICountryDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -53,12 +54,7 @@ public class CountryAreaBL implements ICountryAreaBL
 	{
 		final String trxName = ITrx.TRXNAME_None;
 
-		final I_C_Country country = retrieveCountryByCode(ctx, countryCode, trxName);
-		if (country == null)
-		{
-			throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@: " + countryCode + ")");
-		}
-
+		final CountryId countryId = Services.get(ICountryDAO.class).getCountryIdByCountryCode(countryCode);
 		final I_C_CountryArea countryArea = retrieveCountryAreaByValue(ctx, countryAreaKey, trxName);
 		if (countryArea == null)
 		{
@@ -67,7 +63,8 @@ public class CountryAreaBL implements ICountryAreaBL
 
 		for (final I_C_CountryArea_Assign assignment : retrieveCountryAreaAssignments(ctx, countryArea.getC_CountryArea_ID(), trxName))
 		{
-			if (assignment.getC_Country_ID() != country.getC_Country_ID())
+			final CountryId assignmentCountryId = CountryId.ofRepoId(assignment.getC_Country_ID());
+			if(!CountryId.equals(assignmentCountryId, countryId))
 			{
 				continue;
 			}
@@ -117,8 +114,7 @@ public class CountryAreaBL implements ICountryAreaBL
 				.list(I_C_CountryArea_Assign.class);
 	}
 
-	@Override
-	public List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(I_C_CountryArea countryArea, int countryId)
+	private List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(I_C_CountryArea countryArea, int countryId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(countryArea);
 		final String trxName = InterfaceWrapperHelper.getTrxName(countryArea);
@@ -134,21 +130,6 @@ public class CountryAreaBL implements ICountryAreaBL
 		}
 
 		return result;
-	}
-
-	/**
-	 * Returns the country based on the ISO code.
-	 */
-	@Cached(cacheName = I_C_Country.Table_Name)
-	public I_C_Country retrieveCountryByCode(@CacheCtx Properties ctx, String countryCode, @CacheTrx String trxName)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Country.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_Country.COLUMNNAME_CountryCode, countryCode)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnly(I_C_Country.class);
-
 	}
 
 	@Override

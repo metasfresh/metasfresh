@@ -44,8 +44,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
-import de.metas.adempiere.service.ICountryDAO;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;

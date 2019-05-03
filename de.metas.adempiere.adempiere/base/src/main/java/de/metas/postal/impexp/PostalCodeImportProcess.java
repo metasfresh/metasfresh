@@ -1,7 +1,7 @@
 package de.metas.postal.impexp;
 
 import de.metas.adempiere.model.I_C_Postal;
-import de.metas.adempiere.service.ICountryDAO;
+import de.metas.location.ICountryDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;

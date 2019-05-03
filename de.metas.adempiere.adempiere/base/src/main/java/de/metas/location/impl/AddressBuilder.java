@@ -1,4 +1,4 @@
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
@@ -41,13 +41,13 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.CountrySequences;
-import de.metas.adempiere.service.ICountryCustomInfo;
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
+import de.metas.location.CountrySequences;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -654,7 +654,7 @@ public class AddressBuilder
 			//
 			// construct string
 
-			final ICountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
+			final CountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
 			String ds = userInfo == null ? "" : userInfo.getCaptureSequence();
 			if (ds == null || ds.length() == 0)
 			{

@@ -7,7 +7,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 
 /**
@@ -32,7 +32,7 @@ public class CLocationValidator implements ModelValidator
 		if (client != null)
 			m_AD_Client_ID = client.getAD_Client_ID();
 
-		Services.registerService(ILocationBL.class, new de.metas.adempiere.service.impl.LocationBL());
+		Services.registerService(ILocationBL.class, new de.metas.location.impl.LocationBL());
 		engine.addModelChange(I_C_Location.Table_Name, this);
 	}
 

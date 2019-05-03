@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.adempiere.service.impl;
+package de.metas.location.impl;
 
 import java.util.Comparator;
 
@@ -34,7 +34,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.I_C_Country;
 import org.junit.Ignore;
 
-import de.metas.adempiere.service.ICountryCustomInfo;
+import de.metas.location.CountryCustomInfo;
 
 /**
  * @author cg
@@ -45,7 +45,7 @@ import de.metas.adempiere.service.ICountryCustomInfo;
 public class PlainCountryDAO extends CountryDAO
 {
 	@Override
-	public ICountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName)
+	public CountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName)
 	{
 		return null;
 	}

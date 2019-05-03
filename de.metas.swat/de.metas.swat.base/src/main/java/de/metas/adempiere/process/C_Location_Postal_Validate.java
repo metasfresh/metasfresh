@@ -29,7 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.Query;
 
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.location.ILocationBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 

@@ -31,7 +31,7 @@ import org.compiere.util.Env;
 import com.akunagroup.uk.postcode.AddressInterface;
 import com.akunagroup.uk.postcode.AddressLookupInterface;
 
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 
 public class MetasPostalLookup implements AddressLookupInterface

@@ -1,7 +1,4 @@
-/**
- * 
- */
-package de.metas.adempiere.service.impl;
+package de.metas.location;
 
 /*
  * #%L
@@ -26,33 +23,24 @@ package de.metas.adempiere.service.impl;
  */
 
 
-import de.metas.adempiere.service.ICountryCustomInfo;
+import java.sql.Timestamp;
+import java.util.Properties;
 
-/**
- * @author cg
- * 
- */
-public class CountryCustomInfoImpl implements ICountryCustomInfo
+import org.compiere.model.I_C_CountryArea_Assign;
+
+import de.metas.util.ISingletonService;
+
+public interface ICountryAreaBL extends ISingletonService
 {
-	private final String captureSequence;
-	private final int C_Country_ID;
+	String COUNTRYAREAKEY_EU = "EU";
 
-	CountryCustomInfoImpl(final String captureSequence, final int C_Country_ID)
-	{
-		this.captureSequence = captureSequence;
-		this.C_Country_ID = C_Country_ID;
-	}
+	/**
+	 * Checks if the given country is a member of a specific area at a certain date.
+	 * 
+	 * @param countryAreaKey Area key (e.g. "EU").
+	 * @param countryCode Country ISO code (e.g. "DE")
+	 */
+	boolean isMemberOf(Properties ctx, String countryAreaKey, String countryCode, Timestamp date);
 
-	@Override
-	public String getCaptureSequence()
-	{
-		return captureSequence;
-	}
-
-	@Override
-	public int getC_Country_ID()
-	{
-		return C_Country_ID;
-	}
-
+	void validate(I_C_CountryArea_Assign assignment);
 }

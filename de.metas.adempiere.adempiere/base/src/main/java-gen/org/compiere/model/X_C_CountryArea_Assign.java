@@ -1,43 +1,5 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
-package de.metas.adempiere.model;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -52,7 +14,7 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 745866137L;
+	private static final long serialVersionUID = 1569835791L;
 
     /** Standard Constructor */
     public X_C_CountryArea_Assign (Properties ctx, int C_CountryArea_Assign_ID, String trxName)
@@ -80,14 +42,6 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_CountryArea_Assign[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -150,15 +104,15 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public I_C_CountryArea getC_CountryArea() throws RuntimeException
+	public org.compiere.model.I_C_CountryArea getC_CountryArea() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_CountryArea_ID, I_C_CountryArea.class);
+		return get_ValueAsPO(COLUMNNAME_C_CountryArea_ID, org.compiere.model.I_C_CountryArea.class);
 	}
 
 	@Override
-	public void setC_CountryArea(I_C_CountryArea C_CountryArea)
+	public void setC_CountryArea(org.compiere.model.I_C_CountryArea C_CountryArea)
 	{
-		set_ValueFromPO(COLUMNNAME_C_CountryArea_ID, I_C_CountryArea.class, C_CountryArea);
+		set_ValueFromPO(COLUMNNAME_C_CountryArea_ID, org.compiere.model.I_C_CountryArea.class, C_CountryArea);
 	}
 
 	/** Set Country Area.
@@ -183,9 +137,9 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
-	/** Set GĂĽltig ab.
+	/** Set GÃ¼ltig ab.
 		@param ValidFrom 
-		GĂĽltig ab inklusiv (erster Tag)
+		GÃ¼ltig ab inklusiv (erster Tag)
 	  */
 	@Override
 	public void setValidFrom (java.sql.Timestamp ValidFrom)
@@ -193,8 +147,8 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
-	/** Get GĂĽltig ab.
-		@return GĂĽltig ab inklusiv (erster Tag)
+	/** Get GÃ¼ltig ab.
+		@return GÃ¼ltig ab inklusiv (erster Tag)
 	  */
 	@Override
 	public java.sql.Timestamp getValidFrom () 
@@ -202,9 +156,9 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}
 
-	/** Set GĂĽltig bis.
+	/** Set GÃ¼ltig bis.
 		@param ValidTo 
-		GĂĽltig bis inklusiv (letzter Tag)
+		GÃ¼ltig bis inklusiv (letzter Tag)
 	  */
 	@Override
 	public void setValidTo (java.sql.Timestamp ValidTo)
@@ -212,8 +166,8 @@ public class X_C_CountryArea_Assign extends org.compiere.model.PO implements I_C
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}
 
-	/** Get GĂĽltig bis.
-		@return GĂĽltig bis inklusiv (letzter Tag)
+	/** Get GÃ¼ltig bis.
+		@return GÃ¼ltig bis inklusiv (letzter Tag)
 	  */
 	@Override
 	public java.sql.Timestamp getValidTo () 

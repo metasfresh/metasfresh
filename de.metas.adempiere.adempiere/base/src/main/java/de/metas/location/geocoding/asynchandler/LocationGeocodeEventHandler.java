@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Joiner;
 
 import de.metas.Profiles;
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationDAO;
 import de.metas.event.IEventBusFactory;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
 import de.metas.location.geocoding.GeoCoordinatesProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeographicalCoordinates;
