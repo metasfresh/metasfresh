@@ -1,6 +1,7 @@
 package de.metas.contracts.refund.invoicecandidatehandler;
 
 import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.compiere.util.TimeUtil.asLocalDate;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
@@ -24,6 +25,7 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.NonNull;
 
 /*
@@ -91,7 +93,9 @@ public class FlatrateTermRefund_Handler
 	@Override
 	public Quantity calculateQtyEntered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		final I_C_UOM uomRecord = HandlerTools.retrieveTerm(invoiceCandidateRecord).getC_UOM();
+		final UomId uomId = HandlerTools.retrieveUomId(invoiceCandidateRecord);
+		final I_C_UOM uomRecord = loadOutOfTrx(uomId, I_C_UOM.class);
+
 		return Quantity.of(ONE, uomRecord);
 	}
 

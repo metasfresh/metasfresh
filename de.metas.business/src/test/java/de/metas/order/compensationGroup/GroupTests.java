@@ -24,12 +24,12 @@ import de.metas.util.lang.Percent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,7 +66,7 @@ public class GroupTests
 		{
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260)); // 740
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-222.00")); // - (480+260) * 30%
 		}
 
@@ -75,7 +75,7 @@ public class GroupTests
 		{
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(1);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260 - 222)); // 518
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-51.80")); // - (480+260-222) * 10%
 		}
 	}
@@ -102,7 +102,7 @@ public class GroupTests
 
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260)); // 740
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-222.00")); // - (480+260) * 30%
 		}
 
@@ -110,10 +110,10 @@ public class GroupTests
 		// Check compensation line 2: 10%
 		{
 			group.addNewCompensationLine(newPercentageDiscountRequest(10));
-			
+
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(1);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260 - 222)); // 518
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-51.80")); // - (480+260-222) * 10%
 		}
 

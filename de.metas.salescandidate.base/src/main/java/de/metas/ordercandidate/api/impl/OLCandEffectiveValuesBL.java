@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -205,7 +205,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public I_M_Product getM_Product_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return loadOutOfTrx(
+		return load(
 				getM_Product_Effective_ID(olCand),
 				I_M_Product.class);
 	}
