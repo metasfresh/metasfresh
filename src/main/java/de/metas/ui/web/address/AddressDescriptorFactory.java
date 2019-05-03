@@ -12,8 +12,11 @@ import org.compiere.model.I_C_Region;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Postal;
+import de.metas.adempiere.service.ICountryDAO;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.location.CountryId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -312,14 +315,17 @@ public class AddressDescriptorFactory
 
 		private static Object readValue_C_Country_ID(final I_C_Location locationRecord)
 		{
-			final I_C_Country country = locationRecord.getC_Country();
-			if (country != null && country.getC_Country_ID() > 0)
+			final CountryId countryId = CountryId.ofRepoIdOrNull(locationRecord.getC_Country_ID());
+			if (countryId != null)
 			{
-				final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
-				return IntegerLookupValue.of(countryTrl.getC_Country_ID(), countryTrl.getName());
+				final ITranslatableString displayName = Services.get(ICountryDAO.class).getCountryNameById(countryId);
+				final ITranslatableString helpText = null;
+				return IntegerLookupValue.of(countryId, displayName, helpText);
 			}
-
-			return null;
+			else
+			{
+				return null;
+			}
 		}
 
 		public void writeValue(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
