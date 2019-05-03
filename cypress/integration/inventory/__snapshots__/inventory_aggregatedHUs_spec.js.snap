@@ -441,7 +441,7 @@ exports[`Aggregated inventory test > Create a new aggreagted-HUs inventory doc #
         },
         "value": {
           "caption": "Multiple HUs",
-          "description": "Each inventory line can have multiple HUs",
+          "description": "The inventory line can have multiple HUs",
           "key": "M"
         },
         "viewEditorRenderMode": "never",
