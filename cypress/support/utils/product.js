@@ -41,15 +41,15 @@ export class Product {
     return this;
   }
 
-  setProductType(c_uom_id) {
-    cy.log(`Product - set UOM = ${c_uom_id}`);
-    this.c_uom_id = c_uom_id;
-    return this;
-  }
-
   setProductCategory(m_product_category) {
     cy.log(`Product - set Product Category = ${m_product_category}`);
     this.m_product_category = m_product_category;
+    return this;
+  }
+
+  setUOM(c_uom) {
+    cy.log(`Product - set c_uom = ${c_uom}`);
+    this.c_uom = c_uom;
     return this;
   }
 
@@ -92,6 +92,12 @@ function applyProduct(product) {
     cy.isChecked('IsDiverse').then(isDiverseValue => {
       if (product.isDiverse && !isDiverseValue) {
         cy.clickOnCheckBox('IsDiverse');
+      }
+    });
+
+    cy.getFieldValue('C_UOM_ID').then(uomValue => {
+      if (product.c_uom && product.c_uom != uomValue) {
+        cy.selectInListField('C_UOM_ID', product.c_uom);
       }
     });
 

@@ -3,7 +3,7 @@
     "description": "TestProduct1",
     "value": "TestProduct1",
     "m_product_category": "06_Kartoffeln",
-    "c_uat": "Each",
+    "c_uom": "Each",
     "isStocked": true,
     "isPurchased": true,
     "isSold": true,
@@ -12,7 +12,7 @@
       {
         "priceStd": "2.00",
         "m_pricelist_version": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
-        "c_taxcategory": "Reduzierter Satz Waren/ DL"
+        "c_taxcategory": "Normaler Steuersatz 19% (Deutschland)"
       }
     ]
   }

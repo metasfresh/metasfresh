@@ -31,9 +31,6 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
-/*
- * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
- */
 Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
     let path = `.quick-actions-wrapper`; // default action

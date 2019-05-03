@@ -40,6 +40,12 @@ export class BPartner {
     return this;
   }
 
+  setCustomerPricingSystem(customerPricingSystem) {
+    cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
+    this.customerPricingSystem = customerPricingSystem;
+    return this;
+  }
+
   addLocation(bPartnerLocation) {
     cy.log(`BPartner - add location = ${JSON.stringify(bPartnerLocation)}`);
     this.bPartnerLocations.push(bPartnerLocation);
@@ -114,9 +120,11 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      if (bPartner.isVendor) {
-        cy.clickOnCheckBox('IsVendor');
-      }
+      cy.isChecked('IsVendor').then(isVendorValue => {
+        if (bPartner.isVendor && !isVendorValue) {
+          cy.clickOnCheckBox('IsVendor');
+        }
+      });
       if (bPartner.vendorPricingSystem) {
         cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem);
       }
@@ -126,12 +134,19 @@ function applyBPartner(bPartner) {
       cy.pressDoneButton();
     }
 
-    if (bPartner.isCustomer) {
+    if (bPartner.isCustomer || bPartner.customerPricingSystem) {
       cy.selectTab('Customer');
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.clickOnCheckBox('IsCustomer');
+      cy.isChecked('IsCustomer').then(isCustomerValue => {
+        if (bPartner.isCustomer && !isCustomerValue) {
+          cy.clickOnCheckBox('IsCustomer');
+        }
+      });
+      if (bPartner.customerPricingSystem) {
+        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
+      }
       cy.pressDoneButton();
     }
 
