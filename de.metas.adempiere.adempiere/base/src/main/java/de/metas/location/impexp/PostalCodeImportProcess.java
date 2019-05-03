@@ -1,4 +1,4 @@
-package de.metas.postal.impexp;
+package de.metas.location.impexp;
 
 import de.metas.adempiere.model.I_C_Postal;
 import de.metas.location.ICountryDAO;

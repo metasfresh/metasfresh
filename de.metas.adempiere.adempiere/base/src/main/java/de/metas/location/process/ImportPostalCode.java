@@ -1,4 +1,4 @@
-package de.metas.postal.impexp.process;
+package de.metas.location.process;
 
 import org.compiere.model.I_I_Postal;
 import org.compiere.process.AbstractImportJavaProcess;

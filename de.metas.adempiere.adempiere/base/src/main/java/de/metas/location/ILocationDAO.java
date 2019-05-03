@@ -1,11 +1,8 @@
 package de.metas.location;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
 
 import de.metas.util.ISingletonService;
@@ -39,10 +36,4 @@ public interface ILocationDAO extends ISingletonService
 	List<I_C_Location> getByIds(Set<LocationId> ids);
 
 	void save(I_C_Location location);
-
-	/**
-	 * @return cities filter by country and by regionId (if set)
-	 */
-	IQueryBuilder<I_C_City> retrieveCitiesByCountryOrRegionQuery(Properties ctx, int countryId, int regionId);
-
 }

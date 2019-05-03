@@ -100,7 +100,6 @@ import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
-import de.metas.location.interceptor.C_CountryArea_Assign;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.report.ReportStarter;
@@ -178,8 +177,6 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
-		engine.addModelValidator(new CLocationValidator(), client); // us786
-		engine.addModelValidator(new C_CountryArea_Assign(), client);
 
 		engine.addModelValidator(new InOutCandidateValidator(), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);

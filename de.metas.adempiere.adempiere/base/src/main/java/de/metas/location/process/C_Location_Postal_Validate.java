@@ -1,4 +1,4 @@
-package de.metas.adempiere.process;
+package de.metas.location.process;
 
 /*
  * #%L

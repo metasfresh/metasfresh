@@ -4,20 +4,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOf
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Location;
 
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_City;
-import org.compiere.model.I_C_Location;
-
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -60,27 +53,5 @@ public class LocationDAO implements ILocationDAO
 	public void save(final I_C_Location location)
 	{
 		InterfaceWrapperHelper.save(location);
-	}
-
-	@Override
-	public IQueryBuilder<I_C_City> retrieveCitiesByCountryOrRegionQuery(final Properties ctx, final int countryId, final int regionId)
-	{
-		final IQueryBuilder<I_C_City> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_City.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyContextClientOrSystem()
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_City.COLUMNNAME_C_Country_ID, countryId)
-				//
-				.orderBy()
-				.addColumn(I_C_City.COLUMNNAME_Name)
-				.addColumn(I_C_City.COLUMNNAME_C_City_ID)
-				.endOrderBy();
-
-		if (regionId > 0)
-		{
-			return queryBuilder.addEqualsFilter(I_C_City.COLUMNNAME_C_Region_ID, regionId);
-		}
-
-		return queryBuilder;
 	}
 }
