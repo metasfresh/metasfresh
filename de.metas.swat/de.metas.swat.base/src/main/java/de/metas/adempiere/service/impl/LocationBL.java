@@ -26,11 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -650,23 +649,23 @@ public class LocationBL implements ILocationBL
 			String bPartnerBlock,
 			String userBlock)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String adLanguage;
-		final int orgId;
+		final OrgId orgId;
 		if (bPartner == null)
 		{
 			adLanguage = Services.get(ICountryDAO.class).getDefault(Env.getCtx()).getAD_Language();
-			orgId = Env.getAD_Org_ID(ctx);
+			orgId = Env.getOrgId();
 		}
 		else
 		{
 			adLanguage = bPartner.getAD_Language();
-			orgId = bPartner.getAD_Org_ID();
+			orgId = OrgId.ofRepoId(bPartner.getAD_Org_ID());
 		}
 
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, orgId, I_AD_Org.class, ITrx.TRXNAME_None);
-		return new AddressBuilder(org)
-				.setLanguage(adLanguage)
+		return AddressBuilder.builder()
+				.orgId(orgId)
+				.adLanguage(adLanguage)
+				.build()
 				.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock);
 	}
 

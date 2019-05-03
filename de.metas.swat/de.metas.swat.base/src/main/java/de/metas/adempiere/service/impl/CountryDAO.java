@@ -18,6 +18,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Language;
@@ -33,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.adempiere.service.CountrySequences;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.cache.CCache;
@@ -190,25 +192,28 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public I_C_Country_Sequence retrieveCountrySequence(final I_C_Country country, final int adOrgId, final String adLanguage)
+	public Optional<CountrySequences> getCountrySequences(
+			@NonNull final CountryId countryId,
+			@NonNull final OrgId orgId,
+			final String adLanguage)
 	{
-		Check.assumeNotNull(country, "Parameter country is not null");
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(country);
-		return retrieveCountrySequences(ctx, country.getC_Country_ID())
+		return retrieveCountrySequences(countryId)
 				.stream()
-				.filter(countrySequence -> countrySequenceMatches(countrySequence, adOrgId, adLanguage))
-				.findFirst().orElse(null);
+				.filter(countrySequence -> countrySequenceMatches(countrySequence, orgId, adLanguage))
+				.findFirst();
 	}
 
-	private static boolean countrySequenceMatches(final I_C_Country_Sequence sequence, final int adOrgId, final String adLanguage)
+	private static boolean countrySequenceMatches(
+			final CountrySequences sequence,
+			final OrgId orgId,
+			final String adLanguage)
 	{
-		if (sequence.getAD_Org_ID() != adOrgId)
+		if (!sequence.getOrgId().equals(orgId))
 		{
 			return false;
 		}
 
-		final String countrySequenceLanguage = sequence.getAD_Language();
+		final String countrySequenceLanguage = sequence.getAdLanguage();
 		if (!Check.isEmpty(countrySequenceLanguage, true) && !countrySequenceLanguage.equals(adLanguage))
 		{
 			return false;
@@ -218,10 +223,10 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Cached(cacheName = I_C_Country_Sequence.Table_Name + "#by#C_Country_ID")
-	public List<I_C_Country_Sequence> retrieveCountrySequences(@CacheCtx final Properties ctx, final int countryId)
+	public ImmutableList<CountrySequences> retrieveCountrySequences(@NonNull final CountryId countryId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Country_Sequence.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_C_Country_Sequence.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Country_Sequence.COLUMN_C_Country_ID, countryId)
 				//
@@ -230,7 +235,20 @@ public class CountryDAO implements ICountryDAO
 				.endOrderBy()
 				//
 				.create()
-				.listImmutable(I_C_Country_Sequence.class);
+				.stream()
+				.map(record -> toCountrySequences(record))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static CountrySequences toCountrySequences(final I_C_Country_Sequence record)
+	{
+		return CountrySequences.builder()
+				.adLanguage(record.getAD_Language())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				//
+				.addressDisplaySequence(record.getDisplaySequence())
+				.localAddressDisplaySequence(record.getDisplaySequenceLocal())
+				.build();
 	}
 
 	@Override

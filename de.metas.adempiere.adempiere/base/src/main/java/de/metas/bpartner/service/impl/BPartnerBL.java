@@ -34,6 +34,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
 import org.adempiere.user.UserRepository;
@@ -115,9 +116,11 @@ public class BPartnerBL implements IBPartnerBL
 			final I_AD_User user,
 			final String trxName)
 	{
-		return new AddressBuilder(bPartner.getAD_Org())
-				.setLanguage(bPartner.getAD_Language())
-				.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		final AddressBuilder addressBuilder = AddressBuilder.builder()
+				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
+				.adLanguage(bPartner.getAD_Language())
+				.build();
+		return addressBuilder.buildBPartnerFullAddressString(bPartner, location, user, trxName);
 	}
 
 	@Override

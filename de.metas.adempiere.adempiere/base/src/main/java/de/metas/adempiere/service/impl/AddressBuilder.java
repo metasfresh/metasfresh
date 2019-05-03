@@ -33,37 +33,50 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Org;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.service.CountrySequences;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Builder;
 
 public class AddressBuilder
 {
 	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 
 	/**
 	 * org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
 	 */
-	private final I_AD_Org org;
-	private String adLanguage;
+	private final OrgId orgId;
+	private final String adLanguage;
 
-	private int getAD_Org_ID()
+	@Builder
+	private AddressBuilder(
+			final OrgId orgId,
+			final String adLanguage)
 	{
-		return org == null ? Env.CTXVALUE_AD_Org_ID_Any : org.getAD_Org_ID();
+		this.orgId = orgId != null ? orgId : OrgId.ANY;
+		this.adLanguage = adLanguage;
+	}
+
+	private OrgId getOrgId()
+	{
+		return orgId;
 	}
 
 	private String getAD_Language()
@@ -71,13 +84,7 @@ public class AddressBuilder
 		return adLanguage;
 	}
 
-	public AddressBuilder setLanguage(String language)
-	{
-		this.adLanguage = language;
-		return this;
-	}
-
-	public enum Uservars
+	private static enum Uservars
 	{
 		Title("TI"),
 
@@ -100,12 +107,6 @@ public class AddressBuilder
 		}
 	}
 
-	public AddressBuilder(final I_AD_Org org)
-	{
-		super();
-		this.org = org;
-	}
-
 	/**
 	 * Build address string
 	 *
@@ -116,9 +117,15 @@ public class AddressBuilder
 	 * @param userBlock
 	 * @return
 	 */
-	public String buildAddressString(final I_C_Location location, boolean isLocalAddress, String bPartnerBlock, String userBlock)
+	public String buildAddressString(
+			final I_C_Location location,
+			final boolean isLocalAddress,
+			final String bPartnerBlock,
+			final String userBlock)
 	{
-		final String displaySequence = getDisplaySequence(location.getC_Country(), isLocalAddress);
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
+		final I_C_Country country = countriesRepo.getById(countryId);
+		final String displaySequence = getDisplaySequence(country, isLocalAddress);
 
 		String inStr = displaySequence;
 		final StringBuilder outStr = new StringBuilder();
@@ -190,7 +197,7 @@ public class AddressBuilder
 			String userBlock,
 			final boolean withBrackets)
 	{
-		final I_C_Country country = location.getC_Country();
+		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 
 		final boolean explicitBreaks = inStr.indexOf("@CR@") >= 0;
 
@@ -276,10 +283,9 @@ public class AddressBuilder
 			}
 			else if (token.equals("CO"))
 			{
-				final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
-				final String countryName = countryTrl.getName();
-
-				if (countryName != null && countryName.length() > 0)
+				final ITranslatableString countryNameTrls = countriesRepo.getCountryNameById(countryId);
+				final String countryName = countryNameTrls.translate(Env.getAD_Language());
+				if (!Check.isEmpty(countryName, true))
 				{
 					outStr.append(countryName);
 				}
@@ -368,17 +374,14 @@ public class AddressBuilder
 			}
 			else if ("PB".equals(token)) // postal box
 			{
-				if (location != null)
+				// if we have box number, added it as it is
+				if (location != null && !Check.isEmpty(location.getPOBox(), true))
 				{
-					// if we have box number, added it as it is
-					if (!Check.isEmpty(location.getPOBox(), true))
+					outStr.append(location.getPOBox());
+					// add an automatic new line
+					if (!explicitBreaks)
 					{
-						outStr.append(location.getPOBox());
-						// add an automatic new line
-						if (!explicitBreaks)
-						{
-							outStr.append('\n');
-						}
+						outStr.append('\n');
 					}
 				}
 			}
@@ -388,7 +391,7 @@ public class AddressBuilder
 			}
 			else
 			{
-				log.warn("Token " + token + " is not recognized in display sequence of country " + country);
+				log.warn("Token {} is not recognized in display sequence of country {}", token, countryId);
 			}
 
 			inStr = inStr.substring(j + 1, inStr.length()); // from second @
@@ -435,7 +438,7 @@ public class AddressBuilder
 
 		final Properties ctx = Env.getCtx();
 
-		final I_C_Country countryLocal = Services.get(ICountryDAO.class).getDefault(ctx);
+		final I_C_Country countryLocal = countriesRepo.getDefault(ctx);
 		final boolean isLocal = location.getC_Location() == null ? false : location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
 
 		// User Anschriftenblock
@@ -651,12 +654,11 @@ public class AddressBuilder
 			//
 			// construct string
 
-			final ICountryCustomInfo userInfo = Services.get(ICountryDAO.class).retriveCountryCustomInfo(ctx, trxName);
+			final ICountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
 			String ds = userInfo == null ? "" : userInfo.getCaptureSequence();
 			if (ds == null || ds.length() == 0)
 			{
-				final I_C_Country country = Services.get(ICountryDAO.class).getDefault(ctx);
-
+				final I_C_Country country = countriesRepo.getDefault(ctx);
 				ds = getDisplaySequence(country, isLocal);
 			}
 
@@ -763,16 +765,19 @@ public class AddressBuilder
 
 	private String getDisplaySequence(final I_C_Country country, final boolean isLocalAddress)
 	{
-		final I_C_Country_Sequence countrySequence = Services.get(ICountryDAO.class).retrieveCountrySequence(country, getAD_Org_ID(), getAD_Language());
+		final CountryId countryId = CountryId.ofRepoId(country.getC_Country_ID());
+		final CountrySequences countrySequence = countriesRepo
+				.getCountrySequences(countryId, getOrgId(), getAD_Language())
+				.orElse(null);
 		if (countrySequence == null)
 		{
 			final String displaySequence = isLocalAddress ? country.getDisplaySequenceLocal() : country.getDisplaySequence();
-			return displaySequence;
+			return displaySequence != null ? displaySequence : "";
 		}
 		else
 		{
-			final String displaySequence = isLocalAddress ? countrySequence.getDisplaySequenceLocal() : countrySequence.getDisplaySequence();
-			return displaySequence;
+			final String displaySequence = isLocalAddress ? countrySequence.getLocalAddressDisplaySequence() : countrySequence.getAddressDisplaySequence();
+			return displaySequence != null ? displaySequence : "";
 		}
 	}
 
