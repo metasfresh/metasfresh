@@ -1,0 +1,112 @@
+de.metas.dataentry.rest_api.DataEntryRestControllerTest.testFieldNamesAreNotChanged=[
+  {
+    "groups": [
+      {
+        "id": 100003,
+        "caption": "groupRecord1_tabName",
+        "description": "groupRecord1_description",
+        "subgroups": [
+          {
+            "id": 100009,
+            "caption": "subgroupRecord1_2_tabName",
+            "description": "subgroupRecord1_2_description - seqNo10",
+            "sections": [
+              {
+                "id": 100010,
+                "caption": "sectionRecord1_2_1_sectionName",
+                "description": "sectionRecord1_2_1_description - seqNo20",
+                "initially_closed": true,
+                "lines": [
+                  {
+                    "fields": [
+                      {
+                        "id": 100012,
+                        "caption": "fieldRecord1_2_1_1_1_name",
+                        "description": "fieldRecord1_2_1_1_1_description - seqNo10",
+                        "type": "DATE",
+                        "mandatory": false
+                      },
+                      {
+                        "id": 100013,
+                        "caption": "fieldRecord1_2_1_1_2_name",
+                        "description": "fieldRecord1_2_1_1_2_description",
+                        "type": "LIST",
+                        "mandatory": false,
+                        "list_values": [
+                          {
+                            "id": 100015,
+                            "name": "listValueRecord1_2_1_1_2_2_name",
+                            "description": "listValueRecord1_2_1_1_2_2_description - seqNo10"
+                          },
+                          {
+                            "id": 100014,
+                            "name": "listValueRecord1_2_1_1_2_1_name",
+                            "description": "listValueRecord1_2_1_1_2_1_description - seqNo20"
+                          }
+                        ]
+                      },
+                      {
+                        "id": 100016,
+                        "caption": "fieldRecord1_2_1_1_3_name",
+                        "description": "fieldRecord1_2_1_1_3_description",
+                        "type": "YESNO",
+                        "mandatory": false
+                      },
+                      {
+                        "id": 100017,
+                        "caption": "fieldRecord1_2_1_1_4_name",
+                        "description": "fieldRecord1_2_1_1_4_description",
+                        "type": "TEXT",
+                        "mandatory": true
+                      },
+                      {
+                        "id": 100018,
+                        "caption": "fieldRecord1_2_1_1_5_name",
+                        "description": "fieldRecord1_2_1_1_5_description",
+                        "type": "LONG_TEXT",
+                        "mandatory": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": 100004,
+            "caption": "subgroupRecord1_1_tabName",
+            "description": "subgroupRecord1_1_description - seqNo20",
+            "sections": [
+              {
+                "id": 100005,
+                "caption": "sectionRecord1_1_2_sectionName",
+                "description": "sectionRecord1_1_2_description - seqNo10",
+                "initially_closed": false,
+                "lines": [
+                  {
+                    "fields": [
+                      {
+                        "id": 100008,
+                        "caption": "fieldRecord1_1_2_1_2_name",
+                        "description": "fieldRecord1_1_2_1_2_description - seqNo10",
+                        "type": "NUMBER",
+                        "mandatory": false
+                      },
+                      {
+                        "id": 100007,
+                        "caption": "fieldRecord1_1_2_1_1_name",
+                        "description": "fieldRecord1_1_2_1_1_description - seqNo20",
+                        "type": "TEXT",
+                        "mandatory": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
