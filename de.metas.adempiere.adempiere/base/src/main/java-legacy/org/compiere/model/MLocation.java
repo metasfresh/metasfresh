@@ -233,7 +233,7 @@ public class MLocation extends X_C_Location
 	 * 	@param local if true only foreign country is returned
 	 * 	@return country or null
 	 */
-	public String getCountry (boolean local)
+	private String getCountry (boolean local)
 	{
 		if (local
 				&& getC_Country_ID() == MCountry.getDefault(getCtx()).getC_Country_ID())
@@ -331,7 +331,7 @@ public class MLocation extends X_C_Location
 	 * 	@param getFromRegion get from region (not locally)
 	 *	@return	region Name or ""
 	 */
-	public String getRegionName (boolean getFromRegion)
+	String getRegionName (boolean getFromRegion)
 	{
 		if (getFromRegion && getCountry().isHasRegion()
 			&& getRegion() != null)
@@ -346,24 +346,6 @@ public class MLocation extends X_C_Location
 		return regionName;
 	}	//	getRegionName
 
-
-	/**
-	 * 	Compares to current record
-	 *	@param C_Country_ID if 0 ignored
-	 *	@param C_Region_ID if 0 ignored
-	 *	@param Postal match postal
-	 *	@param Postal_Add match postal add
-	 *	@param City match city
-	 *	@param Address1 match address 1
-	 *	@param Address2 match address 2
-	 *	@return true if equals
-	 */
-	public boolean equals (int C_Country_ID, int C_Region_ID,
-			String Postal, String Postal_Add, String City, String Address1, String Address2)
-	{
-		return equals(this, C_Country_ID, C_Region_ID, Postal, Postal_Add, City, Address1, Address2);
-	}
-	
 	public static boolean equals (
 			I_C_Location locationRecord,
 			int C_Country_ID,

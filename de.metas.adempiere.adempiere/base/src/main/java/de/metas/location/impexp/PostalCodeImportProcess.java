@@ -1,17 +1,19 @@
 package de.metas.location.impexp;
 
-import de.metas.adempiere.model.I_C_Postal;
-import de.metas.location.ICountryDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.model.*;
+import org.compiere.model.I_C_Postal;
+import org.compiere.model.I_I_Postal;
+import org.compiere.model.X_I_Postal;
 
-import java.sql.ResultSet;
-import java.util.Properties;
+import de.metas.location.ICountryDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
