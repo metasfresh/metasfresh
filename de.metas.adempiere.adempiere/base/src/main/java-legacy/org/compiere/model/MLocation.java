@@ -305,7 +305,7 @@ public class MLocation extends X_C_Location
 	 * 	Get Region
 	 *	@return region
 	 */
-	public MRegion getRegion()
+	public I_C_Region getRegion()
 	{
 		// Reset region if not match
 		if (m_r != null && m_r.get_ID() != getC_Region_ID())
