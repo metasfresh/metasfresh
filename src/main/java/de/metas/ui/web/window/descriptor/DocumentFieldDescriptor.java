@@ -30,7 +30,6 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -274,7 +273,7 @@ public final class DocumentFieldDescriptor
 
 	public Optional<LookupDescriptor> getLookupDescriptorForFiltering()
 	{
-		return lookupDescriptorProvider.provideForScope(LookupScope.DocumentFilter);
+		return lookupDescriptorProvider.provideForFilter();
 	}
 
 	public Optional<LookupDataSource> createLookupDataSource()
