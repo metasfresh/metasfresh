@@ -9,7 +9,7 @@ describe('New sales order test', function() {
 
       // cy.get('Select all on this page').click(); // doesn't work
 
-      cy.clickElementWithClass('.pagination-link .pointer');
+      cy.clickElementWithClass('.pagination-link.pointer');
       //cy.clickElementWithClass('pagination-link pointer');
 
       // const aliasName = `selectAll-${timestamp}`;
