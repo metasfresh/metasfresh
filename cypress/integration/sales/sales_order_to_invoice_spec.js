@@ -2,6 +2,7 @@ import { salesOrders } from '../../page_objects/sales_orders';
 import { Product, ProductCategory } from '../../support/utils/product';
 import { BPartner } from '../../support/utils/bpartner';
 import { invoiceCandidates } from '../../page_objects/invoice_candidates';
+import { salesInvoices } from '../../page_objects/sales_invoices';
 
 describe('New sales order test', function() {
   const timestamp = new Date().getTime();
@@ -60,14 +61,6 @@ describe('New sales order test', function() {
 
       cy.writeIntoLookupListField('M_Product_ID', productName, productName);
 
-      cy.get('.form-field-Qty')
-        .click()
-        .find('.input-body-container.focused')
-        .should('exist')
-        .find('i')
-        .eq(0)
-        .click();
-
       const aliasName = `addProduct-${timestamp}`;
       const patchUrlPattern = '/rest/api/window/.*$';
       cy.server();
@@ -75,14 +68,9 @@ describe('New sales order test', function() {
 
       cy.get('.form-field-Qty')
         .find('input')
-        .should('have.value', '0.1')
         .type('1{enter}');
 
       cy.wait(`@${aliasName}`);
-
-      // cy.get('#lookup_M_Product_ID')
-      //   .find('input')
-      //   .should('have.value', '');
     });
 
     it('Complete sales order', function() {
@@ -107,12 +95,15 @@ describe('New sales order test', function() {
     });
 
     it('Select all invoice candidates and invoice them', function() {
+      cy.server();
+
       // select all invoice candidates and wait for the list of available quick action to be updated
+      const quickActionsAlias = `quickActions-${timestamp}`;
       cy.route('GET', `/rest/api/documentView/${invoiceCandidates.windowId}/*/quickActions?selectedIds=all`).as(
-        'selectAll'
+        quickActionsAlias
       );
       cy.clickElementWithClass('.pagination-link.pointer');
-      cy.wait('@selectAll');
+      cy.wait(`@${quickActionsAlias}`);
 
       // and *now* execute the invoiceing action
       cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
@@ -123,6 +114,31 @@ describe('New sales order test', function() {
         '/rest/api/process' /*rewriteUrl*/
       );
       cy.pressStartButton();
+    });
+
+    it('Zoom to the new invoice', function() {
+      cy.wait(5000);
+      cy.server();
+
+      cy.server();
+
+      const invoiceCandidateTab = `tab-${timestamp}`;
+      cy.route('GET', `/rest/api/window/${invoiceCandidates.windowId}/*/AD_Tab*`).as(invoiceCandidateTab);
+      invoiceCandidates
+        .getRows()
+        .eq(0)
+        .find('td')
+        .eq(0)
+        .dblclick();
+      cy.wait(`@${invoiceCandidateTab}`);
+
+      cy.get('body').type('{alt}6'); // open referenced-records-sidelist
+
+      // zoom to the invoice candidate's iinvoice, but also make sure to wait until the data is available
+      const getDataAlias = `data-${timestamp}`;
+      cy.route('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
+      cy.selectReference('C_Invoice_Candidate_Sales_C_Invoice').click();
+      cy.wait(`@${getDataAlias}`);
     });
   });
 });
