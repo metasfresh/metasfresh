@@ -70,7 +70,7 @@ public interface IHUPackingAware
 	void setC_UOM(I_C_UOM uom);
 
 	/** @param qty quantity (aka Qty CU) */
-	void setQty(BigDecimal qty);
+	void setQty(BigDecimal qtyInHUsUOM);
 
 	/** @return quantity (aka Qty CU) */
 	BigDecimal getQty();

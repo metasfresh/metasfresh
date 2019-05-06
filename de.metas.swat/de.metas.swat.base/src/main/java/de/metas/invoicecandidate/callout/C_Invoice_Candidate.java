@@ -90,7 +90,7 @@ public class C_Invoice_Candidate
 			final Timestamp today = invoiceCandBL.getToday();
 
 			ic.setC_ILCandHandler(handler);
-			ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_Sofort);
+			ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_Immediate);
 			// ic.setQtyToInvoice(BigDecimal.ONE); setting this qty is don my the update process
 			ic.setQtyDelivered(BigDecimal.ONE);
 			ic.setQtyOrdered(BigDecimal.ONE);

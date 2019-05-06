@@ -37,6 +37,7 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -130,14 +131,13 @@ import lombok.NonNull;
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
 		Check.assume(Env.getAD_Client_ID(context.getCtx()) == clientOrgAware.getAD_Client_ID(), "AD_Client_ID of PP_Order {} and of its Ctx are the same", ppOrder);
 
-		final ILoggable loggable = Loggables.get();
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
 
 		//
 		// Check if given manufacturing order is eligible. It might be not eligible anymore, because it was already processed earlier this run
 		if (!qualityInspectionHandler.isInvoiceable(ppOrder))
 		{
 			final String msg = "Skip invoice candidates creation because ppOrder={} is not invoiceable according to handler {}";
-			logger.info(msg, ppOrder, qualityInspectionHandler);
 			loggable.addLog(msg, ppOrder, qualityInspectionHandler);
 			return Collections.emptyList(); // nothing to do here
 		}
@@ -147,7 +147,6 @@ import lombok.NonNull;
 		{
 			// fresh-216: if we don't skip there will be problems later, because if nothing was issued, then we won't find a material receipt either.
 			final String msg = "Skip invoice candidates creation because nothing was acutally issued to ppOrder={}.";
-			logger.info(msg, ppOrder);
 			loggable.addLog(msg, ppOrder);
 			return Collections.emptyList(); // nothing to do here
 		}
@@ -160,7 +159,6 @@ import lombok.NonNull;
 			// Case: ppOrder was not assigned to a material tracking (for some reason)
 			final String msg = "Skip invoice candidates creation because ppOrder={} is not assigned to a material tracking";
 			loggable.addLog(msg, ppOrder);
-			logger.info(msg, ppOrder);
 			return Collections.emptyList();
 		}
 
@@ -171,7 +169,6 @@ import lombok.NonNull;
 		{
 			final String msg = "Skip invoice candidates creation because there is no quality inspection for ppOrder={}";
 			loggable.addLog(msg, ppOrder);
-			logger.info(msg, ppOrder);
 			return Collections.emptyList();
 		}
 
@@ -189,7 +186,6 @@ import lombok.NonNull;
 				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate firstDownPaymentIC = downPaymentICs.get(0);
 				final String msg = "Skip invoice candidates creation because {} is a downpayment quality inspection and there are already C_Invoice_Candidates such as {} for it";
 				loggable.addLog(msg, qiOrder.getPP_Order(), firstDownPaymentIC);
-				logger.info(msg, ppOrder, firstDownPaymentIC);
 				return Collections.emptyList();
 			}
 		}

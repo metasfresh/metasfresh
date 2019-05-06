@@ -18,7 +18,11 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -164,7 +168,18 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
 		ic.setDateOrdered(handler.calculateDateOrdered(ic));
-		ic.setQtyOrdered(handler.calculateQtyOrdered(ic));
+
+		final Quantity calculateQtyOrdered = handler.calculateQtyEntered(ic);
+
+		ic.setQtyEntered(calculateQtyOrdered.getAsBigDecimal());
+		ic.setC_UOM_ID(calculateQtyOrdered.getUOMId());
+
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
+		ic.setQtyOrdered(qtyInProductUOM.getAsBigDecimal());
 	}
 
 	/**
@@ -189,12 +204,6 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
 		return handler.calculatePriceAndTax(ic);
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		HandlerTools.setC_UOM_ID(ic);
 	}
 
 	@Override
