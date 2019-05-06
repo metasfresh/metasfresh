@@ -392,6 +392,11 @@ public class InterfaceWrapperHelper
 		return id == null ? newInstance(modelClass) : load(id.getRepoId(), modelClass);
 	}
 
+	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass, final Object contextProvider)
+	{
+		return id == null ? newInstance(modelClass, contextProvider) : load(id.getRepoId(), modelClass);
+	}
+
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);

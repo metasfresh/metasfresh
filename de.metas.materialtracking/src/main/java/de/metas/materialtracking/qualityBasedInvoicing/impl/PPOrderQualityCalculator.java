@@ -52,6 +52,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Calculates and updates Quality related fields of a {@link I_PP_Order} (and it's BOM Lines).
@@ -241,9 +242,8 @@ public class PPOrderQualityCalculator
 		}
 	}
 
-	/* package */void updateQM_QtyDeliveredPercOfRaw(final IQualityInspectionOrder qiOrder)
+	/* package */void updateQM_QtyDeliveredPercOfRaw(@NonNull final IQualityInspectionOrder qiOrder)
 	{
-		Check.assumeNotNull(qiOrder, "qiOrder not null");
 		final IProductionMaterial rawProductionMaterial = qiOrder.getRawProductionMaterial();
 		final BigDecimal rawQty = rawProductionMaterial.getQty();
 		final I_C_UOM rawQtyUOM = rawProductionMaterial.getC_UOM();
