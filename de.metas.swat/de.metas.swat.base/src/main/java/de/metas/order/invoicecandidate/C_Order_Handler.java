@@ -160,7 +160,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	{
 		throw new IllegalStateException("Not supported");
 	}
-	
+
 	@Override
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
@@ -169,12 +169,6 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
-	{
-		throw new IllegalStateException("Not supported");
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
 	{
 		throw new IllegalStateException("Not supported");
 	}

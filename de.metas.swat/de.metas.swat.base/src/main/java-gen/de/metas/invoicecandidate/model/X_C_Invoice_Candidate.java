@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1641104285L;
+	private static final long serialVersionUID = -198439491L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -214,7 +214,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 
 	/** Set Rechnungspartner.
 		@param Bill_BPartner_ID 
-		Geschäftspartners für die Rechnungsstellung
+		Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
@@ -226,7 +226,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Rechnungspartner.
-		@return Geschäftspartners für die Rechnungsstellung
+		@return Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public int getBill_BPartner_ID () 
@@ -1660,14 +1660,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	 * Reference name: C_Order InvoiceRule
 	 */
 	public static final int INVOICERULE_AD_Reference_ID=150;
-	/** Nach Lieferung Auftrag = O */
-	public static final String INVOICERULE_NachLieferungAuftrag = "O";
-	/** Nach Lieferung = D */
-	public static final String INVOICERULE_NachLieferung = "D";
-	/** Kundenintervall (nach Lieferung) = S */
-	public static final String INVOICERULE_KundenintervallNachLieferung = "S";
-	/** Sofort = I */
-	public static final String INVOICERULE_Sofort = "I";
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
 	/** Set Rechnungsstellung.
 		@param InvoiceRule 
 		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
@@ -1693,14 +1693,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	 * Reference name: C_Order InvoiceRule
 	 */
 	public static final int INVOICERULE_EFFECTIVE_AD_Reference_ID=150;
-	/** Nach Lieferung Auftrag = O */
-	public static final String INVOICERULE_EFFECTIVE_NachLieferungAuftrag = "O";
-	/** Nach Lieferung = D */
-	public static final String INVOICERULE_EFFECTIVE_NachLieferung = "D";
-	/** Kundenintervall (nach Lieferung) = S */
-	public static final String INVOICERULE_EFFECTIVE_KundenintervallNachLieferung = "S";
-	/** Sofort = I */
-	public static final String INVOICERULE_EFFECTIVE_Sofort = "I";
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_EFFECTIVE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_EFFECTIVE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_EFFECTIVE_Immediate = "I";
 	/** Set Rechnungsstellung eff..
 		@param InvoiceRule_Effective Rechnungsstellung eff.	  */
 	@Override
@@ -1722,14 +1722,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	 * Reference name: C_Order InvoiceRule
 	 */
 	public static final int INVOICERULE_OVERRIDE_AD_Reference_ID=150;
-	/** Nach Lieferung Auftrag = O */
-	public static final String INVOICERULE_OVERRIDE_NachLieferungAuftrag = "O";
-	/** Nach Lieferung = D */
-	public static final String INVOICERULE_OVERRIDE_NachLieferung = "D";
-	/** Kundenintervall (nach Lieferung) = S */
-	public static final String INVOICERULE_OVERRIDE_KundenintervallNachLieferung = "S";
-	/** Sofort = I */
-	public static final String INVOICERULE_OVERRIDE_Sofort = "I";
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_OVERRIDE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_OVERRIDE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_OVERRIDE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_OVERRIDE_Immediate = "I";
 	/** Set Rechnungsstellung abw..
 		@param InvoiceRule_Override 
 		Erlaubt es, eine abweichende Rechnungsstellungsregel vorzugeben.
@@ -1844,19 +1844,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set In Dispute.
-		@param IsInDispute 
-		Document is in dispute
-	  */
+	/** Set Strittig.
+		@param IsInDispute Strittig	  */
 	@Override
 	public void setIsInDispute (boolean IsInDispute)
 	{
 		set_Value (COLUMNNAME_IsInDispute, Boolean.valueOf(IsInDispute));
 	}
 
-	/** Get In Dispute.
-		@return Document is in dispute
-	  */
+	/** Get Strittig.
+		@return Strittig	  */
 	@Override
 	public boolean isInDispute () 
 	{
@@ -2810,6 +2807,28 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getQtyDelivered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge.
+		@param QtyEntered 
+		Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
+	  */
+	@Override
+	public void setQtyEntered (java.math.BigDecimal QtyEntered)
+	{
+		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
+	}
+
+	/** Get Menge.
+		@return Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
+	  */
+	@Override
+	public java.math.BigDecimal getQtyEntered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

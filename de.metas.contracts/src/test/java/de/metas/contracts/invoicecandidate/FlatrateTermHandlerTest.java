@@ -9,12 +9,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -40,6 +40,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -57,6 +58,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	protected IProductAcctDAO productAcctDAO;
 	@Mocked
 	protected ITaxBL taxBL;
+	private UomId uomId;
 
 	@BeforeClass
 	public static void configure()
@@ -69,12 +71,16 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	public void before()
 	{
 		final I_AD_Org org = newInstance(I_AD_Org.class);
-		InterfaceWrapperHelper.save(org);
+		save(org);
 		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final I_C_Activity activity = newInstance(I_C_Activity.class);
-		InterfaceWrapperHelper.save(activity);
+		save(activity);
 		activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		save(uom);
+		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 	}
 
 	@Test
@@ -147,6 +153,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		final I_M_Product product1 = newInstance(I_M_Product.class);
 		product1.setAD_Org_ID(orgId.getRepoId());
+		product1.setC_UOM_ID(uomId.getRepoId());
 		POJOWrapper.setInstanceName(product1, "product1");
 		save(product1);
 		return product1;
@@ -163,7 +170,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		transition.setTermOfNoticeUnit(termOfNoticeUnit);
 		transition.setName("Transition1");
 		transition.setC_Calendar_Contract_ID(1000000);
-		InterfaceWrapperHelper.save(transition);
+		save(transition);
 		return transition;
 	}
 
@@ -196,21 +203,26 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	}
 
 	@Builder(builderMethodName = "newFlatrateTerm")
-	private I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, final I_M_Product product,
-			final I_C_OrderLine orderLine, @NonNull final Timestamp startDate, final boolean isAutoRenew)
+	private I_C_Flatrate_Term createFlatrateTerm(
+			@NonNull final I_C_Flatrate_Conditions conditions,
+			final I_M_Product product,
+			final I_C_OrderLine orderLine,
+			@NonNull final Timestamp startDate,
+			final boolean isAutoRenew)
 	{
-		final I_C_Flatrate_Term term1 = newInstance(I_C_Flatrate_Term.class);
-		POJOWrapper.setInstanceName(term1, "term1");
-		term1.setAD_Org(conditions.getAD_Org());
-		term1.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		term1.setC_Flatrate_Conditions(conditions);
-		term1.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		term1.setM_Product(product);
-		term1.setStartDate(startDate);
-		term1.setC_OrderLine_Term(orderLine);
-		term1.setIsAutoRenew(isAutoRenew);
-		save(term1);
-		return term1;
+		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
+		POJOWrapper.setInstanceName(term, "term1");
+		term.setAD_Org(conditions.getAD_Org());
+		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		term.setC_Flatrate_Conditions(conditions);
+		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
+		term.setM_Product(product);
+		term.setStartDate(startDate);
+		term.setC_OrderLine_Term(orderLine);
+		term.setIsAutoRenew(isAutoRenew);
+		term.setC_UOM_ID(uomId.getRepoId());
+		save(term);
+		return term;
 	}
 
 	private void assertInvoiceCandidates(final InvoiceCandidateGenerateResult candidates, final I_C_Flatrate_Term term1)

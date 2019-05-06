@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +61,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				// Required because QualityDiscountPercent_Override will be applied to the QtyDelivered, and if we have invoiceRule "immediate", then qtyDelivered make a difference at all.
-				.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_NachLieferung)
+				.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery)
 				.setQualityDiscountPercent_Override(config_getQualityDiscount_Override()) // manually set Quality Discount Percent
 				.setPOReference(IC_PO_REFERENCE)
 				.setDateAcct(IC_DATE_ACCT)
@@ -70,7 +70,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 
 	/**
 	 * Important: make up your mind if you want to return zero or <code>null</code>!
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract BigDecimal config_getQualityDiscount_Override();
@@ -94,7 +94,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 			assertThat(ic.getQualityDiscountPercent_Override(), comparesEqualTo(config_getQualityDiscount_Override()));
 		}
 		// Required because QualityDiscountPercent_Override will be applied to the QtyDelivered, and if we have invoiceRule "immediate", then qtyDelivered make a difference at all.
-		assertThat((String)InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule), is(X_C_Invoice_Candidate.INVOICERULE_NachLieferung));
+		assertThat((String)InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule), is(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery));
 	}
 
 	@Override
