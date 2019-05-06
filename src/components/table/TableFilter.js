@@ -14,7 +14,7 @@ class ActionButton extends Component {
   static propTypes = {
     action: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    docId: PropTypes.number,
+    docId: PropTypes.string,
     tabIndex: PropTypes.number,
   };
 

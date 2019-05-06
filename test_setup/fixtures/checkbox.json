@@ -1,0 +1,23 @@
+{
+  "data1": {
+    "widgetProps": {
+      "widgetField": "IsDefault",
+      "widgetData": [
+        {
+          "displayed": true,
+          "field": "IsDefault",
+          "mandatory": true,
+          "readonly": false,
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsDefault"
+          },
+          "value": true,
+          "viewEditorRenderMode": "always",
+          "widgetType": "YesNo"
+        }
+      ]
+    }
+  }
+}
