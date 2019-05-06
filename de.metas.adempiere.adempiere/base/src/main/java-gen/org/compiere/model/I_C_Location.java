@@ -388,6 +388,56 @@ public interface I_C_Location
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Geocoding Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGeocoding_Issue_ID (int Geocoding_Issue_ID);
+
+	/**
+	 * Get Geocoding Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getGeocoding_Issue_ID();
+
+	public org.compiere.model.I_AD_Issue getGeocoding_Issue();
+
+	public void setGeocoding_Issue(org.compiere.model.I_AD_Issue Geocoding_Issue);
+
+    /** Column definition for Geocoding_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Issue> COLUMN_Geocoding_Issue_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Issue>(I_C_Location.class, "Geocoding_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name Geocoding_Issue_ID */
+    public static final String COLUMNNAME_Geocoding_Issue_ID = "Geocoding_Issue_ID";
+
+	/**
+	 * Set Geocoding Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setGeocodingStatus (java.lang.String GeocodingStatus);
+
+	/**
+	 * Get Geocoding Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGeocodingStatus();
+
+    /** Column definition for GeocodingStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_GeocodingStatus = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "GeocodingStatus", null);
+    /** Column name GeocodingStatus */
+    public static final String COLUMNNAME_GeocodingStatus = "GeocodingStatus";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *

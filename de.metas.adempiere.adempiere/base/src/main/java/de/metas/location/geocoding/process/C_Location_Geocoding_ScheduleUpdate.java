@@ -6,6 +6,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_Location;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -77,12 +78,11 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 				.createQueryBuilderOutOfTrx(I_C_Location.class)
 				//
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Location.COLUMN_Latitude, null)
-				.addEqualsFilter(I_C_Location.COLUMN_Longitude, null)
+				.addEqualsFilter(I_C_Location.COLUMN_GeocodingStatus, X_C_Location.GEOCODINGSTATUS_NotChecked)
 				//
 				.addCompareFilter(I_C_Location.COLUMN_C_Location_ID, Operator.GREATER, LocationId.toRepoIdOr(maxLocationIdScheduled, 0))
+				.orderBy(I_C_Location.COLUMN_C_Location_ID)
 				//
-				.orderBy(I_C_Location.COLUMN_C_Location_ID) // just to have a predictable order
 				.setLimit(limit)
 				//
 				.create()

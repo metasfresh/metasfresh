@@ -15,7 +15,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 802056601L;
+	private static final long serialVersionUID = -1735855907L;
 
     /** Standard Constructor */
     public X_C_Location (Properties ctx, int C_Location_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
         {
 			setC_Country_ID (0);
 			setC_Location_ID (0);
+			setGeocodingStatus (null); // N
 			setIsPostalValidated (false); // N
         } */
     }
@@ -326,6 +327,70 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	public java.lang.String getCity () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_City);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Issue getGeocoding_Issue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Geocoding_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setGeocoding_Issue(org.compiere.model.I_AD_Issue Geocoding_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_Geocoding_Issue_ID, org.compiere.model.I_AD_Issue.class, Geocoding_Issue);
+	}
+
+	/** Set Geocoding Error.
+		@param Geocoding_Issue_ID Geocoding Error	  */
+	@Override
+	public void setGeocoding_Issue_ID (int Geocoding_Issue_ID)
+	{
+		if (Geocoding_Issue_ID < 1) 
+			set_Value (COLUMNNAME_Geocoding_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_Geocoding_Issue_ID, Integer.valueOf(Geocoding_Issue_ID));
+	}
+
+	/** Get Geocoding Error.
+		@return Geocoding Error	  */
+	@Override
+	public int getGeocoding_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Geocoding_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * GeocodingStatus AD_Reference_ID=540990
+	 * Reference name: GeocodingStatus
+	 */
+	public static final int GEOCODINGSTATUS_AD_Reference_ID=540990;
+	/** NotChecked = N */
+	public static final String GEOCODINGSTATUS_NotChecked = "N";
+	/** Resolved = R */
+	public static final String GEOCODINGSTATUS_Resolved = "R";
+	/** NotResolved = X */
+	public static final String GEOCODINGSTATUS_NotResolved = "X";
+	/** Error = E */
+	public static final String GEOCODINGSTATUS_Error = "E";
+	/** Set Geocoding Status.
+		@param GeocodingStatus Geocoding Status	  */
+	@Override
+	public void setGeocodingStatus (java.lang.String GeocodingStatus)
+	{
+
+		set_Value (COLUMNNAME_GeocodingStatus, GeocodingStatus);
+	}
+
+	/** Get Geocoding Status.
+		@return Geocoding Status	  */
+	@Override
+	public java.lang.String getGeocodingStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GeocodingStatus);
 	}
 
 	/** Set PLZ verifiziert.
