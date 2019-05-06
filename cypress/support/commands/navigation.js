@@ -4,7 +4,6 @@
  */
 Cypress.Commands.add('clickButtonWithText', text => {
   cy.get('button')
-    .scrollIntoView()
     .contains(text)
     .should('exist')
     .click();
@@ -16,7 +15,6 @@ Cypress.Commands.add('clickButtonWithText', text => {
  */
 Cypress.Commands.add('clickElementWithClass', selector => {
   cy.get(selector)
-    .scrollIntoView()
     .should('exist')
     .click();
 });
