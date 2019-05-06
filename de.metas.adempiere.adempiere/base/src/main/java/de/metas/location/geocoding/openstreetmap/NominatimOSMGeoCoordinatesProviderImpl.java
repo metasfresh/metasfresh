@@ -174,9 +174,13 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 
 		lastRequestTime = Instant.now();
 
-		return coords.stream()
+		final ImmutableList<GeographicalCoordinates> result = coords.stream()
 				.map(json -> toGeographicalCoordinates(json))
 				.collect(GuavaCollectors.toImmutableList());
+
+		logger.debug("Got result for {}: {}", request, result);
+
+		return result;
 	}
 
 	@SuppressWarnings("SpellCheckingInspection")
@@ -218,8 +222,14 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 
 	private void sleepMillis(final long timeToSleep)
 	{
+		if (timeToSleep <= 0)
+		{
+			return;
+		}
+
 		try
 		{
+			logger.trace("Sleeping {}ms (rate limit)", timeToSleep);
 			TimeUnit.MILLISECONDS.sleep(timeToSleep);
 		}
 		catch (final InterruptedException e)
