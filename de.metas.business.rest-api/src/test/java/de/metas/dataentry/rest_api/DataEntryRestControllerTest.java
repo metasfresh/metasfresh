@@ -53,7 +53,7 @@ class DataEntryRestControllerTest
 		final DataEntryLayoutRepository dataEntryLayoutRepository = new DataEntryLayoutRepository();
 		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
 		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
-		dataEntryRestController = new DataEntryRestController(dataEntryLayoutRepository, dataEntryRecordRepository);
+		dataEntryRestController = new DataEntryRestController(dataEntryLayoutRepository, dataEntryRecordRepository, 0);
 	}
 
 	@Test

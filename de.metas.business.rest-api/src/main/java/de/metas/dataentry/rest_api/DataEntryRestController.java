@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
@@ -15,6 +16,13 @@ import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
+import de.metas.dataentry.model.I_DataEntry_Field;
+import de.metas.dataentry.model.I_DataEntry_Group;
+import de.metas.dataentry.model.I_DataEntry_Line;
+import de.metas.dataentry.model.I_DataEntry_ListValue;
+import de.metas.dataentry.model.I_DataEntry_Record;
+import de.metas.dataentry.model.I_DataEntry_Section;
+import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryGroup;
@@ -33,6 +41,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,23 +77,37 @@ import java.util.List;
 @RequestMapping(DataEntryRestController.ENDPOINT)
 public class DataEntryRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
+	@SuppressWarnings("WeakerAccess") public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
 
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
-	private static AdWindowId bpartnerWindowId = AdWindowId.ofRepoId(123); // FIXME: HARDCODED for now
+	private static final AdWindowId bpartnerWindowId = AdWindowId.ofRepoId(123); // FIXME: HARDCODED for now
 
 	private final DataEntryLayoutRepository layoutRepo;
 	private final DataEntryRecordRepository recordRepo;
 
-	// TODO: add caching which is somehow linked with the tables, so cache expiration is automatic
+	private final CCache<BPartnerId, JsonDataEntry> cache;
 
 	DataEntryRestController(
 			@NonNull final DataEntryLayoutRepository layoutRepo,
-			@NonNull final DataEntryRecordRepository recordRepo)
+			@NonNull final DataEntryRecordRepository recordRepo,
+			@NonNull @Value("${de.metas.dataentry.rest_api.DataEntryRestController.cacheCapacity:200}") final Integer cacheCapacity)
 	{
 		this.layoutRepo = layoutRepo;
 		this.recordRepo = recordRepo;
+		cache = CCache.<BPartnerId, JsonDataEntry>builder()
+				.cacheMapType(CCache.CacheMapType.LRU)
+				.tableName(I_C_BPartner.Table_Name)    // <- apparently this is needed for cache invalidation to work. why? i have no idea! (and i think it's a bug since i'm not caching a BPartner, but rather an _arbitrary_ value
+				//				.tableName(I_DataEntry_Record.Table_Name)    // <- contrary to above, this DOES NOT WORK!!!!!
+				.additionalTableNameToResetFor(I_DataEntry_Group.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_SubGroup.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_Section.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_Line.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_Field.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_Record.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_ListValue.Table_Name)
+				.initialCapacity(cacheCapacity)
+				.build();
 	}
 
 	@GetMapping("/byBPartnerValue/{bpartnerValue}")
@@ -99,9 +122,14 @@ public class DataEntryRestController
 
 	private JsonDataEntry getJsonDataEntry(final String bpartnerValue)
 	{
-		final String adLanguage = Env.getAD_Language();
 		final BPartnerId bpartnerId = Services.get(IBPartnerDAO.class).getBPartnerIdByValue(bpartnerValue);
 
+		return cache.getOrLoad(bpartnerId, () -> getJsonDataEntry(bpartnerId));
+	}
+
+	private JsonDataEntry getJsonDataEntry(final BPartnerId bpartnerId)
+	{
+		final String adLanguage = Env.getAD_Language();
 		final ImmutableList<DataEntryGroup> layout = layoutRepo.getByWindowId(bpartnerWindowId);
 		final ImmutableList<JsonDataEntryGroup> groups = getJsonDataEntryGroups(adLanguage, layout, bpartnerId);
 
