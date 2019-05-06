@@ -15,8 +15,8 @@ import de.metas.event.IEventBusFactory;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeoCoordinatesService;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.location.geocoding.interceptor.C_Location;
 import de.metas.util.Services;
@@ -50,15 +50,15 @@ class LocationGeocodeEventHandler
 {
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final GeoCoordinatesProvider geo;
+	private final GeoCoordinatesService geoCoordinatesService;
 	private final IEventBusFactory eventBusFactory;
 
 	public LocationGeocodeEventHandler(
-			final IEventBusFactory eventBusFactory,
-			final GeoCoordinatesProvider geo)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final GeoCoordinatesService geoCoordinatesService)
 	{
 		this.eventBusFactory = eventBusFactory;
-		this.geo = geo;
+		this.geoCoordinatesService = geoCoordinatesService;
 	}
 
 	@PostConstruct
@@ -75,7 +75,7 @@ class LocationGeocodeEventHandler
 
 		final GeoCoordinatesRequest coordinatesRequest = createGeoCoordinatesRequest(locationRecord);
 
-		final Optional<GeographicalCoordinates> xoy = geo.findBestCoordinates(coordinatesRequest);
+		final Optional<GeographicalCoordinates> xoy = geoCoordinatesService.findBestCoordinates(coordinatesRequest);
 		if (xoy.isPresent())
 		{
 			locationRecord.setLatitude(xoy.get().getLatitude());
