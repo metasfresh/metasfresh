@@ -1,5 +1,8 @@
 package de.metas.location.geocoding;
 
+import java.math.BigDecimal;
+
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -25,10 +28,11 @@ import lombok.Value;
  * #L%
  */
 @Value
+@Builder
 public class GeographicalCoordinates
 {
 	@NonNull
-	private String latitude;
+	private BigDecimal latitude;
 	@NonNull
-	private String longitude;
+	private BigDecimal longitude;
 }

@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 686282458L;
+	private static final long serialVersionUID = 802056601L;
 
     /** Standard Constructor */
     public X_C_Location (Properties ctx, int C_Location_ID, String trxName)
@@ -119,25 +120,6 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
 
-	/** Set C/O.
-		@param CareOf 
-		In care of
-	  */
-	@Override
-	public void setCareOf (java.lang.String CareOf)
-	{
-		set_Value (COLUMNNAME_CareOf, CareOf);
-	}
-
-	/** Get C/O.
-		@return In care of
-	  */
-	@Override
-	public java.lang.String getCareOf () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
-	}
-
 	@Override
 	public org.compiere.model.I_C_City getC_City() throws RuntimeException
 	{
@@ -210,25 +192,6 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Ort.
-		@param City 
-		Identifies a City
-	  */
-	@Override
-	public void setCity (java.lang.String City)
-	{
-		set_Value (COLUMNNAME_City, City);
-	}
-
-	/** Get Ort.
-		@return Identifies a City
-	  */
-	@Override
-	public java.lang.String getCity () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_City);
 	}
 
 	/** Set Anschrift.
@@ -327,6 +290,44 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return ii.intValue();
 	}
 
+	/** Set C/O.
+		@param CareOf 
+		In care of
+	  */
+	@Override
+	public void setCareOf (java.lang.String CareOf)
+	{
+		set_Value (COLUMNNAME_CareOf, CareOf);
+	}
+
+	/** Get C/O.
+		@return In care of
+	  */
+	@Override
+	public java.lang.String getCareOf () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
+	}
+
+	/** Set Ort.
+		@param City 
+		Identifies a City
+	  */
+	@Override
+	public void setCity (java.lang.String City)
+	{
+		set_Value (COLUMNNAME_City, City);
+	}
+
+	/** Get Ort.
+		@return Identifies a City
+	  */
+	@Override
+	public java.lang.String getCity () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_City);
+	}
+
 	/** Set PLZ verifiziert.
 		@param IsPostalValidated 
 		Sagt aus, ob Postleitzahl der Adresse verifiziert wurde.
@@ -358,7 +359,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		Geographical latitude 
 	  */
 	@Override
-	public void setLatitude (java.lang.String Latitude)
+	public void setLatitude (java.math.BigDecimal Latitude)
 	{
 		set_Value (COLUMNNAME_Latitude, Latitude);
 	}
@@ -367,9 +368,12 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		@return Geographical latitude 
 	  */
 	@Override
-	public java.lang.String getLatitude () 
+	public java.math.BigDecimal getLatitude () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Latitude);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Latitude);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Längengrad.
@@ -377,7 +381,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		Geographical longitude
 	  */
 	@Override
-	public void setLongitude (java.lang.String Longitude)
+	public void setLongitude (java.math.BigDecimal Longitude)
 	{
 		set_Value (COLUMNNAME_Longitude, Longitude);
 	}
@@ -386,9 +390,12 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		@return Geographical longitude
 	  */
 	@Override
-	public java.lang.String getLongitude () 
+	public java.math.BigDecimal getLongitude () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Longitude);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Longitude);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Postfach.
