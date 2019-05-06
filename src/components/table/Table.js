@@ -311,12 +311,12 @@ class Table extends Component {
   };
 
   setListenTrue = () => {
-    // console.log('Table setListenTrue');
+    console.log('Table setListenTrue');
     this.setState({ listenOnKeys: true });
   };
 
   setListenFalse = () => {
-    // console.log('Table setListenFalse');
+    console.log('Table setListenFalse');
     this.setState({ listenOnKeys: false });
   };
 
@@ -1327,3 +1327,5 @@ export default connect(
   false,
   { withRef: true }
 )(onClickOutside(Table));
+
+export Table;
