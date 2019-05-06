@@ -1,13 +1,15 @@
 package de.metas.ui.web.dataentry.interceptor;
 
+import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.springframework.stereotype.Component;
 
 import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Group;
+
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -76,21 +78,21 @@ public class DataEntryInterceptorUtil
 
 	public void resetCacheFor(@NonNull final I_DataEntry_Section dataEntrySectionRecord)
 	{
-		if (dataEntrySectionRecord.getDataEntry_SubGroup_ID() > 0)
+		if (dataEntrySectionRecord.getDataEntry_SubTab_ID() > 0)
 		{
-			resetCacheFor(dataEntrySectionRecord.getDataEntry_SubGroup());
+			resetCacheFor(dataEntrySectionRecord.getDataEntry_SubTab());
 		}
 	}
 
-	public void resetCacheFor(@NonNull final I_DataEntry_SubGroup dataEntrySubGroupRecord)
+	public void resetCacheFor(@NonNull final I_DataEntry_SubTab dataEntrySubGroupRecord)
 	{
-		if (dataEntrySubGroupRecord.getDataEntry_Group_ID() > 0)
+		if (dataEntrySubGroupRecord.getDataEntry_Tab_ID() > 0)
 		{
-			resetCacheFor(dataEntrySubGroupRecord.getDataEntry_Group());
+			resetCacheFor(dataEntrySubGroupRecord.getDataEntry_Tab());
 		}
 	}
 
-	public void resetCacheFor(@NonNull final I_DataEntry_Group dataEntryGroupRecord)
+	public void resetCacheFor(@NonNull final I_DataEntry_Tab dataEntryGroupRecord)
 	{
 		final int windowId = dataEntryGroupRecord.getDataEntry_TargetWindow_ID();
 		if (windowId > 0)

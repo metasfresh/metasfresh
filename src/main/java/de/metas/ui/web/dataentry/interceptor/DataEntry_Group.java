@@ -1,11 +1,12 @@
 package de.metas.ui.web.dataentry.interceptor;
 
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.dataentry.model.I_DataEntry_Group;
+
 import lombok.NonNull;
 
 /*
@@ -31,7 +32,7 @@ import lombok.NonNull;
  */
 
 @Component("de.metas.ui.web.dataentry.interceptor.DataEntry_Group")
-@Interceptor(I_DataEntry_Group.class)
+@Interceptor(I_DataEntry_Tab.class)
 public class DataEntry_Group
 {
 	private final DataEntryInterceptorUtil dataEntryInterceptorUtil;
@@ -43,7 +44,7 @@ public class DataEntry_Group
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_Group dataEntryGroupRecord)
+	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_Tab dataEntryGroupRecord)
 	{
 		dataEntryInterceptorUtil.resetCacheFor(dataEntryGroupRecord);
 	}
