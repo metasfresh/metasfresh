@@ -20,8 +20,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchSqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
@@ -32,7 +34,6 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewRowCustomizer;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.FullTextSearchSqlDocumentFilterConverter;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
@@ -149,7 +150,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		filterConverters = builder.buildViewFilterConverters();
 
 		filterConverterDecorator = builder.sqlDocumentFilterConverterDecorator;
-		
+
 		refreshViewOnChangeEvents = builder.refreshViewOnChangeEvents;
 
 		rowIdsConverter = builder.getRowIdsConverter();
@@ -381,6 +382,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private Builder()
 		{
 			filterConverter(FullTextSearchSqlDocumentFilterConverter.FILTER_ID, FullTextSearchSqlDocumentFilterConverter.instance);
+			filterConverter(LocationAreaSearchDocumentFilterConverter.FILTER_ID, LocationAreaSearchDocumentFilterConverter.instance);
 		}
 
 		@Override

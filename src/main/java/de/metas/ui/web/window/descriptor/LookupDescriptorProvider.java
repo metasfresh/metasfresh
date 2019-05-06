@@ -50,6 +50,11 @@ public interface LookupDescriptorProvider
 		return provideForScope(LookupScope.DocumentField);
 	}
 
+	default Optional<LookupDescriptor> provideForFilter()
+	{
+		return provideForScope(LookupScope.DocumentFilter);
+	}
+
 	default boolean isNumericKey()
 	{
 		return provide()

@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.filter;
+package de.metas.ui.web.document.filter.provider.userQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,11 @@ import org.compiere.model.MQuery;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -41,14 +44,11 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public final class MQueryDocumentFilterHelper
 {
-	private MQueryDocumentFilterHelper()
-	{
-	}
-
 	public static DocumentFilter createDocumentFilterFromMQuery(
-			@NonNull final MQuery mquery, 
+			@NonNull final MQuery mquery,
 			@NonNull final ITranslatableString caption)
 	{
 		final List<DocumentFilterParam> parameters = new ArrayList<>();

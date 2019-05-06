@@ -1,7 +1,9 @@
-package de.metas.ui.web.document.filter;
+package de.metas.ui.web.document.filter.provider;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 
 /*
  * #%L
