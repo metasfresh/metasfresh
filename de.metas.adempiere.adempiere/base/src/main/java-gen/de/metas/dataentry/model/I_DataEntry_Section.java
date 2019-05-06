@@ -122,31 +122,31 @@ public interface I_DataEntry_Section
     public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
 
 	/**
-	 * Set Untergruppe.
+	 * Set Unterregister.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID);
+	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID);
 
 	/**
-	 * Get Untergruppe.
+	 * Get Unterregister.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_SubGroup_ID();
+	public int getDataEntry_SubTab_ID();
 
-	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup();
+	public de.metas.dataentry.model.I_DataEntry_SubTab getDataEntry_SubTab();
 
-	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup);
+	public void setDataEntry_SubTab(de.metas.dataentry.model.I_DataEntry_SubTab DataEntry_SubTab);
 
-    /** Column definition for DataEntry_SubGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubGroup> COLUMN_DataEntry_SubGroup_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubGroup>(I_DataEntry_Section.class, "DataEntry_SubGroup_ID", de.metas.dataentry.model.I_DataEntry_SubGroup.class);
-    /** Column name DataEntry_SubGroup_ID */
-    public static final String COLUMNNAME_DataEntry_SubGroup_ID = "DataEntry_SubGroup_ID";
+    /** Column definition for DataEntry_SubTab_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubTab> COLUMN_DataEntry_SubTab_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Section, de.metas.dataentry.model.I_DataEntry_SubTab>(I_DataEntry_Section.class, "DataEntry_SubTab_ID", de.metas.dataentry.model.I_DataEntry_SubTab.class);
+    /** Column name DataEntry_SubTab_ID */
+    public static final String COLUMNNAME_DataEntry_SubTab_ID = "DataEntry_SubTab_ID";
 
 	/**
 	 * Set Beschreibung.

@@ -14,7 +14,7 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1248932730L;
+	private static final long serialVersionUID = -771252130L;
 
     /** Standard Constructor */
     public X_DataEntry_Section (Properties ctx, int DataEntry_Section_ID, String trxName)
@@ -23,7 +23,7 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
       /** if (DataEntry_Section_ID == 0)
         {
 			setDataEntry_Section_ID (0);
-			setDataEntry_SubGroup_ID (0);
+			setDataEntry_SubTab_ID (0);
 			setIsInitiallyClosed (false); // N
 			setSeqNo (0);
         } */
@@ -67,34 +67,34 @@ public class X_DataEntry_Section extends org.compiere.model.PO implements I_Data
 	}
 
 	@Override
-	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup() throws RuntimeException
+	public de.metas.dataentry.model.I_DataEntry_SubTab getDataEntry_SubTab() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class);
+		return get_ValueAsPO(COLUMNNAME_DataEntry_SubTab_ID, de.metas.dataentry.model.I_DataEntry_SubTab.class);
 	}
 
 	@Override
-	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup)
+	public void setDataEntry_SubTab(de.metas.dataentry.model.I_DataEntry_SubTab DataEntry_SubTab)
 	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class, DataEntry_SubGroup);
+		set_ValueFromPO(COLUMNNAME_DataEntry_SubTab_ID, de.metas.dataentry.model.I_DataEntry_SubTab.class, DataEntry_SubTab);
 	}
 
-	/** Set Untergruppe.
-		@param DataEntry_SubGroup_ID Untergruppe	  */
+	/** Set Unterregister.
+		@param DataEntry_SubTab_ID Unterregister	  */
 	@Override
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID)
+	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID)
 	{
-		if (DataEntry_SubGroup_ID < 1) 
-			set_Value (COLUMNNAME_DataEntry_SubGroup_ID, null);
+		if (DataEntry_SubTab_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_SubTab_ID, null);
 		else 
-			set_Value (COLUMNNAME_DataEntry_SubGroup_ID, Integer.valueOf(DataEntry_SubGroup_ID));
+			set_Value (COLUMNNAME_DataEntry_SubTab_ID, Integer.valueOf(DataEntry_SubTab_ID));
 	}
 
-	/** Get Untergruppe.
-		@return Untergruppe	  */
+	/** Get Unterregister.
+		@return Unterregister	  */
 	@Override
-	public int getDataEntry_SubGroup_ID () 
+	public int getDataEntry_SubTab_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubGroup_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubTab_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

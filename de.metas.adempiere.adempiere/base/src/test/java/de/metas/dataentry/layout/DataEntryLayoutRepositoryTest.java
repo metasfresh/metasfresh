@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
+import de.metas.dataentry.model.I_DataEntry_SubTab;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Tab;
@@ -18,11 +19,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Group;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import lombok.NonNull;
 
@@ -74,7 +74,7 @@ public class DataEntryLayoutRepositoryTest
 	@Test
 	public void getByWindowId()
 	{
-		final I_DataEntry_Group groupRecord1 = createRecords();
+		final I_DataEntry_Tab groupRecord1 = createRecords();
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
 
 		// invoke the method under test
@@ -83,7 +83,7 @@ public class DataEntryLayoutRepositoryTest
 		expect(result).toMatchSnapshot();
 	}
 
-	private I_DataEntry_Group createRecords()
+	private I_DataEntry_Tab createRecords()
 	{
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(10);
 
@@ -97,7 +97,7 @@ public class DataEntryLayoutRepositoryTest
 		saveRecord(tabRecord_1);
 
 		// group
-		final I_DataEntry_Group groupRecord1 = newInstance(I_DataEntry_Group.class);
+		final I_DataEntry_Tab groupRecord1 = newInstance(I_DataEntry_Tab.class);
 		groupRecord1.setDataEntry_TargetWindow_ID(windowId_1.getRepoId());
 		groupRecord1.setName("groupRecord1_name");
 		groupRecord1.setDescription("groupRecord1_description");
@@ -111,10 +111,10 @@ public class DataEntryLayoutRepositoryTest
 		return groupRecord1;
 	}
 
-	private void createSubgroup1Records(@NonNull final I_DataEntry_Group groupRecord1)
+	private void createSubgroup1Records(@NonNull final I_DataEntry_Tab groupRecord1)
 	{
-		final I_DataEntry_SubGroup subgroupRecord1_1 = newInstance(I_DataEntry_SubGroup.class);
-		subgroupRecord1_1.setDataEntry_Group(groupRecord1);
+		final I_DataEntry_SubTab subgroupRecord1_1 = newInstance(I_DataEntry_SubTab.class);
+		subgroupRecord1_1.setDataEntry_Tab(groupRecord1);
 		subgroupRecord1_1.setName("subgroupRecord1_1_name");
 		subgroupRecord1_1.setDescription("subgroupRecord1_1_description - seqNo20");
 		subgroupRecord1_1.setTabName("subgroupRecord1_1_tabName");
@@ -122,7 +122,7 @@ public class DataEntryLayoutRepositoryTest
 		saveRecord(subgroupRecord1_1);
 
 		final I_DataEntry_Section sectionRecord1_1_2 = newInstance(I_DataEntry_Section.class);
-		sectionRecord1_1_2.setDataEntry_SubGroup(subgroupRecord1_1);
+		sectionRecord1_1_2.setDataEntry_SubTab(subgroupRecord1_1);
 		sectionRecord1_1_2.setSeqNo(10);
 		sectionRecord1_1_2.setIsInitiallyClosed(false);
 		sectionRecord1_1_2.setName("sectionRecord1_1_2_name");
@@ -157,10 +157,10 @@ public class DataEntryLayoutRepositoryTest
 		saveRecord(fieldRecord1_1_2_1_2);
 	}
 
-	private void createSubgroup2Records(@NonNull final I_DataEntry_Group groupRecord1)
+	private void createSubgroup2Records(@NonNull final I_DataEntry_Tab groupRecord1)
 	{
-		final I_DataEntry_SubGroup subgroupRecord1_2 = newInstance(I_DataEntry_SubGroup.class);
-		subgroupRecord1_2.setDataEntry_Group(groupRecord1);
+		final I_DataEntry_SubTab subgroupRecord1_2 = newInstance(I_DataEntry_SubTab.class);
+		subgroupRecord1_2.setDataEntry_Tab(groupRecord1);
 		subgroupRecord1_2.setName("subgroupRecord1_2_name");
 		subgroupRecord1_2.setDescription("subgroupRecord1_2_description - seqNo10");
 		subgroupRecord1_2.setTabName("subgroupRecord1_2_tabName");
@@ -169,7 +169,7 @@ public class DataEntryLayoutRepositoryTest
 
 		// note: the section records are created in reverse order (SeqNo)
 		final I_DataEntry_Section sectionRecord1_2_1 = newInstance(I_DataEntry_Section.class);
-		sectionRecord1_2_1.setDataEntry_SubGroup(subgroupRecord1_2);
+		sectionRecord1_2_1.setDataEntry_SubTab(subgroupRecord1_2);
 		sectionRecord1_2_1.setSeqNo(20);
 		sectionRecord1_2_1.setIsInitiallyClosed(true);
 		sectionRecord1_2_1.setName("sectionRecord1_2_1_name");

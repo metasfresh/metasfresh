@@ -1,17 +1,17 @@
 package de.metas.dataentry.model;
 
 
-/** Generated Interface for DataEntry_Group
+/** Generated Interface for DataEntry_SubTab
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_DataEntry_Group 
+public interface I_DataEntry_SubTab 
 {
 
-    /** TableName=DataEntry_Group */
-    public static final String Table_Name = "DataEntry_Group";
+    /** TableName=DataEntry_SubTab */
+    public static final String Table_Name = "DataEntry_SubTab";
 
-    /** AD_Table_ID=541165 */
+    /** AD_Table_ID=541166 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
@@ -35,7 +35,7 @@ public interface I_DataEntry_Group
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_Client>(I_DataEntry_Group.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_Client>(I_DataEntry_SubTab.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_DataEntry_Group
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_Org>(I_DataEntry_Group.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_Org>(I_DataEntry_SubTab.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -79,7 +79,7 @@ public interface I_DataEntry_Group
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -94,61 +94,59 @@ public interface I_DataEntry_Group
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_User>(I_DataEntry_Group.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_User>(I_DataEntry_SubTab.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Eingabegruppe.
+	 * Set Unterregister.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_Group_ID (int DataEntry_Group_ID);
+	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID);
 
 	/**
-	 * Get Eingabegruppe.
+	 * Get Unterregister.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_Group_ID();
+	public int getDataEntry_SubTab_ID();
 
-    /** Column definition for DataEntry_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_DataEntry_Group_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "DataEntry_Group_ID", null);
-    /** Column name DataEntry_Group_ID */
-    public static final String COLUMNNAME_DataEntry_Group_ID = "DataEntry_Group_ID";
+    /** Column definition for DataEntry_SubTab_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_DataEntry_SubTab_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "DataEntry_SubTab_ID", null);
+    /** Column name DataEntry_SubTab_ID */
+    public static final String COLUMNNAME_DataEntry_SubTab_ID = "DataEntry_SubTab_ID";
 
 	/**
-	 * Set Eingabefenster.
-	 * Bestehendes Fenster, das um diese Eingabegruppe erweitert werden soll
+	 * Set Eingaberegister.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDataEntry_TargetWindow_ID (int DataEntry_TargetWindow_ID);
+	public void setDataEntry_Tab_ID (int DataEntry_Tab_ID);
 
 	/**
-	 * Get Eingabefenster.
-	 * Bestehendes Fenster, das um diese Eingabegruppe erweitert werden soll
+	 * Get Eingaberegister.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDataEntry_TargetWindow_ID();
+	public int getDataEntry_Tab_ID();
 
-	public org.compiere.model.I_AD_Window getDataEntry_TargetWindow();
+	public de.metas.dataentry.model.I_DataEntry_Tab getDataEntry_Tab();
 
-	public void setDataEntry_TargetWindow(org.compiere.model.I_AD_Window DataEntry_TargetWindow);
+	public void setDataEntry_Tab(de.metas.dataentry.model.I_DataEntry_Tab DataEntry_Tab);
 
-    /** Column definition for DataEntry_TargetWindow_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_Window> COLUMN_DataEntry_TargetWindow_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_Window>(I_DataEntry_Group.class, "DataEntry_TargetWindow_ID", org.compiere.model.I_AD_Window.class);
-    /** Column name DataEntry_TargetWindow_ID */
-    public static final String COLUMNNAME_DataEntry_TargetWindow_ID = "DataEntry_TargetWindow_ID";
+    /** Column definition for DataEntry_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, de.metas.dataentry.model.I_DataEntry_Tab> COLUMN_DataEntry_Tab_ID = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, de.metas.dataentry.model.I_DataEntry_Tab>(I_DataEntry_SubTab.class, "DataEntry_Tab_ID", de.metas.dataentry.model.I_DataEntry_Tab.class);
+    /** Column name DataEntry_Tab_ID */
+    public static final String COLUMNNAME_DataEntry_Tab_ID = "DataEntry_Tab_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -169,7 +167,7 @@ public interface I_DataEntry_Group
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "Description", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -194,7 +192,7 @@ public interface I_DataEntry_Group
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -217,7 +215,7 @@ public interface I_DataEntry_Group
 	public java.lang.String getName();
 
     /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "Name", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
@@ -244,7 +242,7 @@ public interface I_DataEntry_Group
 	public int getSeqNo();
 
     /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "SeqNo", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
@@ -267,7 +265,7 @@ public interface I_DataEntry_Group
 	public java.lang.String getTabName();
 
     /** Column definition for TabName */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_TabName = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "TabName", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_TabName = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "TabName", null);
     /** Column name TabName */
     public static final String COLUMNNAME_TabName = "TabName";
 
@@ -282,7 +280,7 @@ public interface I_DataEntry_Group
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DataEntry_Group, Object>(I_DataEntry_Group.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, Object>(I_DataEntry_SubTab.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -297,7 +295,7 @@ public interface I_DataEntry_Group
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_Group, org.compiere.model.I_AD_User>(I_DataEntry_Group.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DataEntry_SubTab, org.compiere.model.I_AD_User>(I_DataEntry_SubTab.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -17,12 +17,14 @@ import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
 import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Group;
+
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_DataEntry_Section;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+
+import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryGroup;
@@ -99,8 +101,8 @@ public class DataEntryRestController
 				.cacheMapType(CCache.CacheMapType.LRU)
 				.tableName(I_C_BPartner.Table_Name)    // <- apparently this is needed for cache invalidation to work. why? i have no idea! (and i think it's a bug since i'm not caching a BPartner, but rather an _arbitrary_ value
 				//				.tableName(I_DataEntry_Record.Table_Name)    // <- contrary to above, this DOES NOT WORK!!!!!
-				.additionalTableNameToResetFor(I_DataEntry_Group.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_SubGroup.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_Tab.Table_Name)
+				.additionalTableNameToResetFor(I_DataEntry_SubTab.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_Section.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_Line.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_Field.Table_Name)

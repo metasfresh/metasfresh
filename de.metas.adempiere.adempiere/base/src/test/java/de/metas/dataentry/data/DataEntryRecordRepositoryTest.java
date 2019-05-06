@@ -89,7 +89,7 @@ public class DataEntryRecordRepositoryTest
 		final DataEntryRecordId resultId = dataEntryRecordRepository.save(dataEntryRecord);
 
 		final I_DataEntry_Record resultRecord = load(resultId, I_DataEntry_Record.class);
-		assertThat(resultRecord.getDataEntry_SubGroup_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
+		assertThat(resultRecord.getDataEntry_SubTab_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
 		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
 		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
 		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
@@ -115,7 +115,7 @@ public class DataEntryRecordRepositoryTest
 
 		// get the data we just stored and compare it with our snapshot file
 		final I_DataEntry_Record resultRecord = load(resultId, I_DataEntry_Record.class);
-		assertThat(resultRecord.getDataEntry_SubGroup_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
+		assertThat(resultRecord.getDataEntry_SubTab_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
 		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
 		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
 		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
@@ -134,7 +134,7 @@ public class DataEntryRecordRepositoryTest
 		final TableRecordReference tableRecordReference = TableRecordReference.of(I_M_Product.Table_Name, 41);
 
 		final I_DataEntry_Record record = newInstance(I_DataEntry_Record.class);
-		record.setDataEntry_SubGroup_ID(dataEntrySubGroupId.getRepoId());
+		record.setDataEntry_SubTab_ID(dataEntrySubGroupId.getRepoId());
 		record.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
 		record.setRecord_ID(tableRecordReference.getRecord_ID());
 		record.setDataEntry_RecordData(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON);

@@ -93,7 +93,7 @@ public class DataEntryRecordRepository
 				.builder()
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
 				.isNew(false)
-				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubGroup_ID()))
+				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubTab_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.fields(fields)
 				.build();
@@ -105,7 +105,7 @@ public class DataEntryRecordRepository
 		if (dataEntryRecord.isNew())
 		{
 			dataRecord = newInstance(I_DataEntry_Record.class);
-			dataEntryRecord.getId().ifPresent(id -> dataRecord.setDataEntry_SubGroup_ID(id.getRepoId()));
+			dataEntryRecord.getId().ifPresent(id -> dataRecord.setDataEntry_SubTab_ID(id.getRepoId()));
 		}
 		else
 		{
@@ -115,7 +115,7 @@ public class DataEntryRecordRepository
 
 		dataRecord.setAD_Table_ID(dataEntryRecord.getMainRecord().getAD_Table_ID());
 		dataRecord.setRecord_ID(dataEntryRecord.getMainRecord().getRecord_ID());
-		dataRecord.setDataEntry_SubGroup_ID(dataEntryRecord.getDataEntrySubGroupId().getRepoId());
+		dataRecord.setDataEntry_SubTab_ID(dataEntryRecord.getDataEntrySubGroupId().getRepoId());
 		dataRecord.setIsActive(true);
 
 		final String jsonString = jsonDataEntryRecordMapper.serialize(dataEntryRecord.getFields());
@@ -145,7 +145,7 @@ public class DataEntryRecordRepository
 		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Record.class)
 				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupId)
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubGroupId)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
 				.create();
