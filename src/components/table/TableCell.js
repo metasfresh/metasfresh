@@ -132,7 +132,7 @@ class TableCell extends PureComponent {
       widgetBlurred: false,
     });
 
-    // console.log('TableCell blurwidgetfalse')
+    console.log('TableCell blurwidgetfalse')
   };
 
   setBlurWidgetTrue = callback => {
@@ -143,7 +143,7 @@ class TableCell extends PureComponent {
       () => {
         this.cell.focus();
 
-        // console.log('TableCell blurwidgettrue')
+        console.log('TableCell blurwidgettrue')
 
         callback && callback();
       }
@@ -197,24 +197,16 @@ class TableCell extends PureComponent {
   };
 
   handleKeyDown = e => {
-    // if (document.activeElement === this.cell) {
-      const { property, handleKeyDown, widgetData } = this.props;
-      // const { widgetBlurred } = this.state;
-      const { key } = e;
-      // const el = this.cell.getElementsByTagName('input');
-      // console.log('TableCell handleKeyDown: ', key)
-      // handleKeyDown(e, this.cell, property, widgetData);
-      // if (!widgetBlurred) {
-      if (['Enter', 'Tab', 'Escape'].includes(key)) {
-        this.setBlurWidgetTrue();
-      }
-      // this.cell.focus();
-      handleKeyDown(e, property, widgetData);
-      // }
-      // else {
-      //   this.setBlurWidget();
-      // }
-    // }
+    const { property, handleKeyDown, widgetData } = this.props;
+    const { key } = e;
+
+    console.log('TableCell handleKeyDown: ', key)
+
+    if (['Enter', 'Tab', 'Escape'].includes(key)) {
+      this.setBlurWidgetTrue();
+    }
+
+    handleKeyDown(e, property, widgetData);
   };
 
   render() {
@@ -387,6 +379,8 @@ TableCell.propTypes = {
   isEdited: PropTypes.bool,
   isEditable: PropTypes.bool,
   showWidget: PropTypes.bool,
+  widgetData: PropTypes.array,
+  property: PropTypes.string,
 };
 
 export default connect(state => ({
