@@ -79,7 +79,7 @@ public class DataEntryRestController
 
 	// TODO: add caching which is somehow linked with the tables, so cache expiration is automatic
 
-	public DataEntryRestController(
+	DataEntryRestController(
 			@NonNull final DataEntryLayoutRepository layoutRepo,
 			@NonNull final DataEntryRecordRepository recordRepo)
 	{
@@ -90,14 +90,14 @@ public class DataEntryRestController
 	@GetMapping("/byBPartnerValue/{bpartnerValue}")
 	public JsonDataEntry getByBPartnerValue(@PathVariable("bpartnerValue") final String bpartnerValue)
 	{
-		Stopwatch w = Stopwatch.createStarted();
+		final Stopwatch w = Stopwatch.createStarted();
 		final JsonDataEntry jsonDataEntry = getJsonDataEntry(bpartnerValue);
 		w.stop();
 		log.info("getByBPartnerValue for bpartner '{}' duration: {}", bpartnerValue, w.toString());
 		return jsonDataEntry;
 	}
 
-	private JsonDataEntry getJsonDataEntry(@PathVariable("bpartnerValue") final String bpartnerValue)
+	private JsonDataEntry getJsonDataEntry(final String bpartnerValue)
 	{
 		final String adLanguage = Env.getAD_Language();
 		final BPartnerId bpartnerId = Services.get(IBPartnerDAO.class).getBPartnerIdByValue(bpartnerValue);
@@ -105,11 +105,9 @@ public class DataEntryRestController
 		final ImmutableList<DataEntryGroup> layout = layoutRepo.getByWindowId(bpartnerWindowId);
 		final ImmutableList<JsonDataEntryGroup> groups = getJsonDataEntryGroups(adLanguage, layout, bpartnerId);
 
-		final JsonDataEntry jd = JsonDataEntry.builder()
+		return JsonDataEntry.builder()
 				.groups(groups)
 				.build();
-
-		return jd;
 	}
 
 	@NonNull private ImmutableList<JsonDataEntryGroup> getJsonDataEntryGroups(final String adLanguage, final List<DataEntryGroup> layout, final BPartnerId bpartnerId)

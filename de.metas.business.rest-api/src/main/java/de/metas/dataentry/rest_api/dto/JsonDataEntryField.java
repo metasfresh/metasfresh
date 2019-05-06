@@ -25,7 +25,6 @@ package de.metas.dataentry.rest_api.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.FieldType;
 import lombok.Builder;
 import lombok.Value;
 

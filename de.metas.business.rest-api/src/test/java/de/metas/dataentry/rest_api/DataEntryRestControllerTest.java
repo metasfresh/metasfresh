@@ -29,7 +29,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-public class DataEntryRestControllerTest
+class DataEntryRestControllerTest
 {
 
 	private static final int BPARTNER_REPO_ID = 123;
@@ -59,8 +59,7 @@ public class DataEntryRestControllerTest
 	@Test
 	void testFieldNamesAreNotChanged()
 	{
-		final I_DataEntry_Group groupRecord1 = createRecords();
-		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
+		createRecords();
 
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
@@ -234,7 +233,7 @@ public class DataEntryRestControllerTest
 		saveRecord(fieldRecord1_2_1_1_5);
 	}
 
-	public static I_C_BPartner createBPartner(final String nameAndValue)
+	private static I_C_BPartner createBPartner(final String nameAndValue)
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setValue(nameAndValue);
@@ -243,67 +242,4 @@ public class DataEntryRestControllerTest
 
 		return bpartner;
 	}
-
-	//	private DataEntryGroup createGroup()
-	//	{
-	//		final DataEntrySubGroup subGroup = createSubGroup();
-	//		DataEntryGroup group = DataEntryGroup.builder()
-	//				.id(DataEntryGroupId.ofRepoId(100000))
-	//				.caption(ITranslatableString.constant("Group1-Tab1"))
-	//				.description(ITranslatableString.constant("Description of Example-Group1"))
-	//				.dataEntrySubGroup(subGroup)
-	//				.documentLinkColumnName()
-	//				.build();
-	//		return group;
-	//	}
-	//
-	//	private DataEntrySubGroup createSubGroup()
-	//	{
-	//		final DataEntrySubGroup subGroup = DataEntrySubGroup.builder()
-	//				.id(DataEntrySubGroupId.ofRepoId(100000))
-	//				.caption(ITranslatableString.constant("Group1-Tab1-SubTab1"))
-	//				.description(ITranslatableString.constant("Description for SubGroup1-1"))
-	//				.dataEntrySections()
-	//				.dataEntrySection()
-	//				.build();
-	//
-	//		return subGroup;
-	//	}
-	//
-	//	private DataEntrySection createSection()
-	//	{
-	//		final DataEntrySection section = DataEntrySection.builder()
-	//				.id(DataEntrySectionId.ofRepoId(100000))
-	//				.caption(ITranslatableString.constant("Section1-1 1551945835494"))
-	//				.description(ITranslatableString.constant("Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall be alligned!"))
-	//				.initallyClosed(true)
-	//				.dataEntryLines()
-	//				.build();
-	//
-	//		return section;
-	//	}
-	//
-	//	private DataEntryLine createLine()
-	//	{
-	//		final DataEntryLine line = DataEntryLine.builder()
-	//				.dataEntryFields()
-	//				.build();
-	//
-	//		return line;
-	//	}
-	//
-	//	private DataEntryField createField()
-	//	{
-	//		final DataEntryField field = DataEntryField.builder()
-	//				.id(DataEntryFieldId.ofRepoId(100000))
-	//				.caption(ITranslatableString.constant("Tab1-Section1-Line1-Field1"))
-	//				.description(ITranslatableString.constant("Yes-No, single field in its line"))
-	//				.type(FieldType.YESNO)
-	//				.mandatory(true)
-	//				.listValues()
-	//				.build();
-	//
-	//		return field;
-	//	}
-
 }
