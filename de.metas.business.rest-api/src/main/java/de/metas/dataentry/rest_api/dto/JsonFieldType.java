@@ -31,7 +31,7 @@ import java.util.Arrays;
 
 public enum JsonFieldType
 {
-	SUB_GROUP_ID(FieldType.SUB_GROUP_ID),
+	SUB_TAB_ID(FieldType.SUB_TAB_ID),
 	PARENT_LINK_ID(FieldType.PARENT_LINK_ID),
 	CREATED_UPDATED_INFO(FieldType.CREATED_UPDATED_INFO),
 	TEXT(FieldType.TEXT),

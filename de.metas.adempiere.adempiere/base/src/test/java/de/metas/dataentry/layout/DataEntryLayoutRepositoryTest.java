@@ -78,7 +78,7 @@ public class DataEntryLayoutRepositoryTest
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
 
 		// invoke the method under test
-		final List<DataEntryGroup> result = dataEntryLayoutRepository.getByWindowId(windowId_1);
+		final List<DataEntryTab> result = dataEntryLayoutRepository.getByWindowId(windowId_1);
 
 		expect(result).toMatchSnapshot();
 	}

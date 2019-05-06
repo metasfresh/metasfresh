@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 
 /*
  * #%L
@@ -45,10 +45,10 @@ public class DataEntryRecordTest
 	@Test
 	public void clearRecordFields()
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
-				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
 				.build();
@@ -64,10 +64,10 @@ public class DataEntryRecordTest
 	@Test
 	public void setRecordField()
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
-				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(ImmutableList.of())
 				.build();

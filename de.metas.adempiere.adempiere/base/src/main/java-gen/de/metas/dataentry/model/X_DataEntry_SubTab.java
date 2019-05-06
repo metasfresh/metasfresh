@@ -25,7 +25,7 @@ public class X_DataEntry_SubTab extends org.compiere.model.PO implements I_DataE
 			setDataEntry_SubTab_ID (0);
 			setDataEntry_Tab_ID (0);
 			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_SubGroup WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_SubTab WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
 			setTabName (null);
         } */
     }

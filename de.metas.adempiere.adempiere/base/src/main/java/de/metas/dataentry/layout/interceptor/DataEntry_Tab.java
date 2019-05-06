@@ -36,43 +36,43 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.dataentry.layout.interceptor.DataEntry_Group")
+@Component("de.metas.dataentry.layout.interceptor.DataEntry_Tab")
 @Interceptor(I_DataEntry_Tab.class)
 @Callout(I_DataEntry_Tab.class)
-public class DataEntry_Group
+public class DataEntry_Tab
 {
-	public DataEntry_Group()
+	public DataEntry_Tab()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteChildRecords(@NonNull final I_DataEntry_Tab dataEntryGroupRecord)
+	public void deleteChildRecords(@NonNull final I_DataEntry_Tab dataEntryTabRecord)
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_SubTab.class)
-				.addEqualsFilter(I_DataEntry_SubTab.COLUMN_DataEntry_Tab_ID, dataEntryGroupRecord.getDataEntry_Tab_ID())
+				.addEqualsFilter(I_DataEntry_SubTab.COLUMN_DataEntry_Tab_ID, dataEntryTabRecord.getDataEntry_Tab_ID())
 				.create()
 				.delete();
 	}
 
 	@CalloutMethod(columnNames = I_DataEntry_Tab.COLUMNNAME_DataEntry_TargetWindow_ID)
-	public void setSeqNo(@NonNull final I_DataEntry_Tab dataEntryGroupRecord)
+	public void setSeqNo(@NonNull final I_DataEntry_Tab dataEntryTabRecord)
 	{
-		if (dataEntryGroupRecord.getDataEntry_TargetWindow_ID() <= 0)
+		if (dataEntryTabRecord.getDataEntry_TargetWindow_ID() <= 0)
 		{
 			return;
 		}
-		dataEntryGroupRecord.setSeqNo(maxSeqNo(dataEntryGroupRecord) + 10);
+		dataEntryTabRecord.setSeqNo(maxSeqNo(dataEntryTabRecord) + 10);
 	}
 
-	private int maxSeqNo(@NonNull final I_DataEntry_Tab dataEntryGroupRecord)
+	private int maxSeqNo(@NonNull final I_DataEntry_Tab dataEntryTabRecord)
 	{
 		return Services
 				.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Tab.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DataEntry_Tab.COLUMN_DataEntry_TargetWindow_ID, dataEntryGroupRecord.getDataEntry_TargetWindow_ID())
+				.addEqualsFilter(I_DataEntry_Tab.COLUMN_DataEntry_TargetWindow_ID, dataEntryTabRecord.getDataEntry_TargetWindow_ID())
 				.create()
 				.maxInt(I_DataEntry_Tab.COLUMNNAME_SeqNo);
 	}

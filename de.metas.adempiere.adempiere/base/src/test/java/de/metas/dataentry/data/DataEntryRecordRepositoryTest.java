@@ -22,7 +22,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
@@ -76,11 +76,11 @@ public class DataEntryRecordRepositoryTest
 				"}\r\n" +
 				"";
 
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
 				.isNew(true)
-				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(ImmutableList.of())
 				.build();
@@ -89,7 +89,7 @@ public class DataEntryRecordRepositoryTest
 		final DataEntryRecordId resultId = dataEntryRecordRepository.save(dataEntryRecord);
 
 		final I_DataEntry_Record resultRecord = load(resultId, I_DataEntry_Record.class);
-		assertThat(resultRecord.getDataEntry_SubTab_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
+		assertThat(resultRecord.getDataEntry_SubTab_ID()).isEqualTo(dataEntrySubTabId.getRepoId());
 		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
 		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
 		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
@@ -100,12 +100,12 @@ public class DataEntryRecordRepositoryTest
 	@Test
 	public void saveData_nonEmpty() throws IOException, JSONException
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
 				.isNew(true)
-				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
 				.build();
@@ -115,7 +115,7 @@ public class DataEntryRecordRepositoryTest
 
 		// get the data we just stored and compare it with our snapshot file
 		final I_DataEntry_Record resultRecord = load(resultId, I_DataEntry_Record.class);
-		assertThat(resultRecord.getDataEntry_SubTab_ID()).isEqualTo(dataEntrySubGroupId.getRepoId());
+		assertThat(resultRecord.getDataEntry_SubTab_ID()).isEqualTo(dataEntrySubTabId.getRepoId());
 		final TableRecordReference resultReference = TableRecordReference.of(resultRecord.getAD_Table_ID(), resultRecord.getRecord_ID());
 		assertThat(resultReference.getTableName()).isEqualTo(I_M_Product.Table_Name);
 		assertThat(resultReference.getRecord_ID()).isEqualTo(41);
@@ -130,17 +130,17 @@ public class DataEntryRecordRepositoryTest
 	@Test
 	public void getBy() throws IOException
 	{
-		DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
+		DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 		final TableRecordReference tableRecordReference = TableRecordReference.of(I_M_Product.Table_Name, 41);
 
 		final I_DataEntry_Record record = newInstance(I_DataEntry_Record.class);
-		record.setDataEntry_SubTab_ID(dataEntrySubGroupId.getRepoId());
+		record.setDataEntry_SubTab_ID(dataEntrySubTabId.getRepoId());
 		record.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
 		record.setRecord_ID(tableRecordReference.getRecord_ID());
 		record.setDataEntry_RecordData(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON);
 		saveRecord(record);
 
-		final DataEntryRecordQuery query = new DataEntryRecordQuery(dataEntrySubGroupId, tableRecordReference);
+		final DataEntryRecordQuery query = new DataEntryRecordQuery(dataEntrySubTabId, tableRecordReference);
 
 		// invoke the method under test
 		final Optional<DataEntryRecord> result = dataEntryRecordRepository.getBy(query);

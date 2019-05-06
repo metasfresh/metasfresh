@@ -16,7 +16,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,7 +54,7 @@ public class DataEntryRecord
 	/** If {@code true}, then the repository shall create a new DB record. */
 	boolean isNew;
 
-	DataEntrySubGroupId dataEntrySubGroupId;
+	DataEntrySubTabId dataEntrySubTabId;
 
 	ITableRecordReference mainRecord;
 
@@ -65,13 +65,13 @@ public class DataEntryRecord
 			@Nullable final DataEntryRecordId id,
 			final boolean isNew,
 			@NonNull final ITableRecordReference mainRecord,
-			@NonNull final DataEntrySubGroupId dataEntrySubGroupId,
+			@NonNull final DataEntrySubTabId dataEntrySubTabId,
 			@Nullable final List<DataEntryRecordField<?>> fields)
 	{
 		this.id = Optional.ofNullable(id);
 		this.isNew = isNew;
 		this.mainRecord = mainRecord;
-		this.dataEntrySubGroupId = dataEntrySubGroupId;
+		this.dataEntrySubTabId = dataEntrySubTabId;
 
 		this.fields = new HashMap<>();
 

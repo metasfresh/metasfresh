@@ -23,7 +23,7 @@ package de.metas.dataentry.rest_api.dto;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -31,10 +31,10 @@ import java.util.List;
 
 @Builder
 @Value
-public class JsonDataEntrySubGroup
+public class JsonDataEntrySubTab
 {
 	@JsonProperty("id")
-	DataEntrySubGroupId id;
+	DataEntrySubTabId id;
 
 	@JsonProperty("caption")
 	String caption;

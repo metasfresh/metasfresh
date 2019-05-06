@@ -32,6 +32,6 @@ import java.util.List;
 @Value
 public class JsonDataEntry
 {
-	@JsonProperty("groups")
-	List<JsonDataEntryGroup> groups;
+	@JsonProperty("tabs")
+	List<JsonDataEntryTab> tabs;
 }

@@ -1,10 +1,8 @@
 package de.metas.dataentry.layout;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
 import java.util.List;
 
-import de.metas.dataentry.DataEntryGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,50 +32,30 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntryGroup
+public class DataEntrySubTab
 {
-	DataEntryGroupId id;
+	DataEntrySubTabId id;
 
 	ITranslatableString caption;
 	ITranslatableString description;
 
 	String internalName;
 
-	List<DataEntrySubGroup> dataEntrySubGroups;
-
-	/** The column name of the record/document (e.g. C_BPartner_ID) against {@link I_DataEntry_Record_Assignment}s are linked. */
-	DocumentLinkColumnName documentLinkColumnName;
+	List<DataEntrySection> dataEntrySections;
 
 	@Builder
-	private DataEntryGroup(
-			@NonNull final DataEntryGroupId id,
+	private DataEntrySubTab(
+			@NonNull final DataEntrySubTabId id,
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
-			@NonNull final DocumentLinkColumnName documentLinkColumnName,
-			@Singular final List<DataEntrySubGroup> dataEntrySubGroups)
+			@Singular List<DataEntrySection> dataEntrySections)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
-		this.documentLinkColumnName = documentLinkColumnName;
-		this.dataEntrySubGroups = dataEntrySubGroups;
+		this.dataEntrySections = dataEntrySections;
 	}
 
-	@Value
-	public static class DocumentLinkColumnName
-	{
-		public static DocumentLinkColumnName of(String columnName)
-		{
-			return new DocumentLinkColumnName(columnName);
-		}
-
-		String asString;
-
-		private DocumentLinkColumnName(String columnName)
-		{
-			this.asString = assumeNotEmpty(columnName, "Given columnName may not be empty");
-		}
-	}
 }

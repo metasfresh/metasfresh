@@ -13,7 +13,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.util.Check;
@@ -57,7 +57,7 @@ public class DataEntryRecordRepository
 	public static final class DataEntryRecordQuery
 	{
 		@NonNull
-		final DataEntrySubGroupId dataEntrySubGroupId;
+		final DataEntrySubTabId dataEntrySubTabId;
 
 		@NonNull
 		final ITableRecordReference tableRecordReference;
@@ -93,7 +93,7 @@ public class DataEntryRecordRepository
 				.builder()
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
 				.isNew(false)
-				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubTab_ID()))
+				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(record.getDataEntry_SubTab_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.fields(fields)
 				.build();
@@ -115,7 +115,7 @@ public class DataEntryRecordRepository
 
 		dataRecord.setAD_Table_ID(dataEntryRecord.getMainRecord().getAD_Table_ID());
 		dataRecord.setRecord_ID(dataEntryRecord.getMainRecord().getRecord_ID());
-		dataRecord.setDataEntry_SubTab_ID(dataEntryRecord.getDataEntrySubGroupId().getRepoId());
+		dataRecord.setDataEntry_SubTab_ID(dataEntryRecord.getDataEntrySubTabId().getRepoId());
 		dataRecord.setIsActive(true);
 
 		final String jsonString = jsonDataEntryRecordMapper.serialize(dataEntryRecord.getFields());
@@ -136,7 +136,7 @@ public class DataEntryRecordRepository
 
 	private IQuery<I_DataEntry_Record> createQuery(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = dataEntryRecordQuery.getDataEntrySubGroupId();
+		final DataEntrySubTabId dataEntrySubTabId = dataEntryRecordQuery.getDataEntrySubTabId();
 		final ITableRecordReference tableRecordReference = dataEntryRecordQuery.getTableRecordReference();
 
 		final int adTableId = tableRecordReference.getAD_Table_ID();
@@ -145,7 +145,7 @@ public class DataEntryRecordRepository
 		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Record.class)
 				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubGroupId)
+				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubTabId)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
 				.create();

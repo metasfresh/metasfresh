@@ -6,16 +6,16 @@ import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
 import de.metas.dataentry.layout.DataEntryField;
-import de.metas.dataentry.layout.DataEntryGroup;
+import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
-import de.metas.dataentry.layout.DataEntrySubGroup;
+import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.model.I_DataEntry_Field;
 
 import de.metas.dataentry.model.I_DataEntry_Line;
@@ -27,11 +27,11 @@ import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
-import de.metas.dataentry.rest_api.dto.JsonDataEntryGroup;
+import de.metas.dataentry.rest_api.dto.JsonDataEntryTab;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryListValue;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySection;
-import de.metas.dataentry.rest_api.dto.JsonDataEntrySubGroup;
+import de.metas.dataentry.rest_api.dto.JsonDataEntrySubTab;
 import de.metas.dataentry.rest_api.dto.JsonFieldType;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
@@ -132,57 +132,57 @@ public class DataEntryRestController
 	private JsonDataEntry getJsonDataEntry(final BPartnerId bpartnerId)
 	{
 		final String adLanguage = Env.getAD_Language();
-		final ImmutableList<DataEntryGroup> layout = layoutRepo.getByWindowId(bpartnerWindowId);
-		final ImmutableList<JsonDataEntryGroup> groups = getJsonDataEntryGroups(adLanguage, layout, bpartnerId);
+		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(bpartnerWindowId);
+		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(adLanguage, layout, bpartnerId);
 
 		return JsonDataEntry.builder()
-				.groups(groups)
+				.tabs(tabs)
 				.build();
 	}
 
-	@NonNull private ImmutableList<JsonDataEntryGroup> getJsonDataEntryGroups(final String adLanguage, final List<DataEntryGroup> layout, final BPartnerId bpartnerId)
+	@NonNull private ImmutableList<JsonDataEntryTab> getJsonDataEntryTabs(final String adLanguage, final List<DataEntryTab> layout, final BPartnerId bpartnerId)
 	{
-		final ImmutableList.Builder<JsonDataEntryGroup> groups = ImmutableList.builder();
-		for (final DataEntryGroup layoutGroup : layout)
+		final ImmutableList.Builder<JsonDataEntryTab> tabs = ImmutableList.builder();
+		for (final DataEntryTab layoutTab : layout)
 		{
-			final ImmutableList<JsonDataEntrySubGroup> subGroups = getJsonDataEntrySubGroups(adLanguage, layoutGroup, bpartnerId);
+			final ImmutableList<JsonDataEntrySubTab> subTabs = getJsonDataEntrySubTabs(adLanguage, layoutTab, bpartnerId);
 
-			final JsonDataEntryGroup group = JsonDataEntryGroup.builder()
-					.id(layoutGroup.getId())
-					.caption(layoutGroup.getCaption().translate(adLanguage))
-					.description(layoutGroup.getDescription().translate(adLanguage))
-					.subGroups(subGroups)
+			final JsonDataEntryTab tab = JsonDataEntryTab.builder()
+					.id(layoutTab.getId())
+					.caption(layoutTab.getCaption().translate(adLanguage))
+					.description(layoutTab.getDescription().translate(adLanguage))
+					.subTabs(subTabs)
 					.build();
-			groups.add(group);
+			tabs.add(tab);
 		}
-		return groups.build();
+		return tabs.build();
 	}
 
-	@NonNull private ImmutableList<JsonDataEntrySubGroup> getJsonDataEntrySubGroups(final String adLanguage, final DataEntryGroup layoutGroup, final BPartnerId bpartnerId)
+	@NonNull private ImmutableList<JsonDataEntrySubTab> getJsonDataEntrySubTabs(final String adLanguage, final DataEntryTab layoutTab, final BPartnerId bpartnerId)
 	{
-		final ImmutableList.Builder<JsonDataEntrySubGroup> subGroups = ImmutableList.builder();
-		for (final DataEntrySubGroup layoutSubGroup : layoutGroup.getDataEntrySubGroups())
+		final ImmutableList.Builder<JsonDataEntrySubTab> subTabs = ImmutableList.builder();
+		for (final DataEntrySubTab layoutSubTab : layoutTab.getDataEntrySubTabs())
 		{
-			final ImmutableList<JsonDataEntrySection> sections = getJsonDataEntrySections(adLanguage, layoutSubGroup, bpartnerId);
+			final ImmutableList<JsonDataEntrySection> sections = getJsonDataEntrySections(adLanguage, layoutSubTab, bpartnerId);
 
-			final JsonDataEntrySubGroup subGroup = JsonDataEntrySubGroup.builder()
-					.id(layoutSubGroup.getId())
-					.caption(layoutSubGroup.getCaption().translate(adLanguage))
-					.description(layoutSubGroup.getDescription().translate(adLanguage))
+			final JsonDataEntrySubTab subTab = JsonDataEntrySubTab.builder()
+					.id(layoutSubTab.getId())
+					.caption(layoutSubTab.getCaption().translate(adLanguage))
+					.description(layoutSubTab.getDescription().translate(adLanguage))
 					.sections(sections)
 					.build();
-			subGroups.add(subGroup);
+			subTabs.add(subTab);
 		}
-		return subGroups.build();
+		return subTabs.build();
 	}
 
-	@NonNull private ImmutableList<JsonDataEntrySection> getJsonDataEntrySections(final String adLanguage, final DataEntrySubGroup layoutSubGroup, final BPartnerId bpartnerId)
+	@NonNull private ImmutableList<JsonDataEntrySection> getJsonDataEntrySections(final String adLanguage, final DataEntrySubTab layoutSubTab, final BPartnerId bpartnerId)
 	{
 		final TableRecordReference bpartnerRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartnerId);
-		final DataEntryRecord record = getDataEntryRecordForSubGroup(bpartnerRef, layoutSubGroup);
+		final DataEntryRecord record = getDataEntryRecordForSubTab(bpartnerRef, layoutSubTab);
 
 		final ImmutableList.Builder<JsonDataEntrySection> sections = ImmutableList.builder();
-		for (final DataEntrySection layoutSection : layoutSubGroup.getDataEntrySections())
+		for (final DataEntrySection layoutSection : layoutSubTab.getDataEntrySections())
 		{
 			final ImmutableList<JsonDataEntryLine> lines = getJsonDataEntryLines(adLanguage, record, layoutSection);
 
@@ -232,14 +232,14 @@ public class DataEntryRestController
 		return fields.build();
 	}
 
-	private DataEntryRecord getDataEntryRecordForSubGroup(final TableRecordReference bpartnerRef, final DataEntrySubGroup layoutSubGroup)
+	private DataEntryRecord getDataEntryRecordForSubTab(final TableRecordReference bpartnerRef, final DataEntrySubTab layoutSubTab)
 	{
-		final DataEntrySubGroupId subGroupId = layoutSubGroup.getId();
+		final DataEntrySubTabId subTabId = layoutSubTab.getId();
 
-		return recordRepo.getBy(new DataEntryRecordQuery(subGroupId, bpartnerRef))
+		return recordRepo.getBy(new DataEntryRecordQuery(subTabId, bpartnerRef))
 				.orElseGet(() -> DataEntryRecord.builder()
 						.mainRecord(bpartnerRef)
-						.dataEntrySubGroupId(subGroupId)
+						.dataEntrySubTabId(subTabId)
 						.build());
 	}
 

@@ -34,9 +34,9 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.dataentry.layout.interceptor.DataEntry_SubGroup")
+@Component("de.metas.dataentry.layout.interceptor.DataEntry_SubTab")
 @Interceptor(I_DataEntry_SubTab.class)
-public class DataEntry_SubGroup
+public class DataEntry_SubTab
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteChildRecords(@NonNull final I_DataEntry_SubTab dataEntrySubGroupRecord)
