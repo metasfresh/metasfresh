@@ -17,7 +17,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
@@ -113,10 +113,10 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final Function<DocumentId, Document> existingDocumentsSupplier = query.getExistingDocumentsSupplier();
 
 		final DetailId detailId = query.getEntityDescriptor().getDetailId();
-		final DataEntrySubGroupId dataEntrySubGroupId = extractDataEntrySubGroupId(detailId);
+		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
-		final DataEntryRecordQuery dataEntryRecordQuery = new DataEntryRecordQuery(dataEntrySubGroupId, parentRecordReference);
+		final DataEntryRecordQuery dataEntryRecordQuery = new DataEntryRecordQuery(dataEntrySubTabId, parentRecordReference);
 
 		final Optional<DataEntryRecord> dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordQuery);
 		if (!dataEntryRecord.isPresent())
@@ -172,13 +172,13 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 			@NonNull final Document parentDocument)
 	{
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
-		final DataEntrySubGroupId subGroupId = extractDataEntrySubGroupId(entityDescriptor.getDetailId());
+		final DataEntrySubTabId subGroupId = extractDataEntrySubGroupId(entityDescriptor.getDetailId());
 
 		return createDocumentId(subGroupId, parentRecordReference);
 	}
 
 	private static DocumentId createDocumentId(
-			@NonNull final DataEntrySubGroupId subGroupId,
+			@NonNull final DataEntrySubTabId subGroupId,
 			@NonNull final ITableRecordReference parentRecordReference)
 	{
 		final String documentIdStr = new StringBuilder()
@@ -205,7 +205,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	private DataEntryRecordQuery extractDataEntryRecordQuery(@NonNull final Document document)
 	{
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
-		final DataEntrySubGroupId subGroupId = extractDataEntrySubGroupId(detailId);
+		final DataEntrySubTabId subGroupId = extractDataEntrySubGroupId(detailId);
 
 		final Document parentDocument = document.getParentDocument();
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
@@ -255,7 +255,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		{
 			final DataEntryFieldBindingDescriptor dataBinding = fieldView.getDescriptor().getDataBindingNotNull(DataEntryFieldBindingDescriptor.class);
 			final FieldType fieldType = dataBinding.getFieldType();
-			if (fieldType.equals(FieldType.SUB_GROUP_ID)
+			if (fieldType.equals(FieldType.SUB_TAB_ID)
 					|| fieldType.equals(FieldType.PARENT_LINK_ID)
 					|| fieldType.equals(FieldType.CREATED_UPDATED_INFO))
 			{
@@ -289,12 +289,12 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final TableRecordReference parentReference = extractParentRecordReference(document.getParentDocument());
 
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
-		final DataEntrySubGroupId dataEntrySubGroupId = extractDataEntrySubGroupId(detailId);
+		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
 
 		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
 				.isNew(true)
 				.mainRecord(parentReference)
-				.dataEntrySubGroupId(dataEntrySubGroupId)
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.fields(ImmutableList.of())
 				.build();
 		return dataEntryRecord;
@@ -310,13 +310,13 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		return parentReference;
 	}
 
-	private static DataEntrySubGroupId extractDataEntrySubGroupId(@NonNull final DetailId detailId)
+	private static DataEntrySubTabId extractDataEntrySubGroupId(@NonNull final DetailId detailId)
 	{
 		final int subGroupId = detailId.getIdInt();
 		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubTab.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubTab.Table_Name);
 
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(subGroupId);
-		return dataEntrySubGroupId;
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(subGroupId);
+		return dataEntrySubTabId;
 	}
 
 	@Override
@@ -369,7 +369,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		public DocumentId getDocumentId()
 		{
 			final DocumentId documentId = DataEntrySubGroupBindingRepository.createDocumentId(
-					dataEntryRecord.getDataEntrySubGroupId(),
+					dataEntryRecord.getDataEntrySubTabId(),
 					dataEntryRecord.getMainRecord());
 
 			return documentId;

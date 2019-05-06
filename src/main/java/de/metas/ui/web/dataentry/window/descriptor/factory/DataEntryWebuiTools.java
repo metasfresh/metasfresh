@@ -84,8 +84,8 @@ public class DataEntryWebuiTools
 				return trlString.translate(Env.getAD_Language());
 			case PARENT_LINK_ID:
 				return dataEntryRecord.getMainRecord().getRecord_ID();
-			case SUB_GROUP_ID:
-				return dataEntryRecord.getDataEntrySubGroupId().getRepoId();
+			case SUB_TAB_ID:
+				return dataEntryRecord.getDataEntrySubTabId().getRepoId();
 			case LIST:
 				final DataEntryListValueId dataEntryListValueId = (DataEntryListValueId)dataEntryRecord.getFieldValue(dataEntryFieldId).orElse(null);
 				final DataEntryListValueDataSourceFetcher fetcher = (DataEntryListValueDataSourceFetcher)fieldDescriptor.getLookupDescriptor().get().getLookupDataSourceFetcher();
@@ -164,11 +164,11 @@ public class DataEntryWebuiTools
 			case PARENT_LINK_ID:
 				result = fieldType.getClazz().cast(value);
 				break;
-			case SUB_GROUP_ID:
+			case SUB_TAB_ID:
 				result = fieldType.getClazz().cast(value);
 				break;
 			default:
-				// this includes CREATED_UPDATED_INFO, PARENT_LINK_ID and SUB_GROUP_ID; we don't expect the document repo to try and extract these
+				// this includes CREATED_UPDATED_INFO, PARENT_LINK_ID and SUB_TAB_ID; we don't expect the document repo to try and extract these
 				throw new AdempiereException("Unexpected fieldType=" + fieldType);
 		}
 

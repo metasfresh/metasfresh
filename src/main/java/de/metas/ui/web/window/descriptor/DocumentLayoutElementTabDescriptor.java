@@ -39,7 +39,7 @@ import lombok.NonNull;
  */
 
 @SuppressWarnings("serial")
-public final class DocumentLayoutElementGroupDescriptor implements Serializable
+public final class DocumentLayoutElementTabDescriptor implements Serializable
 {
 	public static final Builder builder()
 	{
@@ -59,7 +59,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 	@Getter
 	private final String internalName;
 
-	private DocumentLayoutElementGroupDescriptor(final Builder builder)
+	private DocumentLayoutElementTabDescriptor(final Builder builder)
 	{
 		layoutType = builder.layoutType;
 		elementLines = ImmutableList.copyOf(builder.buildElementLines());
@@ -86,7 +86,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 	public static final class Builder
 	{
-		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementGroupDescriptor.Builder.class);
+		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementTabDescriptor.Builder.class);
 
 		private String internalName;
 		private LayoutType layoutType;
@@ -109,9 +109,9 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 					.toString();
 		}
 
-		public DocumentLayoutElementGroupDescriptor build()
+		public DocumentLayoutElementTabDescriptor build()
 		{
-			final DocumentLayoutElementGroupDescriptor result = new DocumentLayoutElementGroupDescriptor(this);
+			final DocumentLayoutElementTabDescriptor result = new DocumentLayoutElementTabDescriptor(this);
 
 			logger.trace("Built {} for {}", result, this);
 			return result;

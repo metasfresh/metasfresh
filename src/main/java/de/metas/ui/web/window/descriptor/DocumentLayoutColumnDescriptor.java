@@ -43,12 +43,12 @@ public class DocumentLayoutColumnDescriptor
 	}
 
 	private final String internalName;
-	private final List<DocumentLayoutElementGroupDescriptor> elementGroups;
+	private final List<DocumentLayoutElementTabDescriptor> elementGroups;
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
 		internalName = builder.internalName;
-		elementGroups = ImmutableList.copyOf(builder.buildElementGroups());
+		elementGroups = ImmutableList.copyOf(builder.buildElementTabs());
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class DocumentLayoutColumnDescriptor
 				.toString();
 	}
 
-	public List<DocumentLayoutElementGroupDescriptor> getElementGroups()
+	public List<DocumentLayoutElementTabDescriptor> getElementGroups()
 	{
 		return elementGroups;
 	}
@@ -76,7 +76,7 @@ public class DocumentLayoutColumnDescriptor
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutColumnDescriptor.Builder.class);
 
 		private String internalName;
-		private final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupsBuilders = new ArrayList<>();
+		private final List<DocumentLayoutElementTabDescriptor.Builder> elementTabsBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -88,7 +88,7 @@ public class DocumentLayoutColumnDescriptor
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("internalName", internalName)
-					.add("elementGroups-count", elementGroupsBuilders.size())
+					.add("elementGroups-count", elementTabsBuilders.size())
 					.toString();
 		}
 
@@ -100,16 +100,16 @@ public class DocumentLayoutColumnDescriptor
 			return result;
 		}
 
-		private List<DocumentLayoutElementGroupDescriptor> buildElementGroups()
+		private List<DocumentLayoutElementTabDescriptor> buildElementTabs()
 		{
-			return elementGroupsBuilders
+			return elementTabsBuilders
 					.stream()
 					.map(elementGroupBuilder -> elementGroupBuilder.build())
 					.filter(elementGroup -> checkValid(elementGroup))
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
-		private boolean checkValid(final DocumentLayoutElementGroupDescriptor elementGroup)
+		private boolean checkValid(final DocumentLayoutElementTabDescriptor elementGroup)
 		{
 			if(!elementGroup.hasElementLines())
 			{
@@ -126,21 +126,21 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 
-		public Builder addElementGroups(@NonNull final List<DocumentLayoutElementGroupDescriptor.Builder> elementGroupBuilders)
+		public Builder addElementTabs(@NonNull final List<DocumentLayoutElementTabDescriptor.Builder> elementGroupBuilders)
 		{
-			elementGroupsBuilders.addAll(elementGroupBuilders);
+			elementTabsBuilders.addAll(elementGroupBuilders);
 			return this;
 		}
 
-		public Builder addElementGroup(@NonNull final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder)
+		public Builder addElementGroup(@NonNull final DocumentLayoutElementTabDescriptor.Builder elementGroupBuilder)
 		{
-			elementGroupsBuilders.add(elementGroupBuilder);
+			elementTabsBuilders.add(elementGroupBuilder);
 			return this;
 		}
 
 		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
-			return elementGroupsBuilders.stream().flatMap(DocumentLayoutElementGroupDescriptor.Builder::streamElementBuilders);
+			return elementTabsBuilders.stream().flatMap(DocumentLayoutElementTabDescriptor.Builder::streamElementBuilders);
 		}
 	}
 }

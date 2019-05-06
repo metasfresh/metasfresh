@@ -17,12 +17,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
-import de.metas.dataentry.layout.DataEntryGroup;
-import de.metas.dataentry.layout.DataEntryGroup.DocumentLinkColumnName;
+import de.metas.dataentry.layout.DataEntryTab;
+import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
-import de.metas.dataentry.layout.DataEntrySubGroup;
+import de.metas.dataentry.layout.DataEntrySubTab;
 
 
 import de.metas.i18n.ITranslatableString;
@@ -38,7 +38,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementTabDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
@@ -79,19 +79,19 @@ public class DataEntryTabLoader
 {
 	AdWindowId adWindowId;
 	WindowId windowId;
-	DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder;
+	DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
 	DataEntryWebuiTools dataEntryWebuiTools;
 
 	@Builder
 	private DataEntryTabLoader(
 			@NonNull final AdWindowId adWindowId,
 			@NonNull final WindowId windowId,
-			@NonNull final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder)
+			@NonNull final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder)
 	{
 		this.adWindowId = adWindowId;
 		this.windowId = windowId;
-		this.dataEntrySubGroupBindingDescriptorBuilder = dataEntrySubGroupBindingDescriptorBuilder;
-		this.dataEntryWebuiTools = dataEntrySubGroupBindingDescriptorBuilder.getDataEntryWebuiTools();
+		this.dataEntrySubTabBindingDescriptorBuilder = dataEntrySubTabBindingDescriptorBuilder;
+		this.dataEntryWebuiTools = dataEntrySubTabBindingDescriptorBuilder.getDataEntryWebuiTools();
 
 	}
 
@@ -99,43 +99,43 @@ public class DataEntryTabLoader
 	{
 		final DataEntryLayoutRepository dataEntryRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
 
-		final List<DataEntryGroup> dataEntryGroups = dataEntryRepository.getByWindowId(adWindowId);
+		final List<DataEntryTab> dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
 
-		return createLayoutDescriptors(dataEntryGroups);
+		return createLayoutDescriptors(dataEntryTabs);
 	}
 
 	@VisibleForTesting
-	List<DocumentLayoutDetailDescriptor> createLayoutDescriptors(@NonNull final List<DataEntryGroup> dataEntryGroups)
+	List<DocumentLayoutDetailDescriptor> createLayoutDescriptors(@NonNull final List<DataEntryTab> dataEntryTabs)
 	{
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> result = ImmutableList.builder();
-		for (final DataEntryGroup dataEntryGroup : dataEntryGroups)
+		for (final DataEntryTab dataEntryTab : dataEntryTabs)
 		{
 			final ImmutableList<DocumentLayoutDetailDescriptor> //
-			groupLayoutDescriptors = createGroupLayoutDescriptors(windowId, dataEntryGroup);
+			groupLayoutDescriptors = createTabLayoutDescriptors(windowId, dataEntryTab);
 
 			result.addAll(groupLayoutDescriptors);
 		}
 		return result.build();
 	}
 
-	private ImmutableList<DocumentLayoutDetailDescriptor> createGroupLayoutDescriptors(
+	private ImmutableList<DocumentLayoutDetailDescriptor> createTabLayoutDescriptors(
 			@NonNull final WindowId windowId,
-			@NonNull final DataEntryGroup dataEntryGroup)
+			@NonNull final DataEntryTab dataEntryTab)
 	{
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> subGroupLayoutDescriptors = ImmutableList.builder();
-		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
+		for (final DataEntrySubTab dataEntrySubTab : dataEntryTab.getDataEntrySubTabs())
 		{
 			final DocumentLayoutDetailDescriptor //
-			subGroupLayoutDescriptor = createSubGroupLayoutDescriptor(windowId, dataEntrySubGroup);
+			subGroupLayoutDescriptor = createSubTabLayoutDescriptor(windowId, dataEntrySubTab);
 
 			subGroupLayoutDescriptors.add(subGroupLayoutDescriptor);
 		}
 
 		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
-				.builder(windowId, createDetailIdFor(dataEntryGroup))
-				.caption(dataEntryGroup.getCaption())
-				.description(dataEntryGroup.getDescription())
-				.internalName(dataEntryGroup.getInternalName())
+				.builder(windowId, createDetailIdFor(dataEntryTab))
+				.caption(dataEntryTab.getCaption())
+				.description(dataEntryTab.getDescription())
+				.internalName(dataEntryTab.getInternalName())
 				.queryOnActivate(true)
 				.supportQuickInput(false)
 				.addAllSubTabLayouts(subGroupLayoutDescriptors.build());
@@ -143,17 +143,17 @@ public class DataEntryTabLoader
 		return ImmutableList.of(builder.build());
 	}
 
-	private DocumentLayoutDetailDescriptor createSubGroupLayoutDescriptor(
+	private DocumentLayoutDetailDescriptor createSubTabLayoutDescriptor(
 			@NonNull final WindowId windowId,
-			@NonNull final DataEntrySubGroup dataEntrySubGroup)
+			@NonNull final DataEntrySubTab dataEntrySubTab)
 	{
-		final DetailId subgroupDetailId = createDetailIdFor(dataEntrySubGroup);
+		final DetailId subgroupDetailId = createDetailIdFor(dataEntrySubTab);
 
 		final DocumentLayoutDetailDescriptor.Builder subGroupDescriptor = DocumentLayoutDetailDescriptor
 				.builder(windowId, subgroupDetailId)
-				.caption(dataEntrySubGroup.getCaption())
-				.description(dataEntrySubGroup.getDescription())
-				.internalName(dataEntrySubGroup.getInternalName())
+				.caption(dataEntrySubTab.getCaption())
+				.description(dataEntrySubTab.getDescription())
+				.internalName(dataEntrySubTab.getInternalName())
 				.queryOnActivate(true)
 				.supportQuickInput(false);
 
@@ -161,7 +161,7 @@ public class DataEntryTabLoader
 				.builder()
 				.setWindowId(windowId);
 
-		for (final DataEntrySection dataEntrySection : dataEntrySubGroup.getDataEntrySections())
+		for (final DataEntrySection dataEntrySection : dataEntrySubTab.getDataEntrySections())
 		{
 			final DocumentLayoutSectionDescriptor.Builder section = createLayoutSection(dataEntrySection);
 			singleRowLayoutBuilder.addSection(section);
@@ -192,27 +192,27 @@ public class DataEntryTabLoader
 				.setClosableMode(closableMode)
 				.setCaptionMode(CaptionMode.DISPLAY);
 
-		final ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> //
-		elementGroups = createLayoutElemementGroup(dataEntrySection);
+		final ImmutableList<DocumentLayoutElementTabDescriptor.Builder> //
+		elementGroups = createLayoutElemementTab(dataEntrySection);
 
-		column.addElementGroups(elementGroups);
+		column.addElementTabs(elementGroups);
 
 		return layoutSection;
 	}
 
-	private ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> createLayoutElemementGroup(@NonNull final DataEntrySection dataEntrySection)
+	private ImmutableList<DocumentLayoutElementTabDescriptor.Builder> createLayoutElemementTab(@NonNull final DataEntrySection dataEntrySection)
 	{
 		final Integer columnCount = dataEntrySection.getDataEntryLines().stream()
 				.map(DataEntryLine::getDataEntryFields)
 				.map(Collection::size)
 				.max(Comparator.naturalOrder()).orElse(0);
 
-		final ImmutableList.Builder<DocumentLayoutElementGroupDescriptor.Builder> elementGroups = ImmutableList.builder();
+		final ImmutableList.Builder<DocumentLayoutElementTabDescriptor.Builder> elementGroups = ImmutableList.builder();
 
 		final List<DataEntryLine> dataEntryLines = dataEntrySection.getDataEntryLines();
 		for (final DataEntryLine dataEntryLine : dataEntryLines)
 		{
-			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
+			final DocumentLayoutElementTabDescriptor.Builder elementGroup = DocumentLayoutElementTabDescriptor
 					.builder()
 					.setColumnCount(columnCount);
 
@@ -296,41 +296,41 @@ public class DataEntryTabLoader
 	{
 		final DataEntryLayoutRepository dataEntryRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
 
-		final List<DataEntryGroup> dataEntryGroups = dataEntryRepository.getByWindowId(adWindowId);
+		final List<DataEntryTab> dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
 
-		return createGroupEntityDescriptors(dataEntryGroups);
+		return createTabEntityDescriptors(dataEntryTabs);
 	}
 
 	@VisibleForTesting
-	List<DocumentEntityDescriptor> createGroupEntityDescriptors(@NonNull final List<DataEntryGroup> dataEntryGroups)
+	List<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final List<DataEntryTab> dataEntryTabs)
 	{
 		final ImmutableList.Builder<DocumentEntityDescriptor> result = ImmutableList.builder();
-		for (final DataEntryGroup dataEntryGroup : dataEntryGroups)
+		for (final DataEntryTab dataEntryTab : dataEntryTabs)
 		{
-			final ImmutableList<DocumentEntityDescriptor> groupEntityDescriptors = createGroupEntityDescriptors(dataEntryGroup);
+			final ImmutableList<DocumentEntityDescriptor> groupEntityDescriptors = createTabEntityDescriptors(dataEntryTab);
 			result.addAll(groupEntityDescriptors);
 		}
 		return result.build();
 	}
 
-	private ImmutableList<DocumentEntityDescriptor> createGroupEntityDescriptors(@NonNull final DataEntryGroup dataEntryGroup)
+	private ImmutableList<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final DataEntryTab dataEntryTab)
 	{
 		final ImmutableList.Builder<DocumentEntityDescriptor> subGroupEntityDescriptors = ImmutableList.builder();
-		for (final DataEntrySubGroup dataEntrySubGroup : dataEntryGroup.getDataEntrySubGroups())
+		for (final DataEntrySubTab dataEntrySubTab : dataEntryTab.getDataEntrySubTabs())
 		{
-			final DocumentEntityDescriptor subGroupEntityDescriptor = createSubGroupEntityDescriptor(dataEntrySubGroup, dataEntryGroup.getDocumentLinkColumnName());
+			final DocumentEntityDescriptor subGroupEntityDescriptor = createSubTabEntityDescriptor(dataEntrySubTab, dataEntryTab.getDocumentLinkColumnName());
 			subGroupEntityDescriptors.add(subGroupEntityDescriptor);
 		}
 
-		final DataEntryGroupBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntryGroupBindingDescriptorBuilder();
+		final DataEntryTabBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntryTabBindingDescriptorBuilder();
 
 		final DocumentEntityDescriptor documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
 				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
-				.setDetailId(createDetailIdFor(dataEntryGroup))
-				.setInternalName(dataEntryGroup.getInternalName())
-				.setCaption(dataEntryGroup.getCaption())
-				.setDescription(dataEntryGroup.getDescription())
+				.setDetailId(createDetailIdFor(dataEntryTab))
+				.setInternalName(dataEntryTab.getInternalName())
+				.setCaption(dataEntryTab.getCaption())
+				.setDescription(dataEntryTab.getDescription())
 
 				.disableCallouts()
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
@@ -348,18 +348,18 @@ public class DataEntryTabLoader
 		return ImmutableList.of(documentEntityDescriptor);
 	}
 
-	private DocumentEntityDescriptor createSubGroupEntityDescriptor(
-			@NonNull final DataEntrySubGroup dataEntrySubGroup,
+	private DocumentEntityDescriptor createSubTabEntityDescriptor(
+			@NonNull final DataEntrySubTab dataEntrySubTab,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName)
 	{
 		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
 				.setSingleRowDetail(true)
 				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
-				.setDetailId(createDetailIdFor(dataEntrySubGroup))
-				.setInternalName(dataEntrySubGroup.getInternalName())
-				.setCaption(dataEntrySubGroup.getCaption())
-				.setDescription(dataEntrySubGroup.getDescription())
+				.setDetailId(createDetailIdFor(dataEntrySubTab))
+				.setInternalName(dataEntrySubTab.getInternalName())
+				.setCaption(dataEntrySubTab.getCaption())
+				.setDescription(dataEntrySubTab.getDescription())
 
 				.disableCallouts()
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
@@ -367,13 +367,13 @@ public class DataEntryTabLoader
 				.setAllowDeleteLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 
-				.setDataBinding(dataEntrySubGroupBindingDescriptorBuilder);
+				.setDataBinding(dataEntrySubTabBindingDescriptorBuilder);
 
 		documentEntityDescriptor.addField(createIDField());
 
 		documentEntityDescriptor.addField(createParentLinkField(documentLinkColumnName));
 
-		for (final DataEntrySection dataEntrySection : dataEntrySubGroup.getDataEntrySections())
+		for (final DataEntrySection dataEntrySection : dataEntrySubTab.getDataEntrySections())
 		{
 			for (final DataEntryLine dataEntryLine : dataEntrySection.getDataEntryLines())
 			{
@@ -407,7 +407,7 @@ public class DataEntryTabLoader
 				.builder()
 				.columnName(I_DataEntry_SubTab.COLUMNNAME_DataEntry_SubTab_ID)
 				.mandatory(true)
-				.fieldType(FieldType.SUB_GROUP_ID)
+				.fieldType(FieldType.SUB_TAB_ID)
 				.build();
 
 		return DocumentFieldDescriptor.builder(I_DataEntry_SubTab.COLUMNNAME_DataEntry_SubTab_ID)
@@ -500,14 +500,14 @@ public class DataEntryTabLoader
 		return dataEntryWebuiTools.computeFieldName(dataEntryField.getId()) + "_Info";
 	}
 
-	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)
+	private static DetailId createDetailIdFor(@NonNull final DataEntryTab dataEntryTab)
 	{
-		return DetailId.fromPrefixAndId(I_DataEntry_Tab.Table_Name, dataEntryGroup.getId().getRepoId());
+		return DetailId.fromPrefixAndId(I_DataEntry_Tab.Table_Name, dataEntryTab.getId().getRepoId());
 	}
 
-	private static DetailId createDetailIdFor(@NonNull final DataEntrySubGroup dataEntrySubGroup)
+	private static DetailId createDetailIdFor(@NonNull final DataEntrySubTab dataEntrySubTab)
 	{
-		return DetailId.fromPrefixAndId(I_DataEntry_SubTab.Table_Name, dataEntrySubGroup.getId().getRepoId());
+		return DetailId.fromPrefixAndId(I_DataEntry_SubTab.Table_Name, dataEntrySubTab.getId().getRepoId());
 	}
 
 	private static DocumentFieldWidgetType ofFieldType(@NonNull final FieldType fieldType)
@@ -528,7 +528,7 @@ public class DataEntryTabLoader
 				return DocumentFieldWidgetType.YesNo;
 			case CREATED_UPDATED_INFO:
 				return DocumentFieldWidgetType.Text;
-			case SUB_GROUP_ID:
+			case SUB_TAB_ID:
 				return DocumentFieldWidgetType.Integer;
 			case PARENT_LINK_ID:
 				return DocumentFieldWidgetType.Integer;
