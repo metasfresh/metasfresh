@@ -198,8 +198,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 	public void saveGroup(final Group group, final InvoiceCandidatesStorage invoiceCandidatesStorage)
 	{
-		final GroupId groupId = group.getGroupId();
-
 		// Save compensation lines
 		for (final GroupCompensationLine compensationLine : group.getCompensationLines())
 		{
