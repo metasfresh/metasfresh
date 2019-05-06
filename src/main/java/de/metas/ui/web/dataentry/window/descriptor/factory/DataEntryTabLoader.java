@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -21,8 +23,8 @@ import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubGroup;
-import de.metas.dataentry.model.I_DataEntry_Group;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -403,13 +405,13 @@ public class DataEntryTabLoader
 	{
 		final DocumentFieldDataBindingDescriptor dataBinding = DataEntryFieldBindingDescriptor
 				.builder()
-				.columnName(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
+				.columnName(I_DataEntry_SubTab.COLUMNNAME_DataEntry_SubTab_ID)
 				.mandatory(true)
 				.fieldType(FieldType.SUB_GROUP_ID)
 				.build();
 
-		return DocumentFieldDescriptor.builder(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
-				.setCaption(I_DataEntry_SubGroup.COLUMNNAME_DataEntry_SubGroup_ID)
+		return DocumentFieldDescriptor.builder(I_DataEntry_SubTab.COLUMNNAME_DataEntry_SubTab_ID)
+				.setCaption(I_DataEntry_SubTab.COLUMNNAME_DataEntry_SubTab_ID)
 				.setWidgetType(DocumentFieldWidgetType.Text) // not an int; we construct the DocumentId as string
 				.setDisplayLogic(ConstantLogicExpression.FALSE)
 				.setKey(true)
@@ -500,12 +502,12 @@ public class DataEntryTabLoader
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntryGroup dataEntryGroup)
 	{
-		return DetailId.fromPrefixAndId(I_DataEntry_Group.Table_Name, dataEntryGroup.getId().getRepoId());
+		return DetailId.fromPrefixAndId(I_DataEntry_Tab.Table_Name, dataEntryGroup.getId().getRepoId());
 	}
 
 	private static DetailId createDetailIdFor(@NonNull final DataEntrySubGroup dataEntrySubGroup)
 	{
-		return DetailId.fromPrefixAndId(I_DataEntry_SubGroup.Table_Name, dataEntrySubGroup.getId().getRepoId());
+		return DetailId.fromPrefixAndId(I_DataEntry_SubTab.Table_Name, dataEntrySubGroup.getId().getRepoId());
 	}
 
 	private static DocumentFieldWidgetType ofFieldType(@NonNull final FieldType fieldType)

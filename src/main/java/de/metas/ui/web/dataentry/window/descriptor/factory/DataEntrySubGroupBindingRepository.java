@@ -5,6 +5,7 @@ import static de.metas.util.Check.assumeNotNull;
 import java.util.Optional;
 import java.util.function.Function;
 
+import de.metas.dataentry.model.I_DataEntry_SubTab;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.UserId;
@@ -21,7 +22,7 @@ import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -312,7 +313,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 	private static DataEntrySubGroupId extractDataEntrySubGroupId(@NonNull final DetailId detailId)
 	{
 		final int subGroupId = detailId.getIdInt();
-		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubGroup.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubGroup.Table_Name);
+		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubTab.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubTab.Table_Name);
 
 		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(subGroupId);
 		return dataEntrySubGroupId;
