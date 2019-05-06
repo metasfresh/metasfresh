@@ -44,7 +44,7 @@ public class JsonDataEntryField
 	String description;
 
 	@JsonProperty("type")
-	FieldType type;
+	JsonFieldType type;
 	@JsonProperty("mandatory")
 	boolean mandatory;
 

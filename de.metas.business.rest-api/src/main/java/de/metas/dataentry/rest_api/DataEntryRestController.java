@@ -22,6 +22,7 @@ import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryListValue;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySection;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySubGroup;
+import de.metas.dataentry.rest_api.dto.JsonFieldType;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -193,9 +194,7 @@ public class DataEntryRestController
 					.id(layoutField.getId())
 					.caption(layoutField.getCaption().translate(adLanguage))
 					.description(layoutField.getDescription().translate(adLanguage))
-					// fixme: FieldType is not the same as what the customer sends.
-					// 		the customer sends 2 character strings, so maybe we should also return the same?
-					.type(layoutField.getType())
+					.type(JsonFieldType.getBy(layoutField.getType()))
 					.mandatory(layoutField.isMandatory())
 					.listValues(getDataEntryFieldListValues(layoutField, adLanguage))
 					.value(record.getFieldValue(layoutField.getId()).orElse(null))
