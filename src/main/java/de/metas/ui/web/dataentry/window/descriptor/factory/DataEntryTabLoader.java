@@ -177,7 +177,7 @@ public class DataEntryTabLoader
 		final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor
 				.builder();
 
-		final ClosableMode closableMode = dataEntrySection.isInitallyClosed()
+		final ClosableMode closableMode = dataEntrySection.isInitiallyClosed()
 				? ClosableMode.INITIALLY_CLOSED
 				: ClosableMode.INITIALLY_OPEN;
 
