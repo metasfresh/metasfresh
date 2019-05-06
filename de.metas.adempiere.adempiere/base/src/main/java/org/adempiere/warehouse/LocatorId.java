@@ -10,7 +10,6 @@ import org.compiere.model.I_M_Locator;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 import lombok.Value;
 

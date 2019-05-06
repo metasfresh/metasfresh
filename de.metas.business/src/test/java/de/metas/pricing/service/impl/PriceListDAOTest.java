@@ -9,12 +9,12 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Location;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;

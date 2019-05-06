@@ -76,7 +76,6 @@ import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
 import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
-import de.metas.adempiere.modelvalidator.C_CountryArea_Assign;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
@@ -96,7 +95,6 @@ import de.metas.inout.model.validator.M_QualityNote;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.inventory.model.interceptor.M_Inventory;
 import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
@@ -178,8 +176,6 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
-		engine.addModelValidator(new CLocationValidator(), client); // us786
-		engine.addModelValidator(new C_CountryArea_Assign(), client);
 
 		engine.addModelValidator(new InOutCandidateValidator(), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
@@ -196,9 +192,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
-
-		// task #1064
-		engine.addModelValidator(new M_Inventory(), client);
 
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);

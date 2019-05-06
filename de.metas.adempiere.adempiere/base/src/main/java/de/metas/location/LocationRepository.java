@@ -1,7 +1,5 @@
 package de.metas.location;
 
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Country;

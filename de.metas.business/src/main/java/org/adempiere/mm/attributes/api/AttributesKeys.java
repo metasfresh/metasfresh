@@ -142,6 +142,11 @@ public final class AttributesKeys
 
 	public AttributeSetInstanceId createAttributeSetInstanceFromAttributesKey(@NonNull final AttributesKey attributesKey)
 	{
+		if (attributesKey.isNone())
+		{
+			return AttributeSetInstanceId.NONE;
+		}
+
 		final IAttributeSet attributeSet = createAttributeSetFromStorageAttributesKey(attributesKey);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);

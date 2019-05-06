@@ -1,11 +1,6 @@
 package de.metas.location.geocoding.openstreetmap;
 
-import de.metas.location.geocoding.GeographicalCoordinates;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -14,7 +9,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeographicalCoordinates;
 
 /*
  * #%L
@@ -57,7 +58,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.address("zzzzzzzzzzzzzzzzzzzzzzzzzzz")
-						.countryCode("")
+						.countryCode2("")
 						.build());
 
 		assertThat(coord).isEmpty();
@@ -70,7 +71,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("300078")
-						.countryCode("")
+						.countryCode2("")
 						.build());
 
 		final GeographicalCoordinates expectedCoordinates = new GeographicalCoordinates("45.758301112052", "21.2249884579613");
@@ -87,7 +88,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("300078")
-						.countryCode("UK")
+						.countryCode2("UK")
 						.build());
 
 		assertThat(coord).isEmpty();
@@ -100,7 +101,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("300078")
-						.countryCode("RO")
+						.countryCode2("RO")
 						.build());
 
 		final GeographicalCoordinates expectedCoordinates = new GeographicalCoordinates("45.758301112052", "21.2249884579613");
@@ -117,7 +118,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final List<GeographicalCoordinates> coord = coordinatesProvider.findAllCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("5081")
-						.countryCode("AT")
+						.countryCode2("AT")
 						.address("gfvgdggsdfsdfgsdfgsdfgsdfgnull")
 						.build());
 
@@ -135,7 +136,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final List<GeographicalCoordinates> coord = coordinatesProvider.findAllCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("5081")
-						.countryCode("AT")
+						.countryCode2("AT")
 						.build());
 
 		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(new GeographicalCoordinates("47.7587073", "13.0612349838947"));
@@ -152,7 +153,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("5081")
-						.countryCode("RO")
+						.countryCode2("RO")
 						.build());
 
 		assertThat(coord)
@@ -169,13 +170,13 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("5081")
-						.countryCode("RO")
+						.countryCode2("RO")
 						.build());
 
 		coordinatesProvider.findBestCoordinates(
 				GeoCoordinatesRequest.builder()
 						.postal("5082")
-						.countryCode("RO")
+						.countryCode2("RO")
 						.build());
 
 		assertThat(Duration.between(start, Instant.now()))
@@ -190,7 +191,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 5);
 		final GeoCoordinatesRequest req = GeoCoordinatesRequest.builder()
 				.postal("5081")
-				.countryCode("AT")
+				.countryCode2("AT")
 				.build();
 		coordinatesProvider.findBestCoordinates(req);
 
