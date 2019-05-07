@@ -1,19 +1,17 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
-import de.metas.util.Services;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
 
 /*
  * #%L
@@ -84,5 +82,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 			getView().removeHUsAndInvalidate(husToReturn);
 		}
 	}
+
+
 
 }

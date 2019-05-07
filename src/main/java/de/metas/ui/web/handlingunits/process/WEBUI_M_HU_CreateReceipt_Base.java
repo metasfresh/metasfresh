@@ -1,22 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Attribute;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -27,6 +12,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.Product;
+import de.metas.product.ProductRepository;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributes;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -36,7 +23,24 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Attribute;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -71,6 +75,12 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	@Autowired
 	private DocumentCollection documentsCollection;
 
+	@Autowired
+	private SecurPharmService securPharmService;
+
+	@Autowired
+	private ProductRepository productRepository;
+
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -95,6 +105,21 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				final I_M_Attribute translatedAttribute = InterfaceWrapperHelper.translate(attribute, I_M_Attribute.class);
 				final ITranslatableString msg = msgBL.getTranslatableMsgText("WEBUI_Receipt_Missing_Mandatory_HU_Attribute", translatedAttribute.getName());
 				return ProcessPreconditionsResolution.reject(msg);
+			}
+		}
+		if (securPharmService.hasConfig())
+		{
+			final BPartnerId vendorId = BPartnerId.ofRepoIdOrNull(document.getBPartnerId());
+			final Product prod = productRepository.getById(document.getProductId());
+			final BPartnerId manufacturerId = prod.getManufacturerId();
+			if ((vendorId != null && manufacturerId != null && vendorId.getRepoId() != manufacturerId.getRepoId())
+					|| (vendorId == null && manufacturerId != null) || (vendorId != null && manufacturerId == null))
+			{
+				final ScannedAttributeValue scannedAttributeValue = ScannedAttributeValue.valueOf((String)attributes.getValue(AttributeConstants.ATTR_Scanned));
+				if (scannedAttributeValue == ScannedAttributeValue.N)
+				{
+					return ProcessPreconditionsResolution.rejectWithInternalReason("Vendor is different from manufacturer and product was not scanned");
+				}
 			}
 		}
 		return null;
