@@ -115,10 +115,12 @@ public final class ProcessClassParamInfo
 	 * @param source
 	 * @param failIfNotValid
 	 */
-	public void loadParameterValue(final JavaProcess processInstance, final Field processField, final IRangeAwareParams source, final boolean failIfNotValid)
+	public void loadParameterValue(
+			@NonNull final JavaProcess processInstance, 
+			@NonNull final Field processField, 
+			@NonNull final IRangeAwareParams source, 
+			final boolean failIfNotValid)
 	{
-		Check.assumeNotNull(processField, "processField not null");
-
 		//
 		// Get the parameter value from source
 		final Object value = extractParameterValue(processInstance, processField, source);
