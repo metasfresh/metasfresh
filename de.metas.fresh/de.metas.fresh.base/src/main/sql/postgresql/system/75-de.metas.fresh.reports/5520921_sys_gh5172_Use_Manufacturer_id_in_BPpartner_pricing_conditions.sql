@@ -1,4 +1,4 @@
-﻿DROP FUNCTION IF EXISTS report.bpartner_pricing_conditions (IN p_C_BPartner_ID numeric, IN p_C_BPartner_Location_ID numeric, IN p_Date date, IN p_ad_language character varying);
+DROP FUNCTION IF EXISTS report.bpartner_pricing_conditions (IN p_C_BPartner_ID numeric, IN p_C_BPartner_Location_ID numeric, IN p_Date date, IN p_ad_language character varying);
 
 CREATE OR REPLACE FUNCTION report.bpartner_pricing_conditions (IN p_C_BPartner_ID numeric, IN p_C_BPartner_Location_ID numeric, IN p_Date date, IN p_ad_language character varying)
 
