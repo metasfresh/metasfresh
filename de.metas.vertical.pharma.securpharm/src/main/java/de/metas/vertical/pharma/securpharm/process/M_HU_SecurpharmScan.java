@@ -45,6 +45,7 @@ import org.compiere.Adempiere;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
+//TODO move to webui for HU splitting and view update
 public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondition
 {
 
@@ -86,18 +87,18 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 				//TODO check if it fits current data and split otherwise
 				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productData.getExpirationDate());
 				attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productData.getLot());
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.Y);
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.Y.name());
 			}
 			else
 			{
 				attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productData.getSerialNumber());
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E);
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
 				//TODO HU split
 			}
-			attributeStorage.saveChangesIfNeeded();
 		}else{
-			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E);
+			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
 		}
+		attributeStorage.saveChangesIfNeeded();
 	}
 
 	private IAttributeStorage getAttributeStorage(I_M_HU handlingUnit)
@@ -125,15 +126,17 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 			return ProcessPreconditionsResolution.reject();
 		}
 		final I_M_HU handlingUnit = context.getSelectedModel(I_M_HU.class);
-		if (StringUtils.equals(handlingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed) || StringUtils.equals(handlingUnit.getHUStatus(), X_M_HU.HUSTATUS_Shipped))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("handling unit status not appropriate");
-		}
-		final IAttributeStorage attributeStorage = getAttributeStorage(handlingUnit);
-		if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo) || !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
-				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) || !attributeStorage.hasAttribute(AttributeConstants.ATTR_Scanned))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
+		if(handlingUnit != null){
+			if (StringUtils.equals(handlingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed) || StringUtils.equals(handlingUnit.getHUStatus(), X_M_HU.HUSTATUS_Shipped))
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("handling unit status not appropriate");
+			}
+			final IAttributeStorage attributeStorage = getAttributeStorage(handlingUnit);
+			if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo) || !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
+					|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) || !attributeStorage.hasAttribute(AttributeConstants.ATTR_Scanned))
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
+			}
 		}
 		return ProcessPreconditionsResolution.accept();
 	}

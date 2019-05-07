@@ -169,6 +169,8 @@ public class SecurPharmClient
 				final ProductData.ProductDataBuilder productDataBuilder = ProductData.builder()
 						.lot(new String(decodedLot))
 						.productCode(apiResponse.getProduct().getProductCode())
+						//TODO check from where to set this (response?)
+						.productCodeType(ProductCodeType.GTIN)
 						.expirationDate(apiResponse.getProduct().getExpirationDate())
 						.serialNumber(new String(decodedSerialNumber));
 				if (apiResponse.getPack().getState() == State.ACTIVE)

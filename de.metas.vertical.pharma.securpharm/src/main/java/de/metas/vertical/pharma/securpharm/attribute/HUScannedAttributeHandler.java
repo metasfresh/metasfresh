@@ -27,11 +27,13 @@ import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.IAttributeValueGeneratorAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValueHandler;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
 
-public class HUScannedAttributeHandler implements IAttributeValueCallout, IAttributeValueHandler
+public class HUScannedAttributeHandler implements IAttributeValueCallout, IAttributeValueHandler, IAttributeValueGeneratorAdapter
 {
 	@Override
 	public void onValueChanged(IAttributeValueContext attributeValueContext, IAttributeSet attributeSet, I_M_Attribute attribute, Object valueOld, Object valueNew)
@@ -47,7 +49,7 @@ public class HUScannedAttributeHandler implements IAttributeValueCallout, IAttri
 	@Override
 	public boolean isReadonlyUI(IAttributeValueContext ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -61,4 +63,10 @@ public class HUScannedAttributeHandler implements IAttributeValueCallout, IAttri
 	{
 		return Adempiere.getBean(SecurPharmService.class).hasConfig();
 	}
+
+	@Override public String getAttributeValueType()
+	{
+		return X_M_Attribute.ATTRIBUTEVALUETYPE_List;
+	}
+
 }

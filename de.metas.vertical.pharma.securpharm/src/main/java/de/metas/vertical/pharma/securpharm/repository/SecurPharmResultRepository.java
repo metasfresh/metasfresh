@@ -131,7 +131,7 @@ public class SecurPharmResultRepository
 				.responseTime(TimeUtil.asLocalDateTime(actionResult.getRequestEndTime()))
 				.requestUrl(actionResult.getRequestUrl())
 				.clientTransactionID(actionResult.getTransactionIDClient())
-				.clientTransactionID(actionResult.getTransactionIDServer())
+				.serverTransactionID(actionResult.getTransactionIDServer())
 				.build();
 		securPharmActionResult.setRequestLogData(logData);
 		securPharmActionResult.setError(actionResult.isError());
@@ -145,25 +145,27 @@ public class SecurPharmResultRepository
 	private Optional<SecurPharmProductDataResult> ofRecord(@NonNull final I_M_Securpharm_Productdata_Result productResult, @NonNull final SecurPharmProductDataResult result)
 	{
 		result.setHuId(HuId.ofRepoId(productResult.getM_HU_ID()));
-		result.setError(result.isError());
+		result.setError(productResult.isError());
 		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
 				.requestTime(TimeUtil.asLocalDateTime(productResult.getRequestStartTime()))
 				.responseTime(TimeUtil.asLocalDateTime(productResult.getRequestEndTime()))
 				.requestUrl(productResult.getRequestUrl())
 				.clientTransactionID(productResult.getTransactionIDClient())
-				.clientTransactionID(productResult.getTransactionIDServer())
+				.serverTransactionID(productResult.getTransactionIDServer())
 				.build();
 		result.setRequestLogData(logData);
-		final ProductData productData = ProductData.builder()
-				.isActive(productResult.isActive())
-				.expirationDate(TimeUtil.asLocalDate(productResult.getExpirationDate()))
-				.inactiveReason(productResult.getInactiveReason())
-				.lot(productResult.getLotNumber())
-				.productCode(productResult.getProductCode())
-				.productCodeType(ProductCodeType.valueOf(productResult.getProductCodeType()))
-				.serialNumber(productResult.getSerialNumber())
-				.build();
-		result.setProductData(productData);
+		if(!result.isError()){
+			final ProductData productData = ProductData.builder()
+					.isActive(productResult.isActive())
+					.expirationDate(TimeUtil.asLocalDate(productResult.getExpirationDate()))
+					.inactiveReason(productResult.getInactiveReason())
+					.lot(productResult.getLotNumber())
+					.productCode(productResult.getProductCode())
+					.productCodeType(ProductCodeType.valueOf(productResult.getProductCodeType()))
+					.serialNumber(productResult.getSerialNumber())
+					.build();
+			result.setProductData(productData);
+		}
 		return Optional.of(result);
 	}
 
