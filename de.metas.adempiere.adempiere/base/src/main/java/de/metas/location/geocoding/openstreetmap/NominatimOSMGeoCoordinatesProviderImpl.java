@@ -59,26 +59,9 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 {
 	private static final Logger logger = LogManager.getLogger(NominatimOSMGeoCoordinatesProviderImpl.class);
 
-	/**
-	 * Please observe the 2 URLs.
-	 * Issue with WRONG_BASE_URL is that when using
-	 * 
-	 * <pre>
-	 * search?q={address}&postalcode={postalcode}
-	 * </pre>
-	 * 
-	 * Nominatim tries to search for BOTH a postal and an address. <br/>
-	 * <p>
-	 * In some cases the address may be wrong so we get no response. <br>
-	 * <p>
-	 * With the second QUERY_STRING Nominatim ignores the address and just searches for postal.
-	 * <p>
-	 * Country is taken into account in both cases.
-	 */
-	// private static final String WRONG_URL = "https://nominatim.openstreetmap.org/search?q={address}&postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
-	private final static String DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org/search/";
+	private final static String DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org/search";
 	@SuppressWarnings("SpellCheckingInspection")
-	private static final String QUERY_STRING = "{address}?postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
+	private static final String QUERY_STRING = "?street={numberAndStreet}&city={city}&postalcode={postalcode}&countrycodes={countrycodes}&format={format}&dedupe={dedupe}&email={email}&polygon_geojson={polygon_geojson}&polygon_kml={polygon_kml}&polygon_svg={polygon_svg}&polygon_text={polygon_text}";
 
 	private final RestTemplate restTemplate = new RestTemplateBuilder().build();
 
