@@ -28,30 +28,4 @@ export class Currency {
     cy.log(`Currency - apply - END (isoCode=${this.isoCode})`);
     return this;
   }
-
-  activate() {
-    cy.log(`Currency - activate - START (isoCode=${this.isoCode})`);
-    cy.visitWindow('115', `${this.c_currency_ID}`);
-    //cy.visitWindow('115', '100');
-    cy.isChecked('IsActive').then(isActive => {
-      if (!isActive) {
-        cy.clickOnIsActive();
-      }
-    });
-    cy.log(`Currency - activate - END (isoCode=${this.isoCode})`);
-    return this;
-  }
-
-  inactivate() {
-    cy.log(`Currency - inactivate - START (isoCode=${this.isoCode})`);
-    cy.visitWindow('115', `${this.c_currency_ID}`);
-    //cy.visitWindow('115', '100');
-    cy.isChecked('IsActive').then(isActive => {
-      if (isActive) {
-        cy.clickOnIsActive();
-      }
-    });
-    cy.log(`Currency - inactivate - END (isoCode=${this.isoCode})`);
-    return this;
-  }
 }
