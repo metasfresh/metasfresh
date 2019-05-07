@@ -1,15 +1,15 @@
 de.metas.dataentry.rest_api.DataEntryRestControllerTest.testFieldNamesAreNotChanged=[
   {
-    "groups": [
+    "tabs": [
       {
         "id": 100003,
-        "caption": "groupRecord1_tabName",
-        "description": "groupRecord1_description",
-        "subgroups": [
+        "caption": "tabRecord1_tabName",
+        "description": "tabRecord1_description",
+        "subtabs": [
           {
             "id": 100009,
-            "caption": "subgroupRecord1_2_tabName",
-            "description": "subgroupRecord1_2_description - seqNo10",
+            "caption": "subTabRecord1_2_tabName",
+            "description": "subTabRecord1_2_description - seqNo10",
             "sections": [
               {
                 "id": 100010,
@@ -74,8 +74,8 @@ de.metas.dataentry.rest_api.DataEntryRestControllerTest.testFieldNamesAreNotChan
           },
           {
             "id": 100004,
-            "caption": "subgroupRecord1_1_tabName",
-            "description": "subgroupRecord1_1_description - seqNo20",
+            "caption": "subTabRecord1_1_tabName",
+            "description": "subTabRecord1_1_description - seqNo20",
             "sections": [
               {
                 "id": 100005,

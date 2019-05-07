@@ -34,7 +34,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 class DataEntryRestControllerTest
 {
 
-	private static final int BPARTNER_REPO_ID = 123;
+	private static final int BPARTNER_WINDOW_ID = 123;
 	private DataEntryRestController dataEntryRestController;
 
 	@BeforeAll
@@ -65,14 +65,14 @@ class DataEntryRestControllerTest
 
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
-		final JsonDataEntry g0002 = dataEntryRestController.getByBPartnerValue(bPartner.getValue());
+		final JsonDataEntry g0002 = dataEntryRestController.getByRecordId(BPARTNER_WINDOW_ID, bPartner.getC_BPartner_ID());
 		System.out.println(g0002);
 		expect(g0002).toMatchSnapshot();
 	}
 
 	private I_DataEntry_Tab createRecords()
 	{
-		final AdWindowId windowId_1 = AdWindowId.ofRepoId(BPARTNER_REPO_ID);
+		final AdWindowId windowId_1 = AdWindowId.ofRepoId(BPARTNER_WINDOW_ID);
 
 		final I_AD_Table tableRecord_1 = newInstance(I_AD_Table.class);
 		tableRecord_1.setTableName("tableRecord_1_tableName");
