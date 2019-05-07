@@ -86,8 +86,8 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
     cy.server();
-    cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
-    cy.route('GET', '/rest/api/window/**').as('getData');
+    cy.route('PATCH', new RegExp('/rest/api/window/.*')).as('patchCheckBox');
+    cy.route('GET', new RegExp('/rest/api/window/.*')).as('getData');
 
     cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 

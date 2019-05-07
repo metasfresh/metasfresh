@@ -42,8 +42,14 @@ export class Product {
   }
 
   setProductCategory(m_product_category) {
-    cy.log(`Product - set Product Category = ${m_product_category}`);
+    cy.log(`Product - set productCategory = ${m_product_category}`);
     this.m_product_category = m_product_category;
+    return this;
+  }
+
+  setProductType(productType) {
+    cy.log(`Product - set productType = ${productType}`);
+    this.productType = productType;
     return this;
   }
 
@@ -92,6 +98,12 @@ function applyProduct(product) {
     cy.isChecked('IsDiverse').then(isDiverseValue => {
       if (product.isDiverse && !isDiverseValue) {
         cy.clickOnCheckBox('IsDiverse');
+      }
+    });
+
+    cy.getFieldValue('ProductType').then(productType => {
+      if (product.productType != productType) {
+        cy.selectInListField('ProductType', product.productType);
       }
     });
 

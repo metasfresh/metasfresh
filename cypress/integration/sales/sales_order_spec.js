@@ -95,6 +95,8 @@ describe('New sales order test', function() {
         .type(`${timestamp}`);
 
       cy.get('.input-dropdown-list').should('exist');
+
+      // enter just the timestamp which is also part of the product name
       cy.contains('.input-dropdown-list-option', productName).click();
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 
@@ -125,7 +127,11 @@ describe('New sales order test', function() {
       cy.get('.quick-input-container .form-group').should('exist');
       cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
 
-      cy.writeIntoLookupListField('M_Product_ID', 'C', 'Convenience Salat');
+      // as is is right now, the snapshots is a bit flacky; kuba is going to deal with the problem
+      // cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
+
+      // enter just the timestamp which is also part of the product name
+      cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
 
       // increment the quantity via the widget's tiny "up" button
       cy.get('.form-field-Qty')
@@ -136,17 +142,15 @@ describe('New sales order test', function() {
         .eq(0)
         .click();
 
-      const aliasName = `addProduct-${new Date().getTime()}`;
-      const patchUrlPattern = '/rest/api/window/.*$';
       cy.server();
-      cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
-
+      cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
+        'resetQuickInputFields'
+      );
       cy.get('.form-field-Qty')
         .find('input')
         .should('have.value', '0.1')
-        .type('1{enter}');
-
-      cy.wait(`@${aliasName}`);
+        .type('1{enter}'); // hit enter to add the line
+      cy.wait('@resetQuickInputFields'); // the input fields are reset after the new line was added
 
       cy.get('#lookup_M_Product_ID')
         .find('input')
@@ -199,12 +203,10 @@ describe('List tests', function() {
   before(function() {
     const salesReference = `Cypress Test ${timestamp}`;
 
-    // cy.fixture('product/simple_product.json').then(() => {
     new SalesOrder(salesReference)
       .setBPartner('G0001_Test Kunde 1')
       .setBPartnerLocation('Testadresse 3')
       .apply();
-    //});
 
     salesOrders.visit();
     salesOrders.verifyElements();
