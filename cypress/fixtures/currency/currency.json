@@ -1,0 +1,10 @@
+{
+    "c_currency_id": 100,
+    "iso_code": "USD",
+    "description": "Dollar (100 Cents)",
+    "cursymbol": "$",
+    "stdprecision": 2,
+    "costingprecision": 4,
+    "iseuro": false,
+    "isactive": true
+}
