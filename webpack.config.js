@@ -1,4 +1,3 @@
-var path = require('path');
 var webpack = require('webpack');
 
 const plugins = [
@@ -17,7 +16,6 @@ module.exports = {
       {
         test: /\.jsx?$/,
         loader: 'babel-loader',
-        include: path.join(__dirname, 'src'),
       },
     ],
   },
