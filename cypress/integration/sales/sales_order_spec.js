@@ -141,17 +141,15 @@ describe('New sales order test', function() {
         .eq(0)
         .click();
 
-      const aliasName = `addProduct-${new Date().getTime()}`;
-      const patchUrlPattern = '/rest/api/window/.*$';
       cy.server();
-      cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
-
+      cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
+        'resetQuickInputFields'
+      );
       cy.get('.form-field-Qty')
         .find('input')
         .should('have.value', '0.1')
-        .type('1{enter}');
-
-      cy.wait(`@${aliasName}`);
+        .type('1{enter}'); // hit enter to add the line
+      cy.wait('@resetQuickInputFields'); // the input fields are reset after the new line was added
 
       cy.get('#lookup_M_Product_ID')
         .find('input')

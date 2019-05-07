@@ -5,6 +5,7 @@ class SalesOrders extends Metasfresh {
     super();
 
     this.windowId = 143;
+    this.orderLineTabId = 'AD_Tab-187';
     this.tableRows = '.table-flex-wrapper-row';
     this.rowSelector = 'tbody tr';
     this.listHeader = '.document-list-header';
