@@ -4,18 +4,19 @@ describe('Activate Currency USD for Automatic End2End Tests with cypress https:/
   it('Deactivate the currency USD', function() {
     cy.fixture('currency/currency.json').then(currencyJson => {
       Object.assign(new Currency(), currencyJson)
-        .setCurrencyID(100)
+        .setCurrencyID(100) //USD
+        .setIsoCode('USD')
         .setActive(false)
-        .activate('100');
+        .apply();
     });
   });
-
   it('Activate the currency USD', function() {
     cy.fixture('currency/currency.json').then(currencyJson => {
       Object.assign(new Currency(), currencyJson)
-        .setCurrencyID(100)
+        .setCurrencyID(100) //USD
+        .setIsoCode('USD')
         .setActive(true)
-        .inactivate();
+        .apply();
     });
   });
 });

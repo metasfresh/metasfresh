@@ -13,16 +13,29 @@ export class Currency {
 
   setCurrencyID(ID) {
     cy.log(`Currency - set C_Currency_ID = ${ID}`);
-    this.C_Currency_ID = ID;
+    this.c_currency_ID = ID;
+    return this;
+  }
+
+  apply() {
+    cy.log(`Currency - apply - START (isoCode=${this.isoCode})`);
+    cy.visitWindow('115', `${this.c_currency_ID}`);
+    cy.isChecked('IsActive').then(isActive => {
+      if (!isActive) {
+        cy.clickOnIsActive();
+      }
+    });
+    cy.log(`Currency - apply - END (isoCode=${this.isoCode})`);
     return this;
   }
 
   activate() {
     cy.log(`Currency - activate - START (isoCode=${this.isoCode})`);
-    cy.visitWindow('115', this.ID);
+    cy.visitWindow('115', `${this.c_currency_ID}`);
+    //cy.visitWindow('115', '100');
     cy.isChecked('IsActive').then(isActive => {
-      if (this.isActive && !isActive) {
-        cy.clickOnCheckBox('IsActive');
+      if (!isActive) {
+        cy.clickOnIsActive();
       }
     });
     cy.log(`Currency - activate - END (isoCode=${this.isoCode})`);
@@ -31,10 +44,11 @@ export class Currency {
 
   inactivate() {
     cy.log(`Currency - inactivate - START (isoCode=${this.isoCode})`);
-    cy.visitWindow('115', this.ID);
+    cy.visitWindow('115', `${this.c_currency_ID}`);
+    //cy.visitWindow('115', '100');
     cy.isChecked('IsActive').then(isActive => {
-      if (this.isActive && isActive) {
-        cy.clickOnCheckBox('IsActive');
+      if (isActive) {
+        cy.clickOnIsActive();
       }
     });
     cy.log(`Currency - inactivate - END (isoCode=${this.isoCode})`);
