@@ -33,6 +33,9 @@ import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
 import config from '../../config';
 import nextTabbable from './nextTabbable';
+import notificationFixtures from '../../fixtures/misc/notifications.json';
+
+const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
 context('Reusable "login" custom command', function() {
   Cypress.Commands.add('loginByForm', (username, password, redirect) => {
@@ -204,17 +207,6 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
   });
 });
 
-Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = 'visitedDocumentId') => {
-  describe('Open metasfresh single-record window and wait for layout and data', function() {
-    if (recordId == null) {
-      // null == undefined, thx to https://stackoverflow.com/a/2647888/1012103
-      visitTableWindow(windowId);
-    } else {
-      visitDetailWindow(windowId, recordId, documentIdAliasName);
-    }
-  });
-});
-
 function visitTableWindow(windowId) {
   cy.visit(`/window/${windowId}`);
 }
@@ -239,6 +231,62 @@ function visitDetailWindow(windowId, recordId, documentIdAliasName) {
     })
     .as(documentIdAliasName);
 }
+
+Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = 'visitedDocumentId') => {
+  describe('Open metasfresh single-record window and wait for layout and data', function() {
+    if (recordId == null) {
+      // null == undefined, thx to https://stackoverflow.com/a/2647888/1012103
+      visitTableWindow(windowId);
+    } else {
+      visitDetailWindow(windowId, recordId, documentIdAliasName);
+    }
+  });
+});
+
+const getNotificationFixture = () => {
+  const timestamp = new Date().getTime();
+  const message = `Test notification ${timestamp}`;
+
+  return {
+    ...NOTIFICATION_FIXTURE,
+    message,
+  };
+};
+
+Cypress.Commands.add('addNotification', notificationObject => {
+  describe('Push a new notification to the existing list', function() {
+    notificationObject = notificationObject || getNotificationFixture();
+
+    cy.window()
+      .its('store')
+      .invoke('dispatch', {
+        type: 'ADD_NOTIFICATION',
+        notification: {
+          ...notificationObject,
+        },
+      })
+      .then(() => {
+        return notificationObject;
+      });
+  });
+});
+
+Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) => {
+  describe('Clear current notifications and add a new one', function() {
+    notificationObject = notificationObject || getNotificationFixture();
+
+    cy.window()
+      .its('store')
+      .invoke('dispatch', {
+        type: 'NEW_NOTIFICATION',
+        notification: {
+          ...notificationObject,
+        },
+        unreadCount,
+      })
+      .then(() => notificationObject);
+  });
+});
 
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
