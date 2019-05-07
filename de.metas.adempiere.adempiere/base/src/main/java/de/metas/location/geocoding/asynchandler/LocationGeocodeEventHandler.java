@@ -4,7 +4,10 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
+import org.adempiere.ad.service.IErrorManager;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_Location;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -15,8 +18,8 @@ import de.metas.event.IEventBusFactory;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeoCoordinatesService;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.location.geocoding.interceptor.C_Location;
 import de.metas.util.Services;
@@ -50,15 +53,15 @@ class LocationGeocodeEventHandler
 {
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final GeoCoordinatesProvider geo;
+	private final GeoCoordinatesService geoCoordinatesService;
 	private final IEventBusFactory eventBusFactory;
 
 	public LocationGeocodeEventHandler(
-			final IEventBusFactory eventBusFactory,
-			final GeoCoordinatesProvider geo)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final GeoCoordinatesService geoCoordinatesService)
 	{
 		this.eventBusFactory = eventBusFactory;
-		this.geo = geo;
+		this.geoCoordinatesService = geoCoordinatesService;
 	}
 
 	@PostConstruct
@@ -72,14 +75,35 @@ class LocationGeocodeEventHandler
 	private void handleEvent(@NonNull final LocationGeocodeEventRequest request)
 	{
 		final I_C_Location locationRecord = locationsRepo.getById(request.getLocationId());
-
 		final GeoCoordinatesRequest coordinatesRequest = createGeoCoordinatesRequest(locationRecord);
 
-		final Optional<GeographicalCoordinates> xoy = geo.findBestCoordinates(coordinatesRequest);
-		if (xoy.isPresent())
+		try
 		{
-			locationRecord.setLatitude(xoy.get().getLatitude());
-			locationRecord.setLongitude(xoy.get().getLongitude());
+			final Optional<GeographicalCoordinates> xoy = geoCoordinatesService.findBestCoordinates(coordinatesRequest);
+			if (xoy.isPresent())
+			{
+				locationRecord.setLatitude(xoy.get().getLatitude());
+				locationRecord.setLongitude(xoy.get().getLongitude());
+				locationRecord.setGeocodingStatus(X_C_Location.GEOCODINGSTATUS_Resolved);
+				locationRecord.setGeocoding_Issue_ID(-1);
+			}
+			else
+			{
+				locationRecord.setLatitude(null);
+				locationRecord.setLongitude(null);
+				locationRecord.setGeocodingStatus(X_C_Location.GEOCODINGSTATUS_NotResolved);
+				locationRecord.setGeocoding_Issue_ID(-1);
+			}
+		}
+		catch (final Exception ex)
+		{
+			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
+
+			locationRecord.setGeocodingStatus(X_C_Location.GEOCODINGSTATUS_Error);
+			locationRecord.setGeocoding_Issue_ID(issue.getAD_Issue_ID());
+		}
+		finally
+		{
 			locationsRepo.save(locationRecord);
 		}
 	}

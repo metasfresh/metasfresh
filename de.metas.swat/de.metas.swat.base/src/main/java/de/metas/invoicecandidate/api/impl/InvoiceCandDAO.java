@@ -331,7 +331,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return ImmutableList.of(); // no associations for new/not saved ICs
 		}
-		
+
 		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
 	}
 
@@ -741,7 +741,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCandsForBPartnerInvoiceRule(final I_C_BPartner bpartner)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveForBillPartnerQuery(bpartner)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				// Not already processed
@@ -1062,7 +1062,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, I_C_BPartner.COLUMN_C_BPartner_ID, bpartnersQuery)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				//

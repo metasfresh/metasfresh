@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static java.math.BigDecimal.ONE;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -250,11 +252,11 @@ import lombok.NonNull;
 		final BigDecimal factor;
 		if (ic.getQtyOrdered().signum() < 0)
 		{
-			factor = BigDecimal.ONE.negate();
+			factor = ONE.negate();
 		}
 		else
 		{
-			factor = BigDecimal.ONE;
+			factor = ONE;
 		}
 
 		final BigDecimal oldQtyInvoiced = ic.getQtyInvoiced().multiply(factor);
@@ -294,9 +296,6 @@ import lombok.NonNull;
 		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(ic);
 
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
-
-		// update C_UOM_ID data from 'ic'
-		invoiceCandidateHandlerBL.setC_UOM_ID(ic);
 
 		// 06539 add qty overdelivery to qty delivered
 		final org.compiere.model.I_C_OrderLine ol = ic.getC_OrderLine();

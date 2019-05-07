@@ -1,5 +1,7 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.contracts
@@ -29,6 +31,7 @@ import java.util.function.Consumer;
 
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -44,8 +47,10 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,7 +69,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
 		return Services.get(IContractsDAO.class)
-				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, true /* ignoreDateFilters*/)
+				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, true /* ignoreDateFilters */)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTerm.getC_Flatrate_Term_ID())
 				.create()
 				.match();
@@ -118,11 +123,18 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		return X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription;
 	}
 
+	/**
+	 * Set the quantity from the term.
+	 */
 	@Override
-	public BigDecimal calculateQtyOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public Quantity calculateQtyEntered(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
-		return term.getPlannedQtyPerUnit(); // Set the quantity from the term.
+		final UomId uomId = HandlerTools.retrieveUomId(icRecord);
+
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(icRecord);
+		return new Quantity(
+				term.getPlannedQtyPerUnit(),
+				loadOutOfTrx(uomId, I_C_UOM.class));
 	}
 
 	@Override

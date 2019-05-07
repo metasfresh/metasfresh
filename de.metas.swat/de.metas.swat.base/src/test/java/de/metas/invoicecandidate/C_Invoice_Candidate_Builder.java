@@ -114,7 +114,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setDateAcct(dateAcct);
 
 		// InvoiceRule
-		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Sofort);
+		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
 		ic.setInvoiceRule_Override(ic.getInvoiceRule());
 		// ic.setInvoiceRule_Effective(ic.getInvoiceRule()); // virtual column, not used
 		if (invoiceRuleSet)

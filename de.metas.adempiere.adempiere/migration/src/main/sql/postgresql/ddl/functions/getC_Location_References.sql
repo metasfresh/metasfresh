@@ -20,7 +20,7 @@ BEGIN
 				from db_columns_fk fk
 				inner join AD_Table t on (t.TableName=fk.TableName)
 				where ref_tableName='C_Location'
-				and t.IsView='N' and t.IsActive='Y'
+				and t.IsView='N' and t.IsActive='Y' and fk.IsVirtualColumn='N'
 				order by t.TableName, fk.ColumnName
 	) loop
 		if (v_sql <> '') then
@@ -44,14 +44,14 @@ BEGIN
 		v_sql := v_sql || ' and '||rec.ColumnName||' is not null';
 	end loop;
 	
+	raise debug 'Using SQL: %', v_sql;
+
 	return query execute v_sql;
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE
 COST 100
 ROWS 1000;
-
-ALTER FUNCTION getC_Location_References() OWNER TO adempiere;
 
 
 -- select * from getC_Location_References()

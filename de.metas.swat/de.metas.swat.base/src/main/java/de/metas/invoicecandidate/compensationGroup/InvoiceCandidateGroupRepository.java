@@ -27,12 +27,12 @@ import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -138,21 +138,32 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	 */
 	private GroupCompensationLine createCompensationLine(final I_C_Invoice_Candidate invoiceCandidate)
 	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final BigDecimal qtyToInvoice = invoiceCandidate.getQtyToInvoice();
+		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
+
 		final BigDecimal price = invoiceCandidate.getPriceEntered();
-		final BigDecimal qty = invoiceCandidate.getQtyToInvoice();
-		final BigDecimal lineNetAmt = price.multiply(qty);
+
+		final UomId priceUomId = UomId.ofRepoId(invoiceCandidate.getPrice_UOM_ID());
+		final BigDecimal qtyInPriceUom = uomConversionBL.convertFromProductUOM(productId, priceUomId, qtyToInvoice);
+
+		final UomId qtyEnteredUomId = UomId.ofRepoId(invoiceCandidate.getC_UOM_ID());
+		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, qtyEnteredUomId, qtyToInvoice);
+
+		final BigDecimal lineNetAmt = price.multiply(qtyInPriceUom);
 
 		return GroupCompensationLine.builder()
 				.repoId(extractLineId(invoiceCandidate))
 				.seqNo(invoiceCandidate.getLine())
-				.productId(ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()))
-				.uomId(UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()))
+				.productId(productId)
+				.uomId(qtyEnteredUomId)
 				.type(GroupCompensationType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationType()))
 				.amtType(GroupCompensationAmtType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationAmtType()))
 				.percentage(Percent.of(invoiceCandidate.getGroupCompensationPercentage()))
 				.baseAmt(invoiceCandidate.getGroupCompensationBaseAmt())
 				.price(price)
-				.qty(qty)
+				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
 				.build();
 	}
@@ -160,18 +171,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	public int extractLineId(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		return invoiceCandidate.getC_Invoice_Candidate_ID();
-	}
-
-	/**
-	 * note to dev: keep in sync with {@link #createCompensationLine(I_C_Invoice_Candidate)}
-	 */
-	private void updateInvoiceCandidateFromCompensationLine(final I_C_Invoice_Candidate invoiceCandidate, final GroupCompensationLine compensationLine, final GroupId groupId)
-	{
-		invoiceCandidate.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
-
-		invoiceCandidate.setQtyToInvoice(compensationLine.getQty());
-		invoiceCandidate.setPriceEntered(compensationLine.getPrice());
-		invoiceCandidate.setPriceActual(compensationLine.getPrice());
 	}
 
 	private GroupId extractSingleGroupId(final List<I_C_Invoice_Candidate> invoiceCandidates)
@@ -199,8 +198,6 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 	public void saveGroup(final Group group, final InvoiceCandidatesStorage invoiceCandidatesStorage)
 	{
-		final GroupId groupId = group.getGroupId();
-
 		// Save compensation lines
 		for (final GroupCompensationLine compensationLine : group.getCompensationLines())
 		{
@@ -212,9 +209,35 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				throw new AdempiereException("No invoice candidate found for compensation line: " + compensationLine);
 			}
 
-			updateInvoiceCandidateFromCompensationLine(invoiceCandidate, compensationLine, groupId);
+			updateInvoiceCandidateFromCompensationLine(invoiceCandidate, compensationLine);
 			invoiceCandidatesStorage.save(invoiceCandidate);
 		}
+	}
+
+	/**
+	 * note to dev: keep in sync with {@link #createCompensationLine(I_C_Invoice_Candidate)}
+	 */
+	private void updateInvoiceCandidateFromCompensationLine(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@NonNull final GroupCompensationLine compensationLine)
+	{
+		invoiceCandidate.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
+
+		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final BigDecimal qtyToInvoice = uomConversionBL.convertToProductUOM(productId,
+				compensationLine.getQtyEntered(),
+				compensationLine.getUomId());
+
+		invoiceCandidate.setQtyToInvoice(qtyToInvoice);
+
+		invoiceCandidate.setQtyEntered(compensationLine.getQtyEntered());
+		invoiceCandidate.setC_UOM_ID(UomId.toRepoId(compensationLine.getUomId()));
+
+		invoiceCandidate.setPriceEntered(compensationLine.getPrice());
+		invoiceCandidate.setPriceActual(compensationLine.getPrice());
 	}
 
 	@Override

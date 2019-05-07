@@ -1,10 +1,16 @@
 package de.metas.order.compensationGroup;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
@@ -24,12 +30,12 @@ import de.metas.util.lang.Percent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,11 +47,29 @@ public class GroupTests
 	private int nextSeqNo = 1;
 
 	private static final int C_Order_ID = 123;
-	private static final ProductId M_Product_ID = ProductId.ofRepoId(1);
-	private static final UomId C_UOM_ID = UomId.ofRepoId(2);
+
+	private UomId uomId;
+
+	private ProductId productId;
+
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM(uomRecord);
+		saveRecord(productRecord);
+		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+	}
 
 	@Test
-	public void test_updateAllPercentageLines_twoPercentDiscountLines()
+	void updateAllPercentageLines_twoPercentDiscountLines()
 	{
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
@@ -66,7 +90,7 @@ public class GroupTests
 		{
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260)); // 740
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-222.00")); // - (480+260) * 30%
 		}
 
@@ -75,7 +99,7 @@ public class GroupTests
 		{
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(1);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260 - 222)); // 518
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-51.80")); // - (480+260-222) * 10%
 		}
 	}
@@ -84,7 +108,7 @@ public class GroupTests
 	 * NOTE: This test is using the same data as {@link #test_updateAllPercentageLines_twoPercentDiscountLines()}
 	 */
 	@Test
-	public void test_addNewCompensationLine()
+	void addNewCompensationLine()
 	{
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
@@ -102,7 +126,7 @@ public class GroupTests
 
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260)); // 740
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-222.00")); // - (480+260) * 30%
 		}
 
@@ -110,10 +134,10 @@ public class GroupTests
 		// Check compensation line 2: 10%
 		{
 			group.addNewCompensationLine(newPercentageDiscountRequest(10));
-			
+
 			final GroupCompensationLine compensationLine = group.getCompensationLines().get(1);
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260 - 222)); // 518
-			assertThat(compensationLine.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-51.80")); // - (480+260-222) * 10%
 		}
 
@@ -133,8 +157,8 @@ public class GroupTests
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(discountPerc))
 				// does not matter but needs to be filled
-				.productId(M_Product_ID)
-				.uomId(C_UOM_ID);
+				.productId(productId)
+				.uomId(uomId);
 	}
 
 	private GroupCompensationLineCreateRequest newPercentageDiscountRequest(final int discountPerc)
@@ -144,8 +168,8 @@ public class GroupTests
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(discountPerc))
 				// does not matter but needs to be filled
-				.productId(M_Product_ID)
-				.uomId(C_UOM_ID)
+				.productId(productId)
+				.uomId(uomId)
 				.build();
 	}
 }

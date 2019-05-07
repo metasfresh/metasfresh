@@ -2,6 +2,7 @@ package de.metas.location.geocoding.openstreetmap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -39,7 +40,8 @@ import de.metas.location.geocoding.GeographicalCoordinates;
  * #L%
  */
 
-@SuppressWarnings("ArraysAsListWithZeroOrOneArgument") @Disabled("It makes real queries which can't be mocked so don't run it automatically.")
+@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
+@Disabled("It makes real queries which can't be mocked so don't run it automatically.")
 class NominatimOSMGeoCoordinatesProviderImplTest
 {
 	public static final long MILLIS_BETWEEN_REQUESTS = TimeUnit.SECONDS.toMillis(20);
@@ -49,6 +51,14 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	void beforeEach()
 	{
 		coordinatesProvider = new NominatimOSMGeoCoordinatesProviderImpl("", MILLIS_BETWEEN_REQUESTS, 0);
+	}
+
+	private static GeographicalCoordinates toGeographicalCoordinates(final String latitudeStr, final String longitudeStr)
+	{
+		return GeographicalCoordinates.builder()
+				.latitude(new BigDecimal(latitudeStr))
+				.longitude(new BigDecimal(longitudeStr))
+				.build();
 	}
 
 	@Test
@@ -74,7 +84,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 						.countryCode2("")
 						.build());
 
-		final GeographicalCoordinates expectedCoordinates = new GeographicalCoordinates("45.758301112052", "21.2249884579613");
+		final GeographicalCoordinates expectedCoordinates = toGeographicalCoordinates("45.758301112052", "21.2249884579613");
 
 		assertThat(coord)
 				.isNotEmpty()
@@ -104,7 +114,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 						.countryCode2("RO")
 						.build());
 
-		final GeographicalCoordinates expectedCoordinates = new GeographicalCoordinates("45.758301112052", "21.2249884579613");
+		final GeographicalCoordinates expectedCoordinates = toGeographicalCoordinates("45.758301112052", "21.2249884579613");
 
 		assertThat(coord)
 				.isNotEmpty()
@@ -122,7 +132,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 						.address("gfvgdggsdfsdfgsdfgsdfgsdfgnull")
 						.build());
 
-		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(new GeographicalCoordinates("47.7587073", "13.0612349838947"));
+		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(toGeographicalCoordinates("47.7587073", "13.0612349838947"));
 
 		assertThat(coord)
 				.isNotEmpty()
@@ -139,7 +149,7 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 						.countryCode2("AT")
 						.build());
 
-		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(new GeographicalCoordinates("47.7587073", "13.0612349838947"));
+		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(toGeographicalCoordinates("47.7587073", "13.0612349838947"));
 
 		assertThat(coord)
 				.isNotEmpty()

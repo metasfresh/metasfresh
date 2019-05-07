@@ -332,7 +332,7 @@ public class OrderGroupRepository implements GroupRepository
 				.percentage(Percent.of(groupOrderLine.getGroupCompensationPercentage()))
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
-				.qty(groupOrderLine.getQtyEntered())
+				.qtyEntered(groupOrderLine.getQtyEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
 				.build();
 	}
@@ -397,8 +397,8 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId().getRepoId());
 		compensationLinePO.setC_UOM_ID(compensationLine.getUomId().getRepoId());
 
-		compensationLinePO.setQtyEntered(compensationLine.getQty());
-		compensationLinePO.setQtyOrdered(compensationLine.getQty());
+		compensationLinePO.setQtyEntered(compensationLine.getQtyEntered());
+		compensationLinePO.setQtyOrdered(compensationLine.getQtyEntered());
 		compensationLinePO.setIsManualPrice(true);
 		compensationLinePO.setPriceEntered(compensationLine.getPrice());
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
