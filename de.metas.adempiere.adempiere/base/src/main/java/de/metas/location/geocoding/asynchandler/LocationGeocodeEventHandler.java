@@ -118,10 +118,13 @@ class LocationGeocodeEventHandler
 
 		final String postal = locationRecord.getPostal();
 
+		final String city = locationRecord.getCity();
+
 		final GeoCoordinatesRequest coordinatesRequest = GeoCoordinatesRequest.builder()
 				.countryCode2(countryCode2)
 				.address(address)
 				.postal(postal)
+				.city(city)
 				.build();
 		return coordinatesRequest;
 	}

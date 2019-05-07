@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -187,20 +188,12 @@ public class NominatimOSMGeoCoordinatesProviderImpl implements GeoCoordinatesPro
 	@NonNull
 	private Map<String, String> prepareParameterList(final @NonNull GeoCoordinatesRequest request)
 	{
-		String nonNullPostalCode = request.getPostal();
-		if (nonNullPostalCode == null)
-		{
-			nonNullPostalCode = "";
-		}
-		String nonNullAddress = request.getAddress();
-		if (nonNullAddress == null)
-		{
-			nonNullAddress = "";
-		}
+		final String  defaultEmptyValue = "";
 
 		final Map<String, String> m = new HashMap<>();
-		m.put("address", nonNullAddress);
-		m.put("postalcode", nonNullPostalCode);
+		m.put("numberAndStreet", Util.coalesce(request.getAddress(), defaultEmptyValue));
+		m.put("postalcode", Util.coalesce(request.getPostal(), defaultEmptyValue));
+		m.put("city", Util.coalesce(request.getCity(), defaultEmptyValue));
 		m.put("countrycodes", request.getCountryCode2());
 		m.put("format", "json");
 		m.put("dedupe", "1");
