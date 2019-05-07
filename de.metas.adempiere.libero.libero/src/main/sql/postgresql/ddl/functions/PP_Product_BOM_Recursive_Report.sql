@@ -18,7 +18,7 @@ $BODY$
 		t.QtyBOM,
 		t.Percentage,
 		t.UOMSymbol
-	from PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID) t
+	from PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, null) t
 	order by t.path
 $BODY$
 LANGUAGE sql STABLE
