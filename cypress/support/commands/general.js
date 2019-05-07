@@ -288,6 +288,29 @@ Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) =>
   });
 });
 
+Cypress.Commands.add('getDOMNotificationsNumber', () => {
+  describe('Get the number of notifications displayed in the header alert element', function() {
+    cy.get('.header-item-badge')
+      .find('.notification-number')
+      .then(el => {
+        const val = el[0].textContent;
+
+        return parseInt(val, 10);
+      });
+  });
+});
+
+Cypress.Commands.add('getNotificationsInbox', () => {
+  describe('Get the notifications inbox in the app state', function() {
+    cy.window()
+      .its('store')
+      .invoke('getState')
+      .then(state => {
+        return state.appHandler.inbox;
+      });
+  });
+});
+
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
 Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue, expectEmptyRequest = false) => {
