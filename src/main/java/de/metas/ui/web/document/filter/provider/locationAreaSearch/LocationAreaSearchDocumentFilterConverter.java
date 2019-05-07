@@ -166,6 +166,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 				.countryCode2(countryCode2)
 				.postal(filter.getParameterValueAsString(PARAM_Postal, null))
 				.address(filter.getParameterValueAsString(PARAM_Address1, null))
+//				.city(filter.getParameterValueAsString()) // TODO @teo: can we add the city here?
 				.build();
 
 		return Optional.of(request);
