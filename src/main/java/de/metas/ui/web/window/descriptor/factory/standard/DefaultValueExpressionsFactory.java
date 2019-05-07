@@ -24,6 +24,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -58,7 +59,7 @@ public class DefaultValueExpressionsFactory
 		final boolean isDetailTab = false;
 		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
 	}
-	
+
 	public static final DefaultValueExpressionsFactory newInstance(@NonNull final String tableName, final boolean isDetailTab)
 	{
 		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
@@ -99,7 +100,8 @@ public class DefaultValueExpressionsFactory
 
 	//
 	// Parameters
-	@Nullable private final String _tableName;
+	@Nullable
+	private final String _tableName;
 	private final boolean _isDetailTab;
 
 	private DefaultValueExpressionsFactory(final String tableName, final boolean isDetailTab)
@@ -140,7 +142,7 @@ public class DefaultValueExpressionsFactory
 
 		//
 		// If there is no default value expression, use some defaults
-		if (defaultValueStr == null || defaultValueStr.isEmpty())
+		if (Check.isEmpty(defaultValueStr))
 		{
 			if (WindowConstants.FIELDNAME_AD_Client_ID.equals(columnName))
 			{
@@ -161,7 +163,7 @@ public class DefaultValueExpressionsFactory
 				return DEFAULT_VALUE_ContextUser_ID;
 			}
 			//
-			else if(WindowConstants.FIELDNAME_Value.equals(columnName)
+			else if (WindowConstants.FIELDNAME_Value.equals(columnName)
 					&& getTableName() != null
 					&& allowUsingAutoSequence)
 			{
@@ -187,8 +189,11 @@ public class DefaultValueExpressionsFactory
 			}
 			else if (BigDecimal.class.equals(fieldValueClass))
 			{
-				// e.g. C_OrderLine.QtyReserved
-				return DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal;
+				if (isMandatory)
+				{
+					// e.g. C_OrderLine.QtyReserved
+					return DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal;
+				}
 			}
 			else if (widgetType == DocumentFieldWidgetType.ProductAttributes)
 			{
