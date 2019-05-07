@@ -28,6 +28,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -45,18 +46,22 @@ import de.metas.util.time.SystemTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		EventBus2EventLogHandler.class, EventLogService.class, EventLogUserService.class
+		EventBus2EventLogHandler.class, EventLogService.class, EventLogUserService.class,
+		SecurityMainInterceptor.class
 })
 public class UserRolePermissionsDAOTest
 {
 	private UserRolePermissionsDAO dao;
+
+	@Autowired
+	private SecurityMainInterceptor securityMainInterceptor;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		Services.get(IModelInterceptorRegistry.class)
-				.addModelInterceptor(SecurityMainInterceptor.instance);
+				.addModelInterceptor(securityMainInterceptor);
 
 		dao = (UserRolePermissionsDAO)Services.get(IUserRolePermissionsDAO.class);
 	}

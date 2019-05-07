@@ -125,11 +125,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		// Security and User/Roles
-		{
-			engine.addModelValidator(de.metas.security.model.interceptor.SecurityMainInterceptor.instance, client);
-		}
-
 		// Event bus
 		engine.addModelValidator(EventBusAdempiereInterceptor.instance, client);
 
@@ -219,7 +214,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
 		cachingService.addTableCacheConfigIfAbsent(I_M_PriceList.class);
-		
+
 		cachingService.addTableCacheConfigIfAbsent(I_C_ConversionType.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache

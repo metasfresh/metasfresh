@@ -30,6 +30,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -47,13 +48,12 @@ import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+@Component
 public class SecurityMainInterceptor extends AbstractModuleInterceptor
 {
-	public static final transient SecurityMainInterceptor instance = new SecurityMainInterceptor();
-
 	private static final transient Logger logger = LogManager.getLogger(SecurityMainInterceptor.class);
 
-	private SecurityMainInterceptor()
+	public SecurityMainInterceptor()
 	{
 	}
 
@@ -112,7 +112,6 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 		{
 			logger.warn("Cannot register process {}. Skip", processClass, ex);
 		}
-
 	}
 
 	@ToString
