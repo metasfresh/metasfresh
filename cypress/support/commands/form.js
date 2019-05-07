@@ -56,9 +56,8 @@ Cypress.Commands.add('isChecked', (fieldName, modal) => {
     if (modal) {
       path = `.panel-modal ${path}`;
     }
-
     return cy.get(path).then(el => {
-      if (el.find('.checked').length) {
+      if (el.find('checked').length) {
         return true;
       }
       return false;
@@ -73,7 +72,6 @@ Cypress.Commands.add('clickOnIsActive', modal => {
     if (modal) {
       path = `.panel-modal ${path}`;
     }
-
     cy.get(path)
       .find('.input-slider')
       .click();

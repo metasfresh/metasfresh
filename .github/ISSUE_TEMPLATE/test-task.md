@@ -13,7 +13,7 @@ This issue is related to
 
 Todo for developer (besides coding)
 - Always make sure the issue is in the correct project lane
-- [ ] make your estimation and label (`customer:...`, `est:...`, `release:...` ) this issue accordingly
+- [ ] make your estimation and label (`est:...`, `release:...` ) this issue accordingly
 - [ ] run your test in jenkins e2e 
 - [ ] get it integrated into `master`
   * [ ] (pull request URL)

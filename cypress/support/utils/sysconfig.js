@@ -5,9 +5,9 @@ export class SysConfig {
   }
 
   apply() {
-    cy.log(`DiscountSchema - apply - START (name=${this.name})`);
+    cy.log(`Sysconfig - apply - START (name=${this.name})`);
     applySysConfig(this);
-    cy.log(`DiscountSchema - apply - END (name=${this.name})`);
+    cy.log(`Sysconfig - apply - END (name=${this.name})`);
     return this;
   }
 
@@ -21,6 +21,11 @@ export class SysConfig {
       setValue(value) {
         cy.log(`SysConfigBuilder - set value = ${value}`);
         this.value = value;
+        return this;
+      }
+      setDescription(description) {
+        cy.log(`Sysconfig - set description = ${description}`);
+        this.description = description;
         return this;
       }
 
