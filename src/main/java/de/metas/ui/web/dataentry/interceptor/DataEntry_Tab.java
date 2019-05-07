@@ -1,6 +1,6 @@
 package de.metas.ui.web.dataentry.interceptor;
 
-import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
@@ -31,21 +31,21 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_SubGroup")
-@Interceptor(I_DataEntry_SubTab.class)
-public class DataEntry_SubGroup
+@Component("de.metas.ui.web.dataentry.interceptor.DataEntry_Tab")
+@Interceptor(I_DataEntry_Tab.class)
+public class DataEntry_Tab
 {
 	private final DataEntryInterceptorUtil dataEntryInterceptorUtil;
 
-	public DataEntry_SubGroup(
+	public DataEntry_Tab(
 			@NonNull final DataEntryInterceptorUtil dataEntryInterceptorUtil)
 	{
 		this.dataEntryInterceptorUtil = dataEntryInterceptorUtil;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_SubTab dataEntrySubGroupRecord)
+	public void invalidateDocumentDescriptorCache(@NonNull final I_DataEntry_Tab dataEntryTabRecord)
 	{
-		dataEntryInterceptorUtil.resetCacheFor(dataEntrySubGroupRecord);
+		dataEntryInterceptorUtil.resetCacheFor(dataEntryTabRecord);
 	}
 }
