@@ -3,7 +3,7 @@ package de.metas.dataentry.rest_api;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
@@ -32,8 +32,6 @@ import de.metas.dataentry.rest_api.dto.JsonDataEntryTab;
 import de.metas.dataentry.rest_api.dto.JsonFieldType;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -122,7 +120,7 @@ public class DataEntryRestController
 	@GetMapping("/byID/{windowId}/{recordId}")
 	public JsonDataEntry getByRecordId(
 			@PathVariable("windowId") final int windowId,
-			@PathVariable("recordId") final String recordId)
+			@PathVariable("recordId") final int recordId)
 	{
 		final Stopwatch w = Stopwatch.createStarted();
 		final JsonDataEntry jsonDataEntry = getJsonDataEntry(recordId, windowId);
@@ -131,9 +129,12 @@ public class DataEntryRestController
 		return jsonDataEntry;
 	}
 
-	private JsonDataEntry getJsonDataEntry(final String recordId, final int windowId)
+	private JsonDataEntry getJsonDataEntry(final int recordId, final int windowId)
 	{
-		final RepoIdAware repoIdAware = Services.get(IBPartnerDAO.class).getBPartnerIdByValue(recordId);    // FIXME: HARDCODED: since this is a record, i would have to get the DAO by recordId/windowId and not straight use bpartner
+		// FIXME: how do i know from a window id which table is referenced here?
+		final BPartnerId repoIdAware = BPartnerId.ofRepoId(recordId);		// FIXME: HARDCODED: since this is a record, i would have to get the DAO by recordId/windowId and not straight use bpartner
+
+
 		final String adLanguage = Env.getAD_Language();
 		final TableRecordReference recordReference = TableRecordReference.of(I_C_BPartner.Table_Name, repoIdAware);
 		final TableRecordReferenceLanguagePair key = new TableRecordReferenceLanguagePair(recordReference, adLanguage);
