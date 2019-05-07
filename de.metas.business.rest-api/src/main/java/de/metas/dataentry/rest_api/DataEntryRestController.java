@@ -3,7 +3,6 @@ package de.metas.dataentry.rest_api;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.dataentry.DataEntrySubTabId;
@@ -11,31 +10,30 @@ import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
 import de.metas.dataentry.layout.DataEntryField;
-import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
+import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.model.I_DataEntry_Field;
-
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_DataEntry_Section;
-
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
-import de.metas.dataentry.rest_api.dto.JsonDataEntryTab;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryListValue;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySection;
 import de.metas.dataentry.rest_api.dto.JsonDataEntrySubTab;
+import de.metas.dataentry.rest_api.dto.JsonDataEntryTab;
 import de.metas.dataentry.rest_api.dto.JsonFieldType;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -79,16 +77,15 @@ import java.util.List;
 @RequestMapping(DataEntryRestController.ENDPOINT)
 public class DataEntryRestController
 {
-	@SuppressWarnings("WeakerAccess") public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
+	@SuppressWarnings("WeakerAccess")
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
 
 	protected final transient Logger log = LogManager.getLogger(getClass());
-
-	private static final AdWindowId bpartnerWindowId = AdWindowId.ofRepoId(123); // FIXME: HARDCODED for now
 
 	private final DataEntryLayoutRepository layoutRepo;
 	private final DataEntryRecordRepository recordRepo;
 
-	private final CCache<BPartnerId, JsonDataEntry> cache;
+	private final CCache<TableRecordReferenceLanguagePair, JsonDataEntry> cache;
 
 	DataEntryRestController(
 			@NonNull final DataEntryLayoutRepository layoutRepo,
@@ -97,7 +94,7 @@ public class DataEntryRestController
 	{
 		this.layoutRepo = layoutRepo;
 		this.recordRepo = recordRepo;
-		cache = CCache.<BPartnerId, JsonDataEntry>builder()
+		cache = CCache.<TableRecordReferenceLanguagePair, JsonDataEntry>builder()
 				.cacheMapType(CCache.CacheMapType.LRU)
 				.tableName(I_C_BPartner.Table_Name)    // <- apparently this is needed for cache invalidation to work. why? i have no idea! (and i think it's a bug since i'm not caching a BPartner, but rather an _arbitrary_ value
 				//				.tableName(I_DataEntry_Record.Table_Name)    // <- contrary to above, this DOES NOT WORK!!!!!
@@ -111,41 +108,55 @@ public class DataEntryRestController
 				.initialCapacity(cacheCapacity)
 				.build();
 	}
+	//
+	//	@GetMapping("/byBPartnerID/{bpartnerValue}")
+	//	public JsonDataEntry getByBPartnerValue(@PathVariable("bpartnerValue") final String bpartnerValue)
+	//	{
+	//		final Stopwatch w = Stopwatch.createStarted();
+	//		final JsonDataEntry jsonDataEntry = getJsonDataEntry(bpartnerValue);
+	//		w.stop();
+	//		log.info("getByBPartnerValue for bpartner '{}' duration: {}", bpartnerValue, w.toString());
+	//		return jsonDataEntry;
+	//	}
 
-	@GetMapping("/byBPartnerValue/{bpartnerValue}")
-	public JsonDataEntry getByBPartnerValue(@PathVariable("bpartnerValue") final String bpartnerValue)
+	@GetMapping("/byID/{windowId}/{recordId}")
+	public JsonDataEntry getByRecordId(
+			@PathVariable("windowId") final int windowId,
+			@PathVariable("recordId") final String recordId)
 	{
 		final Stopwatch w = Stopwatch.createStarted();
-		final JsonDataEntry jsonDataEntry = getJsonDataEntry(bpartnerValue);
+		final JsonDataEntry jsonDataEntry = getJsonDataEntry(recordId, windowId);
 		w.stop();
-		log.info("getByBPartnerValue for bpartner '{}' duration: {}", bpartnerValue, w.toString());
+		log.info("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w.toString());
 		return jsonDataEntry;
 	}
 
-	private JsonDataEntry getJsonDataEntry(final String bpartnerValue)
+	private JsonDataEntry getJsonDataEntry(final String recordId, final int windowId)
 	{
-		final BPartnerId bpartnerId = Services.get(IBPartnerDAO.class).getBPartnerIdByValue(bpartnerValue);
+		final RepoIdAware repoIdAware = Services.get(IBPartnerDAO.class).getBPartnerIdByValue(recordId);    // FIXME: HARDCODED: since this is a record, i would have to get the DAO by recordId/windowId and not straight use bpartner
+		final String adLanguage = Env.getAD_Language();
+		final TableRecordReference recordReference = TableRecordReference.of(I_C_BPartner.Table_Name, repoIdAware);
+		final TableRecordReferenceLanguagePair key = new TableRecordReferenceLanguagePair(recordReference, adLanguage);
 
-		return cache.getOrLoad(bpartnerId, () -> getJsonDataEntry(bpartnerId));
+		return cache.getOrLoad(key, () -> getJsonDataEntry(recordReference, adLanguage, AdWindowId.ofRepoId(windowId)));
 	}
 
-	private JsonDataEntry getJsonDataEntry(final BPartnerId bpartnerId)
+	private JsonDataEntry getJsonDataEntry(final TableRecordReference recordReference, final String adLanguage, final AdWindowId windowId)
 	{
-		final String adLanguage = Env.getAD_Language();
-		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(bpartnerWindowId);
-		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(adLanguage, layout, bpartnerId);
+		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(windowId);
+		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(adLanguage, layout, recordReference);
 
 		return JsonDataEntry.builder()
 				.tabs(tabs)
 				.build();
 	}
 
-	@NonNull private ImmutableList<JsonDataEntryTab> getJsonDataEntryTabs(final String adLanguage, final List<DataEntryTab> layout, final BPartnerId bpartnerId)
+	@NonNull private ImmutableList<JsonDataEntryTab> getJsonDataEntryTabs(final String adLanguage, final List<DataEntryTab> layout, final TableRecordReference recordReference)
 	{
 		final ImmutableList.Builder<JsonDataEntryTab> tabs = ImmutableList.builder();
 		for (final DataEntryTab layoutTab : layout)
 		{
-			final ImmutableList<JsonDataEntrySubTab> subTabs = getJsonDataEntrySubTabs(adLanguage, layoutTab, bpartnerId);
+			final ImmutableList<JsonDataEntrySubTab> subTabs = getJsonDataEntrySubTabs(adLanguage, layoutTab, recordReference);
 
 			final JsonDataEntryTab tab = JsonDataEntryTab.builder()
 					.id(layoutTab.getId())
@@ -158,12 +169,12 @@ public class DataEntryRestController
 		return tabs.build();
 	}
 
-	@NonNull private ImmutableList<JsonDataEntrySubTab> getJsonDataEntrySubTabs(final String adLanguage, final DataEntryTab layoutTab, final BPartnerId bpartnerId)
+	@NonNull private ImmutableList<JsonDataEntrySubTab> getJsonDataEntrySubTabs(final String adLanguage, final DataEntryTab layoutTab, final TableRecordReference recordReference)
 	{
 		final ImmutableList.Builder<JsonDataEntrySubTab> subTabs = ImmutableList.builder();
 		for (final DataEntrySubTab layoutSubTab : layoutTab.getDataEntrySubTabs())
 		{
-			final ImmutableList<JsonDataEntrySection> sections = getJsonDataEntrySections(adLanguage, layoutSubTab, bpartnerId);
+			final ImmutableList<JsonDataEntrySection> sections = getJsonDataEntrySections(adLanguage, layoutSubTab, recordReference);
 
 			final JsonDataEntrySubTab subTab = JsonDataEntrySubTab.builder()
 					.id(layoutSubTab.getId())
@@ -176,10 +187,10 @@ public class DataEntryRestController
 		return subTabs.build();
 	}
 
-	@NonNull private ImmutableList<JsonDataEntrySection> getJsonDataEntrySections(final String adLanguage, final DataEntrySubTab layoutSubTab, final BPartnerId bpartnerId)
+	@NonNull
+	private ImmutableList<JsonDataEntrySection> getJsonDataEntrySections(final String adLanguage, final DataEntrySubTab layoutSubTab, final TableRecordReference recordReference)
 	{
-		final TableRecordReference bpartnerRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartnerId);
-		final DataEntryRecord record = getDataEntryRecordForSubTab(bpartnerRef, layoutSubTab);
+		final DataEntryRecord record = getDataEntryRecordForSubTab(recordReference, layoutSubTab);
 
 		final ImmutableList.Builder<JsonDataEntrySection> sections = ImmutableList.builder();
 		for (final DataEntrySection layoutSection : layoutSubTab.getDataEntrySections())
@@ -253,5 +264,13 @@ public class DataEntryRestController
 						.build())
 				.collect(GuavaCollectors.toImmutableList());
 	}
+
+	@lombok.Value
+	private static class TableRecordReferenceLanguagePair
+	{
+		TableRecordReference recordReference;
+		String adLanguage;
+	}
+
 }
 
