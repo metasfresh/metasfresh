@@ -111,9 +111,9 @@ public class DataEntryTabLoader
 		for (final DataEntryTab dataEntryTab : dataEntryTabs)
 		{
 			final ImmutableList<DocumentLayoutDetailDescriptor> //
-			groupLayoutDescriptors = createTabLayoutDescriptors(windowId, dataEntryTab);
+			tabLayoutDescriptors = createTabLayoutDescriptors(windowId, dataEntryTab);
 
-			result.addAll(groupLayoutDescriptors);
+			result.addAll(tabLayoutDescriptors);
 		}
 		return result.build();
 	}
@@ -122,13 +122,13 @@ public class DataEntryTabLoader
 			@NonNull final WindowId windowId,
 			@NonNull final DataEntryTab dataEntryTab)
 	{
-		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> subGroupLayoutDescriptors = ImmutableList.builder();
+		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> subTabLayoutDescriptors = ImmutableList.builder();
 		for (final DataEntrySubTab dataEntrySubTab : dataEntryTab.getDataEntrySubTabs())
 		{
 			final DocumentLayoutDetailDescriptor //
-			subGroupLayoutDescriptor = createSubTabLayoutDescriptor(windowId, dataEntrySubTab);
+			subTabLayoutDescriptor = createSubTabLayoutDescriptor(windowId, dataEntrySubTab);
 
-			subGroupLayoutDescriptors.add(subGroupLayoutDescriptor);
+			subTabLayoutDescriptors.add(subTabLayoutDescriptor);
 		}
 
 		final DocumentLayoutDetailDescriptor.Builder builder = DocumentLayoutDetailDescriptor
@@ -138,7 +138,7 @@ public class DataEntryTabLoader
 				.internalName(dataEntryTab.getInternalName())
 				.queryOnActivate(true)
 				.supportQuickInput(false)
-				.addAllSubTabLayouts(subGroupLayoutDescriptors.build());
+				.addAllSubTabLayouts(subTabLayoutDescriptors.build());
 
 		return ImmutableList.of(builder.build());
 	}
@@ -147,10 +147,10 @@ public class DataEntryTabLoader
 			@NonNull final WindowId windowId,
 			@NonNull final DataEntrySubTab dataEntrySubTab)
 	{
-		final DetailId subgroupDetailId = createDetailIdFor(dataEntrySubTab);
+		final DetailId subtabDetailId = createDetailIdFor(dataEntrySubTab);
 
-		final DocumentLayoutDetailDescriptor.Builder subGroupDescriptor = DocumentLayoutDetailDescriptor
-				.builder(windowId, subgroupDetailId)
+		final DocumentLayoutDetailDescriptor.Builder subTabDescriptor = DocumentLayoutDetailDescriptor
+				.builder(windowId, subtabDetailId)
 				.caption(dataEntrySubTab.getCaption())
 				.description(dataEntrySubTab.getDescription())
 				.internalName(dataEntrySubTab.getInternalName())
@@ -167,10 +167,10 @@ public class DataEntryTabLoader
 			singleRowLayoutBuilder.addSection(section);
 		}
 
-		subGroupDescriptor.singleRowDetailLayout(true);
-		subGroupDescriptor.singleRowLayout(singleRowLayoutBuilder);
+		subTabDescriptor.singleRowDetailLayout(true);
+		subTabDescriptor.singleRowLayout(singleRowLayoutBuilder);
 
-		return subGroupDescriptor.build();
+		return subTabDescriptor.build();
 	}
 
 	private DocumentLayoutSectionDescriptor.Builder createLayoutSection(
@@ -193,9 +193,9 @@ public class DataEntryTabLoader
 				.setCaptionMode(CaptionMode.DISPLAY);
 
 		final ImmutableList<DocumentLayoutElementTabDescriptor.Builder> //
-		elementGroups = createLayoutElemementTab(dataEntrySection);
+		elementTabs = createLayoutElemementTab(dataEntrySection);
 
-		column.addElementTabs(elementGroups);
+		column.addElementTabs(elementTabs);
 
 		return layoutSection;
 	}
@@ -207,22 +207,22 @@ public class DataEntryTabLoader
 				.map(Collection::size)
 				.max(Comparator.naturalOrder()).orElse(0);
 
-		final ImmutableList.Builder<DocumentLayoutElementTabDescriptor.Builder> elementGroups = ImmutableList.builder();
+		final ImmutableList.Builder<DocumentLayoutElementTabDescriptor.Builder> elementTabs = ImmutableList.builder();
 
 		final List<DataEntryLine> dataEntryLines = dataEntrySection.getDataEntryLines();
 		for (final DataEntryLine dataEntryLine : dataEntryLines)
 		{
-			final DocumentLayoutElementTabDescriptor.Builder elementGroup = DocumentLayoutElementTabDescriptor
+			final DocumentLayoutElementTabDescriptor.Builder elementTab = DocumentLayoutElementTabDescriptor
 					.builder()
 					.setColumnCount(columnCount);
 
 			final ImmutableList<DocumentLayoutElementLineDescriptor.Builder> elementLines = createLayoutElemementLine(dataEntryLine, columnCount);
-			elementGroup.addElementLines(elementLines);
+			elementTab.addElementLines(elementLines);
 
-			elementGroups.add(elementGroup);
+			elementTabs.add(elementTab);
 		}
 
-		return elementGroups.build();
+		return elementTabs.build();
 	}
 
 	private ImmutableList<DocumentLayoutElementLineDescriptor.Builder> createLayoutElemementLine(
@@ -307,19 +307,19 @@ public class DataEntryTabLoader
 		final ImmutableList.Builder<DocumentEntityDescriptor> result = ImmutableList.builder();
 		for (final DataEntryTab dataEntryTab : dataEntryTabs)
 		{
-			final ImmutableList<DocumentEntityDescriptor> groupEntityDescriptors = createTabEntityDescriptors(dataEntryTab);
-			result.addAll(groupEntityDescriptors);
+			final ImmutableList<DocumentEntityDescriptor> tabEntityDescriptors = createTabEntityDescriptors(dataEntryTab);
+			result.addAll(tabEntityDescriptors);
 		}
 		return result.build();
 	}
 
 	private ImmutableList<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final DataEntryTab dataEntryTab)
 	{
-		final ImmutableList.Builder<DocumentEntityDescriptor> subGroupEntityDescriptors = ImmutableList.builder();
+		final ImmutableList.Builder<DocumentEntityDescriptor> subTabEntityDescriptors = ImmutableList.builder();
 		for (final DataEntrySubTab dataEntrySubTab : dataEntryTab.getDataEntrySubTabs())
 		{
-			final DocumentEntityDescriptor subGroupEntityDescriptor = createSubTabEntityDescriptor(dataEntrySubTab, dataEntryTab.getDocumentLinkColumnName());
-			subGroupEntityDescriptors.add(subGroupEntityDescriptor);
+			final DocumentEntityDescriptor subTabEntityDescriptor = createSubTabEntityDescriptor(dataEntrySubTab, dataEntryTab.getDocumentLinkColumnName());
+			subTabEntityDescriptors.add(subTabEntityDescriptor);
 		}
 
 		final DataEntryTabBindingDescriptorBuilder dataEntryDocumentBinding = new DataEntryTabBindingDescriptorBuilder();
@@ -336,11 +336,11 @@ public class DataEntryTabLoader
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 
-				// this is just a "grouping" tab with no data(-records) of its own
+				// this is just a "tabing" tab with no data(-records) of its own
 				.setAllowCreateNewLogic(ConstantLogicExpression.FALSE)
 				.setAllowDeleteLogic(ConstantLogicExpression.FALSE)
 
-				.addAllIncludedEntities(subGroupEntityDescriptors.build())
+				.addAllIncludedEntities(subTabEntityDescriptors.build())
 
 				.setDataBinding(dataEntryDocumentBinding)
 				.build();

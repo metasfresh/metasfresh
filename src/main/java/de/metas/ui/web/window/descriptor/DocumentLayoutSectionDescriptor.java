@@ -167,7 +167,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 
 		private boolean checkValid(final DocumentLayoutColumnDescriptor column)
 		{
-			if (!column.hasElementGroups())
+			if (!column.hasElementTabs())
 			{
 				logger.trace("Skip adding {} to {} because it does not have elements groups", column, this);
 				return false;
@@ -213,7 +213,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 					.map(elementBuilder -> DocumentLayoutElementLineDescriptor.builder().addElement(elementBuilder))
 					.forEach(elementLineBuilder -> elementsGroupBuilder.addElementLine(elementLineBuilder));
 
-			final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor.builder().addElementGroup(elementsGroupBuilder);
+			final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor.builder().addElementTab(elementsGroupBuilder);
 
 			addColumn(column);
 			return this;

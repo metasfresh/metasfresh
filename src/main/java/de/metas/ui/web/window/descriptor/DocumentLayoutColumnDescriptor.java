@@ -43,12 +43,12 @@ public class DocumentLayoutColumnDescriptor
 	}
 
 	private final String internalName;
-	private final List<DocumentLayoutElementTabDescriptor> elementGroups;
+	private final List<DocumentLayoutElementTabDescriptor> elementTabs;
 
 	private DocumentLayoutColumnDescriptor(final Builder builder)
 	{
 		internalName = builder.internalName;
-		elementGroups = ImmutableList.copyOf(builder.buildElementTabs());
+		elementTabs = ImmutableList.copyOf(builder.buildElementTabs());
 	}
 
 	@Override
@@ -57,18 +57,18 @@ public class DocumentLayoutColumnDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("internalName", internalName)
-				.add("elementGroups", elementGroups.isEmpty() ? null : elementGroups)
+				.add("elementTabs", elementTabs.isEmpty() ? null : elementTabs)
 				.toString();
 	}
 
-	public List<DocumentLayoutElementTabDescriptor> getElementGroups()
+	public List<DocumentLayoutElementTabDescriptor> getElementTabs()
 	{
-		return elementGroups;
+		return elementTabs;
 	}
 
-	public boolean hasElementGroups()
+	public boolean hasElementTabs()
 	{
-		return !elementGroups.isEmpty();
+		return !elementTabs.isEmpty();
 	}
 
 	public static final class Builder
@@ -88,7 +88,7 @@ public class DocumentLayoutColumnDescriptor
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("internalName", internalName)
-					.add("elementGroups-count", elementTabsBuilders.size())
+					.add("elementTabs-count", elementTabsBuilders.size())
 					.toString();
 		}
 
@@ -104,16 +104,16 @@ public class DocumentLayoutColumnDescriptor
 		{
 			return elementTabsBuilders
 					.stream()
-					.map(elementGroupBuilder -> elementGroupBuilder.build())
-					.filter(elementGroup -> checkValid(elementGroup))
+					.map(elementTabBuilder -> elementTabBuilder.build())
+					.filter(elementTab -> checkValid(elementTab))
 					.collect(GuavaCollectors.toImmutableList());
 		}
 
-		private boolean checkValid(final DocumentLayoutElementTabDescriptor elementGroup)
+		private boolean checkValid(final DocumentLayoutElementTabDescriptor elementTab)
 		{
-			if(!elementGroup.hasElementLines())
+			if(!elementTab.hasElementLines())
 			{
-				logger.trace("Skip adding {} to {} because it does not have element line", elementGroup, this);
+				logger.trace("Skip adding {} to {} because it does not have element line", elementTab, this);
 				return false;
 			}
 
@@ -126,15 +126,15 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 
-		public Builder addElementTabs(@NonNull final List<DocumentLayoutElementTabDescriptor.Builder> elementGroupBuilders)
+		public Builder addElementTabs(@NonNull final List<DocumentLayoutElementTabDescriptor.Builder> elementTabBuilders)
 		{
-			elementTabsBuilders.addAll(elementGroupBuilders);
+			elementTabsBuilders.addAll(elementTabBuilders);
 			return this;
 		}
 
-		public Builder addElementGroup(@NonNull final DocumentLayoutElementTabDescriptor.Builder elementGroupBuilder)
+		public Builder addElementTab(@NonNull final DocumentLayoutElementTabDescriptor.Builder elementTabBuilder)
 		{
-			elementTabsBuilders.add(elementGroupBuilder);
+			elementTabsBuilders.add(elementTabBuilder);
 			return this;
 		}
 

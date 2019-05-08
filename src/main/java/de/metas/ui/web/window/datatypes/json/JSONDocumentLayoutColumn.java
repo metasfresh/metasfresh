@@ -56,36 +56,36 @@ public final class JSONDocumentLayoutColumn implements Serializable
 
 	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
 
-	@JsonProperty("elementGroups")
+	@JsonProperty("elementTabs")
 	@JsonInclude(Include.NON_EMPTY)
-	private final List<JSONDocumentLayoutElementGroup> elementGroups;
+	private final List<JSONDocumentLayoutElementGroup> elementTabs;
 
 	private JSONDocumentLayoutColumn()
 	{
-		this.elementGroups = ImmutableList.of();
+		this.elementTabs = ImmutableList.of();
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutColumn(@Nullable @JsonProperty("elementGroups") final List<JSONDocumentLayoutElementGroup> elementGroups)
+	private JSONDocumentLayoutColumn(@Nullable @JsonProperty("elementTabs") final List<JSONDocumentLayoutElementGroup> elementTabs)
 	{
-		this.elementGroups = elementGroups == null ? ImmutableList.of() : ImmutableList.copyOf(elementGroups);
+		this.elementTabs = elementTabs == null ? ImmutableList.of() : ImmutableList.copyOf(elementTabs);
 	}
 
 	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
 	{
-		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
+		elementTabs = JSONDocumentLayoutElementGroup.ofList(column.getElementTabs(), jsonOpts);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("elementGroups", elementGroups)
+				.add("elementTabs", elementTabs)
 				.toString();
 	}
 
-	public List<JSONDocumentLayoutElementGroup> getElementGroups()
+	public List<JSONDocumentLayoutElementGroup> getElementTabs()
 	{
-		return elementGroups;
+		return elementTabs;
 	}
 }
