@@ -5268,6 +5268,21 @@ CREATE INDEX m_securpharm_productdata_result_hu
 UPDATE M_AttributeSet mas SET IsInstanceAttribute='Y' WHERE IsInstanceAttribute='N' AND EXISTS (SELECT * FROM M_AttributeUse mau WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID AND mau.M_Attribute_ID=540040)
 ;
 
+-- 2019-04-24T17:30:28.217
+-- URL zum Konzept
+INSERT INTO M_Attribute (CreatedBy,Created,IsActive,Updated,UpdatedBy,M_Attribute_ID,IsMandatory,AD_Client_ID,IsStorageRelevant,IsReadOnlyValues,IsTransferWhenNull,IsPricingRelevant,IsAttrDocumentRelevant,ValueMax,ValueMin,IsInstanceAttribute,AttributeValueType,Value,AD_Org_ID,IsHighVolume,Description,Name) VALUES (100,TO_TIMESTAMP('2019-04-24 17:30:27','YYYY-MM-DD HH24:MI:SS'),'Y',TO_TIMESTAMP('2019-04-24 17:30:27','YYYY-MM-DD HH24:MI:SS'),100,540040,'N',0,'N','Y','N','N','N',0,0,'N','L','HU_scanned',0,'N','Zeigt an ob die Datamatrix einer HU gescannt wurde','Gescannt')
+;
+
+-- 2019-04-24T17:41:29.367
+-- URL zum Konzept
+UPDATE M_Attribute SET Value='HU_Scanned',Updated=TO_TIMESTAMP('2019-04-24 17:41:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540040
+;
+
+-- 2019-04-24T17:42:23.806
+-- URL zum Konzept
+UPDATE M_Attribute SET IsInstanceAttribute='Y',Updated=TO_TIMESTAMP('2019-04-24 17:42:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540040
+;
+
 INSERT INTO public.m_attributevalue VALUES (540000, 0, 0, 'Y', '2018-09-11 10:29:42+03', 100, '2019-04-24 17:50:31+03', 100, 540040, 'Y', 'Ja', NULL, NULL, 'N')
 ;
 
