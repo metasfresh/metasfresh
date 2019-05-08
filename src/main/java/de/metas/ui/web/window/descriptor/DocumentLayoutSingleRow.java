@@ -102,8 +102,8 @@ public class DocumentLayoutSingleRow
 		{
 			elements = sections.stream()
 					.flatMap(section -> section.getColumns().stream())
-					.flatMap(column -> column.getElementTabs().stream())
-					.flatMap(elementTab -> elementTab.getElementLines().stream())
+					.flatMap(column -> column.getElementGroups().stream())
+					.flatMap(elementGroup -> elementGroup.getElementLines().stream())
 					.flatMap(elementLine -> elementLine.getElements().stream())
 					.collect(ImmutableList.toImmutableList());
 		}

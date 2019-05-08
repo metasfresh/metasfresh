@@ -320,7 +320,7 @@ public class LayoutFactory
 			{
 				continue;
 			}
-			layoutColumnBuilder.addElementTab(layoutElementGroupBuilder);
+			layoutColumnBuilder.addElementGroup(layoutElementGroupBuilder);
 		}
 
 		return layoutColumnBuilder;
