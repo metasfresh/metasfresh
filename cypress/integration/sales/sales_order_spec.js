@@ -127,9 +127,6 @@ describe('New sales order test', function() {
       cy.get('.quick-input-container .form-group').should('exist');
       cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
 
-      // as is is right now, the snapshots is a bit flacky; kuba is going to deal with the problem
-      // cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
-
       // enter just the timestamp which is also part of the product name
       cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
 
