@@ -27,6 +27,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.vertical.pharma.securpharm.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.model.*;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 import org.adempiere.user.UserId;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +52,9 @@ public class SecurPharmServiceTest
 
 	@Mock
 	private SecurPharmResultService resultService;
+
+	@Mock
+	private SecurPharmConfigRespository configRespository;
 
 	@Mock
 	private SecurPharmClient client;
