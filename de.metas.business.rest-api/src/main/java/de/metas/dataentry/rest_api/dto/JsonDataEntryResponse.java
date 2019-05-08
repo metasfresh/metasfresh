@@ -22,23 +22,23 @@ package de.metas.dataentry.rest_api.dto;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.List;
-
 @Builder
 @Value
-public class JsonDataEntry
+public class JsonDataEntryResponse
 {
-	@JsonProperty("tabs")
-	List<JsonDataEntryTab> tabs;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonProperty("result")
+	JsonDataEntry result;
 
-	@JsonIgnore
-	public boolean isEmpty()
-	{
-		return tabs.isEmpty();
-	}
+	@JsonProperty("status")
+	int status;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonProperty("error")
+	String error;
 }

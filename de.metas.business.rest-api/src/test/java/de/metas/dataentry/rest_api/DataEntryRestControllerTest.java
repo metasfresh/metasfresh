@@ -12,7 +12,7 @@ import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
-import de.metas.dataentry.rest_api.dto.JsonDataEntry;
+import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -66,7 +67,7 @@ class DataEntryRestControllerTest
 
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
-		final JsonDataEntry g0002 = dataEntryRestController.getByRecordId(BPARTNER_WINDOW_ID, bPartner.getC_BPartner_ID());
+		final JsonDataEntryResponse g0002 = dataEntryRestController.getByRecordId(BPARTNER_WINDOW_ID, bPartner.getC_BPartner_ID()).getBody();
 		expect(g0002).toMatchSnapshot();
 	}
 
@@ -77,8 +78,11 @@ class DataEntryRestControllerTest
 
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
-		final JsonDataEntry shouldBeEmpty = dataEntryRestController.getByRecordId(55555, bPartner.getC_BPartner_ID());
-		assertThat(shouldBeEmpty.getTabs()).isEmpty();
+		final int inexistentWindowId = 55555;
+		final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId(inexistentWindowId, bPartner.getC_BPartner_ID()).getBody();
+		System.out.println(shouldBeEmpty);
+		assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId));
 		expect(shouldBeEmpty).toMatchSnapshot();
 	}
 
