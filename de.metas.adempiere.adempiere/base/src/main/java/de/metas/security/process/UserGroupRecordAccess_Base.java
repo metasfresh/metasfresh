@@ -1,7 +1,13 @@
 package de.metas.security.process;
 
+import java.util.List;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -11,9 +17,11 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
+import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
 import de.metas.security.permissions.record_access.RecordAccessService;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -25,21 +33,24 @@ import de.metas.user.UserId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessPrecondition
+abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProcessPrecondition
 {
 	private final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
+
+	@Param(parameterName = "PrincipalType", mandatory = true)
+	private String principalTypeCode;
 
 	@Param(parameterName = "AD_User_ID", mandatory = false)
 	private UserId userId;
@@ -47,11 +58,12 @@ public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessP
 	@Param(parameterName = "AD_UserGroup_ID", mandatory = false)
 	private UserGroupId userGroupId;
 
-	@Param(parameterName = "Access", mandatory = true)
+	private static final String PARAM_PermissionCode = "Access";
+	@Param(parameterName = PARAM_PermissionCode, mandatory = false)
 	private String permissionCode;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public final ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
@@ -61,16 +73,37 @@ public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessP
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@Override
-	protected String doIt()
+	protected final void grantAccessToRecord()
 	{
 		userGroupRecordAccessService.grantAccess(RecordAccessGrantRequest.builder()
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
-				.permission(getPermissionToGrant())
+				.permission(getPermission())
 				.build());
+	}
 
-		return MSG_OK;
+	protected final void revokeAccessFromRecord()
+	{
+		final boolean revokeAllPermissions;
+		final List<Access> permissionsToRevoke;
+		final Access permission = getPermissionOrNull();
+		if (permission == null)
+		{
+			revokeAllPermissions = true;
+			permissionsToRevoke = ImmutableList.of();
+		}
+		else
+		{
+			revokeAllPermissions = false;
+			permissionsToRevoke = ImmutableList.of(permission);
+		}
+
+		userGroupRecordAccessService.revokeAccess(RecordAccessRevokeRequest.builder()
+				.recordRef(getRecordRef())
+				.principal(getPrincipal())
+				.revokeAllPermissions(revokeAllPermissions)
+				.permissions(permissionsToRevoke)
+				.build());
 	}
 
 	private TableRecordReference getRecordRef()
@@ -80,15 +113,40 @@ public class GrantUserGroupRecordAccess extends JavaProcess implements IProcessP
 
 	private Principal getPrincipal()
 	{
-		return Principal.builder()
-				.userId(userId)
-				.userGroupId(userGroupId)
-				.build();
+		final PrincipalType principalType = PrincipalType.ofCode(principalTypeCode);
+		if (PrincipalType.USER.equals(principalType))
+		{
+			return Principal.userId(userId);
+		}
+		else if (PrincipalType.USER_GROUP.equals(principalType))
+		{
+			return Principal.userGroupId(userGroupId);
+		}
+		else
+		{
+			throw new AdempiereException("@Unknown@ @PrincipalType@: " + principalType);
+		}
 	}
 
-	private Access getPermissionToGrant()
+	private Access getPermission()
 	{
-		return Access.ofCode(permissionCode);
+		final Access permission = getPermissionOrNull();
+		if (permission == null)
+		{
+			throw new FillMandatoryException(PARAM_PermissionCode);
+		}
+		return permission;
 	}
 
+	private Access getPermissionOrNull()
+	{
+		if (Check.isEmpty(permissionCode))
+		{
+			return null;
+		}
+		else
+		{
+			return Access.ofCode(permissionCode);
+		}
+	}
 }

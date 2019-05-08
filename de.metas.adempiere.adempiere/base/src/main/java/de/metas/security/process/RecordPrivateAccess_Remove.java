@@ -1,19 +1,5 @@
 package de.metas.security.process;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.Principal;
-import de.metas.security.requests.RemoveRecordPrivateAccessRequest;
-import de.metas.user.UserGroupId;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,48 +22,13 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class RecordPrivateAccess_Remove extends JavaProcess implements IProcessPrecondition
+public class RecordPrivateAccess_Remove extends RecordPrivateAccess_Base
 {
-	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
-
-	@Param(parameterName = "AD_User_ID", mandatory = false)
-	private UserId userId;
-
-	@Param(parameterName = "AD_UserGroup_ID", mandatory = false)
-	private UserGroupId userGroupId;
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
-	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
 	@Override
 	protected String doIt()
 	{
-		userRolePermissionsRepo.deletePrivateAccess(RemoveRecordPrivateAccessRequest.builder()
-				.recordRef(getRecordRef())
-				.principal(getPrincipal())
-				.build());
-
+		removeFromPrivateAccess();
 		return MSG_OK;
 	}
 
-	private TableRecordReference getRecordRef()
-	{
-		return TableRecordReference.of(getTableName(), getRecord_ID());
-	}
-
-	private Principal getPrincipal()
-	{
-		return Principal.builder()
-				.userId(userId)
-				.userGroupId(userGroupId)
-				.build();
-	}
 }

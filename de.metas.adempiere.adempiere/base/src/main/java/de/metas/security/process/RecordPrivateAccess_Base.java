@@ -1,24 +1,20 @@
 package de.metas.security.process;
 
-import java.util.Set;
-
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Principal;
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
-import de.metas.security.permissions.record_access.RecordAccessService;
+import de.metas.security.requests.CreateRecordPrivateAccessRequest;
+import de.metas.security.requests.RemoveRecordPrivateAccessRequest;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -42,9 +38,12 @@ import de.metas.util.Check;
  * #L%
  */
 
-public class RevokeUserGroupRecordAccess extends JavaProcess implements IProcessPrecondition
+abstract class RecordPrivateAccess_Base extends JavaProcess implements IProcessPrecondition
 {
-	private final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
+	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
+
+	@Param(parameterName = "PrincipalType", mandatory = true)
+	private String principalTypeCode;
 
 	@Param(parameterName = "AD_User_ID", mandatory = false)
 	private UserId userId;
@@ -52,11 +51,8 @@ public class RevokeUserGroupRecordAccess extends JavaProcess implements IProcess
 	@Param(parameterName = "AD_UserGroup_ID", mandatory = false)
 	private UserGroupId userGroupId;
 
-	@Param(parameterName = "Access", mandatory = false)
-	private String permissionCode;
-
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public final ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
@@ -66,17 +62,20 @@ public class RevokeUserGroupRecordAccess extends JavaProcess implements IProcess
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@Override
-	protected String doIt()
+	protected final void addToPrivateAccess()
 	{
-		userGroupRecordAccessService.revokeAccess(RecordAccessRevokeRequest.builder()
+		userRolePermissionsRepo.createPrivateAccess(CreateRecordPrivateAccessRequest.builder()
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
-				.revokeAllPermissions(isRevokeAllPermissions())
-				.permissions(getPermissionsToRevoke())
 				.build());
+	}
 
-		return MSG_OK;
+	protected final void removeFromPrivateAccess()
+	{
+		userRolePermissionsRepo.deletePrivateAccess(RemoveRecordPrivateAccessRequest.builder()
+				.recordRef(getRecordRef())
+				.principal(getPrincipal())
+				.build());
 	}
 
 	private TableRecordReference getRecordRef()
@@ -86,26 +85,19 @@ public class RevokeUserGroupRecordAccess extends JavaProcess implements IProcess
 
 	private Principal getPrincipal()
 	{
-		return Principal.builder()
-				.userId(userId)
-				.userGroupId(userGroupId)
-				.build();
-	}
-
-	private boolean isRevokeAllPermissions()
-	{
-		return Check.isEmpty(permissionCode, true);
-	}
-
-	private Set<Access> getPermissionsToRevoke()
-	{
-		if (Check.isEmpty(permissionCode, true))
+		final PrincipalType principalType = PrincipalType.ofCode(principalTypeCode);
+		if (PrincipalType.USER.equals(principalType))
 		{
-			return ImmutableSet.of();
+			return Principal.userId(userId);
+		}
+		else if (PrincipalType.USER_GROUP.equals(principalType))
+		{
+			return Principal.userGroupId(userGroupId);
 		}
 		else
 		{
-			return ImmutableSet.of(Access.ofCode(permissionCode));
+			throw new AdempiereException("@Unknown@ @PrincipalType@: " + principalType);
 		}
 	}
+
 }

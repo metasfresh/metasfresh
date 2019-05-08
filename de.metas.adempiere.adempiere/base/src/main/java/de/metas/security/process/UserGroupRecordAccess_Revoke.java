@@ -22,12 +22,12 @@ package de.metas.security.process;
  * #L%
  */
 
-public class RecordPrivateAccess_Add extends RecordPrivateAccess_Base
+public class UserGroupRecordAccess_Revoke extends UserGroupRecordAccess_Base
 {
 	@Override
 	protected String doIt()
 	{
-		addToPrivateAccess();
+		revokeAccessFromRecord();
 		return MSG_OK;
 	}
 }

@@ -40,10 +40,10 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsEventBus;
-import de.metas.security.process.GrantUserGroupRecordAccess;
+import de.metas.security.process.UserGroupRecordAccess_Grant;
 import de.metas.security.process.RecordPrivateAccess_Add;
 import de.metas.security.process.RecordPrivateAccess_Remove;
-import de.metas.security.process.RevokeUserGroupRecordAccess;
+import de.metas.security.process.UserGroupRecordAccess_Revoke;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -91,8 +91,8 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 	{
 		UserRolePermissionsEventBus.install();
 
-		registerProcessNoFail(GrantUserGroupRecordAccess.class);
-		registerProcessNoFail(RevokeUserGroupRecordAccess.class);
+		registerProcessNoFail(UserGroupRecordAccess_Grant.class);
+		registerProcessNoFail(UserGroupRecordAccess_Revoke.class);
 
 		registerProcessNoFail(RecordPrivateAccess_Add.class);
 		registerProcessNoFail(RecordPrivateAccess_Remove.class);
