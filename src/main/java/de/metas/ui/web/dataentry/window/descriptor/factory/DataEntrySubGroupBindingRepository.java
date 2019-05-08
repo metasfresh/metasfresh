@@ -116,7 +116,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
-		final DataEntryRecordQuery dataEntryRecordQuery = new DataEntryRecordQuery(dataEntrySubTabId, parentRecordReference);
+		final DataEntryRecordQuery dataEntryRecordQuery = DataEntryRecordQuery.of(dataEntrySubTabId, parentRecordReference.getRecord_ID());
 
 		final Optional<DataEntryRecord> dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordQuery);
 		if (!dataEntryRecord.isPresent())
@@ -210,7 +210,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final Document parentDocument = document.getParentDocument();
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
-		return new DataEntryRecordQuery(subGroupId, parentRecordReference);
+		return DataEntryRecordQuery.of(subGroupId, parentRecordReference.getRecord_ID());
 	}
 
 	private void refreshFromDataEntryRecord(
