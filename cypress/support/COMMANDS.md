@@ -7,6 +7,11 @@
 - active: query for active element
 - waitForHeader: wait for breadcrumb in header
 - visitWindow: visit metasfresh and wait for layout
+- addNotification: adds a new notification to the list
+- newNotification: creates fresh notification list with 1 element
+- getDOMNotificationsNumber: gets the number of notifications in the
+  DOM counter element
+- getNotificationsInbox: gets app notifications inbox
 - waitForFieldValue: wait for field data from request
 
 ** Navigation (navigation.js)
