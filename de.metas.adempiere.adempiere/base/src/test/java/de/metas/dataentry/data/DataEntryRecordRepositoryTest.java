@@ -140,7 +140,7 @@ public class DataEntryRecordRepositoryTest
 		record.setDataEntry_RecordData(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON);
 		saveRecord(record);
 
-		final DataEntryRecordQuery query = new DataEntryRecordQuery(dataEntrySubTabId, tableRecordReference);
+		final DataEntryRecordQuery query = DataEntryRecordQuery.of(dataEntrySubTabId, tableRecordReference.getRecord_ID());
 
 		// invoke the method under test
 		final Optional<DataEntryRecord> result = dataEntryRecordRepository.getBy(query);

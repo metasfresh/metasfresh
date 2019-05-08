@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
@@ -53,14 +52,12 @@ public class DataEntryRecordRepository
 		this.jsonDataEntryRecordMapper = jsonDataEntryRecordMapper;
 	}
 
-	@Value
+	@Value(staticConstructor = "of")
 	public static final class DataEntryRecordQuery
 	{
-		@NonNull
-		final DataEntrySubTabId dataEntrySubTabId;
+		@NonNull final DataEntrySubTabId dataEntrySubTabId;
 
-		@NonNull
-		final ITableRecordReference tableRecordReference;
+		final int recordId;
 	}
 
 	public Optional<DataEntryRecord> getBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
@@ -133,21 +130,18 @@ public class DataEntryRecordRepository
 		query.delete();
 	}
 
-
+	@SuppressWarnings("UnnecessaryLocalVariable")
 	private IQuery<I_DataEntry_Record> createQuery(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
 	{
 		final DataEntrySubTabId dataEntrySubTabId = dataEntryRecordQuery.getDataEntrySubTabId();
-		final ITableRecordReference tableRecordReference = dataEntryRecordQuery.getTableRecordReference();
-
-		final int adTableId = tableRecordReference.getAD_Table_ID();
-		final int recordId = tableRecordReference.getRecord_ID();
+		final int recordId = dataEntryRecordQuery.getRecordId();
 
 		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Record.class)
 				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubTabId)
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
+				.orderBy(I_DataEntry_Record.COLUMNNAME_Updated)
 				.create();
 		return query;
 	}
