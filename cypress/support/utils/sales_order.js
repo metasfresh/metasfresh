@@ -39,7 +39,7 @@ function applySalesOrder(salesOrder) {
       'C_BPartner_Location_ID',
       salesOrder.bPartnerLocation,
       salesOrder.bPartnerLocation,
-      true
+      true /*typeList*/
     );
 
     cy.get('.header-breadcrumb-sitename').should('not.contain', '<');

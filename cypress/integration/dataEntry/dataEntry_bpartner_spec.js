@@ -3,11 +3,6 @@ import { DataEntrySection, DataEntryLine } from '../../support/utils/dataEntrySe
 import { DataEntryField, DataEntryListValue } from '../../support/utils/dataEntryField';
 
 describe('Create bpartner with custom dataentry based tabs', function() {
-  before(function() {
-    // login before each test and open the flatrate conditions window
-    cy.loginByForm();
-  });
-
   it('Create bpartner with custom dataentry based tabs', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const dataEntryGroupName = `Group1 ${timestamp}`;
@@ -120,6 +115,12 @@ describe('Create bpartner with custom dataentry based tabs', function() {
     cy.get(`@${dataEntrySubGroup1Name}`).then(dataEntrySubGroup => {
       cy.log(`going to open the tab for dataEntrySubGroup=${JSON.stringify(dataEntrySubGroup)}`);
       cy.selectTab(`DataEntry_SubGroup_ID-${dataEntrySubGroup.documentId}`);
+    });
+
+    // deactivate the custom tab, because we don't want other tests to unexpectedly have it among their respective bpartner-tabs
+    cy.get(`@${dataEntryGroupName}`).then(dataEntryGroup => {
+      cy.visitWindow('540571', dataEntryGroup.documentId);
+      cy.clickOnIsActive();
     });
   });
 });

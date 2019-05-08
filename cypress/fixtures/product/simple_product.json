@@ -2,16 +2,18 @@
     "name": "ProductName",
     "description": "TestProduct1",
     "value": "TestProduct1",
-    "m_product_category_id": "06_Kartoffeln",
+    "m_product_category": "06_Kartoffeln",
+    "c_uom": "Each",
     "isStocked": true,
     "isPurchased": true,
     "isSold": true,
     "isDiverse": false,
+    "productType": "Item",
     "prices": [
       {
         "priceStd": "2.00",
-        "m_pricelist_version_id": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
-        "c_taxcategory_id": "Reduzierter Satz Waren/ DL"
+        "m_pricelist_version": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
+        "c_taxcategory": "Normaler Steuersatz 19% (Deutschland)"
       }
     ]
   }

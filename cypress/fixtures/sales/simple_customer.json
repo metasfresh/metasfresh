@@ -1,0 +1,20 @@
+{
+  "name": "Simple Customer",
+  "isVendor": false,
+  "isCustomer": true,
+  "customerPricingSystem": "Testpreisliste Kunden",
+  "bPartnerLocations": [
+    {
+      "name": "Address1",
+      "city": "Cologne",
+      "country": "Deutschland"
+    }
+  ],
+  "contacts": [
+    {
+      "isDefaultContact": true,
+      "firstName": "Default",
+      "lastName": "Contact"
+    }
+  ]
+}

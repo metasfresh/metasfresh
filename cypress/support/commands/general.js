@@ -214,7 +214,7 @@ function visitTableWindow(windowId) {
 function visitDetailWindow(windowId, recordId, documentIdAliasName) {
   cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
-  cy.route('GET', `/rest/api/window/${windowId}/layout`).as(layoutAliasName);
+  cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
   const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
   cy.visit(`/window/${windowId}/${recordId}`)

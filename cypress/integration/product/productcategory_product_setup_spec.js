@@ -21,7 +21,7 @@ describe('Create Product Masterdata for Automatic End2End Tests with cypress htt
     });
   });
 
-  it('Create a new Product & Price', function() {
+  it('Create Product & Price; edit document note', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
@@ -29,5 +29,9 @@ describe('Create Product Masterdata for Automatic End2End Tests with cypress htt
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .apply();
     });
+
+    cy.openAdvancedEdit();
+    cy.writeIntoTextField('DocumentNote', '{selectall}{backspace}blah-blah-blah');
+    cy.pressDoneButton();
   });
 });

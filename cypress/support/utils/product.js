@@ -41,15 +41,21 @@ export class Product {
     return this;
   }
 
-  setProductType(c_uom_id) {
-    cy.log(`Product - set UOM = ${c_uom_id}`);
-    this.c_uom_id = c_uom_id;
+  setProductCategory(m_product_category) {
+    cy.log(`Product - set productCategory = ${m_product_category}`);
+    this.m_product_category = m_product_category;
     return this;
   }
 
-  setProductCategory(m_product_category_id) {
-    cy.log(`Product - set Product Category = ${m_product_category_id}`);
-    this.m_product_category_id = m_product_category_id;
+  setProductType(productType) {
+    cy.log(`Product - set productType = ${productType}`);
+    this.productType = productType;
+    return this;
+  }
+
+  setUOM(c_uom) {
+    cy.log(`Product - set c_uom = ${c_uom}`);
+    this.c_uom = c_uom;
     return this;
   }
 
@@ -70,7 +76,7 @@ function applyProduct(product) {
     //cy.clearField('Value');
     //cy.writeIntoStringField('Value', product.value);
 
-    cy.selectInListField('M_Product_Category_ID', product.m_product_category_id);
+    cy.selectInListField('M_Product_Category_ID', product.m_product_category);
 
     cy.writeIntoStringField('Description', product.description);
 
@@ -92,6 +98,18 @@ function applyProduct(product) {
     cy.isChecked('IsDiverse').then(isDiverseValue => {
       if (product.isDiverse && !isDiverseValue) {
         cy.clickOnCheckBox('IsDiverse');
+      }
+    });
+
+    cy.getFieldValue('ProductType').then(productType => {
+      if (product.productType != productType) {
+        cy.selectInListField('ProductType', product.productType);
+      }
+    });
+
+    cy.getFieldValue('C_UOM_ID').then(uomValue => {
+      if (product.c_uom && product.c_uom != uomValue) {
+        cy.selectInListField('C_UOM_ID', product.c_uom);
       }
     });
 
@@ -142,18 +160,19 @@ function applyProductCategory(productCategory) {
 }
 
 function applyProductPrice(price) {
-  describe(`Create new Product Price ${price.m_pricelist_version_id}`, function() {
+  describe(`Create new Product Price ${price.m_pricelist_version}`, function() {
     cy.get('#tab_M_ProductPrice').click();
     cy.pressAddNewButton();
     cy.writeIntoLookupListField(
       'M_PriceList_Version_ID',
-      price.m_pricelist_version_id,
-      price.m_pricelist_version_id,
-      null
+      price.m_pricelist_version,
+      price.m_pricelist_version,
+      false /*typeList*/,
+      true /*modal*/
     );
     cy.clearField('PriceStd');
     cy.writeIntoStringField('PriceStd', price.priceStd);
-    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory_id);
+    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory);
     cy.pressDoneButton();
   });
 }

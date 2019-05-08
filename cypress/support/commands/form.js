@@ -86,8 +86,8 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
     cy.server();
-    cy.route('PATCH', '/rest/api/window/**').as('patchCheckBox');
-    cy.route('GET', '/rest/api/window/**').as('getData');
+    cy.route('PATCH', new RegExp('/rest/api/window/.*')).as('patchCheckBox');
+    cy.route('GET', new RegExp('/rest/api/window/.*')).as('getData');
 
     cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
@@ -168,7 +168,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
  */
 Cypress.Commands.add(
   'writeIntoLookupListField',
-  (fieldName, partialValue, listValue, typeList = false, modal = false, rewriteUrl = null) => {
+  (fieldName, partialValue, expectedListValue, typeList = false, modal = false, rewriteUrl = null) => {
     describe('Enter value into lookup list field', function() {
       let path = `#lookup_${fieldName}`;
       if (modal) {
@@ -195,7 +195,7 @@ Cypress.Commands.add(
       });
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', listValue).click(/*{ force: true }*/);
+      cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
       cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList);
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });

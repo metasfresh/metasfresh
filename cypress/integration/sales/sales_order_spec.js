@@ -4,12 +4,15 @@ import config from '../../config';
 import { Product, ProductCategory } from '../../support/utils/product';
 import { SalesOrder } from '../../support/utils/sales_order';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
+import { BPartner } from '../../support/utils/bpartner';
 
 describe('New sales order test', function() {
   const windowId = salesOrders.windowId;
   let headerCaption = '';
   let menuOption = '';
   const timestamp = new Date().getTime();
+  const productName = `Sales Order Test ${timestamp}`;
+  const customerName = `Sales Order Test ${timestamp}`;
 
   before(function() {
     getBreadcrumbs(windowId, '1000040-new').then(({ option, caption }) => {
@@ -17,18 +20,20 @@ describe('New sales order test', function() {
       headerCaption = caption;
     });
 
-    const productName = `P002737_Convenience Salat 250g ${timestamp}`;
-    const productValue = `Convencience Salat ${timestamp}`;
+    const productValue = `sales_order_test ${timestamp}`;
     const productCategoryName = `ProductCategoryName ${timestamp}`;
     const productCategoryValue = `ProductNameValue ${timestamp}`;
-
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      Object.assign(new BPartner(), customerJson)
+        .setName(customerName)
+        .apply();
+    });
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
         .setValue(productCategoryValue)
         .apply();
     });
-
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
@@ -65,35 +70,17 @@ describe('New sales order test', function() {
     });
 
     it('Fill Business Partner', function() {
-      cy.writeIntoLookupListField('C_BPartner_ID', 'G', 'G0001_Test');
+      cy.writeIntoLookupListField('C_BPartner_ID', `${timestamp}`, customerName);
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });
-
-    // it('Create new Business Partner', function() {
-    //   cy.writeIntoLookupListField('C_BPartner_ID', 'New', 'New Business Partner', true);
-    //   cy.get('.panel-modal').should('exist');
-    //   cy.writeIntoStringField('Companyname', vendorName);
-    //   // cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
-    //   const aliasName = `addBP-${new Date().getTime()}`;
-    //   const patchUrlPattern = '/rest/api/window/.*$';
-    //   cy.server();
-    //   cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
-    //   cy.get('.panel-modal-header')
-    //     .find('.btn')
-    //     .click();
-    //   cy.wait(`@${aliasName}`);
-    //   // form-field-C_Location_ID click
-    //   // attributes-dropdown should.be.visible
-    //   // C_Country_ID Deu Germany - Deutschland
-    // });
 
     it('Fill order reference to differentiate cypress tests', function() {
       cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
       cy.get('.indicator-pending').should('not.exist');
     });
 
-    it('Add new product', function() {
+    it('Add new order line via "add new" button', function() {
       const addNewText = Cypress.messages.window.addNew.caption;
 
       cy.get('.tabs-wrapper .form-flex-align .btn')
@@ -105,10 +92,12 @@ describe('New sales order test', function() {
 
       cy.get('.form-field-M_Product_ID')
         .find('input')
-        .type('C');
+        .type(`${timestamp}`);
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'P002737_Convenience Salat 250g').click();
+
+      // enter just the timestamp which is also part of the product name
+      cy.contains('.input-dropdown-list-option', productName).click();
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 
       cy.get('.form-field-QtyEntered', { timeout: 12000 })
@@ -127,7 +116,7 @@ describe('New sales order test', function() {
       cy.wait(`@${aliasName}`);
     });
 
-    it('Add new product via Batch Entry', function() {
+    it('Add new order line via Batch Entry', function() {
       const addNewText = Cypress.messages.window.batchEntry.caption;
 
       cy.get('.tabs-wrapper .form-flex-align .btn')
@@ -138,8 +127,10 @@ describe('New sales order test', function() {
       cy.get('.quick-input-container .form-group').should('exist');
       cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
 
-      cy.writeIntoLookupListField('M_Product_ID', 'C', 'Convenience Salat');
+      // enter just the timestamp which is also part of the product name
+      cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
 
+      // increment the quantity via the widget's tiny "up" button
       cy.get('.form-field-Qty')
         .click()
         .find('.input-body-container.focused')
@@ -148,17 +139,15 @@ describe('New sales order test', function() {
         .eq(0)
         .click();
 
-      const aliasName = `addProduct-${new Date().getTime()}`;
-      const patchUrlPattern = '/rest/api/window/.*$';
       cy.server();
-      cy.route('GET', new RegExp(patchUrlPattern)).as(aliasName);
-
+      cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
+        'resetQuickInputFields'
+      );
       cy.get('.form-field-Qty')
         .find('input')
         .should('have.value', '0.1')
-        .type('1{enter}');
-
-      cy.wait(`@${aliasName}`);
+        .type('1{enter}'); // hit enter to add the line
+      cy.wait('@resetQuickInputFields'); // the input fields are reset after the new line was added
 
       cy.get('#lookup_M_Product_ID')
         .find('input')
@@ -211,12 +200,10 @@ describe('List tests', function() {
   before(function() {
     const salesReference = `Cypress Test ${timestamp}`;
 
-    cy.fixture('product/simple_product.json').then(() => {
-      new SalesOrder(salesReference)
-        .setBPartner('G0001_Test Kunde 1')
-        .setBPartnerLocation('Testadresse 3')
-        .apply();
-    });
+    new SalesOrder(salesReference)
+      .setBPartner('G0001_Test Kunde 1')
+      .setBPartnerLocation('Testadresse 3')
+      .apply();
 
     salesOrders.visit();
     salesOrders.verifyElements();

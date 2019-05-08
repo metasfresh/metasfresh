@@ -9,6 +9,11 @@
   "projectId_comment": "Our recorded test runs can be found here: https://dashboard.cypress.io/#/projects/5yp4q1/runs",
   "projectId": "5yp4q1",
   
+  "requestTimeout_comment1": "Set to same value as response time out.",
+  "requestTimeout_comment2": "Example: when adding a new sales order line, the actual 'request' does not happen directly,",
+  "requestTimeout_comment3": "but only after some time, when the line was already added by the API",
+  "requestTimeout" : 30000,
+
   "videoCompression": false, 
 
   "viewport_comment1": "the default is 1000px by 660px",
