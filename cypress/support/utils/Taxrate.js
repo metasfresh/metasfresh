@@ -56,14 +56,26 @@ export class Taxrate {
 }
 
 function applyTaxrate(taxrate) {
+  const timestamp = new Date().getTime();
+
   describe(`Create new Taxrate ${taxrate.name}`, function() {
-    debugger;
     cy.visitWindow('137', 'NEW');
-    cy.writeIntoStringField('Name', taxrate.name);
-    cy.writeIntoStringField('ValidFrom', taxrate.validFrom);
-    cy.selectInListField('C_TaxCategory_ID', taxrate.taxCategory, taxrate.taxCategory);
-    cy.writeIntoStringField('Rate', taxrate.rate);
-    cy.writeIntoLookupListField('C_Country_ID', taxrate.country);
-    cy.writeIntoLookupListField('To_Country_ID', taxrate.countryTo);
+    cy.log(`Taxrate - Name (name=${taxrate.name} ${timestamp})`);
+    cy.writeIntoStringField('Name', `${taxrate.name} ${timestamp}`);
+    cy.log(`Taxrate - validFrom (validFrom=${taxrate.validFrom}{enter})`);
+    //cy.writeIntoStringField('ValidFrom', `${taxrate.validFrom}{enter}`);
+    cy.writeIntoStringField('ValidFrom', `${taxrate.validFrom}{enter}`, false, null, true);
+    cy.log(`Taxrate - C_TaxCategory_ID (TaxCategory=${taxrate.taxCategory})`);
+    cy.selectInListField('C_TaxCategory_ID', taxrate.taxCategory);
+    cy.log(`Taxrate - Rate (Rate=${taxrate.rate})`);
+    cy.get('.form-field-Rate')
+      .find('input')
+      .clear()
+      .type('10{enter}');
+    cy.log(`Taxrate - C_Country_ID (C_Country_ID=${taxrate.country})`);
+    cy.selectInListField('C_Country_ID', 'none', false);
+    cy.selectInListField('C_Country_ID', taxrate.country, false);
+    cy.log(`Taxrate - To_Country_ID (To_Country_ID=${taxrate.countryTo})`);
+    cy.selectInListField('To_Country_ID', taxrate.countryTo, false);
   });
 }
