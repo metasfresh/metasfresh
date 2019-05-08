@@ -1,4 +1,4 @@
-export class Currency {
+export class Taxrate {
   constructor(name, validFrom, taxCategory) {
     this.name = name;
     this.validFrom = validFrom;
