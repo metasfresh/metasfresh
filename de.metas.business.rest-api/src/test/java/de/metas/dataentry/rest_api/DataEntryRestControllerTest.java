@@ -30,6 +30,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DataEntryRestControllerTest
 {
@@ -59,15 +60,26 @@ class DataEntryRestControllerTest
 	}
 
 	@Test
-	void testFieldNamesAreNotChanged()
+	void fieldNamesAreNotChanged()
 	{
 		createRecords();
 
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
 		final JsonDataEntry g0002 = dataEntryRestController.getByRecordId(BPARTNER_WINDOW_ID, bPartner.getC_BPartner_ID());
-		System.out.println(g0002);
 		expect(g0002).toMatchSnapshot();
+	}
+
+	@Test
+	void badWindowGivesEmptyResult()
+	{
+		createRecords();
+
+		final I_C_BPartner bPartner = createBPartner("G0002");
+
+		final JsonDataEntry shouldBeEmpty = dataEntryRestController.getByRecordId(55555, bPartner.getC_BPartner_ID());
+		assertThat(shouldBeEmpty.getTabs()).isEmpty();
+		expect(shouldBeEmpty).toMatchSnapshot();
 	}
 
 	private I_DataEntry_Tab createRecords()

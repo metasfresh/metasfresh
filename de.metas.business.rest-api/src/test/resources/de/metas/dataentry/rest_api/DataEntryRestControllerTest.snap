@@ -1,4 +1,11 @@
-de.metas.dataentry.rest_api.DataEntryRestControllerTest.testFieldNamesAreNotChanged=[
+de.metas.dataentry.rest_api.DataEntryRestControllerTest.badWindowGivesEmptyResult=[
+  {
+    "tabs": [ ]
+  }
+]
+
+
+de.metas.dataentry.rest_api.DataEntryRestControllerTest.fieldNamesAreNotChanged=[
   {
     "tabs": [
       {
