@@ -275,7 +275,16 @@ import lombok.NonNull;
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
-		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(adProcessParam.isMandatory());
+
+		final ILogicExpression mandatoryLogic;
+		if (adProcessParam.isMandatory())
+		{
+			mandatoryLogic = displayLogic;
+		}
+		else
+		{
+			mandatoryLogic = ConstantLogicExpression.FALSE;
+		}
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
 				adProcessParam.getDefaultValue(),
