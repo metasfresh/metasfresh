@@ -1,0 +1,17 @@
+{
+    "ID": 1,
+    "AD_Client_ID": 1000000,
+    "AD_Org_ID": 1000000,
+    "Name": "Normaler Steuersatz 10%",
+    "IsActive": true,
+    "IsDefault": false,
+    "C_TaxCategory_ID": "Normaler Steuersatz 19% (Deutschland)",
+    "ValidFrom": "2019-05-01",
+    "RequiresTaxCertificate": false,
+    "Rate": 10,
+    "C_Country_ID": "Deutschland", 
+    "To_Country_ID": "Deutschland",
+    "C_Region_ID": "",
+    "To_Region_ID": "",
+    "IsToEULocation": true
+}
