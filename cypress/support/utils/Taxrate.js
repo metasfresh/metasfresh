@@ -57,10 +57,11 @@ export class Taxrate {
 
 function applyTaxrate(taxrate) {
   describe(`Create new Taxrate ${taxrate.name}`, function() {
+    debugger;
     cy.visitWindow('137', 'NEW');
     cy.writeIntoStringField('Name', taxrate.name);
     cy.writeIntoStringField('ValidFrom', taxrate.validFrom);
-    cy.selectInListField('C_TaxCategory_ID', taxrate.TaxCategory, taxrate.TaxCategory);
+    cy.selectInListField('C_TaxCategory_ID', taxrate.taxCategory, taxrate.taxCategory);
     cy.writeIntoStringField('Rate', taxrate.rate);
     cy.writeIntoLookupListField('C_Country_ID', taxrate.country);
     cy.writeIntoLookupListField('To_Country_ID', taxrate.countryTo);
