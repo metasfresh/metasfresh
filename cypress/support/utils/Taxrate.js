@@ -46,4 +46,23 @@ export class Taxrate {
     this.countryTo = country;
     return this;
   }
+
+  apply() {
+    cy.log(`Taxrate - apply - START (name=${this.name})`);
+    applyTaxrate(this);
+    cy.log(`Taxrate - apply - END (name=${this.name})`);
+    return this;
+  }
+}
+
+function applyTaxrate(taxrate) {
+  describe(`Create new Taxrate ${taxrate.name}`, function() {
+    cy.visitWindow('137', 'NEW');
+    cy.writeIntoStringField('Name', taxrate.name);
+    cy.writeIntoStringField('ValidFrom', taxrate.validFrom);
+    cy.selectInListField('C_TaxCategory_ID', taxrate.TaxCategory, taxrate.TaxCategory);
+    cy.writeIntoStringField('Rate', taxrate.rate);
+    cy.writeIntoLookupListField('C_Country_ID', taxrate.country);
+    cy.writeIntoLookupListField('To_Country_ID', taxrate.countryTo);
+  });
 }
