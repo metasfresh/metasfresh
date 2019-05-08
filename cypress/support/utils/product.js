@@ -171,7 +171,7 @@ function applyProductPrice(price) {
       true /*modal*/
     );
     cy.clearField('PriceStd');
-    cy.writeIntoStringField('PriceStd', price.priceStd);
+    cy.writeIntoStringField('PriceStd', price.priceStd, false /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory);
     cy.pressDoneButton();
   });
