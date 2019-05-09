@@ -40,10 +40,6 @@ public class WebuiSecurityMainInterceptor extends AbstractModuleInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(WebuiSecurityMainInterceptor.class);
 
-	public WebuiSecurityMainInterceptor()
-	{
-	}
-
 	@Override
 	protected void onAfterInit()
 	{
