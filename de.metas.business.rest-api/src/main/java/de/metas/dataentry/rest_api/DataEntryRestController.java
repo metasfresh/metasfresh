@@ -68,8 +68,7 @@ import lombok.NonNull;
 @RequestMapping(DataEntryRestController.ENDPOINT)
 public class DataEntryRestController
 {
-	@SuppressWarnings("WeakerAccess")
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
+	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
 
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
