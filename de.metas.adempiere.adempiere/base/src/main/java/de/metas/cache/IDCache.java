@@ -20,12 +20,7 @@ import lombok.NonNull;
  */
 public class IDCache<V> extends CCache<Object, V>
 {
-	public IDCache(final String tableName, final String trxName, final int initialCapacity, final int expireMinutes)
-	{
-		this(tableName, trxName, initialCapacity, expireMinutes, CacheMapType.HashMap);
-	}
-
-	private static KeysMapper<Object> KEYS_MAPPER = new KeysMapper<Object>()
+	private static final KeysMapper<Object> KEYS_MAPPER = new KeysMapper<Object>()
 	{
 		/** @return always {@code false} */
 		@Override
@@ -41,6 +36,11 @@ public class IDCache<V> extends CCache<Object, V>
 		}
 	};
 
+	public IDCache(final String tableName, final String trxName, final int initialCapacity, final int expireMinutes)
+	{
+		this(tableName, trxName, initialCapacity, expireMinutes, CacheMapType.HashMap);
+	}
+	
 	public IDCache(final String tableName,
 			final String trxName,
 			final int initialCapacity,
