@@ -76,13 +76,13 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public static final <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
 	{
-		return new CCache<>(cacheName,
-				null, // auto-detect tableName
-				null, // additionalTableNamesToResetFor
-				maxSize, // initialCapacity // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
-				expireAfterMinutes,
-				CacheMapType.LRU,
-				null/* KeysMapper */);
+		return CCache.<K, V> builder()
+				.cacheName(cacheName)
+				// .tableName(null) // auto-detect tableName
+				.initialCapacity(maxSize) // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
+				.expireMinutes(expireAfterMinutes)
+				.cacheMapType(CacheMapType.LRU)
+				.build();
 	}
 
 	/**
@@ -92,13 +92,13 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
-		return new CCache<>(cacheName,
-				null, // auto-detect tableName
-				null, // additionalTableNamesToResetFor
-				initialCapacity,
-				expireAfterMinutes,
-				CacheMapType.HashMap,
-				null/* KeysMapper */);
+		return CCache.<K, V> builder()
+				.cacheName(cacheName)
+				// .tableName(null) // auto-detect tableName
+				.initialCapacity(initialCapacity)
+				.expireMinutes(expireAfterMinutes)
+				.cacheMapType(CacheMapType.HashMap)
+				.build();
 	}
 
 	public static enum CacheMapType
@@ -134,6 +134,11 @@ public class CCache<K, V> implements CacheInterface
 		 *
 		 */
 		Collection<K> computeKeys(TableRecordReference tableRecordReference);
+	}
+
+	public interface RemovalListener<K, V>
+	{
+		void itemRemoved(K key, V value);
 	}
 
 	/**
@@ -202,7 +207,8 @@ public class CCache<K, V> implements CacheInterface
 				initialCapacity,
 				expireMinutes,
 				CacheMapType.HashMap,
-				null/* KeysMapper */);
+				(KeysMapper<K>)null,
+				(RemovalListener<K, V>)null);
 	}
 
 	@Builder
@@ -213,7 +219,8 @@ public class CCache<K, V> implements CacheInterface
 			final Integer initialCapacity,
 			final Integer expireMinutes,
 			final CacheMapType cacheMapType,
-			@Nullable final KeysMapper<K> keysMapper)
+			@Nullable final KeysMapper<K> keysMapper,
+			@Nullable final RemovalListener<K, V> removalListener)
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
 
@@ -261,7 +268,8 @@ public class CCache<K, V> implements CacheInterface
 		this.cache = buildGuavaCache(
 				cacheMapType != null ? cacheMapType : CacheMapType.HashMap,
 				initialCapacity != null ? initialCapacity : 0,
-				this.expireMinutes);
+				this.expireMinutes,
+				removalListener);
 
 		if (DEBUG)
 		{
@@ -328,7 +336,8 @@ public class CCache<K, V> implements CacheInterface
 	private static final <K, V> Cache<K, V> buildGuavaCache(
 			@NonNull final CacheMapType cacheMapType,
 			final int initialCapacity,
-			final int expireMinutes)
+			final int expireMinutes,
+			@Nullable final RemovalListener<K, V> removalListener)
 	{
 		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
 		if (cacheMapType == CacheMapType.HashMap)
@@ -349,6 +358,19 @@ public class CCache<K, V> implements CacheInterface
 		if (expireMinutes > 0)
 		{
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireMinutes, TimeUnit.MINUTES);
+		}
+
+		if (removalListener != null)
+		{
+			cacheBuilder.removalListener(notif -> {
+				@SuppressWarnings("unchecked")
+				final K key = (K)notif.getKey();
+
+				@SuppressWarnings("unchecked")
+				final V value = (V)notif.getValue();
+
+				removalListener.itemRemoved(key, value);
+			});
 		}
 
 		return cacheBuilder.build();

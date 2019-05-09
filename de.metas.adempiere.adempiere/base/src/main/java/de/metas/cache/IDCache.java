@@ -54,7 +54,8 @@ public class IDCache<V> extends CCache<Object, V>
 				initialCapacity,
 				expireMinutes,
 				cacheMapType,
-				KEYS_MAPPER);
+				KEYS_MAPPER,
+				(RemovalListener<Object, V>)null);
 
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 	}
