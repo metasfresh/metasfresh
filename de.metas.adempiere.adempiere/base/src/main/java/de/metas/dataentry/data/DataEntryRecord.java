@@ -75,11 +75,6 @@ public class DataEntryRecord
 		}
 	}
 
-	public void clearRecordFields()
-	{
-		fields.clear();
-	}
-
 	/**
 	 * @return {@code true} if the given value is different from the previous one.
 	 */
@@ -99,7 +94,7 @@ public class DataEntryRecord
 		}
 
 		final ZonedDateTime updated = ZonedDateTime.now();
-		CreatedUpdatedInfo createdUpdatedInfo;
+		final CreatedUpdatedInfo createdUpdatedInfo;
 		if (previousFieldVersion == null)
 		{
 			createdUpdatedInfo = CreatedUpdatedInfo.createNew(updatedBy, updated);

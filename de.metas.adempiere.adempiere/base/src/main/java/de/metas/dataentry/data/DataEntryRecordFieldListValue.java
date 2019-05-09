@@ -36,7 +36,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntryListValueId>
 {
 	@Getter
-	DataEntryListValueId value;
+	private final DataEntryListValueId value;
 
 	public static DataEntryRecordFieldListValue of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

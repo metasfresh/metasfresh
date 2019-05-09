@@ -41,26 +41,6 @@ import de.metas.user.UserId;
 
 public class DataEntryRecordTest
 {
-
-	@Test
-	public void clearRecordFields()
-	{
-		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
-		final DataEntryRecord dataEntryRecord = DataEntryRecord
-				.builder()
-				.dataEntrySubTabId(dataEntrySubTabId)
-				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
-				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
-				.build();
-
-		assertThat(dataEntryRecord.isEmpty()).isFalse(); // guard
-
-		// invoke method under test
-		dataEntryRecord.clearRecordFields();
-
-		assertThat(dataEntryRecord.isEmpty()).isTrue();
-	}
-
 	@Test
 	public void setRecordField()
 	{
