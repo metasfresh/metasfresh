@@ -1,16 +1,21 @@
 package de.metas.cache;
 
+import java.util.Collection;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * An extension of {@link CCache} which is used to store models indexed by their primary key.
- * 
+ *
  * NOTE: we use Object as cache key because in future i think we will move from Integer keys to something else (UUID, String etc).
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <V>
  */
 public class IDCache<V> extends CCache<Object, V>
@@ -19,6 +24,22 @@ public class IDCache<V> extends CCache<Object, V>
 	{
 		this(tableName, trxName, initialCapacity, expireMinutes, CacheMapType.HashMap);
 	}
+
+	private static KeysMapper<Object> KEYS_MAPPER = new KeysMapper<Object>()
+	{
+		/** @return always {@code false} */
+		@Override
+		public boolean isResetAll(TableRecordReference tableRecordReference)
+		{
+			return false;
+		}
+
+		@Override
+		public Collection<Object> computeKeys(@NonNull final TableRecordReference tableRecordReference)
+		{
+			return ImmutableList.of(tableRecordReference.getRecord_ID());
+		}
+	};
 
 	public IDCache(final String tableName,
 			final String trxName,
@@ -32,7 +53,8 @@ public class IDCache<V> extends CCache<Object, V>
 				null, // additionalTableNamesToResetFor
 				initialCapacity,
 				expireMinutes,
-				cacheMapType);
+				cacheMapType,
+				KEYS_MAPPER);
 
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 	}
@@ -46,15 +68,5 @@ public class IDCache<V> extends CCache<Object, V>
 				.toString();
 
 		return cacheName;
-	}
-
-	@Override
-	public long resetForRecordId(final TableRecordReference recordRef)
-	{
-		// NOTE: we assume record's table name is matching this cache.
-		
-		final int recordId = recordRef.getRecord_ID();
-		final V valueOld = remove(recordId);
-		return valueOld == null ? 0 : 1;
 	}
 }
