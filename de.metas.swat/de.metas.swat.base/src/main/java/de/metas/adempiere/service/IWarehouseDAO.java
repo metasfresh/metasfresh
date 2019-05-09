@@ -31,7 +31,7 @@ import de.metas.util.ISingletonService;
 public interface IWarehouseDAO extends ISingletonService
 {
 	/**
-	 * Retrieve the warehouse marked as IsIssueWarehouse; There should be one and only one entry of this kind (unique index)
+	 * Retrieve the warehouse marked as IsIssueWarehouse; There should be one and only one entry of this kind (unique index).
 	 *
 	 * @return warehouse or null
 	 */
@@ -43,7 +43,7 @@ public interface IWarehouseDAO extends ISingletonService
 	I_M_Warehouse retrieveWarehouseForIssues(Properties ctx);
 
 	/**
-	 * Retrieve the warehouse marked as IsQuarantineWarehouse
+	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
 	 *
 	 * @return Quarantine warehouse or null
 	 */

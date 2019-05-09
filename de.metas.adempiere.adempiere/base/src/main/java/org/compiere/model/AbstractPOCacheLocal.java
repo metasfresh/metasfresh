@@ -52,8 +52,6 @@ public abstract class AbstractPOCacheLocal
 
 	protected AbstractPOCacheLocal(final String parentColumnName, final String tableName)
 	{
-		super();
-
 		Check.assumeNotEmpty(parentColumnName, "parentColumnName is null");
 		Check.assumeNotEmpty(tableName, "tableName");
 

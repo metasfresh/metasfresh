@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,7 +81,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 	public void test_2StepShipment_WithDifferentInvoicesPerStep_IR_NachLieferung()
 	{
 		// FIXME: consider using theories
-		test_2StepShipment_WithDifferentInvoicesPerStep(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
+		test_2StepShipment_WithDifferentInvoicesPerStep(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 	}
 
 //	 @formatter:off
@@ -238,7 +238,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			InterfaceWrapperHelper.refresh(ic);
 			// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
 			assertThat("Invalid QtyDelivered on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32));
-			if (X_C_Invoice_Candidate.INVOICERULE_NachLieferung.equals(invoiceRuleOverride))
+			if (X_C_Invoice_Candidate.INVOICERULE_AfterDelivery.equals(invoiceRuleOverride))
 			{
 				assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty1_32));
 			}

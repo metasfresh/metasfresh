@@ -531,11 +531,4 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.setInvoiceScheduleAndDateToInvoice(ic);
 	}
-
-	@Override
-	public void setC_UOM_ID(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
-		handler.setC_UOM_ID(ic);
-	}
 }

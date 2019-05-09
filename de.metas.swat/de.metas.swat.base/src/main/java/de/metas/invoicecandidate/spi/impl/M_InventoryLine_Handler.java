@@ -1,5 +1,8 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
@@ -39,10 +42,12 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -71,7 +76,6 @@ import lombok.NonNull;
 
 public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
-	//
 	// Services
 	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
 
@@ -154,9 +158,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setM_Product_ID(productId.getRepoId());
 			// for the time being, the material disposals do not have packing material lines because we only throw the products, not the boxes
 			ic.setIsPackagingMaterial(false);
-
-			setC_UOM_ID(ic);
-			ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
+			ic.setQtyToInvoice(ZERO); // to be computed
 		}
 
 		//
@@ -179,7 +181,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		Check.assumeNotNull(originInOutLine, "InventoryLine {0} must have an origin inoutline set", inventoryLine);
 		final I_M_InOut inOut = originInOutLine.getM_InOut();
 
-		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Sofort); // Immediate (until further requirements)
+		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate (until further requirements)
 
 		//
 		// Set C_Activity from Product (07442)
@@ -254,13 +256,6 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		Check.assumeNotNull(originInOutLine, "InventoryLine {0} must have an origin inoutline set", inventoryLine);
 
 		return M_InOutLine_Handler.calculatePriceAndQuantity(ic, originInOutLine);
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
-		ic.setC_UOM_ID(inventoryLine.getC_UOM_ID());
 	}
 
 	@Override
@@ -394,16 +389,22 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (docActionBL.isDocumentStatusOneOf(inventoryLine.getM_Inventory(), IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
-			final BigDecimal qtyMultiplier = new BigDecimal(-1); // TODO: check if this is ok
+			final BigDecimal qtyMultiplier = ONE.negate();
 			final BigDecimal qtyDelivered = inventoryLine.getQtyInternalUse().multiply(qtyMultiplier);
+			ic.setQtyEntered(qtyDelivered);
 			ic.setQtyOrdered(qtyDelivered);
 		}
 		else
 		{
 			// Corrected, voided etc document. Set qty to zero.
-			ic.setQtyOrdered(BigDecimal.ZERO);
+			ic.setQtyOrdered(ZERO);
+			ic.setQtyEntered(ZERO);
 		}
 
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final UomId stockingUOMId = productBL.getStockingUOMId(inventoryLine.getM_Product_ID());
+
+		ic.setC_UOM_ID(UomId.toRepoId(stockingUOMId));
 	}
 
 	@Override

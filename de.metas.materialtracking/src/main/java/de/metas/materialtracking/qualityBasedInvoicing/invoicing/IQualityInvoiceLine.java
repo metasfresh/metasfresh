@@ -24,13 +24,13 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 
 /**
  * See https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view
@@ -67,18 +67,11 @@ public interface IQualityInvoiceLine
 	BigDecimal getPercentage();
 
 	/**
-	 * i.e. Menge
+	 * i.e. Menge and Einheit
 	 *
 	 * @return
 	 */
-	BigDecimal getQty();
-
-	/**
-	 * i.e. Einheit
-	 *
-	 * @return
-	 */
-	I_C_UOM getC_UOM();
+	Quantity getQty();
 
 	/**
 	 * i.e. Preis

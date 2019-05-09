@@ -37,10 +37,10 @@ FROM
 		COALESCE(pt.name, p.name) AS p_Name,
 		p.packageSize AS op,
 		COALESCE(uomt.UOMSymbol,uom.UOMSymbol) AS me,
-		p.manufacturer AS manufacturer,
+		manf.Name AS manufacturer,
 		ps.name AS base_ps,
 		COALeSCE(dsb.breakdiscount, 0) AS breakdiscount,
-		COALESCE(dsb.std_addamt, 0) AS fixum,
+		COALESCE(dsb.PricingSystemSurchargeAmt, 0) AS fixum,
 		p_term.discount as discount,
 		COALESCE(pprice.pricestd, 0) AS pricestd
 		
@@ -54,6 +54,8 @@ FROM
 	INNER JOIN M_Product p ON dsb.M_Product_ID = p.M_Product_ID
 	LEFT JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = p_ad_language
 	LEFT JOIN C_PaymentTerm p_term ON dsb.C_PaymentTerm_ID = p_term.C_PaymentTerm_ID
+	
+	LEFT JOIN C_BPartner manf ON p.manufacturer_id = manf.C_BPartner_id
 
 	LEFT JOIN C_UOM uom ON p.Package_UOM_ID = uom.C_UOM_ID
 	LEFT JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = p_ad_language

@@ -42,9 +42,9 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -217,7 +217,8 @@ public final class VBPartner extends CDialog implements ActionListener
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
 					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-					MLocation.Table_ID, 0, false);
+					InterfaceWrapperHelper.getTableId(I_C_Location.class),
+					0, false);
 		}
 		fAddress = new VLocation("C_Location_ID", false, ro, true, new MLocationLookup(Env.getCtx(), m_WindowNo));
 		fAddress.setValue(null);

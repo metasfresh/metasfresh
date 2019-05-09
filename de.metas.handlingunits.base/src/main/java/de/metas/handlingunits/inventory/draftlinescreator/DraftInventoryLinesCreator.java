@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
-import de.metas.inventory.AggregationType;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.inventory.AggregationType;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;
@@ -78,7 +78,7 @@ public class DraftInventoryLinesCreator
 
 			if (strategy.getMaxLocatorsAllowed() > 0 && strategy.getMaxLocatorsAllowed() < seenLocatorIds.size())
 			{
-				return;
+				break;
 			}
 
 			createOrUpdateInventoryLine(hu);
