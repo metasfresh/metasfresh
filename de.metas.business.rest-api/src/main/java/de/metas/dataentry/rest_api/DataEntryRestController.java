@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
-import de.metas.dataentry.layout.DataEntryTab;
+import de.metas.dataentry.layout.DataEntryWindow;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
 import de.metas.logging.LogManager;
@@ -107,8 +106,8 @@ public class DataEntryRestController
 			final int recordId,
 			@NonNull final String adLanguage)
 	{
-		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(windowId);
-		final DataEntryRecordsMap records = dataRecords.get(recordId, DataEntryTab.getSubTabIds(layout));
+		final DataEntryWindow layout = layoutRepo.getByWindowId(windowId);
+		final DataEntryRecordsMap records = dataRecords.get(recordId, layout.getSubTabIds());
 
 		return JsonDataEntryFactory.builder()
 				.layout(layout)

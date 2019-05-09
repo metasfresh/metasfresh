@@ -72,7 +72,7 @@ public class DataEntryTab
 		this.dataEntrySubTabs = ImmutableList.copyOf(dataEntrySubTabs);
 	}
 
-	private Stream<DataEntrySubTabId> streamSubTabIds()
+	Stream<DataEntrySubTabId> streamSubTabIds()
 	{
 		return dataEntrySubTabs.stream().map(DataEntrySubTab::getId);
 	}

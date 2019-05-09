@@ -2,10 +2,10 @@ package de.metas.dataentry.layout;
 
 import static de.metas.util.Check.fail;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import de.metas.dataentry.model.I_DataEntry_SubTab;
-import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -18,20 +18,20 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
 import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.FieldType;
-import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryLine.DataEntryLineBuilder;
 import de.metas.dataentry.layout.DataEntrySection.DataEntrySectionBuilder;
+import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
-
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
-
+import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -68,22 +68,30 @@ public class DataEntryLayoutRepository
 
 	private static final Logger logger = LogManager.getLogger(DataEntryLayoutRepository.class);
 
-	public ImmutableList<DataEntryTab> getByWindowId(@NonNull final AdWindowId adWindowId)
+	public DataEntryWindow getByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		final ImmutableList<I_DataEntry_Tab> tabRecords = retrieveTabRecords(adWindowId);
 		if (tabRecords.isEmpty())
 		{
-			return ImmutableList.of();
+			return DataEntryWindow.empty(adWindowId);
 		}
 
-		final ImmutableList.Builder<DataEntryTab> result = ImmutableList.builder();
-
+		final List<DataEntryTab> tabs = new ArrayList<>();
 		for (final I_DataEntry_Tab tabRecord : tabRecords)
 		{
 			final Optional<DataEntryTab> tab = ofRecord(tabRecord);
-			tab.ifPresent(result::add);
+			tab.ifPresent(tabs::add);
 		}
-		return result.build();
+
+		if (tabs.isEmpty())
+		{
+			return DataEntryWindow.empty(adWindowId);
+		}
+
+		return DataEntryWindow.builder()
+				.windowId(adWindowId)
+				.tabs(tabs)
+				.build();
 	}
 
 	private ImmutableList<I_DataEntry_Tab> retrieveTabRecords(@NonNull final AdWindowId adWindowId)

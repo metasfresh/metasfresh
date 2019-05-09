@@ -1,7 +1,5 @@
 package de.metas.dataentry.rest_api;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.data.DataEntryRecord;
@@ -11,6 +9,7 @@ import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
+import de.metas.dataentry.layout.DataEntryWindow;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
@@ -46,17 +45,17 @@ import lombok.NonNull;
 
 final class JsonDataEntryFactory
 {
-	private final ImmutableList<DataEntryTab> layout;
+	private final DataEntryWindow layout;
 	private final DataEntryRecordsMap records;
 	private final String adLanguage;
 
 	@Builder(buildMethodName = "buildFactory")
 	private JsonDataEntryFactory(
-			@NonNull final List<DataEntryTab> layout,
+			@NonNull final DataEntryWindow layout,
 			@NonNull final DataEntryRecordsMap records,
 			@NonNull final String adLanguage)
 	{
-		this.layout = ImmutableList.copyOf(layout);
+		this.layout = layout;
 		this.records = records;
 		this.adLanguage = adLanguage;
 	}
@@ -80,7 +79,7 @@ final class JsonDataEntryFactory
 	private ImmutableList<JsonDataEntryTab> toJsonDataEntryTabs()
 	{
 		final ImmutableList.Builder<JsonDataEntryTab> tabs = ImmutableList.builder();
-		for (final DataEntryTab layoutTab : layout)
+		for (final DataEntryTab layoutTab : layout.getTabs())
 		{
 			final ImmutableList<JsonDataEntrySubTab> subTabs = toJsonDataEntrySubTabs(layoutTab);
 
