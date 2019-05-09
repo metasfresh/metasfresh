@@ -45,7 +45,7 @@ public class DataEntrySection
 
 	boolean initiallyClosed;
 
-	ImmutableList<DataEntryLine> dataEntryLines;
+	ImmutableList<DataEntryLine> lines;
 
 	@Builder
 	private DataEntrySection(
@@ -54,13 +54,13 @@ public class DataEntrySection
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			final boolean initiallyClosed,
-			@Singular final List<DataEntryLine> dataEntryLines)
+			@Singular final List<DataEntryLine> lines)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
 		this.initiallyClosed = initiallyClosed;
-		this.dataEntryLines = ImmutableList.copyOf(dataEntryLines);
+		this.lines = ImmutableList.copyOf(lines);
 	}
 }

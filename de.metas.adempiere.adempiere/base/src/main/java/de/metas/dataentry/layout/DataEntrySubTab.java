@@ -43,7 +43,7 @@ public class DataEntrySubTab
 
 	String internalName;
 
-	ImmutableList<DataEntrySection> dataEntrySections;
+	ImmutableList<DataEntrySection> sections;
 
 	@Builder
 	private DataEntrySubTab(
@@ -51,13 +51,13 @@ public class DataEntrySubTab
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
-			@Singular List<DataEntrySection> dataEntrySections)
+			@Singular final List<DataEntrySection> sections)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
-		this.dataEntrySections = ImmutableList.copyOf(dataEntrySections);
+		this.sections = ImmutableList.copyOf(sections);
 	}
 
 }

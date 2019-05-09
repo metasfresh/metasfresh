@@ -50,7 +50,7 @@ public class DataEntryTab
 
 	String internalName;
 
-	ImmutableList<DataEntrySubTab> dataEntrySubTabs;
+	ImmutableList<DataEntrySubTab> subTabs;
 
 	/** The column name of the record/document (e.g. C_BPartner_ID) against {@link I_DataEntry_Record_Assignment}s are linked. */
 	DocumentLinkColumnName documentLinkColumnName;
@@ -62,19 +62,19 @@ public class DataEntryTab
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName,
-			@Singular final List<DataEntrySubTab> dataEntrySubTabs)
+			@Singular final List<DataEntrySubTab> subTabs)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
 		this.documentLinkColumnName = documentLinkColumnName;
-		this.dataEntrySubTabs = ImmutableList.copyOf(dataEntrySubTabs);
+		this.subTabs = ImmutableList.copyOf(subTabs);
 	}
 
 	Stream<DataEntrySubTabId> streamSubTabIds()
 	{
-		return dataEntrySubTabs.stream().map(DataEntrySubTab::getId);
+		return subTabs.stream().map(DataEntrySubTab::getId);
 	}
 
 	public static Set<DataEntrySubTabId> getSubTabIds(final Collection<DataEntryTab> tabs)

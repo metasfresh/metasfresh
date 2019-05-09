@@ -99,7 +99,7 @@ final class JsonDataEntryFactory
 	private ImmutableList<JsonDataEntrySubTab> toJsonDataEntrySubTabs(@NonNull final DataEntryTab layoutTab)
 	{
 		final ImmutableList.Builder<JsonDataEntrySubTab> subTabs = ImmutableList.builder();
-		for (final DataEntrySubTab layoutSubTab : layoutTab.getDataEntrySubTabs())
+		for (final DataEntrySubTab layoutSubTab : layoutTab.getSubTabs())
 		{
 			final DataEntryRecord dataEntryRecord = records.getBySubTabId(layoutSubTab.getId()).orElse(null);
 			if (dataEntryRecord == null)
@@ -126,7 +126,7 @@ final class JsonDataEntryFactory
 			@NonNull final DataEntryRecord dataEntryRecord)
 	{
 		final ImmutableList.Builder<JsonDataEntrySection> sections = ImmutableList.builder();
-		for (final DataEntrySection layoutSection : layoutSubTab.getDataEntrySections())
+		for (final DataEntrySection layoutSection : layoutSubTab.getSections())
 		{
 			final ImmutableList<JsonDataEntryLine> lines = toJsonDataEntryLines(layoutSection, dataEntryRecord);
 
@@ -147,7 +147,7 @@ final class JsonDataEntryFactory
 			@NonNull final DataEntryRecord dataEntryRecord)
 	{
 		final ImmutableList.Builder<JsonDataEntryLine> lines = ImmutableList.builder();
-		for (final DataEntryLine layoutLine : layoutSection.getDataEntryLines())
+		for (final DataEntryLine layoutLine : layoutSection.getLines())
 		{
 			final ImmutableList<JsonDataEntryField> fields = toJsonDataEntryFields(layoutLine, dataEntryRecord);
 
@@ -165,7 +165,7 @@ final class JsonDataEntryFactory
 			@NonNull final DataEntryRecord dataEntryRecord)
 	{
 		final ImmutableList.Builder<JsonDataEntryField> fields = ImmutableList.builder();
-		for (final DataEntryField layoutField : layoutLine.getDataEntryFields())
+		for (final DataEntryField layoutField : layoutLine.getFields())
 		{
 			// some fields can be excluded from the response, according to this flag
 			if (!layoutField.isAvailableInApi())
