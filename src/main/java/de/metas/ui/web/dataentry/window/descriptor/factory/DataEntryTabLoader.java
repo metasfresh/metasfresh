@@ -15,13 +15,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
-import de.metas.dataentry.layout.DataEntryWindow;
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.i18n.ITranslatableString;
@@ -98,13 +98,13 @@ public class DataEntryTabLoader
 	{
 		final DataEntryLayoutRepository dataEntryRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
 
-		final DataEntryWindow dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
+		final DataEntryLayout layout = dataEntryRepository.getByWindowId(adWindowId);
 
-		return createLayoutDescriptors(dataEntryTabs);
+		return createLayoutDescriptors(layout);
 	}
 
 	@VisibleForTesting
-	List<DocumentLayoutDetailDescriptor> createLayoutDescriptors(@NonNull final DataEntryWindow layout)
+	List<DocumentLayoutDetailDescriptor> createLayoutDescriptors(@NonNull final DataEntryLayout layout)
 	{
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> result = ImmutableList.builder();
 		for (final DataEntryTab dataEntryTab : layout.getTabs())
@@ -295,13 +295,13 @@ public class DataEntryTabLoader
 	{
 		final DataEntryLayoutRepository dataEntryRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
 
-		final DataEntryWindow dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
+		final DataEntryLayout layout = dataEntryRepository.getByWindowId(adWindowId);
 
-		return createTabEntityDescriptors(dataEntryTabs);
+		return createTabEntityDescriptors(layout);
 	}
 
 	@VisibleForTesting
-	List<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final DataEntryWindow layout)
+	List<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final DataEntryLayout layout)
 	{
 		final ImmutableList.Builder<DocumentEntityDescriptor> result = ImmutableList.builder();
 		for (final DataEntryTab dataEntryTab : layout.getTabs())

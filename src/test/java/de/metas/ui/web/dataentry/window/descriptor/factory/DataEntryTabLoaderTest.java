@@ -31,7 +31,7 @@ import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
-import de.metas.dataentry.layout.DataEntryWindow;
+import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -118,7 +118,7 @@ public class DataEntryTabLoaderTest
 
 		// invoke the method under test
 		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
-				.createLayoutDescriptors(DataEntryWindow.builder()
+				.createLayoutDescriptors(DataEntryLayout.builder()
 						.windowId(AdWindowId.ofRepoId(1))
 						.tab(dataEntryTab)
 						.build());
@@ -133,7 +133,7 @@ public class DataEntryTabLoaderTest
 
 		// invoke the method under test
 		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
-				.createLayoutDescriptors(DataEntryWindow.builder()
+				.createLayoutDescriptors(DataEntryLayout.builder()
 						.windowId(AdWindowId.ofRepoId(1))
 						.tab(dataEntryTab)
 						.build());
@@ -149,7 +149,7 @@ public class DataEntryTabLoaderTest
 
 		// invoke the method under test
 		final List<DocumentEntityDescriptor> descriptors = dataEntryTabLoader
-				.createTabEntityDescriptors(DataEntryWindow.builder()
+				.createTabEntityDescriptors(DataEntryLayout.builder()
 						.windowId(AdWindowId.ofRepoId(1))
 						.tab(dataEntryTab)
 						.build());
