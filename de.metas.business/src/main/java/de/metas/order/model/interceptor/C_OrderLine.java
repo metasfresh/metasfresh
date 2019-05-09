@@ -232,6 +232,10 @@ public class C_OrderLine
 	})
 	public void onGroupCompensationLineChanged(final I_C_OrderLine orderLine)
 	{
+		if (Check.isEmpty(orderLine.getGroupCompensationType()) && !orderLine.isGroupCompensationLine())
+		{
+			return; // nothing to do..however note that ideally we wouldn't have been called in the first place
+		}
 		groupChangesHandler.updateCompensationLineNoSave(orderLine);
 	}
 
