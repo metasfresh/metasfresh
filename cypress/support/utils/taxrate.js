@@ -47,10 +47,23 @@ export class Taxrate {
     return this;
   }
 
+  setC_TaxRate_ID(c_taxrate_id) {
+    cy.log(`Taxrate - set C_TaxRate_ID = ${c_taxrate_id}`);
+    this.c_taxrate_id = c_taxrate_id;
+    return this;
+  }
+
   apply() {
     cy.log(`Taxrate - apply - START (name=${this.name})`);
     applyTaxrate(this);
     cy.log(`Taxrate - apply - END (name=${this.name})`);
+    return this;
+  }
+
+  activate() {
+    cy.log(`Taxrate - activate - START (name=${this.name})`);
+    applyActive(this);
+    cy.log(`Taxrate - activate - END (name=${this.name})`);
     return this;
   }
 }
@@ -77,5 +90,19 @@ function applyTaxrate(taxrate) {
     cy.selectInListField('C_Country_ID', taxrate.country, false);
     cy.log(`Taxrate - To_Country_ID (To_Country_ID=${taxrate.countryTo})`);
     cy.selectInListField('To_Country_ID', taxrate.countryTo, false);
+  });
+}
+
+function applyActive(taxrate) {
+  describe(`Create new Taxrate ${taxrate.name}`, function() {
+    //cy.log(`Taxrate - activate - START (c_taxrate_id=${this.c_taxrate_id})`);
+    //cy.visitWindow('137', `${this.c_taxrate_id}`);
+    cy.isChecked('IsActive').then(isActive => {
+      if (!isActive) {
+        cy.clickOnIsActive();
+      }
+    });
+    cy.log(`Taxrate - activate - END (c_taxrate_id=${this.c_taxrate_id})`);
+    return this;
   });
 }

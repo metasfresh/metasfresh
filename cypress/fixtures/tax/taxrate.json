@@ -13,5 +13,6 @@
     "countryTo": "Germany - Deutschland",
     "c_region_id": "",
     "to_region_id": "",
-    "isToEULocation": true
+    "isToEULocation": true,
+    "c_taxrate_id": true
 }
