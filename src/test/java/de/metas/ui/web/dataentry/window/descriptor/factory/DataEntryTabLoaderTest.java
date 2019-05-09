@@ -166,8 +166,8 @@ public class DataEntryTabLoaderTest
 				.caption(ImmutableTranslatableString.constant("dataEntryTab_caption"))
 				.description(ImmutableTranslatableString.constant("dataEntryTab_description"))
 
-				.dataEntrySubTab(createSubTab(1/* subTabNo */))
-				.dataEntrySubTab(createSubTab(2/* subTabNo */))
+				.subTab(createSubTab(1/* subTabNo */))
+				.subTab(createSubTab(2/* subTabNo */))
 
 				.build();
 	}
@@ -185,7 +185,7 @@ public class DataEntryTabLoaderTest
 				.caption(ImmutableTranslatableString.constant("dataEntrySubTab" + subTabNo + "_caption"))
 				.description(ImmutableTranslatableString.constant("dataEntrySubTab" + subTabNo + "_description"))
 
-				.dataEntrySection(DataEntrySection.builder()
+				.section(DataEntrySection.builder()
 						.id(DataEntrySectionId.ofRepoId(parseInt(idPrefix + "1")))
 						.caption(ImmutableTranslatableString.constant("dataEntrySection" + subTabNo + "1 - section with 2 lines. "
 								+ "The 1st line has 1 field, the 2nd line has 2 fields. "
@@ -193,23 +193,23 @@ public class DataEntryTabLoaderTest
 						.description(ImmutableTranslatableString.constant("dataEntrySection1_description"))
 						.internalName("dataEntrySection1_internalName")
 						.initiallyClosed(false)
-						.dataEntryLine(DataEntryLine.builder()
-								.dataEntryField(DataEntryField.builder()
+						.line(DataEntryLine.builder()
+								.field(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "11")))
 										.caption(ImmutableTranslatableString.constant("textField" + subTabNo + "1_caption"))
 										.description(ImmutableTranslatableString.constant("textField" + subTabNo + "1_description"))
 										.type(FieldType.TEXT)
 										.build())
 								.build())
-						.dataEntryLine(DataEntryLine.builder()
-								.dataEntryField(DataEntryField.builder()
+						.line(DataEntryLine.builder()
+								.field(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "12")))
 										.caption(ImmutableTranslatableString.constant("longTextField" + subTabNo + "1_caption"))
 										.description(ImmutableTranslatableString.constant("longTextField1_description"))
 										.type(FieldType.LONG_TEXT)
 										.build())
 
-								.dataEntryField(DataEntryField.builder()
+								.field(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "13")))
 										.caption(ImmutableTranslatableString.constant("numberField" + subTabNo + "1_caption"))
 										.description(ImmutableTranslatableString.constant("numberField" + subTabNo + "1_description"))
@@ -218,40 +218,43 @@ public class DataEntryTabLoaderTest
 								.build())
 						.build())
 
-				.dataEntrySection(DataEntrySection.builder()
+				.section(DataEntrySection.builder()
 						.id(DataEntrySectionId.ofRepoId(parseInt(idPrefix + "2")))
 						.caption(ImmutableTranslatableString.constant("dataEntrySection" + subTabNo + "2_caption"))
 						.description(ImmutableTranslatableString.constant("dataEntrySection" + subTabNo + "2 - section with one line and 3 fields"))
 						.internalName("dataEntrySection2_internalName")
 						.initiallyClosed(true)
-						.dataEntryLine(DataEntryLine.builder()
-								.dataEntryField(DataEntryField.builder()
+						.line(DataEntryLine.builder()
+								.field(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "21")))
 										.caption(ImmutableTranslatableString.constant("dateField" + subTabNo + "1_caption"))
 										.description(ImmutableTranslatableString.constant("dateField" + subTabNo + "1_description"))
 										.type(FieldType.DATE)
 										.build())
-								.dataEntryField(DataEntryField.builder()
+								.field(DataEntryField.builder()
 										.id(DataEntryFieldId.ofRepoId(parseInt(idPrefix + "22")))
 										.caption(ImmutableTranslatableString.constant("yesNoField" + subTabNo + "1_caption"))
 										.description(ImmutableTranslatableString.constant("yesNoField" + subTabNo + "1_description"))
 										.type(FieldType.YESNO)
 										.build())
-								.dataEntryField(DataEntryField.builder()
+								.field(DataEntryField.builder()
 										.id(dataEntryListFieldId)
 										.caption(ImmutableTranslatableString.constant("listField" + subTabNo + "1_caption"))
 										.description(ImmutableTranslatableString.constant("listField" + subTabNo + "1_description"))
 										.type(FieldType.LIST)
-										.listValue(new DataEntryListValue(
-												DataEntryListValueId.ofRepoId(parseInt(idPrefix + "231")),
-												dataEntryListFieldId,
-												ImmutableTranslatableString.constant("listValue" + subTabNo + "1_name"),
-												ImmutableTranslatableString.constant("listValue" + subTabNo + "1_description")))
-										.listValue(new DataEntryListValue(
-												DataEntryListValueId.ofRepoId(parseInt(idPrefix + "232")),
-												dataEntryListFieldId,
-												ImmutableTranslatableString.constant("listValue" + subTabNo + "2_name"),
-												ImmutableTranslatableString.constant("listValue" + subTabNo + "2_description")))
+										.listValue(DataEntryListValue.builder()
+												.id(DataEntryListValueId.ofRepoId(parseInt(idPrefix + "231")))
+												.fieldId(dataEntryListFieldId)
+												.name(ImmutableTranslatableString.constant("listValue" + subTabNo + "1_name"))
+												.description(ImmutableTranslatableString.constant("listValue" + subTabNo + "1_description"))
+												.build())
+
+										.listValue(DataEntryListValue.builder()
+												.id(DataEntryListValueId.ofRepoId(parseInt(idPrefix + "232")))
+												.fieldId(dataEntryListFieldId)
+												.name(ImmutableTranslatableString.constant("listValue" + subTabNo + "2_name"))
+												.description(ImmutableTranslatableString.constant("listValue" + subTabNo + "2_description"))
+												.build())
 										.build())
 								.build())
 						.build())
