@@ -100,7 +100,7 @@ public class JSONUserSession
 			avatarId = userSession.getAvatarId();
 
 			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
-			userProfileId = userSession.getAD_User_ID();
+			userProfileId = userSession.getLoggedUserId().getRepoId();
 			
 			websocketEndpoint = userSession.getWebsocketEndpoint();
 		}

@@ -57,7 +57,7 @@ public class UserSessionRestController
 	public JSONLookupValue setLanguage(@RequestBody final JSONLookupValue value)
 	{
 		final String adLanguage = value.getKey();
-		userSessionRepo.setAD_Language(userSession.getAD_User_ID(), adLanguage);
+		userSessionRepo.setAD_Language(userSession.getLoggedUserId(), adLanguage);
 		
 		return getLanguage();
 	}
