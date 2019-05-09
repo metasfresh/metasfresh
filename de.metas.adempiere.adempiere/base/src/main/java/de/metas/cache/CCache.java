@@ -49,7 +49,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
@@ -116,32 +115,6 @@ public class CCache<K, V> implements CacheInterface
 	}
 
 	/**
-	 * Provide an implementation to the {@link CCacheBuilder} to enable the cache to be "selective".
-	 * With an implementation provided, {@link CacheInvalidateRequest}s that are only about particular records don't have to cause the full cache to be reset.
-	 */
-	public interface KeysMapper<K>
-	{
-		/** If this method returns <code>true</code>, then the whole cache needs resetting. */
-		boolean isResetAll(TableRecordReference tableRecordReference);
-
-		/**
-		 * Provide a possibly empty collection of cache keys for the give table record reference.
-		 * Allows {@link CCache#resetForRecordId(TableRecordReference)} to only remove a limited number of cached entries.
-		 * <p>
-		 * Implementors can assume that
-		 * <li>the given {@code tableRecordReference} is never {@code null} and
-		 * <li>every key this method returns will be invalidated in the cache.
-		 *
-		 */
-		Collection<K> computeKeys(TableRecordReference tableRecordReference);
-	}
-
-	public interface RemovalListener<K, V>
-	{
-		void itemRemoved(K key, V value);
-	}
-
-	/**
 	 * If active, following informations will be stored:
 	 * <ul>
 	 * <li>{@link #debugId} - unique JVM object ID
@@ -169,7 +142,7 @@ public class CCache<K, V> implements CacheInterface
 	private boolean m_justReset = true;
 
 	/** Can provide a collection of cache keys for a given record reference. */
-	private final Optional<KeysMapper<K>> keysMapper;
+	private final Optional<CacheInvalidationKeysMapper<K>> invalidationKeysMapper;
 
 	/**
 	 * If {@link #DEBUG} is enabled, this variable contains the object's identity code (see {@link System#identityHashCode(Object)}).
@@ -207,8 +180,8 @@ public class CCache<K, V> implements CacheInterface
 				initialCapacity,
 				expireMinutes,
 				CacheMapType.HashMap,
-				(KeysMapper<K>)null,
-				(RemovalListener<K, V>)null);
+				(CacheInvalidationKeysMapper<K>)null,
+				(CacheRemovalListener<K, V>)null);
 	}
 
 	@Builder
@@ -219,12 +192,12 @@ public class CCache<K, V> implements CacheInterface
 			final Integer initialCapacity,
 			final Integer expireMinutes,
 			final CacheMapType cacheMapType,
-			@Nullable final KeysMapper<K> keysMapper,
-			@Nullable final RemovalListener<K, V> removalListener)
+			@Nullable final CacheInvalidationKeysMapper<K> invalidationKeysMapper,
+			@Nullable final CacheRemovalListener<K, V> removalListener)
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
 
-		this.keysMapper = Optional.ofNullable(keysMapper);
+		this.invalidationKeysMapper = Optional.ofNullable(invalidationKeysMapper);
 
 		final String tableNameEffective;
 		if (cacheName == null)
@@ -337,7 +310,7 @@ public class CCache<K, V> implements CacheInterface
 			@NonNull final CacheMapType cacheMapType,
 			final int initialCapacity,
 			final int expireMinutes,
-			@Nullable final RemovalListener<K, V> removalListener)
+			@Nullable final CacheRemovalListener<K, V> removalListener)
 	{
 		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
 		if (cacheMapType == CacheMapType.HashMap)
@@ -454,18 +427,18 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long resetForRecordId(@NonNull final TableRecordReference recordRef)
 	{
-		if (!keysMapper.isPresent())
+		if (!invalidationKeysMapper.isPresent())
 		{
 			// NOTE: reseting only by "key" is not supported, so we are reseting everything
 			return reset();
 		}
 
-		return resetForRecordIdUsingKeysMapper(recordRef, keysMapper.get());
+		return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
 	}
 
 	private long resetForRecordIdUsingKeysMapper(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull final KeysMapper<K> keysMapper)
+			@NonNull final CacheInvalidationKeysMapper<K> keysMapper)
 	{
 		if (keysMapper.isResetAll(recordRef))
 		{
@@ -473,7 +446,7 @@ public class CCache<K, V> implements CacheInterface
 		}
 
 		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
-		for (final K key : keysMapper.computeKeys(recordRef))
+		for (final K key : keysMapper.computeKeysToInvalidate(recordRef))
 		{
 			final boolean keyRemoved = remove(key) != null;
 			if (keyRemoved)

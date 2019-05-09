@@ -62,21 +62,7 @@ final class DataEntryRecordCache
 			.tableName(I_DataEntry_Record.Table_Name)
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(1000)
-			.keysMapper(new CCache.KeysMapper<DataEntryRecordCache.CacheKey>()
-			{
-
-				@Override
-				public boolean isResetAll(final TableRecordReference tableRecordReference)
-				{
-					return false;
-				}
-
-				@Override
-				public Collection<CacheKey> computeKeys(final TableRecordReference recordRef)
-				{
-					return dataEntryRecordIdIndex.getCacheKeysByTableRecordReference(recordRef);
-				}
-			})
+			.invalidationKeysMapper(dataEntryRecordIdIndex::getCacheKeysByTableRecordReference)
 			.removalListener(dataEntryRecordIdIndex::remove)
 			.build();
 
