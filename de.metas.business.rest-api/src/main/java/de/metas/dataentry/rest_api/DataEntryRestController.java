@@ -1,9 +1,24 @@
 package de.metas.dataentry.rest_api;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.element.api.AdWindowId;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.Profiles;
-import de.metas.cache.CCache;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
@@ -13,13 +28,6 @@ import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
-import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Line;
-import de.metas.dataentry.model.I_DataEntry_ListValue;
-import de.metas.dataentry.model.I_DataEntry_Record;
-import de.metas.dataentry.model.I_DataEntry_Section;
-import de.metas.dataentry.model.I_DataEntry_SubTab;
-import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
@@ -33,20 +41,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -83,25 +77,16 @@ public class DataEntryRestController
 	private final DataEntryLayoutRepository layoutRepo;
 	private final DataEntryRecordRepository recordRepo;
 
-	private final CCache<RecordIdLanguagePair, JsonDataEntry> cache;
+	private final JsonDataEntryCache cache;
 
 	DataEntryRestController(
 			@NonNull final DataEntryLayoutRepository layoutRepo,
 			@NonNull final DataEntryRecordRepository recordRepo,
-			@NonNull @Value("${de.metas.dataentry.rest_api.DataEntryRestController.cacheCapacity:200}") final Integer cacheCapacity)
+			@Value("${de.metas.dataentry.rest_api.DataEntryRestController.cacheCapacity:200}") final int cacheCapacity)
 	{
 		this.layoutRepo = layoutRepo;
 		this.recordRepo = recordRepo;
-		cache = CCache.<RecordIdLanguagePair, JsonDataEntry>builder()
-				.initialCapacity(cacheCapacity)
-				.additionalTableNameToResetFor(I_DataEntry_Tab.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_SubTab.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_Section.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_Line.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_Field.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_Record.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_ListValue.Table_Name)
-				.build();
+		cache = new JsonDataEntryCache(cacheCapacity);
 	}
 
 	@GetMapping("/byID/{windowId}/{recordId}")
@@ -110,18 +95,20 @@ public class DataEntryRestController
 			@PathVariable("recordId") final int recordId)
 	{
 		final Stopwatch w = Stopwatch.createStarted();
-		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getJsonDataEntry(recordId, windowId);
+		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getJsonDataEntry(AdWindowId.ofRepoId(windowId), recordId);
 		w.stop();
-		log.info("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w.toString());
+		log.debug("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w);
 		return jsonDataEntry;
 	}
 
-	private ResponseEntity<JsonDataEntryResponse> getJsonDataEntry(final int recordId, final int windowId)
+	private ResponseEntity<JsonDataEntryResponse> getJsonDataEntry(final AdWindowId windowId, final int recordId)
 	{
-		final String adLanguage = Env.getAD_Language();
-
-		final RecordIdLanguagePair key = RecordIdLanguagePair.of(recordId, adLanguage);
-		final JsonDataEntry jsonDataEntry = cache.getOrLoad(key, () -> getJsonDataEntry(adLanguage, AdWindowId.ofRepoId(windowId), recordId));
+		final JsonDataEntryCache.CacheKey key = JsonDataEntryCache.CacheKey.builder()
+				.windowId(windowId)
+				.recordId(recordId)
+				.adLanguage(Env.getAD_Language())
+				.build();
+		final JsonDataEntry jsonDataEntry = cache.getOrLoad(key, this::loadJsonDataEntry);
 
 		if (jsonDataEntry.isEmpty())
 		{
@@ -140,10 +127,10 @@ public class DataEntryRestController
 	}
 
 	@NonNull
-	private JsonDataEntry getJsonDataEntry(final String adLanguage, final AdWindowId windowId, final int recordId)
+	private JsonDataEntry loadJsonDataEntry(@NonNull final JsonDataEntryCache.CacheKey key)
 	{
-		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(windowId);
-		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(adLanguage, layout, recordId);
+		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(key.getWindowId());
+		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(key.getAdLanguage(), layout, key.getRecordId());
 
 		return JsonDataEntry.builder()
 				.tabs(tabs)
@@ -275,13 +262,6 @@ public class DataEntryRestController
 						.description(it.getDescription().translate(adLanguage))
 						.build())
 				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	@lombok.Value(staticConstructor = "of")
-	private static class RecordIdLanguagePair
-	{
-		int recordId;
-		@NonNull String adLanguage;
 	}
 }
 
