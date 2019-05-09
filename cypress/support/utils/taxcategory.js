@@ -27,6 +27,12 @@ export class Taxcategory {
     return this;
   }
 
+  setID(id) {
+    cy.log(`Taxcategory - set ID = ${id}`);
+    this.ID = id;
+    return this;
+  }
+
   apply() {
     cy.log(`Taxrate - apply - START (name=${this.name})`);
     applyTaxcategory(this);
@@ -58,8 +64,9 @@ function applyTaxcategory(taxcat) {
 
 function applyActive(taxcat) {
   describe(`Create new Taxrate ${taxcat.Name}`, function() {
-    //cy.log(`Taxrate - activate - START (c_taxrate_id=${this.c_taxrate_id})`);
-    //cy.visitWindow('137', `${this.c_taxrate_id}`);
+    if (this.ID) {
+      cy.visitWindow('138', `${this.ID}`);
+    }
     cy.isChecked('IsActive').then(isActive => {
       if (!isActive) {
         cy.clickOnIsActive();
