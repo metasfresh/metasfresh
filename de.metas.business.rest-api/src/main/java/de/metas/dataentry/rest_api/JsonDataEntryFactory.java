@@ -43,6 +43,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Produces {@link JsonDataEntry} by merging {@link DataEntryLayout} with {@link DataEntryRecordsMap}.
+ */
 final class JsonDataEntryFactory
 {
 	private final DataEntryLayout layout;
