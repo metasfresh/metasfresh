@@ -3,26 +3,26 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
     {
       "id": 100003,
       "caption": {
-        "value": "groupRecord1_tabName",
+        "value": "tabRecord1_tabName",
         "anyLanguage": true
       },
       "description": {
-        "value": "groupRecord1_description",
+        "value": "tabRecord1_description",
         "anyLanguage": true
       },
-      "internalName": "DataEntry_Group_ID-100003",
-      "dataEntrySubGroups": [
+      "internalName": "DataEntry_Tab_ID-100003",
+      "dataEntrySubTabs": [
         {
           "id": 100009,
           "caption": {
-            "value": "subgroupRecord1_2_tabName",
+            "value": "subtabRecord1_2_tabName",
             "anyLanguage": true
           },
           "description": {
-            "value": "subgroupRecord1_2_description - seqNo10",
+            "value": "subtabRecord1_2_description - seqNo10",
             "anyLanguage": true
           },
-          "internalName": "DataEntry_SubGroup_ID-100009",
+          "internalName": "DataEntry_SubTab_ID-100009",
           "dataEntrySections": [
             {
               "id": 100010,
@@ -143,14 +143,14 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
         {
           "id": 100004,
           "caption": {
-            "value": "subgroupRecord1_1_tabName",
+            "value": "subtabRecord1_1_tabName",
             "anyLanguage": true
           },
           "description": {
-            "value": "subgroupRecord1_1_description - seqNo20",
+            "value": "subtabRecord1_1_description - seqNo20",
             "anyLanguage": true
           },
-          "internalName": "DataEntry_SubGroup_ID-100004",
+          "internalName": "DataEntry_SubTab_ID-100004",
           "dataEntrySections": [
             {
               "id": 100005,
