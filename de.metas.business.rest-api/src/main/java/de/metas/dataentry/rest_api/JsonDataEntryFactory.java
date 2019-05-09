@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
-import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;

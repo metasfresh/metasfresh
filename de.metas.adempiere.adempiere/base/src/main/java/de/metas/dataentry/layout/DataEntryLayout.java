@@ -63,4 +63,9 @@ public class DataEntryLayout
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public boolean isEmpty()
+	{
+		return tabs.isEmpty();
+	}
+
 }

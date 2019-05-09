@@ -5,7 +5,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +52,7 @@ public class DataEntryRestController
 {
 	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
 
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(DataEntryRestController.class);
 
 	private final DataEntryLayoutRepository layoutRepo;
 	private final DataEntryRecordCache dataRecords;
@@ -73,47 +72,31 @@ public class DataEntryRestController
 			@PathVariable("recordId") final int recordId)
 	{
 		final Stopwatch w = Stopwatch.createStarted();
-		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getJsonDataEntry(AdWindowId.ofRepoId(windowId), recordId);
+		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getByRecordId0(AdWindowId.ofRepoId(windowId), recordId);
 		w.stop();
-		log.debug("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w);
+
+		logger.debug("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w);
 		return jsonDataEntry;
 	}
 
-	private ResponseEntity<JsonDataEntryResponse> getJsonDataEntry(final AdWindowId windowId, final int recordId)
+	private ResponseEntity<JsonDataEntryResponse> getByRecordId0(final AdWindowId windowId, final int recordId)
 	{
 		final String adLanguage = Env.getAD_Language();
-		final JsonDataEntry jsonDataEntry = getJsonDataEntry(windowId, recordId, adLanguage);
 
-		if (jsonDataEntry.isEmpty())
+		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
+		if (layout.isEmpty())
 		{
-			final JsonDataEntryResponse dataEntryResponse = JsonDataEntryResponse.builder()
-					.error("No dataentry for windowId: " + windowId)
-					.status(HttpStatus.NOT_FOUND.value())
-					.build();
-			return new ResponseEntity<>(dataEntryResponse, HttpStatus.NOT_FOUND);
+			return JsonDataEntryResponse.notFound("No data entry for windowId: " + windowId);
 		}
 
-		final JsonDataEntryResponse dataEntryResponse = JsonDataEntryResponse.builder()
-				.result(jsonDataEntry)
-				.status(HttpStatus.OK.value())
-				.build();
-		return new ResponseEntity<>(dataEntryResponse, HttpStatus.OK);
-	}
-
-	@NonNull
-	private JsonDataEntry getJsonDataEntry(
-			@NonNull final AdWindowId windowId,
-			final int recordId,
-			@NonNull final String adLanguage)
-	{
-		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
 		final DataEntryRecordsMap records = dataRecords.get(recordId, layout.getSubTabIds());
 
-		return JsonDataEntryFactory.builder()
+		final JsonDataEntry jsonDataEntry = JsonDataEntryFactory.builder()
 				.layout(layout)
 				.records(records)
 				.adLanguage(adLanguage)
 				.build();
-	}
 
+		return JsonDataEntryResponse.ok(jsonDataEntry);
+	}
 }

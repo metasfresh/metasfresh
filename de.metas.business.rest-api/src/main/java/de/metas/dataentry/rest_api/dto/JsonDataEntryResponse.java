@@ -1,5 +1,8 @@
 package de.metas.dataentry.rest_api.dto;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -24,13 +27,33 @@ package de.metas.dataentry.rest_api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Builder
 @Value
 public class JsonDataEntryResponse
 {
+	public static ResponseEntity<JsonDataEntryResponse> ok(@NonNull final JsonDataEntry result)
+	{
+		final JsonDataEntryResponse dataEntryResponse = JsonDataEntryResponse.builder()
+				.result(result)
+				.status(HttpStatus.OK.value())
+				.build();
+		return new ResponseEntity<>(dataEntryResponse, HttpStatus.OK);
+	}
+
+	public static ResponseEntity<JsonDataEntryResponse> notFound(@NonNull final String errorMsg)
+	{
+		final JsonDataEntryResponse dataEntryResponse = JsonDataEntryResponse.builder()
+				.error(errorMsg)
+				.status(HttpStatus.NOT_FOUND.value())
+				.build();
+		return new ResponseEntity<>(dataEntryResponse, HttpStatus.NOT_FOUND);
+	}
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@JsonProperty("result")
 	JsonDataEntry result;
