@@ -2,6 +2,8 @@ package de.metas.dataentry.layout;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
@@ -41,7 +43,7 @@ public class DataEntrySubTab
 
 	String internalName;
 
-	List<DataEntrySection> dataEntrySections;
+	ImmutableList<DataEntrySection> dataEntrySections;
 
 	@Builder
 	private DataEntrySubTab(
@@ -55,7 +57,7 @@ public class DataEntrySubTab
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
-		this.dataEntrySections = dataEntrySections;
+		this.dataEntrySections = ImmutableList.copyOf(dataEntrySections);
 	}
 
 }

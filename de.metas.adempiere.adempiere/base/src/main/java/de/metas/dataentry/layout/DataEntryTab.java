@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.dataentry.DataEntrySubTabId;
@@ -49,7 +50,7 @@ public class DataEntryTab
 
 	String internalName;
 
-	List<DataEntrySubTab> dataEntrySubTabs;
+	ImmutableList<DataEntrySubTab> dataEntrySubTabs;
 
 	/** The column name of the record/document (e.g. C_BPartner_ID) against {@link I_DataEntry_Record_Assignment}s are linked. */
 	DocumentLinkColumnName documentLinkColumnName;
@@ -68,7 +69,7 @@ public class DataEntryTab
 		this.description = description;
 		this.internalName = internalName;
 		this.documentLinkColumnName = documentLinkColumnName;
-		this.dataEntrySubTabs = dataEntrySubTabs;
+		this.dataEntrySubTabs = ImmutableList.copyOf(dataEntrySubTabs);
 	}
 
 	private Stream<DataEntrySubTabId> streamSubTabIds()
@@ -86,16 +87,16 @@ public class DataEntryTab
 	@Value
 	public static class DocumentLinkColumnName
 	{
-		public static DocumentLinkColumnName of(String columnName)
+		public static DocumentLinkColumnName of(final String columnName)
 		{
 			return new DocumentLinkColumnName(columnName);
 		}
 
 		String asString;
 
-		private DocumentLinkColumnName(String columnName)
+		private DocumentLinkColumnName(final String columnName)
 		{
-			this.asString = assumeNotEmpty(columnName, "Given columnName may not be empty");
+			asString = assumeNotEmpty(columnName, "Given columnName may not be empty");
 		}
 	}
 }

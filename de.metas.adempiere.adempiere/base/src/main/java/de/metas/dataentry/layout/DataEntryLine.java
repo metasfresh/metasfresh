@@ -1,6 +1,6 @@
 package de.metas.dataentry.layout;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.Singular;
@@ -33,5 +33,5 @@ import lombok.Value;
 public class DataEntryLine
 {
 	@Singular
-	List<DataEntryField> dataEntryFields;
+	ImmutableList<DataEntryField> dataEntryFields;
 }
