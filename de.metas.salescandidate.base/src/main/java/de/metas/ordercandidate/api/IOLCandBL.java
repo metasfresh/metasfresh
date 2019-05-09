@@ -69,7 +69,6 @@ public interface IOLCandBL extends ISingletonService
 	 * @param qtyOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQty()}
 	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
 	 * @Param date to be used in retrieving the actual price
-	 * @return
 	 */
 	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, Timestamp date);
 

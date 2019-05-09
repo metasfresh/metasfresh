@@ -1241,9 +1241,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final int getPrecision(final org.compiere.model.I_C_Invoice invoice)
+	public final int getPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		return invoice.getC_Currency().getStdPrecision();
+		final int currencyPrecision = invoice.getC_Currency_ID() > 0 ? invoice.getC_Currency().getStdPrecision() : 0;
+		final int plPrecision = invoice.getM_PriceList_ID() > 0 ? invoice.getM_PriceList().getPricePrecision() : 0;
+
+		return Integer.max(currencyPrecision, plPrecision);
 	}
 
 	@Override
