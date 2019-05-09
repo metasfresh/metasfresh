@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.DataEntrySubGroupId;
 import de.metas.user.UserId;
 
 /*
