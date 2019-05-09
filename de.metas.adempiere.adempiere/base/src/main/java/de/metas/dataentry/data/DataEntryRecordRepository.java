@@ -12,13 +12,15 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -52,35 +54,31 @@ public class DataEntryRecordRepository
 		this.jsonDataEntryRecordMapper = jsonDataEntryRecordMapper;
 	}
 
-	@Value(staticConstructor = "of")
-	public static final class DataEntryRecordQuery
+	public Optional<DataEntryRecord> getBy(@NonNull final DataEntryRecordQuery query)
 	{
-		@NonNull final DataEntrySubTabId dataEntrySubTabId;
+		final I_DataEntry_Record record = query(query)
+				.firstOnly(I_DataEntry_Record.class);
 
-		final int recordId;
+		return record != null
+				? Optional.of(toDataEntryRecord(record))
+				: null;
 	}
 
-	public Optional<DataEntryRecord> getBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	public List<DataEntryRecord> list(@NonNull final DataEntryRecordQuery query)
 	{
-		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
-
-		final I_DataEntry_Record record = query.firstOnly(I_DataEntry_Record.class);
-
-		if (record == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(ofRecord(record));
+		return query(query)
+				.stream()
+				.map(this::toDataEntryRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public DataEntryRecord getBy(@NonNull final DataEntryRecordId dataEntryRecordId)
+	public DataEntryRecord getById(@NonNull final DataEntryRecordId dataEntryRecordId)
 	{
 		final I_DataEntry_Record record = load(dataEntryRecordId, I_DataEntry_Record.class);
-		return ofRecord(record);
+		return toDataEntryRecord(record);
 	}
 
-	private DataEntryRecord ofRecord(@NonNull final I_DataEntry_Record record)
+	private DataEntryRecord toDataEntryRecord(@NonNull final I_DataEntry_Record record)
 	{
 		final String jsonString = record.getDataEntry_RecordData();
 
@@ -123,26 +121,22 @@ public class DataEntryRecordRepository
 		return DataEntryRecordId.ofRepoId(dataRecord.getDataEntry_Record_ID());
 	}
 
-	public void deleteBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	public void deleteBy(@NonNull final DataEntryRecordQuery query)
 	{
-		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
-
-		query.delete();
+		query(query).delete();
 	}
 
-	@SuppressWarnings("UnnecessaryLocalVariable")
-	private IQuery<I_DataEntry_Record> createQuery(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	private IQuery<I_DataEntry_Record> query(@NonNull final DataEntryRecordQuery query)
 	{
-		final DataEntrySubTabId dataEntrySubTabId = dataEntryRecordQuery.getDataEntrySubTabId();
-		final int recordId = dataEntryRecordQuery.getRecordId();
+		final ImmutableSet<DataEntrySubTabId> dataEntrySubTabIds = query.getDataEntrySubTabIds();
+		final int recordId = query.getRecordId();
 
-		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Record.class)
 				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubTabId)
+				.addInArrayFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubTabIds)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
-				.orderBy(I_DataEntry_Record.COLUMNNAME_Updated)
+				.orderBy(I_DataEntry_Record.COLUMNNAME_DataEntry_SubTab_ID)
 				.create();
-		return query;
 	}
 }

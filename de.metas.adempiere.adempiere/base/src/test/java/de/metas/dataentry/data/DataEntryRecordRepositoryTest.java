@@ -23,7 +23,6 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
 
@@ -140,7 +139,10 @@ public class DataEntryRecordRepositoryTest
 		record.setDataEntry_RecordData(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA_JSON);
 		saveRecord(record);
 
-		final DataEntryRecordQuery query = DataEntryRecordQuery.of(dataEntrySubTabId, tableRecordReference.getRecord_ID());
+		final DataEntryRecordQuery query = DataEntryRecordQuery.builder()
+				.dataEntrySubTabId(dataEntrySubTabId)
+				.recordId(tableRecordReference.getRecord_ID())
+				.build();
 
 		// invoke the method under test
 		final Optional<DataEntryRecord> result = dataEntryRecordRepository.getBy(query);

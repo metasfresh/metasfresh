@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
+import de.metas.dataentry.data.DataEntryRecordQuery;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
@@ -249,7 +250,10 @@ public class DataEntryRestController
 	@NonNull
 	private Optional<DataEntryRecord> getDataEntryRecordForSubtabAndRecord(@NonNull final DataEntrySubTabId subTabId, final int recordId)
 	{
-		return recordRepo.getBy(DataEntryRecordRepository.DataEntryRecordQuery.of(subTabId, recordId));
+		return recordRepo.getBy(DataEntryRecordQuery.builder()
+				.dataEntrySubTabId(subTabId)
+				.recordId(recordId)
+				.build());
 	}
 
 	@NonNull
@@ -264,4 +268,3 @@ public class DataEntryRestController
 				.collect(GuavaCollectors.toImmutableList());
 	}
 }
-
