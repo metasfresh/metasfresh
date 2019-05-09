@@ -1,5 +1,10 @@
 package de.metas.dataentry.rest_api.dto;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -24,13 +29,13 @@ package de.metas.dataentry.rest_api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.List;
-
 @Builder
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonDataEntry
 {
 	@JsonProperty("tabs")
