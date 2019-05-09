@@ -2,8 +2,14 @@ package de.metas.dataentry.layout;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.DataEntryTabId;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
@@ -63,6 +69,18 @@ public class DataEntryTab
 		this.internalName = internalName;
 		this.documentLinkColumnName = documentLinkColumnName;
 		this.dataEntrySubTabs = dataEntrySubTabs;
+	}
+
+	private Stream<DataEntrySubTabId> streamSubTabIds()
+	{
+		return dataEntrySubTabs.stream().map(DataEntrySubTab::getId);
+	}
+
+	public static Set<DataEntrySubTabId> getSubTabIds(final Collection<DataEntryTab> tabs)
+	{
+		return tabs.stream()
+				.flatMap(DataEntryTab::streamSubTabIds)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Value

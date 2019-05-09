@@ -134,7 +134,7 @@ public class DataEntryRecordRepository
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Record.class)
-				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
+				.addOnlyActiveRecordsFilter() // we have a UC on those columns
 				.addInArrayFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubTabIds)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
 				.orderBy(I_DataEntry_Record.COLUMNNAME_DataEntry_SubTab_ID)

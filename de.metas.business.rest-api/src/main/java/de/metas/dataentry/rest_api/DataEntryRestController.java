@@ -19,9 +19,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
-import de.metas.dataentry.data.DataEntryRecordQuery;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
@@ -76,18 +74,15 @@ public class DataEntryRestController
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	private final DataEntryLayoutRepository layoutRepo;
-	private final DataEntryRecordRepository recordRepo;
-
-	private final JsonDataEntryCache cache;
+	private final DataEntryRecordCache dataRecords;
 
 	DataEntryRestController(
 			@NonNull final DataEntryLayoutRepository layoutRepo,
-			@NonNull final DataEntryRecordRepository recordRepo,
+			@NonNull final DataEntryRecordRepository recordsRepo,
 			@Value("${de.metas.dataentry.rest_api.DataEntryRestController.cacheCapacity:200}") final int cacheCapacity)
 	{
 		this.layoutRepo = layoutRepo;
-		this.recordRepo = recordRepo;
-		cache = new JsonDataEntryCache(cacheCapacity);
+		this.dataRecords = new DataEntryRecordCache(recordsRepo);
 	}
 
 	@GetMapping("/byID/{windowId}/{recordId}")
@@ -104,12 +99,8 @@ public class DataEntryRestController
 
 	private ResponseEntity<JsonDataEntryResponse> getJsonDataEntry(final AdWindowId windowId, final int recordId)
 	{
-		final JsonDataEntryCache.CacheKey key = JsonDataEntryCache.CacheKey.builder()
-				.windowId(windowId)
-				.recordId(recordId)
-				.adLanguage(Env.getAD_Language())
-				.build();
-		final JsonDataEntry jsonDataEntry = cache.getOrLoad(key, this::loadJsonDataEntry);
+		final String adLanguage = Env.getAD_Language();
+		final JsonDataEntry jsonDataEntry = getJsonDataEntry(windowId, recordId, adLanguage);
 
 		if (jsonDataEntry.isEmpty())
 		{
@@ -128,10 +119,15 @@ public class DataEntryRestController
 	}
 
 	@NonNull
-	private JsonDataEntry loadJsonDataEntry(@NonNull final JsonDataEntryCache.CacheKey key)
+	private JsonDataEntry getJsonDataEntry(
+			@NonNull final AdWindowId windowId,
+			final int recordId,
+			@NonNull final String adLanguage)
 	{
-		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(key.getWindowId());
-		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(key.getAdLanguage(), layout, key.getRecordId());
+		final ImmutableList<DataEntryTab> layout = layoutRepo.getByWindowId(windowId);
+		final DataEntryRecordsMap records = dataRecords.get(recordId, DataEntryTab.getSubTabIds(layout));
+
+		final ImmutableList<JsonDataEntryTab> tabs = getJsonDataEntryTabs(adLanguage, layout, records);
 
 		return JsonDataEntry.builder()
 				.tabs(tabs)
@@ -139,12 +135,15 @@ public class DataEntryRestController
 	}
 
 	@NonNull
-	private ImmutableList<JsonDataEntryTab> getJsonDataEntryTabs(final String adLanguage, @NonNull final List<DataEntryTab> layout, final int recordId)
+	private static ImmutableList<JsonDataEntryTab> getJsonDataEntryTabs(
+			final String adLanguage,
+			@NonNull final List<DataEntryTab> layout,
+			@NonNull final DataEntryRecordsMap records)
 	{
 		final ImmutableList.Builder<JsonDataEntryTab> tabs = ImmutableList.builder();
 		for (final DataEntryTab layoutTab : layout)
 		{
-			final ImmutableList<JsonDataEntrySubTab> subTabs = getJsonDataEntrySubTabs(adLanguage, layoutTab, recordId);
+			final ImmutableList<JsonDataEntrySubTab> subTabs = getJsonDataEntrySubTabs(adLanguage, layoutTab, records);
 
 			final JsonDataEntryTab tab = JsonDataEntryTab.builder()
 					.id(layoutTab.getId())
@@ -158,12 +157,15 @@ public class DataEntryRestController
 	}
 
 	@NonNull
-	private ImmutableList<JsonDataEntrySubTab> getJsonDataEntrySubTabs(final String adLanguage, @NonNull final DataEntryTab layoutTab, final int recordId)
+	private static ImmutableList<JsonDataEntrySubTab> getJsonDataEntrySubTabs(
+			final String adLanguage,
+			@NonNull final DataEntryTab layoutTab,
+			@NonNull final DataEntryRecordsMap records)
 	{
 		final ImmutableList.Builder<JsonDataEntrySubTab> subTabs = ImmutableList.builder();
 		for (final DataEntrySubTab layoutSubTab : layoutTab.getDataEntrySubTabs())
 		{
-			final Optional<DataEntryRecord> dataEntryRecord = getDataEntryRecordForSubtabAndRecord(layoutSubTab.getId(), recordId);
+			final Optional<DataEntryRecord> dataEntryRecord = records.getBySubTabId(layoutSubTab.getId());
 			final ImmutableList<JsonDataEntrySection> sections = getJsonDataEntrySections(adLanguage, layoutSubTab, dataEntryRecord);
 
 			final JsonDataEntrySubTab subTab = JsonDataEntrySubTab.builder()
@@ -179,7 +181,7 @@ public class DataEntryRestController
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	@NonNull
-	private ImmutableList<JsonDataEntrySection> getJsonDataEntrySections(final String adLanguage, @NonNull final DataEntrySubTab layoutSubTab, final Optional<DataEntryRecord> dataEntryRecord)
+	private static ImmutableList<JsonDataEntrySection> getJsonDataEntrySections(final String adLanguage, @NonNull final DataEntrySubTab layoutSubTab, final Optional<DataEntryRecord> dataEntryRecord)
 	{
 		final ImmutableList.Builder<JsonDataEntrySection> sections = ImmutableList.builder();
 		for (final DataEntrySection layoutSection : layoutSubTab.getDataEntrySections())
@@ -199,7 +201,7 @@ public class DataEntryRestController
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	private ImmutableList<JsonDataEntryLine> getJsonDataEntryLines(final String adLanguage, @NonNull final DataEntrySection layoutSection, final Optional<DataEntryRecord> dataEntryRecord)
+	private static ImmutableList<JsonDataEntryLine> getJsonDataEntryLines(final String adLanguage, @NonNull final DataEntrySection layoutSection, final Optional<DataEntryRecord> dataEntryRecord)
 	{
 		final ImmutableList.Builder<JsonDataEntryLine> lines = ImmutableList.builder();
 		for (final DataEntryLine layoutLine : layoutSection.getDataEntryLines())
@@ -216,7 +218,7 @@ public class DataEntryRestController
 
 	@NonNull
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	private ImmutableList<JsonDataEntryField> getJsonDataEntryFields(final String adLanguage, @NonNull final DataEntryLine layoutLine, final Optional<DataEntryRecord> dataEntryRecord)
+	private static ImmutableList<JsonDataEntryField> getJsonDataEntryFields(final String adLanguage, @NonNull final DataEntryLine layoutLine, final Optional<DataEntryRecord> dataEntryRecord)
 	{
 		final ImmutableList.Builder<JsonDataEntryField> fields = ImmutableList.builder();
 		for (final DataEntryField layoutField : layoutLine.getDataEntryFields())
@@ -248,16 +250,7 @@ public class DataEntryRestController
 	}
 
 	@NonNull
-	private Optional<DataEntryRecord> getDataEntryRecordForSubtabAndRecord(@NonNull final DataEntrySubTabId subTabId, final int recordId)
-	{
-		return recordRepo.getBy(DataEntryRecordQuery.builder()
-				.dataEntrySubTabId(subTabId)
-				.recordId(recordId)
-				.build());
-	}
-
-	@NonNull
-	private ImmutableList<JsonDataEntryListValue> getDataEntryFieldListValues(@NonNull final DataEntryField layoutField, final String adLanguage)
+	private static ImmutableList<JsonDataEntryListValue> getDataEntryFieldListValues(@NonNull final DataEntryField layoutField, final String adLanguage)
 	{
 		return layoutField.getListValues().stream()
 				.map(it -> JsonDataEntryListValue.builder()
