@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 686282458L;
+	private static final long serialVersionUID = -1735855907L;
 
     /** Standard Constructor */
     public X_C_Location (Properties ctx, int C_Location_ID, String trxName)
@@ -24,6 +25,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
         {
 			setC_Country_ID (0);
 			setC_Location_ID (0);
+			setGeocodingStatus (null); // N
 			setIsPostalValidated (false); // N
         } */
     }
@@ -119,25 +121,6 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
 
-	/** Set C/O.
-		@param CareOf 
-		In care of
-	  */
-	@Override
-	public void setCareOf (java.lang.String CareOf)
-	{
-		set_Value (COLUMNNAME_CareOf, CareOf);
-	}
-
-	/** Get C/O.
-		@return In care of
-	  */
-	@Override
-	public java.lang.String getCareOf () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
-	}
-
 	@Override
 	public org.compiere.model.I_C_City getC_City() throws RuntimeException
 	{
@@ -210,25 +193,6 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Ort.
-		@param City 
-		Identifies a City
-	  */
-	@Override
-	public void setCity (java.lang.String City)
-	{
-		set_Value (COLUMNNAME_City, City);
-	}
-
-	/** Get Ort.
-		@return Identifies a City
-	  */
-	@Override
-	public java.lang.String getCity () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_City);
 	}
 
 	/** Set Anschrift.
@@ -327,6 +291,108 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		return ii.intValue();
 	}
 
+	/** Set C/O.
+		@param CareOf 
+		In care of
+	  */
+	@Override
+	public void setCareOf (java.lang.String CareOf)
+	{
+		set_Value (COLUMNNAME_CareOf, CareOf);
+	}
+
+	/** Get C/O.
+		@return In care of
+	  */
+	@Override
+	public java.lang.String getCareOf () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
+	}
+
+	/** Set Ort.
+		@param City 
+		Identifies a City
+	  */
+	@Override
+	public void setCity (java.lang.String City)
+	{
+		set_Value (COLUMNNAME_City, City);
+	}
+
+	/** Get Ort.
+		@return Identifies a City
+	  */
+	@Override
+	public java.lang.String getCity () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_City);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Issue getGeocoding_Issue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Geocoding_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setGeocoding_Issue(org.compiere.model.I_AD_Issue Geocoding_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_Geocoding_Issue_ID, org.compiere.model.I_AD_Issue.class, Geocoding_Issue);
+	}
+
+	/** Set Geocoding Error.
+		@param Geocoding_Issue_ID Geocoding Error	  */
+	@Override
+	public void setGeocoding_Issue_ID (int Geocoding_Issue_ID)
+	{
+		if (Geocoding_Issue_ID < 1) 
+			set_Value (COLUMNNAME_Geocoding_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_Geocoding_Issue_ID, Integer.valueOf(Geocoding_Issue_ID));
+	}
+
+	/** Get Geocoding Error.
+		@return Geocoding Error	  */
+	@Override
+	public int getGeocoding_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Geocoding_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * GeocodingStatus AD_Reference_ID=540990
+	 * Reference name: GeocodingStatus
+	 */
+	public static final int GEOCODINGSTATUS_AD_Reference_ID=540990;
+	/** NotChecked = N */
+	public static final String GEOCODINGSTATUS_NotChecked = "N";
+	/** Resolved = R */
+	public static final String GEOCODINGSTATUS_Resolved = "R";
+	/** NotResolved = X */
+	public static final String GEOCODINGSTATUS_NotResolved = "X";
+	/** Error = E */
+	public static final String GEOCODINGSTATUS_Error = "E";
+	/** Set Geocoding Status.
+		@param GeocodingStatus Geocoding Status	  */
+	@Override
+	public void setGeocodingStatus (java.lang.String GeocodingStatus)
+	{
+
+		set_Value (COLUMNNAME_GeocodingStatus, GeocodingStatus);
+	}
+
+	/** Get Geocoding Status.
+		@return Geocoding Status	  */
+	@Override
+	public java.lang.String getGeocodingStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GeocodingStatus);
+	}
+
 	/** Set PLZ verifiziert.
 		@param IsPostalValidated 
 		Sagt aus, ob Postleitzahl der Adresse verifiziert wurde.
@@ -358,7 +424,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		Geographical latitude 
 	  */
 	@Override
-	public void setLatitude (java.lang.String Latitude)
+	public void setLatitude (java.math.BigDecimal Latitude)
 	{
 		set_Value (COLUMNNAME_Latitude, Latitude);
 	}
@@ -367,9 +433,12 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		@return Geographical latitude 
 	  */
 	@Override
-	public java.lang.String getLatitude () 
+	public java.math.BigDecimal getLatitude () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Latitude);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Latitude);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Längengrad.
@@ -377,7 +446,7 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		Geographical longitude
 	  */
 	@Override
-	public void setLongitude (java.lang.String Longitude)
+	public void setLongitude (java.math.BigDecimal Longitude)
 	{
 		set_Value (COLUMNNAME_Longitude, Longitude);
 	}
@@ -386,9 +455,12 @@ public class X_C_Location extends org.compiere.model.PO implements I_C_Location,
 		@return Geographical longitude
 	  */
 	@Override
-	public java.lang.String getLongitude () 
+	public java.math.BigDecimal getLongitude () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Longitude);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Longitude);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Postfach.

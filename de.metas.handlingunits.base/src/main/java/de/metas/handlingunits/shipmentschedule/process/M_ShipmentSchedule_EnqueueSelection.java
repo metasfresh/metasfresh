@@ -68,7 +68,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 	{
 		if (context.getSelectionSize() <= 0)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No items are selected");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class).stream()

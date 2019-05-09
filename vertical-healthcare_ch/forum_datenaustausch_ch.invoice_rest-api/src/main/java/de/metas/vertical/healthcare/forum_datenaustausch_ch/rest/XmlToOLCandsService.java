@@ -2,6 +2,7 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE;
+import static de.metas.util.Check.assumeNotEmpty;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.compiere.util.Util.coalesce;
@@ -305,8 +306,6 @@ public class XmlToOLCandsService
 
 		requestBuilder.invoiceDocType(createJsonDocTypeInfo(docSubTypeAndPOReference.getLeft()));
 
-		requestBuilder.externalHeaderId(createExternalHeaderId(payload));
-
 		insertInoviceIntoBuilder(
 				requestBuilder,
 				payload.getInvoice());
@@ -321,29 +320,6 @@ public class XmlToOLCandsService
 				.map(JsonOLCandCreateRequestBuilder::build)
 				.collect(ImmutableList.toImmutableList());
 		return requests;
-	}
-
-	private String createExternalHeaderId(@NonNull final PayloadType payload)
-	{
-		final IPair<String, String> docSubTypeAndPOReference = createPOReference(payload);
-		final String requestIdToUse = docSubTypeAndPOReference.getRight();
-
-		final BillerAddressType biller;
-
-		final BodyType body = payload.getBody();
-		if (body.getTiersGarant() != null)
-		{
-			biller = body.getTiersGarant().getBiller();
-		}
-		else
-		{
-			biller = body.getTiersPayant().getBiller();
-		}
-
-		final String billerEAN = Check.assumeNotEmpty(
-				biller.getEanParty(),
-				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
-		return billerEAN + "_" + requestIdToUse;
 	}
 
 	/**
@@ -388,14 +364,16 @@ public class XmlToOLCandsService
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
 	{
-		final ImmutableList<JsonOLCandCreateRequestBuilder> //
-		invoiceRecipientBuilders = insertInsuranceAndBillerIntoBuilder(
+		final JsonOLCandCreateRequestBuilder //
+		invoiceRecipientBuilder = insertInsuranceAndBillerIntoBuilder(
 				requestBuilder,
 				getInsuranceAndBiller(body),
 				context);
 
-		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilders(
-				invoiceRecipientBuilders,
+		invoiceRecipientBuilder.externalHeaderId(createExternalHeaderId(invoiceRecipientBuilder));
+
+		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilder(
+				invoiceRecipientBuilder,
 				body.getServices(),
 				context);
 
@@ -424,7 +402,7 @@ public class XmlToOLCandsService
 				body.getTiersPayant().getBiller());
 	}
 
-	private ImmutableList<JsonOLCandCreateRequestBuilder> insertInsuranceAndBillerIntoBuilder(
+	private JsonOLCandCreateRequestBuilder insertInsuranceAndBillerIntoBuilder(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final InsuranceAndBiller insuranceAndBiller,
 			@NonNull final HighLevelContext context)
@@ -441,7 +419,7 @@ public class XmlToOLCandsService
 				.bpartner(recipientBPartnerInfo)
 				.org(billerOrgInfo);
 
-		return ImmutableList.of(insuranceBuilder);
+		return insuranceBuilder;
 	}
 
 	@Value
@@ -669,8 +647,8 @@ public class XmlToOLCandsService
 				.toBuilder();
 	}
 
-	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServicesIntoBuilders(
-			@NonNull final ImmutableList<JsonOLCandCreateRequestBuilder> invoiceRecipientBuilders,
+	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServicesIntoBuilder(
+			@NonNull final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder,
 			@NonNull final ServicesType services,
 			@NonNull final HighLevelContext context)
 	{
@@ -679,108 +657,122 @@ public class XmlToOLCandsService
 		final List<Object> records = services.getRecordTarmedOrRecordDrgOrRecordLab();
 		for (final Object record : records)
 		{
-			result.addAll(insertServiceRecordIntoBuilders(invoiceRecipientBuilders, record, context));
+			result.addAll(insertServiceRecordIntoBuilder(invoiceRecipientBuilder, record, context));
 		}
 
 		return result.build();
 	}
 
-	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServiceRecordIntoBuilders(
-			@NonNull final ImmutableList<JsonOLCandCreateRequestBuilder> invoiceRecipientBuilders,
+	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServiceRecordIntoBuilder(
+			@NonNull final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder,
 			@NonNull final Object record,
 			@NonNull final HighLevelContext context)
 	{
 		final ImmutableList.Builder<JsonOLCandCreateRequestBuilder> result = ImmutableList.builder();
 
-		for (final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder : invoiceRecipientBuilders)
+		final String externalLineId;
+		final JsonProductInfo product;
+		final BigDecimal price;
+		final BigDecimal quantity;
+		if (record instanceof RecordTarmedType)
 		{
-			final String externalLineId;
-			final JsonProductInfo product;
-			final BigDecimal price;
-			final BigDecimal quantity;
-			if (record instanceof RecordTarmedType)
-			{
-				final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
+			final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
 
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordTarmedType.getRecordId());
-				product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName(), context);
-				price = recordTarmedType.getAmount();
-				quantity = ONE;
-			}
-			else if (record instanceof RecordDRGType)
-			{
-				final RecordDRGType recordDRGType = (RecordDRGType)record;
-
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
-				product = createProduct(recordDRGType.getCode(), recordDRGType.getName(), context);
-				price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
-				quantity = recordDRGType.getQuantity();
-			}
-			else if (record instanceof RecordLabType)
-			{
-				final RecordLabType recordLabType = (RecordLabType)record;
-
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
-				product = createProduct(recordLabType.getCode(), recordLabType.getName(), context);
-				price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
-				quantity = recordLabType.getQuantity();
-			}
-			else if (record instanceof RecordMigelType)
-			{
-				final RecordMigelType recordMigelType = (RecordMigelType)record;
-
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
-				product = createProduct(recordMigelType.getCode(), recordMigelType.getName(), context);
-				price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
-				quantity = recordMigelType.getQuantity();
-			}
-			else if (record instanceof RecordParamedType)
-			{
-				final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
-
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
-				product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName(), context);
-				price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
-				quantity = recordParamedOtherType.getQuantity();
-			}
-			else if (record instanceof RecordDrugType)
-			{
-				final RecordDrugType recordDrugType = (RecordDrugType)record;
-
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
-				product = createProduct(recordDrugType.getCode(), recordDrugType.getName(), context);
-				price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
-				quantity = recordDrugType.getQuantity();
-			}
-			else if (record instanceof RecordOtherType)
-			{
-				final RecordOtherType recordOtherType = (RecordOtherType)record;
-
-				externalLineId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
-				product = createProduct(recordOtherType.getCode(), recordOtherType.getName(), context);
-				price = createPrice(recordOtherType);
-				quantity = recordOtherType.getQuantity();
-
-			}
-			else
-			{
-				Check.fail("Unexpected record type={}", record);
-				return null;
-			}
-			final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
-			serviceRecordBuilder
-					.externalLineId(externalLineId)
-					.product(product)
-					.price(price)
-					.currencyCode(CURRENCY_CODE)
-					// the UOM shall be taken from the product-masterdata, because we don't really know it from the XML file
-					// .uomCode(UOM_CODE)
-					.discount(ZERO)
-					.qty(quantity);
-
-			result.add(serviceRecordBuilder);
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordTarmedType.getRecordId());
+			product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName(), context);
+			price = recordTarmedType.getAmount();
+			quantity = ONE;
 		}
+		else if (record instanceof RecordDRGType)
+		{
+			final RecordDRGType recordDRGType = (RecordDRGType)record;
+
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
+			product = createProduct(recordDRGType.getCode(), recordDRGType.getName(), context);
+			price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
+			quantity = recordDRGType.getQuantity();
+		}
+		else if (record instanceof RecordLabType)
+		{
+			final RecordLabType recordLabType = (RecordLabType)record;
+
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
+			product = createProduct(recordLabType.getCode(), recordLabType.getName(), context);
+			price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
+			quantity = recordLabType.getQuantity();
+		}
+		else if (record instanceof RecordMigelType)
+		{
+			final RecordMigelType recordMigelType = (RecordMigelType)record;
+
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
+			product = createProduct(recordMigelType.getCode(), recordMigelType.getName(), context);
+			price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
+			quantity = recordMigelType.getQuantity();
+		}
+		else if (record instanceof RecordParamedType)
+		{
+			final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
+
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
+			product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName(), context);
+			price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
+			quantity = recordParamedOtherType.getQuantity();
+		}
+		else if (record instanceof RecordDrugType)
+		{
+			final RecordDrugType recordDrugType = (RecordDrugType)record;
+
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
+			product = createProduct(recordDrugType.getCode(), recordDrugType.getName(), context);
+			price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
+			quantity = recordDrugType.getQuantity();
+		}
+		else if (record instanceof RecordOtherType)
+		{
+			final RecordOtherType recordOtherType = (RecordOtherType)record;
+
+			externalLineId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
+			product = createProduct(recordOtherType.getCode(), recordOtherType.getName(), context);
+			price = createPrice(recordOtherType);
+			quantity = recordOtherType.getQuantity();
+
+		}
+		else
+		{
+			Check.fail("Unexpected record type={}", record);
+			return null;
+		}
+		final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
+		serviceRecordBuilder
+				.externalLineId(externalLineId)
+				.product(product)
+				.price(price)
+				.currencyCode(CURRENCY_CODE)
+				// the UOM shall be taken from the product-masterdata, because we don't really know it from the XML file
+				// .uomCode(UOM_CODE)
+				.discount(ZERO)
+				.qty(quantity);
+
+		result.add(serviceRecordBuilder);
+
 		return result.build();
+	}
+
+	private String createExternalHeaderId(@NonNull final JsonOLCandCreateRequestBuilder requestBuilder)
+	{
+		final JsonOLCandCreateRequest request = requestBuilder.build();
+
+		final String poReference = assumeNotEmpty(request.getPoReference(), "request.poReference may not be empty; request={}", request);
+		final String billerExternalId = assumeNotEmpty(request.getOrg().getBpartner().getBpartner().getExternalId(), "request.org.bpartner.bpartner.externalId may not be empty; request={}", request);
+		final String billRecipientExternalId = assumeNotEmpty(request.getBpartner().getBpartner().getExternalId(), "request.bpartner.bpartner.externalId may not be empty; request={}", request);
+
+		return ""
+				+ poReference // probably the "diversest" property
+				+ "_"
+				+ billerExternalId // biller, might be the same for different bill receivers
+				+ "_"
+				+ billRecipientExternalId; // bill receiver, might be the same for different billers
 	}
 
 	private String createExternalId(
@@ -789,12 +781,9 @@ public class XmlToOLCandsService
 	{
 		final JsonOLCandCreateRequest request = requestBuilder.build();
 
+		final String externalHeaderId = assumeNotEmpty(request.getExternalHeaderId(), "request.externalHeaderId may not be empty; request={}", request);
 		return ""
-				+ request.getPoReference() // probably the "diversest" property
-				+ "_"
-				+ request.getOrg().getBpartner().getBpartner().getExternalId() // biller
-				+ "_"
-				+ request.getBpartner().getBpartner().getExternalId() // might be that same for different billers
+				+ externalHeaderId
 				+ "_"
 				+ recordId;
 	}

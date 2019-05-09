@@ -1,5 +1,8 @@
 package de.metas.order.compensationGroup;
 
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -9,14 +12,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -161,15 +165,19 @@ public class Group
 			final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
 			final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
-			compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
+			final Quantity one = Quantity.of(ONE,
+					loadOutOfTrx(compensationLine.getUomId(), I_C_UOM.class));
+			compensationLine.setPriceAndQty(amt, one, precision);
 		}
 	}
 
 	public void addNewCompensationLine(final GroupCompensationLineCreateRequest request)
 	{
 		final BigDecimal price = request.getPrice();
-		final BigDecimal qty = request.getQty();
-		final BigDecimal lineNetAmt = price != null && qty != null ? price.multiply(qty).setScale(precision, RoundingMode.HALF_UP) : null;
+		final BigDecimal qtyEntered = request.getQtyEntered();
+		final BigDecimal lineNetAmt = price != null && qtyEntered != null
+				? price.multiply(qtyEntered).setScale(precision, RoundingMode.HALF_UP)
+				: null;
 		final GroupCompensationLine compensationLine = GroupCompensationLine.builder()
 				.productId(request.getProductId())
 				.uomId(request.getUomId())
@@ -177,7 +185,7 @@ public class Group
 				.amtType(request.getAmtType())
 				.percentage(request.getPercentage())
 				.price(price)
-				.qty(qty)
+				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.build();

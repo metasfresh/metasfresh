@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,8 +35,13 @@ import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.pricing.IPricingResult;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Takes {@link IQualityInvoiceLine}s and converts them to {@link I_C_Invoice_Detail}s.
@@ -131,29 +136,39 @@ public class InvoiceDetailWriter
 		}
 	}
 
-	private void saveLine(final IQualityInvoiceLine line)
+	private void saveLine(@NonNull final IQualityInvoiceLine line)
 	{
-		Check.assumeNotNull(line, "line not null");
-
 		final I_C_Invoice_Candidate invoiceCandidate = getC_Invoice_Candidate();
 		final int seqNo = _seqNoNext;
+		final Quantity lineQty = line.getQty();
 
 		// Pricing
 		final IPricingResult pricingResult = line.getPrice();
 		final int priceUOMId;
 		final BigDecimal price;
 		final BigDecimal discount;
+		final BigDecimal qtyEnteredInPriceUOM;
+
 		if (pricingResult != null)
 		{
 			priceUOMId = pricingResult.getPrice_UOM_ID();
 			price = pricingResult.getPriceStd();
 			discount = pricingResult.getDiscount().getValue();
+
+			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+			qtyEnteredInPriceUOM = uomConversionBL
+					.convertQuantityTo(
+							lineQty,
+							UOMConversionContext.of(line.getProductId()),
+							UomId.ofRepoId(priceUOMId))
+					.getAsBigDecimal();
 		}
 		else
 		{
-			priceUOMId = -1;
+			priceUOMId = lineQty.getUOMId();
 			price = null;
 			discount = null;
+			qtyEnteredInPriceUOM = lineQty.getAsBigDecimal();
 		}
 
 		final I_C_Invoice_Detail invoiceDetail = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class, getContext());
@@ -168,13 +183,15 @@ public class InvoiceDetailWriter
 		invoiceDetail.setM_Product(line.getM_Product());
 		invoiceDetail.setNote(line.getProductName());
 		// invoiceDetail.setM_AttributeSetInstance(M_AttributeSetInstance);
-		invoiceDetail.setC_UOM(line.getC_UOM());
+		invoiceDetail.setQty(lineQty.getAsBigDecimal());
+		invoiceDetail.setC_UOM_ID(lineQty.getUOMId());
 		invoiceDetail.setDiscount(discount);
-		invoiceDetail.setPrice_UOM_ID(priceUOMId);
 		invoiceDetail.setPriceEntered(price);
 		invoiceDetail.setPriceActual(price);
-		invoiceDetail.setQty(line.getQty());
-		invoiceDetail.setQtyEnteredInPriceUOM(line.getQty());
+
+		invoiceDetail.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+		invoiceDetail.setPrice_UOM_ID(priceUOMId);
+
 		invoiceDetail.setPercentage(line.getPercentage());
 
 		invoiceDetail.setPP_Order(line.getPP_Order());

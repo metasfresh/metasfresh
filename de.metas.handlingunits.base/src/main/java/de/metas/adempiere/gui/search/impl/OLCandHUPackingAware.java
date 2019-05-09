@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -65,7 +66,7 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	public int getM_Product_ID()
 	{
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
+		return ProductId.toRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
 	}
 
 	@Override

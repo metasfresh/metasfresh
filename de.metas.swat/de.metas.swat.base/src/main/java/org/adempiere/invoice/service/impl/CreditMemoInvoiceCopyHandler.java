@@ -1,5 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
+import static java.math.BigDecimal.ONE;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -124,7 +126,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 		// get our currency precision and the smallest possible amount (in most currencies this is 0.01)
 		final int precision = invoice.getC_Currency().getStdPrecision();
-		final BigDecimal smallestAmtInCurrency = BigDecimal.ONE.setScale(precision, BigDecimal.ROUND_HALF_UP).divide(BigDecimal.TEN.pow(precision));
+		final BigDecimal smallestAmtInCurrency = ONE.setScale(precision, BigDecimal.ROUND_HALF_UP).divide(BigDecimal.TEN.pow(precision));
 
 		// Compute the factor we can use to get the credit memo amounts from their respective invoice amounts.
 		// Note that by rounding to "floor", the rounded value won't ever be greater than the "correct" value
@@ -254,8 +256,8 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 		for (final I_C_InvoiceLine creditMemoLine : lines)
 		{
-			creditMemoLine.setQtyEntered(BigDecimal.ONE);
-			creditMemoLine.setQtyInvoiced(BigDecimal.ONE);
+			creditMemoLine.setQtyEntered(ONE);
+			creditMemoLine.setQtyInvoiced(ONE);
 			creditMemoLine.setPriceEntered(line2newLineGrossAmt.get(creditMemoLine));
 			creditMemoLine.setPriceActual(line2newLineGrossAmt.get(creditMemoLine));
 

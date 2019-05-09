@@ -104,8 +104,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic);
 
-	void setC_UOM_ID(I_C_Invoice_Candidate ic);
-
 	void invalidateCandidatesFor(Object model);
 
 	void setBPartnerData(I_C_Invoice_Candidate ic);

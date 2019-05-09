@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -203,11 +204,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>M_Product_Override_ID</code></li>
 	 * <li><code>M_Product_ID</code></li>
 	 * </ul>
-	 *
-	 * @param olCand
-	 * @return
 	 */
-	int getM_Product_Effective_ID(I_C_OLCand olCand);
+	ProductId getM_Product_Effective_ID(I_C_OLCand olCand);
 
 	/**
 	 * Like {@link #getM_Product_Effective_ID(I_C_OLCand)}, but returns the actual product.
