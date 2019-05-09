@@ -313,6 +313,7 @@ public class DataEntryLayoutRepository
 				.description(descriptionTrl)
 				.mandatory(fieldRecord.isMandatory())
 				.type(type)
+				.availableInApi(fieldRecord.isAvailableInAPI())
 				.listValues(listValues.build())
 				.build();
 		return Optional.of(field);

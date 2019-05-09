@@ -44,6 +44,8 @@ public class DataEntryField
 
 	boolean mandatory;
 
+	boolean availableInApi;
+
 	/** empty, unless type=list */
 	List<DataEntryListValue> listValues;
 
@@ -54,6 +56,7 @@ public class DataEntryField
 			@NonNull final ITranslatableString description,
 			@NonNull final FieldType type,
 			final boolean mandatory,
+			final boolean availableInApi,
 			@Singular final List<DataEntryListValue> listValues)
 	{
 		this.id = id;
@@ -61,6 +64,7 @@ public class DataEntryField
 		this.description = description;
 		this.type = type;
 		this.mandatory = mandatory;
+		this.availableInApi = availableInApi;
 		this.listValues = listValues;
 	}
 

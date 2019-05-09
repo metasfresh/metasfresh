@@ -51,6 +51,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "DATE",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -65,6 +66,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "LIST",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [
                         {
                           "id": 100015,
@@ -104,6 +106,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "YESNO",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -118,6 +121,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "TEXT",
                       "mandatory": true,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -132,6 +136,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "LONG_TEXT",
                       "mandatory": true,
+                      "availableInApi": false,
                       "listValues": [ ]
                     }
                   ]
@@ -179,6 +184,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "NUMBER",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -193,6 +199,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "TEXT",
                       "mandatory": true,
+                      "availableInApi": false,
                       "listValues": [ ]
                     }
                   ]
