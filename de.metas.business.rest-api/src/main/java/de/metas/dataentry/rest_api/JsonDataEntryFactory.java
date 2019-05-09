@@ -81,21 +81,22 @@ final class JsonDataEntryFactory
 	@NonNull
 	private ImmutableList<JsonDataEntryTab> toJsonDataEntryTabs()
 	{
-		final ImmutableList.Builder<JsonDataEntryTab> tabs = ImmutableList.builder();
-		for (final DataEntryTab layoutTab : layout.getTabs())
-		{
-			final ImmutableList<JsonDataEntrySubTab> subTabs = toJsonDataEntrySubTabs(layoutTab);
+		return layout.getTabs()
+				.stream()
+				.map(this::toJsonDataEntryTab)
+				.collect(ImmutableList.toImmutableList());
+	}
 
-			final JsonDataEntryTab tab = JsonDataEntryTab.builder()
-					.id(layoutTab.getId())
-					.caption(layoutTab.getCaption().translate(adLanguage))
-					.description(layoutTab.getDescription().translate(adLanguage))
-					.subTabs(subTabs)
-					.build();
-			tabs.add(tab);
-		}
+	private JsonDataEntryTab toJsonDataEntryTab(final DataEntryTab layoutTab)
+	{
+		final ImmutableList<JsonDataEntrySubTab> subTabs = toJsonDataEntrySubTabs(layoutTab);
 
-		return tabs.build();
+		return JsonDataEntryTab.builder()
+				.id(layoutTab.getId())
+				.caption(layoutTab.getCaption().translate(adLanguage))
+				.description(layoutTab.getDescription().translate(adLanguage))
+				.subTabs(subTabs)
+				.build();
 	}
 
 	@NonNull
@@ -110,17 +111,25 @@ final class JsonDataEntryFactory
 				continue;
 			}
 
-			final ImmutableList<JsonDataEntrySection> sections = toJsonDataEntrySections(layoutSubTab, dataEntryRecord);
-
-			final JsonDataEntrySubTab subTab = JsonDataEntrySubTab.builder()
-					.id(layoutSubTab.getId())
-					.caption(layoutSubTab.getCaption().translate(adLanguage))
-					.description(layoutSubTab.getDescription().translate(adLanguage))
-					.sections(sections)
-					.build();
+			final JsonDataEntrySubTab subTab = toJsonDataEntrySubTab(layoutSubTab, dataEntryRecord);
 			subTabs.add(subTab);
 		}
+
 		return subTabs.build();
+	}
+
+	private JsonDataEntrySubTab toJsonDataEntrySubTab(
+			@NonNull final DataEntrySubTab layoutSubTab,
+			@NonNull final DataEntryRecord dataEntryRecord)
+	{
+		final ImmutableList<JsonDataEntrySection> sections = toJsonDataEntrySections(layoutSubTab, dataEntryRecord);
+
+		return JsonDataEntrySubTab.builder()
+				.id(layoutSubTab.getId())
+				.caption(layoutSubTab.getCaption().translate(adLanguage))
+				.description(layoutSubTab.getDescription().translate(adLanguage))
+				.sections(sections)
+				.build();
 	}
 
 	@NonNull
@@ -131,18 +140,26 @@ final class JsonDataEntryFactory
 		final ImmutableList.Builder<JsonDataEntrySection> sections = ImmutableList.builder();
 		for (final DataEntrySection layoutSection : layoutSubTab.getSections())
 		{
-			final ImmutableList<JsonDataEntryLine> lines = toJsonDataEntryLines(layoutSection, dataEntryRecord);
-
-			final JsonDataEntrySection section = JsonDataEntrySection.builder()
-					.id(layoutSection.getId())
-					.caption(layoutSection.getCaption().translate(adLanguage))
-					.description(layoutSection.getDescription().translate(adLanguage))
-					.initiallyClosed(layoutSection.isInitiallyClosed())
-					.lines(lines)
-					.build();
+			final JsonDataEntrySection section = toJsonDataEntrySection(layoutSection, dataEntryRecord);
 			sections.add(section);
 		}
 		return sections.build();
+	}
+
+	@NonNull
+	private JsonDataEntrySection toJsonDataEntrySection(
+			@NonNull final DataEntrySection layoutSection,
+			@NonNull final DataEntryRecord dataEntryRecord)
+	{
+		final ImmutableList<JsonDataEntryLine> lines = toJsonDataEntryLines(layoutSection, dataEntryRecord);
+
+		return JsonDataEntrySection.builder()
+				.id(layoutSection.getId())
+				.caption(layoutSection.getCaption().translate(adLanguage))
+				.description(layoutSection.getDescription().translate(adLanguage))
+				.initiallyClosed(layoutSection.isInitiallyClosed())
+				.lines(lines)
+				.build();
 	}
 
 	private ImmutableList<JsonDataEntryLine> toJsonDataEntryLines(
@@ -152,14 +169,21 @@ final class JsonDataEntryFactory
 		final ImmutableList.Builder<JsonDataEntryLine> lines = ImmutableList.builder();
 		for (final DataEntryLine layoutLine : layoutSection.getLines())
 		{
-			final ImmutableList<JsonDataEntryField> fields = toJsonDataEntryFields(layoutLine, dataEntryRecord);
-
-			final JsonDataEntryLine line = JsonDataEntryLine.builder()
-					.fields(fields)
-					.build();
+			final JsonDataEntryLine line = toJsonDataEntryLine(layoutLine, dataEntryRecord);
 			lines.add(line);
 		}
 		return lines.build();
+	}
+
+	private JsonDataEntryLine toJsonDataEntryLine(
+			@NonNull final DataEntryLine layoutLine,
+			@NonNull final DataEntryRecord dataEntryRecord)
+	{
+		final ImmutableList<JsonDataEntryField> fields = toJsonDataEntryFields(layoutLine, dataEntryRecord);
+
+		return JsonDataEntryLine.builder()
+				.fields(fields)
+				.build();
 	}
 
 	@NonNull
@@ -176,20 +200,28 @@ final class JsonDataEntryFactory
 				continue;
 			}
 
-			final Object fieldValue = dataEntryRecord.getFieldValue(layoutField.getId()).orElse(null);
-
-			final JsonDataEntryField field = JsonDataEntryField.builder()
-					.id(layoutField.getId())
-					.caption(layoutField.getCaption().translate(adLanguage))
-					.description(layoutField.getDescription().translate(adLanguage))
-					.type(JsonFieldType.getBy(layoutField.getType()))
-					.mandatory(layoutField.isMandatory())
-					.listValues(toJsonDataEntryListValues(layoutField))
-					.value(fieldValue)
-					.build();
+			final JsonDataEntryField field = toJsonDataEntryField(layoutField, dataEntryRecord);
 			fields.add(field);
 		}
+
 		return fields.build();
+	}
+
+	private JsonDataEntryField toJsonDataEntryField(
+			@NonNull final DataEntryField layoutField,
+			@NonNull final DataEntryRecord dataEntryRecord)
+	{
+		final Object fieldValue = dataEntryRecord.getFieldValue(layoutField.getId()).orElse(null);
+
+		return JsonDataEntryField.builder()
+				.id(layoutField.getId())
+				.caption(layoutField.getCaption().translate(adLanguage))
+				.description(layoutField.getDescription().translate(adLanguage))
+				.type(JsonFieldType.getBy(layoutField.getType()))
+				.mandatory(layoutField.isMandatory())
+				.listValues(toJsonDataEntryListValues(layoutField))
+				.value(fieldValue)
+				.build();
 	}
 
 	@NonNull
