@@ -69,17 +69,17 @@ public class ADWindowDAO implements IADWindowDAO
 	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
 
 	@Override
-	public ITranslatableString retrieveWindowName(final int adWindowId)
+	public ITranslatableString retrieveWindowName(final AdWindowId adWindowId)
 	{
 		return retrieveWindowNameCached(adWindowId);
 	}
 
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	public ITranslatableString retrieveWindowNameCached(final int adWindowId)
+	public ITranslatableString retrieveWindowNameCached(final AdWindowId adWindowId)
 	{
 		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
 		final I_AD_Window window = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Window.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
@@ -108,19 +108,28 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow)
 	{
-		return retrieveTabsQuery(adWindow)
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(adWindow.getAD_Window_ID());
+		return retrieveTabsQuery(adWindowId)
 				.create()
 				.list(I_AD_Tab.class);
 	}
 
-	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final I_AD_Window window)
+	@Override
+	public void deleteTabsByWindowId(@NonNull final AdWindowId adWindowId)
+	{
+		retrieveTabsQuery(adWindowId)
+				.create()
+				.delete();
+	}
+
+	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final AdWindowId adWindowId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL
-				.createQueryBuilder(I_AD_Tab.class, window)
+				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, window.getAD_Window_ID())
+				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, adWindowId)
 				.orderBy()
 				.addColumn(I_AD_Tab.COLUMN_SeqNo)
 				.addColumn(I_AD_Tab.COLUMN_AD_Tab_ID)
@@ -722,7 +731,11 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
 	{
-		final Map<Integer, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindow).create().map(I_AD_Tab.class, I_AD_Tab::getAD_Table_ID);
+		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
+		final Map<Integer, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindowId)
+				.create()
+				.map(I_AD_Tab.class, I_AD_Tab::getAD_Table_ID);
+		
 		final Collection<I_AD_Tab> sourceTabs = retrieveTabs(sourceWindow);
 
 		for (final I_AD_Tab sourceTab : sourceTabs)

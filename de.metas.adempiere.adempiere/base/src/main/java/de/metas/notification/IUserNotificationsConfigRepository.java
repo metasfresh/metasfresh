@@ -1,5 +1,6 @@
 package de.metas.notification;
 
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -26,5 +27,5 @@ import de.metas.util.ISingletonService;
 
 public interface IUserNotificationsConfigRepository extends ISingletonService
 {
-	UserNotificationsConfig getByUserId(int adUserId);
+	UserNotificationsConfig getByUserId(UserId adUserId);
 }

@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 
@@ -40,6 +39,7 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.requisition.RequisitionRepository;
 import de.metas.requisition.RequisitionService;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 

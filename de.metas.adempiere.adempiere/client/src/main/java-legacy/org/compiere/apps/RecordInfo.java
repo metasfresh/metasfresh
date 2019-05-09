@@ -31,14 +31,11 @@ import java.util.stream.Collectors;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
 import org.compiere.grid.VTable;
 import org.compiere.model.MTable;
@@ -53,6 +50,9 @@ import org.compiere.util.TimeUtil;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 

@@ -55,6 +55,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -689,7 +690,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				}
 			};
 		}
-		else if(Comparable.class.isAssignableFrom(type))
+		else if (Comparable.class.isAssignableFrom(type))
 		{
 			return (result, value) -> {
 				final Comparable resultCmp = (Comparable)result;
@@ -735,15 +736,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public POJOQuery<T> setApplyAccessFilter(final boolean flag)
-	{
-		// nothing at the moment
-		// FIXME: implement
-		return this;
-	}
-
-	@Override
-	public POJOQuery<T> setApplyAccessFilterRW(final boolean RW)
+	public POJOQuery<T> setRequiredAccess(final Access access)
 	{
 		// nothing at the moment
 		// FIXME: implement

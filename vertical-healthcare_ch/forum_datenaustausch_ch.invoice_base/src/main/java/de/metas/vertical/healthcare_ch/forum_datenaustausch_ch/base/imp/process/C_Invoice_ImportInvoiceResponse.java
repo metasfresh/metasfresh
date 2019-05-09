@@ -128,7 +128,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		// return "OK" (i.e. don't throw an exception), but notify the user
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
-				.recipient(Recipient.user(getAD_User_ID()))
+				.recipient(Recipient.user(getUserId()))
 				.contentADMessage(MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION)
 				.contentADMessageParam(getPinstanceId().getRepoId())
 				.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId()), WINDOW_ID_AD_PInstance_ID))

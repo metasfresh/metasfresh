@@ -45,6 +45,7 @@ import javax.swing.event.ChangeListener;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
@@ -1130,8 +1131,8 @@ public final class ALogin extends CDialog
 			return true;
 		}
 
-		final int adClientId = m_login.getCtx().getAD_Client_ID();
-		final boolean dateAutoupdate = sysConfigBL.getBooleanValue("LOGINDATE_AUTOUPDATE", false, adClientId);
+		final ClientId adClientId = m_login.getCtx().getClientId();
+		final boolean dateAutoupdate = sysConfigBL.getBooleanValue("LOGINDATE_AUTOUPDATE", false, adClientId.getRepoId());
 		if (dateAutoupdate)
 		{
 			return false;

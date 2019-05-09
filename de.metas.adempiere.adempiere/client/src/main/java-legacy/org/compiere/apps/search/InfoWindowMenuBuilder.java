@@ -10,7 +10,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.KeyStroke;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
@@ -26,6 +25,7 @@ import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

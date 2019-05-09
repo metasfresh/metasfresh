@@ -151,25 +151,25 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public final int getParameterAsInt(final String parameterName)
+	public final int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
 		{
-			return 0;
+			return defaultValue;
 		}
-		return processInfoParameter.getParameterAsInt();
+		return processInfoParameter.getParameterAsInt(defaultValue);
 	}
 
 	@Override
-	public int getParameter_ToAsInt(final String parameterName)
+	public int getParameter_ToAsInt(final String parameterName, final int defaultValue)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
 		{
-			return 0;
+			return defaultValue;
 		}
-		return processInfoParameter.getParameter_ToAsInt();
+		return processInfoParameter.getParameter_ToAsInt(defaultValue);
 	}
 
 	@Override

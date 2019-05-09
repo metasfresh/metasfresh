@@ -93,7 +93,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 	{
 		final IParams params = getParameterAsIParams();
 
-		warehouseId = params.getParameterAsInt(PARA_M_WAREHOUSE_ID);
+		warehouseId = params.getParameterAsInt(PARA_M_WAREHOUSE_ID, -1);
 		dateFrom = params.getParameterAsTimestamp(PARA_DATE_FROM);
 		dateTo = params.getParameterAsTimestamp(PARA_DATE_TO);
 		isCreateMovement = params.getParameterAsBool(PARA_IS_CREATE_MOVEMENT);

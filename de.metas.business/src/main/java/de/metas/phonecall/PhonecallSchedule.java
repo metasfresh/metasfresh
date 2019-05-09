@@ -5,9 +5,8 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.UserId;
-
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

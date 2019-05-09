@@ -64,9 +64,9 @@ public class GLJournalImportProcess extends AbstractImportProcess<I_I_GLJournal>
 
 	private void getGLJournalImportProcessParameter()
 	{
-		m_AD_Client_ID = getParameters().getParameterAsInt("AD_Client_ID");
-		m_AD_Org_ID = getParameters().getParameterAsInt("AD_Org_ID");
-		m_C_AcctSchema_ID = getParameters().getParameterAsInt("C_AcctSchema_ID");
+		m_AD_Client_ID = getParameters().getParameterAsInt("AD_Client_ID", -1);
+		m_AD_Org_ID = getParameters().getParameterAsInt("AD_Org_ID", -1);
+		m_C_AcctSchema_ID = getParameters().getParameterAsInt("C_AcctSchema_ID", -1);
 		m_DateAcct = getParameters().getParameterAsTimestamp("DateAcct");
 	}
 

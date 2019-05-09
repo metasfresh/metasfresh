@@ -3,8 +3,6 @@ package de.metas.order.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 
 /*
@@ -33,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -46,6 +45,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.interfaces.I_C_OrderLine;
@@ -53,8 +53,10 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
@@ -208,19 +210,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public Set<Integer> retriveOrderCreatedByUserIds(@NonNull final Collection<Integer> orderIds)
+	public Set<UserId> retriveOrderCreatedByUserIds(@NonNull final Collection<Integer> orderIds)
 	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final List<Integer> userIds = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
-				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
-		return ImmutableSet.copyOf(userIds);
+				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class)
+				.stream()
+				.map(UserId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -230,8 +234,19 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
+	public <T extends I_C_Order> List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(orderIds), clazz);
+	}
+
+	@Override
+	public Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(OrderId::ofRepoId)
+				.stream();
 	}
 }

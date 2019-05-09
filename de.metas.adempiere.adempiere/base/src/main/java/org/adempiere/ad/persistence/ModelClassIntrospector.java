@@ -13,29 +13,25 @@ package org.adempiere.ad.persistence;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.util.collections.IdentityHashSet;
 
 /**
  * Used to fetch {@link IModelClassInfo}s from model classes.
@@ -52,13 +48,10 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 		return instance;
 	}
 
-	private final Map<Class<?>, IModelClassInfo> class2info = new IdentityHashMap<>(500);
-	private final Set<Class<?>> classesWhichAreNotModels = new IdentityHashSet<>(100);
-	private final ReentrantLock lock = new ReentrantLock();
+	private final Map<Class<?>, Optional<IModelClassInfo>> modelClassInfos = new ConcurrentHashMap<>(500);
 
 	private ModelClassIntrospector()
 	{
-		super();
 	}
 
 	@Override
@@ -69,56 +62,24 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 			return null;
 		}
 
-		lock.lock();
-		try
-		{
-			//
-			// Check if we already have cached the model
-			IModelClassInfo modelClassInfo = class2info.get(clazz);
-			if (modelClassInfo != null)
-			{
-				return modelClassInfo;
-			}
-
-			//
-			// Check if our class is on black list
-			if (classesWhichAreNotModels.contains(clazz))
-			{
-				return null;
-			}
-
-			//
-			// Introspect the class and create it's model info
-			modelClassInfo = createModelClassInfo(clazz);
-			if (modelClassInfo == null)
-			{
-				// If class could not be introspected then it's not a model, so we are adding it to black list
-				classesWhichAreNotModels.add(clazz);
-			}
-			else
-			{
-				// add model info to cache
-				class2info.put(clazz, modelClassInfo);
-			}
-
-			return modelClassInfo;
-		}
-		finally
-		{
-			lock.unlock();
-		}
+		return modelClassInfos
+				.computeIfAbsent(clazz, this::createModelClassInfo)
+				.orElse(null);
 	}
 
-	private final IModelClassInfo createModelClassInfo(final Class<?> clazz)
+	private final Optional<IModelClassInfo> createModelClassInfo(final Class<?> clazz)
 	{
 		final String tableName = getTableNameOrNull(clazz);
 		if (tableName != null || clazz.isInterface())
 		{
 			final IModelClassInfo modelClassInfo = new ModelClassInfo(this, clazz, tableName);
-			return modelClassInfo;
+			return Optional.of(modelClassInfo);
+		}
+		else
+		{
+			return Optional.empty();
 		}
 
-		return null;
 	}
 
 	public Map<Method, IModelMethodInfo> createModelMethodInfos(final Class<?> clazz)

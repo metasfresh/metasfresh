@@ -68,8 +68,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -247,7 +247,7 @@ public class VFileImport extends CPanel
 					.addColumn(I_AD_ImpFormat.COLUMNNAME_Name)
 					.endOrderBy()
 					.create()
-					.setApplyAccessFilterRW(false) // RO
+					.setRequiredAccess(Access.READ)
 					.list(I_AD_ImpFormat.class);
 
 			final ListComboBoxModel<I_AD_ImpFormat> pickFormatModel = new ListComboBoxModel<>();

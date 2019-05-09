@@ -53,6 +53,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -155,7 +156,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.addColumn(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
 
 		final List<I_M_ReceiptSchedule> schedules = queryBuilder.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.list(I_M_ReceiptSchedule.class)
 				.stream()
 

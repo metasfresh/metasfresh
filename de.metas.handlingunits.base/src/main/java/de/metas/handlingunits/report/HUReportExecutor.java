@@ -331,7 +331,7 @@ public class HUReportExecutor
 			if (processExecutionResult.isError() && !processExecutionResult.isErrorWasReportedToUser())
 			{
 				final ProcessInfo processInfo = result.getProcessInfo();
-				final Recipient recipient = Recipient.userAndRole(processInfo.getAD_User_ID(), processInfo.getAD_Role_ID());
+				final Recipient recipient = Recipient.userAndRole(processInfo.getUserId(), processInfo.getRoleId());
 
 				final String plainMessage = StringUtils.formatMessage("AD_PInstance_ID={}\n Summary:\n{}", processInfo.getPinstanceId().getRepoId(), processExecutionResult.getSummary());
 

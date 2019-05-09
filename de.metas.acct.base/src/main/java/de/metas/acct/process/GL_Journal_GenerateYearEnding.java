@@ -90,7 +90,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 		p_DateFrom = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_YEAR);
 		p_DateTo = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(params.getParameterAsInt(PARAM_C_AcctSchema_ID));
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(params.getParameterAsInt(PARAM_C_AcctSchema_ID, -1));
 		acctSchema = acctSchemasRepo.getById(acctSchemaId);
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		p_Account_IncomeSummaryId = acctSchemaGL.getIncomeSummaryAcctId();

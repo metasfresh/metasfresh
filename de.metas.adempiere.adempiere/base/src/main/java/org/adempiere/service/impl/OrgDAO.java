@@ -37,12 +37,10 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_AD_TreeNode;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -154,30 +152,6 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	public List<I_AD_Org> retrieveChildOrgs(final Properties ctx, final int parentOrgId, final int adTreeOrgId)
-	{
-		if (parentOrgId <= 0)
-		{
-			return ImmutableList.of();
-		}
-
-		// Do we look for trees?
-		if (adTreeOrgId <= 0)
-		{
-			return ImmutableList.of();
-		}
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_TreeNode.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, adTreeOrgId)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Parent_ID, parentOrgId)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_AD_TreeNode.COLUMN_Node_ID, I_AD_Org.class)
-				.create()
-				.list();
-	}
-
-	@Override
 	public Optional<OrgId> retrieveOrgIdBy(@NonNull final OrgQuery orgQuery)
 	{
 		final IQueryBuilder<I_AD_Org> queryBuilder = createQueryBuilder(orgQuery.isOutOfTrx());
@@ -185,7 +159,7 @@ public class OrgDAO implements IOrgDAO
 		final int orgId = queryBuilder
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgQuery.getOrgValue())
 				.create()
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.firstIdOnly();
 
 		if (orgId < 0 && orgQuery.isFailIfNotExists())

@@ -21,16 +21,15 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
 
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.cache.CCache;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
 
 /**
  * 	Performance Measure Calculation
@@ -450,7 +449,7 @@ public class MMeasureCalc extends X_PA_MeasureCalc
 			return finalSQL;
 		if (role == null)
 			role = Env.getUserRolePermissions();
-		String retValue = role.addAccessSQL(finalSQL, tableName, true, false);
+		String retValue = role.addAccessSQL(finalSQL, tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		return retValue;
 	}	//	addRestrictions
 
