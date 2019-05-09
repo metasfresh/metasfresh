@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.user.UserId;
 import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.UserQueryRepository;
 
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

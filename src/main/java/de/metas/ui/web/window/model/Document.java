@@ -27,6 +27,8 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -265,12 +267,12 @@ public final class Document
 
 		for (final DocumentEntityDescriptor includedEntityDescriptor : includedEntities)
 		{
-//			if (!includedEntityDescriptor.getFields().isEmpty())
-//			{
-				final DetailId detailId = includedEntityDescriptor.getDetailId();
-				final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this);
-				includedDocuments.put(detailId, includedDocumentsForDetailId);
-//			}
+			// if (!includedEntityDescriptor.getFields().isEmpty())
+			// {
+			final DetailId detailId = includedEntityDescriptor.getDetailId();
+			final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this);
+			includedDocuments.put(detailId, includedDocumentsForDetailId);
+			// }
 
 			// recurse
 			includedDocuments.putAll(extractIncludedDocuments(includedEntityDescriptor.getIncludedEntities()));
@@ -1961,16 +1963,16 @@ public final class Document
 		};
 	}
 
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
 		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Client_ID);
-		return field != null ? field.getValueAsInt(-1) : -1;
+		return ClientId.ofRepoIdOrNull(field != null ? field.getValueAsInt(-1) : -1);
 	}
 
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
 		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Org_ID);
-		return field != null ? field.getValueAsInt(-1) : -1;
+		return OrgId.ofRepoIdOrNull(field != null ? field.getValueAsInt(-1) : -1);
 	}
 
 	public void onChildSaved(final Document document)

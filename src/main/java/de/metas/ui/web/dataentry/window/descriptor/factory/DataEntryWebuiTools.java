@@ -4,15 +4,13 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.CreatedUpdatedInfo;
-import org.adempiere.user.User;
-import org.adempiere.user.UserRepository;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
+import de.metas.dataentry.data.CreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -20,6 +18,8 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 

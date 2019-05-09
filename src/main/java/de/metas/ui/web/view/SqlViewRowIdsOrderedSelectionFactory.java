@@ -6,10 +6,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
@@ -19,6 +15,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -92,7 +92,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final SqlDocumentFilterConverterContext context)
 	{
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
-		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
+		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(permissionsKey);
 		final int queryLimit = permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
 				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
 				.getMaxQueryRecordsPerRole();

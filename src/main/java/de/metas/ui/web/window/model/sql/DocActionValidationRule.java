@@ -2,7 +2,6 @@ package de.metas.ui.web.window.model.sql;
 
 import java.util.Set;
 
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -15,6 +14,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.lang.SOTrx;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
