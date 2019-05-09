@@ -21,6 +21,12 @@ export class Taxcategory {
     return this;
   }
 
+  setActive(isActive) {
+    cy.log(`Taxcategory - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
+  }
+
   apply() {
     cy.log(`Taxrate - apply - START (name=${this.name})`);
     applyTaxcategory(this);

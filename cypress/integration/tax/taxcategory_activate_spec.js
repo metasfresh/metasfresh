@@ -1,19 +1,16 @@
-import { Taxrate } from '../../support/utils/taxrate';
+import { Taxcategory } from '../../support/utils/taxcategory';
 
-describe('Create Taxrate for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/74', function() {
-  it('Create and deactivate new Taxrate', function() {
-    cy.fixture('tax/taxrate.json').then(taxrateJson => {
-      Object.assign(
-        new Taxrate('Normaler Steuersatz 10%', '2019-05-01', 'Normaler Steuersatz 19% (Deutschland)'),
-        taxrateJson
-      )
+describe('Create Taxcategory for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/75', function() {
+  it('Create and deactivate new Taxcategory', function() {
+    cy.fixture('tax/taxcategory.json').then(taxcategoryJson => {
+      Object.assign(new Taxcategory('Test Steuer'), taxcategoryJson)
         .apply()
         .setActive(false)
         .activate();
     });
-    cy.get('@taxRateObj').then(obj => {
+    cy.get('@taxCatObj').then(obj => {
       // access the users argument
-      cy.log(`Taxrate - Name (name=${obj.documentId}`);
+      cy.log(`Taxcategory - Name = ${obj.documentId}`);
     });
 
     // 2. Deactivate Taxrate

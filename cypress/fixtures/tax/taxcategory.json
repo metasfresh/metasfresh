@@ -6,5 +6,5 @@
     "Description": "Cypress Test Steuer",
     "ID": "",
     "IsActive": true,
-    "VATType": "Standard"
+    "VATType": "Regular VAT"
 }
