@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -74,8 +73,13 @@ public class DataEntryRecordRepository
 
 	public DataEntryRecord getById(@NonNull final DataEntryRecordId dataEntryRecordId)
 	{
-		final I_DataEntry_Record record = load(dataEntryRecordId, I_DataEntry_Record.class);
+		final I_DataEntry_Record record = getRecordById(dataEntryRecordId);
 		return toDataEntryRecord(record);
+	}
+
+	private I_DataEntry_Record getRecordById(final DataEntryRecordId dataEntryRecordId)
+	{
+		return load(dataEntryRecordId, I_DataEntry_Record.class);
 	}
 
 	private DataEntryRecord toDataEntryRecord(@NonNull final I_DataEntry_Record record)
@@ -84,8 +88,7 @@ public class DataEntryRecordRepository
 
 		final List<DataEntryRecordField<?>> fields = jsonDataEntryRecordMapper.deserialize(jsonString);
 
-		return DataEntryRecord
-				.builder()
+		return DataEntryRecord.builder()
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
 				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(record.getDataEntry_SubTab_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
@@ -96,15 +99,14 @@ public class DataEntryRecordRepository
 	public DataEntryRecordId save(@NonNull final DataEntryRecord dataEntryRecord)
 	{
 		final I_DataEntry_Record dataRecord;
-		if (dataEntryRecord.isNew())
+		final DataEntryRecordId existingId = dataEntryRecord.getId().orElse(null);
+		if (existingId == null)
 		{
 			dataRecord = newInstance(I_DataEntry_Record.class);
-			dataEntryRecord.getId().ifPresent(id -> dataRecord.setDataEntry_SubTab_ID(id.getRepoId()));
 		}
 		else
 		{
-			Check.assume(dataEntryRecord.getId().isPresent(), "If isNew=false, then the given dataEntryRecord needs to have an Id dataEntryRecord= {}", dataEntryRecord);
-			dataRecord = load(dataEntryRecord.getId().get(), I_DataEntry_Record.class);
+			dataRecord = getRecordById(existingId);
 		}
 
 		dataRecord.setAD_Table_ID(dataEntryRecord.getMainRecord().getAD_Table_ID());

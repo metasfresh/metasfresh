@@ -75,11 +75,6 @@ public class DataEntryRecord
 		}
 	}
 
-	public boolean isNew()
-	{
-		return !id.isPresent();
-	}
-
 	public void clearRecordFields()
 	{
 		fields.clear();
