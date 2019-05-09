@@ -9,7 +9,7 @@ import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
-import de.metas.dataentry.layout.DataEntryWindow;
+import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryField;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryLine;
@@ -45,13 +45,13 @@ import lombok.NonNull;
 
 final class JsonDataEntryFactory
 {
-	private final DataEntryWindow layout;
+	private final DataEntryLayout layout;
 	private final DataEntryRecordsMap records;
 	private final String adLanguage;
 
 	@Builder(buildMethodName = "buildFactory")
 	private JsonDataEntryFactory(
-			@NonNull final DataEntryWindow layout,
+			@NonNull final DataEntryLayout layout,
 			@NonNull final DataEntryRecordsMap records,
 			@NonNull final String adLanguage)
 	{

@@ -68,7 +68,7 @@ public class DataEntryLayoutRepository
 {
 	private static final Logger logger = LogManager.getLogger(DataEntryLayoutRepository.class);
 
-	private CCache<AdWindowId, DataEntryWindow> cache = CCache.<AdWindowId, DataEntryWindow> builder()
+	private CCache<AdWindowId, DataEntryLayout> cache = CCache.<AdWindowId, DataEntryLayout> builder()
 			.additionalTableNameToResetFor(I_DataEntry_Tab.Table_Name)
 			.additionalTableNameToResetFor(I_DataEntry_SubTab.Table_Name)
 			.additionalTableNameToResetFor(I_DataEntry_Section.Table_Name)
@@ -77,17 +77,17 @@ public class DataEntryLayoutRepository
 			.additionalTableNameToResetFor(I_DataEntry_ListValue.Table_Name)
 			.build();
 
-	public DataEntryWindow getByWindowId(@NonNull final AdWindowId adWindowId)
+	public DataEntryLayout getByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		return cache.getOrLoad(adWindowId, this::retrieveByWindowId);
 	}
 
-	private DataEntryWindow retrieveByWindowId(@NonNull final AdWindowId adWindowId)
+	private DataEntryLayout retrieveByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		final ImmutableList<I_DataEntry_Tab> tabRecords = retrieveTabRecords(adWindowId);
 		if (tabRecords.isEmpty())
 		{
-			return DataEntryWindow.empty(adWindowId);
+			return DataEntryLayout.empty(adWindowId);
 		}
 
 		final List<DataEntryTab> tabs = new ArrayList<>();
@@ -99,10 +99,10 @@ public class DataEntryLayoutRepository
 
 		if (tabs.isEmpty())
 		{
-			return DataEntryWindow.empty(adWindowId);
+			return DataEntryLayout.empty(adWindowId);
 		}
 
-		return DataEntryWindow.builder()
+		return DataEntryLayout.builder()
 				.windowId(adWindowId)
 				.tabs(tabs)
 				.build();

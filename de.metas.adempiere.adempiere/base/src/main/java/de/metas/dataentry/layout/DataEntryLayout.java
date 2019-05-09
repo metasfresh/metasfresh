@@ -37,9 +37,9 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntryWindow
+public class DataEntryLayout
 {
-	public static DataEntryWindow empty(@NonNull final AdWindowId windowId)
+	public static DataEntryLayout empty(@NonNull final AdWindowId windowId)
 	{
 		return builder().windowId(windowId).build();
 	}
@@ -48,7 +48,7 @@ public class DataEntryWindow
 	ImmutableList<DataEntryTab> tabs;
 
 	@Builder
-	private DataEntryWindow(
+	private DataEntryLayout(
 			@NonNull final AdWindowId windowId,
 			@NonNull @Singular final List<DataEntryTab> tabs)
 	{

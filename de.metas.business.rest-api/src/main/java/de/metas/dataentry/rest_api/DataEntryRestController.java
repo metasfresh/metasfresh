@@ -17,7 +17,7 @@ import com.google.common.base.Stopwatch;
 import de.metas.Profiles;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
-import de.metas.dataentry.layout.DataEntryWindow;
+import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
 import de.metas.logging.LogManager;
@@ -106,7 +106,7 @@ public class DataEntryRestController
 			final int recordId,
 			@NonNull final String adLanguage)
 	{
-		final DataEntryWindow layout = layoutRepo.getByWindowId(windowId);
+		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
 		final DataEntryRecordsMap records = dataRecords.get(recordId, layout.getSubTabIds());
 
 		return JsonDataEntryFactory.builder()
