@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.CCache;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
@@ -65,10 +66,23 @@ import lombok.NonNull;
 @Repository
 public class DataEntryLayoutRepository
 {
-
 	private static final Logger logger = LogManager.getLogger(DataEntryLayoutRepository.class);
 
+	private CCache<AdWindowId, DataEntryWindow> cache = CCache.<AdWindowId, DataEntryWindow> builder()
+			.additionalTableNameToResetFor(I_DataEntry_Tab.Table_Name)
+			.additionalTableNameToResetFor(I_DataEntry_SubTab.Table_Name)
+			.additionalTableNameToResetFor(I_DataEntry_Section.Table_Name)
+			.additionalTableNameToResetFor(I_DataEntry_Line.Table_Name)
+			.additionalTableNameToResetFor(I_DataEntry_Field.Table_Name)
+			.additionalTableNameToResetFor(I_DataEntry_ListValue.Table_Name)
+			.build();
+
 	public DataEntryWindow getByWindowId(@NonNull final AdWindowId adWindowId)
+	{
+		return cache.getOrLoad(adWindowId, this::retrieveByWindowId);
+	}
+
+	private DataEntryWindow retrieveByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		final ImmutableList<I_DataEntry_Tab> tabRecords = retrieveTabRecords(adWindowId);
 		if (tabRecords.isEmpty())
