@@ -22,6 +22,7 @@ import java.awt.Window;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -36,9 +37,6 @@ import javax.swing.JFrame;
 
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
@@ -48,7 +46,6 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.service.OrgId;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
@@ -66,6 +63,11 @@ import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -156,7 +158,7 @@ public final class Env
 		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
 		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
 		{
-		SpringApplication.exit(springApplicationContext, () -> 0);
+			SpringApplication.exit(springApplicationContext, () -> 0);
 		}
 
 		// should not be required anymore since we make sure that all non-demon threads are stopped
@@ -232,7 +234,7 @@ public final class Env
 
 	public static final String CTXNAME_AD_Client_ID = "#AD_Client_ID";
 	public static final String CTXNAME_AD_Client_Name = "#AD_Client_Name";
-	public static final int CTXVALUE_AD_Client_ID_System = IClientDAO.SYSTEM_CLIENT_ID;
+	public static final int CTXVALUE_AD_Client_ID_System = ClientId.SYSTEM.getRepoId();
 
 	public static final String CTXNAME_AD_Org_ID = "#AD_Org_ID";
 	public static final String CTXNAME_AD_Org_Name = "#AD_Org_Name";
@@ -245,7 +247,7 @@ public final class Env
 
 	public static final String CTXNAME_AD_Role_ID = "#AD_Role_ID";
 	public static final int CTXVALUE_AD_Role_ID_NONE = -1;
-	public static final int CTXVALUE_AD_Role_ID_System = IUserRolePermissions.SYSTEM_ROLE_ID;
+	public static final int CTXVALUE_AD_Role_ID_System = RoleId.SYSTEM.getRepoId();
 	public static final String CTXNAME_AD_Role_Name = "#AD_Role_Name";
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
 
@@ -1144,7 +1146,7 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Client_ID);
 	}	// getAD_Client_ID
-	
+
 	public static ClientId getClientId(Properties ctx)
 	{
 		return ClientId.ofRepoId(getAD_Client_ID(ctx));
@@ -1159,7 +1161,7 @@ public final class Env
 	{
 		return ClientId.ofRepoId(getAD_Client_ID());
 	}
-	
+
 	public static void setClientId(@NonNull final Properties ctx, @NonNull final ClientId clientId)
 	{
 		setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
@@ -1175,7 +1177,7 @@ public final class Env
 	{
 		return getContextAsInt(ctx, CTXNAME_AD_Org_ID);
 	}	// getAD_Client_ID
-	
+
 	public static OrgId getOrgId(final Properties ctx)
 	{
 		return OrgId.ofRepoIdOrAny(getAD_Org_ID(ctx));
@@ -1216,18 +1218,16 @@ public final class Env
 	{
 		return UserId.ofRepoId(getAD_User_ID(ctx));
 	}
-	
+
 	public static void setLoggedUserId(final Properties ctx, @NonNull final UserId userId)
 	{
 		setContext(ctx, CTXNAME_AD_User_ID, userId.getRepoId());
 	}
-	
+
 	public static void setSalesRepId(final Properties ctx, @NonNull final UserId userId)
 	{
 		setContext(ctx, CTXNAME_SalesRep_ID, userId.getRepoId());
 	}
-
-
 
 	/**
 	 * Get Login AD_Role_ID
@@ -1235,9 +1235,14 @@ public final class Env
 	 * @param ctx context
 	 * @return {@code #AD_Role_ID}
 	 */
-	public static int getAD_Role_ID(Properties ctx)
+	public static int getAD_Role_ID(final Properties ctx)
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID);
+	}
+
+	public static RoleId getLoggedRoleId(final Properties ctx)
+	{
+		return RoleId.ofRepoId(getAD_Role_ID(ctx));
 	}
 
 	public static IUserRolePermissions getUserRolePermissions()
@@ -1248,19 +1253,19 @@ public final class Env
 
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
-		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctx);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 
 	public static IUserRolePermissions getUserRolePermissions(final UserRolePermissionsKey key)
 	{
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(key);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(key);
 	}
 
 	public static IUserRolePermissions getUserRolePermissions(final String permissionsKey)
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromString(permissionsKey);
-		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 
 	public static int getAD_Session_ID(final Properties ctx)
@@ -1776,7 +1781,6 @@ public final class Env
 		startBrowser(file.toURI().toString());
 	}
 
-
 	/**
 	 * Do we run on Apple
 	 *
@@ -2191,9 +2195,8 @@ public final class Env
 			return null;
 		}
 
-
 		Timestamp timestamp = parseTimestampUsingJDBCFormatOrNull(timestampStr);
-		if(timestamp != null)
+		if (timestamp != null)
 		{
 			return timestamp;
 		}
@@ -2205,7 +2208,7 @@ public final class Env
 		}
 		catch (final DateTimeParseException ex)
 		{
-			 // ignore exception
+			// ignore exception
 		}
 
 		throw new AdempiereException("Failed converting '" + timestampStr + "' to " + Timestamp.class);
@@ -2377,6 +2380,16 @@ public final class Env
 	public static Timestamp getDate(final Properties ctx)
 	{
 		return getContextAsDate(ctx, WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	public static LocalDate getLocalDate(final Properties ctx)
+	{
+		return TimeUtil.asLocalDate(getDate(ctx));
+	}
+
+	public static LocalDate getLocalDate()
+	{
+		return getLocalDate(getCtx());
 	}
 
 	/**

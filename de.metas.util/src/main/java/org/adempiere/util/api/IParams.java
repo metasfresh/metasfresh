@@ -46,8 +46,8 @@ public interface IParams
 	/** @return string value or <code>null</code> if parameter is missing */
 	String getParameterAsString(String parameterName);
 
-	/** @return int value or <code>0</code> if parameter is missing or cannot be converted to integer */
-	int getParameterAsInt(String parameterName);
+	/** @return int value or <code>defaultValue</code> if parameter is missing or cannot be converted to integer */
+	int getParameterAsInt(String parameterName, int defaultValue);
 
 	/** @return boolean value or <code>false</code> if parameter is missing */
 	boolean getParameterAsBool(String parameterName);

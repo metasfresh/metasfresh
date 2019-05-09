@@ -1,6 +1,5 @@
 package org.compiere.report.email.service.impl;
 
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -12,6 +11,7 @@ import org.slf4j.Logger;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -57,7 +57,7 @@ public final class BPartnerEmailParams implements IEmailParameters
 		}
 
 		// find the C_BPartner_ID parameter
-		final int bpartnerId = params.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+		final int bpartnerId = params.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 		if (bpartnerId <= 0)
 		{
 			logger.info("Process parameter " + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " didn't contain a value");

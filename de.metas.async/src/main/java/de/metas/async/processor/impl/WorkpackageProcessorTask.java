@@ -75,6 +75,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -532,8 +533,8 @@ import lombok.NonNull;
 
 	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)
 	{
-		final int userInChargeId = workpackage.getAD_User_InCharge_ID();
-		if (userInChargeId <= 0)
+		final UserId userInChargeId = workpackage.getAD_User_InCharge_ID() > 0 ? UserId.ofRepoId(workpackage.getAD_User_InCharge_ID()) : null;
+		if (userInChargeId == null)
 		{
 			return;
 		}

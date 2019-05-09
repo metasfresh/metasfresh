@@ -17,11 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
@@ -31,11 +27,15 @@ import org.compiere.model.MTree_Node;
 import org.compiere.model.MTree_NodeBP;
 import org.compiere.model.MTree_NodeMM;
 import org.compiere.model.MTree_NodePR;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
 
 
 public class TreeMaintenance {
@@ -51,7 +51,7 @@ public class TreeMaintenance {
 	{
 		return DB.getKeyNamePairs(Env.getUserRolePermissions().addAccessSQL(
 				"SELECT AD_Tree_ID, Name FROM AD_Tree WHERE TreeType NOT IN ('BB') ORDER BY 2", 
-				"AD_Tree", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RW), false);
+				"AD_Tree", IUserRolePermissions.SQL_NOTQUALIFIED, Access.WRITE), false);
 	}
 	
 	public ArrayList<ListItem> getTreeItemData()
@@ -74,7 +74,7 @@ public class TreeMaintenance {
 		
 		final List<Object> sqlParams = new ArrayList<>();
 		String sql = poTreeSupport.getNodeInfoSelectSQL(m_tree, sqlParams);
-		sql = Env.getUserRolePermissions().addAccessSQL(sql, sourceTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, sourceTableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		sql += " ORDER BY 2";
 		log.info(sql);
 		//	

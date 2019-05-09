@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -23,6 +22,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;

@@ -4,10 +4,10 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
 
+import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,8 +49,7 @@ public class AD_Column
 			return;
 		}
 
-		final AccessSqlParser accessSqlParserInstance = new AccessSqlParser();
-		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
+		final String adaptedWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
 
 		column.setColumnSQL(adaptedWhereClause);
 	}

@@ -26,15 +26,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 import javax.swing.Box;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -50,12 +44,17 @@ import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
 
 /**
  *	Search by Product Attribute.
@@ -187,7 +186,7 @@ public class InfoPAttribute extends CDialog
 			+ "FROM M_Attribute "
 			+ "WHERE IsActive='Y' "
 			+ "ORDER BY IsInstanceAttribute, Name", 
-			"M_Attribute", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"M_Attribute", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
@@ -282,7 +281,9 @@ public class InfoPAttribute extends CDialog
 			+ "FROM M_AttributeValue "
 			+ "WHERE M_Attribute_ID=? "
 			+ "ORDER BY 2",
-			"M_AttributeValue", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"M_AttributeValue",
+			IUserRolePermissions.SQL_NOTQUALIFIED,
+			Access.READ);
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
@@ -315,7 +316,7 @@ public class InfoPAttribute extends CDialog
 		
 		String sql = Env.getUserRolePermissions().addAccessSQL(
 			"SELECT M_Lot_ID, Name FROM M_Lot WHERE IsActive='Y' ORDER BY 2",
-			"M_Lot", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"M_Lot", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

@@ -2016,8 +2016,9 @@ DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=622223
 
 -- 2019-04-03T09:25:04.460
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543954,628426,563198,0,143,TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) 
+-- VALUES (0,543954,628426,563198,0,143,TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 2019-04-03T09:25:04.503
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -2026,8 +2027,8 @@ DELETE FROM AD_Element_Link WHERE AD_Element_Link_ID=628426
 
 -- 2019-04-03T09:25:04.615
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543954,628427,563198,0,143,TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_Element_Link (AD_Client_ID,AD_Element_ID,AD_Element_Link_ID,AD_Field_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,543954,628427,563198,0,143,TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2019-04-03 09:25:04','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 2019-04-03T09:25:51.777
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

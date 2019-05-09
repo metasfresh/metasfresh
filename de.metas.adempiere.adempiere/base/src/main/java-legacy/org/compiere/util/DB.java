@@ -47,7 +47,6 @@ import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -81,6 +80,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -2353,6 +2353,17 @@ public final class DB
 	}
 
 	/**
+	 * @return e.g. (e.g. ColumnName IN (1, 2) OR ColumnName IS NULL)
+	 */
+	public static String buildSqlList(
+			@NonNull final String columnName,
+			@NonNull final Collection<? extends Object> paramsIn)
+	{
+		final List<Object> paramsOut = null;
+		return buildSqlList(columnName, paramsIn, paramsOut);
+	}
+
+	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
 	 * @param columnName
@@ -2361,7 +2372,10 @@ public final class DB
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
-	public static String buildSqlList(final String columnName, final Collection<? extends Object> paramsIn, final List<Object> paramsOut)
+	public static String buildSqlList(
+			@NonNull final String columnName,
+			@NonNull final Collection<? extends Object> paramsIn,
+			@Nullable final List<Object> paramsOut)
 	{
 		Check.assumeNotEmpty(paramsIn, "paramsIn not empty");
 

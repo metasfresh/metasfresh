@@ -15,6 +15,7 @@ import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -103,7 +104,7 @@ public class InventoryUserNotificationsProducer
 				.topic(EVENTBUS_TOPIC);
 	}
 
-	private final int getNotificationRecipientUserId(final I_M_Inventory inventory)
+	private final UserId getNotificationRecipientUserId(final I_M_Inventory inventory)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
@@ -112,16 +113,16 @@ public class InventoryUserNotificationsProducer
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)
 			{
-				return currentUserId;
+				return UserId.ofRepoId(currentUserId);
 			}
 
-			return inventory.getUpdatedBy(); // last updated
+			return UserId.ofRepoId(inventory.getUpdatedBy()); // last updated
 		}
 		//
 		// Fallback: notify only the creator
 		else
 		{
-			return inventory.getCreatedBy();
+			return UserId.ofRepoId(inventory.getCreatedBy());
 		}
 	}
 

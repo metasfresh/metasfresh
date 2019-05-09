@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.DocumentUserNotificationsProducer;
 import de.metas.procurement.base.ProcurementConstants;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 
 /*
@@ -62,7 +63,7 @@ public class OrdersCollector implements IOrdersCollector
 			.eventAD_MessageParamsExtractor(OrdersCollector::extractUserNotificationADMessageParams)
 			.build();
 
-	private int defaultNotificationRecipientId = -1;
+	private UserId defaultNotificationRecipientId;
 
 	private OrdersCollector()
 	{
@@ -78,7 +79,7 @@ public class OrdersCollector implements IOrdersCollector
 				.build();
 	}
 
-	public void setDefaultNotificationRecipientId(final int defaultNotificationRecipientId)
+	public void setDefaultNotificationRecipientId(final UserId defaultNotificationRecipientId)
 	{
 		this.defaultNotificationRecipientId = defaultNotificationRecipientId;
 	}

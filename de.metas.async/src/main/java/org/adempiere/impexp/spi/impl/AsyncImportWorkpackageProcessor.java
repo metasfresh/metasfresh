@@ -39,6 +39,7 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -81,7 +82,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 		Check.assumeNotNull(importTableName, "importTableName not null");
 
 		// Make sure we have a selection defined. It will be used by the import processor.
-		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID);
+		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID, -1);
 		Check.assume(selectionId > 0, "selectionId > 0");
 
 		final IImportProcess<Object> importProcessor = Services.get(IImportProcessFactory.class).newImportProcessForTableName(importTableName);
@@ -90,12 +91,13 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 		importProcessor.setParameters(getParameters());
 		final ImportProcessResult result = importProcessor.run();
 
-		notifyImportDone(result, workpackage.getCreatedBy());
+		final UserId recipientUserId = UserId.ofRepoId(workpackage.getCreatedBy());
+		notifyImportDone(result, recipientUserId);
 
 		return Result.SUCCESS;
 	}
 
-	private void notifyImportDone(final ImportProcessResult result, final int recipientUserId)
+	private void notifyImportDone(final ImportProcessResult result, final UserId recipientUserId)
 	{
 		try
 		{

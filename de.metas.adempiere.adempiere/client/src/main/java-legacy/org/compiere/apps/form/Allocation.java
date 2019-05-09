@@ -21,27 +21,26 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Vector;
-import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MAllocationLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.document.engine.IDocument;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 public class Allocation
 {
@@ -138,7 +137,7 @@ public class Allocation
 		sql.append(" ORDER BY p.DateTrx,p.DocumentNo");
 		
 		// role security
-		sql = new StringBuffer(Env.getUserRolePermissions().addAccessSQL(sql.toString(), "p", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
+		sql = new StringBuffer(Env.getUserRolePermissions().addAccessSQL(sql.toString(), "p", IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ));
 		
 		log.debug("PaySQL=" + sql.toString());
 		try
@@ -267,7 +266,7 @@ public class Allocation
 		log.debug("InvSQL=" + sql.toString());
 		
 		// role security
-		sql = new StringBuffer(Env.getUserRolePermissions().addAccessSQL(sql.toString(), "i", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
+		sql = new StringBuffer(Env.getUserRolePermissions().addAccessSQL(sql.toString(), "i", IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ));
 		
 		try
 		{

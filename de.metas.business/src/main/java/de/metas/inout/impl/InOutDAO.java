@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -271,13 +272,29 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public Stream<InOutId> streamInOutIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InOut.class)
+				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.stream();
+	}
+
+	@Override
 	public Set<InOutAndLineId> retrieveLinesForInOutId(final InOutId inOutId)
 	{
-		final I_M_InOut inOut = load(inOutId.getRepoId(), I_M_InOut.class);
+		final I_M_InOut inOut = getById(inOutId);
 
 		return retrieveLines(inOut)
 				.stream()
-				.map(line -> InOutAndLineId.ofRepoId(inOut.getM_InOut_ID(), line.getM_InOutLine_ID()))
+				.map(this::extractInOutAndLineId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
+	{
+		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
 	}
 }

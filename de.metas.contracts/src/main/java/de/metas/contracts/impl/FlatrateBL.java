@@ -105,6 +105,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -1200,7 +1201,13 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
 
-		flatrateGeneratedEventBus.notifyUser(currentTerm, currentTerm.getAD_User_InCharge_ID(), msgValue);
+		final UserId recipientUserId = currentTerm.getAD_User_InCharge_ID() > 0 ? UserId.ofRepoId(currentTerm.getAD_User_InCharge_ID()) : null;
+		if(recipientUserId == null)
+		{
+			return;
+		}
+		
+		flatrateGeneratedEventBus.notifyUser(currentTerm, recipientUserId, msgValue);
 	}
 
 	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context)
