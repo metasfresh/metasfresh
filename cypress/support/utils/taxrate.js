@@ -72,7 +72,7 @@ function applyTaxrate(taxrate) {
   const timestamp = new Date().getTime();
 
   describe(`Create new Taxrate ${taxrate.name}`, function() {
-    cy.visitWindow('137', 'NEW');
+    cy.visitWindow('137', 'NEW', 'taxRateObj');
     cy.log(`Taxrate - Name (name=${taxrate.name} ${timestamp})`);
     cy.writeIntoStringField('Name', `${taxrate.name} ${timestamp}`);
     cy.log(`Taxrate - validFrom (validFrom=${taxrate.validFrom}{enter})`);

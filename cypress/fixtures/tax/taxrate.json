@@ -14,5 +14,5 @@
     "c_region_id": "",
     "to_region_id": "",
     "isToEULocation": true,
-    "c_taxrate_id": true
+    "c_taxrate_id": 0
 }
