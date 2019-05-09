@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import de.metas.dataentry.model.I_DataEntry_SubTab;
-import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,14 +15,15 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.layout.DataEntryField;
-import de.metas.dataentry.layout.DataEntryTab;
-import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
-
-
+import de.metas.dataentry.layout.DataEntryTab;
+import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
+import de.metas.dataentry.layout.DataEntryWindow;
+import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -38,8 +37,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementTabDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementTabDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
@@ -99,16 +98,16 @@ public class DataEntryTabLoader
 	{
 		final DataEntryLayoutRepository dataEntryRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
 
-		final List<DataEntryTab> dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
+		final DataEntryWindow dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
 
 		return createLayoutDescriptors(dataEntryTabs);
 	}
 
 	@VisibleForTesting
-	List<DocumentLayoutDetailDescriptor> createLayoutDescriptors(@NonNull final List<DataEntryTab> dataEntryTabs)
+	List<DocumentLayoutDetailDescriptor> createLayoutDescriptors(@NonNull final DataEntryWindow layout)
 	{
 		final ImmutableList.Builder<DocumentLayoutDetailDescriptor> result = ImmutableList.builder();
-		for (final DataEntryTab dataEntryTab : dataEntryTabs)
+		for (final DataEntryTab dataEntryTab : layout.getTabs())
 		{
 			final ImmutableList<DocumentLayoutDetailDescriptor> //
 			groupLayoutDescriptors = createTabLayoutDescriptors(windowId, dataEntryTab);
@@ -296,16 +295,16 @@ public class DataEntryTabLoader
 	{
 		final DataEntryLayoutRepository dataEntryRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
 
-		final List<DataEntryTab> dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
+		final DataEntryWindow dataEntryTabs = dataEntryRepository.getByWindowId(adWindowId);
 
 		return createTabEntityDescriptors(dataEntryTabs);
 	}
 
 	@VisibleForTesting
-	List<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final List<DataEntryTab> dataEntryTabs)
+	List<DocumentEntityDescriptor> createTabEntityDescriptors(@NonNull final DataEntryWindow layout)
 	{
 		final ImmutableList.Builder<DocumentEntityDescriptor> result = ImmutableList.builder();
-		for (final DataEntryTab dataEntryTab : dataEntryTabs)
+		for (final DataEntryTab dataEntryTab : layout.getTabs())
 		{
 			final ImmutableList<DocumentEntityDescriptor> groupEntityDescriptors = createTabEntityDescriptors(dataEntryTab);
 			result.addAll(groupEntityDescriptors);

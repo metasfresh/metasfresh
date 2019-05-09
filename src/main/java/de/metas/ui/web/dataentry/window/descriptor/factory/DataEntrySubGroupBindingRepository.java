@@ -5,7 +5,6 @@ import static de.metas.util.Check.assumeNotNull;
 import java.util.Optional;
 import java.util.function.Function;
 
-import de.metas.dataentry.model.I_DataEntry_SubTab;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -19,9 +18,9 @@ import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
+import de.metas.dataentry.data.DataEntryRecordQuery;
 import de.metas.dataentry.data.DataEntryRecordRepository;
-import de.metas.dataentry.data.DataEntryRecordRepository.DataEntryRecordQuery;
-
+import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -29,12 +28,12 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
-import de.metas.user.UserId;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -116,7 +115,10 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
-		final DataEntryRecordQuery dataEntryRecordQuery = DataEntryRecordQuery.of(dataEntrySubTabId, parentRecordReference.getRecord_ID());
+		final DataEntryRecordQuery dataEntryRecordQuery = DataEntryRecordQuery.builder()
+				.dataEntrySubTabId(dataEntrySubTabId)
+				.recordId(parentRecordReference.getRecord_ID())
+				.build();
 
 		final Optional<DataEntryRecord> dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordQuery);
 		if (!dataEntryRecord.isPresent())
@@ -202,7 +204,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		refreshFromDataEntryRecord(document, dataEntryRecord);
 	}
 
-	private DataEntryRecordQuery extractDataEntryRecordQuery(@NonNull final Document document)
+	private static DataEntryRecordQuery extractDataEntryRecordQuery(@NonNull final Document document)
 	{
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
 		final DataEntrySubTabId subGroupId = extractDataEntrySubGroupId(detailId);
@@ -210,7 +212,10 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final Document parentDocument = document.getParentDocument();
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
-		return DataEntryRecordQuery.of(subGroupId, parentRecordReference.getRecord_ID());
+		return DataEntryRecordQuery.builder()
+				.dataEntrySubTabId(subGroupId)
+				.recordId(parentRecordReference.getRecord_ID())
+				.build();
 	}
 
 	private void refreshFromDataEntryRecord(
@@ -291,13 +296,11 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
 		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
 
-		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
-				.isNew(true)
+		return DataEntryRecord.builder()
 				.mainRecord(parentReference)
 				.dataEntrySubTabId(dataEntrySubTabId)
 				.fields(ImmutableList.of())
 				.build();
-		return dataEntryRecord;
 	}
 
 	private static TableRecordReference extractParentRecordReference(@NonNull final Document parentDocument)

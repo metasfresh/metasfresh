@@ -7,6 +7,7 @@ import static java.lang.Integer.parseInt;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,23 +15,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
 import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryField;
-import de.metas.dataentry.layout.DataEntryTab;
-import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
+import de.metas.dataentry.layout.DataEntryTab;
+import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
+import de.metas.dataentry.layout.DataEntryWindow;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -117,7 +118,10 @@ public class DataEntryTabLoaderTest
 
 		// invoke the method under test
 		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
-				.createLayoutDescriptors(ImmutableList.of(dataEntryTab));
+				.createLayoutDescriptors(DataEntryWindow.builder()
+						.windowId(AdWindowId.ofRepoId(1))
+						.tab(dataEntryTab)
+						.build());
 
 		expect(descriptors).toMatchSnapshot();
 	}
@@ -129,7 +133,10 @@ public class DataEntryTabLoaderTest
 
 		// invoke the method under test
 		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
-				.createLayoutDescriptors(ImmutableList.of(dataEntryTab));
+				.createLayoutDescriptors(DataEntryWindow.builder()
+						.windowId(AdWindowId.ofRepoId(1))
+						.tab(dataEntryTab)
+						.build());
 
 		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonOptions);
 		expect(jsonTabs).toMatchSnapshot();
@@ -142,7 +149,10 @@ public class DataEntryTabLoaderTest
 
 		// invoke the method under test
 		final List<DocumentEntityDescriptor> descriptors = dataEntryTabLoader
-				.createTabEntityDescriptors(ImmutableList.of(dataEntryTab));
+				.createTabEntityDescriptors(DataEntryWindow.builder()
+						.windowId(AdWindowId.ofRepoId(1))
+						.tab(dataEntryTab)
+						.build());
 
 		expect(descriptors).toMatchSnapshot();
 	}
