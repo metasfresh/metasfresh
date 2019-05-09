@@ -1,7 +1,6 @@
 package de.metas.dataentry.rest_api;
 
 import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -21,6 +20,7 @@ import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
 import de.metas.logging.LogManager;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.utils.RestApiUtils;
 import lombok.NonNull;
 
 /*
@@ -81,7 +81,7 @@ public class DataEntryRestController
 
 	private ResponseEntity<JsonDataEntryResponse> getByRecordId0(final AdWindowId windowId, final int recordId)
 	{
-		final String adLanguage = Env.getAD_Language();
+		final String adLanguage = RestApiUtils.getAdLanguage();
 
 		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
 		if (layout.isEmpty())
