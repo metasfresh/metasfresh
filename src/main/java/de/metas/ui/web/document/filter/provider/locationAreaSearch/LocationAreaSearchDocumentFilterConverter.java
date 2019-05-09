@@ -52,6 +52,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 
 	public static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
 	public static final String PARAM_Address1 = "Address1";
+	public static final String PARAM_City = "City";
 	public static final String PARAM_Postal = "Postal";
 	public static final String PARAM_CountryId = "C_Country_ID";
 	public static final String PARAM_Distance = "Distance";
@@ -164,9 +165,9 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 
 		final GeoCoordinatesRequest request = GeoCoordinatesRequest.builder()
 				.countryCode2(countryCode2)
-				.postal(filter.getParameterValueAsString(PARAM_Postal, null))
-				.address(filter.getParameterValueAsString(PARAM_Address1, null))
-//				.city(filter.getParameterValueAsString()) // TODO @teo: can we add the city here?
+				.postal(filter.getParameterValueAsString(PARAM_Postal, ""))
+				.address(filter.getParameterValueAsString(PARAM_Address1, ""))
+				.city(filter.getParameterValueAsString(PARAM_City, ""))
 				.build();
 
 		return Optional.of(request);
