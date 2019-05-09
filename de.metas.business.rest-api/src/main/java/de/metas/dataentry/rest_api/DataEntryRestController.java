@@ -16,8 +16,8 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.Profiles;
 import de.metas.dataentry.data.DataEntryRecordRepository;
-import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntryLayout;
+import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.rest_api.dto.JsonDataEntry;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
 import de.metas.logging.LogManager;
@@ -67,7 +67,7 @@ public class DataEntryRestController
 		this.dataRecords = new DataEntryRecordCache(recordsRepo);
 	}
 
-	@GetMapping("/byID/{windowId}/{recordId}")
+	@GetMapping("/byId/{windowId}/{recordId}")
 	public ResponseEntity<JsonDataEntryResponse> getByRecordId(
 			@PathVariable("windowId") final int windowId,
 			@PathVariable("recordId") final int recordId)
