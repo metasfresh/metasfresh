@@ -11,7 +11,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
         "anyLanguage": true
       },
       "internalName": "DataEntry_Tab_ID-100003",
-      "dataEntrySubTabs": [
+      "subTabs": [
         {
           "id": 100009,
           "caption": {
@@ -23,7 +23,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
             "anyLanguage": true
           },
           "internalName": "DataEntry_SubTab_ID-100009",
-          "dataEntrySections": [
+          "sections": [
             {
               "id": 100010,
               "caption": {
@@ -36,9 +36,9 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
               },
               "internalName": "DataEntry_Section_ID-100010",
               "initiallyClosed": true,
-              "dataEntryLines": [
+              "lines": [
                 {
-                  "dataEntryFields": [
+                  "fields": [
                     {
                       "id": 100012,
                       "caption": {
@@ -70,7 +70,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       "listValues": [
                         {
                           "id": 100015,
-                          "dataEntryFieldId": 100013,
+                          "fieldId": 100013,
                           "name": {
                             "value": "listValueRecord1_2_1_1_2_2_name",
                             "anyLanguage": true
@@ -82,7 +82,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                         },
                         {
                           "id": 100014,
-                          "dataEntryFieldId": 100013,
+                          "fieldId": 100013,
                           "name": {
                             "value": "listValueRecord1_2_1_1_2_1_name",
                             "anyLanguage": true
@@ -156,7 +156,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
             "anyLanguage": true
           },
           "internalName": "DataEntry_SubTab_ID-100004",
-          "dataEntrySections": [
+          "sections": [
             {
               "id": 100005,
               "caption": {
@@ -169,9 +169,9 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
               },
               "internalName": "DataEntry_Section_ID-100005",
               "initiallyClosed": false,
-              "dataEntryLines": [
+              "lines": [
                 {
-                  "dataEntryFields": [
+                  "fields": [
                     {
                       "id": 100008,
                       "caption": {
