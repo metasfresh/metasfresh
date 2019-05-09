@@ -443,15 +443,15 @@ public class CCache<K, V> implements CacheInterface
 
 	private long resetForRecordIdUsingKeysMapper(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull final KeysMapper<K> existingKeysMapper)
+			@NonNull final KeysMapper<K> keysMapper)
 	{
-		if (existingKeysMapper.isResetAll(recordRef))
+		if (keysMapper.isResetAll(recordRef))
 		{
 			return reset();
 		}
 
 		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
-		for (final K key : existingKeysMapper.computeKeys(recordRef))
+		for (final K key : keysMapper.computeKeys(recordRef))
 		{
 			final boolean keyRemoved = remove(key) != null;
 			if (keyRemoved)
