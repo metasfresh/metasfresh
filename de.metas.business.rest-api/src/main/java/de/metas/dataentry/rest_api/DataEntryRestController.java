@@ -233,6 +233,12 @@ public class DataEntryRestController
 		final ImmutableList.Builder<JsonDataEntryField> fields = ImmutableList.builder();
 		for (final DataEntryField layoutField : layoutLine.getDataEntryFields())
 		{
+			// some fields can be excluded from the response, according to this flag
+			if (!layoutField.isAvailableInApi())
+			{
+				continue;
+			}
+
 			Object dataEntryRecordValue = null;
 			if (dataEntryRecord.isPresent())
 			{
