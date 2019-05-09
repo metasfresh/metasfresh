@@ -47,13 +47,16 @@ public class JsonDataEntryCache
 	{
 		cache = CCache.<CacheKey, JsonDataEntry> builder()
 				.initialCapacity(cacheCapacity)
+				// Layout:
 				.additionalTableNameToResetFor(I_DataEntry_Tab.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_SubTab.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_Section.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_Line.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_Field.Table_Name)
-				.additionalTableNameToResetFor(I_DataEntry_Record.Table_Name)
 				.additionalTableNameToResetFor(I_DataEntry_ListValue.Table_Name)
+				// Data:
+				.additionalTableNameToResetFor(I_DataEntry_Record.Table_Name)
+				//
 				.build();
 	}
 
