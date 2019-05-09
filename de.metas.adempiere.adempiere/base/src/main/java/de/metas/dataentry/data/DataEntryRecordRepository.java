@@ -87,7 +87,6 @@ public class DataEntryRecordRepository
 		return DataEntryRecord
 				.builder()
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
-				.isNew(false)
 				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(record.getDataEntry_SubTab_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.fields(fields)

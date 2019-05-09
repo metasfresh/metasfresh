@@ -3,7 +3,6 @@ package de.metas.dataentry.data;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -48,32 +47,25 @@ import lombok.Value;
 public class DataEntryRecord
 {
 	/** May be empty if not yet persisted */
-	Optional<DataEntryRecordId> id;
+	final Optional<DataEntryRecordId> id;
+	final DataEntrySubTabId dataEntrySubTabId;
+	final ITableRecordReference mainRecord;
 
-	/** If {@code true}, then the repository shall create a new DB record. */
-	boolean isNew;
-
-	DataEntrySubTabId dataEntrySubTabId;
-
-	ITableRecordReference mainRecord;
-
-	@Getter(AccessLevel.NONE) final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
+	@Getter(AccessLevel.NONE)
+	final HashMap<DataEntryFieldId, DataEntryRecordField<?>> fields;
 
 	@Builder
 	private DataEntryRecord(
 			@Nullable final DataEntryRecordId id,
-			final boolean isNew,
 			@NonNull final ITableRecordReference mainRecord,
 			@NonNull final DataEntrySubTabId dataEntrySubTabId,
 			@Nullable final List<DataEntryRecordField<?>> fields)
 	{
 		this.id = Optional.ofNullable(id);
-		this.isNew = isNew;
 		this.mainRecord = mainRecord;
 		this.dataEntrySubTabId = dataEntrySubTabId;
 
 		this.fields = new HashMap<>();
-
 		if (fields != null)
 		{
 			for (final DataEntryRecordField<?> field : fields)
@@ -81,6 +73,11 @@ public class DataEntryRecord
 				this.fields.put(field.getDataEntryFieldId(), field);
 			}
 		}
+	}
+
+	public boolean isNew()
+	{
+		return !id.isPresent();
 	}
 
 	public void clearRecordFields()
@@ -118,7 +115,7 @@ public class DataEntryRecord
 		}
 
 		final DataEntryRecordField<?> //
-				dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
+		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
 
 		fields.put(dataEntryFieldId, dataEntryRecordField);
 		return true;

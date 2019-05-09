@@ -78,7 +78,6 @@ public class DataEntryRecordRepositoryTest
 		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
-				.isNew(true)
 				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(ImmutableList.of())
@@ -103,7 +102,6 @@ public class DataEntryRecordRepositoryTest
 
 		final DataEntryRecord dataEntryRecord = DataEntryRecord
 				.builder()
-				.isNew(true)
 				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
 				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
