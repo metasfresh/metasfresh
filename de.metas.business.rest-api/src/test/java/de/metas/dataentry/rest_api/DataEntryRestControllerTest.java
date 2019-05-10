@@ -19,6 +19,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +43,6 @@ class DataEntryRestControllerTest
 	@BeforeAll
 	static void initStatic()
 	{
-		AdempiereTestHelper.get().init();
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
@@ -52,8 +52,11 @@ class DataEntryRestControllerTest
 		validateSnapshots();
 	}
 
-	@BeforeEach void init()
+	@BeforeEach
+	void init()
 	{
+		AdempiereTestHelper.get().init();
+
 		final DataEntryLayoutRepository dataEntryLayoutRepository = new DataEntryLayoutRepository();
 		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
 		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
@@ -67,7 +70,8 @@ class DataEntryRestControllerTest
 
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
-		final JsonDataEntryResponse g0002 = dataEntryRestController.getByRecordId(BPARTNER_WINDOW_ID, bPartner.getC_BPartner_ID()).getBody();
+		final JsonDataEntryResponse g0002 = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(BPARTNER_WINDOW_ID), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
+		System.out.println(g0002);
 		expect(g0002).toMatchSnapshot();
 	}
 
@@ -79,10 +83,10 @@ class DataEntryRestControllerTest
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
 		final int inexistentWindowId = 55555;
-		final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId(inexistentWindowId, bPartner.getC_BPartner_ID()).getBody();
-		System.out.println(shouldBeEmpty);
+		final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
 		assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId));
+		assertThat(shouldBeEmpty.getResult()).isNull();
 		expect(shouldBeEmpty).toMatchSnapshot();
 	}
 
@@ -254,6 +258,7 @@ class DataEntryRestControllerTest
 	private static I_C_BPartner createBPartner(final String nameAndValue)
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setC_BPartner_ID(100038);
 		bpartner.setValue(nameAndValue);
 		bpartner.setName(nameAndValue);
 		save(bpartner);

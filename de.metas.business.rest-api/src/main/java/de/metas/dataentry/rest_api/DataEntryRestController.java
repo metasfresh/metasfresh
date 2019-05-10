@@ -1,5 +1,6 @@
 package de.metas.dataentry.rest_api;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +53,7 @@ public class DataEntryRestController
 {
 	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
 
-	private static final transient Logger logger = LogManager.getLogger(DataEntryRestController.class);
+	private static final transient Logger log = LogManager.getLogger(DataEntryRestController.class);
 
 	private final DataEntryLayoutRepository layoutRepo;
 	private final DataEntryRecordCache dataRecords;
@@ -72,21 +73,21 @@ public class DataEntryRestController
 			@PathVariable("recordId") final int recordId)
 	{
 		final Stopwatch w = Stopwatch.createStarted();
-		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getByRecordId0(AdWindowId.ofRepoId(windowId), recordId);
+		final String adLanguage = RestApiUtils.getAdLanguage();
+		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getByRecordId0(AdWindowId.ofRepoId(windowId), recordId, adLanguage);
 		w.stop();
 
-		logger.debug("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w);
+		log.trace("getJsonDataEntry by {windowId '{}' and recordId '{}'} duration: {}", windowId, recordId, w);
 		return jsonDataEntry;
 	}
 
-	private ResponseEntity<JsonDataEntryResponse> getByRecordId0(final AdWindowId windowId, final int recordId)
+	@VisibleForTesting
+	ResponseEntity<JsonDataEntryResponse> getByRecordId0(final AdWindowId windowId, final int recordId, final String adLanguage)
 	{
-		final String adLanguage = RestApiUtils.getAdLanguage();
-
 		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
 		if (layout.isEmpty())
 		{
-			return JsonDataEntryResponse.notFound("No data entry for windowId: " + windowId);
+			return JsonDataEntryResponse.notFound(String.format("No dataentry for windowId '%d' and recordId '%s'.", windowId.getRepoId(), recordId));
 		}
 
 		final DataEntryRecordsMap records = dataRecords.get(recordId, layout.getSubTabIds());
