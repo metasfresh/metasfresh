@@ -64,7 +64,7 @@ public class DataEntryRestController
 			@Value("${de.metas.dataentry.rest_api.DataEntryRestController.cacheCapacity:200}") final int cacheCapacity)
 	{
 		this.layoutRepo = layoutRepo;
-		this.dataRecords = new DataEntryRecordCache(recordsRepo);
+		this.dataRecords = new DataEntryRecordCache(recordsRepo, cacheCapacity);
 	}
 
 	@GetMapping("/byId/{windowId}/{recordId}")

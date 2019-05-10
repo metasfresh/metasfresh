@@ -71,7 +71,7 @@ public class DataEntryRecordCacheTest
 		LogManager.setLoggerLevel(DataEntryRecordIdIndex.class, Level.TRACE);
 
 		entryRecordsRepo = new DataEntryRecordRepository(new JSONDataEntryRecordMapper());
-		entryRecordsCache = new DataEntryRecordCache(entryRecordsRepo);
+		entryRecordsCache = new DataEntryRecordCache(entryRecordsRepo, 1000);
 	}
 
 	private static Set<DataEntrySubTabId> toDataEntrySubTabIds(final int... repoIds)

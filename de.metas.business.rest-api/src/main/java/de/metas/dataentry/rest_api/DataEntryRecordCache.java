@@ -58,17 +58,18 @@ final class DataEntryRecordCache
 	private final DataEntryRecordRepository recordsRepo;
 
 	private final DataEntryRecordIdIndex dataEntryRecordIdIndex = new DataEntryRecordIdIndex();
-	private final CCache<CacheKey, DataEntryRecord> cache = CCache.<CacheKey, DataEntryRecord> builder()
-			.tableName(I_DataEntry_Record.Table_Name)
-			.cacheMapType(CacheMapType.LRU)
-			.initialCapacity(1000)
-			.invalidationKeysMapper(dataEntryRecordIdIndex::getCacheKeysByTableRecordReference)
-			.removalListener(dataEntryRecordIdIndex::remove)
-			.build();
+	private final CCache<CacheKey, DataEntryRecord> cache;
 
-	public DataEntryRecordCache(@NonNull final DataEntryRecordRepository recordsRepo)
+	public DataEntryRecordCache(@NonNull final DataEntryRecordRepository recordsRepo, final int cacheCapacity)
 	{
 		this.recordsRepo = recordsRepo;
+		cache = CCache.<CacheKey, DataEntryRecord> builder()
+				.tableName(I_DataEntry_Record.Table_Name)
+				.cacheMapType(CacheMapType.LRU)
+				.initialCapacity(cacheCapacity)
+				.invalidationKeysMapper(dataEntryRecordIdIndex::getCacheKeysByTableRecordReference)
+				.removalListener(dataEntryRecordIdIndex::remove)
+				.build();
 	}
 
 	public DataEntryRecordsMap get(
