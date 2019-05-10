@@ -1,5 +1,9 @@
 package de.metas.dataentry.rest_api;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
@@ -11,9 +15,11 @@ import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
@@ -36,7 +42,10 @@ class DataEntryRestControllerTest
 {
 
 	private static final int BPARTNER_WINDOW_ID = 123;
+	private static final int C_B_PARTNER_ID = 100038;
+
 	private DataEntryRestController dataEntryRestController;
+	 private DataEntryRecordRepository dataEntryRecordRepository;
 
 	@BeforeAll
 	static void initStatic()
@@ -57,7 +66,7 @@ class DataEntryRestControllerTest
 
 		final DataEntryLayoutRepository dataEntryLayoutRepository = new DataEntryLayoutRepository();
 		final JSONDataEntryRecordMapper jsonDataEntryRecordMapper = new JSONDataEntryRecordMapper();
-		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
+		dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
 		dataEntryRestController = new DataEntryRestController(dataEntryLayoutRepository, dataEntryRecordRepository, 0);
 	}
 
@@ -161,6 +170,7 @@ class DataEntryRestControllerTest
 		fieldRecord1_1_2_1_1.setDescription("fieldRecord1_1_2_1_1_description - seqNo20");
 		fieldRecord1_1_2_1_1.setIsMandatory(true);
 		fieldRecord1_1_2_1_1.setSeqNo(20);
+		fieldRecord1_1_2_1_1.setAvailableInAPI(true);
 		fieldRecord1_1_2_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
 		saveRecord(fieldRecord1_1_2_1_1);
 
@@ -171,6 +181,7 @@ class DataEntryRestControllerTest
 		fieldRecord1_1_2_1_2.setDescription("fieldRecord1_1_2_1_2_description - seqNo10");
 		fieldRecord1_1_2_1_2.setIsMandatory(false);
 		fieldRecord1_1_2_1_2.setSeqNo(10);
+		fieldRecord1_1_2_1_2.setAvailableInAPI(true);
 		fieldRecord1_1_2_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
 		saveRecord(fieldRecord1_1_2_1_2);
 	}
@@ -207,6 +218,7 @@ class DataEntryRestControllerTest
 		fieldRecord1_2_1_1_1.setDescription("fieldRecord1_2_1_1_1_description - seqNo10");
 		fieldRecord1_2_1_1_1.setIsMandatory(false);
 		fieldRecord1_2_1_1_1.setSeqNo(10);
+		fieldRecord1_2_1_1_1.setAvailableInAPI(true);
 		fieldRecord1_2_1_1_1.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
 		saveRecord(fieldRecord1_2_1_1_1);
 
@@ -216,6 +228,7 @@ class DataEntryRestControllerTest
 		fieldRecord1_2_1_1_2.setName("fieldRecord1_2_1_1_2_name");
 		fieldRecord1_2_1_1_2.setDescription("fieldRecord1_2_1_1_2_description");
 		fieldRecord1_2_1_1_2.setIsMandatory(false);
+		fieldRecord1_2_1_1_2.setAvailableInAPI(true);
 		fieldRecord1_2_1_1_2.setSeqNo(20);
 		fieldRecord1_2_1_1_2.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
 		saveRecord(fieldRecord1_2_1_1_2);
@@ -231,6 +244,7 @@ class DataEntryRestControllerTest
 		listValueRecord1_2_1_1_2_2.setDataEntry_Field(fieldRecord1_2_1_1_2);
 		listValueRecord1_2_1_1_2_2.setName("listValueRecord1_2_1_1_2_2_name");
 		listValueRecord1_2_1_1_2_2.setDescription("listValueRecord1_2_1_1_2_2_description - seqNo10");
+
 		listValueRecord1_2_1_1_2_2.setSeqNo(10);
 		saveRecord(listValueRecord1_2_1_1_2_2);
 
@@ -241,6 +255,7 @@ class DataEntryRestControllerTest
 		fieldRecord1_2_1_1_3.setDescription("fieldRecord1_2_1_1_3_description");
 		fieldRecord1_2_1_1_3.setIsMandatory(false);
 		fieldRecord1_2_1_1_3.setSeqNo(30);
+		fieldRecord1_2_1_1_3.setAvailableInAPI(true);
 		fieldRecord1_2_1_1_3.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_NotPersonal);
 		saveRecord(fieldRecord1_2_1_1_3);
 
@@ -250,6 +265,7 @@ class DataEntryRestControllerTest
 		fieldRecord1_2_1_1_4.setName("fieldRecord1_2_1_1_4_name");
 		fieldRecord1_2_1_1_4.setDescription("fieldRecord1_2_1_1_4_description");
 		fieldRecord1_2_1_1_4.setIsMandatory(true);
+		fieldRecord1_2_1_1_4.setAvailableInAPI(true);
 		fieldRecord1_2_1_1_4.setSeqNo(40);
 		fieldRecord1_2_1_1_4.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_Personal);
 		saveRecord(fieldRecord1_2_1_1_4);
@@ -261,15 +277,30 @@ class DataEntryRestControllerTest
 		fieldRecord1_2_1_1_5.setName("fieldRecord1_2_1_1_5_name");
 		fieldRecord1_2_1_1_5.setDescription("fieldRecord1_2_1_1_5_description");
 		fieldRecord1_2_1_1_5.setIsMandatory(true);
+		fieldRecord1_2_1_1_5.setAvailableInAPI(true);
 		fieldRecord1_2_1_1_5.setSeqNo(50);
 		fieldRecord1_2_1_1_5.setPersonalDataCategory(X_DataEntry_Field.PERSONALDATACATEGORY_SensitivePersonal);
 		saveRecord(fieldRecord1_2_1_1_5);
+
+		createEntryRecord(subTabRecord1_2, fieldRecord1_2_1_1_5);
+
+	}
+
+	private void createEntryRecord(final I_DataEntry_SubTab subTabRecord1_2, final I_DataEntry_Field fieldRecord)
+	{
+		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
+				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(subTabRecord1_2.getDataEntry_SubTab_ID()))
+				.mainRecord(TableRecordReference.of(I_C_BPartner.Table_Name, C_B_PARTNER_ID))
+				.fields(ImmutableList.of())
+				.build();
+		dataEntryRecord.setRecordField(DataEntryFieldId.ofRepoId(fieldRecord.getDataEntry_Field_ID()), UserId.ofRepoId(100), "someText");
+		dataEntryRecordRepository.save(dataEntryRecord);
 	}
 
 	private static I_C_BPartner createBPartner(final String nameAndValue)
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-		bpartner.setC_BPartner_ID(100038);
+		bpartner.setC_BPartner_ID(C_B_PARTNER_ID);
 		bpartner.setValue(nameAndValue);
 		bpartner.setName(nameAndValue);
 		save(bpartner);
