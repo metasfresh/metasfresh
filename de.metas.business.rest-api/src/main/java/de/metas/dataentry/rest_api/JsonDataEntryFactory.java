@@ -84,6 +84,7 @@ final class JsonDataEntryFactory
 		return layout.getTabs()
 				.stream()
 				.map(this::toJsonDataEntryTab)
+				.filter(tab -> !tab.getSubTabs().isEmpty())
 				.collect(ImmutableList.toImmutableList());
 	}
 
