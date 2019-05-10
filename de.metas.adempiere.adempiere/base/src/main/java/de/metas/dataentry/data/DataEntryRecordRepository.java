@@ -61,7 +61,7 @@ public class DataEntryRecordRepository
 
 		return record != null
 				? Optional.of(toDataEntryRecord(record))
-				: null;
+				: Optional.empty();
 	}
 
 	public List<DataEntryRecord> list(@NonNull final DataEntryRecordQuery query)
