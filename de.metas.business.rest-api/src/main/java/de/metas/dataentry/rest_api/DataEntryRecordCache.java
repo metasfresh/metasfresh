@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -96,7 +97,9 @@ final class DataEntryRecordCache
 	private Map<CacheKey, DataEntryRecord> loadRecords(final Collection<CacheKey> keys)
 	{
 		final DataEntryRecordQuery query = toDataEntryRecordQuery(keys);
-		final List<DataEntryRecord> records = recordsRepo.list(query);
+		final List<DataEntryRecord> records = recordsRepo.stream(query)
+				.map(DataEntryRecord::copyAsImmutable)
+				.collect(ImmutableList.toImmutableList());
 		if (records.isEmpty())
 		{
 			return ImmutableMap.of();

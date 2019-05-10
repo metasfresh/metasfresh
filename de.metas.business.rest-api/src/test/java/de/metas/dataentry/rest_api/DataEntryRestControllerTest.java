@@ -1,6 +1,26 @@
 package de.metas.dataentry.rest_api;
 
-import com.google.common.collect.ImmutableList;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
@@ -17,26 +37,6 @@ import de.metas.dataentry.model.X_DataEntry_Field;
 import de.metas.dataentry.rest_api.dto.JsonDataEntryResponse;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class DataEntryRestControllerTest
 {
@@ -291,7 +291,6 @@ class DataEntryRestControllerTest
 		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
 				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(subTabRecord1_2.getDataEntry_SubTab_ID()))
 				.mainRecord(TableRecordReference.of(I_C_BPartner.Table_Name, C_B_PARTNER_ID))
-				.fields(ImmutableList.of())
 				.build();
 		dataEntryRecord.setRecordField(DataEntryFieldId.ofRepoId(fieldRecord.getDataEntry_Field_ID()), UserId.ofRepoId(100), "someText");
 		dataEntryRecordRepository.save(dataEntryRecord);

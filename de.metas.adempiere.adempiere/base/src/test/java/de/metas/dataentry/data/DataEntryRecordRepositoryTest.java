@@ -20,8 +20,6 @@ import org.junit.rules.TestWatcher;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
@@ -80,7 +78,6 @@ public class DataEntryRecordRepositoryTest
 				.builder()
 				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
-				.fields(ImmutableList.of())
 				.build();
 
 		// invoke the method under test

@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -65,10 +66,14 @@ public class DataEntryRecordRepository
 
 	public List<DataEntryRecord> list(@NonNull final DataEntryRecordQuery query)
 	{
+		return stream(query).collect(ImmutableList.toImmutableList());
+	}
+
+	public Stream<DataEntryRecord> stream(@NonNull final DataEntryRecordQuery query)
+	{
 		return query(query)
 				.stream()
-				.map(this::toDataEntryRecord)
-				.collect(ImmutableList.toImmutableList());
+				.map(this::toDataEntryRecord);
 	}
 
 	public DataEntryRecord getById(@NonNull final DataEntryRecordId dataEntryRecordId)

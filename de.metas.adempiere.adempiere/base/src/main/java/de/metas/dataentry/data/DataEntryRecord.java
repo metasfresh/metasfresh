@@ -1,16 +1,21 @@
 package de.metas.dataentry.data;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
@@ -52,26 +57,86 @@ public class DataEntryRecord
 	final ITableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
-	final HashMap<DataEntryFieldId, DataEntryRecordField<?>> fields;
+	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
+	final boolean readOnly;
 
 	@Builder
 	private DataEntryRecord(
 			@Nullable final DataEntryRecordId id,
 			@NonNull final ITableRecordReference mainRecord,
 			@NonNull final DataEntrySubTabId dataEntrySubTabId,
-			@Nullable final List<DataEntryRecordField<?>> fields)
+			@Nullable final List<DataEntryRecordField<?>> fields,
+			final boolean readOnly)
 	{
 		this.id = Optional.ofNullable(id);
 		this.mainRecord = mainRecord;
 		this.dataEntrySubTabId = dataEntrySubTabId;
 
-		this.fields = new HashMap<>();
-		if (fields != null)
+		this.readOnly = readOnly;
+		this.fields = toMap(fields, readOnly);
+	}
+
+	/** Copy constructor */
+	private DataEntryRecord(final DataEntryRecord from, final boolean readOnly)
+	{
+		this.id = from.id;
+		this.mainRecord = from.mainRecord;
+		this.dataEntrySubTabId = from.dataEntrySubTabId;
+
+		this.readOnly = readOnly;
+		this.fields = readOnly ? ImmutableMap.copyOf(from.fields) : new HashMap<>(from.fields);
+	}
+
+	private static Map<DataEntryFieldId, DataEntryRecordField<?>> toMap(
+			@Nullable final Collection<DataEntryRecordField<?>> fields,
+			final boolean readOnly)
+	{
+		if (readOnly)
 		{
-			for (final DataEntryRecordField<?> field : fields)
+			if (fields == null || fields.isEmpty())
 			{
-				this.fields.put(field.getDataEntryFieldId(), field);
+				return ImmutableMap.of();
 			}
+			else
+			{
+				return Maps.uniqueIndex(fields, DataEntryRecordField::getDataEntryFieldId);
+			}
+		}
+		else
+		{
+			if (fields == null || fields.isEmpty())
+			{
+				return new HashMap<>();
+			}
+			else
+			{
+				final HashMap<DataEntryFieldId, DataEntryRecordField<?>> map = new HashMap<>();
+				for (final DataEntryRecordField<?> field : fields)
+				{
+					map.put(field.getDataEntryFieldId(), field);
+				}
+				return map;
+			}
+		}
+	}
+
+	public DataEntryRecord copyAsImmutable()
+	{
+		if (readOnly)
+		{
+			return this;
+		}
+		else
+		{
+			return new DataEntryRecord(this, true);
+		}
+	}
+
+	private void assertReadWrite()
+	{
+		if (readOnly)
+		{
+			throw new AdempiereException("Changing readonly instance is not allowed: " + this);
 		}
 	}
 
@@ -83,6 +148,8 @@ public class DataEntryRecord
 			@NonNull final UserId updatedBy,
 			@Nullable final Object value)
 	{
+		assertReadWrite();
+
 		final DataEntryRecordField<?> previousFieldVersion = fields.get(dataEntryFieldId);
 
 		final Object previousValue = previousFieldVersion == null ? null : previousFieldVersion.getValue();
@@ -121,45 +188,45 @@ public class DataEntryRecord
 		return ImmutableList.copyOf(fields.values());
 	}
 
-	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
-		return getCreatedUpdatedInfo(dataEntryFieldId)
+		return getCreatedUpdatedInfo(fieldId)
 				.map(CreatedUpdatedInfo::getCreated);
 	}
 
-	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
-		return getCreatedUpdatedInfo(dataEntryFieldId)
+		return getCreatedUpdatedInfo(fieldId)
 				.map(CreatedUpdatedInfo::getCreatedBy);
 	}
 
-	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
-		return getCreatedUpdatedInfo(dataEntryFieldId)
+		return getCreatedUpdatedInfo(fieldId)
 				.map(CreatedUpdatedInfo::getUpdated);
 	}
 
-	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
-		return getCreatedUpdatedInfo(dataEntryFieldId)
+		return getCreatedUpdatedInfo(fieldId)
 				.map(CreatedUpdatedInfo::getUpdatedBy);
 	}
 
-	public Optional<CreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId dataEntryFieldId)
+	public Optional<CreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
 	{
-		return getOptional(dataEntryFieldId)
+		return getOptional(fieldId)
 				.map(DataEntryRecordField::getCreatedUpdatedInfo);
 	}
 
-	public Optional<Object> getFieldValue(@NonNull final DataEntryFieldId dataEntryFieldId)
+	public Optional<Object> getFieldValue(@NonNull final DataEntryFieldId fieldId)
 	{
-		return getOptional(dataEntryFieldId)
+		return getOptional(fieldId)
 				.map(DataEntryRecordField::getValue);
 	}
 
-	private Optional<DataEntryRecordField<?>> getOptional(@NonNull final DataEntryFieldId dataEntryFieldId)
+	private Optional<DataEntryRecordField<?>> getOptional(@NonNull final DataEntryFieldId fieldId)
 	{
-		return Optional.ofNullable(fields.get(dataEntryFieldId));
+		return Optional.ofNullable(fields.get(fieldId));
 	}
 
 }
