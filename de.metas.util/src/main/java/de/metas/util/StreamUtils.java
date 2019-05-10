@@ -1,10 +1,12 @@
 package de.metas.util;
 
+import java.util.stream.Stream;
+
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,121 +24,31 @@ package de.metas.util;
  * #L%
  */
 
-
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-public final class StreamUtils
+public class StreamUtils
 {
-	private StreamUtils()
+	@SafeVarargs
+	public static <T> Stream<T> concat(final Stream<T>... streams)
 	{
-		super();
-	}
-
-	public static String toString(final InputStream in)
-	{
-		return new String(toByteArray(in));
-	}
-
-	public static byte[] toByteArray(final InputStream in) throws RuntimeException
-	{
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-		try
+		if (streams.length == 0)
 		{
-			final byte[] buf = new byte[1024 * 4];
-			int len = -1;
-			while ((len = in.read(buf)) > 0)
+			return Stream.empty();
+		}
+		else if (streams.length == 1)
+		{
+			return streams[0];
+		}
+		else if (streams.length == 2)
+		{
+			return Stream.concat(streams[0], streams[1]);
+		}
+		else
+		{
+			Stream<T> result = streams[0];
+			for (int i = 1; i < streams.length; i++)
 			{
-				out.write(buf, 0, len);
+				result = Stream.concat(result, streams[i]);
 			}
-		}
-		catch (final IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-
-		return out.toByteArray();
-	}
-
-	/**
-	 * Close given closeable stream.
-	 * 
-	 * No errors will be thrown.
-	 * 
-	 * @param closeable
-	 */
-	public static void close(final Closeable closeable)
-	{
-		if (closeable == null)
-		{
-			return;
-		}
-
-		try
-		{
-			closeable.close();
-		}
-		catch (final IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Close all given input streams.
-	 * 
-	 * No errors will be thrown.
-	 * 
-	 * @param closeables
-	 */
-	public static void close(final Closeable... closeables)
-	{
-		if (closeables == null || closeables.length == 0)
-		{
-			return;
-		}
-
-		for (final Closeable closeable : closeables)
-		{
-			close(closeable);
-		}
-	}
-
-	/**
-	 * Copy data from input stream to output stream.
-	 * 
-	 * NOTE: no matter what, both streams are closed after this call.
-	 * 
-	 * @param out
-	 * @param in
-	 * @throws RuntimeException if something fails
-	 */
-	public static void copy(final OutputStream out, final InputStream in)
-	{
-		Check.assumeNotNull(out, "out not null");
-		Check.assumeNotNull(in, "in not null");
-
-		try
-		{
-			final byte[] buf = new byte[4 * 1024];
-			int len = 0;
-			while ((len = in.read(buf)) > 0)
-			{
-				out.write(buf, 0, len);
-			}
-		}
-		catch (final IOException e)
-		{
-			throw new RuntimeException(e.getLocalizedMessage(), e);
-		}
-		finally
-		{
-			close(out);
-			close(in);
+			return result;
 		}
 	}
 }

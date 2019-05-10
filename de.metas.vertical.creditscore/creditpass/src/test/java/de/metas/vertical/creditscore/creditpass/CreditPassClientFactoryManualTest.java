@@ -1,12 +1,11 @@
 package de.metas.vertical.creditscore.creditpass;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.vertical.creditscore.base.spi.model.CreditScore;
-import de.metas.vertical.creditscore.base.spi.model.ResultCode;
-import de.metas.vertical.creditscore.base.spi.model.TransactionData;
-import de.metas.vertical.creditscore.creditpass.model.*;
-import de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository;
-import org.adempiere.user.UserId;
+import static org.junit.Assert.assertNotNull;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.mockito.InjectMocks;
@@ -14,11 +13,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
+import de.metas.bpartner.BPartnerId;
+import de.metas.user.UserId;
+import de.metas.vertical.creditscore.base.spi.model.CreditScore;
+import de.metas.vertical.creditscore.base.spi.model.ResultCode;
+import de.metas.vertical.creditscore.base.spi.model.TransactionData;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfig;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigId;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRule;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassConfigPaymentRuleId;
+import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
+import de.metas.vertical.creditscore.creditpass.repository.CreditPassConfigRepository;
 
 public class CreditPassClientFactoryManualTest
 {

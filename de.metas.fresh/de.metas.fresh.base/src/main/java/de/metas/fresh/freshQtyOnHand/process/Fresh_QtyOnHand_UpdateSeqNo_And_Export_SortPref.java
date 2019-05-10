@@ -28,6 +28,7 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
+import de.metas.user.api.IUserSortPrefDAO;
 import de.metas.util.Services;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,7 +37,6 @@ import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.user.api.IUserSortPrefDAO;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_InfoColumn;

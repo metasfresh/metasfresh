@@ -119,11 +119,11 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 
 		final boolean oldestFirst = workpackageParams.getParameterAsBool(PARAM_OLDEST_FIRST);
 
-		final int count = workpackageParams.getParameterAsInt(PARAM_COUNT);
+		final int count = workpackageParams.getParameterAsInt(PARAM_COUNT, 0);
 
 		final Timestamp dontReEnQueueAfter = workpackageParams.getParameterAsTimestamp(PARAM_DONT_REENQUEUE_AFTER);
 
-		final int dlmConfigId = workpackageParams.getParameterAsInt(PARAM_DLM_PARTITION_CONFIG_ID);
+		final int dlmConfigId = workpackageParams.getParameterAsInt(PARAM_DLM_PARTITION_CONFIG_ID, -1);
 		final I_DLM_Partition_Config configDB = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(workPackage), dlmConfigId, I_DLM_Partition_Config.class, ITrx.TRXNAME_None);
 		final PartitionConfig config = dlmService.loadPartitionConfig(configDB);
 

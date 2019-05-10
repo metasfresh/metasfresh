@@ -41,7 +41,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelInterceptor2ModelValidatorWrapper;
 import org.adempiere.ad.modelvalidator.ModelInterceptorInitException;
 import org.adempiere.ad.persistence.EntityTypesCache;
-import org.adempiere.ad.security.IUserLoginListener;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.MFSession;
@@ -74,6 +73,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
+import de.metas.security.IUserLoginListener;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -277,9 +277,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private static Collection<Object> getSpringInterceptors()
 	{
 		final ApplicationContext context = Adempiere.getSpringApplicationContext();
-		// NOTE: atm it returns null only when started from our tools (like the "model generator")
-		// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
-		// so we can leave with the NPE here
+		if (context == null)
+		{
+			// NOTE: atm it returns null only when started from our tools (like the "model generator")
+			// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
+			throw new AdempiereException("Cannot fetch Spring interceptors because spring context is not available");
+		}
 
 		final LinkedHashMap<String, Object> interceptorsByName = new LinkedHashMap<>();
 		interceptorsByName.putAll(context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class));

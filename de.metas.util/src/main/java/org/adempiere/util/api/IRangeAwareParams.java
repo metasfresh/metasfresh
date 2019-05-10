@@ -39,7 +39,7 @@ public interface IRangeAwareParams extends IParams
 	 * @param parameterName
 	 * @return int value or <code>0</code> if parameter is missing or cannot be converted to integer
 	 */
-	int getParameter_ToAsInt(String parameterName);
+	int getParameter_ToAsInt(String parameterName, int defaultValue);
 
 	/**
 	 * @param parameterName

@@ -669,9 +669,10 @@ public final class Evaluatees
 		}
 
 		@Override
-		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue_IGNORED)
+		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
 		{
-			final int value = params.getParameterAsInt(variableName);
+			final int defaultValueInt = defaultValue != null ? defaultValue : 0;
+			final int value = params.getParameterAsInt(variableName, defaultValueInt);
 			return value;
 		}
 

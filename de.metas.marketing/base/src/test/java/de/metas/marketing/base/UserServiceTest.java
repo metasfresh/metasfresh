@@ -18,7 +18,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.I_AD_User;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,7 @@ import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 

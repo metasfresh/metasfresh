@@ -2,7 +2,6 @@ package de.metas.document.archive.mailrecipient.impl;
 
 import java.util.Optional;
 
-import org.adempiere.user.User;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -16,6 +15,7 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.user.User;
 import de.metas.util.Check;
 import lombok.NonNull;
 

@@ -55,7 +55,7 @@ public class DBTest
 	{
 		{
 			final List<Object> paramsOut = new ArrayList<>();
-			final String sql = DB.buildSqlList(null, paramsOut);
+			final String sql = DB.buildSqlList((Collection<? extends Object>)null, paramsOut);
 			Assert.assertTrue("paramsOut shall be empty: " + paramsOut, paramsOut.isEmpty());
 			Assert.assertEquals("sql shall be empty list", DB.SQL_EmptyList, sql);
 		}

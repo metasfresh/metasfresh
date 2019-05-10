@@ -11,6 +11,8 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.CompositeRecordTextProvider;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -79,13 +81,13 @@ public class NotificationBL implements INotificationBL
 	}
 
 	@Override
-	public UserNotificationsConfig getUserNotificationsConfig(final int adUserId)
+	public UserNotificationsConfig getUserNotificationsConfig(final UserId adUserId)
 	{
 		return Services.get(IUserNotificationsConfigRepository.class).getByUserId(adUserId);
 	}
 
 	@Override
-	public RoleNotificationsConfig getRoleNotificationsConfig(final int adRoleId)
+	public RoleNotificationsConfig getRoleNotificationsConfig(final RoleId adRoleId)
 	{
 		return Services.get(IRoleNotificationsConfigRepository.class).getByRoleId(adRoleId);
 	}

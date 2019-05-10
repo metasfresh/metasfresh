@@ -1,6 +1,8 @@
 package de.metas.bpartner.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -12,16 +14,18 @@ import java.util.Locale;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.util.Services;
@@ -85,15 +89,18 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	 */
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
-		final I_C_BPartner_Stats stat = InterfaceWrapperHelper.newInstance(I_C_BPartner_Stats.class);
-		final String status = partner.getC_BP_Group().getSOCreditStatus();
-		stat.setC_BPartner(partner);
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
+		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getById(bpGroupId);
+		
+		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
+		final String status = bpGroup.getSOCreditStatus();
+		stat.setC_BPartner_ID(partner.getC_BPartner_ID());
 		stat.setSOCreditStatus(status);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
 		stat.setOpenItems(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.save(stat);
+		saveRecord(stat);
 
 		return stat;
 	}
@@ -184,7 +191,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		stats.setSOCreditStatus(soCreditStatus);
 
-		InterfaceWrapperHelper.save(stats);
+		saveRecord(stats);
 
 	}
 
@@ -214,7 +221,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		stats.setOpenItems(openItems);
 
 		// save in db
-		InterfaceWrapperHelper.save(stats);
+		saveRecord(stats);
 	}
 
 	private void updateActualLifeTimeValue(final BPartnerStats bpStats)
@@ -257,7 +264,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 
 		stats.setActualLifeTimeValue(actualLifeTimeValue);
-		InterfaceWrapperHelper.save(stats);
+		saveRecord(stats);
 	}
 
 	private void updateSOCreditUsed(final BPartnerStats bpStats)
@@ -265,21 +272,19 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		stats.setSO_CreditUsed(SO_CreditUsed);
-		InterfaceWrapperHelper.save(stats);
+		saveRecord(stats);
 	}
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		final I_C_BPartner partner = load(bpStats.getBpartnerId(), I_C_BPartner.class);
 
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -334,6 +339,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final String percentSring = fmt.format(percent);
 
 		stats.setCreditLimitIndicator(percentSring);
-		InterfaceWrapperHelper.save(stats);
+		
+		saveRecord(stats);
 	}
 }

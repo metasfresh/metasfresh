@@ -144,4 +144,6 @@ public interface IADProcessDAO extends ISingletonService
 	void copyProcess(AdProcessId targetProcessId, AdProcessId sourceProcessId);
 
 	void copyProcessParameters(AdProcessId targetProcessId, AdProcessId sourceProcessId);
+
+	ITranslatableString getProcessNameById(final AdProcessId id);
 }

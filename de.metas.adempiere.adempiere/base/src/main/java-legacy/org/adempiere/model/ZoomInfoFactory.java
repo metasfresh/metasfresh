@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
@@ -45,9 +44,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -431,7 +430,7 @@ public class ZoomInfoFactory
 				})
 				//
 				// Filter out those windows on which current logged in user does not have permissions
-				.filter(zoomInfo -> rolePermissions.checkWindowAccess(zoomInfo.getAD_Window_ID()) != null)
+				.filter(zoomInfo -> rolePermissions.checkWindowPermission(zoomInfo.getAD_Window_ID()).hasReadAccess())
 				//
 				// Filter by targetAD_Window_ID if any.
 				// If not our target window ID, skip it.

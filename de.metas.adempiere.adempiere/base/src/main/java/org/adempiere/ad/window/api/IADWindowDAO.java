@@ -52,7 +52,12 @@ public interface IADWindowDAO extends ISingletonService
 	 * @param adWindowId
 	 * @return the name for the given <code>AD_Window_ID</code> or <code>null</code> if the given ID is less or equal zero.
 	 */
-	ITranslatableString retrieveWindowName(int adWindowId);
+	ITranslatableString retrieveWindowName(AdWindowId adWindowId);
+
+	default ITranslatableString retrieveWindowName(int adWindowId)
+	{
+		return retrieveWindowName(AdWindowId.ofRepoIdOrNull(adWindowId));
+	}
 
 	String retrieveInternalWindowName(int adWindowId);
 
@@ -73,6 +78,8 @@ public interface IADWindowDAO extends ISingletonService
 	boolean hasUISections(I_AD_Tab adTab);
 
 	List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow);
+
+	void deleteTabsByWindowId(AdWindowId adWindowId);
 
 	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
 

@@ -84,7 +84,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 
 	private final I_M_Warehouse getM_Warehouse(final IRangeAwareParams params, final String warehouseParameterName)
 	{
-		final int warehouseId = params.getParameterAsInt(warehouseParameterName);
+		final int warehouseId = params.getParameterAsInt(warehouseParameterName, -1);
 		if (warehouseId <= 0)
 		{
 			throw new FillMandatoryException(warehouseParameterName);

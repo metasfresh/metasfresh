@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MChangeRequest;
 import org.compiere.model.MClient;
@@ -37,6 +36,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.Msg;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**

@@ -338,7 +338,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.omitNullValues()
 				.add("tableName", tableName)
 				.add("recordId", recordId)
-				.add(" (SoftReference-)model", modelRef.get())
+				// .add(" (SoftReference-)model", modelRef.get())
 				.toString();
 	}
 
@@ -485,5 +485,11 @@ public final class TableRecordReference implements ITableRecordReference
 				.stream()
 				.map(ref -> ref.getModel(modelClass))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean isOfType(@NonNull final Class<?> modelClass)
+	{
+		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
+		return modelTableName != null && modelTableName.equals(getTableName());
 	}
 }

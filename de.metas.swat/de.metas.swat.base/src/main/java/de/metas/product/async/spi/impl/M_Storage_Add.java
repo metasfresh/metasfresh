@@ -59,11 +59,11 @@ public class M_Storage_Add extends WorkpackageProcessorAdapter
 		final IParams params = workpackageParamDAO.retrieveWorkpackageParams(workpackage);
 
 		final boolean success = Services.get(IStorageBL.class).add(InterfaceWrapperHelper.getCtx(workpackage),
-				params.getParameterAsInt(WP_PARAM_M_Warehouse_ID),
-				params.getParameterAsInt(WP_PARAM_M_Locator_ID),
-				params.getParameterAsInt(WP_PARAM_M_Product_ID),
-				params.getParameterAsInt(WP_PARAM_M_AttributeSetInstance_ID),
-				params.getParameterAsInt(WP_PARAM_reservationAttributeSetInstance_ID),
+				params.getParameterAsInt(WP_PARAM_M_Warehouse_ID, -1),
+				params.getParameterAsInt(WP_PARAM_M_Locator_ID, -1),
+				params.getParameterAsInt(WP_PARAM_M_Product_ID, -1),
+				params.getParameterAsInt(WP_PARAM_M_AttributeSetInstance_ID, -1),
+				params.getParameterAsInt(WP_PARAM_reservationAttributeSetInstance_ID, -1),
 				params.getParameterAsBigDecimal(WP_PARAM_diffQtyOnHand),
 				params.getParameterAsBigDecimal(WP_PARAM_diffQtyReserved),
 				params.getParameterAsBigDecimal(WP_PARAM_diffQtyOrdered),

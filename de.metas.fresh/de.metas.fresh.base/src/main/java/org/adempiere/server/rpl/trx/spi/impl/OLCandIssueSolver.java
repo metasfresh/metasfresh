@@ -45,13 +45,13 @@ public class OLCandIssueSolver implements IReplicationIssueSolver<I_C_OLCand>
 		final I_C_OLCand olCand = InterfaceWrapperHelper.create(recordWithIssues, I_C_OLCand.class);
 
 		// Partner
-		final int bpartnerId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_ID);
+		final int bpartnerId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_ID, -1);
 		if (bpartnerId > 0)
 		{
 			olCand.setC_BPartner_ID(bpartnerId);
 
 			// Location
-			final int bpartnerLocationId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID);
+			final int bpartnerLocationId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID, -1);
 			olCand.setC_BPartner_Location_ID(bpartnerLocationId);
 		}
 
