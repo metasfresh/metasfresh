@@ -4,11 +4,9 @@ import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.model.I_DataEntry_Field;
-
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
-
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
@@ -85,7 +83,20 @@ class DataEntryRestControllerTest
 		final int inexistentWindowId = 55555;
 		final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
 		assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId));
+		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId)).doesNotContain(String.valueOf(bPartner.getC_BPartner_ID()));
+		assertThat(shouldBeEmpty.getResult()).isNull();
+		expect(shouldBeEmpty).toMatchSnapshot();
+	}
+
+	@Test
+	void badRecordIdGivesEmptyResult()
+	{
+		createRecords();
+
+		final int inexistentRecordId = 5;
+		final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(BPARTNER_WINDOW_ID), inexistentRecordId, Env.getLanguage().getAD_Language()).getBody();
+		assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentRecordId)).contains(String.valueOf(BPARTNER_WINDOW_ID));
 		assertThat(shouldBeEmpty.getResult()).isNull();
 		expect(shouldBeEmpty).toMatchSnapshot();
 	}

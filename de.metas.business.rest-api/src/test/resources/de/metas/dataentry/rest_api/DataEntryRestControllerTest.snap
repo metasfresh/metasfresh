@@ -1,7 +1,15 @@
+de.metas.dataentry.rest_api.DataEntryRestControllerTest.badRecordIdGivesEmptyResult=[
+  {
+    "status": 404,
+    "error": "No dataentry for windowId '123' and recordId '5'."
+  }
+]
+
+
 de.metas.dataentry.rest_api.DataEntryRestControllerTest.badWindowGivesEmptyResult=[
   {
     "status": 404,
-    "error": "No dataentry for windowId '55555' and recordId '100038'."
+    "error": "No dataentry for windowId '55555'."
   }
 ]
 
