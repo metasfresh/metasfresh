@@ -12,8 +12,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.FieldType;
@@ -299,7 +297,6 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		return DataEntryRecord.builder()
 				.mainRecord(parentReference)
 				.dataEntrySubTabId(dataEntrySubTabId)
-				.fields(ImmutableList.of())
 				.build();
 	}
 
