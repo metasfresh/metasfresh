@@ -29,9 +29,9 @@ export class PriceListVersion {
   }
 
   apply() {
-    cy.log(`PriceListVersion - apply - START (name=${this.name})`);
+    cy.log(`PriceListVersion - apply - START (name=${this.Name})`);
     applyPriceListVersion(this);
-    cy.log(`PriceListVersion - apply - END (name=${this.name})`);
+    cy.log(`PriceListVersion - apply - END (name=${this.Name})`);
     return this;
   }
 }
