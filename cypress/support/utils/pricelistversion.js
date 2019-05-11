@@ -38,16 +38,16 @@ export class PriceListVersion {
 
 function applyPriceListVersion(pricelistversion) {
   describe(`Create new PriceListVersion ${pricelistversion.Name}`, function() {
-    cy.visitWindow('540321', pricelistversion.plDocId);
+    //cy.visitWindow('540321', pricelistversion.plDocId);
+    cy.visitWindow('540321', '2008405');
     cy.selectTab('M_PriceList_Version');
     cy.pressAddNewButton();
-    cy.writeIntoStringField('Name', `{selectall}{backspace}${pricelistversion.name} ${pricelistversion.ValidFrom}`);
-    cy.writeIntoStringField('ValidFrom', `${pricelistversion.ValidFrom}{enter}`, false, null, false);
-    cy.isChecked('IsActive').then(isActive => {
-      if (pricelistversion.IsActive && !isActive) {
-        cy.clickOnCheckBox('IsIsActive');
-      }
-    });
+    cy.writeIntoStringField('Name', `{selectall}{backspace}`, true, null, true);
+    cy.writeIntoStringField('Name', `${pricelistversion.name} ${pricelistversion.ValidFrom}`, true, null, true);
+    cy.get('.form-field-ValidFrom')
+      .find('input')
+      .clear();
+    cy.writeIntoStringField('ValidFrom', `${pricelistversion.ValidFrom}{enter}`, true, null, true);
     cy.pressDoneButton();
   });
 }

@@ -39,7 +39,7 @@ function applyPricelist(pricelist) {
   const timestamp = new Date().getTime();
 
   describe(`Create new Pricelist ${pricelist.Name}`, function() {
-    cy.visitWindow('540321', 'NEW');
+    cy.visitWindow('540321', 'NEW', 'priceListObj');
     cy.writeIntoStringField('Name', `${pricelist.Name} ${timestamp}`);
     cy.selectInListField('C_Country_ID', `none`);
     cy.selectInListField('C_Country_ID', `${pricelist.Country}`);
