@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.104
+
+* metasfresh-e2e
+  * [#76](https://github.com/metasfresh/metasfresh-e2e/issues/76) Set currency USD active/inactive
+
 # metasfresh 5.103
 ## Features
 * metasfresh
