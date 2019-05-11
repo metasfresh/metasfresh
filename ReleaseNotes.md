@@ -30,6 +30,7 @@ Here come the actual release notes:
 
 * metasfresh-e2e
   * [#19](https://github.com/metasfresh/metasfresh-e2e/issues/19) Fix Test purchase_create_vendor
+  * [#37](https://github.com/metasfresh/metasfresh-e2e/issues/37) eslint delete CR error in project
   * [#39](https://github.com/metasfresh/metasfresh-e2e/issues/39) Use fixtures for attributes
   * [#57](https://github.com/metasfresh/metasfresh-e2e/issues/57) Fix bpartner object: location
   * [#58](https://github.com/metasfresh/metasfresh-e2e/issues/58) Fix isChecked command
