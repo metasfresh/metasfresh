@@ -1,4 +1,4 @@
-export class Pricelist {
+export class PriceList {
   constructor(name) {
     this.Name = name;
   }
