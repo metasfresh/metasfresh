@@ -44,8 +44,11 @@ function applyPricelist(pricelist) {
     cy.selectInListField('C_Country_ID', `none`);
     cy.selectInListField('C_Country_ID', `${pricelist.Country}`);
     cy.selectInListField('C_Currency_ID', `${pricelist.Currency}`);
+    cy.get('.form-field-PricePrecision')
+      .find('input')
+      .clear()
+      .type(`${pricelist.PricePrecision}`);
     cy.selectInListField('M_PricingSystem_ID', `${pricelist.PricingSystem}`);
-    cy.writeIntoStringField('PricePrecision', `${pricelist.PricePrecision}`, false, null, false);
     cy.writeIntoStringField('Description', `${pricelist.Description}`);
   });
 }
