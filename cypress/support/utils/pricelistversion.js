@@ -4,25 +4,25 @@ export class PriceListVersion {
   }
 
   setName(name) {
-    cy.log(`Pricelist - set Name = ${name}`);
+    cy.log(`PriceListVersion - set Name = ${name}`);
     this.Name = name;
     return this;
   }
 
   setDescription(description) {
-    cy.log(`Pricelist - set Description = ${description}`);
+    cy.log(`PriceListVersion - set Description = ${description}`);
     this.Description = description;
     return this;
   }
 
   setActive(isActive) {
-    cy.log(`Pricelist - set isActive = ${isActive}`);
+    cy.log(`PriceListVersion - set isActive = ${isActive}`);
     this.IsActive = isActive;
     return this;
   }
 
   setValidFrom(validFrom) {
-    cy.log(`Pricelist - set ValidFrom = ${validFrom}`);
+    cy.log(`PriceListVersion - set ValidFrom = ${validFrom}`);
     this.ValidFrom = validFrom;
     return this;
   }
@@ -36,15 +36,13 @@ export class PriceListVersion {
 }
 
 function applyPriceListVersion(pricelistversion) {
-  const timestamp = new Date().getTime();
-
   describe(`Create new PriceListVersion ${pricelistversion.Name}`, function() {
     const timestamp = new Date().getTime();
-    
+
     cy.visitWindow('540321', ???);
     cy.selectTab('M_PriceList_Version');
       cy.pressAddNewButton();
-      cy.writeIntoStringField('Name', `{selectall}{backspace}${pricelistversion.name}`);
+      cy.writeIntoStringField('Name', `{selectall}{backspace}${pricelistversion.name} ${pricelistversion.ValidFrom}`);
     cy.writeIntoStringField('ValidFrom', `${pricelistversion.ValidFrom}{enter}`, false, null, false);
     cy.isChecked('IsActive').then(isActive => {
       if (pricelistversion.IsActive && !isActive) {

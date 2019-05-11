@@ -5,9 +5,12 @@ describe('Create Pricelist for Automatic End2End Tests with cypress https://gith
     cy.fixture('price/pricelist.json').then(pricelistJson => {
       Object.assign(new PriceList('Test Preisliste DEU EUR'), pricelistJson).apply();
     });
-
-    cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-      Object.assign(new PriceListVersion('Test Preisliste Version'), priceListVersionJson).apply();
+    cy.get('@priceListObj').then(obj => {
+      // access the users argument
+      cy.log(`PriceList - Name = ${obj.Name}`);
+      cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
+        Object.assign(new PriceListVersion(`${obj.Name}`), priceListVersionJson).apply();
+      });
     });
   });
 });
