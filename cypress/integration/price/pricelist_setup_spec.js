@@ -9,7 +9,7 @@ describe('Create Pricelist for Automatic End2End Tests with cypress https://gith
       // access the users argument
       cy.log(`PriceList - Name = ${obj.Name}`);
       cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-        Object.assign(new PriceListVersion(`${obj.Name}`), priceListVersionJson).apply();
+        Object.assign(new PriceListVersion(`${obj.Name}`, obj.documentId), priceListVersionJson).apply();
       });
     });
   });

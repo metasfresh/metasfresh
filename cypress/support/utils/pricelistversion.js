@@ -1,6 +1,7 @@
 export class PriceListVersion {
-  constructor(name) {
+  constructor(name, plDocId) {
     this.Name = name;
+    this.PriceListDocID = plDocId;
   }
 
   setName(name) {
@@ -37,12 +38,10 @@ export class PriceListVersion {
 
 function applyPriceListVersion(pricelistversion) {
   describe(`Create new PriceListVersion ${pricelistversion.Name}`, function() {
-    const timestamp = new Date().getTime();
-
-    cy.visitWindow('540321', ???);
+    cy.visitWindow('540321', pricelistversion.plDocId);
     cy.selectTab('M_PriceList_Version');
-      cy.pressAddNewButton();
-      cy.writeIntoStringField('Name', `{selectall}{backspace}${pricelistversion.name} ${pricelistversion.ValidFrom}`);
+    cy.pressAddNewButton();
+    cy.writeIntoStringField('Name', `{selectall}{backspace}${pricelistversion.name} ${pricelistversion.ValidFrom}`);
     cy.writeIntoStringField('ValidFrom', `${pricelistversion.ValidFrom}{enter}`, false, null, false);
     cy.isChecked('IsActive').then(isActive => {
       if (pricelistversion.IsActive && !isActive) {
