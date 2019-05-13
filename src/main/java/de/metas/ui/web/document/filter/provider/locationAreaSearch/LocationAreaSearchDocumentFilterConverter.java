@@ -89,7 +89,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 					+ " SELECT 1"
 					+ " FROM " + I_C_Location.Table_Name + " l"
 					+ " WHERE "
-					+ " l.C_Location_ID=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ " l." + I_C_Location.COLUMNNAME_C_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -98,9 +98,9 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl"
-					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l.C_Location_ID=bpl.C_Location_ID"
+					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 					+ " WHERE "
-					+ " bpl.C_BPartner_Location_ID=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -109,11 +109,11 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_BPartner.Table_Name + " bp"
-					+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON bpl.C_BPartner_Location_ID=bp.C_BPartner_Location_ID"
-					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l.C_Location_ID=bpl.C_Location_ID"
+					+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 					+ " WHERE "
-					+ " bp.C_BPartner_ID=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
-					+ " AND bpl.IsActive='Y'"
+					+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ " AND bpl." + I_C_BPartner_Location.COLUMNNAME_IsActive + "='Y'"
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
