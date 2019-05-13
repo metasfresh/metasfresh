@@ -58,7 +58,7 @@ public class AD_EventLog_DeleteOldRecords extends JavaProcess
 				.create()
 				.deleteDirectly(); // this also lets the DB delete the AD_EventLog_Entries, via an FK constraint with "ON DELETE CASCADE"
 
-		addLog("Deleted {} records with a Updated <= {}", deleted, maxUpdated);
+		addLog("Deleted {} records with a Updated up to {}", deleted, maxUpdated);
 		return MSG_OK;
 	}
 
