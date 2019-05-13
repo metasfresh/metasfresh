@@ -7,7 +7,6 @@ import java.util.function.UnaryOperator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -15,6 +14,7 @@ import com.google.common.cache.CacheBuilder;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.letter.WebuiLetter.WebuiLetterBuilder;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -56,7 +56,7 @@ public class WebuiLetterRepository
 				.letterId(String.valueOf(nextLetterId.getAndIncrement()))
 				.build();
 		
-		Preconditions.checkArgument(letter.getOwnerUserId() >= 0, "ownerUserId >= 0 for {}", letter);
+		Check.assumeNotNull(letter.getOwnerUserId(), "ownerUserId is not null");
 
 		lettersById.put(letter.getLetterId(), new WebuiLetterEntry(letter));
 

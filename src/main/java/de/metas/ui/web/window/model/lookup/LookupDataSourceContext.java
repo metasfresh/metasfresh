@@ -14,8 +14,6 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.compiere.util.CtxName;
@@ -32,6 +30,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;

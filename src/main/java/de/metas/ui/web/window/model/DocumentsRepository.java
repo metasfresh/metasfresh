@@ -55,9 +55,6 @@ public interface DocumentsRepository
 	DocumentId retrieveParentDocumentId(DocumentEntityDescriptor parentEntityDescriptor, DocumentQuery childDocumentQuery);
 
 	/**
-	 *
-	 * @param entityDescriptor
-	 * @param parentDocument
 	 * @return newly created document (not saved); never returns null
 	 */
 	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final IDocumentChangesCollector changesCollector);

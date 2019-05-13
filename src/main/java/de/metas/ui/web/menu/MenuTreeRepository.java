@@ -8,10 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.IUserMenuFavoritesDAO;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,7 +19,12 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.session.UserSession;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserMenuFavoritesDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -69,15 +71,17 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 		}
 	});
 
-	private final LoadingCache<Integer, UserMenuFavorites> userMenuFavoritesByUserId = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.HOURS).build(new CacheLoader<Integer, UserMenuFavorites>()
-	{
+	private final LoadingCache<UserId, UserMenuFavorites> userMenuFavoritesByUserId = CacheBuilder.newBuilder()
+			.expireAfterAccess(1, TimeUnit.HOURS)
+			.build(new CacheLoader<UserId, UserMenuFavorites>()
+			{
 
-		@Override
-		public UserMenuFavorites load(final Integer adUserId)
-		{
-			return retrieveFavoriteMenuIds(adUserId);
-		}
-	});
+				@Override
+				public UserMenuFavorites load(final UserId adUserId)
+				{
+					return retrieveFavoriteMenuIds(adUserId);
+				}
+			});
 
 	public MenuTree getUserSessionMenuTree()
 	{
@@ -132,7 +136,7 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 
 	public UserMenuFavorites getUserMenuFavorites()
 	{
-		final int adUserId = userSession.getAD_User_ID();
+		final UserId adUserId = userSession.getLoggedUserId();
 		try
 		{
 			return userMenuFavoritesByUserId.get(adUserId);
@@ -143,7 +147,7 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 		}
 	}
 
-	private UserMenuFavorites retrieveFavoriteMenuIds(final int adUserId)
+	private UserMenuFavorites retrieveFavoriteMenuIds(final UserId adUserId)
 	{
 		final List<Integer> adMenuIds = Services.get(IUserMenuFavoritesDAO.class).retrieveMenuIdsForUser(adUserId);
 
@@ -158,7 +162,7 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 		final int adMenuId = menuNode.getAD_Menu_ID();
 
 		final UserMenuFavorites userMenuFavorites = getUserMenuFavorites();
-		final int adUserId = userMenuFavorites.getAdUserId();
+		final UserId adUserId = userMenuFavorites.getAdUserId();
 
 		// Update in database first
 		if (favorite)
@@ -243,21 +247,18 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 			return new Builder();
 		}
 
-		private final int adUserId;
+		private final UserId adUserId;
 		private final Set<Integer> menuIds = ConcurrentHashMap.newKeySet();
 
 		private UserMenuFavorites(final Builder builder)
 		{
 			adUserId = builder.adUserId;
-			if (adUserId < 0)
-			{
-				throw new IllegalArgumentException("adUserId not set");
-			}
+			Check.assumeNotNull(adUserId, "Parameter adUserId is not null");
 
 			menuIds.addAll(builder.menuIds);
 		}
 
-		public int getAdUserId()
+		public UserId getAdUserId()
 		{
 			return adUserId;
 		}
@@ -281,7 +282,7 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 
 		public static class Builder
 		{
-			private int adUserId = -1;
+			private UserId adUserId;
 			private final Set<Integer> menuIds = new HashSet<>();
 
 			private Builder()
@@ -293,7 +294,7 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 				return new UserMenuFavorites(this);
 			}
 
-			public Builder adUserId(final int adUserId)
+			public Builder adUserId(final UserId adUserId)
 			{
 				this.adUserId = adUserId;
 				return this;

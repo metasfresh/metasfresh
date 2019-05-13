@@ -10,8 +10,6 @@ import java.util.Properties;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -23,6 +21,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;

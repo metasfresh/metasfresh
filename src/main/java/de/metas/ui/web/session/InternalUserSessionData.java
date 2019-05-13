@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -18,7 +20,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.Language;
+import de.metas.security.RoleId;
 import de.metas.ui.web.base.session.UserPreference;
+import de.metas.user.UserId;
 
 /*
  * #%L
@@ -197,24 +201,24 @@ import de.metas.ui.web.base.session.UserPreference;
 		return ctx;
 	}
 
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
-		return Env.getAD_Client_ID(getCtx());
+		return Env.getClientId(getCtx());
 	}
 
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
-		return Env.getAD_Org_ID(getCtx());
+		return Env.getOrgId(getCtx());
 	}
 
-	public int getAD_User_ID()
+	public UserId getLoggedUserId()
 	{
-		return Env.getAD_User_ID(getCtx());
+		return Env.getLoggedUserId(getCtx());
 	}
 
-	public int getAD_Role_ID()
+	public RoleId getLoggedRoleId()
 	{
-		return Env.getAD_Role_ID(getCtx());
+		return Env.getLoggedRoleId(getCtx());
 	}
 
 	public String getUserName()

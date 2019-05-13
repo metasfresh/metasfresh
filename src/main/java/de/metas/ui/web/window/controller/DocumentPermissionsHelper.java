@@ -2,15 +2,17 @@ package de.metas.ui.web.window.controller;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
+import org.adempiere.service.OrgId;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.ElementPermission;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -111,7 +113,7 @@ public class DocumentPermissionsHelper
 
 		try
 		{
-			rolePermLoggingBL.logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
+			rolePermLoggingBL.logWindowAccess(permissions.getRoleId(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
 		}
 		catch (final NoSuchForeignKeyException noSuchForeignKeyException)
 		{
@@ -119,7 +121,7 @@ public class DocumentPermissionsHelper
 		}
 		throw ex;
 	}
-	
+
 	public static void assertCanView(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
 		// In case document type is not Window, return OK because we cannot validate
@@ -136,16 +138,16 @@ public class DocumentPermissionsHelper
 			throw DocumentPermissionException.of(DocumentPermission.View, "no window read permission");
 		}
 
-		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
-		if (tableName == null)
+		final int adTableId = getAdTableId(document);
+		if (adTableId <= 0)
 		{
 			// cannot apply security because this is not table based
 			return;
 		}
 
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		final int recordId = document.getDocumentId().toIntOr(-1);
-		final String errmsg = permissions.checkCanView(document.getAD_Client_ID(), document.getAD_Org_ID(), adTableId, recordId);
+		final int recordId = getRecordId(document);
+
+		final String errmsg = permissions.checkCanView(document.getClientId(), document.getOrgId(), adTableId, recordId);
 		if (errmsg != null)
 		{
 			throw DocumentPermissionException.of(DocumentPermission.View, errmsg);
@@ -155,11 +157,11 @@ public class DocumentPermissionsHelper
 	public static void assertCanEdit(final Document document)
 	{
 		// If running from a background thread, consider it editable
-		if(!UserSession.isWebuiThread())
+		if (!UserSession.isWebuiThread())
 		{
 			return;
 		}
-		
+
 		assertCanEdit(document, UserSession.getCurrentPermissions());
 	}
 
@@ -195,18 +197,40 @@ public class DocumentPermissionsHelper
 			return "no window edit permission";
 		}
 
+		final int adTableId = getAdTableId(document);
+		if (adTableId <= 0)
+		{
+			return null; // not table based => OK
+		}
+		final int recordId = getRecordId(document);
+
+		ClientId adClientId = document.getClientId();
+		OrgId adOrgId = document.getOrgId();
+		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+	}
+
+	private static int getAdTableId(final Document document)
+	{
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
 		{
 			// cannot apply security because this is not table based
-			return null; // OK
+			return -1; // OK
 		}
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		int adClientId = document.getAD_Client_ID();
-		int adOrgId = document.getAD_Org_ID();
-		final int recordId = document.getDocumentId().toIntOr(-1);
-		return permissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+		return Services.get(IADTableDAO.class).retrieveTableId(tableName);
+	}
+
+	private static int getRecordId(final Document document)
+	{
+		if (document.isNew())
+		{
+			return -1;
+		}
+		else
+		{
+			return document.getDocumentId().toIntOr(-1);
+		}
 	}
 
 }

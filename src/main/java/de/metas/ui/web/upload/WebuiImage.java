@@ -1,5 +1,7 @@
 package de.metas.ui.web.upload;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.MImage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -80,14 +82,14 @@ public final class WebuiImage implements ETagAware
 		return adImage.getScaledImageData(maxWidth, maxHeight);
 	}
 
-	public int getAdClientId()
+	public ClientId getAdClientId()
 	{
-		return adImage.getAD_Client_ID();
+		return ClientId.ofRepoId(adImage.getAD_Client_ID());
 	}
 
-	public int getAdOrgId()
+	public OrgId getAdOrgId()
 	{
-		return adImage.getAD_Org_ID();
+		return OrgId.ofRepoId(adImage.getAD_Org_ID());
 	}
 
 	public int getAdImageId()

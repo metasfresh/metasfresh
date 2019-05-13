@@ -1,6 +1,7 @@
 package de.metas.ui.web.letter;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -34,7 +35,7 @@ public class WebuiLetter
 {
 	@NonNull
 	private final String letterId;
-	private final int ownerUserId;
+	private final UserId ownerUserId;
 
 	private final boolean processed;
 	/** PDF data; set when the letter is marked as processed too */

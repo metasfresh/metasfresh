@@ -3,14 +3,14 @@ package de.metas.ui.web.view;
 import java.util.Properties;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.Suppliers;
 
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.impl.AccessSqlStringExpression;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -48,7 +48,7 @@ public final class ViewEvaluationCtx
 		return ViewEvaluationCtx.builder()
 				.loggedUserId(Env.getAD_User_ID(ctx))
 				.adLanguage(Env.getAD_Language(ctx))
-				.permissionsKey(UserRolePermissionsKey.of(ctx))
+				.permissionsKey(UserRolePermissionsKey.fromContext(ctx))
 				.build();
 	}
 
