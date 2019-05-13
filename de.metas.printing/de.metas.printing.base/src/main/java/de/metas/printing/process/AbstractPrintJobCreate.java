@@ -94,7 +94,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 						log.error("Failed creating print job for {}", source, ex);
 						Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
 								.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
-								.recipientUserId(Env.getAD_User_ID(getCtx()))
+								.recipientUserId(Env.getLoggedUserId(getCtx()))
 								.contentPlain(ex.getLocalizedMessage())
 								.build());
 					}

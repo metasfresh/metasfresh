@@ -156,7 +156,7 @@ public class RefundInvoiceCandidateFactory
 		refundInvoiceCandidateRecord.setQtyOrdered(ONE);
 		refundInvoiceCandidateRecord.setQtyDelivered(ONE);
 
-		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
 		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
 		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
 

@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,7 +67,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 				.setInstanceName("ic1")
 				.build();
 
-		ic1.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
+		ic1.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic1.setPOReference(IC_PO_REFERENCE);
 		ic1.setDateAcct(IC_DATE_ACCT);
 		InterfaceWrapperHelper.save(ic1);
@@ -121,12 +121,12 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11, il1);
-		
+
 		assertThat(il1.getPriceActual(), comparesEqualTo(BigDecimal.ONE.negate()));
 		assertThat(il1.getQtyToInvoice(), comparesEqualTo(FIFTY.negate()));
 		assertThat(il1.getNetLineAmt(), comparesEqualTo(FIFTY));
 	}
-	
+
 	protected abstract boolean config_IsSOTrx();
 
 }

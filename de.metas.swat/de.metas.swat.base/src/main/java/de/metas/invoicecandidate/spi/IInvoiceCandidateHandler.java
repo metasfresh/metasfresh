@@ -215,6 +215,8 @@ public interface IInvoiceCandidateHandler
 	 * <li>C_Order_ID
 	 * <li>DateOrderd
 	 * <li>QtyOrdered
+	 * <li>QtyEntered
+	 * <li>C_UOM_ID
 	 * </ul>
 	 * of the given invoice candidate.
 	 * <p>
@@ -263,13 +265,6 @@ public interface IInvoiceCandidateHandler
 
 		Services.get(IInvoiceCandBL.class).set_DateToInvoice_DefaultImpl(ic);
 	}
-
-	/**
-	 * Method sets inherited C_UOM_ID opon IC creation
-	 *
-	 * @param ic
-	 */
-	void setC_UOM_ID(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Price and tax info calculation result.

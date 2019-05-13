@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.api.impl;
 
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -38,8 +38,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
@@ -193,30 +194,25 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
-	public int getM_Product_Effective_ID(final I_C_OLCand olCand)
+	public ProductId getM_Product_Effective_ID(@NonNull final I_C_OLCand olCand)
 	{
-		Check.assumeNotNull(olCand, "OLCand not null");
-
-		return olCand.getM_Product_Override_ID() > 0
+		final int productRepoId = olCand.getM_Product_Override_ID() > 0
 				? olCand.getM_Product_Override_ID()
 				: olCand.getM_Product_ID();
+		return ProductId.ofRepoId(productRepoId);
 	}
 
 	@Override
-	public I_M_Product getM_Product_Effective(final I_C_OLCand olCand)
+	public I_M_Product getM_Product_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return InterfaceWrapperHelper.create(
-				InterfaceWrapperHelper.getCtx(olCand),
+		return load(
 				getM_Product_Effective_ID(olCand),
-				I_M_Product.class,
-				InterfaceWrapperHelper.getTrxName(olCand));
+				I_M_Product.class);
 	}
 
 	@Override
-	public int getC_UOM_Effective_ID(final I_C_OLCand olCand)
+	public int getC_UOM_Effective_ID(@NonNull final I_C_OLCand olCand)
 	{
-		Check.assumeNotNull(olCand, "OLCand not null");
-
 		return olCand.isManualPrice()
 				? olCand.getC_UOM_ID()
 				: olCand.getC_UOM_Internal_ID();

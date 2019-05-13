@@ -25,21 +25,18 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.security.IRoleDAO;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process_Para;
@@ -77,6 +74,13 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.DocumentApprovalConstraint;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -746,7 +750,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			oldUser = user;
 			log.debug("User=" + user.getName());
 			// Get Roles of User
-			final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(getCtx(), AD_User_ID, AD_Org_ID);
+			final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
+					Env.getClientId(),
+					OrgId.ofRepoIdOrAny(AD_Org_ID),
+					UserId.ofRepoId(AD_User_ID),
+					Env.getLocalDate());
 			for (final IUserRolePermissions role : roles)
 			{
 				final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)
@@ -1196,8 +1204,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					}
 					else if (resp.isRole())
 					{
-						final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(resp.getAD_Role_ID());
-						if (allRoleUserIds.contains(m_process.getAD_User_ID()))
+						final RoleId roleId = RoleId.ofRepoId(resp.getAD_Role_ID());
+						final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
+						if (allRoleUserIds.contains(UserId.ofRepoId(m_process.getAD_User_ID())))
 						{
 							autoApproval = true;
 						}
@@ -1376,7 +1385,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				final INotificationBL notificationBL = Services.get(INotificationBL.class);
 				notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
-						.recipientUserId(doc.getDoc_User_ID())
+						.recipientUserId(UserId.ofRepoId(doc.getDoc_User_ID()))
 						.contentADMessage(MSG_NotApproved)
 						.contentADMessageParam(doc.toTableRecordReference())
 						.contentADMessageParam(docInfo)
@@ -1408,7 +1417,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 		//
 		final I_AD_User oldUser = getAD_User();
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+		final I_AD_User user = Services.get(IUserDAO.class).getById(AD_User_ID);
 		// Update
 		setAD_User_ID(user.getAD_User_ID());
 		setTextMsg(textMsg);
@@ -1568,12 +1577,15 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		MClient client = MClient.get(doc.getCtx(), doc.getAD_Client_ID());
 
 		// Explicit EMail
-		sendEMail(client, 0, m_node.getEMail(), subject, message, pdf, mailTextBuilder.isHtml());
+		sendEMail(client, (UserId)null, m_node.getEMail(), subject, message, pdf, mailTextBuilder.isHtml());
 		// Recipient Type
 		String recipient = m_node.getEMailRecipient();
 		// email to document user
 		if (recipient == null || recipient.length() == 0)
-			sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
+		{
+			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+		}
 		else if (recipient.equals(MWFNode.EMAILRECIPIENT_DocumentBusinessPartner))
 		{
 			int index = m_po.get_ColumnIndex("AD_User_ID");
@@ -1582,33 +1594,51 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				Object oo = m_po.get_Value(index);
 				if (oo instanceof Integer)
 				{
-					int AD_User_ID = ((Integer)oo).intValue();
-					if (AD_User_ID != 0)
-						sendEMail(client, AD_User_ID, null, subject, message, pdf, mailTextBuilder.isHtml());
+					final UserId userId = UserId.ofRepoIdOrNull(((Integer)oo).intValue());
+					if (userId != null)
+					{
+						sendEMail(client, userId, null, subject, message, pdf, mailTextBuilder.isHtml());
+					}
 					else
+					{
 						log.debug("No User in Document");
+					}
 				}
 				else
+				{
 					log.debug("Empty User in Document");
+				}
 			}
 			else
+			{
 				log.debug("No User Field in Document");
+			}
 		}
 		else if (recipient.equals(MWFNode.EMAILRECIPIENT_DocumentOwner))
-			sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
+		{
+			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+		}
 		else if (recipient.equals(MWFNode.EMAILRECIPIENT_WFResponsible))
 		{
-			MWFResponsible resp = getResponsible();
+			final MWFResponsible resp = getResponsible();
 			if (resp.isInvoker())
-				sendEMail(client, doc.getDoc_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
+			{
+				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+				sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+			}
 			else if (resp.isHuman())
-				sendEMail(client, resp.getAD_User_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
+			{
+				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
+				sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+			}
 			else if (resp.isRole())
 			{
 				final I_AD_Role role = resp.getRole();
 				if (role != null)
 				{
-					for (final int adUserId : Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(role.getAD_Role_ID()))
+					final RoleId roleId = RoleId.ofRepoId(role.getAD_Role_ID());
+					for (final UserId adUserId : Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId))
 					{
 						sendEMail(client, adUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
 					}
@@ -1618,9 +1648,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			{
 				final I_AD_OrgInfo org = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), m_po.getAD_Org_ID(), ITrx.TRXNAME_None);
 				if (org.getSupervisor_ID() <= 0)
-					log.debug("No Supervisor for AD_Org_ID=" + m_po.getAD_Org_ID());
+				{
+					log.debug("No Supervisor for AD_Org_ID={}", m_po.getAD_Org_ID());
+				}
 				else
-					sendEMail(client, org.getSupervisor_ID(), null, subject, message, pdf, mailTextBuilder.isHtml());
+				{
+					final UserId supervisorId = UserId.ofRepoId(org.getSupervisor_ID());
+					sendEMail(client, supervisorId, null, subject, message, pdf, mailTextBuilder.isHtml());
+				}
 			}
 		}
 	}	// sendEMail
@@ -1636,12 +1671,18 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param pdf attachment
 	 * @param isHtml isHtml
 	 */
-	private void sendEMail(MClient client, int AD_User_ID, String email,
-			String subject, String message, File pdf, boolean isHtml)
+	private void sendEMail(
+			MClient client,
+			UserId userId, 
+			String email,
+			String subject, 
+			String message, 
+			File pdf, 
+			boolean isHtml)
 	{
-		if (AD_User_ID > 0)
+		if (userId != null)
 		{
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+			final I_AD_User user = Services.get(IUserDAO.class).getById(userId);
 			email = user.getEMail();
 			if (email != null && email.length() > 0)
 			{

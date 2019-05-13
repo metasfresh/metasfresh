@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +56,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
  * <p>
  * => Expectation: the MovementQty that is in dispute is not invoiced.
  * <p>
- * 
+ *
  * @author ts
  *
  */
@@ -103,7 +103,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 	{
 		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, null);// isSOTrx, priceEtnered_Override
 		final I_C_Invoice_Candidate ic = ics.get(0);
-		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
+		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic.setInvoiceRule_Override(null);
 		InterfaceWrapperHelper.save(ic);
 

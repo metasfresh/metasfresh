@@ -1,5 +1,7 @@
 package de.metas.payment.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,6 +28,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,13 +47,22 @@ import org.compiere.model.I_Fact_Acct;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
+	@Override
+	public I_C_Payment getById(@NonNull final PaymentId paymentId)
+	{
+		return load(paymentId, I_C_Payment.class);
+	}
+
 	@Override
 	public BigDecimal getInvoiceOpenAmount(I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
@@ -88,7 +100,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
 				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
-				;
+		;
 
 		// Only the documents created after the given start time
 		if (startTime != null)
@@ -102,7 +114,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
-				;
+		;
 
 		// Exclude the entries that don't have either PayAmt or OverUnderAmt. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_Payment> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class).setJoinOr()
@@ -123,7 +135,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL.createQueryBuilder(I_C_Payment.class, ctx, trxName)
@@ -137,7 +148,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt); // Matching DocType
 
-
 		final IQuery<I_C_AllocationLine> allocationsQuery = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
@@ -145,7 +155,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		final IQueryFilter<I_C_Payment> allocationFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class)
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, allocationsQuery);
-
 
 		final ICompositeQueryFilter<I_C_Payment> linkedPayments = queryBL.createCompositeQueryFilter(I_C_Payment.class).setJoinOr()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
@@ -160,6 +169,16 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.create()
 				.setOrderBy(orderBy)
 				.list();
+	}
 
+	@Override
+	public Stream<PaymentId> streamPaymentIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(PaymentId::ofRepoId)
+				.stream();
 	}
 }

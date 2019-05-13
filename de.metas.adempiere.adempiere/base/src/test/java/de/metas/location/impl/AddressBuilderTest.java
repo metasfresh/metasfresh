@@ -4,7 +4,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -21,6 +20,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.user.UserRepository;
 
 public class AddressBuilderTest
 {

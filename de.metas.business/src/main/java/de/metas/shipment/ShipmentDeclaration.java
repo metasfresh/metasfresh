@@ -5,13 +5,13 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.user.UserId;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.inout.InOutId;
+import de.metas.user.UserId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;

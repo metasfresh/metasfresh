@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -20,8 +21,10 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -151,9 +154,22 @@ public class HandlerTools
 		ic.setBill_User_ID(term.getBill_User_ID());
 	}
 
-	public static void setC_UOM_ID(@NonNull final I_C_Invoice_Candidate ic)
+	public static UomId retrieveUomId(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final I_C_Flatrate_Term term = retrieveTerm(ic);
-		ic.setC_UOM_ID(term.getC_UOM_ID());
+		final I_C_Flatrate_Term term = retrieveTerm(icRecord);
+		if (term.getC_UOM_ID() > 0)
+		{
+			return UomId.ofRepoId(term.getC_UOM_ID());
+		}
+		if (term.getM_Product_ID() > 0)
+		{
+			final IProductBL productBL = Services.get(IProductBL.class);
+			return productBL.getStockingUOMId(term.getM_Product_ID());
+		}
+
+		throw new AdempiereException("The term of param 'icRecord' needs to have a UOM; C_Invoice_Candidate_ID=" + icRecord.getC_Invoice_Candidate_ID())
+				.appendParametersToMessage()
+				.setParameter("term", term)
+				.setParameter("icRecord", icRecord);
 	}
 }

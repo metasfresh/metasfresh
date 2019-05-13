@@ -28,7 +28,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -37,6 +36,7 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 
 /**

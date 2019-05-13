@@ -4,12 +4,11 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.data.CreatedUpdatedInfo;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;

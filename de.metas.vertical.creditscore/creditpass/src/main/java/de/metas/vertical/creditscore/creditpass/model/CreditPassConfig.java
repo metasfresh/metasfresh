@@ -1,5 +1,9 @@
 package de.metas.vertical.creditscore.creditpass.model;
 
+import java.util.List;
+
+import de.metas.user.UserId;
+
 /*
  * #%L
  * de.metas.vertical.creditscore.creditpass.model
@@ -26,9 +30,6 @@ import de.metas.vertical.creditscore.base.spi.model.ResultCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.user.UserId;
-
-import java.util.List;
 
 @Value
 @Builder

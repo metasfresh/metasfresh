@@ -48,7 +48,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -107,6 +106,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -331,7 +331,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return ImmutableList.of(); // no associations for new/not saved ICs
 		}
-		
+
 		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
 	}
 
@@ -741,7 +741,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCandsForBPartnerInvoiceRule(final I_C_BPartner bpartner)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveForBillPartnerQuery(bpartner)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				// Not already processed
@@ -1062,7 +1062,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, I_C_BPartner.COLUMN_C_BPartner_ID, bpartnersQuery)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				//

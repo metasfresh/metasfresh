@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.Check;
+import de.metas.security.RoleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,15 +35,14 @@ import lombok.Value;
 @Value
 public class RoleNotificationsConfig
 {
-	private final int roleId;
+	private final RoleId roleId;
 	private List<UserNotificationsGroup> notificationGroups;
 
 	@Builder
 	public RoleNotificationsConfig(
-			final int roleId,
+			@NonNull final RoleId roleId,
 			@NonNull @Singular final ImmutableList<UserNotificationsGroup> notificationGroups)
 	{
-		Check.assumeGreaterOrEqualToZero(roleId, "roleId");
 		this.roleId = roleId;
 		this.notificationGroups = notificationGroups;
 	}

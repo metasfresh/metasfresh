@@ -1,7 +1,8 @@
 package de.metas.vertical.pharma.model;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
+
+import javax.annotation.Nullable;
 
 public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
@@ -193,10 +194,16 @@ public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 	public void setStatusInfo(String StatusInfo);
 	public String getStatusInfo();
 	// @formatter:on
-	
+
 	// @formatter:off
 	public static final String COLUMNNAME_IFA_Manufacturer = "IFA_Manufacturer";
 	public void setIFA_Manufacturer(String IFA_Manufacturer);
 	public String getIFA_Manufacturer();
 	// @formatter:on
+
+	// @formatter:off
+	public static final String COLUMNNAME_BTM = "BTM";
+	public void setBTM(String BTM);
+	public String getBTM();
+	// @formater:on
 }

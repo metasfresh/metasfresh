@@ -952,7 +952,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void setQtys(final I_C_InvoiceLine invoiceLine, final BigDecimal qtyInvoiced)
+	public final void setQtys(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final BigDecimal qtyInvoiced)
 	{
 		// for now we are lenient, because i'm not sure because strict doesn't break stuff
 		// Check.assume(invoiceLine.getM_Product_ID() > 0, "invoiceLine {} has M_Product_ID > 0", invoiceLine);
@@ -970,13 +970,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-		// if (product.getC_UOM_ID() < 0)
-		// {
-		// fallback = true;
-		// }
 
 		if (fallback)
 		{
+			// without a product, we have no internal UOM, so we can't do any conversions
 			invoiceLine.setQtyEntered(qtyInvoiced);
 			invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoiced);
 			return;
@@ -1244,9 +1241,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final int getPrecision(final org.compiere.model.I_C_Invoice invoice)
+	public final int getPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		return invoice.getC_Currency().getStdPrecision();
+		final int currencyPrecision = invoice.getC_Currency_ID() > 0 ? invoice.getC_Currency().getStdPrecision() : 0;
+		final int plPrecision = invoice.getM_PriceList_ID() > 0 ? invoice.getM_PriceList().getPricePrecision() : 0;
+
+		return Integer.max(currencyPrecision, plPrecision);
 	}
 
 	@Override
@@ -1381,7 +1381,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			return null;
 		}
-		
+
 		return pricingResult.getTaxCategoryId();
 	}
 

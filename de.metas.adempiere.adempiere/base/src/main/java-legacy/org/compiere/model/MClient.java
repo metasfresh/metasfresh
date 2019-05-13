@@ -31,7 +31,6 @@ import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -41,6 +40,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.i18n.Language;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -443,6 +444,12 @@ public class MClient extends X_AD_Client
 	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
+	public boolean sendEMail (UserId userId, String subject, String message, File attachment)
+	{
+		return sendEMail(UserId.toRepoId(userId), subject, message, attachment);
+	}
+	
+	@Deprecated
 	public boolean sendEMail (int AD_User_ID, String subject, String message, File attachment)
 	{
 		Collection<File> attachments = new ArrayList<>();
@@ -481,7 +488,7 @@ public class MClient extends X_AD_Client
 	@Deprecated
 	private boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments, boolean html)
 	{
-		final I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+		final I_AD_User to = Services.get(IUserDAO.class).getById(AD_User_ID);
 		String toEMail = to.getEMail();
 		if (toEMail == null || toEMail.length() == 0)
 		{

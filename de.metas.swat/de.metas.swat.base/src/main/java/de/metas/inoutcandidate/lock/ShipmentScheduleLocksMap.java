@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.user.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

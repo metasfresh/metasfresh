@@ -103,6 +103,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -349,8 +350,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			// New Lot Button
 			if (attributeSet.getM_LotCtl_ID() > 0)
 			{
-				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, false)
-						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, false)
+				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, Access.WRITE)
+						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, Access.WRITE)
 						&& !attributeSet.isExcludeLot(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bLot, null);
@@ -386,7 +387,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			// New SerNo Button
 			if (attributeSet.getM_SerNoCtl_ID() > 0)
 			{
-				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, false)
+				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, Access.WRITE)
 						&& !attributeSet.isExcludeSerNo(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bSerNo, null);

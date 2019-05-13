@@ -16,7 +16,6 @@ package org.compiere.apps.form;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.compiere.model.I_AD_Archive;
@@ -29,6 +28,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 
 public class Archive {
@@ -240,9 +241,10 @@ public class Archive {
 
 		//metas: Bugfix zu included_Role
 		//	Process Access
+		final RoleId roleId = role.getRoleId();
 		sql.append(" AND (AD_Process_ID IS NULL OR AD_Process_ID IN "
 			+ "(SELECT AD_Process_ID FROM AD_Process_Access WHERE AD_Role_ID=")
-			.append(role.getAD_Role_ID())
+			.append(roleId.getRepoId())
 			.append(" OR ").append(role.getIncludedRolesWhereClause("AD_Role_ID", null))
 			.append("))");
 		//	Table Access
@@ -251,10 +253,9 @@ public class Archive {
 			+ "OR AD_Table_ID IN "
 			+ "(SELECT t.AD_Table_ID FROM AD_Tab t"
 			+ " INNER JOIN AD_Window_Access wa ON (t.AD_Window_ID=wa.AD_Window_ID) "
-			+ "WHERE wa.AD_Role_ID=").append(role.getAD_Role_ID())
+			+ "WHERE wa.AD_Role_ID=").append(roleId.getRepoId())
 			.append(" OR ").append(role.getIncludedRolesWhereClause("wa.AD_Role_ID", null))
 			.append("))");
-		log.trace(sql.toString());
 		//metas: Bugfix zu included_Role ende
 		//
 		final List<I_AD_Archive> archivesList = Services.get(IArchiveDAO.class).retrieveArchives(Env.getCtx(), sql.toString());

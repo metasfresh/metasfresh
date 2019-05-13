@@ -51,7 +51,7 @@ import de.metas.document.archive.esb.api.IArchiveEndpoint;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StreamUtils;
+import de.metas.util.IOStreamUtils;
 
 /**
  * Rest HTTP Remote Archive Endpoint connector
@@ -178,7 +178,7 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 			in = httpPost.getResponseBodyAsStream();
 			if (result != 200)
 			{
-				final String errorMsg = in == null ? "code " + result : StreamUtils.toString(in);
+				final String errorMsg = in == null ? "code " + result : IOStreamUtils.toString(in);
 				throw new AdempiereException("Error " + result + " while posting on " + url + ": " + errorMsg);
 			}
 
@@ -194,7 +194,7 @@ public class RestHttpArchiveEndpoint implements IArchiveEndpoint
 		}
 		finally
 		{
-			StreamUtils.close(in);
+			IOStreamUtils.close(in);
 			in = null;
 		}
 

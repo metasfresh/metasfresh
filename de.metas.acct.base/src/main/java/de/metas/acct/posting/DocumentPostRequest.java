@@ -1,11 +1,13 @@
 package de.metas.acct.posting;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import de.metas.user.UserId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
