@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -267,13 +268,18 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final InvoiceToExport invoice,
 			@NonNull final XmlBody xBody)
 	{
+
+		// just hand through attachments/documents that already exist within the XML that was uploaded to us
+		final List<XmlDocument> documentsToExport = new ArrayList<>(xBody.getDocuments());
+		documentsToExport.addAll(createDocuments(invoice.getInvoiceAttachments()));
+
 		return BodyMod
 				.builder()
 				.prologMod(createPrologMod(invoice.getMetasfreshVersion()))
 				.balanceMod(createBalanceMod(invoice))
 				.esr(createXmlEsr(invoice.getCustomInvoicePayload()))
 				.serviceModsWithSelectors(createServiceModsWithSelectors(invoice, xBody.getServices()))
-				.documents(createDocuments(invoice.getInvoiceAttachments())) // replaces possible existing documents
+				.documents(documentsToExport) // replaces possible existing documents
 				.build();
 	}
 

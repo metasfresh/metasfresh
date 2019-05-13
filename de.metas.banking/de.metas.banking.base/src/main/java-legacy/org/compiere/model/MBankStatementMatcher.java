@@ -21,12 +21,14 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.impexp.BankStatementMatcherInterface;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  *	Bank Statement Matcher Algorithm
@@ -52,7 +54,7 @@ public class MBankStatementMatcher extends X_C_BankStatementMatcher
 		ArrayList<MBankStatementMatcher> list = new ArrayList<MBankStatementMatcher>();
 		String sql = Env.getUserRolePermissions(ctx).addAccessSQL(
 			"SELECT * FROM C_BankStatementMatcher ORDER BY SeqNo", 
-			"C_BankStatementMatcher", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"C_BankStatementMatcher", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		PreparedStatement pstmt = null;
 		try

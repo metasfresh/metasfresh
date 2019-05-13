@@ -1,13 +1,14 @@
 package de.metas.acct.posting;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.user.UserId;
 
 /*
  * #%L

@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.LegacyAdapters;
@@ -37,6 +36,8 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 
@@ -352,7 +353,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 			if (local_only_warehouse_id == 0)
 				sql.append("(SELECT wh.Name FROM M_Warehouse wh WHERE wh.M_Warehouse_ID=M_Locator.M_Warehouse_ID),");
 			sql.append("M_Locator.Value");
-			String finalSql = Env.getUserRolePermissions(m_ctx).addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			String finalSql = Env.getUserRolePermissions(m_ctx).addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 			if (isInterrupted())
 			{
 				log.error("Interrupted");

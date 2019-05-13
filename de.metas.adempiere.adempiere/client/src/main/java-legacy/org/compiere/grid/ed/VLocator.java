@@ -31,7 +31,6 @@ import java.sql.SQLException;
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
@@ -60,6 +59,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -454,7 +455,7 @@ public class VLocator extends JComponent
 					.append("WHERE s.M_Locator_ID=M_Locator.M_Locator_ID AND s.M_Product_ID=?))");
 		}
 
-		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		//
 		int M_Locator_ID = 0;
 		PreparedStatement pstmt = null;

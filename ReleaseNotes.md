@@ -10,6 +10,34 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.104
+
+## Features
+* metasfresh
+  * [#5101](https://github.com/metasfresh/metasfresh/issues/5101) Area search - Geocoding
+  * [#5175](https://github.com/metasfresh/metasfresh/issues/5175) Add language parameter to SQL Function PP_Product_BOM_Recursive
+  * [#5177](https://github.com/metasfresh/metasfresh/issues/5177) Checking BtM and PZN with Modulo 11
+  * [#5183](https://github.com/metasfresh/metasfresh/issues/5183) Enable selective cache invalidation
+
+* metasfresh-e2e
+  * [#74](https://github.com/metasfresh/metasfresh-e2e/issues/74) Create new Tax Rate
+  * [#76](https://github.com/metasfresh/metasfresh-e2e/issues/76) Set currency USD active/inactive
+  * [#78](https://github.com/metasfresh/metasfresh-e2e/issues/78) Enable checking for user notifications
+
+## Fixes
+* metasfresh
+  * [#5172](https://github.com/metasfresh/metasfresh/issues/5172) Pricing Conditions Report Error
+  * [#5182](https://github.com/metasfresh/metasfresh/issues/5182) forum-datenaustausch.ch XML externalId not sufficiently unique
+  * [#5185](https://github.com/metasfresh/metasfresh/issues/5185) forum-datenaustausch.ch XML pre-existing documents are removed from XML on exporting
+  * [#5186](https://github.com/metasfresh/metasfresh/issues/5186) Invoice candidate from order line candidate - pricelist precision not applied when computing PriceActual
+
+* metasfresh-webui-api
+  * [#1189](https://github.com/metasfresh/metasfresh-webui-api/issues/1189) Results missing in batch entry dropdown
+  * [#1194](https://github.com/metasfresh/metasfresh-webui-api/issues/1194) Non-Mandatory BigDecimal fields inititalized with 0
+
+* metasfresh-e2e
+  * [#79](https://github.com/metasfresh/metasfresh-e2e/issues/79) Fix sales order test
+
 # metasfresh 5.103
 ## Features
 * metasfresh
@@ -24,6 +52,7 @@ Here come the actual release notes:
 
 * metasfresh-e2e
   * [#19](https://github.com/metasfresh/metasfresh-e2e/issues/19) Fix Test purchase_create_vendor
+  * [#37](https://github.com/metasfresh/metasfresh-e2e/issues/37) eslint delete CR error in project
   * [#39](https://github.com/metasfresh/metasfresh-e2e/issues/39) Use fixtures for attributes
   * [#57](https://github.com/metasfresh/metasfresh-e2e/issues/57) Fix bpartner object: location
   * [#58](https://github.com/metasfresh/metasfresh-e2e/issues/58) Fix isChecked command

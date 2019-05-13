@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
@@ -37,6 +36,7 @@ import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -121,7 +121,7 @@ public class SendMailText extends JavaProcess
 		//
 		if (m_AD_User_ID > 0)
 		{
-			m_from = Services.get(IUserDAO.class).retrieveUser(m_AD_User_ID);
+			m_from = Services.get(IUserDAO.class).getById(m_AD_User_ID);
 		}
 		log.debug("From " + m_from);
 		long start = System.currentTimeMillis();
@@ -273,7 +273,7 @@ public class SendMailText extends JavaProcess
 			return null;
 		m_list.add(ii);
 		//
-		I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+		I_AD_User to = Services.get(IUserDAO.class).getById(AD_User_ID);
 		mailTextBuilder.setAD_User(AD_User_ID);		//	parse context
 		String message = mailTextBuilder.getFullMailText();
 		//	Unsubscribe

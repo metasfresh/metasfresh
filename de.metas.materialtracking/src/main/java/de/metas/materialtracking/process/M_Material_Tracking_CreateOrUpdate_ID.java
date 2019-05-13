@@ -110,19 +110,19 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			if (I_C_Order.Table_Name.equals(getTableName()))
 			{
 				p_C_Order_ID = getRecord_ID();
-				p_Line = params.getParameterAsInt(PARA_Line);
+				p_Line = params.getParameterAsInt(PARA_Line, 0);
 			}
 			else
 			{
-				p_C_Order_ID = params.getParameterAsInt(PARA_C_Order_ID);
-				p_Line = params.getParameterAsInt(PARA_Line);
+				p_C_Order_ID = params.getParameterAsInt(PARA_C_Order_ID, -1);
+				p_Line = params.getParameterAsInt(PARA_Line, 0);
 			}
 
 			final I_C_Order order = InterfaceWrapperHelper.create(getCtx(), p_C_Order_ID, I_C_Order.class, getTrxName());
 			orderLine = orderDAO.retrieveOrderLine(order, p_Line, I_C_OrderLine.class);
 		}
 
-		p_Material_Tracking_ID = params.getParameterAsInt(PARA_M_Material_Tracking_ID);
+		p_Material_Tracking_ID = params.getParameterAsInt(PARA_M_Material_Tracking_ID, -1);
 	}
 
 	@Override

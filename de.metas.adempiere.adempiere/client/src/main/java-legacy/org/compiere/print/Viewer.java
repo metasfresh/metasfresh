@@ -67,12 +67,9 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -112,6 +109,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
@@ -461,7 +461,7 @@ public class Viewer extends CFrame
 				+ "AND IsActive='Y' "
 				//End of Added Lines
 				+ "ORDER BY Name",
-			"AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		final int AD_Table_ID = m_reportEngine.getPrintFormat().getAD_Table_ID();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1161,21 +1161,16 @@ public class Viewer extends CFrame
 			tabAndTemplateTabId = TabAndTemplateTabId.NONE;
 		}
 
-		// ASP
-		final String ASPFilter = Services.get(IASPFiltersFactory.class)
-				.getASPFiltersForClient(Env.getAD_Client_ID(Env.getCtx()))
-				.getSQLWhereClause(I_AD_Tab.class);
-
 		//
 		sql = "SELECT Name, TableName"
 				+ ", " + I_AD_Tab.COLUMNNAME_MaxQueryRecords
-				+ " FROM AD_Tab_v WHERE AD_Tab_ID=? " + ASPFilter;
+				+ " FROM AD_Tab_v WHERE AD_Tab_ID=? ";
 		if (!Env.isBaseLanguage(Env.getCtx(), "AD_Tab"))
 		{
 			sql = "SELECT Name, TableName"
 					+ ", " + I_AD_Tab.COLUMNNAME_MaxQueryRecords
 					+ " FROM AD_Tab_vt WHERE AD_Tab_ID=?"
-					+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "' " + ASPFilter;
+					+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "' ";
 		}
 
 		String title = null;

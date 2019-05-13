@@ -8,9 +8,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.UserId;
-
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;

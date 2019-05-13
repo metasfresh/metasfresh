@@ -11,8 +11,9 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.util.Check;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,7 +51,10 @@ public class FlatrateUserNotificationsProducer
 			.type(Type.REMOTE)
 			.build();
 
-	public FlatrateUserNotificationsProducer notifyUser(final I_C_Flatrate_Term contract, final int recipientUserId, final String message)
+	public FlatrateUserNotificationsProducer notifyUser(
+			final I_C_Flatrate_Term contract,
+			final UserId recipientUserId,
+			final String message)
 	{
 		if (contract == null)
 		{
@@ -70,11 +74,12 @@ public class FlatrateUserNotificationsProducer
 		return this;
 	}
 
-	private final UserNotificationRequest createFlatrateTermGeneratedEvent(final I_C_Flatrate_Term contract, final int recipientUserId, final String message)
+	private final UserNotificationRequest createFlatrateTermGeneratedEvent(
+			@NonNull final I_C_Flatrate_Term contract, 
+			final UserId recipientUserId, 
+			final String message)
 	{
-		Check.assumeNotNull(contract, "contract not null");
-
-		if (recipientUserId <= 0)
+		if (recipientUserId == null)
 		{
 			// nothing to do
 			return null;

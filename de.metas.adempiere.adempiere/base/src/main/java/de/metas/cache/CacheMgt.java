@@ -347,7 +347,7 @@ public final class CacheMgt
 		return total;
 	}
 
-	private final long invalidateForRequest(final CacheInvalidateRequest request)
+	private final long invalidateForRequest(@NonNull final CacheInvalidateRequest request)
 	{
 		if (request.isAllRecords())
 		{

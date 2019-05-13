@@ -16,32 +16,22 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.ad.security.IRoleDAO;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_DocType;
+import org.adempiere.service.OrgId;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
@@ -55,6 +45,15 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.OrgResource;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
@@ -164,7 +163,8 @@ public class Login
 		// metas: us902: Update logged in user if not equal.
 		// Because we are creating the session before we know which user will be logged, initially
 		// the AD_Session.CreatedBy is zero.
-		session.setAD_User_ID(user.getAD_User_ID());
+		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+		session.setAD_User_ID(userId.getRepoId());
 
 		final boolean isAccountLocked = user.isAccountLocked();
 		if (isAccountLocked)
@@ -212,8 +212,7 @@ public class Login
 			InterfaceWrapperHelper.save(user);
 		}
 
-		final int AD_User_ID = user.getAD_User_ID();
-		ctx.setUser(AD_User_ID, username);
+		ctx.setUser(userId, username);
 
 		//
 		if (Ini.isSwingClient())
@@ -249,20 +248,20 @@ public class Login
 		//
 		// Get user's roles
 		final Set<KeyNamePair> roles = new LinkedHashSet<>();
-		for (final I_AD_Role role : roleDAO.retrieveRolesForUser(ctx.getSessionContext(), user.getAD_User_ID()))
+		for (final Role role : roleDAO.getUserRoles(userId))
 		{
 			// if webui then skip non-webui roles
-			if (ctx.isWebui() && !role.isWEBUI_Role())
+			if (ctx.isWebui() && !role.isWebuiRole())
 			{
 				continue;
 			}
 
-			if (role.getAD_Role_ID() == IUserRolePermissions.SYSTEM_ROLE_ID)
+			if (role.getId().isSystem())
 			{
 				ctx.setSysAdmin(true);
 			}
 
-			final KeyNamePair roleKNP = KeyNamePair.of(role.getAD_Role_ID(), role.getName(), role.getDescription());
+			final KeyNamePair roleKNP = KeyNamePair.of(role.getId(), role.getName(), role.getDescription());
 			roles.add(roleKNP);
 		}
 		//
@@ -312,9 +311,9 @@ public class Login
 		//
 		// Get user role
 		final LoginContext ctx = getCtx();
-		final int AD_Role_ID = role.getKey();
-		final int AD_User_ID = ctx.getAD_User_ID();
-		final IUserRolePermissions rolePermissions = getUserRolePermissions(AD_Role_ID, AD_User_ID);
+		final RoleId roleId = RoleId.ofRepoId(role.getKey());
+		final UserId userId = ctx.getUserId();
+		final IUserRolePermissions rolePermissions = getUserRolePermissions(roleId, userId);
 
 		//
 		// Get login AD_Clients
@@ -327,26 +326,26 @@ public class Login
 
 		//
 		// Update login context
-		ctx.setRole(rolePermissions.getAD_Role_ID(), rolePermissions.getName());
+		ctx.setRole(rolePermissions.getRoleId(), rolePermissions.getName());
 		ctx.setRoleUserLevel(rolePermissions.getUserLevel());
 		ctx.setAllowLoginDateOverride(rolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowLoginDateOverride));
 
 		return clientsList;
 	}
 
-	private IUserRolePermissions getUserRolePermissions(final int AD_Role_ID, final int AD_User_ID)
+	private IUserRolePermissions getUserRolePermissions(final RoleId roleId, final UserId userId)
 	{
 		//
 		// Get user role
-		final int AD_Client_ID = -1; // N/A
-		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
+		final ClientId clientId = null; // N/A
+		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 		return rolePermissions;
 	}
 
-	public Set<KeyNamePair> getAvailableClients(final int AD_Role_ID, final int AD_User_ID)
+	public Set<KeyNamePair> getAvailableClients(final RoleId roleId, final UserId userId)
 	{
-		return getUserRolePermissions(AD_Role_ID, AD_User_ID)
+		return getUserRolePermissions(roleId, userId)
 				.getLoginClients();
 	}
 
@@ -364,28 +363,27 @@ public class Login
 		//
 		// Get login organizations
 		final LoginContext ctx = getCtx();
-		final int AD_Client_ID = client.getKey();
-		final int AD_Role_ID = ctx.getAD_Role_ID();
-		final int AD_User_ID = ctx.getAD_User_ID();
-		final Set<KeyNamePair> orgsList = getAvailableOrgs(AD_Role_ID, AD_User_ID, AD_Client_ID);
+		final ClientId clientId = ClientId.ofRepoId(client.getKey());
+		final RoleId roleId = ctx.getRoleId();
+		final UserId userId = ctx.getUserId();
+		final Set<KeyNamePair> orgsList = getAvailableOrgs(roleId, userId, clientId);
 
 		//
 		// Update login context
-		ctx.setClient(client.getKey(), client.getName());
+		ctx.setClient(clientId, client.getName());
 
 		return orgsList;
 	}
 
-	public Set<KeyNamePair> getAvailableOrgs(final int AD_Role_ID, final int AD_User_ID, final int AD_Client_ID)
+	public Set<KeyNamePair> getAvailableOrgs(
+			@NonNull final RoleId roleId,
+			@NonNull final UserId userId,
+			@NonNull final ClientId clientId)
 	{
-		Check.assume(AD_Role_ID >= 0, "AD_Role_ID >= 0");
-		Check.assume(AD_User_ID >= 0, "AD_User_ID >= 0");
-		Check.assume(AD_Client_ID >= 0, "AD_Client_ID >= 0");
-
 		//
 		// Get user role
-		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions role = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
+		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final IUserRolePermissions role = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 
 		//
 		// Get login organizations
@@ -397,7 +395,7 @@ public class Login
 		// No Orgs
 		if (orgsList.isEmpty())
 		{
-			log.warn("No Org for AD_Client_ID={}, AD_Role_ID={}, AD_User_ID={} \nPermissions: {}", AD_Client_ID, AD_Role_ID, AD_User_ID, role);
+			log.warn("No Org for AD_Client_ID={}, AD_Role_ID={}, AD_User_ID={} \nPermissions: {}", clientId, roleId, userId, role);
 			return ImmutableSet.of();
 		}
 
@@ -419,17 +417,17 @@ public class Login
 	public String validateLogin(final KeyNamePair org, final boolean fireLoginComplete)
 	{
 		final LoginContext ctx = getCtx();
-		final int AD_Client_ID = ctx.getAD_Client_ID();
-		final int AD_Org_ID = org.getKey();
-		final int AD_Role_ID = ctx.getAD_Role_ID();
-		final int AD_User_ID = ctx.getAD_User_ID();
+		final ClientId clientId = ctx.getClientId();
+		final OrgId orgId = OrgId.ofRepoId(org.getKey());
+		final RoleId roleId = ctx.getRoleId();
+		final UserId userId = ctx.getUserId();
 
 		//
 		// Update AD_Session
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx.getSessionContext());
 		if (session != null)
 		{
-			session.setLoginInfo(AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID, ctx.getLoginDate());
+			session.setLoginInfo(clientId, orgId, roleId, userId, ctx.getLoginDate());
 			session.updateContext(ctx.getSessionContext());
 		}
 		else
@@ -443,7 +441,7 @@ public class Login
 		// Fire LoginComplete
 		if (fireLoginComplete)
 		{
-			final String error = ModelValidationEngine.get().loginComplete(AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID);
+			final String error = ModelValidationEngine.get().loginComplete(clientId.getRepoId(), orgId.getRepoId(), roleId.getRepoId(), userId.getRepoId());
 			if (error != null && error.length() > 0)
 			{
 				log.error("Refused: " + error);
@@ -476,30 +474,31 @@ public class Login
 		Check.assumeNotNull(org, "Parameter org is not null");
 
 		final LoginContext ctx = getCtx();
-		final int AD_Client_ID = ctx.getAD_Client_ID();
-		final int AD_User_ID = ctx.getAD_User_ID();
-		final int AD_Role_ID = ctx.getAD_Role_ID();
+		final ClientId clientId = ctx.getClientId();
+		final OrgId orgId = OrgId.ofRepoId(org.getKey());
+		final UserId userId = ctx.getUserId();
+		final RoleId roleId = ctx.getRoleId();
 
 		//
 		// Org Info - assumes that it is valid
-		ctx.setOrg(org.getKey(), org.getName());
+		ctx.setOrg(orgId, org.getName());
 
 		//
 		// Date (default today)
-		final Timestamp loginDate;
+		final LocalDate loginDate;
 		if (timestamp == null)
 		{
-			loginDate = SystemTime.asDayTimestamp();
+			loginDate = SystemTime.asLocalDate();
 		}
 		else
 		{
-			loginDate = TimeUtil.trunc(timestamp, TimeUtil.TRUNC_DAY);
+			loginDate = TimeUtil.asLocalDate(timestamp);
 		}
 		ctx.setLoginDate(loginDate);
 
 		//
 		// Role additional info
-		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
+		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 		ctx.setUserOrgs(userRolePermissions.getAD_Org_IDs_AsString());
 
 		// Other
@@ -513,7 +512,7 @@ public class Login
 		ctx.setProperty("#ShowAdvanced", Ini.isPropertyBool(Ini.P_SHOW_ADVANCED));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		ctx.setProperty("#CashAsPayment", sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, AD_Client_ID));
+		ctx.setProperty("#CashAsPayment", sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, clientId.getRepoId()));
 
 		String retValue = "";
 
@@ -539,14 +538,10 @@ public class Login
 			//
 			// Load preferences
 			loadPreferences();
-
-			//
-			// Default Values
-			loadDefaults();
 		}
 		catch (Exception e)
 		{
-			log.error("loadPreferences", e);
+			log.warn("Failed loading preferences. Skipping.", e);
 		}
 
 		//
@@ -584,10 +579,10 @@ public class Login
 	private void loadAccounting()
 	{
 		final LoginContext ctx = getCtx();
-		final int AD_Role_ID = ctx.getAD_Role_ID();
+		final RoleId roleId = ctx.getRoleId();
 
 		// Don't try to load the accounting schema for System role
-		if (AD_Role_ID == Env.CTXVALUE_AD_Role_ID_System)
+		if (roleId.isSystem())
 		{
 			return;
 		}
@@ -602,109 +597,16 @@ public class Login
 	private void loadPreferences()
 	{
 		final LoginContext ctx = getCtx();
-		final int AD_Client_ID = ctx.getAD_Client_ID();
-		final int AD_Org_ID = ctx.getAD_Org_ID();
-		final int AD_User_ID = ctx.getAD_User_ID();
+		final ClientId clientId = ctx.getClientId();
+		final OrgId orgId = ctx.getOrgId();
+		final UserId userId = ctx.getUserId();
 
 		Services.get(IValuePreferenceBL.class)
-				.getAllWindowPreferences(AD_Client_ID, AD_Org_ID, AD_User_ID)
+				.getAllWindowPreferences(clientId.getRepoId(), orgId.getRepoId(), userId.getRepoId())
 				.stream()
 				.flatMap(userValuePreferences -> userValuePreferences.values().stream())
 				.forEach(ctx::setPreference);
 	}
-
-	private void loadDefaults() throws SQLException
-	{
-		log.debug("Default Values ...");
-
-		final String sqlDefaulValues = "SELECT t.TableName, c.ColumnName "
-				+ "FROM AD_Column c "
-				+ " INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
-				+ "WHERE c.IsKey='Y' AND t.IsActive='Y'"
-				+ " AND EXISTS (SELECT * FROM AD_Column cc "
-				+ " WHERE ColumnName = 'IsDefault' AND t.AD_Table_ID=cc.AD_Table_ID AND cc.IsActive='Y')";
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sqlDefaulValues, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final String tableName = rs.getString(1);
-				final String columnName = rs.getString(2);
-				loadDefault(tableName, columnName);
-			}
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			pstmt = null;
-			rs = null;
-		}
-
-	}
-
-	/**
-	 * Load Default Value for Table into Context.
-	 *
-	 * @param TableName table name
-	 * @param ColumnName column name
-	 */
-	private void loadDefault(final String TableName, final String ColumnName)
-	{
-		if (TableName.startsWith("AD_Window")
-				|| TableName.startsWith("AD_PrintFormat")
-				|| TableName.startsWith("AD_Workflow"))
-		{
-			return;
-		}
-
-		final LoginContext ctx = getCtx();
-
-		String value = null;
-		//
-		String sql = "SELECT " + ColumnName + " FROM " + TableName	// most specific first
-				+ " WHERE IsDefault='Y' AND IsActive='Y' ORDER BY AD_Client_ID DESC, AD_Org_ID DESC";
-		sql = Env.getUserRolePermissions(ctx.getSessionContext()).addAccessSQL(sql, TableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				value = rs.getString(1);
-			}
-
-			// If there is more then one default value, we shall avoid having a default value in context at all
-			if (rs.next())
-			{
-				value = null;
-			}
-		}
-		catch (SQLException e)
-		{
-			log.error(TableName + " (" + sql + ")", e);
-			return;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		// Set Context Value
-		if (value != null && value.length() != 0)
-		{
-			if (I_C_DocType.Table_Name.equals(TableName))
-				ctx.setProperty("#C_DocTypeTarget_ID", value);
-			else
-				ctx.setProperty("#" + ColumnName, value);
-		}
-	}	// loadDefault
 
 	/**
 	 *
@@ -717,19 +619,19 @@ public class Login
 	private void loadUIWindowHeaderNotice()
 	{
 		final LoginContext ctx = getCtx();
-		final int AD_Client_ID = ctx.getAD_Client_ID();
-		final int AD_Org_ID = ctx.getAD_Org_ID();
+		final ClientId clientId = ctx.getClientId();
+		final OrgId orgId = ctx.getOrgId();
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final String windowHeaderNoticeText = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_Text, AD_Client_ID, AD_Org_ID);
+		final String windowHeaderNoticeText = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_Text, clientId.getRepoId(), orgId.getRepoId());
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_Text, windowHeaderNoticeText);
 
 		// FRESH-352: also allow setting the status message's foreground and background color.
-		final String windowHeaderBackgroundColor = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_BG_Color, AD_Client_ID, AD_Org_ID);
+		final String windowHeaderBackgroundColor = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_BG_Color, clientId.getRepoId(), orgId.getRepoId());
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_BG_COLOR, windowHeaderBackgroundColor);
 
-		final String windowHeaderForegroundColor = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_FG_Color, AD_Client_ID, AD_Org_ID);
+		final String windowHeaderForegroundColor = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_FG_Color, clientId.getRepoId(), orgId.getRepoId());
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_FG_COLOR, windowHeaderForegroundColor);
 	}
 

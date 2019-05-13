@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MLookupFactory;
@@ -42,6 +41,8 @@ import org.slf4j.Logger;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 /**
@@ -654,11 +655,11 @@ public class DataEngine
 			}
 			//	Access Restriction
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-			if (role.getAD_Role_ID() == 0 && !Ini.isSwingClient())
+			if (role.getRoleId().isSystem() && !Ini.isSwingClient())
 				;	//	System Access
 			else
 				finalSQL = new StringBuffer (role.addAccessSQL (finalSQL.toString (),
-					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
+					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ));
 		}
 
 		//	Add GROUP BY clause

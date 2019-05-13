@@ -27,11 +27,9 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.lang.IMutable;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.compiere.model.I_AD_User;
@@ -42,6 +40,10 @@ import org.compiere.model.X_I_User;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -181,11 +183,12 @@ public class ADUserImportProcess extends AbstractImportProcess<I_I_User>
 
 		//
 		// Assign Role
-		int roleId = importRecord.getAD_Role_ID();
+		final RoleId roleId = RoleId.ofRepoIdOrNull(importRecord.getAD_Role_ID());
 
-		if (roleId > 0)
+		if (roleId != null)
 		{
-			Services.get(IRoleDAO.class).createUserRoleAssignmentIfMissing(user.getAD_User_ID(), roleId);
+			final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+			Services.get(IRoleDAO.class).createUserRoleAssignmentIfMissing(userId, roleId);
 		}
 		//
 		// Link back the request to current import record

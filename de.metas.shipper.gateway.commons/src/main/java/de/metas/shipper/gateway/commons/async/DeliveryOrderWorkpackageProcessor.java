@@ -123,7 +123,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 	public DeliveryOrderId getDeliveryOrderRepoId()
 	{
-		final int repoId = getParameters().getParameterAsInt(PARAM_DeliveryOrderRepoId);
+		final int repoId = getParameters().getParameterAsInt(PARAM_DeliveryOrderRepoId, -1);
 		return DeliveryOrderId.ofRepoId(repoId);
 	}
 

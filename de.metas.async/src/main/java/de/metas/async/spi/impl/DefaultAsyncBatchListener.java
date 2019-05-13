@@ -19,8 +19,9 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.util.Services;
 import de.metas.notification.UserNotificationsConfig;
+import de.metas.user.UserId;
+import de.metas.util.Services;
 
 /**
  * @author cg
@@ -39,7 +40,8 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 			return;
 		}
 
-		final UserNotificationsConfig notificationsConfig = createUserNotificationsConfigOrNull(asyncBatch.getCreatedBy(), asyncBatchType);
+		final UserId recipientUserId = UserId.ofRepoId(asyncBatch.getCreatedBy());
+		final UserNotificationsConfig notificationsConfig = createUserNotificationsConfigOrNull(recipientUserId, asyncBatchType);
 		if (notificationsConfig == null)
 		{
 			return;
@@ -57,7 +59,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 						.build());
 	}
 
-	private static UserNotificationsConfig createUserNotificationsConfigOrNull(final int recipientUserId, final I_C_Async_Batch_Type asyncBatchType)
+	private static UserNotificationsConfig createUserNotificationsConfigOrNull(final UserId recipientUserId, final I_C_Async_Batch_Type asyncBatchType)
 	{
 		final Set<NotificationType> notificationTypes = extractNotificationTypes(asyncBatchType);
 		if (notificationTypes.isEmpty())
