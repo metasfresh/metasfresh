@@ -60,14 +60,9 @@ public class PurchaseCandidateReminderSchedulerRestController
 		userSession.assertLoggedIn();
 
 		final int purchaseCandidatesWindowId = RecordZoomWindowFinder.findAD_Window_ID(I_C_PurchaseCandidate.Table_Name);
-		final Boolean accessRW = userSession.getUserRolePermissions().checkWindowAccess(purchaseCandidatesWindowId);
-		if (accessRW == null)
+		if (!userSession.getUserRolePermissions().checkWindowPermission(purchaseCandidatesWindowId).hasWriteAccess())
 		{
-			throw new AdempiereException("No access to purchase candidates window");
-		}
-		else if (accessRW == false)
-		{
-			throw new AdempiereException("No read/writeaccess to purchase candidates window");
+			throw new AdempiereException("No read/write access to purchase candidates window");
 		}
 	}
 

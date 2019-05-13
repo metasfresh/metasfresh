@@ -7,11 +7,11 @@ import java.util.stream.Stream;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -31,6 +31,7 @@ import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
@@ -274,7 +275,16 @@ import lombok.NonNull;
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
-		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(adProcessParam.isMandatory());
+
+		final ILogicExpression mandatoryLogic;
+		if (adProcessParam.isMandatory())
+		{
+			mandatoryLogic = displayLogic;
+		}
+		else
+		{
+			mandatoryLogic = ConstantLogicExpression.FALSE;
+		}
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
 				adProcessParam.getDefaultValue(),
@@ -326,7 +336,8 @@ import lombok.NonNull;
 		}
 		else
 		{
-			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(adProcessParamRecord.getAD_Element(), I_AD_Element.class);
+			final I_AD_Element element = Services.get(IADElementDAO.class).getById(adProcessParamRecord.getAD_Element_ID());
+			final I_AD_Element elementTrl = InterfaceWrapperHelper.translate(element, I_AD_Element.class);
 			paramDescriptorBuilder
 					.setCaption(elementTrl.getName())
 					.setDescription(elementTrl.getDescription());
