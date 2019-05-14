@@ -2,19 +2,22 @@ package de.metas.dataentry.data;
 
 import static de.metas.dataentry.data.DataEntryRecordTestConstants.DATE_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.dataentry.DataEntryFieldId;
-import de.metas.dataentry.DataEntrySubGroupId;
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.user.UserId;
 
 /*
@@ -41,35 +44,19 @@ import de.metas.user.UserId;
 
 public class DataEntryRecordTest
 {
-
-	@Test
-	public void clearRecordFields()
+	@Before
+	public void init()
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
-		final DataEntryRecord dataEntryRecord = DataEntryRecord
-				.builder()
-				.dataEntrySubGroupId(dataEntrySubGroupId)
-				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
-				.fields(DataEntryRecordTestConstants.SIMPLE_DATA_ENTRY_FIELD_DATA)
-				.build();
-
-		assertThat(dataEntryRecord.isEmpty()).isFalse(); // guard
-
-		// invoke method under test
-		dataEntryRecord.clearRecordFields();
-
-		assertThat(dataEntryRecord.isEmpty()).isTrue();
+		AdempiereTestHelper.get().init();
 	}
 
 	@Test
 	public void setRecordField()
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = DataEntrySubGroupId.ofRepoId(10);
-		final DataEntryRecord dataEntryRecord = DataEntryRecord
-				.builder()
-				.dataEntrySubGroupId(dataEntrySubGroupId)
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
+		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
-				.fields(ImmutableList.of())
 				.build();
 
 		final DataEntryFieldId fieldId1 = DataEntryFieldId.ofRepoId(1);
@@ -98,5 +85,23 @@ public class DataEntryRecordTest
 		assertThat(resultMap.get(fieldId4).getValue()).isEqualTo(true);
 		assertThat(resultMap.get(fieldId5).getValue()).isEqualTo(new BigDecimal("15"));
 		assertThat(resultMap.get(fieldId6).getValue()).isEqualTo(DATE_TIME);
+	}
+
+	@Test
+	public void testImmutable()
+	{
+		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
+				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(10))
+				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
+				.build()
+				//
+				.copyAsImmutable();
+
+		final DataEntryFieldId fieldId1 = DataEntryFieldId.ofRepoId(1);
+		final UserId updatedBy = UserId.ofRepoId(1);
+
+		assertThatThrownBy(() -> dataEntryRecord.setRecordField(fieldId1, updatedBy, "bla"))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageStartingWith("Changing readonly instance is not allowed: ");
 	}
 }

@@ -4,34 +4,34 @@ package de.metas.dataentry.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for DataEntry_Group
+/** Generated Model for DataEntry_SubTab
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_DataEntry_Group extends org.compiere.model.PO implements I_DataEntry_Group, org.compiere.model.I_Persistent 
+public class X_DataEntry_SubTab extends org.compiere.model.PO implements I_DataEntry_SubTab, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 323981254L;
+	private static final long serialVersionUID = -792052436L;
 
     /** Standard Constructor */
-    public X_DataEntry_Group (Properties ctx, int DataEntry_Group_ID, String trxName)
+    public X_DataEntry_SubTab (Properties ctx, int DataEntry_SubTab_ID, String trxName)
     {
-      super (ctx, DataEntry_Group_ID, trxName);
-      /** if (DataEntry_Group_ID == 0)
+      super (ctx, DataEntry_SubTab_ID, trxName);
+      /** if (DataEntry_SubTab_ID == 0)
         {
-			setDataEntry_Group_ID (0);
-			setDataEntry_TargetWindow_ID (0);
+			setDataEntry_SubTab_ID (0);
+			setDataEntry_Tab_ID (0);
 			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Group WHERE DataEntry_TargetWindow_ID=@DataEntry_TargetWindow_ID/0@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_SubTab WHERE DataEntry_Group_ID=@DataEntry_Group_ID/0@
 			setTabName (null);
         } */
     }
 
     /** Load Constructor */
-    public X_DataEntry_Group (Properties ctx, ResultSet rs, String trxName)
+    public X_DataEntry_SubTab (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -45,60 +45,57 @@ public class X_DataEntry_Group extends org.compiere.model.PO implements I_DataEn
       return poi;
     }
 
-	/** Set Eingabegruppe.
-		@param DataEntry_Group_ID Eingabegruppe	  */
+	/** Set Unterregister.
+		@param DataEntry_SubTab_ID Unterregister	  */
 	@Override
-	public void setDataEntry_Group_ID (int DataEntry_Group_ID)
+	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID)
 	{
-		if (DataEntry_Group_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, null);
+		if (DataEntry_SubTab_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_SubTab_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_Group_ID, Integer.valueOf(DataEntry_Group_ID));
+			set_ValueNoCheck (COLUMNNAME_DataEntry_SubTab_ID, Integer.valueOf(DataEntry_SubTab_ID));
 	}
 
-	/** Get Eingabegruppe.
-		@return Eingabegruppe	  */
+	/** Get Unterregister.
+		@return Unterregister	  */
 	@Override
-	public int getDataEntry_Group_ID () 
+	public int getDataEntry_SubTab_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Group_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubTab_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getDataEntry_TargetWindow() throws RuntimeException
+	public de.metas.dataentry.model.I_DataEntry_Tab getDataEntry_Tab() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_TargetWindow_ID, org.compiere.model.I_AD_Window.class);
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Tab_ID, de.metas.dataentry.model.I_DataEntry_Tab.class);
 	}
 
 	@Override
-	public void setDataEntry_TargetWindow(org.compiere.model.I_AD_Window DataEntry_TargetWindow)
+	public void setDataEntry_Tab(de.metas.dataentry.model.I_DataEntry_Tab DataEntry_Tab)
 	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_TargetWindow_ID, org.compiere.model.I_AD_Window.class, DataEntry_TargetWindow);
+		set_ValueFromPO(COLUMNNAME_DataEntry_Tab_ID, de.metas.dataentry.model.I_DataEntry_Tab.class, DataEntry_Tab);
 	}
 
-	/** Set Eingabefenster.
-		@param DataEntry_TargetWindow_ID 
-		Bestehendes Fenster, das um diese Eingabegruppe erweitert werden soll
-	  */
+	/** Set Eingaberegister.
+		@param DataEntry_Tab_ID Eingaberegister	  */
 	@Override
-	public void setDataEntry_TargetWindow_ID (int DataEntry_TargetWindow_ID)
+	public void setDataEntry_Tab_ID (int DataEntry_Tab_ID)
 	{
-		if (DataEntry_TargetWindow_ID < 1) 
-			set_Value (COLUMNNAME_DataEntry_TargetWindow_ID, null);
+		if (DataEntry_Tab_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_Tab_ID, null);
 		else 
-			set_Value (COLUMNNAME_DataEntry_TargetWindow_ID, Integer.valueOf(DataEntry_TargetWindow_ID));
+			set_ValueNoCheck (COLUMNNAME_DataEntry_Tab_ID, Integer.valueOf(DataEntry_Tab_ID));
 	}
 
-	/** Get Eingabefenster.
-		@return Bestehendes Fenster, das um diese Eingabegruppe erweitert werden soll
-	  */
+	/** Get Eingaberegister.
+		@return Eingaberegister	  */
 	@Override
-	public int getDataEntry_TargetWindow_ID () 
+	public int getDataEntry_Tab_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_TargetWindow_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Tab_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

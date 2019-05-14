@@ -3,6 +3,8 @@ package de.metas.dataentry.layout;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,11 +30,14 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class DataEntryListValue
 {
+	@NonNull
 	DataEntryListValueId id;
 
-	DataEntryFieldId dataEntryFieldId;
+	@NonNull
+	DataEntryFieldId fieldId;
 
 	ITranslatableString name;
 	ITranslatableString description;
