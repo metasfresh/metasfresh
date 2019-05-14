@@ -35,7 +35,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldYesNo extends DataEntryRecordField<Boolean>
 {
 	@Getter
-	private Boolean value;
+	private final Boolean value;
 
 	public static DataEntryRecordFieldYesNo of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

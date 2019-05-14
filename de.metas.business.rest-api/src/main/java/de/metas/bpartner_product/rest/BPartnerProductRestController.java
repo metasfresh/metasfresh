@@ -2,29 +2,22 @@ package de.metas.bpartner_product.rest;
 
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.utils.RestApiUtils;
 
 /*
  * #%L
@@ -107,45 +100,6 @@ public class BPartnerProductRestController
 	private String trl(final String message)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		return msgBL.parseTranslation(getAdLanguage(), message);
-	}
-
-	private String getAdLanguage()
-	{
-		final ILanguageDAO languagesRepo = Services.get(ILanguageDAO.class);
-
-		final HttpServletRequest httpServletRequest = getHttpServletRequest();
-		if (httpServletRequest != null)
-		{
-			final String httpAcceptLanguage = httpServletRequest.getHeader(HttpHeaders.ACCEPT_LANGUAGE);
-			if (!Check.isEmpty(httpAcceptLanguage, true))
-			{
-				final String requestLanguage = languagesRepo.retrieveAvailableLanguages()
-						.getAD_LanguageFromHttpAcceptLanguage(httpAcceptLanguage, null);
-				if (requestLanguage != null)
-				{
-					return requestLanguage;
-				}
-			}
-		}
-
-		// Fallback to base language
-		return languagesRepo.retrieveBaseLanguage();
-	}
-
-	private static final HttpServletRequest getHttpServletRequest()
-	{
-		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		if (requestAttributes == null)
-		{
-			return null;
-		}
-		if (!(requestAttributes instanceof ServletRequestAttributes))
-		{
-			return null;
-		}
-
-		final HttpServletRequest servletRequest = ((ServletRequestAttributes)requestAttributes).getRequest();
-		return servletRequest;
+		return msgBL.parseTranslation(RestApiUtils.getAdLanguage(), message);
 	}
 }

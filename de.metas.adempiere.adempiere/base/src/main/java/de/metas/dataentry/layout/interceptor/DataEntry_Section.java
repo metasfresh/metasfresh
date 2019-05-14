@@ -1,5 +1,6 @@
 package de.metas.dataentry.layout.interceptor;
 
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -9,7 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.util.Services;
@@ -57,10 +57,10 @@ public class DataEntry_Section
 				.delete();
 	}
 
-	@CalloutMethod(columnNames = I_DataEntry_Section.COLUMNNAME_DataEntry_SubGroup_ID)
+	@CalloutMethod(columnNames = I_DataEntry_Section.COLUMNNAME_DataEntry_SubTab_ID)
 	public void setSeqNo(@NonNull final I_DataEntry_Section dataEntrySectionRecord)
 	{
-		if (dataEntrySectionRecord.getDataEntry_SubGroup_ID() <= 0)
+		if (dataEntrySectionRecord.getDataEntry_SubTab_ID() <= 0)
 		{
 			return;
 		}
@@ -73,8 +73,8 @@ public class DataEntry_Section
 				.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Section.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DataEntry_Section.COLUMN_DataEntry_SubGroup_ID, dataEntrySectionRecord.getDataEntry_SubGroup_ID())
+				.addEqualsFilter(I_DataEntry_Section.COLUMN_DataEntry_SubTab_ID, dataEntrySectionRecord.getDataEntry_SubTab_ID())
 				.create()
-				.maxInt(I_DataEntry_Group.COLUMNNAME_SeqNo);
+				.maxInt(I_DataEntry_Tab.COLUMNNAME_SeqNo);
 	}
 }

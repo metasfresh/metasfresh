@@ -1,5 +1,6 @@
 package de.metas.dataentry.layout.interceptor;
 
+import de.metas.dataentry.model.I_DataEntry_SubTab;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -7,7 +8,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.dataentry.model.I_DataEntry_Section;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -33,16 +34,16 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.dataentry.layout.interceptor.DataEntry_SubGroup")
-@Interceptor(I_DataEntry_SubGroup.class)
-public class DataEntry_SubGroup
+@Component("de.metas.dataentry.layout.interceptor.DataEntry_SubTab")
+@Interceptor(I_DataEntry_SubTab.class)
+public class DataEntry_SubTab
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteChildRecords(@NonNull final I_DataEntry_SubGroup dataEntrySubGroupRecord)
+	public void deleteChildRecords(@NonNull final I_DataEntry_SubTab dataEntrySubGroupRecord)
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Section.class)
-				.addEqualsFilter(I_DataEntry_Section.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupRecord.getDataEntry_SubGroup_ID())
+				.addEqualsFilter(I_DataEntry_Section.COLUMN_DataEntry_SubTab_ID, dataEntrySubGroupRecord.getDataEntry_SubTab_ID())
 				.create()
 				.delete();
 	}

@@ -14,7 +14,7 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 61705954L;
+	private static final long serialVersionUID = 1075215908L;
 
     /** Standard Constructor */
     public X_DataEntry_Field (Properties ctx, int DataEntry_Field_ID, String trxName)
@@ -22,13 +22,14 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
       super (ctx, DataEntry_Field_ID, trxName);
       /** if (DataEntry_Field_ID == 0)
         {
+			setAvailableInAPI (true); // Y
 			setDataEntry_Field_ID (0);
 			setDataEntry_Line_ID (0);
 			setDataEntry_RecordType (null); // T
 			setIsMandatory (false); // N
 			setName (null);
 			setPersonalDataCategory (null); // NP
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Field WHERE DataEntry_SubGroup_ID=@DataEntry_SubGroup_ID/0@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Field WHERE DataEntry_Line_ID=@DataEntry_Line_ID/0@
         } */
     }
 
@@ -46,6 +47,32 @@ public class X_DataEntry_Field extends org.compiere.model.PO implements I_DataEn
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set In API verfügbar.
+		@param AvailableInAPI 
+		Legt fest, ob dieses Feld via metasfresh API für externe Anwendungen verfügbar ist.
+	  */
+	@Override
+	public void setAvailableInAPI (boolean AvailableInAPI)
+	{
+		set_Value (COLUMNNAME_AvailableInAPI, Boolean.valueOf(AvailableInAPI));
+	}
+
+	/** Get In API verfügbar.
+		@return Legt fest, ob dieses Feld via metasfresh API für externe Anwendungen verfügbar ist.
+	  */
+	@Override
+	public boolean isAvailableInAPI () 
+	{
+		Object oo = get_Value(COLUMNNAME_AvailableInAPI);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set Dateneingabefeld.
 		@param DataEntry_Field_ID Dateneingabefeld	  */

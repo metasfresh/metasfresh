@@ -6,20 +6,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
-import de.metas.dataentry.DataEntrySubGroupId;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -53,47 +54,48 @@ public class DataEntryRecordRepository
 		this.jsonDataEntryRecordMapper = jsonDataEntryRecordMapper;
 	}
 
-	@Value
-	public static final class DataEntryRecordQuery
+	public Optional<DataEntryRecord> getBy(@NonNull final DataEntryRecordQuery query)
 	{
-		@NonNull
-		final DataEntrySubGroupId dataEntrySubGroupId;
+		final I_DataEntry_Record record = query(query)
+				.firstOnly(I_DataEntry_Record.class);
 
-		@NonNull
-		final ITableRecordReference tableRecordReference;
+		return record != null
+				? Optional.of(toDataEntryRecord(record))
+				: Optional.empty();
 	}
 
-	public Optional<DataEntryRecord> getBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	public List<DataEntryRecord> list(@NonNull final DataEntryRecordQuery query)
 	{
-		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
-
-		final I_DataEntry_Record record = query.firstOnly(I_DataEntry_Record.class);
-
-		if (record == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(ofRecord(record));
+		return stream(query).collect(ImmutableList.toImmutableList());
 	}
 
-	public DataEntryRecord getBy(@NonNull final DataEntryRecordId dataEntryRecordId)
+	public Stream<DataEntryRecord> stream(@NonNull final DataEntryRecordQuery query)
 	{
-		final I_DataEntry_Record record = load(dataEntryRecordId, I_DataEntry_Record.class);
-		return ofRecord(record);
+		return query(query)
+				.stream()
+				.map(this::toDataEntryRecord);
 	}
 
-	private DataEntryRecord ofRecord(@NonNull final I_DataEntry_Record record)
+	public DataEntryRecord getById(@NonNull final DataEntryRecordId dataEntryRecordId)
+	{
+		final I_DataEntry_Record record = getRecordById(dataEntryRecordId);
+		return toDataEntryRecord(record);
+	}
+
+	private I_DataEntry_Record getRecordById(final DataEntryRecordId dataEntryRecordId)
+	{
+		return load(dataEntryRecordId, I_DataEntry_Record.class);
+	}
+
+	private DataEntryRecord toDataEntryRecord(@NonNull final I_DataEntry_Record record)
 	{
 		final String jsonString = record.getDataEntry_RecordData();
 
 		final List<DataEntryRecordField<?>> fields = jsonDataEntryRecordMapper.deserialize(jsonString);
 
-		return DataEntryRecord
-				.builder()
+		return DataEntryRecord.builder()
 				.id(DataEntryRecordId.ofRepoId(record.getDataEntry_Record_ID()))
-				.isNew(false)
-				.dataEntrySubGroupId(DataEntrySubGroupId.ofRepoId(record.getDataEntry_SubGroup_ID()))
+				.dataEntrySubTabId(DataEntrySubTabId.ofRepoId(record.getDataEntry_SubTab_ID()))
 				.mainRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.fields(fields)
 				.build();
@@ -102,20 +104,19 @@ public class DataEntryRecordRepository
 	public DataEntryRecordId save(@NonNull final DataEntryRecord dataEntryRecord)
 	{
 		final I_DataEntry_Record dataRecord;
-		if (dataEntryRecord.isNew())
+		final DataEntryRecordId existingId = dataEntryRecord.getId().orElse(null);
+		if (existingId == null)
 		{
 			dataRecord = newInstance(I_DataEntry_Record.class);
-			dataEntryRecord.getId().ifPresent(id -> dataRecord.setDataEntry_SubGroup_ID(id.getRepoId()));
 		}
 		else
 		{
-			Check.assume(dataEntryRecord.getId().isPresent(), "If isNew=false, then the given dataEntryRecord needs to have an Id dataEntryRecord= {}", dataEntryRecord);
-			dataRecord = load(dataEntryRecord.getId().get(), I_DataEntry_Record.class);
+			dataRecord = getRecordById(existingId);
 		}
 
 		dataRecord.setAD_Table_ID(dataEntryRecord.getMainRecord().getAD_Table_ID());
 		dataRecord.setRecord_ID(dataEntryRecord.getMainRecord().getRecord_ID());
-		dataRecord.setDataEntry_SubGroup_ID(dataEntryRecord.getDataEntrySubGroupId().getRepoId());
+		dataRecord.setDataEntry_SubTab_ID(dataEntryRecord.getDataEntrySubTabId().getRepoId());
 		dataRecord.setIsActive(true);
 
 		final String jsonString = jsonDataEntryRecordMapper.serialize(dataEntryRecord.getFields());
@@ -126,29 +127,22 @@ public class DataEntryRecordRepository
 		return DataEntryRecordId.ofRepoId(dataRecord.getDataEntry_Record_ID());
 	}
 
-	public void deleteBy(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	public void deleteBy(@NonNull final DataEntryRecordQuery query)
 	{
-		final IQuery<I_DataEntry_Record> query = createQuery(dataEntryRecordQuery);
-
-		query.delete();
+		query(query).delete();
 	}
 
-
-	private IQuery<I_DataEntry_Record> createQuery(@NonNull final DataEntryRecordQuery dataEntryRecordQuery)
+	private IQuery<I_DataEntry_Record> query(@NonNull final DataEntryRecordQuery query)
 	{
-		final DataEntrySubGroupId dataEntrySubGroupId = dataEntryRecordQuery.getDataEntrySubGroupId();
-		final ITableRecordReference tableRecordReference = dataEntryRecordQuery.getTableRecordReference();
+		final ImmutableSet<DataEntrySubTabId> dataEntrySubTabIds = query.getDataEntrySubTabIds();
+		final int recordId = query.getRecordId();
 
-		final int adTableId = tableRecordReference.getAD_Table_ID();
-		final int recordId = tableRecordReference.getRecord_ID();
-
-		final IQuery<I_DataEntry_Record> query = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DataEntry_Record.class)
-				.addOnlyActiveRecordsFilter() // we have a UC on those three columns
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_DataEntry_SubGroup_ID, dataEntrySubGroupId)
-				.addEqualsFilter(I_DataEntry_Record.COLUMN_AD_Table_ID, adTableId)
+				.addOnlyActiveRecordsFilter() // we have a UC on those columns
+				.addInArrayFilter(I_DataEntry_Record.COLUMN_DataEntry_SubTab_ID, dataEntrySubTabIds)
 				.addEqualsFilter(I_DataEntry_Record.COLUMN_Record_ID, recordId)
+				.orderBy(I_DataEntry_Record.COLUMNNAME_DataEntry_SubTab_ID)
 				.create();
-		return query;
 	}
 }

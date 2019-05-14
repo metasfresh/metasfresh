@@ -37,7 +37,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 {
 	@Getter
-	private BigDecimal value;
+	private final BigDecimal value;
 
 	public static DataEntryRecordFieldNumber of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

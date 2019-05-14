@@ -92,6 +92,30 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 	}
 
 	@Test
+	@DisplayName("bestCoordinates finds metas DE by full address")
+	void bestCoordinatesFindsMetasDEByFullAddress()
+	{
+		final Optional<GeographicalCoordinates> coord = coordinatesProvider.findBestCoordinates(
+				GeoCoordinatesRequest.builder()
+						.address("Am Nossbacher Weg 2")
+						.postal("53179")
+						.city("Bonn")
+						.countryCode2("DE")
+						.build());
+
+
+//		correct google: 	lat=50.658480, lon=7.169762
+//		correct nominatim: 	lat=50.6583491 lon=7.16960605354244
+
+		final GeographicalCoordinates expectedCoordinates = toGeographicalCoordinates("50.6583491", "7.16960605354244");
+
+		assertThat(coord)
+				.isNotEmpty()
+				.contains(expectedCoordinates);
+	}
+
+
+	@Test
 	@DisplayName("bestCoordinates cannot find metasRO by postal and wrong country")
 	void bestCoordinatesCannotFindMetasROByPostalAndWrongCountry()
 	{
@@ -119,41 +143,6 @@ class NominatimOSMGeoCoordinatesProviderImplTest
 		assertThat(coord)
 				.isNotEmpty()
 				.contains(expectedCoordinates);
-	}
-
-	@Test
-	@DisplayName("Should ignore the address if a postal code exists")
-	void shouldIgnoreTheAddressIfAPostalCodeExists()
-	{
-		final List<GeographicalCoordinates> coord = coordinatesProvider.findAllCoordinates(
-				GeoCoordinatesRequest.builder()
-						.postal("5081")
-						.countryCode2("AT")
-						.address("gfvgdggsdfsdfgsdfgsdfgsdfgnull")
-						.build());
-
-		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(toGeographicalCoordinates("47.7587073", "13.0612349838947"));
-
-		assertThat(coord)
-				.isNotEmpty()
-				.containsAll(expectedCoordinates);
-	}
-
-	@Test
-	@DisplayName("Should ignore the address if a postal code exists2")
-	void shouldIgnoreTheAddressIfAPostalCodeExists2()
-	{
-		final List<GeographicalCoordinates> coord = coordinatesProvider.findAllCoordinates(
-				GeoCoordinatesRequest.builder()
-						.postal("5081")
-						.countryCode2("AT")
-						.build());
-
-		final List<GeographicalCoordinates> expectedCoordinates = Arrays.asList(toGeographicalCoordinates("47.7587073", "13.0612349838947"));
-
-		assertThat(coord)
-				.isNotEmpty()
-				.containsAll(expectedCoordinates);
 	}
 
 	@Test
