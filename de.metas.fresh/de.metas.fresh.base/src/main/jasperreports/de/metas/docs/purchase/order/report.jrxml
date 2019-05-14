@@ -157,7 +157,7 @@
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="1840ecd8-6028-4728-964a-ec10e262f4d5">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[ew Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
