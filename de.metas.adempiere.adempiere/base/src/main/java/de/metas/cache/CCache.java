@@ -504,7 +504,7 @@ public class CCache<K, V> implements CacheInterface
 	/**
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
-	public V get(final K key)
+	@Nullable public V get(final K key)
 	{
 		return cache.getIfPresent(key);
 	}	// get

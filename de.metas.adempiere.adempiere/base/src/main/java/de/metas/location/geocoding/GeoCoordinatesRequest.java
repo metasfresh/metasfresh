@@ -36,4 +36,6 @@ public class GeoCoordinatesRequest
 
 	String postal;
 	String address;
+
+	String city;
 }
