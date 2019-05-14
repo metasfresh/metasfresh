@@ -31,17 +31,17 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntrySubGroupId implements RepoIdAware
+public class DataEntrySubTabId implements RepoIdAware
 {
-	public static DataEntrySubGroupId ofRepoId(final int repoId)
+	public static DataEntrySubTabId ofRepoId(final int repoId)
 	{
-		return new DataEntrySubGroupId(repoId);
+		return new DataEntrySubTabId(repoId);
 	}
 
 	int repoId;
 
 	@JsonCreator
-	public DataEntrySubGroupId(final int repoId)
+	public DataEntrySubTabId(final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
 	}

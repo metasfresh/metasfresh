@@ -20,17 +20,10 @@ import lombok.NonNull;
  */
 public class IDCache<V> extends CCache<Object, V>
 {
-	private static final KeysMapper<Object> KEYS_MAPPER = new KeysMapper<Object>()
+	private static final CacheInvalidationKeysMapper<Object> KEYS_MAPPER = new CacheInvalidationKeysMapper<Object>()
 	{
-		/** @return always {@code false} */
 		@Override
-		public boolean isResetAll(TableRecordReference tableRecordReference)
-		{
-			return false;
-		}
-
-		@Override
-		public Collection<Object> computeKeys(@NonNull final TableRecordReference tableRecordReference)
+		public Collection<Object> computeKeysToInvalidate(@NonNull final TableRecordReference tableRecordReference)
 		{
 			return ImmutableList.of(tableRecordReference.getRecord_ID());
 		}
@@ -54,7 +47,8 @@ public class IDCache<V> extends CCache<Object, V>
 				initialCapacity,
 				expireMinutes,
 				cacheMapType,
-				KEYS_MAPPER);
+				KEYS_MAPPER,
+				(CacheRemovalListener<Object, V>)null);
 
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 	}
