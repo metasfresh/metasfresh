@@ -34,7 +34,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.event.log.EventBus2EventLogHandler;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -46,7 +45,7 @@ import de.metas.util.time.SystemTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		EventBus2EventLogHandler.class, EventLogService.class, EventLogUserService.class,
+		EventLogService.class, EventLogUserService.class,
 		SecurityMainInterceptor.class
 })
 public class UserRolePermissionsDAOTest

@@ -42,6 +42,7 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
@@ -181,6 +182,16 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
+	public void postObject(@NonNull final Object obj)
+	{
+		final String json = sharedJsonSerializer.writeValueAsString(obj);
+		postEvent(Event.builder()
+				.putProperty(PROP_Body, json)
+				.storeEvent()
+				.build());
+	}
+
+	@Override
 	public void postEvent(@NonNull final Event event)
 	{
 		// Do nothing if destroyed
@@ -190,18 +201,14 @@ final class EventBus implements IEventBus
 			return;
 		}
 
+		if (event.isStoreEvent() && event.isLocalEvent())
+		{
+			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+			eventLogService.storeEvent(event, this);
+		}
+
 		logger.debug("{} - Posting event: {}", this, event);
 		eventBus.post(event);
-	}
-
-	@Override
-	public void postObject(@NonNull final Object obj)
-	{
-		final String json = sharedJsonSerializer.writeValueAsString(obj);
-		postEvent(Event.builder()
-				.putProperty(PROP_Body, json)
-				.storeEvent()
-				.build());
 	}
 
 	private static class TypedConsumerAsEventListener<T> implements IEventListener
@@ -276,7 +283,20 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		// even if the event(-data) is not stored, we allow all listeners/handlers to add log entries.
+		if (event.isStoreEvent())
+		{
+			invokeEventListenerWithLogging(eventListener, event);
+		}
+		else
+		{
+			eventListener.onEvent(this, event);
+		}
+	}
+
+	private void invokeEventListenerWithLogging(
+			@NonNull final IEventListener eventListener,
+			@NonNull final Event event)
+	{
 		final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event);
 		try
 		{
