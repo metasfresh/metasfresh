@@ -9,7 +9,6 @@ import java.time.Instant;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.InvoiceImportClient;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
@@ -54,8 +53,6 @@ import lombok.NonNull;
  */
 public class InvoiceImportClientImpl implements InvoiceImportClient
 {
-	final String requiredAttachmentTagName = InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
-
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 
 	public InvoiceImportClientImpl(@NonNull final CrossVersionServiceRegistry crossVersionServiceRegistry)

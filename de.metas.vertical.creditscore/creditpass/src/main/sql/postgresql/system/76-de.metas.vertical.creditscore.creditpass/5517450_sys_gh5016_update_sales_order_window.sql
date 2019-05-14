@@ -102,12 +102,6 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=542394, SeqNo=10,Updated=TO_TIMES
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=542394, SeqNo=20,Updated=TO_TIMESTAMP('2019-03-26 18:40:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=558081
 ;
-
--- 2019-03-26T19:40:46.392
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN CreditpassFlag BYTEA')
-;
-
 -- 2019-03-26T19:40:57.101
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN CreditpassStatus VARCHAR(1000)')
@@ -148,9 +142,9 @@ UPDATE AD_Column SET AD_Reference_ID=20, DefaultValue='N', FieldLength=1, IsMand
 UPDATE AD_Column SET DefaultValue='Y', IsMandatory='N',Updated=TO_TIMESTAMP('2019-03-26 22:19:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=564640
 ;
 
--- 2019-03-26T22:19:04.612
+-- 2019-03-26T19:40:46.392
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_order','CreditpassFlag','CHAR(1)',null,'Y')
+/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN CreditpassFlag CHAR(1) DEFAULT ''Y''')
 ;
 
 -- 2019-03-27T14:23:35.982

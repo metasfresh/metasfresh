@@ -1,14 +1,20 @@
 package de.metas.vertical.pharma.model.interceptor;
 
-import de.metas.vertical.pharma.PharmaCustomerPermission;
-import de.metas.vertical.pharma.PharmaVendorPermission;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import de.metas.vertical.pharma.PharmaCustomerPermission;
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
+import de.metas.vertical.pharma.PharmaModulo11Validator;
+import de.metas.vertical.pharma.PharmaVendorPermission;
 import de.metas.vertical.pharma.PharmaVendorPermissions;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 
@@ -35,9 +41,12 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
  */
 
 @Interceptor(I_C_BPartner.class)
-@Component
+@Component("de.metas.vertical.pharma.model.interceptor.C_BPartner")
 public class C_BPartner
 {
+	private static final String ERR_NarcoticPermissions_Valid_BTM = "de.metas.vertical.pharma.model.interceptor.C_BPartner.NarcoticPermissions_Valid_BTM";
+	private static final String ERR_InvalidBTM = "de.metas.vertical.pharma.model.interceptor.C_BPartner.Invalid_BTM";
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_C_BPartner.COLUMNNAME_IsCustomer,
 			I_C_BPartner.COLUMNNAME_IsPharmaAgentPermission,
@@ -104,4 +113,42 @@ public class C_BPartner
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_BPartner.COLUMNNAME_BTM,
+			I_C_BPartner.COLUMNNAME_IsPharmaCustomerNarcoticsPermission,
+			I_C_BPartner.COLUMNNAME_IsPharmaVendorNarcoticsPermission })
+	public void validateBTM(final I_C_BPartner partner)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final String btm = partner.getBTM();
+		final boolean hasNarcoticPermission = partner.isPharmaCustomerNarcoticsPermission() || partner.isPharmaVendorNarcoticsPermission();
+
+		if (Check.isEmpty(btm))
+		{
+			if (hasNarcoticPermission)
+			{
+
+				final ITranslatableString validBTMRequiredMessage = msgBL.getTranslatableMsgText(ERR_NarcoticPermissions_Valid_BTM, partner);
+
+				throw new AdempiereException(validBTMRequiredMessage)
+						.markAsUserValidationError();
+			}
+
+			// If the partner doesn't have permissions, BTM is not relevant.
+			return;
+		}
+
+		final boolean isValidBTM = PharmaModulo11Validator.isValid(btm);
+
+		if (!isValidBTM)
+		{
+
+			final ITranslatableString invalidBTMMessage = msgBL.getTranslatableMsgText(ERR_InvalidBTM, btm);
+
+			throw new AdempiereException(invalidBTMMessage)
+					.markAsUserValidationError();
+		}
+
+	}
 }
