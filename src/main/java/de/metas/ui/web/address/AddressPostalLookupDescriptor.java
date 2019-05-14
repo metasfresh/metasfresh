@@ -200,6 +200,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 				+ "\n " + I_C_Postal.COLUMNNAME_C_Postal_ID
 				+ "\n, " + I_C_Postal.COLUMNNAME_Postal
 				+ "\n, " + I_C_Postal.COLUMNNAME_City
+				+ "\n, " + I_C_Postal.COLUMNNAME_Township
 				+ "\n, " + I_C_Postal.COLUMNNAME_C_Country_ID
 				+ "\n FROM " + I_C_Postal.Table_Name
 				+ "\n WHERE "
@@ -224,11 +225,12 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 				final int postalId = rs.getInt(I_C_Postal.COLUMNNAME_C_Postal_ID);
 				final String postal = rs.getString(I_C_Postal.COLUMNNAME_Postal);
 				final String city = rs.getString(I_C_Postal.COLUMNNAME_City);
+				final String township = rs.getString(I_C_Postal.COLUMNNAME_Township);
 				final int countryId = rs.getInt(I_C_Postal.COLUMNNAME_C_Country_ID);
 
 				final LookupValue countryLookupValue = countryLookup.getLookupValueById(countryId);
 
-				lookupValues.add(buildPostalLookupValue(postalId, postal, city, countryLookupValue.getDisplayNameTrl()));
+				lookupValues.add(buildPostalLookupValue(postalId, postal, city, township, countryLookupValue.getDisplayNameTrl()));
 			}
 
 			return LookupValuesList.fromCollection(lookupValues);
@@ -253,16 +255,22 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 
 		final LookupValue countryLookupValue = countryLookup.getLookupValueById(postalRecord.getC_Country_ID());
 
-		return buildPostalLookupValue(postalRecord.getC_Postal_ID(), postalRecord.getPostal(), postalRecord.getCity(), countryLookupValue.getDisplayNameTrl());
+		return buildPostalLookupValue(
+				postalRecord.getC_Postal_ID(),
+				postalRecord.getPostal(),
+				postalRecord.getCity(),
+				postalRecord.getTownship(),
+				countryLookupValue.getDisplayNameTrl());
 	}
 
 	private static final IntegerLookupValue buildPostalLookupValue(
 			final int postalId,
 			final String postal,
 			final String city,
+			final String township,
 			final ITranslatableString countryName)
 	{
-		final ITranslatableString displayName = ITranslatableString.compose("", postal, " ", city, " (", countryName, ")");
+		final ITranslatableString displayName = ITranslatableString.compose("", postal, " ", city, " ", township, " (", countryName, ")");
 		return IntegerLookupValue.of(postalId, displayName, null/* description */);
 	}
 }
