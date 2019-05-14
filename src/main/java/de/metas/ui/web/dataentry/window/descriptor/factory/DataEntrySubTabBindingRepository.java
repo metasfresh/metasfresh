@@ -58,7 +58,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class DataEntrySubGroupBindingRepository implements DocumentsRepository
+public class DataEntrySubTabBindingRepository implements DocumentsRepository
 {
 	private static final String VERSION_DEFAULT = "0";
 
@@ -66,7 +66,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 
 	private final DataEntryWebuiTools dataEntryWebuiTools;
 
-	public DataEntrySubGroupBindingRepository(
+	public DataEntrySubTabBindingRepository(
 			@NonNull final DataEntryRecordRepository dataEntryRecordRepository,
 			@NonNull final DataEntryWebuiTools dataEntryWebuiTools)
 	{
@@ -368,7 +368,7 @@ public class DataEntrySubGroupBindingRepository implements DocumentsRepository
 		@Override
 		public DocumentId getDocumentId()
 		{
-			final DocumentId documentId = DataEntrySubGroupBindingRepository.createDocumentId(
+			final DocumentId documentId = DataEntrySubTabBindingRepository.createDocumentId(
 					dataEntryRecord.getDataEntrySubTabId(),
 					dataEntryRecord.getMainRecord());
 

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementTabDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -45,7 +45,7 @@ import lombok.NonNull;
 public final class JSONDocumentLayoutElementGroup implements Serializable
 {
 	static List<JSONDocumentLayoutElementGroup> ofList(
-			@NonNull final List<DocumentLayoutElementTabDescriptor> elementGroups,
+			@NonNull final List<DocumentLayoutElementGroupDescriptor> elementGroups,
 			@NonNull final JSONOptions jsonOpts)
 	{
 		return elementGroups.stream()
@@ -55,7 +55,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	}
 
 	public static JSONDocumentLayoutElementGroup of(
-			@NonNull final DocumentLayoutElementTabDescriptor elementGroup,
+			@NonNull final DocumentLayoutElementGroupDescriptor elementGroup,
 			@NonNull final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
@@ -95,7 +95,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	private final List<JSONDocumentLayoutElementLine> elementLines;
 
 	private JSONDocumentLayoutElementGroup(
-			@NonNull final DocumentLayoutElementTabDescriptor elementGroup,
+			@NonNull final DocumentLayoutElementGroupDescriptor elementGroup,
 			@NonNull final JSONOptions jsonOpts)
 	{
 		this.type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());

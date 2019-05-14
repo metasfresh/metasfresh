@@ -45,8 +45,8 @@ public class DataEntrySubTabBindingDescriptorBuilder implements DocumentEntityDa
 	{
 		this.dataEntryWebuiTools = dataEntryWebuiTools;
 
-		final DataEntrySubGroupBindingRepository dataEntrySubGroupBindingRepository //
-				= new DataEntrySubGroupBindingRepository(dataEntryRecordRepository, dataEntryWebuiTools);
+		final DataEntrySubTabBindingRepository dataEntrySubGroupBindingRepository //
+				= new DataEntrySubTabBindingRepository(dataEntryRecordRepository, dataEntryWebuiTools);
 
 		this.dataBinding = new DocumentEntityDataBindingDescriptor()
 		{

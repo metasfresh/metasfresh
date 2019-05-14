@@ -208,7 +208,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 				return this;
 			}
 
-			final DocumentLayoutElementTabDescriptor.Builder elementsGroupBuilder = DocumentLayoutElementTabDescriptor.builder();
+			final DocumentLayoutElementGroupDescriptor.Builder elementsGroupBuilder = DocumentLayoutElementGroupDescriptor.builder();
 			elementsBuilders.stream()
 					.map(elementBuilder -> DocumentLayoutElementLineDescriptor.builder().addElement(elementBuilder))
 					.forEach(elementLineBuilder -> elementsGroupBuilder.addElementLine(elementLineBuilder));

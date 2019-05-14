@@ -38,7 +38,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementTabDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
@@ -191,7 +191,7 @@ public class DataEntryTabLoader
 				.setClosableMode(closableMode)
 				.setCaptionMode(CaptionMode.DISPLAY);
 
-		final ImmutableList<DocumentLayoutElementTabDescriptor.Builder> //
+		final ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> //
 		elementGroups = createLayoutElemementTab(dataEntrySection);
 
 		column.addElementTabs(elementGroups);
@@ -199,19 +199,19 @@ public class DataEntryTabLoader
 		return layoutSection;
 	}
 
-	private ImmutableList<DocumentLayoutElementTabDescriptor.Builder> createLayoutElemementTab(@NonNull final DataEntrySection dataEntrySection)
+	private ImmutableList<DocumentLayoutElementGroupDescriptor.Builder> createLayoutElemementTab(@NonNull final DataEntrySection dataEntrySection)
 	{
 		final int columnCount = dataEntrySection.getLines().stream()
 				.map(DataEntryLine::getFields)
 				.map(Collection::size)
 				.max(Comparator.naturalOrder()).orElse(0);
 
-		final ImmutableList.Builder<DocumentLayoutElementTabDescriptor.Builder> elementGroups = ImmutableList.builder();
+		final ImmutableList.Builder<DocumentLayoutElementGroupDescriptor.Builder> elementGroups = ImmutableList.builder();
 
 		final List<DataEntryLine> dataEntryLines = dataEntrySection.getLines();
 		for (final DataEntryLine dataEntryLine : dataEntryLines)
 		{
-			final DocumentLayoutElementTabDescriptor.Builder elementGroup = DocumentLayoutElementTabDescriptor
+			final DocumentLayoutElementGroupDescriptor.Builder elementGroup = DocumentLayoutElementGroupDescriptor
 					.builder()
 					.setColumnCount(columnCount);
 

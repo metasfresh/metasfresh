@@ -522,7 +522,11 @@ public final class Document
 			}
 			else
 			{
-				throw AdempiereException.wrapIfNeeded(e);
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("mode", mode)
+						.setParameter("documentField", documentField)
+						.setParameter("fieldValueSupplier", fieldValueSupplier);
 			}
 		}
 

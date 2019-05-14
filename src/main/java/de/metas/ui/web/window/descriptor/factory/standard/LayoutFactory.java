@@ -45,7 +45,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementTabDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
@@ -315,7 +315,7 @@ public class LayoutFactory
 		// UI Element Groups
 		for (final I_AD_UI_ElementGroup uiElementGroup : uiElementGroups)
 		{
-			final DocumentLayoutElementTabDescriptor.Builder layoutElementGroupBuilder = layoutElementGroup(uiElementGroup);
+			final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = layoutElementGroup(uiElementGroup);
 			if (layoutElementGroupBuilder == null)
 			{
 				continue;
@@ -326,7 +326,7 @@ public class LayoutFactory
 		return layoutColumnBuilder;
 	}
 
-	private DocumentLayoutElementTabDescriptor.Builder layoutElementGroup(final I_AD_UI_ElementGroup uiElementGroup)
+	private DocumentLayoutElementGroupDescriptor.Builder layoutElementGroup(final I_AD_UI_ElementGroup uiElementGroup)
 	{
 		if (!uiElementGroup.isActive())
 		{
@@ -337,7 +337,7 @@ public class LayoutFactory
 		final List<I_AD_UI_Element> uiElements = getUIProvider().getUIElements(uiElementGroup);
 		logger.trace("Building layout element group for {}: {}", uiElementGroup, uiElements);
 
-		final DocumentLayoutElementTabDescriptor.Builder layoutElementGroupBuilder = DocumentLayoutElementTabDescriptor.builder()
+		final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder = DocumentLayoutElementGroupDescriptor.builder()
 				.setInternalName(uiElementGroup.toString())
 				.setLayoutType(uiElementGroup.getUIStyle());
 
