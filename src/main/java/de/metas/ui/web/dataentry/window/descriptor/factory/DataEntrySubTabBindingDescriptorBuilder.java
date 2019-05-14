@@ -32,21 +32,21 @@ import lombok.NonNull;
  */
 
 @Service
-public class DataEntrySubGroupBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
+public class DataEntrySubTabBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
 {
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
 	@Getter
 	private final DataEntryWebuiTools dataEntryWebuiTools;
 
-	public DataEntrySubGroupBindingDescriptorBuilder(
+	public DataEntrySubTabBindingDescriptorBuilder(
 			@NonNull final DataEntryRecordRepository dataEntryRecordRepository,
 			@NonNull final DataEntryWebuiTools dataEntryWebuiTools)
 	{
 		this.dataEntryWebuiTools = dataEntryWebuiTools;
 
-		final DataEntrySubGroupBindingRepository dataEntrySubGroupBindingRepository //
-				= new DataEntrySubGroupBindingRepository(dataEntryRecordRepository, dataEntryWebuiTools);
+		final DataEntrySubTabBindingRepository dataEntrySubGroupBindingRepository //
+				= new DataEntrySubTabBindingRepository(dataEntryRecordRepository, dataEntryWebuiTools);
 
 		this.dataBinding = new DocumentEntityDataBindingDescriptor()
 		{
