@@ -42,6 +42,7 @@ class Header extends Component {
   };
 
   udRef = React.createRef();
+  inboxRef = React.createRef();
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -96,6 +97,18 @@ class Header extends Component {
       !!this.udRef.current
     ) {
       this.udRef.current.disableOnClickOutside();
+    } else if (
+      this.state.isInboxOpen &&
+      !prevState.isInboxOpen &&
+      !!this.inboxRef.current
+    ) {
+      this.inboxRef.current.enableOnClickOutside();
+    } else if (
+      !this.state.isInboxOpen &&
+      prevState.isInboxOpen &&
+      !!this.inboxRef.current
+    ) {
+      this.inboxRef.current.disableOnClickOutside();
     }
   }
 
@@ -546,10 +559,11 @@ class Header extends Component {
                 </div>
 
                 <Inbox
+                  ref={this.inboxRef}
                   open={isInboxOpen}
                   close={this.handleInboxOpen}
                   onFocus={() => this.handleInboxOpen(true)}
-                  disableOnClickOutside={!isInboxOpen}
+                  disableOnClickOutside={true}
                   inbox={inbox}
                 />
 
