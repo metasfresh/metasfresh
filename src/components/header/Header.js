@@ -41,6 +41,8 @@ class Header extends Component {
     prompt: { open: false },
   };
 
+  udRef = React.createRef();
+
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     inbox: PropTypes.object.isRequired,
@@ -67,7 +69,7 @@ class Header extends Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     // const {dispatch, pathname} = this.props;
 
     if (
@@ -82,6 +84,18 @@ class Header extends Component {
 
       // Need to reload page completely when current locale gets changed
       window.location.reload(false);
+    } else if (
+      this.state.isUDOpen &&
+      !prevState.isUDOpen &&
+      !!this.udRef.current
+    ) {
+      this.udRef.current.enableOnClickOutside();
+    } else if (
+      !this.state.isUDOpen &&
+      prevState.isUDOpen &&
+      !!this.udRef.current
+    ) {
+      this.udRef.current.disableOnClickOutside();
     }
   }
 
@@ -540,9 +554,10 @@ class Header extends Component {
                 />
 
                 <UserDropdown
+                  ref={this.udRef}
                   open={isUDOpen}
                   handleUDOpen={this.handleUDOpen}
-                  disableOnClickOutside={!isUDOpen}
+                  disableOnClickOutside={true}
                   redirect={this.redirect}
                   shortcut={keymap.OPEN_AVATAR_MENU}
                   toggleTooltip={this.toggleTooltip}
