@@ -27,15 +27,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.event.log.EventLogService;
-import de.metas.event.log.EventLogUserService;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.model.interceptor.SecurityMainInterceptor;
@@ -43,22 +35,18 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		EventLogService.class, EventLogUserService.class,
-		SecurityMainInterceptor.class
-})
 public class UserRolePermissionsDAOTest
 {
 	private UserRolePermissionsDAO dao;
 
-	@Autowired
 	private SecurityMainInterceptor securityMainInterceptor;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		securityMainInterceptor = new SecurityMainInterceptor();
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(securityMainInterceptor);
 
