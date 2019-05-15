@@ -74,6 +74,10 @@ public class HUInternalUseInventoryProducer
 	private String _docSubType = X_C_DocType.DOCSUBTYPE_InternalUseInventory;
 	private final List<I_M_HU> _hus = new ArrayList<>();
 
+	private int activityId;
+	private String description;
+	private boolean isCompleteInventory;
+
 	private HUInternalUseInventoryProducer()
 	{
 	}
@@ -89,14 +93,14 @@ public class HUInternalUseInventoryProducer
 		{
 			final int warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
-			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus);
+			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus, activityId, description, isCompleteInventory);
 			result.addAll(inventories);
 		}
 
 		return result;
 	}
 
-	private final List<I_M_Inventory> createInventories(final int warehouseId, final List<I_M_HU> hus)
+	private final List<I_M_Inventory> createInventories(final int warehouseId, final List<I_M_HU> hus, final int activityId, final String description, final boolean isCompleteInventory)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
 
@@ -120,7 +124,11 @@ public class HUInternalUseInventoryProducer
 
 		// Inventory allocation destination
 		final int materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
-		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouse, materialDisposalDocTypeId);
+		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(
+				warehouse,
+				materialDisposalDocTypeId,
+				activityId,
+				description);
 
 		//
 		// Create and configure Loader
@@ -133,7 +141,7 @@ public class HUInternalUseInventoryProducer
 		loader.unloadAllFromSource(huContext);
 
 		//
-		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories();
+		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories(isCompleteInventory);
 
 		// destroy empty hus
 		{
@@ -169,6 +177,42 @@ public class HUInternalUseInventoryProducer
 			_movementDate = Env.getDate(Env.getCtx());
 		}
 		return _movementDate;
+	}
+
+	public int getActivityId()
+	{
+		return activityId;
+	}
+
+	public HUInternalUseInventoryProducer setActivityId(int activityId)
+	{
+		this.activityId = activityId;
+
+		return this;
+	}
+
+	public boolean isCompleteInventory()
+	{
+		return isCompleteInventory;
+	}
+
+	public HUInternalUseInventoryProducer setIsCompleteInventory(boolean isCompleteInventory)
+	{
+		this.isCompleteInventory = isCompleteInventory;
+
+		return this;
+	}
+
+	public String getDescription()
+	{
+		return description;
+	}
+
+	public HUInternalUseInventoryProducer setDescription(String description)
+	{
+		this.description = description;
+
+		return this;
 	}
 
 	public HUInternalUseInventoryProducer setDocSubType(@NonNull final String docSubType)
@@ -228,4 +272,5 @@ public class HUInternalUseInventoryProducer
 				.build();
 		return handlingUnitsBL.getTopLevelHUs(query);
 	}
+
 }

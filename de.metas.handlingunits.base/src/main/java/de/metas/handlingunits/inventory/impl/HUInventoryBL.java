@@ -39,12 +39,20 @@ import de.metas.util.Services;
 public class HUInventoryBL implements IHUInventoryBL
 {
 	@Override
-	public List<I_M_Inventory> moveToGarbage(final Collection<I_M_HU> husToDestroy, final Timestamp movementDate)
+	public List<I_M_Inventory> moveToGarbage(
+			final Collection<I_M_HU> husToDestroy,
+			final Timestamp movementDate,
+			final int activityId,
+			final String description,
+			final boolean isCompleteInventory)
 	{
 		return HUInternalUseInventoryProducer.newInstance()
 				.setMovementDate(movementDate)
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 				.addHUs(husToDestroy)
+				.setActivityId(activityId)
+				.setDescription(description)
+				.setIsCompleteInventory(isCompleteInventory)
 				.createInventories();
 	}
 
