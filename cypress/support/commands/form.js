@@ -81,13 +81,14 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
-Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) => {
+Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, rewriteUrl = null) => {
   describe('Click on a checkbox field', function() {
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*')).as('patchCheckBox');
-    cy.route('GET', new RegExp('/rest/api/window/.*')).as('getData');
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as('patchCheckBox');
 
     cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
@@ -207,13 +208,15 @@ Cypress.Commands.add(
  *
  * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
+Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null) => {
   describe('Select value in list field', function() {
     cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+
     // here we want to match URLs that don *not* end with "/NEW"
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchListField`);
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(`patchListField`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {

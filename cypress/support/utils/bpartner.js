@@ -52,9 +52,21 @@ export class BPartner {
     return this;
   }
 
+  clearLocations() {
+    cy.log(`BPartner - clear locations`);
+    this.bPartnerLocations = [];
+    return this;
+  }
+
   addContact(contact) {
     cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
     this.contacts.push(contact);
+    return this;
+  }
+
+  clearContacts() {
+    cy.log(`BPartner - clear contacts`);
+    this.contacts = [];
     return this;
   }
 
