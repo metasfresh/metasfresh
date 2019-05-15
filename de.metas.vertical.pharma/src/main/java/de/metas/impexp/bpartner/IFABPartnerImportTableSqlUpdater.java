@@ -44,8 +44,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class IFABPartnerImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(IFABPartnerImportTableSqlUpdater.class);
-
 	final public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
@@ -65,7 +63,6 @@ public class IFABPartnerImportTableSqlUpdater
 
 	private void dbUpdateCountries(@NonNull final String whereClause)
 	{
-		int no;
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(I_I_Pharma_BPartner.Table_Name + " i ")
