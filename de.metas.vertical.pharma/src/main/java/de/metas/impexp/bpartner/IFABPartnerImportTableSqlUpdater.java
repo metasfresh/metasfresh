@@ -1,13 +1,10 @@
 package de.metas.impexp.bpartner;
 
-import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
