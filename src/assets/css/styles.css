@@ -483,6 +483,7 @@ body {
 }
 
 .document-list-wrapper {
+    overflow: auto;
     display: flex;
     flex: 1;
     flex-direction: column;
