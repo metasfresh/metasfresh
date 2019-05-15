@@ -7,16 +7,20 @@ assignees: ''
 
 ---
 
-This issue is related to
-* (e.g. a metasfresh-issue)
-* (e.g. a customer issue)
+**Test shall include:**
+
+- Customer Fixtures to use: (if needed)
+- What to test
+- Expectation for the test to be successful
+
+
+
 
 Todo for developer (besides coding)
 - Always make sure the issue is in the correct project lane
-- [ ] make your estimation and label (`est:...`, `release:...` ) this issue accordingly
-- [ ] run your test in jenkins e2e 
+- [ ] run your test in jenkins e2e on a vanilla db
+- [ ] jenkins console URL / cypress dashboard URL to the successful test run (alternatively screenshot)
 - [ ] get it integrated into `master`
   * [ ] (pull request URL)
-- [ ] add the label of your developer effort in sum (`effort: ...`)
 
 All Flags are ticked? Congratulations, you have delivered!
