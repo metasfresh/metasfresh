@@ -201,6 +201,7 @@ final class EventBus implements IEventBus
 			return;
 		}
 
+		// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
 		if (event.isStoreEvent() && event.isLocalEvent())
 		{
 			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);

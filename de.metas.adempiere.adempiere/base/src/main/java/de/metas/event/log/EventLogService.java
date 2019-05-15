@@ -134,7 +134,7 @@ public class EventLogService
 		return eventStoreRecordId;
 	}
 
-	private Integer retrieveRecordIdOutOfTrx(final UUID uuid)
+	private Integer retrieveRecordIdOutOfTrx(@NonNull final UUID uuid)
 	{
 		final int eventStoreRecordId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_EventLog.class, PlainContextAware.newOutOfTrx())
