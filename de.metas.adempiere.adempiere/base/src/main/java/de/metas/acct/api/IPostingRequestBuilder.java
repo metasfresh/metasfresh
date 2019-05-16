@@ -25,11 +25,11 @@ package de.metas.acct.api;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
+import de.metas.user.UserId;
 
 /**
  * Posting request builder: a helper class which assist the developer to Post a document.

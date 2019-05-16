@@ -104,12 +104,6 @@ public class Query extends TypedSqlQuery<Object>
 	}
 
 	@Override
-	public Query setApplyAccessFilterRW(boolean RW)
-	{
-		return (Query)super.setApplyAccessFilterRW(RW);
-	}
-
-	@Override
 	public Query setOption(String name, Object value)
 	{
 		return (Query)super.setOption(name, value);

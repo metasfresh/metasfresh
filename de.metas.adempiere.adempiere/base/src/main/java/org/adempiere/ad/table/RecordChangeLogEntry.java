@@ -2,9 +2,8 @@ package org.adempiere.ad.table;
 
 import java.time.ZonedDateTime;
 
-import org.adempiere.user.UserId;
-
 import de.metas.i18n.ITranslatableString;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

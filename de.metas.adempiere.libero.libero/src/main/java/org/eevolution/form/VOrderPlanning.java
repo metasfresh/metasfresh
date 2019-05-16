@@ -63,7 +63,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
@@ -93,6 +92,8 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessExecutionListener;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -712,7 +713,8 @@ public class VOrderPlanning extends CPanel
 			sql.append(m_sqlAdd);
 			String xSql = Msg.parseTranslation(Env.getCtx(), sql.toString());	// Variables
 			xSql = Env.getUserRolePermissions().addAccessSQL(xSql, getTableName(),
-					IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+					IUserRolePermissions.SQL_FULLYQUALIFIED,
+					Access.READ);
 
 			try
 			{

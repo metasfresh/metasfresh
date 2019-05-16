@@ -2,9 +2,12 @@ package de.metas.event.interceptor;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.persistence.TableModelClassLoader;
 
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
+import de.metas.event.model.X_AD_EventLog;
+import de.metas.event.model.X_AD_EventLog_Entry;
 import de.metas.util.Services;
 
 /*
@@ -40,8 +43,10 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
+		TableModelClassLoader.instance.registerSpecialClassName(I_AD_EventLog.Table_Name, X_AD_EventLog.class.getName());
+		TableModelClassLoader.instance.registerSpecialClassName(I_AD_EventLog_Entry.Table_Name, X_AD_EventLog_Entry.class.getName());
+		
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-
 		migrationLogger.addTableToIgnoreList(I_AD_EventLog.Table_Name);
 		migrationLogger.addTableToIgnoreList(I_AD_EventLog_Entry.Table_Name);
 	}

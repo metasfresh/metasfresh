@@ -40,12 +40,14 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.GridRowCtx;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -58,6 +60,8 @@ import org.slf4j.Logger;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 /**
@@ -409,8 +413,8 @@ public class GridTable extends AbstractTableModel
 			// if (!m_readOnly)
 			// ro = MRole.SQL_RW;
 			final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
+			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
 
 		// ORDER BY
@@ -508,7 +512,7 @@ public class GridTable extends AbstractTableModel
 		}
 
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-		if (!role.isColumnAccess(m_AD_Table_ID, field.getAD_Column_ID(), true))
+		if (!role.isColumnAccess(m_AD_Table_ID, field.getAD_Column_ID(), Access.READ))
 		{
 			log.debug("No Column Access {}", field.getColumnName());
 			return;
@@ -1490,11 +1494,11 @@ public class GridTable extends AbstractTableModel
 		}
 
 		// Can we change?
-		final int[] adClientAndOrgId = getClientOrg(m_rowChanged);
-		final int AD_Client_ID = adClientAndOrgId[0];
-		final int AD_Org_ID = adClientAndOrgId[1];
+		final ImmutablePair<ClientId, OrgId> adClientAndOrgId = getClientOrg(m_rowChanged);
+		final ClientId clientId = adClientAndOrgId.getLeft();
+		final OrgId orgId = adClientAndOrgId.getRight();
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-		if (!role.canUpdate(AD_Client_ID, AD_Org_ID, m_AD_Table_ID, 0, true))
+		if (!role.canUpdate(clientId, orgId, m_AD_Table_ID, 0, true))
 		{
 			fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 			dataIgnore();
@@ -2490,41 +2494,54 @@ public class GridTable extends AbstractTableModel
 			}
 		}
 		//
-		int[] co = getClientOrg(row);
-		int AD_Client_ID = co[0];
-		int AD_Org_ID = co[1];
-		int Record_ID = getKeyID(row);
+		final ImmutablePair<ClientId, OrgId> co = getClientOrg(row);
+		final ClientId clientId = co.getLeft();
+		final OrgId orgId = co.getRight();
+		if(clientId == null || orgId == null)
+		{
+			// usually that's the case of a row for which the underlying record was deleted by some outside BL or process.
+			return false;
+		}
+		
+		final int Record_ID = getKeyID(row);
 		final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-		return role.canUpdate(AD_Client_ID, AD_Org_ID, m_AD_Table_ID, Record_ID, false);
+		try
+		{
+			return role.canUpdate(clientId, orgId, m_AD_Table_ID, Record_ID, false);
+		}
+		catch (Exception ex)
+		{
+			log.warn("Failed checking role access. Considering row not editable.", ex);
+			return false;
+		}
 	}	// isRowEditable
 
 	/**
-	 * Get Client Org for row
-	 *
-	 * @param row row
-	 * @return array [0] = Client [1] = Org - a value of -1 is not defined/found
+	 * @return Client and Org for row
 	 */
-	private int[] getClientOrg(int row)
+	private ImmutablePair<ClientId, OrgId> getClientOrg(final int row)
 	{
-		int AD_Client_ID = -1;
+		ClientId clientId = null;
 		if (m_indexClientColumn != -1)
 		{
-			Integer ii = (Integer)getValueAt(row, m_indexClientColumn);
+			final Integer ii = (Integer)getValueAt(row, m_indexClientColumn);
 			if (ii != null)
 			{
-				AD_Client_ID = ii.intValue();
+				clientId = ClientId.ofRepoIdOrSystem(ii.intValue());
 			}
 		}
-		int AD_Org_ID = 0;
+		
+		OrgId orgId = OrgId.ANY;
 		if (m_indexOrgColumn != -1)
 		{
-			Integer ii = (Integer)getValueAt(row, m_indexOrgColumn);
+			final Integer ii = (Integer)getValueAt(row, m_indexOrgColumn);
 			if (ii != null)
 			{
-				AD_Org_ID = ii.intValue();
+				orgId = OrgId.ofRepoIdOrAny(ii.intValue());
 			}
 		}
-		return new int[] { AD_Client_ID, AD_Org_ID };
+		
+		return ImmutablePair.of(clientId, orgId);
 	}	// getClientOrg
 
 	/**
@@ -3313,8 +3330,8 @@ public class GridTable extends AbstractTableModel
 			// if (!m_readOnly)
 			// ro = MRole.SQL_RW;
 			final IUserRolePermissions role = Env.getUserRolePermissions(m_ctx);
-			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
-			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			m_SQL = role.addAccessSQL(m_SQL, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
+			m_SQL_Count = role.addAccessSQL(m_SQL_Count, m_tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
 
 		// ORDER BY
@@ -3478,6 +3495,4 @@ public class GridTable extends AbstractTableModel
 	{
 		return DataNewCopyMode.isCopy(_dataNewCopyMode);
 	}
-
-	// metas: end
 }

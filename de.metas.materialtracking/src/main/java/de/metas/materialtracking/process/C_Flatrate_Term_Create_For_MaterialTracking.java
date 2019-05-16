@@ -80,7 +80,7 @@ public class C_Flatrate_Term_Create_For_MaterialTracking
 	{
 		final IParams para = getParameterAsIParams();
 
-		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID);
+		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, -1);
 		final int materialTrackingID = getRecord_ID();
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(getCtx(), materialTrackingID, I_M_Material_Tracking.class, getTrxName());
 

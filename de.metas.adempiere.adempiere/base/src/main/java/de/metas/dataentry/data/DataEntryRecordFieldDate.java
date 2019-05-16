@@ -4,8 +4,6 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,7 +37,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldDate extends DataEntryRecordField<ZonedDateTime>
 {
 	@Getter
-	private ZonedDateTime value;
+	private final ZonedDateTime value;
 
 	public static DataEntryRecordFieldDate of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

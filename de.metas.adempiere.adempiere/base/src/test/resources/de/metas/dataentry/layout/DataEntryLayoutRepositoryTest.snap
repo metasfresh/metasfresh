@@ -3,27 +3,27 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
     {
       "id": 100003,
       "caption": {
-        "value": "groupRecord1_tabName",
+        "value": "tabRecord1_tabName",
         "anyLanguage": true
       },
       "description": {
-        "value": "groupRecord1_description",
+        "value": "tabRecord1_description",
         "anyLanguage": true
       },
-      "internalName": "DataEntry_Group_ID-100003",
-      "dataEntrySubGroups": [
+      "internalName": "DataEntry_Tab_ID-100003",
+      "subTabs": [
         {
           "id": 100009,
           "caption": {
-            "value": "subgroupRecord1_2_tabName",
+            "value": "subtabRecord1_2_tabName",
             "anyLanguage": true
           },
           "description": {
-            "value": "subgroupRecord1_2_description - seqNo10",
+            "value": "subtabRecord1_2_description - seqNo10",
             "anyLanguage": true
           },
-          "internalName": "DataEntry_SubGroup_ID-100009",
-          "dataEntrySections": [
+          "internalName": "DataEntry_SubTab_ID-100009",
+          "sections": [
             {
               "id": 100010,
               "caption": {
@@ -35,10 +35,10 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                 "anyLanguage": true
               },
               "internalName": "DataEntry_Section_ID-100010",
-              "initallyClosed": true,
-              "dataEntryLines": [
+              "initiallyClosed": true,
+              "lines": [
                 {
-                  "dataEntryFields": [
+                  "fields": [
                     {
                       "id": 100012,
                       "caption": {
@@ -51,6 +51,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "DATE",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -65,10 +66,11 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "LIST",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [
                         {
                           "id": 100015,
-                          "dataEntryFieldId": 100013,
+                          "fieldId": 100013,
                           "name": {
                             "value": "listValueRecord1_2_1_1_2_2_name",
                             "anyLanguage": true
@@ -80,7 +82,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                         },
                         {
                           "id": 100014,
-                          "dataEntryFieldId": 100013,
+                          "fieldId": 100013,
                           "name": {
                             "value": "listValueRecord1_2_1_1_2_1_name",
                             "anyLanguage": true
@@ -104,6 +106,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "YESNO",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -118,6 +121,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "TEXT",
                       "mandatory": true,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -132,6 +136,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "LONG_TEXT",
                       "mandatory": true,
+                      "availableInApi": false,
                       "listValues": [ ]
                     }
                   ]
@@ -143,15 +148,15 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
         {
           "id": 100004,
           "caption": {
-            "value": "subgroupRecord1_1_tabName",
+            "value": "subtabRecord1_1_tabName",
             "anyLanguage": true
           },
           "description": {
-            "value": "subgroupRecord1_1_description - seqNo20",
+            "value": "subtabRecord1_1_description - seqNo20",
             "anyLanguage": true
           },
-          "internalName": "DataEntry_SubGroup_ID-100004",
-          "dataEntrySections": [
+          "internalName": "DataEntry_SubTab_ID-100004",
+          "sections": [
             {
               "id": 100005,
               "caption": {
@@ -163,10 +168,10 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                 "anyLanguage": true
               },
               "internalName": "DataEntry_Section_ID-100005",
-              "initallyClosed": false,
-              "dataEntryLines": [
+              "initiallyClosed": false,
+              "lines": [
                 {
-                  "dataEntryFields": [
+                  "fields": [
                     {
                       "id": 100008,
                       "caption": {
@@ -179,6 +184,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "NUMBER",
                       "mandatory": false,
+                      "availableInApi": false,
                       "listValues": [ ]
                     },
                     {
@@ -193,6 +199,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       },
                       "type": "TEXT",
                       "mandatory": true,
+                      "availableInApi": false,
                       "listValues": [ ]
                     }
                   ]

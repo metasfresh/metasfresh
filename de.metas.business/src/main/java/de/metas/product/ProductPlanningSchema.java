@@ -3,11 +3,11 @@ package de.metas.product;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

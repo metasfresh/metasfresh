@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * @author tsa
@@ -43,11 +44,13 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 		return new POCacheLocal(parent, parentColumnName, tableName);
 	}
 
-	private POCacheLocal(PO parent, String parentColumnName, String tableName)
+	private POCacheLocal(
+			@NonNull final PO parent,
+			final String parentColumnName,
+			final String tableName)
 	{
 		super(parentColumnName, tableName);
 
-		Check.assumeNotNull(parent, "parent is null");
 		Check.assumeNotEmpty(parentColumnName, "parentColumnName is null");
 		Check.assumeNotEmpty(tableName, "tableName");
 

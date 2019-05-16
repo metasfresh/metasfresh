@@ -22,8 +22,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.ad.security.IRoleDAO;
-
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**
@@ -132,31 +133,34 @@ public class MAlert extends X_AD_Alert
 	 * 	Get First Role if exist
 	 *	@return AD_Role_ID or -1
 	 */
-	public int getFirstAD_Role_ID()
+	public RoleId getFirstRoleId()
 	{
 		getRecipients(false);
 		for (int i = 0; i < m_recipients.length; i++)
 		{
-			if (m_recipients[i].getAD_Role_ID() != -1)
-				return m_recipients[i].getAD_Role_ID();
+			if (m_recipients[i].getAD_Role_ID() >= 0)
+			{
+				return RoleId.ofRepoId(m_recipients[i].getAD_Role_ID());
+			}
 		}
-		return -1;
+		return null;
 	}	//	getForstAD_Role_ID
 	
 	/**
 	 * 	Get First User Role if exist
 	 *	@return AD_Role_ID or -1
 	 */
-	public int getFirstUserAD_Role_ID()
+	public RoleId getFirstUserRoleId()
 	{
 		getRecipients(false);
-		int AD_User_ID = getFirstAD_User_ID();
-		if (AD_User_ID != -1)
+		final UserId userId = UserId.ofRepoIdOrNull(getFirstAD_User_ID());
+		if (userId != null)
 		{
-			final int firstRoleId = Services.get(IRoleDAO.class).retrieveFirstRoleIdForUserId(AD_User_ID);
-			return firstRoleId >= 0 ? firstRoleId : -1;
+			final RoleId firstRoleId = Services.get(IRoleDAO.class).retrieveFirstRoleIdForUserId(userId);
+			return firstRoleId;
 		}
-		return -1;
+		
+		return null;
 	}	//	getFirstUserAD_Role_ID
 
 	/**
@@ -177,17 +181,20 @@ public class MAlert extends X_AD_Alert
 	/**
 	 * @return unique list of recipient users
 	 */
-	public Set<Integer> getRecipientUsers() {
+	public Set<UserId> getRecipientUsers() {
 		MAlertRecipient[] recipients = getRecipients(false);
-		TreeSet<Integer> users = new TreeSet<>();
+		TreeSet<UserId> users = new TreeSet<>();
 		for (int i = 0; i < recipients.length; i++)
 		{
 			MAlertRecipient recipient = recipients[i];
 			if (recipient.getAD_User_ID() >= 0)		//	System == 0
-				users.add(recipient.getAD_User_ID());
-			if (recipient.getAD_Role_ID() >= 0)		//	SystemAdministrator == 0
 			{
-				final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(recipient.getAD_Role_ID());
+				users.add(UserId.ofRepoId(recipient.getAD_User_ID()));
+			}
+			final RoleId roleId = RoleId.ofRepoIdOrNull(recipient.getAD_Role_ID());
+			if (roleId != null)		//	SystemAdministrator == 0
+			{
+				final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
 				users.addAll(allRoleUserIds);
 			}
 		}

@@ -69,6 +69,31 @@ public interface I_DataEntry_Field
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set In API verfügbar.
+	 * Legt fest, ob dieses Feld via metasfresh API für externe Anwendungen verfügbar ist.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAvailableInAPI (boolean AvailableInAPI);
+
+	/**
+	 * Get In API verfügbar.
+	 * Legt fest, ob dieses Feld via metasfresh API für externe Anwendungen verfügbar ist.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAvailableInAPI();
+
+    /** Column definition for AvailableInAPI */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Field, Object> COLUMN_AvailableInAPI = new org.adempiere.model.ModelColumn<I_DataEntry_Field, Object>(I_DataEntry_Field.class, "AvailableInAPI", null);
+    /** Column name AvailableInAPI */
+    public static final String COLUMNNAME_AvailableInAPI = "AvailableInAPI";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
-import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.ClassnameScanner;
 import org.compiere.model.MQuery;
@@ -59,6 +58,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.security.TableAccessLevel;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

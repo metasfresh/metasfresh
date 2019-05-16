@@ -47,6 +47,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -183,7 +184,7 @@ public class ReceiptScheduleHUDocumentFactory implements IHUDocumentFactory
 				// Only active records
 				.setOnlyActiveRecords(true)
 				// Only those on which logged in user has RW access
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				//
 				.iterate(I_M_ReceiptSchedule.class);
 

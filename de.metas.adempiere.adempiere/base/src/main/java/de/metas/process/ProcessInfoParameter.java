@@ -98,23 +98,13 @@ public final class ProcessInfoParameter implements Serializable
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
 
-	/**
-	 * Construct Parameter
-	 * 
-	 * @param parameterName parameter name
-	 * @param parameter parameter
-	 * @param parameter_To to parameter
-	 * @param info info
-	 * @param info_To to info
-	 */
-	public ProcessInfoParameter(final String parameterName,
+	public ProcessInfoParameter(
+			final String parameterName,
 			final Object parameter,
 			final Object parameter_To,
 			final String info,
 			final String info_To)
 	{
-		super();
-
 		m_ParameterName = parameterName;
 		m_Parameter = parameter;
 		m_Parameter_To = parameter_To;
@@ -128,11 +118,6 @@ public final class ProcessInfoParameter implements Serializable
 	private final String m_Info;
 	private final String m_Info_To;
 
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
@@ -147,56 +132,34 @@ public final class ProcessInfoParameter implements Serializable
 					+ " (" + m_Info_To + ")";
 		}
 		// Value
-		return "ProcessInfoParameter[" + m_ParameterName + "=" + m_Parameter
-				+ (m_Parameter == null ? "" : "{" + m_Parameter.getClass().getName() + "}")
-				+ " (" + m_Info + ")";
-	}	// toString
+		else
+		{
+			return "ProcessInfoParameter[" + m_ParameterName + "=" + m_Parameter
+					+ (m_Parameter == null ? "" : "{" + m_Parameter.getClass().getName() + "}")
+					+ " (" + m_Info + ")";
+		}
+	}
 
-	/**
-	 * Method getParameterName
-	 * 
-	 * @return String
-	 */
 	public String getParameterName()
 	{
 		return m_ParameterName;
 	}
 
-	/**
-	 * Method getInfo
-	 * 
-	 * @return String
-	 */
 	public String getInfo()
 	{
 		return m_Info;
 	}
 
-	/**
-	 * Method getInfo_To
-	 * 
-	 * @return String
-	 */
 	public String getInfo_To()
 	{
 		return m_Info_To;
 	}
 
-	/**
-	 * Method getParameter
-	 * 
-	 * @return Object
-	 */
 	public Object getParameter()
 	{
 		return m_Parameter;
 	}
 
-	/**
-	 * Method getParameter_To
-	 * 
-	 * @return Object
-	 */
 	public Object getParameter_To()
 	{
 		return m_Parameter_To;
@@ -221,36 +184,36 @@ public final class ProcessInfoParameter implements Serializable
 		return value.toString();
 	}
 
-	/**
-	 * Method getParameter as Int
-	 * 
-	 * @return Object
-	 */
 	public int getParameterAsInt()
 	{
-		return toInt(m_Parameter);
-	}	// getParameterAsInt
-	
-	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Function<Integer, T> mapper)
-	{
-		return mapper.apply(getParameterAsInt());
+		return getParameterAsInt(0);
 	}
 
-	/**
-	 * Method getParameter as Int
-	 * 
-	 * @return Object
-	 */
+	public int getParameterAsInt(final int defaultValueWhenNull)
+	{
+		return toInt(m_Parameter, defaultValueWhenNull);
+	}
+
+	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Function<Integer, T> mapper)
+	{
+		return mapper.apply(getParameterAsInt(-1));
+	}
+
 	public int getParameter_ToAsInt()
 	{
-		return toInt(m_Parameter_To);
-	}	// getParameter_ToAsInt
+		return getParameter_ToAsInt(0);
+	}
 
-	private static final int toInt(final Object value)
+	public int getParameter_ToAsInt(final int defaultValueWhenNull)
+	{
+		return toInt(m_Parameter_To, defaultValueWhenNull);
+	}
+
+	private static final int toInt(final Object value, final int defaultValueWhenNull)
 	{
 		if (value == null)
 		{
-			return 0;
+			return defaultValueWhenNull;
 		}
 		else if (value instanceof Number)
 		{
@@ -267,11 +230,6 @@ public final class ProcessInfoParameter implements Serializable
 		}
 	}
 
-	/**
-	 * Method getParameter as Boolean
-	 * 
-	 * @return boolean value
-	 */
 	public boolean getParameterAsBoolean()
 	{
 		final boolean defaultValue = false;
@@ -284,11 +242,6 @@ public final class ProcessInfoParameter implements Serializable
 		return toBoolean(m_Parameter, defaultValue);
 	}
 
-	/**
-	 * Method getParameter as Boolean
-	 * 
-	 * @return boolean
-	 */
 	public boolean getParameter_ToAsBoolean()
 	{
 		final boolean defaultValue = false;

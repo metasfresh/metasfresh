@@ -202,9 +202,9 @@ public class ShipmentScheduleEnqueuer
 
 				workpackageBuilder
 						.parameters()
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.quantityType)
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.completeShipments)
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday);
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
 				// Create a new locker which will grab the locked invoice candidates from 'mainLock'
 				// and it will move them to a new owner which is created per workpackage

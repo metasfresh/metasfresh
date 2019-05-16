@@ -41,11 +41,12 @@ import de.metas.event.Event;
 import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
-import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
+import de.metas.util.JSONObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -69,6 +70,7 @@ final class EventBus implements IEventBus
 	};
 
 	private static final String PROP_Body = "body";
+	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
 
 	@Getter
 	private final String topicName;
@@ -180,6 +182,16 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
+	public void postObject(@NonNull final Object obj)
+	{
+		final String json = sharedJsonSerializer.writeValueAsString(obj);
+		postEvent(Event.builder()
+				.putProperty(PROP_Body, json)
+				.storeEvent()
+				.build());
+	}
+
+	@Override
 	public void postEvent(@NonNull final Event event)
 	{
 		// Do nothing if destroyed
@@ -189,33 +201,37 @@ final class EventBus implements IEventBus
 			return;
 		}
 
+		// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
+		if (event.isStoreEvent() && event.isLocalEvent())
+		{
+			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+			eventLogService.storeEvent(event, this);
+		}
+
 		logger.debug("{} - Posting event: {}", this, event);
 		eventBus.post(event);
 	}
 
-	@Override
-	public void postObject(@NonNull final Object obj)
-	{
-		final String json = SimpleObjectSerializer.get().serialize(obj);
-		postEvent(Event.builder()
-				.putProperty(PROP_Body, json)
-				.storeEvent()
-				.build());
-	}
-
-	@AllArgsConstructor
 	private static class TypedConsumerAsEventListener<T> implements IEventListener
 	{
 		@NonNull
-		private final Class<T> eventBodyType;
-		@NonNull
 		private final Consumer<T> eventConsumer;
+		@NonNull
+		private final JSONObjectMapper<T> jsonDeserializer;
+
+		public TypedConsumerAsEventListener(
+				@NonNull final Class<T> eventBodyType,
+				@NonNull final Consumer<T> eventConsumer)
+		{
+			this.jsonDeserializer = JSONObjectMapper.forClass(eventBodyType);
+			this.eventConsumer = eventConsumer;
+		}
 
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
 			final String json = event.getPropertyAsString(PROP_Body);
-			final T obj = SimpleObjectSerializer.get().deserialize(json, eventBodyType);
+			final T obj = jsonDeserializer.readValue(json);
 			eventConsumer.accept(obj);
 		}
 
@@ -268,7 +284,20 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		// even if the event(-data) is not stored, we allow all listeners/handlers to add log entries.
+		if (event.isStoreEvent())
+		{
+			invokeEventListenerWithLogging(eventListener, event);
+		}
+		else
+		{
+			eventListener.onEvent(this, event);
+		}
+	}
+
+	private void invokeEventListenerWithLogging(
+			@NonNull final IEventListener eventListener,
+			@NonNull final Event event)
+	{
 		final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event);
 		try
 		{

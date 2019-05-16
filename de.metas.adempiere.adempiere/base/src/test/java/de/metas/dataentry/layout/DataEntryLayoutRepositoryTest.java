@@ -6,8 +6,6 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.List;
-
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Tab;
@@ -18,11 +16,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Group;
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.dataentry.model.I_DataEntry_Section;
-import de.metas.dataentry.model.I_DataEntry_SubGroup;
+import de.metas.dataentry.model.I_DataEntry_SubTab;
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import lombok.NonNull;
 
@@ -74,16 +72,16 @@ public class DataEntryLayoutRepositoryTest
 	@Test
 	public void getByWindowId()
 	{
-		final I_DataEntry_Group groupRecord1 = createRecords();
-		final AdWindowId windowId_1 = AdWindowId.ofRepoId(groupRecord1.getDataEntry_TargetWindow_ID());
+		final I_DataEntry_Tab tabRecord1 = createRecords();
+		final AdWindowId windowId_1 = AdWindowId.ofRepoId(tabRecord1.getDataEntry_TargetWindow_ID());
 
 		// invoke the method under test
-		final List<DataEntryGroup> result = dataEntryLayoutRepository.getByWindowId(windowId_1);
+		final DataEntryLayout layout = dataEntryLayoutRepository.getByWindowId(windowId_1);
 
-		expect(result).toMatchSnapshot();
+		expect(layout.getTabs()).toMatchSnapshot();
 	}
 
-	private I_DataEntry_Group createRecords()
+	private I_DataEntry_Tab createRecords()
 	{
 		final AdWindowId windowId_1 = AdWindowId.ofRepoId(10);
 
@@ -96,33 +94,33 @@ public class DataEntryLayoutRepositoryTest
 		tabRecord_1.setAD_Table(tableRecord_1);
 		saveRecord(tabRecord_1);
 
-		// group
-		final I_DataEntry_Group groupRecord1 = newInstance(I_DataEntry_Group.class);
-		groupRecord1.setDataEntry_TargetWindow_ID(windowId_1.getRepoId());
-		groupRecord1.setName("groupRecord1_name");
-		groupRecord1.setDescription("groupRecord1_description");
-		groupRecord1.setTabName("groupRecord1_tabName");
-		saveRecord(groupRecord1);
+		// tab
+		final I_DataEntry_Tab tabRecord1 = newInstance(I_DataEntry_Tab.class);
+		tabRecord1.setDataEntry_TargetWindow_ID(windowId_1.getRepoId());
+		tabRecord1.setName("tabRecord1_name");
+		tabRecord1.setDescription("tabRecord1_description");
+		tabRecord1.setTabName("tabRecord1_tabName");
+		saveRecord(tabRecord1);
 
-		createSubgroup1Records(groupRecord1);
+		createSubtab1Records(tabRecord1);
 
-		createSubgroup2Records(groupRecord1);
+		createSubtab2Records(tabRecord1);
 
-		return groupRecord1;
+		return tabRecord1;
 	}
 
-	private void createSubgroup1Records(@NonNull final I_DataEntry_Group groupRecord1)
+	private void createSubtab1Records(@NonNull final I_DataEntry_Tab tabRecord1)
 	{
-		final I_DataEntry_SubGroup subgroupRecord1_1 = newInstance(I_DataEntry_SubGroup.class);
-		subgroupRecord1_1.setDataEntry_Group(groupRecord1);
-		subgroupRecord1_1.setName("subgroupRecord1_1_name");
-		subgroupRecord1_1.setDescription("subgroupRecord1_1_description - seqNo20");
-		subgroupRecord1_1.setTabName("subgroupRecord1_1_tabName");
-		subgroupRecord1_1.setSeqNo(20);
-		saveRecord(subgroupRecord1_1);
+		final I_DataEntry_SubTab subtabRecord1_1 = newInstance(I_DataEntry_SubTab.class);
+		subtabRecord1_1.setDataEntry_Tab(tabRecord1);
+		subtabRecord1_1.setName("subtabRecord1_1_name");
+		subtabRecord1_1.setDescription("subtabRecord1_1_description - seqNo20");
+		subtabRecord1_1.setTabName("subtabRecord1_1_tabName");
+		subtabRecord1_1.setSeqNo(20);
+		saveRecord(subtabRecord1_1);
 
 		final I_DataEntry_Section sectionRecord1_1_2 = newInstance(I_DataEntry_Section.class);
-		sectionRecord1_1_2.setDataEntry_SubGroup(subgroupRecord1_1);
+		sectionRecord1_1_2.setDataEntry_SubTab(subtabRecord1_1);
 		sectionRecord1_1_2.setSeqNo(10);
 		sectionRecord1_1_2.setIsInitiallyClosed(false);
 		sectionRecord1_1_2.setName("sectionRecord1_1_2_name");
@@ -135,7 +133,7 @@ public class DataEntryLayoutRepositoryTest
 		lineRecord1_1_2_1.setSeqNo(10);
 		saveRecord(lineRecord1_1_2_1);
 
-		// note: the fields of group 1 are created in reverse order (SeqNo)
+		// note: the fields of tab 1 are created in reverse order (SeqNo)
 		final I_DataEntry_Field fieldRecord1_1_2_1_1 = newInstance(I_DataEntry_Field.class);
 		fieldRecord1_1_2_1_1.setDataEntry_Line(lineRecord1_1_2_1);
 		fieldRecord1_1_2_1_1.setDataEntry_RecordType(X_DataEntry_Field.DATAENTRY_RECORDTYPE_Text);
@@ -157,19 +155,19 @@ public class DataEntryLayoutRepositoryTest
 		saveRecord(fieldRecord1_1_2_1_2);
 	}
 
-	private void createSubgroup2Records(@NonNull final I_DataEntry_Group groupRecord1)
+	private void createSubtab2Records(@NonNull final I_DataEntry_Tab tabRecord1)
 	{
-		final I_DataEntry_SubGroup subgroupRecord1_2 = newInstance(I_DataEntry_SubGroup.class);
-		subgroupRecord1_2.setDataEntry_Group(groupRecord1);
-		subgroupRecord1_2.setName("subgroupRecord1_2_name");
-		subgroupRecord1_2.setDescription("subgroupRecord1_2_description - seqNo10");
-		subgroupRecord1_2.setTabName("subgroupRecord1_2_tabName");
-		subgroupRecord1_2.setSeqNo(10);
-		saveRecord(subgroupRecord1_2);
+		final I_DataEntry_SubTab subtabRecord1_2 = newInstance(I_DataEntry_SubTab.class);
+		subtabRecord1_2.setDataEntry_Tab(tabRecord1);
+		subtabRecord1_2.setName("subtabRecord1_2_name");
+		subtabRecord1_2.setDescription("subtabRecord1_2_description - seqNo10");
+		subtabRecord1_2.setTabName("subtabRecord1_2_tabName");
+		subtabRecord1_2.setSeqNo(10);
+		saveRecord(subtabRecord1_2);
 
 		// note: the section records are created in reverse order (SeqNo)
 		final I_DataEntry_Section sectionRecord1_2_1 = newInstance(I_DataEntry_Section.class);
-		sectionRecord1_2_1.setDataEntry_SubGroup(subgroupRecord1_2);
+		sectionRecord1_2_1.setDataEntry_SubTab(subtabRecord1_2);
 		sectionRecord1_2_1.setSeqNo(20);
 		sectionRecord1_2_1.setIsInitiallyClosed(true);
 		sectionRecord1_2_1.setName("sectionRecord1_2_1_name");

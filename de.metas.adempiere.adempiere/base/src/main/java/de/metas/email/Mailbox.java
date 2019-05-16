@@ -1,11 +1,11 @@
 package de.metas.email;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import de.metas.user.UserId;
 import de.metas.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

@@ -174,7 +174,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		whereClause.append(" AND AD_Client_ID=").append(getAD_Client_ID());
 
 		// Selection_ID
-		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID);
+		final int selectionId = getParameters().getParameterAsInt(PARAM_Selection_ID, -1);
 		if (selectionId > 0)
 		{
 			whereClause.append(" AND EXISTS (SELECT 1 FROM T_SELECTION s WHERE s.AD_PInstance_ID=" + selectionId + " AND s.T_Selection_ID=" + getImportKeyColumnName() + ")");

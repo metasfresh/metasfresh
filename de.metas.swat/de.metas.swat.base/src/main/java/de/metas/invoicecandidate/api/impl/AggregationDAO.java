@@ -36,6 +36,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.I_M_ProductGroup_Product;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -86,7 +87,7 @@ public class AggregationDAO implements IAggregationDAO
 						product == null ? 0 : product.getM_Product_ID(),
 						product == null ? 0 : product.getM_Product_Category_ID())
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.setOrderBy(orderBy)
 				.first(I_C_Invoice_Candidate_Agg.class);
 	}

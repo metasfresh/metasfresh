@@ -14,6 +14,7 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
 
@@ -21,6 +22,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
+import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
@@ -64,9 +66,13 @@ import lombok.NonNull;
 public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 {
 	private static int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
+	private static int WINDOW_ID_SALES_C_INVOICE_ID = 167; // FIXME Hardcoded
 
 	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
 	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
+	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Subject";
+	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content";
+
 	private static final String ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
 	private static final String ATTATCHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
 	private static final String ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
@@ -118,7 +124,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			return MSG_OK; // all went fine; nothing more to do
 		}
 
-		if(getProcessInfo().isInvokedByScheduler())
+		if (getProcessInfo().isInvokedByScheduler())
 		{
 			// throw an exception so the problem is logged with the scheduler and a supervisor may be notified
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NOT_ALL_FILES_IMPORTED);
@@ -128,7 +134,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		// return "OK" (i.e. don't throw an exception), but notify the user
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
-				.recipient(Recipient.user(getAD_User_ID()))
+				.recipient(Recipient.user(getUserId()))
 				.contentADMessage(MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION)
 				.contentADMessageParam(getPinstanceId().getRepoId())
 				.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId()), WINDOW_ID_AD_PInstance_ID))
@@ -157,7 +163,22 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 			final InvoiceId invoiceId = importedInvoiceResponseRepo.save(responseWithTags);
 			moveFile(fileToImport, outputDirectory);
-			addLog("Imported invoice response file={} into C_Invoice_ID={}", fileToImport.getFileName().toString(), invoiceId.getRepoId());
+			addLog("Imported invoice response file={} with status={} into C_Invoice_ID={}", fileToImport.getFileName().toString(), response.getStatus(), invoiceId.getRepoId());
+
+			if (Status.REJECTED.equals(responseWithTags.getStatus()))
+			{
+				final Recipient recipient = Recipient.user(getUserId());
+				final UserNotificationRequest userNotificationRequest = UserNotificationRequest
+						.builder()
+						.recipient(recipient)
+						.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
+						.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT)
+						.contentADMessageParam(responseWithTags.getDocumentNumber())
+						.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId), WINDOW_ID_SALES_C_INVOICE_ID))
+						.build();
+				notificationBL.send(userNotificationRequest);
+				addLog("Send notification to recipient={}", recipient);
+			}
 			return true;
 		}
 		catch (final InvoiceResponseRepoException e)

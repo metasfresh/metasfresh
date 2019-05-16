@@ -14,7 +14,7 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1121615748L;
+	private static final long serialVersionUID = 2097173568L;
 
     /** Standard Constructor */
     public X_DataEntry_Record (Properties ctx, int DataEntry_Record_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
         {
 			setAD_Table_ID (0);
 			setDataEntry_Record_ID (0);
-			setDataEntry_SubGroup_ID (0);
+			setDataEntry_SubTab_ID (0);
 			setRecord_ID (0);
         } */
     }
@@ -123,34 +123,34 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 	}
 
 	@Override
-	public de.metas.dataentry.model.I_DataEntry_SubGroup getDataEntry_SubGroup() throws RuntimeException
+	public de.metas.dataentry.model.I_DataEntry_SubTab getDataEntry_SubTab() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class);
+		return get_ValueAsPO(COLUMNNAME_DataEntry_SubTab_ID, de.metas.dataentry.model.I_DataEntry_SubTab.class);
 	}
 
 	@Override
-	public void setDataEntry_SubGroup(de.metas.dataentry.model.I_DataEntry_SubGroup DataEntry_SubGroup)
+	public void setDataEntry_SubTab(de.metas.dataentry.model.I_DataEntry_SubTab DataEntry_SubTab)
 	{
-		set_ValueFromPO(COLUMNNAME_DataEntry_SubGroup_ID, de.metas.dataentry.model.I_DataEntry_SubGroup.class, DataEntry_SubGroup);
+		set_ValueFromPO(COLUMNNAME_DataEntry_SubTab_ID, de.metas.dataentry.model.I_DataEntry_SubTab.class, DataEntry_SubTab);
 	}
 
-	/** Set Untergruppe.
-		@param DataEntry_SubGroup_ID Untergruppe	  */
+	/** Set Unterregister.
+		@param DataEntry_SubTab_ID Unterregister	  */
 	@Override
-	public void setDataEntry_SubGroup_ID (int DataEntry_SubGroup_ID)
+	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID)
 	{
-		if (DataEntry_SubGroup_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, null);
+		if (DataEntry_SubTab_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DataEntry_SubTab_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DataEntry_SubGroup_ID, Integer.valueOf(DataEntry_SubGroup_ID));
+			set_ValueNoCheck (COLUMNNAME_DataEntry_SubTab_ID, Integer.valueOf(DataEntry_SubTab_ID));
 	}
 
-	/** Get Untergruppe.
-		@return Untergruppe	  */
+	/** Get Unterregister.
+		@return Unterregister	  */
 	@Override
-	public int getDataEntry_SubGroup_ID () 
+	public int getDataEntry_SubTab_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubGroup_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_SubTab_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

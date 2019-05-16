@@ -29,7 +29,7 @@ import lombok.Getter;
 
 public enum FieldType
 {
-	SUB_GROUP_ID(Integer.class),
+	SUB_TAB_ID(Integer.class),
 	PARENT_LINK_ID(Integer.class),
 
 	CREATED_UPDATED_INFO(String.class),

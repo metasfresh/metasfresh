@@ -25,6 +25,7 @@ package de.metas.printing.api;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 
 import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
 
 /**
  * Used in {@link IPrintingQueueBL#createPrintingQueueSources(java.util.Properties, IPrintingQueueQuery)} to specify which printing queue items shall be returned by the source.<br>
@@ -96,9 +97,9 @@ public interface IPrintingQueueQuery
 
 	void setModelFilter(ISqlQueryFilter modelFilter);
 
-	Boolean getApplyAccessFilterRW();
+	Access getRequiredAccess();
 
-	void setApplyAccessFilterRW(Boolean applyAccessFilterRW);
+	void setRequiredAccess(Access requiredAccess);
 
 	/**
 	 * 

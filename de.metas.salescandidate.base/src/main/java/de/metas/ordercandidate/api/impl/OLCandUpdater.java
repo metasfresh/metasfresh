@@ -62,11 +62,11 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 		Check.errorIf(params == null, "Given processorCtx {} needs to contain params", processorCtx);
 
 		// Partner
-		final int bpartnerId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID);
+		final int bpartnerId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID, -1);
 		olCand.setC_BPartner_Override_ID(bpartnerId);
 
 		// Location
-		final int bpartnerLocationId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID);
+		final int bpartnerLocationId = params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID, -1);
 		olCand.setC_BP_Location_Override_ID(bpartnerLocationId);
 
 		// DatePrommissed

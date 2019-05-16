@@ -2,8 +2,6 @@ package de.metas.dataentry.data;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,7 +35,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldYesNo extends DataEntryRecordField<Boolean>
 {
 	@Getter
-	private Boolean value;
+	private final Boolean value;
 
 	public static DataEntryRecordFieldYesNo of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

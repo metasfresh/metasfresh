@@ -2,8 +2,6 @@ package org.adempiere.ad.session.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,6 +38,7 @@ import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.cache.CCache;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
 public class SessionBL implements ISessionBL
