@@ -1,4 +1,4 @@
-package de.metas.event.log.impl;
+package de.metas.event.log;
 
 import java.util.UUID;
 
