@@ -34,8 +34,12 @@ Cypress.Commands.add('selectSingleTabRow', () => {
   });
 });
 
-Cypress.Commands.add('selectReference', refName => {
+Cypress.Commands.add('selectReference', (refName, timeout) => {
   describe('Select reference with a certain name', function() {
-    return cy.get(`.reference_${refName}`);
+    const options = {};
+    if (timeout) {
+      options.timeout = timeout;
+    }
+    return cy.get(`.reference_${refName}`, options);
   });
 });
