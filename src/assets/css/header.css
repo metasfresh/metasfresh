@@ -165,7 +165,7 @@
     width: 50%;
     position: fixed;
     z-index: 201;
-    margin-top:-1px;
+    margin-top:55px;
     background-color: $brand-bright-color;
 }
 
