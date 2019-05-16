@@ -12,12 +12,12 @@ import java.util.function.Consumer;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,20 +31,19 @@ import java.util.function.Consumer;
  * <p>
  * Note: if an event bus is only local or also remote (i.e. events are send to other hosts as well) just depends on wheter the event bus factory registered a an apprpriate subscriber to forward events
  * to other hosts.
- * 
+ *
  * @author tsa
  *
  */
 public interface IEventBus
 {
 	/**
-	 * 
 	 * @return the (topic-) name of this event bus.
 	 */
 	String getTopicName();
 
 	/**
-	 * 
+	 *
 	 * @return the type (remote or local) of this event bus. If the event bus is "remote" then subscriber on other hosts will be notified about events on this host.
 	 */
 	Type getType();
