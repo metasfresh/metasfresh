@@ -86,9 +86,10 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchCheckBoxAliasName = `patchCheckBox-${new Date().getTime()}`;
 
     cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as('patchCheckBox');
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
 
     cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
@@ -100,7 +101,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
     cy.get(path)
       .find('.input-checkbox-tick')
       .click({ force: true }) // we don't care if the checkbox scrolled out of view
-      .waitForFieldValue(`@patchCheckBox`, fieldName, expectedPatchValue);
+      .waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
   });
 });
 
@@ -212,11 +213,12 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
   describe('Select value in list field', function() {
     cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
+    const patchListFieldAliasName = `patchListField-${new Date().getTime()}`;
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
     // here we want to match URLs that don *not* end with "/NEW"
     cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(`patchListField`);
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -229,6 +231,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
 
     cy.contains('.input-dropdown-list-option', listValue)
       .click()
-      .waitForFieldValue(`@patchListField`, fieldName, listValue);
+      .waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
   });
 });
