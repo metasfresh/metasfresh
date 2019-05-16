@@ -67,10 +67,9 @@ Hardcoded default in case this sysconfig record is missing: true!
 ',Updated=TO_TIMESTAMP('2019-05-15 15:24:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541279
 ;
 
-
 -- 2019-05-16T15:04:14.995
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_List SET Description='Der Lieferbeleg enth‰lt die Liefermenge der jeweiligen Lieferdispo-Datens‰tze, auch wenn kein ausreichender Bestand vorhanden ist.', Name='Liefermenge',Updated=TO_TIMESTAMP('2019-05-16 15:04:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541682
+UPDATE AD_Ref_List SET Description='Der Lieferbeleg enth√§lt die Liefermenge der jeweiligen Lieferdispo-Datens√§tze, auch wenn kein ausreichender Bestand vorhanden ist.', Name='Liefermenge',Updated=TO_TIMESTAMP('2019-05-16 15:04:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541682
 ;
 
 -- 2019-05-16T15:05:08.332
@@ -80,7 +79,7 @@ UPDATE AD_Ref_List_Trl SET Description='The shipment document contains the shipm
 
 -- 2019-05-16T15:05:27.042
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_List_Trl SET Description='Der Lieferbeleg enth‰lt die Liefermenge der jeweiligen Lieferdispo-Datens‰tze, auch wenn kein ausreichender Bestand vorhanden ist.',Updated=TO_TIMESTAMP('2019-05-16 15:05:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=541682
+UPDATE AD_Ref_List_Trl SET Description='Der Lieferbeleg enth√§lt die Liefermenge der jeweiligen Lieferdispo-Datens√§tze, auch wenn kein ausreichender Bestand vorhanden ist.',Updated=TO_TIMESTAMP('2019-05-16 15:05:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=541682
 ;
 
 -- 2019-05-16T15:05:33.407
@@ -95,7 +94,7 @@ UPDATE AD_Ref_List_Trl SET Name='Liefermenge',Updated=TO_TIMESTAMP('2019-05-16 1
 
 -- 2019-05-16T15:05:46.481
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_List_Trl SET Description='Der Lieferbeleg enth‰lt die Liefermenge der jeweiligen Lieferdispo-Datens‰tze, auch wenn kein ausreichender Bestand vorhanden ist.',Updated=TO_TIMESTAMP('2019-05-16 15:05:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=541682
+UPDATE AD_Ref_List_Trl SET Description='Der Lieferbeleg enth√§lt die Liefermenge der jeweiligen Lieferdispo-Datens√§tze, auch wenn kein ausreichender Bestand vorhanden ist.',Updated=TO_TIMESTAMP('2019-05-16 15:05:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=541682
 ;
 
 -- 2019-05-16T15:06:01.016
