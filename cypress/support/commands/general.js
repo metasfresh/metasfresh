@@ -254,6 +254,26 @@ Cypress.Commands.add('resetNotifications', () => {
   });
 });
 
+Cypress.Commands.add('readAllNotifications', () => {
+  describe('Mark all current notifications as read in the API and reset counter', function() {
+    return cy
+      .request({
+        method: 'PUT',
+        url: config.API_URL + '/notifications/all/read',
+        failOnStatusCode: false,
+        followRedirect: false,
+      })
+      .then(() => {
+        return cy
+          .window()
+          .its('store')
+          .invoke('dispatch', {
+            type: 'READ_ALL_NOTIFICATIONS',
+          });
+      });
+  });
+});
+
 const getNotificationFixture = () => {
   const timestamp = new Date().getTime();
   const message = `Test notification ${timestamp}`;
