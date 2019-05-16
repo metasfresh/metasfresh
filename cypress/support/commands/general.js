@@ -264,8 +264,7 @@ Cypress.Commands.add('readAllNotifications', () => {
         followRedirect: false,
       })
       .then(() => {
-        return cy
-          .window()
+        cy.window()
           .its('store')
           .invoke('dispatch', {
             type: 'READ_ALL_NOTIFICATIONS',

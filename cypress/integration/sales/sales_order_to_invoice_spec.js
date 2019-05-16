@@ -37,15 +37,13 @@ describe('New sales order test', function() {
         .apply();
     });
 
-    cy.getDOMNotificationsNumber().then(number => {
-      notificationsNumber = number;
-    });
+    cy.readAllNotifications();
   });
 
   describe('Create a new sales order', function() {
     it('Create new sales order header', function() {
       cy.visitWindow(salesOrders.windowId, 'NEW');
-      cy.resetNotifications();
+      // cy.resetNotifications();
 
       cy.writeIntoLookupListField('C_BPartner_ID', customerName, customerName);
 
@@ -123,7 +121,7 @@ describe('New sales order test', function() {
 
     it('Zoom to the new invoice', function() {
       cy.getDOMNotificationsNumber().then(number => {
-        expect(number).to.equal(notificationsNumber + 1);
+        expect(number).to.equal(1);
 
         cy.getNotificationModal();
         cy.server();
