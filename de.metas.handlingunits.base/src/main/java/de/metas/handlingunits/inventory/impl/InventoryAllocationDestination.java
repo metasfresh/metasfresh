@@ -234,11 +234,11 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			inventoryLine.setM_HU_ID(topLevelHU.getM_HU_ID());
 
-			Services.get(IHUAssignmentBL.class).assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
-
 			//
 			// Save the inventory line and assign the top level HU to it
 			InterfaceWrapperHelper.save(inventoryLine);
+
+			Services.get(IHUAssignmentBL.class).assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
 
 			//
 			// Update the result
