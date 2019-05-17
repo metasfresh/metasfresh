@@ -11,39 +11,31 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="RECORD_ID" class="java.lang.Integer">
+	<parameter name="RECORD_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT distinct
-  v.productName             as ProductName,
-  v.CustomerLabelName       as CustomerLabelName,
-  v.additional_produktinfos as Additional_produktinfos,
-  v.productValue            as ProductValue,
-  v.UPC                     as UPC,
-  v.weight                  as NetWeight,
-  v.country                 as Country,
-  v.piQty                   as NumberOfEvents,
-  v.guaranteedaysmin        as ShelfLifeDays,
-  v.warehouse_temperature   as Warehouse_temperature,
-  v.productDecription       as ProductDescription,
-  v.componentName           as BOMProduct,
-  v.componentIngredients    as Ingredients,
-  v.qtybatch                as QtyBatch,
-  v.allergen                as Allergen,
-  v.nutritionName           as Product_Nutrition,
-  v.nutritionqty            as NutritionQty,
-  ispackagingmaterial,
+  p.name             as ProductName,
+  additional_produktinfos as Additional_produktinfos,
+  p.value            as ProductValue,
+  UPC                     as UPC,
+  weight                  as NetWeight,
+  c.name                 as Country,
+  guaranteedaysmin        as ShelfLifeDays,
+  warehouse_temperature   as Warehouse_temperature,
+  p.description       as ProductDescription,
 m_product_ID
-FROM "de.metas.fresh".product_specifications_v v
-WHERE m_product_ID = $P{RECORD_ID}
-ORDER BY componentName;]]>
+FROM m_product p
+left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
+left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner_location_id
+ left outer join c_location l on oi.c_location_id = l.c_location_id
+ left outer join c_country c on l.c_country_id = c.c_country_id
+ WHERE m_product_ID = $P{RECORD_ID}
+;]]>
 	</queryString>
 	<field name="productname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="productname"/>
-	</field>
-	<field name="customerlabelname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="customerlabelname"/>
 	</field>
 	<field name="additional_produktinfos" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="additional_produktinfos"/>
@@ -60,9 +52,6 @@ ORDER BY componentName;]]>
 	<field name="country" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="country"/>
 	</field>
-	<field name="numberofevents" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="numberofevents"/>
-	</field>
 	<field name="shelflifedays" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="shelflifedays"/>
 	</field>
@@ -72,314 +61,9 @@ ORDER BY componentName;]]>
 	<field name="productdescription" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="productdescription"/>
 	</field>
-	<field name="bomproduct" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bomproduct"/>
-	</field>
-	<field name="ingredients" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ingredients"/>
-	</field>
-	<field name="qtybatch" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="qtybatch"/>
-	</field>
-	<field name="allergen" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="allergen"/>
-	</field>
-	<field name="product_nutrition" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="product_nutrition"/>
-	</field>
-	<field name="nutritionqty" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="nutritionqty"/>
-	</field>
-	<field name="ispackagingmaterial" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ispackagingmaterial"/>
-	</field>
 	<field name="m_product_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
 	</field>
-	<group name="Prod2" keepTogether="true">
-		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
-		<groupHeader>
-			<band height="42">
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="0" y="8" width="180" height="14" printWhenGroupChanges="M_Product_ID" uuid="c58e81c9-237f-4152-9114-98b1c96b0be3"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Detail_3}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="27" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="996d952d-1b89-437f-b230-a6ae58e1542f"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{PackagingMaterial}+":"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement isPrintRepeatedValues="false" x="140" y="27" width="136" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="BOMProduct" uuid="5c41c146-7160-4c1d-a0ab-869b4205bea6"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{bomproduct}]]></textFieldExpression>
-				</textField>
-			</band>
-			<band height="12"/>
-		</groupHeader>
-	</group>
-	<group name="M_Product_ID" minHeightToStartNewPage="30" footerPosition="StackAtBottom">
-		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
-		<groupHeader>
-			<band height="121">
-				<textField>
-					<reportElement x="0" y="20" width="180" height="14" printWhenGroupChanges="M_Product_ID" uuid="71e2f28f-4d9d-4a89-833c-741f2b0e99b5"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Detail_2}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="87" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="91da66ab-c0d1-40ff-a707-c32d4e528708"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{NetWeight}+":"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="99" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="17913aaf-ef2a-4537-901f-2d1e71b11181"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Country}+":"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="99" width="414" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="M_Product_ID" uuid="d827a449-8a38-4d93-913a-76ece757a70b"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{country}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="87" width="414" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="M_Product_ID" uuid="a847a877-0e44-4ed4-b552-f4d249b51180"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{netweight}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="39" width="414" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="M_Product_ID" uuid="f3cfc4f6-bd94-4051-aad0-8b2cac1e266f"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="75" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="b237f49a-a5ba-421c-8b6f-246fa2e459c8"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{ProductValue}+":"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="51" width="414" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="M_Product_ID" uuid="500d8b30-9cd8-4565-a2fd-445f54ae2619"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{productdescription}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="63" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="97fd46e4-8813-45a2-a3f4-30a71ac2c784"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Additional_produktinfos}+":"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="75" width="414" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="M_Product_ID" uuid="36a78bcc-cdab-45af-875e-667964cf4427"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{productvalue}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="39" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="4cd13cbb-b0bc-44b4-8757-f4eda830684d"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{ProductName}+":"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="63" width="414" height="12" isPrintWhenDetailOverflows="true" printWhenGroupChanges="M_Product_ID" uuid="273dd53a-0af5-4199-acf0-964fb01caeff"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{additional_produktinfos}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="51" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="f4508f68-fcac-45bb-85f7-8ebec5db159b"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{ProductDescription}+":"]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-	</group>
-	<group name="Prod3">
-		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
-		<groupHeader>
-			<band height="51">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="27" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="84300474-bc1c-4c83-86f5-659a7257f97b"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{shelflifedays}+" "+$R{days}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="39" width="136" height="12" uuid="7ed751a1-d814-4297-8a3d-614d7c8e9794"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Warehouse_temperature}+":"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="0" y="8" width="180" height="14" printWhenGroupChanges="M_Product_ID" uuid="58abcecf-b54a-4939-81d0-c96460130577"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Detail_4}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="0" y="27" width="136" height="12" uuid="c89aa8d5-3b04-46f0-bfb4-afddf563b005"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{ShelfLifeDays}+":"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="136" y="39" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="53488c13-387a-47b8-b70d-1b176a20a7d5"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{warehouse_temperature}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-		<groupFooter>
-			<band height="50"/>
-		</groupFooter>
-	</group>
-	<group name="BOMProduct" keepTogether="true">
-		<groupExpression><![CDATA[$F{bomproduct}]]></groupExpression>
-		<groupHeader>
-			<band height="40">
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="0" y="27" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="dde6c110-158c-4366-9c16-3702d035285b"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Ingredients}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="0" y="8" width="180" height="14" uuid="d953c3c1-0b90-42e3-9772-3cf2f6c66a52"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Detail_5}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="140" y="27" width="136" height="12" printWhenGroupChanges="M_Product_ID" uuid="da340190-868c-4ded-bb74-7e99315d1f56"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Composition}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="430" y="27" width="121" height="12" printWhenGroupChanges="M_Product_ID" uuid="f1996055-29f0-415b-a80e-8229235e5007"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
-						<paragraph lineSpacing="1_1_2"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{QtyBatch}]]></textFieldExpression>
-				</textField>
-			</band>
-			<band height="13">
-				<printWhenExpression><![CDATA[$F{ispackagingmaterial}.equals("N")]]></printWhenExpression>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="140" y="1" width="289" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="cb9fd3ec-31fe-4acc-b2bb-f56fd14e0e44"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="Single"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{ingredients}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="0" y="1" width="136" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="df98d2af-370b-42a8-a094-fb1b8473ae24"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="Single"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{bomproduct}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="430" y="1" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="00c3095f-b241-49f3-8e64-b3fa90d7bbf5"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
-						<paragraph lineSpacing="Single"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{qtybatch}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-		<groupFooter>
-			<band height="636"/>
-			<band height="50"/>
-		</groupFooter>
-	</group>
-	<group name="Allergen" keepTogether="true">
-		<groupExpression><![CDATA[$F{allergen}]]></groupExpression>
-		<groupHeader>
-			<band height="26">
-				<textField>
-					<reportElement isPrintRepeatedValues="false" x="0" y="8" width="180" height="14" uuid="3f5d174c-dd94-4446-b4f5-932dac7e76bc"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Detail_6}]]></textFieldExpression>
-				</textField>
-			</band>
-			<band height="12">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="ContainerHeight" x="0" y="0" width="550" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="2416e759-6939-4bc1-8f41-6415d7a1b537"/>
-					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="Arial" size="9" isBold="false"/>
-						<paragraph lineSpacing="Single"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{allergen}]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-		<groupFooter>
-			<band height="50"/>
-		</groupFooter>
-	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -398,6 +82,182 @@ ORDER BY componentName;]]>
 			</image>
 		</band>
 	</title>
+	<detail>
+		<band height="149" splitType="Stretch">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="ae93a721-5e42-4219-bd07-2ad1eab73cfe"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ProductName}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="99" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7411173c-0f92-4f2a-bae5-db88ff93face"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{country}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="99" width="136" height="12" uuid="fd6c9a8d-3fc8-4d94-88d5-c1ffca87e01f"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Country}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="63" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b4894817-b2f3-4cd8-ad99-9977b828367b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{additional_produktinfos}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="51" width="136" height="12" uuid="1aa2dcbe-2bdc-42a5-8045-1a3e75126294"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ProductDescription}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="87" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="f0348708-6ca4-4573-a37d-91f583522320"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{netweight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="87" width="136" height="12" uuid="29f35d2e-188a-45b4-b53a-9a9bee62c17a"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{NetWeight}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="75" width="136" height="12" uuid="68843a1b-6778-4d03-8410-e3e91134d235"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ProductValue}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="8bbba5b1-f655-4f72-9ce1-743e1a824182"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productdescription}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="63" width="136" height="12" uuid="acc4b218-b0fe-4c5e-9211-142ee6fb2525"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Additional_produktinfos}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b0d9120a-3cbf-478b-8fca-edda14659c14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="8659ecdb-d1bf-4c41-8b31-84e67783f747"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_2}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="75" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="57be0389-14a7-4c61-a85d-ea73f7fbb480"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productvalue}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="0" y="120" width="549" height="28" uuid="faf383a7-d2f4-4257-bba1-ada086176be1"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$F{m_product_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["report_packagingmaterial.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="57">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="31" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="61b2b209-0b53-4f90-b0ae-2b24553f9235"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shelflifedays}+" "+$R{days}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="31" width="136" height="12" uuid="b41a5a19-7b9e-4bf0-8800-44dc6c2e93f4"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ShelfLifeDays}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="12" width="180" height="14" uuid="e9038c71-f753-4652-bbcc-bcba50d073d8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_4}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="43" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="68ad74ae-dacc-4fce-9e98-459b522a4c99"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{warehouse_temperature}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="43" width="136" height="12" uuid="b8f96be5-6fd9-4439-a2e0-a6c94544a761"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Warehouse_temperature}+":"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="31">
+			<subreport>
+				<reportElement x="0" y="3" width="549" height="28" uuid="28065a70-a08d-431d-b55f-16d218b9fc6c"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["report_component.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="33">
+			<subreport>
+				<reportElement x="0" y="3" width="549" height="28" uuid="44f09295-75ac-4b48-a3a0-55a01de35e13"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["report_allergen.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
 	<columnFooter>
 		<band splitType="Stretch"/>
 	</columnFooter>
