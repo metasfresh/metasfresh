@@ -12,6 +12,13 @@ declare namespace Cypress {
     assertFieldNotShown(fieldName: string, modal: boolean): Chainable<any>
 
     /**
+     * Fire header action with a certain name and expect a modal dialog to pop up within 10 secs
+     * 
+     * @param actionName internal name of the action to be executed
+     */
+    executeHeaderActionWithDialog(actionName:string): Chainable<any>
+
+    /**
      * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
      * 
      * @param actionName internal name of the action to be executed

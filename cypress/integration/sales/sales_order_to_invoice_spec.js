@@ -108,7 +108,7 @@ describe('New sales order test', function() {
       cy.clickElementWithClass('.pagination-link.pointer');
       cy.wait(`@${quickActionsAlias}`);
 
-      // and *now* execute the invoiceing action
+      // and *now* execute the invoicing action
       cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
       cy.writeIntoStringField(
         'POReference',
