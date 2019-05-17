@@ -1,4 +1,4 @@
-package de.metas.event.store;
+package de.metas.event.log;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -10,6 +10,8 @@ import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.event.log.impl.EventLogLoggable;
 import de.metas.util.ILoggable;
@@ -52,7 +54,8 @@ import lombok.Value;
 @Service
 public class EventLogUserService
 {
-	public static final String PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES = "EventStore_ProcessedByHandlerClassNames";
+	@VisibleForTesting
+	static final String PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES = "EventStore_ProcessedByHandlerClassNames";
 
 	@Value
 	public static class EventLogEntryRequest
