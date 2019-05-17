@@ -87,7 +87,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		}
 
 		final Timestamp movementDate = Env.getDate(getCtx());
-		huInventoryBL.moveToGarbage(husToDestroy, movementDate, -1, null, true);
+		huInventoryBL.moveToGarbage(husToDestroy, movementDate, -1, null, true, true);
 
 		huIdsDestroyed = husToDestroy
 				.stream()

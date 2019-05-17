@@ -98,7 +98,7 @@ public class WEBUI_M_HU_Mass_Disposal extends HUEditorProcessTemplate implements
 		}
 
 		final Timestamp movementDate = Env.getDate(getCtx());
-		huInventoryBL.moveToGarbage(husToDestroy, movementDate, p_C_Activity_ID, p_Description, p_IsCompleteInventory);
+		huInventoryBL.moveToGarbage(husToDestroy, movementDate, p_C_Activity_ID, p_Description, p_IsCompleteInventory, false);
 
 		huIdsDestroyed = husToDestroy
 				.stream()
