@@ -81,6 +81,25 @@ class ActionButton extends Component {
 }
 
 class TableFilter extends Component {
+  static propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    tabIndex: PropTypes.number.isRequired,
+    modalVisible: PropTypes.bool.isRequired,
+    forceHeight: PropTypes.number,
+    tabId: PropTypes.string,
+    docType: PropTypes.string,
+    docId: PropTypes.string,
+    openModal: PropTypes.func,
+    toggleFullScreen: PropTypes.func,
+    fullScreen: PropTypes.any,
+    wrapperHeight: PropTypes.number,
+    selected: PropTypes.array,
+    isBatchEntry: PropTypes.bool,
+    handleBatchEntryToggle: PropTypes.func,
+    supportQuickInput: PropTypes.bool,
+    allowCreateNew: PropTypes.bool,
+  };
+
   constructor(props) {
     super(props);
 
@@ -297,13 +316,6 @@ class TableFilter extends Component {
     );
   }
 }
-
-TableFilter.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  tabIndex: PropTypes.number.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  forceHeight: PropTypes.number,
-};
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
