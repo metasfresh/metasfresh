@@ -80,7 +80,6 @@ public class AD_Column_AutoApplyValRuleConfig
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Column.COLUMN_IsAutoApplyValidationRule, true)
-				.addNotEqualsFilter(I_AD_Column.COLUMN_AD_Val_Rule_ID, null)
 				.orderBy(I_AD_Column.COLUMN_AD_Table_ID)
 				.orderBy(I_AD_Column.COLUMN_AD_Column_ID);
 	}
@@ -101,7 +100,8 @@ public class AD_Column_AutoApplyValRuleConfig
 		engine.removeModelChange(tableName, autoApplyValRuleInterceptor);
 		tabCalloutFactory.unregisterTabCalloutForTable(tableName, AD_Column_AutoApplyValRuleTabCallout.class);
 
-		final IQueryBuilder<I_AD_Column> queryBuilder = createQueryBuilder().addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, column.getAD_Table_ID());
+		final IQueryBuilder<I_AD_Column> queryBuilder = createQueryBuilder()
+				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, column.getAD_Table_ID());
 
 		createAndRegisterForQuery(engine, queryBuilder.create());
 	}
