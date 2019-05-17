@@ -11,16 +11,14 @@ CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
     p.UPC,
     p.weight,
     c.name                 as country,
-    pi.Name                as piName,
-    pi.qty                 as piQty,
     p.guaranteedaysmin,
     p.warehouse_temperature,
     p.description          as productDecription,
     a.Name                 as allergen,
     nf.Name                as nutritionName,
     pn.nutritionqty,
-    bomProduct.CustomerLabelName        as componentName,
-    bomLine.qtybatch,
+    coalesce(bomProduct.CustomerLabelName, bomProduct.Name)        as componentName,
+    round(bomLine.qtybatch,2) as qtybatch,
     bom_pc.ispackagingmaterial,
     bomProduct.ingredients as componentIngredients,
     p.M_product_ID
@@ -29,7 +27,6 @@ CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
     left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner_location_id
     left outer join c_location l on oi.c_location_id = l.c_location_id
     left outer join c_country c on l.c_country_id = c.c_country_id
-    left outer join M_HU_PI_Item_Product pi on pi.M_product_ID = p.M_product_ID
     left outer join M_Product_Allergen pa on pa.M_product_ID = p.M_product_ID
     left outer join M_Allergen a on a.m_allergen_id = pa.m_allergen_id
     left outer join M_Product_Nutrition pn on pn.M_product_ID = p.M_product_ID
