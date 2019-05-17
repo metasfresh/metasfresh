@@ -16,6 +16,11 @@ class ActionButton extends Component {
     dispatch: PropTypes.func.isRequired,
     docId: PropTypes.string,
     tabIndex: PropTypes.number,
+    children: PropTypes.element,
+  };
+
+  state = {
+    isTooltipShow: false,
   };
 
   handleClick = () => {
@@ -43,8 +48,21 @@ class ActionButton extends Component {
     );
   };
 
+  showToolTipOnActionButton = () => {
+    this.setState({
+      isTooltipShow: true,
+    });
+  };
+
+  hideToolTipOnActionButton = () => {
+    this.setState({
+      isTooltipShow: false,
+    });
+  };
+
   render() {
-    const { action, tabIndex } = this.props;
+    const { isTooltipShow } = this.state;
+    const { action, tabIndex, children } = this.props;
 
     return (
       <button
@@ -52,8 +70,11 @@ class ActionButton extends Component {
         className="btn btn-meta-outline-secondary btn-distance btn-sm"
         tabIndex={tabIndex}
         title={action.description}
+        onMouseEnter={this.showToolTipOnActionButton}
+        onMouseLeave={this.hideToolTipOnActionButton}
       >
         {action.caption}
+        {isTooltipShow && children}
       </button>
     );
   }
@@ -221,7 +242,13 @@ class TableFilter extends Component {
                       selected,
                     }}
                     key={`top-action-${action.processId}`}
-                  />
+                  >
+                    <Tooltips
+                      name={action.shortcut.replace('-', '+')}
+                      action={action.caption}
+                      type={''}
+                    />
+                  </ActionButton>
                 ))
               : null}
             {!isBatchEntry && actions.length ? this.generateShortcuts() : null}
