@@ -180,7 +180,7 @@ button, .btn {
     background-color: transparent;
 
     .tooltip-wrapp {
-        transition: opacity 50ms ease-in-out 1s;
+        transition: opacity 50ms ease-in-out;
         opacity: 0;
     }
 }
@@ -188,6 +188,7 @@ button, .btn {
     background-color: color(#000 lightness(95%));
 
     .tooltip-wrapp {
+        transition: opacity 50ms ease-in-out 1s;
         opacity: 1;
     }
 }
