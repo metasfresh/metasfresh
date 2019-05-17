@@ -19,10 +19,6 @@ class ActionButton extends Component {
     children: PropTypes.element,
   };
 
-  state = {
-    isTooltipShow: false,
-  };
-
   handleClick = () => {
     const { dispatch, action, docId } = this.props;
 
@@ -48,20 +44,7 @@ class ActionButton extends Component {
     );
   };
 
-  showToolTipOnActionButton = () => {
-    this.setState({
-      isTooltipShow: true,
-    });
-  };
-
-  hideToolTipOnActionButton = () => {
-    this.setState({
-      isTooltipShow: false,
-    });
-  };
-
   render() {
-    const { isTooltipShow } = this.state;
     const { action, tabIndex, children } = this.props;
 
     return (
@@ -70,11 +53,9 @@ class ActionButton extends Component {
         className="btn btn-meta-outline-secondary btn-distance btn-sm"
         tabIndex={tabIndex}
         title={action.description}
-        onMouseEnter={this.showToolTipOnActionButton}
-        onMouseLeave={this.hideToolTipOnActionButton}
       >
         {action.caption}
-        {isTooltipShow && children}
+        {children}
       </button>
     );
   }
