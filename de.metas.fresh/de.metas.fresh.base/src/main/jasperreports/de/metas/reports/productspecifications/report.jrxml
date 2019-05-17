@@ -80,6 +80,10 @@ left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner
 				<reportElement x="0" y="40" width="268" height="120" uuid="6ac70aea-892a-4a5d-a965-52431ba2511a"/>
 				<imageExpression><![CDATA["header.png"]]></imageExpression>
 			</image>
+			<image scaleImage="RealSize">
+				<reportElement x="0" y="0" width="115" height="29" uuid="77f7f6b1-d76b-494f-a849-f53906e0a255"/>
+				<imageExpression><![CDATA["logo.png"]]></imageExpression>
+			</image>
 		</band>
 	</title>
 	<detail>
@@ -256,6 +260,74 @@ left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["report_allergen.jasper"]]></subreportExpression>
 			</subreport>
+		</band>
+		<band height="33">
+			<subreport>
+				<reportElement x="0" y="3" width="549" height="28" uuid="96386cd9-0eb7-44e0-bf38-7c1a6268cd79"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["report_nutrition.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="57">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="12" width="180" height="14" uuid="4deb80a3-a065-4a26-94fe-4f548a87383b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_9}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="31" width="550" height="19" isPrintWhenDetailOverflows="true" uuid="bd7c46b6-6fd5-42b0-a79d-5e61b9cbd46e"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_9_text}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="140">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="2" width="180" height="14" uuid="85734e8a-e3c0-45d5-b283-6aa55c3811a8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_10}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="21" width="550" height="19" uuid="742ea5f9-f524-4dc1-96a3-382b014c9242"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_10_text}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="62" width="136" height="12" uuid="21f69536-8ce9-4a3a-9a06-e67b59966fd8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="78" width="136" height="12" uuid="90242a8f-65d3-44d2-a38f-202f127d572a"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DoneBy}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="127" width="550" height="12" uuid="5f8c16e1-c353-4cb4-9025-73dad80e0d40"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Footer_txt}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>

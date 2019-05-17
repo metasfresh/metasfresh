@@ -24,7 +24,7 @@
 		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT 
+		<![CDATA[SELECT distinct
    v.allergen                as Allergen,
 m_product_ID
 FROM "de.metas.fresh".product_specifications_v v
@@ -41,7 +41,7 @@ ORDER BY allergen;]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="19" splitType="Stretch">
+		<band height="35" splitType="Stretch">
 			<textField>
 				<reportElement isPrintRepeatedValues="false" x="0" y="5" width="180" height="14" uuid="c58e81c9-237f-4152-9114-98b1c96b0be3"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -49,13 +49,20 @@ ORDER BY allergen;]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Detail_6}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="22" width="594" height="12" uuid="b1b82d7a-c77a-4d17-ab39-66f4d36b51be"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Allergen_txt}]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<detail>
 		<band height="14" splitType="Stretch">
 			<printWhenExpression><![CDATA[1==1]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
-				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="550" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="77ccef05-158f-4757-98af-8c5416f8cd42"/>
+				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="594" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="77ccef05-158f-4757-98af-8c5416f8cd42"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
