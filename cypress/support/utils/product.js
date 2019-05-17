@@ -171,7 +171,12 @@ function applyProductPrice(price) {
       true /*modal*/
     );
 
-    cy.writeIntoStringField('PriceStd', `{selectall}{backspace}${price.priceStd}`);
+    cy.clearField('PriceStd');
+    cy.writeIntoStringField('PriceStd', price.priceStd, false /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
+
+    // @TODO This approach doesn't work correctly
+    // cy.writeIntoStringField('PriceStd', `{selectall}{backspace}${price.priceStd}`);
+
     cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory);
     cy.pressDoneButton();
   });

@@ -1,8 +1,11 @@
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
-  const expectedPatchValue = stringValue.replace(regex, '');
-  return expectedPatchValue;
+
+  if (!(stringValue).match) {
+    return stringValue;
+  }
+  return stringValue.replace(regex, '');
 }
 
 /*
