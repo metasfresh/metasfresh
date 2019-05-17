@@ -8,6 +8,17 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
+# metasfresh 5.105
+
+## Features
+* metasfresh
+* metasfresh-e2e
+
+## Fixes
+* metasfresh
+* metasfresh-webui-api
+
+
 Here come the actual release notes:
 
 # metasfresh 5.104
