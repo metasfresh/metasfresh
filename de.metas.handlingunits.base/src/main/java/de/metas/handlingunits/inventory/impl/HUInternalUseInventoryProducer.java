@@ -78,6 +78,8 @@ public class HUInternalUseInventoryProducer
 	private String description;
 	private boolean isCompleteInventory;
 
+	private boolean isCreateMovement;
+
 	private HUInternalUseInventoryProducer()
 	{
 	}
@@ -93,14 +95,18 @@ public class HUInternalUseInventoryProducer
 		{
 			final int warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
-			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus, activityId, description, isCompleteInventory);
+			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus, activityId, description, isCompleteInventory, isCreateMovement);
 			result.addAll(inventories);
 		}
 
 		return result;
 	}
 
-	private final List<I_M_Inventory> createInventories(final int warehouseId, final List<I_M_HU> hus, final int activityId, final String description, final boolean isCompleteInventory)
+	private final List<I_M_Inventory> createInventories(final int warehouseId,
+			final List<I_M_HU> hus,
+			final int activityId, final String description,
+			final boolean isCompleteInventory,
+			final boolean isCreateMovement)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
 
@@ -142,6 +148,11 @@ public class HUInternalUseInventoryProducer
 
 		//
 		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories(isCompleteInventory);
+
+		if (isCreateMovement)
+		{
+			inventoryAllocationDestination.createMovementsForInventories();
+		}
 
 		// destroy empty hus
 		{
@@ -199,6 +210,18 @@ public class HUInternalUseInventoryProducer
 	public HUInternalUseInventoryProducer setIsCompleteInventory(boolean isCompleteInventory)
 	{
 		this.isCompleteInventory = isCompleteInventory;
+
+		return this;
+	}
+
+	public boolean isCreateMovement()
+	{
+		return isCreateMovement;
+	}
+
+	public HUInternalUseInventoryProducer setIsCreateMovement(boolean isCreateMovement)
+	{
+		this.isCreateMovement = isCreateMovement;
 
 		return this;
 	}

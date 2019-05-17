@@ -1300,7 +1300,7 @@ public class HUEditorModel implements IDisposable
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
 
 		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
-		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(selectedHUs, movementDate, -1, null, true); // TODO fix this
+		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(selectedHUs, movementDate, -1, null, true, true);
 
 		//
 		// Refresh the HUKeys

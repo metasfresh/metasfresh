@@ -37,7 +37,7 @@ public interface IHUInventoryBL extends ISingletonService
 	 * Move products from the warehouse to garbage (waste disposal)
 	 * After this process an internal use inventory is created.
 	 */
-	List<I_M_Inventory> moveToGarbage(Collection<I_M_HU> husToDestroy, Timestamp movementDate, int activityId, String description, boolean isCompleteInventory);
+	List<I_M_Inventory> moveToGarbage(Collection<I_M_HU> husToDestroy, Timestamp movementDate, int activityId, String description, boolean isCompleteInventory, boolean isCreateMovement);
 
 	/**
 	 * Check if the given inventory is a material disposal
@@ -47,4 +47,5 @@ public interface IHUInventoryBL extends ISingletonService
 	 * @return
 	 */
 	boolean isMaterialDisposal(I_M_Inventory inventory);
+
 }

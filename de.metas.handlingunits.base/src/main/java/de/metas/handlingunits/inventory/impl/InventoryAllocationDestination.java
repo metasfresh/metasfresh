@@ -213,22 +213,27 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			inventoryLine.setM_HU_PI_Item_Product(extractPackingOrNull(hu, inventoryLine));
 
-			final I_M_HU tuHU = retrieveTU(hu);
-			//
-			// Calculate and update inventory line's QtyTU
-			{
-				final BigDecimal countTUs = countTUs(request.getHUContext(), tuHU, inventoryLine);
-				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
-				inventoryLine.setQtyTU(qtyTU);
-			}
+			final I_M_HU tuHU = retrieveTUOrNull(hu);
 
-			//
-			// Collect HU's packing materials
+			if (tuHU != null)
+
 			{
-				collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
-				if (topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
+				//
+				// Calculate and update inventory line's QtyTU
 				{
-					collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+					final BigDecimal countTUs = countTUs(request.getHUContext(), tuHU, inventoryLine);
+					final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
+					inventoryLine.setQtyTU(qtyTU);
+				}
+
+				//
+				// Collect HU's packing materials
+				{
+					collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
+					if (topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
+					{
+						collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+					}
 				}
 			}
 
@@ -313,7 +318,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return inoutLineInDispute;
 	}
 
-	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory)
+	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory )
 	{
 		final List<I_M_Inventory> inventories = getInventories();
 		inventories.forEach(inventory -> processInventory(inventory, isCompleteInventory));
@@ -323,12 +328,23 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private void processInventory(final I_M_Inventory inventory, final boolean isCompleteInventory)
 	{
 		createHUSnapshotsForInventory(inventory);
+
 		if (isCompleteInventory)
 		{
 			completeInventory(inventory);
-			createEmptiesMovementForInventory(inventory);
 		}
+	}
 
+	public void createMovementsForInventories()
+	{
+		final List<I_M_Inventory> inventories = getInventories();
+		inventories.forEach(inventory -> createMovementForInventory(inventory));
+
+	}
+
+	private void createMovementForInventory(final I_M_Inventory inventory)
+	{
+		createEmptiesMovementForInventory(inventory);
 	}
 
 	/**
@@ -549,7 +565,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	/**
 	 * Find get the TU for the given {@code hu}. Might be the HU itself or its parent.
 	 */
-	private I_M_HU retrieveTU(@NonNull final I_M_HU hu)
+	private I_M_HU retrieveTUOrNull(@NonNull final I_M_HU hu)
 	{
 		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
@@ -561,9 +577,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			if (parentHU == null) // TODO fix this
 			{
-				return hu;
+				return null;
 			}
-			return retrieveTU(parentHU);
+			return retrieveTUOrNull(parentHU);
 		}
 		else
 		{
@@ -598,4 +614,5 @@ class InventoryAllocationDestination implements IAllocationDestination
 	{
 		return packingMaterialsCollectorByInventoryId.get(inventoryId);
 	}
+
 }

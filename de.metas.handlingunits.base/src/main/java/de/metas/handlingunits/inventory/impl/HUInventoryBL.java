@@ -44,7 +44,8 @@ public class HUInventoryBL implements IHUInventoryBL
 			final Timestamp movementDate,
 			final int activityId,
 			final String description,
-			final boolean isCompleteInventory)
+			final boolean isCompleteInventory,
+			final boolean isCreateMovement)
 	{
 		return HUInternalUseInventoryProducer.newInstance()
 				.setMovementDate(movementDate)
@@ -53,6 +54,7 @@ public class HUInventoryBL implements IHUInventoryBL
 				.setActivityId(activityId)
 				.setDescription(description)
 				.setIsCompleteInventory(isCompleteInventory)
+				.setIsCreateMovement(isCreateMovement)
 				.createInventories();
 	}
 
