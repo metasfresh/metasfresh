@@ -12,6 +12,13 @@ declare namespace Cypress {
     assertFieldNotShown(fieldName: string, modal: boolean): Chainable<any>
 
     /**
+     * Fire header action with a certain name and expect a modal dialog to pop up within 10 secs
+     * 
+     * @param actionName internal name of the action to be executed
+     */
+    executeHeaderActionWithDialog(actionName:string): Chainable<any>
+
+    /**
      * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
      * 
      * @param actionName internal name of the action to be executed
@@ -81,8 +88,9 @@ declare namespace Cypress {
      * @param fieldName name of the field is question
      * @param stringValue (sub-)string of the list item to select
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
      */
-    selectInListField(fieldName: string, stringValue: string, modal: boolean): Chainable<any>
+    selectInListField(fieldName: string, stringValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
 
     /**
      * Select a reference (zoom-to-target) from the reference-sidelist

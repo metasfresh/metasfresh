@@ -11,7 +11,7 @@
     "productType": "Item",
     "prices": [
       {
-        "priceStd": "2.00",
+        "priceStd": 2.00,
         "m_pricelist_version": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
         "c_taxcategory": "Normaler Steuersatz 19% (Deutschland)"
       }
