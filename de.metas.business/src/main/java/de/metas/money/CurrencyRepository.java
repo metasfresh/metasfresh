@@ -1,10 +1,19 @@
 package de.metas.money;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -40,7 +49,7 @@ public class CurrencyRepository
 
 		return ofRecord(currencyRecord);
 	}
-	
+
 	public Currency getById(final int currencyId)
 	{
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
@@ -56,5 +65,30 @@ public class CurrencyRepository
 				.precision(currencyRecord.getStdPrecision())
 				.threeLetterCode(currencyRecord.getISO_Code())
 				.build();
+	}
+
+	public CurrencyId getForBPartnerLocationId(final BPartnerLocationId bpartnerLocationId)
+	{
+
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+
+		final I_C_BPartner_Location bPartnerLocationRecord = bPartnerDAO.getBPartnerLocationById(bpartnerLocationId);
+
+		final LocationId locationId = LocationId.ofRepoId(bPartnerLocationRecord.getC_Location_ID());
+
+		final I_C_Location locationRecord = locationDAO.getById(locationId);
+		final CountryId countryId = CountryId.ofRepoId(locationRecord.getC_Country_ID());
+
+		final CurrencyId currencyId = countryDAO.getCountryCurrencyId(countryId).orElse(null);
+
+		// TODO Improve this
+		if (currencyId == null)
+		{
+			throw new AdempiereException("Please, set a currency fro the country " + countryId);
+		}
+
+		return currencyId;
 	}
 }
