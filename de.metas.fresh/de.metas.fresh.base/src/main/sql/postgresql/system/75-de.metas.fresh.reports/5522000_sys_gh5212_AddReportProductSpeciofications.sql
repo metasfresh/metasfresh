@@ -12,7 +12,7 @@ INSERT INTO AD_Process (
 	Updated,UpdatedBy,Value
 ) VALUES (
 	'3',0,0,541134,
-	'N','de.metas.report.jasper.client.process.JasperReportStarter','N',TO_TIMESTAMP('2019-05-20 14:43:38','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',
+	'N','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2019-05-20 14:43:38','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',
 	'N','N','Y',
 	'N','Y',
 	'N',
