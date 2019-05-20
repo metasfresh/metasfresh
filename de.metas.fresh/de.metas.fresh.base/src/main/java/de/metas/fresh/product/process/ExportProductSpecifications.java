@@ -109,7 +109,6 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 		columnHeaders.add("UPC");
 		columnHeaders.add("NetWeight");
 		columnHeaders.add("Country");
-		columnHeaders.add("NumberOfEvents");
 		columnHeaders.add("ShelfLifeDays");
 		columnHeaders.add("Warehouse_temperature");
 		columnHeaders.add("ProductDescription");
