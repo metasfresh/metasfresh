@@ -15,6 +15,9 @@
 	<parameter name="RECORD_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT distinct
   bp.companyname,
