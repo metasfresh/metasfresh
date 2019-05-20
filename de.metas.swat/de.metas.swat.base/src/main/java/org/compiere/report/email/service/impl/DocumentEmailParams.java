@@ -75,7 +75,7 @@ public final class DocumentEmailParams implements IEmailParameters
 
 		final int tableId = pi.getTable_ID();
 		final boolean isOrder = I_C_Order.Table_ID == tableId;
-		final boolean isInOut = I_M_InOut.Table_ID == tableId;
+		final boolean isInOut = InterfaceWrapperHelper.getTableId(I_M_InOut.class) == tableId;
 		final boolean isInvoice = InterfaceWrapperHelper.getTableId(I_C_Invoice.class) == tableId;
 
 		if (!isOrder && !isInOut && !isInvoice)

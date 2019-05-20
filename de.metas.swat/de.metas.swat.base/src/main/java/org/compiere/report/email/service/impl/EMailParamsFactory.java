@@ -20,7 +20,7 @@ public class EMailParamsFactory implements IEmailParamsFactory
 
 		final int tableId = pi.getTable_ID();
 
-		if (tableId == I_C_Order.Table_ID || tableId == InterfaceWrapperHelper.getTableId(I_C_Invoice.class) || tableId == I_M_InOut.Table_ID)
+		if (tableId == I_C_Order.Table_ID || tableId == InterfaceWrapperHelper.getTableId(I_C_Invoice.class) || tableId == InterfaceWrapperHelper.getTableId(I_M_InOut.class))
 		{
 			return new DocumentEmailParams(pi);
 		}

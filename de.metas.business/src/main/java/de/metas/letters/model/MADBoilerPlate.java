@@ -349,7 +349,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Payment_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_M_InOut.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_M_InOut.class))
 		{
 			rq.setM_InOut_ID(parent_record_id);
 		}
