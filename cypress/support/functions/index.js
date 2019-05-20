@@ -13,12 +13,12 @@ const selectFrequentFilterWidget = () => {
 };
 
 const selectNotFrequentFilterWidget = filterId => {
-  cy.clickElementWithClass(`.filter-menu .filter-option-${filterId}`);
+  cy.clickElementWithClass(`.filter-menu .filter-option-${filterId}`, true);
   return cy.get('.filters-not-frequent .filter-widget');
 };
 
 const applyFilters = () => {
-  cy.clickElementWithClass('.filter-btn-wrapper .applyBtn');
+  cy.clickElementWithClass('.filter-btn-wrapper .applyBtn', true);
 };
 
 export {

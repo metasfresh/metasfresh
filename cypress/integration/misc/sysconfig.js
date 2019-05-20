@@ -12,7 +12,7 @@ describe('SysConfig Tests', function() {
 
     applyFilters();
 
-    sysconfigs.getRows().should('have.length', 0);
+    sysconfigs.getRows().should('have.length', 1);
   });
 
   const timestamp = new Date().getTime(); // used in the document names, for ordering
