@@ -42,9 +42,9 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogEntryCollector;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.JSONObjectMapper;
 import lombok.AllArgsConstructor;
@@ -205,7 +205,7 @@ final class EventBus implements IEventBus
 		if (event.isStoreEvent() && event.isLocalEvent())
 		{
 			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
-			eventLogService.storeEvent(event, this);
+			eventLogService.saveEvent(event, this);
 		}
 
 		logger.debug("{} - Posting event: {}", this, event);

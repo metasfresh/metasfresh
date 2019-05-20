@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -49,6 +50,7 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -116,6 +118,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final int inventoryDocTypeId;
 	private final int chargeId;
 
+	private final int activityId;
+	private final String description;
+
 	private final Map<Integer, I_M_Inventory> inventoriesByOrderId = new LinkedHashMap<>();
 	/** Map the inventory lines to the base receipt lines */
 	private final Map<ArrayKey, I_M_InventoryLine> inventoryLinesByKey = new HashMap<>();
@@ -131,12 +136,19 @@ class InventoryAllocationDestination implements IAllocationDestination
 	// HU snapshoting
 	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
 
-	public InventoryAllocationDestination(@NonNull final I_M_Warehouse warehouse, final int inventoryDocTypeId)
+	public InventoryAllocationDestination(
+			@NonNull final I_M_Warehouse warehouse,
+			final int inventoryDocTypeId,
+			final int activityId,
+			final String description)
 	{
 		warehouseId = warehouse.getM_Warehouse_ID();
 		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse).getM_Locator_ID();
 		this.inventoryDocTypeId = inventoryDocTypeId;
 		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
+
+		this.activityId = activityId;
+		this.description = description;
 	}
 
 	/** @return created inventory documents */
@@ -201,31 +213,37 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			inventoryLine.setM_HU_PI_Item_Product(extractPackingOrNull(hu, inventoryLine));
 
-			final I_M_HU tuHU = retrieveTU(hu);
-			//
-			// Calculate and update inventory line's QtyTU
-			{
-				final BigDecimal countTUs = countTUs(request.getHUContext(), tuHU, inventoryLine);
-				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
-				inventoryLine.setQtyTU(qtyTU);
-			}
+			final I_M_HU tuHU = retrieveTUOrNull(hu);
 
-			//
-			// Collect HU's packing materials
+			if (tuHU != null)
+
 			{
-				collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
-				if (topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
+				//
+				// Calculate and update inventory line's QtyTU
 				{
-					collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+					final BigDecimal countTUs = countTUs(request.getHUContext(), tuHU, inventoryLine);
+					final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
+					inventoryLine.setQtyTU(qtyTU);
+				}
+
+				//
+				// Collect HU's packing materials
+				{
+					collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
+					if (topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
+					{
+						collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+					}
 				}
 			}
-			
+
 			inventoryLine.setM_HU_ID(topLevelHU.getM_HU_ID());
 
 			//
 			// Save the inventory line and assign the top level HU to it
 			InterfaceWrapperHelper.save(inventoryLine);
-		
+
+			Services.get(IHUAssignmentBL.class).assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
 
 			//
 			// Update the result
@@ -272,7 +290,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId.getRepoId()) // #1604: skip inoutlines for other products
 				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
 				.collect(ImmutableList.toImmutableList());
-		
+
 		return receiptLines;
 	}
 
@@ -300,23 +318,38 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return inoutLineInDispute;
 	}
 
-	public List<I_M_Inventory> processInventories()
+	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory )
 	{
 		final List<I_M_Inventory> inventories = getInventories();
-		inventories.forEach(this::processInventory);
+		inventories.forEach(inventory -> processInventory(inventory, isCompleteInventory));
 		return inventories;
 	}
 
-	private void processInventory(final I_M_Inventory inventory)
+	private void processInventory(final I_M_Inventory inventory, final boolean isCompleteInventory)
 	{
 		createHUSnapshotsForInventory(inventory);
-		completeInventory(inventory);
+
+		if (isCompleteInventory)
+		{
+			completeInventory(inventory);
+		}
+	}
+
+	public void createMovementsForInventories()
+	{
+		final List<I_M_Inventory> inventories = getInventories();
+		inventories.forEach(inventory -> createMovementForInventory(inventory));
+
+	}
+
+	private void createMovementForInventory(final I_M_Inventory inventory)
+	{
 		createEmptiesMovementForInventory(inventory);
 	}
 
 	/**
 	 * Complete inventory document
-	 * 
+	 *
 	 * @param inventory
 	 */
 	private void completeInventory(final I_M_Inventory inventory)
@@ -326,7 +359,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Create HU snapshots recursively for all the HUs linked to this inventory
-	 * 
+	 *
 	 * @param inventory
 	 */
 	private void createHUSnapshotsForInventory(final I_M_Inventory inventory)
@@ -337,7 +370,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Move the handling units used in inventory from their current warehouse to the handling units warehouse.
-	 * 
+	 *
 	 * @param inventory
 	 */
 	private void createEmptiesMovementForInventory(final I_M_Inventory inventory)
@@ -409,6 +442,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class);
 		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		inventory.setM_Warehouse_ID(warehouseId);
+
+		inventory.setC_Activity_ID(activityId);
+		inventory.setDescription(description);
 
 		if (inventoryDocTypeId > 0)
 		{
@@ -501,7 +537,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Counts the number of TUs from from the
-	 * 
+	 *
 	 * @param huContext
 	 * @param tuHU TU or aggregated TU
 	 * @param inventoryLine
@@ -529,7 +565,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	/**
 	 * Find get the TU for the given {@code hu}. Might be the HU itself or its parent.
 	 */
-	private I_M_HU retrieveTU(@NonNull final I_M_HU hu)
+	private I_M_HU retrieveTUOrNull(@NonNull final I_M_HU hu)
 	{
 		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
@@ -538,7 +574,12 @@ class InventoryAllocationDestination implements IAllocationDestination
 		else if (handlingUnitsBL.isVirtual(hu))
 		{
 			final I_M_HU parentHU = handlingUnitsDAO.retrieveParent(hu);
-			return retrieveTU(parentHU);
+
+			if (parentHU == null) // TODO fix this
+			{
+				return null;
+			}
+			return retrieveTUOrNull(parentHU);
 		}
 		else
 		{
@@ -573,4 +614,5 @@ class InventoryAllocationDestination implements IAllocationDestination
 	{
 		return packingMaterialsCollectorByInventoryId.get(inventoryId);
 	}
+
 }

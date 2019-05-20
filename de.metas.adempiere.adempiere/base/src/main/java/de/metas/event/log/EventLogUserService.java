@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.event.log.impl.EventLogEntryCollector;
-import de.metas.event.log.impl.EventLogLoggable;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;

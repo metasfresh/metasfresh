@@ -11,12 +11,11 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.Type;
-import de.metas.event.log.EventLogService;
-import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.impl.EventLogEntry;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import mockit.Expectations;
@@ -70,10 +69,10 @@ public class EventLogServiceTest
 	}
 
 	@Test
-	public void storeEvent()
+	public void saveEvent()
 	{
 		final Event event = createSimpleEvent();
-		eventLogService.storeEvent(event, eventBus);
+		eventLogService.saveEvent(event, eventBus);
 
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
@@ -92,7 +91,7 @@ public class EventLogServiceTest
 						"}");
 
 		final List<I_AD_EventLog_Entry> eventLogEntryRecords = pojoLookupMap.getRecords(I_AD_EventLog_Entry.class);
-		assertThat(eventLogEntryRecords).isEmpty();
+		assertThat(eventLogEntryRecords).as("just string the event log does not mean any entries were created").isEmpty();
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -100,7 +99,7 @@ public class EventLogServiceTest
 	public void loadEvent()
 	{
 		final Event event = createSimpleEvent();
-		eventLogService.storeEvent(event, eventBus);
+		eventLogService.saveEvent(event, eventBus);
 		final EventLogEntry eventLog1 = EventLogEntry.builder()
 				.uuid(event.getUuid())
 				.clientId(20)
@@ -108,7 +107,7 @@ public class EventLogServiceTest
 				.processed(true)
 				.message("logs as processed, but doesn't provide handler class info")
 				.build();
-		eventLogService.storeEventLogEntry(eventLog1);
+		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog1));
 
 		final EventLogEntry eventLog2 = EventLogEntry.builder()
 				.uuid(event.getUuid())
@@ -118,7 +117,7 @@ public class EventLogServiceTest
 				.eventHandlerClass(String.class)
 				.message("logs as not (yet) processed and provides handler class info")
 				.build();
-		eventLogService.storeEventLogEntry(eventLog2);
+		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog2));
 
 		final EventLogEntry eventLog3 = EventLogEntry.builder()
 				.uuid(event.getUuid())
@@ -128,7 +127,7 @@ public class EventLogServiceTest
 				.eventHandlerClass(String.class)
 				.message("logs as processed and provides handler class info")
 				.build();
-		eventLogService.storeEventLogEntry(eventLog3);
+		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog3));
 
 		final EventLogEntry eventLog4 = EventLogEntry.builder()
 				.uuid(event.getUuid())
@@ -138,7 +137,7 @@ public class EventLogServiceTest
 				.eventHandlerClass(Integer.class)
 				.message("logs as processed and provides handler class info")
 				.build();
-		eventLogService.storeEventLogEntry(eventLog4);
+		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog4));
 
 		final EventLogEntry eventLog5 = EventLogEntry.builder()
 				.uuid(event.getUuid())
@@ -148,13 +147,15 @@ public class EventLogServiceTest
 				.eventHandlerClass(Boolean.class)
 				.message("logs as not processed and provides handler class info")
 				.build();
-		eventLogService.storeEventLogEntry(eventLog5);
+		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog5));
 
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
 		assertThat(eventLogRecords).hasSize(1);
 
-		final Event loadedEvent = eventLogService.loadEventForReposting(eventLogRecords.get(0));
+		final EventLogId eventLogId = EventLogId.ofRepoId(eventLogRecords.get(0).getAD_EventLog_ID());
+
+		final Event loadedEvent = eventLogService.loadEventForReposting(eventLogId);
 		final List<Object> processedbyHandlerInfo = loadedEvent.getProperty(EventLogUserService.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES);
 		assertThat(processedbyHandlerInfo).isNotNull();
 		assertThat(processedbyHandlerInfo).isInstanceOf(List.class);
