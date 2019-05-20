@@ -74,7 +74,7 @@ ORDER BY nutritionName;]]>
 	<detail>
 		<band height="12">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="0" y="0" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
+				<reportElement x="0" y="0" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -82,7 +82,7 @@ ORDER BY nutritionName;]]>
 				<textFieldExpression><![CDATA[$F{nutritionname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="430" y="0" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
+				<reportElement x="430" y="0" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
 					<paragraph lineSpacing="1_1_2"/>
