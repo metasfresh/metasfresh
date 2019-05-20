@@ -142,7 +142,7 @@ import lombok.NonNull;
 	private Set<HuId> alreadyAssignedTUIds = null; // to be configured by called
 
 	@Getter
-	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
 
 	//
 	// Manual packing materials related:

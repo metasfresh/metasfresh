@@ -108,7 +108,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
 
 	@Override
-	public void addQtyPickedAndUpdateHU(
+	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull Quantity qtyPicked,
 			@NonNull HuId tuOrVHUId)
@@ -121,11 +121,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU);
+		return addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU);
 	}
 
 	@Override
-	public void addQtyPicked(
+	public ShipmentScheduleWithHU addQtyPicked(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
 			@NonNull final Quantity qtyPicked,
 			@NonNull final I_M_HU tuOrVHU)
@@ -157,6 +157,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		setHUStatusToPicked(topLevelHU);
 		setHUPartnerAndLocationFromSched(topLevelHU, sched);
 		handlingUnitsRepo.saveHU(topLevelHU);
+
+		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU);
 	}
 
 	private void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)

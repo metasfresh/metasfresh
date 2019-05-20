@@ -162,7 +162,7 @@ public class ShipmentScheduleWithHU
 
 	@Getter
 	@Setter
-	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // keep old functionality as default
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER; // keep old functionality as default
 	/**
 	 * Tells us if the candidate is supposed to receive a manual packing material (in the case when we have a quick shipment, with no picking)
 	 * #4507 leave default as before: if nothing is specified, create the shipments based on qtyToDeliver and create the packing materials

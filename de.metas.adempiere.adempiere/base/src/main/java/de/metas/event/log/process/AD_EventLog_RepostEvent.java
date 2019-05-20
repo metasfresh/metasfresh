@@ -8,6 +8,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.event.log.EventLogService;
+import de.metas.event.log.EventLogService.EventLogId;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
@@ -51,8 +52,10 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 			addLog("The given event log record has a REMOTE topic, but we only got a LOCAL event bus!");
 		}
 
+		final EventLogId eventLogId = EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID());
+
 		final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
-		final Event event = eventLogService.loadEventForReposting(eventLogRecord);
+		final Event event = eventLogService.loadEventForReposting(eventLogId);
 
 		eventBus.postEvent(event);
 

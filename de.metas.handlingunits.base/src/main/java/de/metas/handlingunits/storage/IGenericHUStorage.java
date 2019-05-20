@@ -55,9 +55,6 @@ public interface IGenericHUStorage
 	void addQty(ProductId productId, BigDecimal qty, I_C_UOM uom);
 
 	/**
-	 *
-	 * @param productId
-	 * @param uom
 	 * @return storage qty for <code>product</code> in <code>uom</code> unit of measure
 	 */
 	BigDecimal getQty(ProductId productId, I_C_UOM uom);
