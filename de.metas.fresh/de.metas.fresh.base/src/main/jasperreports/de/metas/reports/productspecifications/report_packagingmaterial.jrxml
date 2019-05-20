@@ -65,7 +65,7 @@ ORDER BY componentName;]]>
 				<textFieldExpression><![CDATA[$R{PackagingMaterial}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="136" y="2" width="455" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8411332e-a884-4413-9983-9958387ee1b9"/>
+				<reportElement x="136" y="2" width="455" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8411332e-a884-4413-9983-9958387ee1b9"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
