@@ -18,6 +18,7 @@ import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,6 +44,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * This one is invoked by {@link IFlatrateTermEventService} if no other listener was registered for a particular conditions type.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -79,7 +81,8 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 				throw new AdempiereException(
 						Env.getLanguage(ctx).getAD_Language(),
 						MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P,
-						new Object[] { entry.getC_UOM().getName(), entry.getC_Period().getName() });
+						new Object[]
+						{ entry.getC_UOM().getName(), entry.getC_Period().getName() });
 			}
 			InterfaceWrapperHelper.delete(entry);
 		}
@@ -102,22 +105,35 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	}
 
 	/**
-	 * When a term is reactivated, it's invoice candidate needs to be deleted. Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been
-	 * invoiced.
-	 *
-	 * @param term
+	 * When a term is reactivated, its invoice candidate needs to be deleted.
+	 * Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been invoiced.
 	 */
-	public void deleteInvoiceCandidates(final I_C_Flatrate_Term term)
+	public void deleteInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
 	{
-		//
 		// Delete invoice candidates
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		for (final I_C_Invoice_Candidate icToDelete : invoiceCandDB.retrieveReferencing(term))
 		{
+			setProcessedToFalseIfIcNotNeeded(icToDelete);
 			InterfaceWrapperHelper.delete(icToDelete);
 		}
 	}
-	
+
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		if (manuallyFlaggedAsProcessed)
+		{
+			boolean noInvoiceLines = Services.get(IInvoiceCandDAO.class).retrieveIlForIc(icToDelete).isEmpty();
+			if (noInvoiceLines)
+			{
+				// icToDelete was manually set to "processed" by a user, jsut to be out of the way. 
+				// In this case, we can unprocess and delete it.
+				icToDelete.setProcessed(false);
+			}
+		}
+	}
+
 	/**
 	 * Does nothing; Feel free to override.
 	 */
@@ -126,7 +142,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	{
 		// nothing
 	}
-	
+
 	/**
 	 * Does nothing; Feel free to override.
 	 */
@@ -140,7 +156,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next,  I_C_Flatrate_Term predecessor)
+	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}
