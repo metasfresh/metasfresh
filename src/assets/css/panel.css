@@ -114,6 +114,18 @@
     padding: 0 2rem;
     box-shadow: none;
     transition: all 0.2s ease;
+
+    .optional {
+        flex: 9;
+        padding-left: inherit;
+
+        .panel-modal-header-title-with-header-properties{
+            flex: 2;
+        }
+        .optional-name {
+            display: block;
+        }
+    }
 }
 
 .desktop {

@@ -249,9 +249,8 @@ class RawModal extends Component {
   };
 
   render() {
-    const { modalTitle, children, modalDescription } = this.props;
+    const { modalTitle, children, modalDescription, rawModal } = this.props;
     const { scrolled } = this.state;
-
     if (!children) {
       return null;
     }
@@ -265,12 +264,21 @@ class RawModal extends Component {
                 'header-shadow': scrolled,
               })}
             >
-              <span className="panel-modal-header-title">
+              <span className="panel-modal-header-title panel-modal-header-title-with-header-properties">
                 {modalTitle ? modalTitle : 'Modal'}
                 <span className="panel-modal-description">
                   {modalDescription ? modalDescription : ''}
                 </span>
               </span>
+              {!!rawModal.headerProperties && (
+                <div className="optional">
+                  {rawModal.headerProperties.entries.map((entry, idx) => (
+                    <span key={idx} className="optional-name">
+                      {entry.caption}:{entry.value}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="items-row-2">{this.renderButtons()}</div>
             </div>
             <Indicator />
