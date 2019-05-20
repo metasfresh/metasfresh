@@ -8,18 +8,25 @@ Additional notes:
  * The metasfresh website is at http://metasfresh.com/en, http://metasfresh.com/ (german)
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
+Here come the actual release notes:
+
 # metasfresh 5.105
 
 ## Features
 * metasfresh
-* metasfresh-e2e
+  * [#5181](https://github.com/metasfresh/metasfresh/issues/5181) Add Age and Production Date attributes
+  * [#5192](https://github.com/metasfresh/metasfresh/issues/5192) Add a less restrictive C_Postal Unique Index
+  * [#5198](https://github.com/metasfresh/metasfresh/issues/5198) HU Mass Disposal process
+  * [#5199](https://github.com/metasfresh/metasfresh/issues/5199) Avoid updating AD_EventLog records
+  * [#5214](https://github.com/metasfresh/metasfresh/issues/5214) Change OLCand-Processor config to process OLCands from OrderLineCandidate REST EP
 
 ## Fixes
 * metasfresh
-* metasfresh-webui-api
+  * [#5206](https://github.com/metasfresh/metasfresh/issues/5206) BPartnerGroup and Product UOM are not set automatically anymore in new bpartner / new product
 
-
-Here come the actual release notes:
+* metasfresh-webui-frontend
+  * [#2263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2263) HU Panel too small in material receipt candidates' modal overlay
+  * [#2265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2265) Notifications and user menu will not close
 
 # metasfresh 5.104
 
