@@ -91,7 +91,7 @@ ORDER BY componentIngredients nulls first;]]>
 		<band height="14">
 			<printWhenExpression><![CDATA[$F{ispackagingmaterial}.equals("N")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="0" y="1" width="136" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
+				<reportElement x="0" y="1" width="136" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
@@ -99,7 +99,7 @@ ORDER BY componentIngredients nulls first;]]>
 				<textFieldExpression><![CDATA[$F{bomproduct}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="136" y="1" width="289" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="a04e7107-b34d-4864-9b06-622fd4a19277"/>
+				<reportElement x="136" y="1" width="289" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="a04e7107-b34d-4864-9b06-622fd4a19277"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
@@ -107,7 +107,7 @@ ORDER BY componentIngredients nulls first;]]>
 				<textFieldExpression><![CDATA[$F{ingredients}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="430" y="1" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
+				<reportElement x="430" y="1" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
 					<paragraph lineSpacing="Single"/>

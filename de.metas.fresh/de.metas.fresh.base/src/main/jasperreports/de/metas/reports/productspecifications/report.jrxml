@@ -141,7 +141,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Certification}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="174" width="414" height="42" isPrintWhenDetailOverflows="true" uuid="fcb1f27f-298e-4633-8eaa-08634d9d644d"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="174" width="414" height="42" isPrintWhenDetailOverflows="true" uuid="fcb1f27f-298e-4633-8eaa-08634d9d644d"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -151,7 +151,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 +$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="221" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="1f1fc585-e809-4d8a-8d33-43617ca0d1cb"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="221" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="1f1fc585-e809-4d8a-8d33-43617ca0d1cb"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -159,7 +159,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Responsible}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="233" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="56dc4e85-202c-49a9-a528-83ccc9b40f82"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="233" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="56dc4e85-202c-49a9-a528-83ccc9b40f82"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -167,7 +167,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Tel_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="245" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7e2a01c9-ba1b-4112-8b4e-de89c42d7aa3"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="245" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7e2a01c9-ba1b-4112-8b4e-de89c42d7aa3"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -175,7 +175,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Mail_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="267" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="6150625d-3b20-40fd-a802-3f61a6f71a50"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="267" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="6150625d-3b20-40fd-a802-3f61a6f71a50"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -183,7 +183,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Certs}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="0" y="1" width="190" height="59" isPrintWhenDetailOverflows="true" uuid="bc5660f4-e58f-4cb4-98d5-60817f3ba04b"/>
+				<reportElement isPrintRepeatedValues="false" x="0" y="1" width="190" height="59" isPrintWhenDetailOverflows="true" uuid="bc5660f4-e58f-4cb4-98d5-60817f3ba04b"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="8" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -193,7 +193,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 +$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="200" y="0" width="130" height="20" isPrintWhenDetailOverflows="true" uuid="cde0ab46-3ee6-4458-be5e-58051a8b5b29"/>
+				<reportElement isPrintRepeatedValues="false" x="200" y="0" width="130" height="20" isPrintWhenDetailOverflows="true" uuid="cde0ab46-3ee6-4458-be5e-58051a8b5b29"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Arial" size="8" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -213,7 +213,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{ProductName}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="99" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7411173c-0f92-4f2a-bae5-db88ff93face"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="99" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7411173c-0f92-4f2a-bae5-db88ff93face"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -229,7 +229,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Country}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="63" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b4894817-b2f3-4cd8-ad99-9977b828367b"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="63" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b4894817-b2f3-4cd8-ad99-9977b828367b"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -245,7 +245,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{ProductDescription}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="87" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="f0348708-6ca4-4573-a37d-91f583522320"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="87" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="f0348708-6ca4-4573-a37d-91f583522320"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -269,7 +269,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{ProductValue}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="8bbba5b1-f655-4f72-9ce1-743e1a824182"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="8bbba5b1-f655-4f72-9ce1-743e1a824182"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -285,7 +285,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Additional_produktinfos}+":"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b0d9120a-3cbf-478b-8fca-edda14659c14"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b0d9120a-3cbf-478b-8fca-edda14659c14"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -300,7 +300,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Detail_2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ElementGroupHeight" isPrintRepeatedValues="false" x="136" y="75" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="57be0389-14a7-4c61-a85d-ea73f7fbb480"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="75" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="57be0389-14a7-4c61-a85d-ea73f7fbb480"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -318,7 +318,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 		</band>
 		<band height="65" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="61b2b209-0b53-4f90-b0ae-2b24553f9235"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="61b2b209-0b53-4f90-b0ae-2b24553f9235"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -341,7 +341,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Detail_4}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="68ad74ae-dacc-4fce-9e98-459b522a4c99"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="68ad74ae-dacc-4fce-9e98-459b522a4c99"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -462,7 +462,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[new SimpleDateFormat("dd.MM.yyyy").format(new Date())]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement isPrintRepeatedValues="false" x="100" y="96" width="230" height="12" uuid="2cd4f0ff-d2c9-4e50-b1eb-0e718ac89559"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
