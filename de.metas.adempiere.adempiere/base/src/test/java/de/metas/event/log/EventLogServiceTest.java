@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.Type;
-import de.metas.event.log.EventLogService.EventLogId;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import mockit.Expectations;
