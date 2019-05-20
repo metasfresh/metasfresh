@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -45,21 +46,21 @@ import de.metas.util.Services;
 
 /**
  * Post Shipment/Receipt Documents.
- * 
+ *
  * <pre>
  *  Table:              M_InOut (319)
  *  Document Types:     MMS, MMR
  * </pre>
- * 
+ *
  * metas:
  * <li>copied from // metas: from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_InOut.java, Rev 10177
  * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
- * 
+ *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
  *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  *         <li>BF [ 2858043 ] Correct Included Tax in Average Costing
- * 
+ *
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
@@ -128,7 +129,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	/**
 	 * Create Facts (the accounting logic) for MMS, MMR.
-	 * 
+	 *
 	 * <pre>
 	 *  Shipment
 	 *      CoGS (RevOrg)   DR
@@ -140,7 +141,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	 *      Inventory       DR
 	 *      NotInvoicedReceipt      CR
 	 * </pre>
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return Fact
 	 */
@@ -365,7 +366,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(InterfaceWrapperHelper.getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -387,7 +388,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(InterfaceWrapperHelper.getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -435,7 +436,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	/**
 	 * Creating a not null cost value whose precision matches the given <code>C_Currency_ID</code>'s.
 	 * Goal of this method is to avoid the warnings in FactLine.setAmtSource().
-	 * 
+	 *
 	 * @param currencyId
 	 * @param costs
 	 * @return costs rounded to currency precision

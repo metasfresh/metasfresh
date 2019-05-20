@@ -26,12 +26,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MCash;
-import org.compiere.model.MInOut;
 import org.compiere.model.MJournal;
 import org.compiere.model.MMovement;
 import org.compiere.model.MOrder;
@@ -212,7 +212,7 @@ public class FactAcctReset extends JavaProcess
 				+ "','" + X_C_DocType.DOCBASETYPE_ARInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_ARCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARProFormaInvoice + "')";
-		else if (AD_Table_ID == MInOut.Table_ID)
+		else if (AD_Table_ID ==InterfaceWrapperHelper.getTableId(I_M_InOut.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_MaterialDelivery
 				+ "','" + X_C_DocType.DOCBASETYPE_MaterialReceipt + "')";
 		else if (AD_Table_ID == MPayment.Table_ID)

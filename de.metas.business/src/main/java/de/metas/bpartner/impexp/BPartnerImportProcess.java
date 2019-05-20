@@ -32,15 +32,16 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.MContactInterest;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_I_BPartner;
-import org.compiere.model.X_M_InOut;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPPrintFormat;
@@ -273,7 +274,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
-			adTableId = X_M_InOut.Table_ID;
+			adTableId = InterfaceWrapperHelper.getTableId(I_M_InOut.class);
 		}
 
 		final BPartnerPrintFormatRepository repo = Adempiere.getBean(BPartnerPrintFormatRepository.class);

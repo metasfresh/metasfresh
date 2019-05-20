@@ -36,10 +36,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MCampaign;
-import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPayment;
@@ -287,7 +287,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_Payment_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == MInOut.Table_ID)
+			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_InOut.class))
 			{
 				tab.setValue("M_InOut_ID", new Integer(m_Record_ID));
 			}
