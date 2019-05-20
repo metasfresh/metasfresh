@@ -70,7 +70,7 @@ ORDER BY componentIngredients nulls first;]]>
 				<textFieldExpression><![CDATA[$R{Ingredients}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="140" y="27" width="136" height="12" uuid="41be0133-0624-4e4f-a20c-c284632f2b54"/>
+				<reportElement isPrintRepeatedValues="false" x="136" y="27" width="136" height="12" uuid="41be0133-0624-4e4f-a20c-c284632f2b54"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -99,7 +99,7 @@ ORDER BY componentIngredients nulls first;]]>
 				<textFieldExpression><![CDATA[$F{bomproduct}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerHeight" x="140" y="1" width="289" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="a04e7107-b34d-4864-9b06-622fd4a19277"/>
+				<reportElement stretchType="ContainerHeight" x="136" y="1" width="289" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="a04e7107-b34d-4864-9b06-622fd4a19277"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="Single"/>

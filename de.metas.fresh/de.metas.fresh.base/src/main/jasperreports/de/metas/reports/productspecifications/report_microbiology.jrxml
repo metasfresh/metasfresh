@@ -24,22 +24,10 @@
 		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT distinct
-  nutritionName,
-  nutritionqty,
-m_product_ID
-FROM "de.metas.fresh".product_specifications_v v
-WHERE m_product_ID = $P{RECORD_ID}
-ORDER BY nutritionName;]]>
+		<![CDATA[SELECT 1;]]>
 	</queryString>
-	<field name="nutritionname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="nutritionname"/>
-	</field>
-	<field name="nutritionqty" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="nutritionqty"/>
-	</field>
-	<field name="m_product_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	<field name="?column?" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="?column?"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -59,7 +47,7 @@ ORDER BY nutritionName;]]>
 					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Nutrition_desc}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Detail_8_Param}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement isPrintRepeatedValues="false" x="430" y="27" width="121" height="12" uuid="a696f27b-f834-40ee-a8b7-f692409002a6"/>
@@ -67,19 +55,19 @@ ORDER BY nutritionName;]]>
 					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Nutrition_100}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Detail_8_MaxValue}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
-		<band height="12">
+		<band height="56">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="0" y="0" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nutritionname}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Detail_8_Aerobe}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="430" y="0" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
@@ -87,7 +75,47 @@ ORDER BY nutritionName;]]>
 					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nutritionqty}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Detail_8_Aerobe_val}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="0" y="12" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="017c3ba7-881c-4d1c-87fc-88b0fdd86908"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Listeria}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="430" y="12" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="08ef407f-d9ab-450a-b937-f452b847630b"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Listeria_val}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="0" y="24" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="1bae192d-7528-4734-a7fa-1c63e20f9b75"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_EColi}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="430" y="24" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="6d5e9391-3946-42f3-94c3-6636c05511f9"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_EColi_val}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" x="0" y="43" width="590" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="c31ac9fa-5a84-4471-ac12-eaa77e57e6a7"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_txt}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
