@@ -27,7 +27,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -36,6 +35,8 @@ import org.slf4j.Logger;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.uom.LegacyUOMConversionUtils;
 
 /**
@@ -177,7 +178,9 @@ public class ScheduleUtil
 		sql = Env.getUserRolePermissions(m_ctx).addAccessSQL(
 			"SELECT Name, Date1 FROM C_NonBusinessDay "
 			+ "WHERE TRUNC(Date1) BETWEEN ? AND ?",
-			"C_NonBusinessDay", false, false);	// not qualified - RO
+			"C_NonBusinessDay",
+			IUserRolePermissions.SQL_NOTQUALIFIED,
+			Access.READ);	// not qualified - RO
 		try
 		{
 			Timestamp startDay = TimeUtil.getDay(m_startDate);
@@ -578,7 +581,9 @@ public class ScheduleUtil
 			+ "FROM S_Resource r, S_ResourceType rt "
 			+ "WHERE r.S_Resource_ID=?"
 			+ " AND r.S_ResourceType_ID=rt.S_ResourceType_ID",
-			"r", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			"r",
+			IUserRolePermissions.SQL_FULLYQUALIFIED,
+			Access.READ);
 		//
 		try
 		{

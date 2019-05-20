@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS C_Phonecall_Data;

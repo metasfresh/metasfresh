@@ -10,6 +10,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
@@ -18,10 +19,10 @@ import org.xmlunit.validation.Validator;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 
 /*
@@ -55,6 +56,14 @@ public class Invoice440RequestConversionServiceTest
 	public void init()
 	{
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
+	}
+
+	/** Ignored; un-ignore if you have a local (private) file you want to run a quick test with. */
+	@Test
+	@Ignore
+	public void localFile()
+	{
+		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
 	}
 
 	@Test
@@ -180,12 +189,12 @@ public class Invoice440RequestConversionServiceTest
 		testWithPublicExampleXmlFile("md_440_tp_uvg_de.xml");
 	}
 
-	private void testWithPublicExampleXmlFile(final String inputXmlFileName)
+	private void testWithPublicExampleXmlFile(@NonNull final String inputXmlFileName)
 	{
 		testWithXmlFile("/public_examples/" + inputXmlFileName);
 	}
 
-	private void testWithXmlFile(final String inputXmlFileName)
+	private void testWithXmlFile(@NonNull final String inputXmlFileName)
 	{
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard
@@ -196,6 +205,12 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService.fromCrossVersionRequest(xRequest, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+	}
+
+	private InputStream createInputStream(@NonNull final String resourceName)
+	{
+		final InputStream xmlInput = this.getClass().getResourceAsStream(resourceName);
+		return xmlInput;
 	}
 
 	private void assertXmlIsValid(@NonNull final InputStream inputStream)
@@ -210,11 +225,5 @@ public class Invoice440RequestConversionServiceTest
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
 		Assert.assertTrue(r.isValid());
-	}
-
-	private InputStream createInputStream(final String resourceName)
-	{
-		final InputStream xmlInput = this.getClass().getResourceAsStream(resourceName);
-		return xmlInput;
 	}
 }

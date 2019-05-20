@@ -75,7 +75,7 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		ic1.setQtyToInvoice_Override(config_GetQtyToInvoice_Override());
 
-		ic1.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Sofort); // need this for tests where we have _Override > Delivered
+		ic1.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // need this for tests where we have _Override > Delivered
 		ic1.setInvoiceRule_Override(null);
 		ic1.setPOReference(IC_PO_REFERENCE);
 		ic1.setDateAcct(IC_DATE_ACCT);

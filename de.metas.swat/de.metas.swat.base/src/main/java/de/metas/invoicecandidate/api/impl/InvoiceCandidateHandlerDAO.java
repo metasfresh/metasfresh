@@ -40,6 +40,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -62,7 +63,7 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 
 		return queryBuilder
 				.create()
-				.setApplyAccessFilter(true) // only the records on which current role has access to
+				.setRequiredAccess(Access.READ) // only the records on which current role has access to
 				.list(I_C_ILCandHandler.class);
 	}
 

@@ -14,7 +14,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1116936358L;
+	private static final long serialVersionUID = 1794949249L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (Properties ctx, int PP_Product_BOM_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
       super (ctx, PP_Product_BOM_ID, trxName);
       /** if (PP_Product_BOM_ID == 0)
         {
+			setC_UOM_ID (0);
 			setM_Product_ID (0);
 			setName (null);
 			setPP_Product_BOM_ID (0);
@@ -345,9 +346,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -355,8 +354,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -425,6 +423,40 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public java.lang.String getRevision () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Revision);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Sequence getSerialNo_Sequence() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SerialNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setSerialNo_Sequence(org.compiere.model.I_AD_Sequence SerialNo_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_SerialNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, SerialNo_Sequence);
+	}
+
+	/** Set Serial No. Sequence.
+		@param SerialNo_Sequence_ID Serial No. Sequence	  */
+	@Override
+	public void setSerialNo_Sequence_ID (int SerialNo_Sequence_ID)
+	{
+		if (SerialNo_Sequence_ID < 1) 
+			set_Value (COLUMNNAME_SerialNo_Sequence_ID, null);
+		else 
+			set_Value (COLUMNNAME_SerialNo_Sequence_ID, Integer.valueOf(SerialNo_Sequence_ID));
+	}
+
+	/** Get Serial No. Sequence.
+		@return Serial No. Sequence	  */
+	@Override
+	public int getSerialNo_Sequence_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SerialNo_Sequence_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Gültig ab.

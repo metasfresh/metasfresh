@@ -2956,6 +2956,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_URL = "URL";
 
 	/**
+	 * Set Yousty-Profil.
+	 * Full URL address - e.g. http://www.adempiere.org
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setURL3 (java.lang.String URL3);
+
+	/**
+	 * Get Yousty-Profil.
+	 * Full URL address - e.g. http://www.adempiere.org
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getURL3();
+
+    /** Column definition for URL3 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_URL3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "URL3", null);
+    /** Column name URL3 */
+    public static final String COLUMNNAME_URL3 = "URL3";
+
+	/**
 	 * Set Lieferanten Kategorie.
 	 * Lieferanten Kategorie
 	 *

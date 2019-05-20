@@ -123,7 +123,4 @@ import lombok.experimental.UtilityClass;
 		final boolean isRealSqlQuery = !Adempiere.isUnitTestMode();
 		return isRealSqlQuery;
 	}
-
-
-
 }

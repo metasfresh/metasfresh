@@ -4,8 +4,8 @@ import lombok.NonNull;
 
 import java.util.List;
 
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 
 /*
  * #%L

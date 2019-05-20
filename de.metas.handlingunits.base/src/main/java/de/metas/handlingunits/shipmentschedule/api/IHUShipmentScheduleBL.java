@@ -30,9 +30,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @param tuOrVHU TU or VirtualHU to link on
 	 * @return qtyPicked record for this addition
 	 */
-	void addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPicked, I_M_HU tuOrVHU);
+	ShipmentScheduleWithHU addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPicked, I_M_HU tuOrVHU);
 
-	void addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, Quantity qtyPicked, HuId tuOrVHUId);
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, Quantity qtyPicked, HuId tuOrVHUId);
 
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link IShipmentScheduleWithHU}s.

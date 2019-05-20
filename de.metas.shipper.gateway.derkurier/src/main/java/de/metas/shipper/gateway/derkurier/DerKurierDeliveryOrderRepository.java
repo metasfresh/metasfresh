@@ -44,7 +44,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
-import de.metas.adempiere.service.ICountryDAO;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
@@ -282,7 +283,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.zipCode(headerRecord.getDK_Sender_ZipCode())
 				.city(headerRecord.getDK_Sender_City());
 
-		final CountryCode countryCode = DeliveryOrderUtil.createShipperCountryCode(headerRecord.getC_Country_ID());
+		final CountryCode countryCode = DeliveryOrderUtil.createShipperCountryCode(CountryId.ofRepoId(headerRecord.getC_Country_ID()));
 		pickupAddressBuilder.country(countryCode);
 
 		final Address pickupAddress = pickupAddressBuilder.build();
@@ -320,7 +321,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.city(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_City, lineRecord, previousLineRecord));
 
 		final Integer countryId = assertSameAsPreviousValue(COLUMNNAME_C_Country_ID, lineRecord, previousLineRecord);
-		final CountryCode countryCode = DeliveryOrderUtil.createShipperCountryCode(countryId);
+		final CountryCode countryCode = DeliveryOrderUtil.createShipperCountryCode(CountryId.ofRepoId(countryId));
 		deliveryAddressBuilder.country(countryCode);
 
 		final Address deliveryAddress = deliveryAddressBuilder.build();

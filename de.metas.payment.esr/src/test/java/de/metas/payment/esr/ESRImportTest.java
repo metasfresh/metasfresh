@@ -123,7 +123,7 @@ public class ESRImportTest extends ESRTestBase
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /*refNo,*/ ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		esrImportBL.process(esrImport);
@@ -221,9 +221,12 @@ public class ESRImportTest extends ESRTestBase
 		inv.setIsSOTrx(true);
 		InterfaceWrapperHelper.save(inv);
 
+		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
 		// reference no
 		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
-		referenceNo.setReferenceNo("300000001060012345600654321");
+		referenceNo.setReferenceNo(completeRef);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		InterfaceWrapperHelper.save(referenceNo);
@@ -235,7 +238,6 @@ public class ESRImportTest extends ESRTestBase
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
-		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
 
 		final I_ESR_Import esrImport = createImport();
 
@@ -316,12 +318,13 @@ public class ESRImportTest extends ESRTestBase
 
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, true, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "50", true);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, true, completeRef,/*esrLineText, refNo,*/ ESR_Rendered_AccountNo, partnerValue, "50", true);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -419,12 +422,13 @@ public class ESRImportTest extends ESRTestBase
 
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "25", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef,/*esrLineText, refNo,*/ ESR_Rendered_AccountNo, partnerValue, "25", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -499,12 +503,13 @@ public class ESRImportTest extends ESRTestBase
 	{
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000070009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "70", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef,/*esrLineText, refNo,*/ ESR_Rendered_AccountNo, partnerValue, "70", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -576,12 +581,13 @@ public class ESRImportTest extends ESRTestBase
 	{
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000070009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "70", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef,/*esrLineText, refNo,*/ ESR_Rendered_AccountNo, partnerValue, "70", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -1051,12 +1057,13 @@ public class ESRImportTest extends ESRTestBase
 
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef,/*esrLineText, refNo,*/ ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		final Runnable runnable = new Runnable()

@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_BPartner;
@@ -55,7 +56,6 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;

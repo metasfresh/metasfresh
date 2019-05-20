@@ -275,7 +275,7 @@ public class OrderBL implements IOrderBL
 		final org.compiere.model.I_C_BPartner_Location shipToLocation = getShipToLocation(order);
 		final int shipBPLocationId = shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1;
 
-		final int bpartnerId =  shipToLocation != null ? shipToLocation.getC_BPartner_ID() : order.getC_BPartner_ID();
+		final int bpartnerId = shipToLocation != null ? shipToLocation.getC_BPartner_ID() : order.getC_BPartner_ID();
 
 		return new BillBPartnerAndShipToLocation(bpartnerId, shipBPLocationId);
 	}
@@ -1006,7 +1006,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isQuotation(final I_C_Order order)
+	public boolean isQuotation(@NonNull final I_C_Order order)
 	{
 		final boolean isSOTrx = order.isSOTrx();
 
@@ -1016,7 +1016,11 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		final I_C_DocType docType = order.getC_DocType();
+		final I_C_DocType docType = Util.coalesceSuppliers(() -> order.getC_DocType(), () -> order.getC_DocTypeTarget());
+		if (docType == null)
+		{
+			return false;
+		}
 
 		if (!(X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType())))
 		{

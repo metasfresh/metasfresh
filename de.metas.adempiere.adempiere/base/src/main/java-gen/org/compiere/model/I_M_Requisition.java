@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,39 +12,54 @@ public interface I_M_Requisition
     public static final String Table_Name = "M_Requisition";
 
     /** AD_Table_ID=702 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
-	/** Get Mandant.
-	  * Client/Tenant for this installation.
-	  */
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Requisition, org.compiere.model.I_AD_Client>(I_M_Requisition.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Set Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Sektion.
-	  * Organisatorische Einheit des Mandanten
-	  */
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -69,17 +68,27 @@ public interface I_M_Requisition
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Ansprechpartner.
-	  * User within the system - Internal or Business Partner Contact
-	  */
+	/**
+	 * Set Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setAD_User_ID (int AD_User_ID);
 
-	/** Get Ansprechpartner.
-	  * User within the system - Internal or Business Partner Contact
-	  */
+	/**
+	 * Get Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException;
+	public org.compiere.model.I_AD_User getAD_User();
 
 	public void setAD_User(org.compiere.model.I_AD_User AD_User);
 
@@ -88,17 +97,27 @@ public interface I_M_Requisition
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
-	/** Set Belegart.
-	  * Document type or rules
-	  */
+	/**
+	 * Set Belegart.
+	 * Document type or rules
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setC_DocType_ID (int C_DocType_ID);
 
-	/** Get Belegart.
-	  * Document type or rules
-	  */
+	/**
+	 * Get Belegart.
+	 * Document type or rules
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException;
+	public org.compiere.model.I_C_DocType getC_DocType();
 
 	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
@@ -107,9 +126,14 @@ public interface I_M_Requisition
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
-	/** Get Erstellt.
-	  * Date this record was created
-	  */
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
@@ -117,9 +141,14 @@ public interface I_M_Requisition
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Erstellt durch.
-	  * User who created this records
-	  */
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
@@ -127,14 +156,24 @@ public interface I_M_Requisition
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Belegdatum.
-	  * Datum des Belegs
-	  */
+	/**
+	 * Set Belegdatum.
+	 * Datum des Belegs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDateDoc (java.sql.Timestamp DateDoc);
 
-	/** Get Belegdatum.
-	  * Datum des Belegs
-	  */
+	/**
+	 * Get Belegdatum.
+	 * Datum des Belegs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getDateDoc();
 
     /** Column definition for DateDoc */
@@ -142,14 +181,22 @@ public interface I_M_Requisition
     /** Column name DateDoc */
     public static final String COLUMNNAME_DateDoc = "DateDoc";
 
-	/** Set Date Required.
-	  * Date when required
-	  */
+	/**
+	 * Set Zieldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDateRequired (java.sql.Timestamp DateRequired);
 
-	/** Get Date Required.
-	  * Date when required
-	  */
+	/**
+	 * Get Zieldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getDateRequired();
 
     /** Column definition for DateRequired */
@@ -157,10 +204,22 @@ public interface I_M_Requisition
     /** Column name DateRequired */
     public static final String COLUMNNAME_DateRequired = "DateRequired";
 
-	/** Set Beschreibung	  */
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setDescription (java.lang.String Description);
 
-	/** Get Beschreibung	  */
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
@@ -168,14 +227,24 @@ public interface I_M_Requisition
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/** Set Belegverarbeitung.
-	  * The targeted status of the document
-	  */
+	/**
+	 * Set Belegverarbeitung.
+	 * The targeted status of the document
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocAction (java.lang.String DocAction);
 
-	/** Get Belegverarbeitung.
-	  * The targeted status of the document
-	  */
+	/**
+	 * Get Belegverarbeitung.
+	 * The targeted status of the document
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocAction();
 
     /** Column definition for DocAction */
@@ -183,14 +252,24 @@ public interface I_M_Requisition
     /** Column name DocAction */
     public static final String COLUMNNAME_DocAction = "DocAction";
 
-	/** Set Belegstatus.
-	  * The current status of the document
-	  */
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocStatus (java.lang.String DocStatus);
 
-	/** Get Belegstatus.
-	  * The current status of the document
-	  */
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocStatus();
 
     /** Column definition for DocStatus */
@@ -198,14 +277,24 @@ public interface I_M_Requisition
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
-	/** Set Beleg Nr..
-	  * Document sequence number of the document
-	  */
+	/**
+	 * Set Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setDocumentNo (java.lang.String DocumentNo);
 
-	/** Get Beleg Nr..
-	  * Document sequence number of the document
-	  */
+	/**
+	 * Get Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getDocumentNo();
 
     /** Column definition for DocumentNo */
@@ -213,14 +302,24 @@ public interface I_M_Requisition
     /** Column name DocumentNo */
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
-	/** Set Kommentar/Hilfe.
-	  * Comment or Hint
-	  */
+	/**
+	 * Set Kommentar/Hilfe.
+	 * Comment or Hint
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setHelp (java.lang.String Help);
 
-	/** Get Kommentar/Hilfe.
-	  * Comment or Hint
-	  */
+	/**
+	 * Get Kommentar/Hilfe.
+	 * Comment or Hint
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getHelp();
 
     /** Column definition for Help */
@@ -228,14 +327,24 @@ public interface I_M_Requisition
     /** Column name Help */
     public static final String COLUMNNAME_Help = "Help";
 
-	/** Set Aktiv.
-	  * The record is active in the system
-	  */
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsActive (boolean IsActive);
 
-	/** Get Aktiv.
-	  * The record is active in the system
-	  */
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isActive();
 
     /** Column definition for IsActive */
@@ -243,14 +352,24 @@ public interface I_M_Requisition
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Freigegeben.
-	  * Indicates if this document requires approval
-	  */
+	/**
+	 * Set Freigegeben.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setIsApproved (boolean IsApproved);
 
-	/** Get Freigegeben.
-	  * Indicates if this document requires approval
-	  */
+	/**
+	 * Get Freigegeben.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isApproved();
 
     /** Column definition for IsApproved */
@@ -258,17 +377,27 @@ public interface I_M_Requisition
     /** Column name IsApproved */
     public static final String COLUMNNAME_IsApproved = "IsApproved";
 
-	/** Set Preisliste.
-	  * Unique identifier of a Price List
-	  */
+	/**
+	 * Set Preisliste.
+	 * Unique identifier of a Price List
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setM_PriceList_ID (int M_PriceList_ID);
 
-	/** Get Preisliste.
-	  * Unique identifier of a Price List
-	  */
+	/**
+	 * Get Preisliste.
+	 * Unique identifier of a Price List
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getM_PriceList_ID();
 
-	public org.compiere.model.I_M_PriceList getM_PriceList() throws RuntimeException;
+	public org.compiere.model.I_M_PriceList getM_PriceList();
 
 	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList);
 
@@ -277,14 +406,24 @@ public interface I_M_Requisition
     /** Column name M_PriceList_ID */
     public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
-	/** Set Bedarf.
-	  * Material Requisition
-	  */
+	/**
+	 * Set Bedarf.
+	 * Material Requisition
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setM_Requisition_ID (int M_Requisition_ID);
 
-	/** Get Bedarf.
-	  * Material Requisition
-	  */
+	/**
+	 * Get Bedarf.
+	 * Material Requisition
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getM_Requisition_ID();
 
     /** Column definition for M_Requisition_ID */
@@ -292,10 +431,22 @@ public interface I_M_Requisition
     /** Column name M_Requisition_ID */
     public static final String COLUMNNAME_M_Requisition_ID = "M_Requisition_ID";
 
-	/** Set M_Requisition_includedTab	  */
+	/**
+	 * Set M_Requisition_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setM_Requisition_includedTab (java.lang.String M_Requisition_includedTab);
 
-	/** Get M_Requisition_includedTab	  */
+	/**
+	 * Get M_Requisition_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getM_Requisition_includedTab();
 
     /** Column definition for M_Requisition_includedTab */
@@ -303,17 +454,27 @@ public interface I_M_Requisition
     /** Column name M_Requisition_includedTab */
     public static final String COLUMNNAME_M_Requisition_includedTab = "M_Requisition_includedTab";
 
-	/** Set Lager.
-	  * Storage Warehouse and Service Point
-	  */
+	/**
+	 * Set Lager.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
-	/** Get Lager.
-	  * Storage Warehouse and Service Point
-	  */
+	/**
+	 * Get Lager.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException;
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
 
 	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
@@ -322,14 +483,24 @@ public interface I_M_Requisition
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
-	/** Set Verbucht.
-	  * Posting status
-	  */
+	/**
+	 * Set Verbucht.
+	 * Posting status
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setPosted (boolean Posted);
 
-	/** Get Verbucht.
-	  * Posting status
-	  */
+	/**
+	 * Get Verbucht.
+	 * Posting status
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isPosted();
 
     /** Column definition for Posted */
@@ -337,14 +508,24 @@ public interface I_M_Requisition
     /** Column name Posted */
     public static final String COLUMNNAME_Posted = "Posted";
 
-	/** Set Priorität.
-	  * Priority of a document
-	  */
+	/**
+	 * Set Priorität.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setPriorityRule (java.lang.String PriorityRule);
 
-	/** Get Priorität.
-	  * Priority of a document
-	  */
+	/**
+	 * Get Priorität.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.lang.String getPriorityRule();
 
     /** Column definition for PriorityRule */
@@ -352,14 +533,24 @@ public interface I_M_Requisition
     /** Column name PriorityRule */
     public static final String COLUMNNAME_PriorityRule = "PriorityRule";
 
-	/** Set Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessed (boolean Processed);
 
-	/** Get Verarbeitet.
-	  * Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessed();
 
     /** Column definition for Processed */
@@ -367,10 +558,22 @@ public interface I_M_Requisition
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set Verarbeiten	  */
+	/**
+	 * Set Verarbeiten.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public void setProcessing (boolean Processing);
 
-	/** Get Verarbeiten	  */
+	/**
+	 * Get Verarbeiten.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -378,14 +581,24 @@ public interface I_M_Requisition
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
 
-	/** Set Summe Zeilen.
-	  * Total of all document lines
-	  */
+	/**
+	 * Set Summe Zeilen.
+	 * Total of all document lines
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public void setTotalLines (java.math.BigDecimal TotalLines);
 
-	/** Get Summe Zeilen.
-	  * Total of all document lines
-	  */
+	/**
+	 * Get Summe Zeilen.
+	 * Total of all document lines
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.math.BigDecimal getTotalLines();
 
     /** Column definition for TotalLines */
@@ -393,9 +606,14 @@ public interface I_M_Requisition
     /** Column name TotalLines */
     public static final String COLUMNNAME_TotalLines = "TotalLines";
 
-	/** Get Aktualisiert.
-	  * Date this record was updated
-	  */
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
@@ -403,9 +621,14 @@ public interface I_M_Requisition
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Aktualisiert durch.
-	  * User who updated this records
-	  */
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */

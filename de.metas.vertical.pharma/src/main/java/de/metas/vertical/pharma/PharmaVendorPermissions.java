@@ -54,6 +54,10 @@ public final class PharmaVendorPermissions
 		{
 			permissionsBuilder.add(PharmaVendorPermission.PHARMA_WHOLESALE);
 		}
+		if (bpartner.isPharmaVendorNarcoticsPermission()) 
+		{
+			permissionsBuilder.add(PharmaVendorPermission.PHARMA_NARCOTICS);
+		}
 
 		final ImmutableSet<PharmaVendorPermission> permissions = permissionsBuilder.build();
 		if (permissions.isEmpty())

@@ -2,7 +2,7 @@ package de.metas.invoice_gateway.spi;
 
 import java.util.Optional;
 
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ public interface InvoiceExportClientFactory
 
 	public static final String ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE = "ExternalReference";
 
-	public static final String ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE = "BelogsToExternalReference";
+	public static final String ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE = "BelongsToExternalReference";
 
 	String getInvoiceExportProviderId();
 

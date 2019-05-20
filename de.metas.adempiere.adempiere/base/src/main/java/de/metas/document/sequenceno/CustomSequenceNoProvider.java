@@ -1,5 +1,7 @@
 package de.metas.document.sequenceno;
 
+import org.compiere.util.Evaluatee;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,7 +26,7 @@ package de.metas.document.sequenceno;
 
 public interface CustomSequenceNoProvider
 {
-	boolean isApplicable(Object documentModel);
+	boolean isApplicable(Evaluatee context);
 
-	String provideSequenceNo(Object _documentModel);
+	String provideSequenceNo(Evaluatee context);
 }

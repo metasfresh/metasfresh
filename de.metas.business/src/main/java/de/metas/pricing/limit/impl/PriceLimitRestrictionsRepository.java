@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_C_PriceLimit_Restriction;
 
 import com.google.common.collect.ImmutableSet;

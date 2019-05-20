@@ -35,17 +35,17 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Expor
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.ProcessingMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.prolog.XmlSoftware.SoftwareMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.TransportMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody.BodyMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlReminder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance.BalanceMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog.PrologMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.prolog.XmlSoftware.SoftwareMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
 
 /*
@@ -73,7 +73,7 @@ import lombok.NonNull;
 public class DunningExportClientImpl implements DunningExportClient
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
-	private final CrossVersionRequestConverter<?> exportConverter;
+	private final CrossVersionRequestConverter exportConverter;
 	private final XmlMode exportFileMode;
 	private final String exportFileFromEAN;
 	private final String exportFileViaEAN;
@@ -83,7 +83,7 @@ public class DunningExportClientImpl implements DunningExportClient
 			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		this.exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		this.exportConverter = crossVersionServiceRegistry.getRequestConverterForSimpleVersionName(exportConfig.getXmlVersion());
 		this.exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
 		this.exportFileFromEAN = exportConfig.getFromEAN();
 		this.exportFileViaEAN = exportConfig.getViaEAN();
@@ -92,7 +92,7 @@ public class DunningExportClientImpl implements DunningExportClient
 	@Override
 	public boolean canExport(@NonNull final DunningToExport dunningToExport)
 	{
-		final ImmutableMultimap<CrossVersionRequestConverter<?>, DunningAttachment> //
+		final ImmutableMultimap<CrossVersionRequestConverter, DunningAttachment> //
 		converters = extractConverters(dunningToExport.getDunningAttachments());
 
 		// TODO check if
@@ -104,12 +104,12 @@ public class DunningExportClientImpl implements DunningExportClient
 	@Override
 	public List<DunningExportResult> export(@NonNull final DunningToExport dunning)
 	{
-		final ImmutableMultimap<CrossVersionRequestConverter<?>, DunningAttachment> //
+		final ImmutableMultimap<CrossVersionRequestConverter, DunningAttachment> //
 		converter2ConvertableAttachment = extractConverters(dunning.getDunningAttachments());
 
 		final ImmutableList.Builder<DunningExportResult> exportResults = ImmutableList.builder();
 
-		for (final CrossVersionRequestConverter<? extends Object> importConverter : converter2ConvertableAttachment.keySet())
+		for (final CrossVersionRequestConverter importConverter : converter2ConvertableAttachment.keySet())
 		{
 			for (final DunningAttachment attachment : converter2ConvertableAttachment.get(importConverter))
 			{
@@ -136,11 +136,11 @@ public class DunningExportClientImpl implements DunningExportClient
 		return exportResults.build();
 	}
 
-	private ImmutableMultimap<CrossVersionRequestConverter<?>, DunningAttachment> extractConverters(
+	private ImmutableMultimap<CrossVersionRequestConverter, DunningAttachment> extractConverters(
 			@NonNull final List<DunningAttachment> dunningAttachments)
 	{
-		final Builder<CrossVersionRequestConverter<?>, DunningAttachment> //
-		result = ImmutableMultimap.<CrossVersionRequestConverter<?>, DunningAttachment> builder();
+		final Builder<CrossVersionRequestConverter, DunningAttachment> //
+		result = ImmutableMultimap.<CrossVersionRequestConverter, DunningAttachment> builder();
 
 		for (final DunningAttachment attachment : dunningAttachments)
 		{
@@ -151,7 +151,7 @@ public class DunningExportClientImpl implements DunningExportClient
 
 			final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(attachment.getDataAsInputStream());
 
-			final CrossVersionRequestConverter<?> converter = crossVersionServiceRegistry.getConverterForXsdName(xsdName);
+			final CrossVersionRequestConverter converter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 			if (converter == null)
 			{
 				continue;

@@ -10,12 +10,12 @@ package de.metas.document.refid.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,7 +70,7 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 		setupType(Gen1.class);
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes(Env.getCtx()).size(), is(2)); // guard
+		assertThat(dao.retrieveReferenceNoTypes().size(), is(2)); // guard
 
 		dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen1.class);
 	}
@@ -84,7 +84,7 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 		setupType(Gen1.class);
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes(Env.getCtx()).size(), is(1)); // guard
+		assertThat(dao.retrieveReferenceNoTypes().size(), is(1)); // guard
 
 		dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen2.class);
 	}
@@ -101,8 +101,8 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
 
-		assertThat(dao.retrieveRefNoTypeByName(Env.getCtx(), mkName(Gen1.class)), is(type1));
-		assertThat(dao.retrieveRefNoTypeByName(Env.getCtx(), mkName(Gen2.class)), is(type2));
+		assertThat(dao.retrieveRefNoTypeByName(mkName(Gen1.class)), is(type1));
+		assertThat(dao.retrieveRefNoTypeByName(mkName(Gen2.class)), is(type2));
 	}
 
 	/**
@@ -115,9 +115,9 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 		setupType(Gen1.class);
 
 		final PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes(Env.getCtx()).size(), is(2)); // guard
+		assertThat(dao.retrieveReferenceNoTypes().size(), is(2)); // guard
 
-		dao.retrieveRefNoTypeByName(Env.getCtx(), mkName(Gen1.class));
+		dao.retrieveRefNoTypeByName(mkName(Gen1.class));
 	}
 
 	/**
@@ -129,9 +129,9 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 		setupType(Gen1.class);
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes(Env.getCtx()).size(), is(1)); // guard
+		assertThat(dao.retrieveReferenceNoTypes().size(), is(1)); // guard
 
-		dao.retrieveRefNoTypeByName(Env.getCtx(), mkName(Gen2.class));
+		dao.retrieveRefNoTypeByName(mkName(Gen2.class));
 	}
 
 	private static class Gen1 implements IReferenceNoGenerator

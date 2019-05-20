@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -120,7 +118,7 @@ import lombok.NonNull;
 
 	@Override
 	@Deprecated
-	public void setSkipCreateCandidates()
+	public final void setSkipCreateCandidates()
 	{
 		this._skipCreateCandidates = true;
 	}
@@ -218,7 +216,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void createReceiptCandidatesFromPlanningHU(final I_M_HU planningHU)
+	public final void createReceiptCandidatesFromPlanningHU(final I_M_HU planningHU)
 	{
 		Preconditions.checkNotNull(planningHU);
 		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
@@ -306,14 +304,13 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public List<I_PP_Order_Qty> getCreatedCandidates()
+	public final List<I_PP_Order_Qty> getCreatedCandidates()
 	{
 		return ImmutableList.copyOf(createdCandidates);
 	}
 
 	@Override
-	@OverridingMethodsMustInvokeSuper
-	public IPPOrderReceiptHUProducer setMovementDate(final Date movementDate)
+	public final IPPOrderReceiptHUProducer setMovementDate(final Date movementDate)
 	{
 		Check.assumeNotNull(movementDate, "Parameter movementDate is not null");
 		_movementDate = movementDate;

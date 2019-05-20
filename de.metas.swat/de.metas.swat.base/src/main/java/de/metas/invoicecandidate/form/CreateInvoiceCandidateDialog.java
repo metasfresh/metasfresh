@@ -48,7 +48,6 @@ import javax.swing.JLabel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
@@ -85,6 +84,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
@@ -326,7 +326,7 @@ public class CreateInvoiceCandidateDialog
 		final I_C_ILCandHandler manualCandidateHandler = Services.get(IInvoiceCandidateHandlerDAO.class).retrieveForClassOneOnly(ctx, ManualCandidateHandler.class);
 		ilCandHandlerField.setValue(manualCandidateHandler.getC_ILCandHandler_ID());
 
-		invoiceRuleField.setValue(X_C_Invoice_Candidate.INVOICERULE_Sofort); // default
+		invoiceRuleField.setValue(X_C_Invoice_Candidate.INVOICERULE_Immediate); // default
 
 		//
 		// Get pricing system (or dispose window if none was found)
@@ -595,6 +595,7 @@ public class CreateInvoiceCandidateDialog
 				ic.setPriceActual(ic.getPriceEntered());
 
 				ic.setC_UOM_ID(product.getC_UOM_ID()); // use the product's UOM for the main IC/InvoiceLine C_UOM_ID
+				ic.setQtyEntered((BigDecimal)qtyOrdered);
 
 				//
 				// Mock (not used, cannot be null)

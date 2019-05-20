@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Evaluatee2;
 
@@ -41,20 +40,23 @@ import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Default aggregator implementation. It is used if a given {@link I_C_Invoice_Candidate} record has no {@link I_C_Invoice_Candidate#COLUMNNAME_C_Invoice_Candidate_Agg_ID} or if it has one without an
  * explicit classname value.
- * 
+ *
  * This implementation sums up QtyToInvoice, PriceActual, PriceEntered and Discount of the candidates that it aggregates.
- * 
+ *
  * @author ts
  */
 public class DefaultAggregator implements IAggregator
@@ -65,7 +67,7 @@ public class DefaultAggregator implements IAggregator
 	/**
 	 * Map: Invoice Line Aggregation Key to List of candidates, that needs to be aggregated. Using a {@link LinkedHashMap} so that the order in which the {@link InvoiceCandidateWithInOutLine}'s are
 	 * aggregated (see {@link #aggregate()}) is the same order in which they were added (see {@link #addInvoiceCandidate(IInvoiceLineAggregationRequest)}.
-	 * 
+	 *
 	 * After aggregation this map will be cleared.
 	 */
 	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<String, List<InvoiceCandidateWithInOutLine>>();
@@ -104,13 +106,13 @@ public class DefaultAggregator implements IAggregator
 		icsPool.add(ics);
 	}
 
-	private String mkLineAggregationKeyToUse(final IInvoiceLineAggregationRequest request)
+	private String mkLineAggregationKeyToUse(@NonNull final IInvoiceLineAggregationRequest request)
 	{
 		final I_C_Invoice_Candidate ic = request.getC_Invoice_Candidate();
 		InterfaceWrapperHelper.refresh(ic); // make sure it's up to date
 		//
 		final String lineAggregationKeyStr = ic.getLineAggregationKey();
-		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || ic.isToRecompute(),
+		Check.assume(!Check.isEmpty(lineAggregationKeyStr) || Services.get(IInvoiceCandDAO.class).isToRecompute(ic),
 				"LineAggregationKey may not be empty, except when the ic is new and thus needs recomputation: {}", ic);
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();

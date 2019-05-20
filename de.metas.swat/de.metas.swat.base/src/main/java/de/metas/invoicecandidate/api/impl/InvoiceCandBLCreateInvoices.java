@@ -572,15 +572,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (ilVO.getM_Product_ID() > 0)
 				{
 					invoiceLine.setM_Product_ID(ilVO.getM_Product_ID());
-					invoiceBL.setQtys(invoiceLine, qtyToInvoice); // task: 08841; note that we need to call this method *after* UOMs and product were set
 				}
-				else
-				{
-					// without a product, we have no internal UOM, so we can't do any conversions
-					invoiceLine.setQtyInvoiced(qtyToInvoice);
-					invoiceLine.setQtyInvoicedInPriceUOM(qtyToInvoice);
-					invoiceLine.setQtyEntered(qtyToInvoice);
-				}
+				invoiceBL.setQtys(invoiceLine, qtyToInvoice); // task: 08841; note that we need to call this method *after* UOMs and product were set
+
 				invoiceLine.setC_Charge_ID(ilVO.getC_Charge_ID());
 				invoiceLine.setIsPackagingMaterial(cand.isPackagingMaterial()); // task FRESH-273
 
@@ -773,7 +767,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	 * <br>
 	 */
 	@Override
-	public IInvoiceGenerateResult generateInvoices(final Iterator<I_C_Invoice_Candidate> invoiceCandidates)
+	public IInvoiceGenerateResult generateInvoices(@NonNull final Iterator<I_C_Invoice_Candidate> invoiceCandidates)
 	{
 		final boolean ignoreInvoiceSchedule = isIgnoreInvoiceSchedule();
 

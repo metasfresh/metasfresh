@@ -69,6 +69,21 @@ public interface I_T_MD_Stock_WarehouseAndProduct
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_T_MD_Stock_WarehouseAndProduct, Object>(I_T_MD_Stock_WarehouseAndProduct.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
 	 * Set Zeile Nr..
 	 * Einzelne Zeile in dem Dokument
 	 *

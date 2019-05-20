@@ -10,6 +10,172 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.105
+
+## Features
+* metasfresh
+  * [#5181](https://github.com/metasfresh/metasfresh/issues/5181) Add Age and Production Date attributes
+  * [#5192](https://github.com/metasfresh/metasfresh/issues/5192) Add a less restrictive C_Postal Unique Index
+  * [#5198](https://github.com/metasfresh/metasfresh/issues/5198) HU Mass Disposal process
+  * [#5199](https://github.com/metasfresh/metasfresh/issues/5199) Avoid updating AD_EventLog records
+  * [#5214](https://github.com/metasfresh/metasfresh/issues/5214) Change OLCand-Processor config to process OLCands from OrderLineCandidate REST EP
+
+## Fixes
+* metasfresh
+  * [#5206](https://github.com/metasfresh/metasfresh/issues/5206) BPartnerGroup and Product UOM are not set automatically anymore in new bpartner / new product
+
+* metasfresh-webui-frontend
+  * [#2263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2263) HU Panel too small in material receipt candidates' modal overlay
+  * [#2265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2265) Notifications and user menu will not close
+
+# metasfresh 5.104
+
+## Features
+* metasfresh
+  * [#5101](https://github.com/metasfresh/metasfresh/issues/5101) Area search - Geocoding
+  * [#5175](https://github.com/metasfresh/metasfresh/issues/5175) Add language parameter to SQL Function PP_Product_BOM_Recursive
+  * [#5177](https://github.com/metasfresh/metasfresh/issues/5177) Checking BtM and PZN with Modulo 11
+  * [#5183](https://github.com/metasfresh/metasfresh/issues/5183) Enable selective cache invalidation
+
+* metasfresh-e2e
+  * [#74](https://github.com/metasfresh/metasfresh-e2e/issues/74) Create new Tax Rate
+  * [#76](https://github.com/metasfresh/metasfresh-e2e/issues/76) Set currency USD active/inactive
+  * [#78](https://github.com/metasfresh/metasfresh-e2e/issues/78) Enable checking for user notifications
+
+## Fixes
+* metasfresh
+  * [#5172](https://github.com/metasfresh/metasfresh/issues/5172) Pricing Conditions Report Error
+  * [#5182](https://github.com/metasfresh/metasfresh/issues/5182) forum-datenaustausch.ch XML externalId not sufficiently unique
+  * [#5185](https://github.com/metasfresh/metasfresh/issues/5185) forum-datenaustausch.ch XML pre-existing documents are removed from XML on exporting
+  * [#5186](https://github.com/metasfresh/metasfresh/issues/5186) Invoice candidate from order line candidate - pricelist precision not applied when computing PriceActual
+
+* metasfresh-webui-api
+  * [#1189](https://github.com/metasfresh/metasfresh-webui-api/issues/1189) Results missing in batch entry dropdown
+  * [#1194](https://github.com/metasfresh/metasfresh-webui-api/issues/1194) Non-Mandatory BigDecimal fields inititalized with 0
+
+* metasfresh-e2e
+  * [#79](https://github.com/metasfresh/metasfresh-e2e/issues/79) Fix sales order test
+
+# metasfresh 5.103
+## Features
+* metasfresh
+  * [#5137](https://github.com/metasfresh/metasfresh/issues/5137) Inventory with multiple HUs per inventory line
+
+## Fixes
+* metasfresh-webui-api
+  * [#1190](https://github.com/metasfresh/metasfresh-webui-api/issues/1190) HU received in manufacturing order cannot be selected for issueing in a second manufacturing order
+
+* metasfresh-webui-frontend
+  * [#2251](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2251) Attributes panel displayed only after blurring button
+
+* metasfresh-e2e
+  * [#19](https://github.com/metasfresh/metasfresh-e2e/issues/19) Fix Test purchase_create_vendor
+  * [#37](https://github.com/metasfresh/metasfresh-e2e/issues/37) eslint delete CR error in project
+  * [#39](https://github.com/metasfresh/metasfresh-e2e/issues/39) Use fixtures for attributes
+  * [#57](https://github.com/metasfresh/metasfresh-e2e/issues/57) Fix bpartner object: location
+  * [#58](https://github.com/metasfresh/metasfresh-e2e/issues/58) Fix isChecked command
+  * [#66](https://github.com/metasfresh/metasfresh-e2e/issues/66) Fix Test: Sysconfig
+
+
+# metasfresh 5.102
+## Features
+* metasfresh 
+  * [#5151](https://github.com/metasfresh/metasfresh/issues/5151) Allow to delete Scale Prices
+  * [#5157](https://github.com/metasfresh/metasfresh/issues/5157) Reduce log-output of sequence checks when running migration-script
+
+* metasfresh-webui-frontend
+  * [#2180](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2180) Shortcut shall work for Cancel button in Modal view
+  * [#2195](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2195) Tab top actions: use provided shortcut if any
+
+* metasfresh-e2e
+  * [#53](https://github.com/metasfresh/metasfresh-e2e/issues/53) Add repeatable actions for working with filters
+
+# metasfresh 5.101
+## Features
+* metasfresh
+  * [#5108](https://github.com/metasfresh/metasfresh/issues/5108) Short term availability check for sales orders
+  * [#5143](https://github.com/metasfresh/metasfresh/issues/5143) Product Specification process only for one selected product
+
+* metasfresh-e2e
+  * [#36](https://github.com/metasfresh/metasfresh-e2e/issues/36) Use fixtures for sales order
+
+* metasfresh-edi
+  * [#3](https://github.com/metasfresh/metasfresh-edi/issues/3) Process new data formats
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#2217](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2217) Console flooded with error "Cannot read property 'getInstance' of null"
+
+
+# metasfresh 5.100
+## Features
+* metasfresh
+  * [#5114](https://github.com/metasfresh/metasfresh/issues/5114) Column Translation Insert
+  * [#5121](https://github.com/metasfresh/metasfresh/issues/5121) Create Company Directory window
+  * [#5123](https://github.com/metasfresh/metasfresh/issues/5123) Don't automatically generate AD_Message records for developers
+  * [#5131](https://github.com/metasfresh/metasfresh/issues/5131) SQL rollout: consider additional URLs to download and run the migation scripts
+
+
+## Fixes
+* metasfresh
+  * [#5119](https://github.com/metasfresh/metasfresh/issues/5119) Fix AD_Element_Link related issues
+  * [#5128](https://github.com/metasfresh/metasfresh/issues/5128) Avoid generating values for "Value" column when dealing with application dictionary entities
+  * [#5134](https://github.com/metasfresh/metasfresh/issues/5134) Repair Umsatzreport Geschäftspartner Woche Excel
+
+* metasfresh-webui-frontend
+  * [#2241](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2241) Order line quick input not working
+  * [#2244](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2244) Fix tabbing
+
+# metasfresh 5.99
+## Features
+* metasfresh
+  * [#5024](https://github.com/metasfresh/metasfresh/issues/5024) REST API for sales invoice payment status
+  * [#5095](https://github.com/metasfresh/metasfresh/issues/5095) Enable set/unset of BPartner narcotics pharma permission
+  * [#5118](https://github.com/metasfresh/metasfresh/issues/5118) Tool to run all migration scripts from developer workspace
+
+* metasfresh-e2e
+  * [#16](https://github.com/metasfresh/metasfresh-e2e/issues/16) Make our custom input commands more stable
+
+# Fixes
+* metasfresh-webui-frontend
+  * [#2214](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214) Input field value sometimes swallowed
+  * [#2237](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2237) Scrollbars missing in modal overlays
+
+# metasfresh 5.98
+## Features
+* metasfresh 
+  * [#4895](https://github.com/metasfresh/metasfresh/issues/4895) Support Automatic Numbering on Purchase Requisition
+  * [#4951](https://github.com/metasfresh/metasfresh/issues/4951) Phonecall Planning and Execution
+  * [#5040](https://github.com/metasfresh/metasfresh/issues/5040) Accounting for Payment Allocation and Vendor Credit Memo wrong
+  * [#5070](https://github.com/metasfresh/metasfresh/issues/5070) Discount Schema Lines in separate window
+  * [#5072](https://github.com/metasfresh/metasfresh/issues/5072) Support forum-datenaustausch.ch XML invoice cancelation-response
+  * [#5081](https://github.com/metasfresh/metasfresh/issues/5081) Product prices window: don't sort it because on huge amount of data this is a performance issue
+  * [#5089](https://github.com/metasfresh/metasfresh/issues/5089) XML import/export for Kanton 
+
+* metasfresh-webui-api
+  * [#1178](https://github.com/metasfresh/metasfresh-webui-api/issues/1178) view: kick out a row if is no longer matching the filters
+
+* metasfresh-webui-frontend
+  * [#2221](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2221) Display time fields with no seconds in gridview
+  * [#2224](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2224) View: after calling getByIds, frontend shall remove the rows which are no longer in the result
+
+* metasfresh-edi
+  * [#1](https://github.com/metasfresh/metasfresh-edi/issues/1) Modernize and update EDI ESB camel
+
+# Fixes
+* metasfresh
+  * [#5079](https://github.com/metasfresh/metasfresh/issues/5079) Error while posting purchase invoices because of charge even though charge is not used
+  * [#5084](https://github.com/metasfresh/metasfresh/issues/5084) Error while posting cost collector
+  * [#5086](https://github.com/metasfresh/metasfresh/issues/5086) Error logging in to webui when there is no default warehouse
+  * [#5092](https://github.com/metasfresh/metasfresh/issues/5092) Fix wrong avg PO cost on material receipt and match invoice in case we have a different price UOM
+  * [#5093](https://github.com/metasfresh/metasfresh/issues/5053) Log related NPE on metasfresh startup
+
+* metasfresh-webui-api
+  * [#1180](https://github.com/metasfresh/metasfresh-webui-api/issues/1180) Webui server shall start even if something in picking terminal code fails
+
+* metasfresh-webui-frontend
+  * [#2230](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2230) Refresh filtered list
+
 # metasfresh 5.97
 ## Features
 * metasfresh
@@ -43,7 +209,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1165](https://github.com/metasfresh/metasfresh-webui-api/issues/1165) Window Layout: allow first field of a fields combo to be a dropdown
-  * [#1167](https://github.com/metasfresh/metasfresh-webui-api/issues/1167) Product lookup performance improvements (repsective frontend isue not yet doen)
+  * [#1167](https://github.com/metasfresh/metasfresh-webui-api/issues/1167) Product lookup performance improvements (repsective frontend isue not yet done)
 
 * metasfresh-webui-frontend
   * [#2177](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2177) Support single entry view mode for Tabs

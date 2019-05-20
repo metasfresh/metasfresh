@@ -5,12 +5,12 @@ import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_Location;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;

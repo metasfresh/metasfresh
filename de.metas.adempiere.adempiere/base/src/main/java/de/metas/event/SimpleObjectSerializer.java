@@ -33,10 +33,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 /**
  * Simple json serializer/deserializer that can be used when a whole object is to be send as an {@link Event}'s property.<br>
  * See the {@code metasfresh-material-event} module for usage examples.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
+ * @deprecated Please use {@code de.metas.util.JSONObjectMapper} instead.
  */
+@Deprecated
 public class SimpleObjectSerializer
 {
 	private static final SimpleObjectSerializer INSTANCE = new SimpleObjectSerializer();

@@ -37,7 +37,6 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.IQuery;
@@ -47,6 +46,8 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class VAccountAutoCompleter extends FieldAutoCompleter
@@ -153,7 +154,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 			final String sql = sqlQuery.getSQL();
 
 			// this is taken from VAccount.cmd_text() which used to do the lookup
-			return Env.getUserRolePermissions().addAccessSQL(sql, "C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			return Env.getUserRolePermissions().addAccessSQL(sql, "C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		}
 		return null; // according to the doc we shall return "null" for "error"
 	}

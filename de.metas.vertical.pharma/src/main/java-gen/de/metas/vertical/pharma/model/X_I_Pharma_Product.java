@@ -15,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 177384329L;
+	private static final long serialVersionUID = -2004482234L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
       /** if (I_Pharma_Product_ID == 0)
         {
 			setA00ANBNR5 (0); // 0
-			setIsPriceCreated (false); // N
+			setIsPriceCopied (false); // N
         } */
     }
 
@@ -3118,20 +3118,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
-	/** Set Price Created.
-		@param IsPriceCreated Price Created	  */
+	/** Set Price Copied.
+		@param IsPriceCopied Price Copied	  */
 	@Override
-	public void setIsPriceCreated (boolean IsPriceCreated)
+	public void setIsPriceCopied (boolean IsPriceCopied)
 	{
-		set_Value (COLUMNNAME_IsPriceCreated, Boolean.valueOf(IsPriceCreated));
+		set_Value (COLUMNNAME_IsPriceCopied, Boolean.valueOf(IsPriceCopied));
 	}
 
-	/** Get Price Created.
-		@return Price Created	  */
+	/** Get Price Copied.
+		@return Price Copied	  */
 	@Override
-	public boolean isPriceCreated () 
+	public boolean isPriceCopied () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsPriceCreated);
+		Object oo = get_Value(COLUMNNAME_IsPriceCopied);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -3284,6 +3284,43 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner getManufacturer() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer)
+	{
+		set_ValueFromPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class, Manufacturer);
+	}
+
+	/** Set Hersteller.
+		@param Manufacturer_ID 
+		Hersteller des Produktes
+	  */
+	@Override
+	public void setManufacturer_ID (int Manufacturer_ID)
+	{
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Integer.valueOf(Manufacturer_ID));
+	}
+
+	/** Get Hersteller.
+		@return Hersteller des Produktes
+	  */
+	@Override
+	public int getManufacturer_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Manufacturer_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_UOM getPackage_UOM() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class);
@@ -3295,10 +3332,8 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		set_ValueFromPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class, Package_UOM);
 	}
 
-	/** Set Package UOM.
-		@param Package_UOM_ID 
-		UOM of the package
-	  */
+	/** Set Verpackungseinheit.
+		@param Package_UOM_ID Verpackungseinheit	  */
 	@Override
 	public void setPackage_UOM_ID (int Package_UOM_ID)
 	{
@@ -3308,9 +3343,8 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 			set_Value (COLUMNNAME_Package_UOM_ID, Integer.valueOf(Package_UOM_ID));
 	}
 
-	/** Get Package UOM.
-		@return UOM of the package
-	  */
+	/** Get Verpackungseinheit.
+		@return Verpackungseinheit	  */
 	@Override
 	public int getPackage_UOM_ID () 
 	{

@@ -3,6 +3,7 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -54,7 +55,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.location.CountryId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -120,6 +120,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.pricing.PricingSystemId;
@@ -198,17 +199,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private LocalDate computeDateToInvoice(final I_C_Invoice_Candidate ic)
 	{
 		final String invoiceRule = getInvoiceRule(ic);
-		if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))
+		if (X_C_Invoice_Candidate.INVOICERULE_Immediate.equals(invoiceRule))
 		{
 			return TimeUtil.asLocalDate(ic.getDateOrdered());
 		}
-		else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferung.equals(invoiceRule) || X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
+		else if (X_C_Invoice_Candidate.INVOICERULE_AfterDelivery.equals(invoiceRule) || X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered.equals(invoiceRule))
 		{
 			// if there is no delivery yet, then we set the date to the far future
 			final LocalDate deliveryDate = TimeUtil.asLocalDate(ic.getDeliveryDate());
 			return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
 		}
-		else if (X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
+		else if (X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule))
 		{
 			if (ic.getC_InvoiceSchedule_ID() <= 0)        // that's a paddlin'
 			{
@@ -246,7 +247,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final String invoiceRule = getInvoiceRule(ic);
-		if (!X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
+		if (!X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule))
 		{
 			// Note: the field is supposed not to be displayed on status=OK, so we don't need to localize this
 			ic.setInvoiceScheduleAmtStatus("OK");
@@ -380,8 +381,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(ic);
 
-		BigDecimal qtyInvoiced = BigDecimal.ZERO;
-		BigDecimal netAmtInvoiced = BigDecimal.ZERO;
+		BigDecimal qtyInvoiced = ZERO;
+		BigDecimal netAmtInvoiced = ZERO;
 
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
@@ -457,8 +458,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private int retrieveInvoiceScheduleId(final I_C_Invoice_Candidate ic)
 	{
 		final String invoiceRule = getInvoiceRule(ic);
-		Check.assume(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule),
-				"Method is only called if invoice rule is " + X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		Check.assume(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule),
+				"Method is only called if invoice rule is " + X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
@@ -676,11 +677,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Gets Qty Ordered (target), considering the QtyDelivered too.
-	 *
-	 * @param ic
-	 * @return
 	 */
-	private BigDecimal getQtyOrdered(final I_C_Invoice_Candidate ic)
+	private BigDecimal getQtyOrdered(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qtyOrdered = ic.getQtyOrdered();
 		final BigDecimal qtyDelivered = getQtyDelivered_Effective(ic);
@@ -689,11 +687,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public BigDecimal convertToPriceUOM(final BigDecimal qty, final I_C_Invoice_Candidate ic)
+	public BigDecimal convertToPriceUOM(
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_Invoice_Candidate ic)
 	{
-		Check.assumeNotNull(qty, "qty not null");
-		Check.assumeNotNull(ic, "ic not null");
-
 		if (ic.getM_Product_ID() <= 0)
 		{
 			logger.debug("returing param qty {} as result, because ic.getM_Product_ID() <= 0");
@@ -766,7 +763,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final String invoiceRule = invoiceCandBL.getInvoiceRule(ic);
-		if (X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_KundenintervallNachLieferung.equals(invoiceRule)
+		if (X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery.equals(invoiceRule)
 				&& ic.getC_InvoiceSchedule_ID() > 0)
 		{
 			final I_C_InvoiceSchedule invoiceSchedule = ic.getC_InvoiceSchedule();
@@ -906,7 +903,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final LocalDate date = TimeUtil.asLocalDate(ic.getDateOrdered());
 			final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
-			
+
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
 							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
@@ -975,10 +972,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setIsPackagingMaterial(ic.isPackagingMaterial());
 		splitCand.setC_Charge_ID(ic.getC_Charge_ID());
 
-		splitCand.setQtyOrdered(BigDecimal.ONE);
+		splitCand.setQtyOrdered(ONE);
 		splitCand.setQtyDelivered(ZERO);
-		splitCand.setQtyToInvoice(BigDecimal.ONE);
-		splitCand.setQtyToInvoice_Override(BigDecimal.ONE);
+		splitCand.setQtyToInvoice(ONE);
+		splitCand.setQtyToInvoice_Override(ONE);
 
 		splitCand.setC_Currency_ID(ic.getC_Currency_ID());
 		splitCand.setC_ConversionType_ID(ic.getC_ConversionType_ID());
@@ -1228,7 +1225,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			creditedInvoiceIsReversed = false;
 		}
 		// if we deal with a credit memo, we need to thread the qtys as negative
-		final BigDecimal factor = creditMemo ? BigDecimal.ONE.negate() : BigDecimal.ONE;
+		final BigDecimal factor = creditMemo ? ONE.negate() : ONE;
 
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
@@ -1687,11 +1684,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal factor;
 		if (ic.getQtyOrdered().signum() < 0)
 		{
-			factor = BigDecimal.ONE.negate();
+			factor = ONE.negate();
 		}
 		else
 		{
-			factor = BigDecimal.ONE;
+			factor = ONE;
 		}
 
 		return ic.getQtyDelivered().subtract((ic.getQtyWithIssues_Effective()).multiply(factor));
@@ -1889,8 +1886,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				Check.assumeNotNull(qtyToInvoiceOverride, "qtyToInvoiceOverride not null");
 				newQtyToInvoice = qtyToInvoiceOverride;
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferung.equals(invoiceRule)
-					|| X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung.equals(invoiceRule))
+			else if (X_C_Invoice_Candidate.INVOICERULE_AfterDelivery.equals(invoiceRule)
+					|| X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule))
 			{
 				// after Delivery
 
@@ -1899,11 +1896,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final BigDecimal maxInvoicableQty = qtyDeliveredToUse;// .subtract(ic.getQtyInvoiced());
 				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                                // Immediate
+			else if (X_C_Invoice_Candidate.INVOICERULE_Immediate.equals(invoiceRule))                                // Immediate
 			{
 				newQtyToInvoice = computeQtyToInvoiceWhenRuleImmediate(ic, factor);
 			}
-			else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
+			else if (X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered.equals(invoiceRule))
 			{
 				// AfterOrderDelivered
 				if (isOrderFullyDelivered(ic))
@@ -1934,11 +1931,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal factor;
 		if (ic.getQtyOrdered().signum() < 0)
 		{
-			factor = BigDecimal.ONE.negate();
+			factor = ONE.negate();
 		}
 		else
 		{
-			factor = BigDecimal.ONE;
+			factor = ONE;
 		}
 		return computeQtyToInvoiceWhenRuleImmediate(ic, factor);
 	}

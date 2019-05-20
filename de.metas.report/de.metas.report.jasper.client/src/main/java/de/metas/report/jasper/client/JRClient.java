@@ -210,7 +210,7 @@ public final class JRClient
 		if (lang == null)
 		{
 			final IRangeAwareParams parameterAsIParams = pi.getParameterAsIParams();
-			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+			final int bPartnerID = parameterAsIParams.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 			if (bPartnerID > 0)
 			{
 				lang = Services.get(IBPartnerBL.class).getLanguage(pi.getCtx(), bPartnerID);

@@ -2,6 +2,8 @@ package de.metas.dataentry.layout;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.dataentry.DataEntrySectionId;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
@@ -41,9 +43,9 @@ public class DataEntrySection
 
 	String internalName;
 
-	boolean initallyClosed;
+	boolean initiallyClosed;
 
-	List<DataEntryLine> dataEntryLines;
+	ImmutableList<DataEntryLine> lines;
 
 	@Builder
 	private DataEntrySection(
@@ -51,14 +53,14 @@ public class DataEntrySection
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
-			final boolean initallyClosed,
-			@Singular final List<DataEntryLine> dataEntryLines)
+			final boolean initiallyClosed,
+			@Singular final List<DataEntryLine> lines)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
-		this.initallyClosed = initallyClosed;
-		this.dataEntryLines = dataEntryLines;
+		this.initiallyClosed = initiallyClosed;
+		this.lines = ImmutableList.copyOf(lines);
 	}
 }

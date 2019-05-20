@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -48,4 +49,6 @@ public class ProductPriceCreateRequest
 	private final LocalDate validDate;
 	private final int taxCategoryId;
 	private final boolean useNewestPriceListversion;
+	@Default
+	private int seqNo = 10;
 }

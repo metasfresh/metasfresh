@@ -23,11 +23,13 @@ package de.metas.material.planning.pporder;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.quantity.Quantity;
@@ -131,4 +133,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
 
 	boolean isSomethingReportedOnBOMLines(PPOrderId ppOrderId);
+	
+	Optional<DocSequenceId> getSerialNoSequenceId(PPOrderId ppOrderId);
 }

@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAging;
 import org.compiere.util.DB;
@@ -31,6 +30,8 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  *	Invoice Aging Report.
@@ -174,7 +175,7 @@ public class Aging extends JavaProcess
 		
 		log.trace(sql.toString());
 		String finalSql = Env.getUserRolePermissions(getCtx()).addAccessSQL(
-			sql.toString(), "oi", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);	
+			sql.toString(), "oi", IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);	
 		log.trace(finalSql);
 
 		PreparedStatement pstmt = null;

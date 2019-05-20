@@ -3,11 +3,10 @@ package de.metas.inoutcandidate.lock;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.user.UserId;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;

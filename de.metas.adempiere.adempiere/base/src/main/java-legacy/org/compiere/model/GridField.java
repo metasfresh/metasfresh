@@ -38,12 +38,12 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.beans.DelayedPropertyChangeSupport;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
@@ -59,6 +59,9 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -375,16 +378,25 @@ public class GridField
 			return false;
 
 		// Numeric Keys and Created/Updated as well as
-		// DocumentNo/Value/ASI ars not mandatory (persistency layer manages them)
+		// ASI/Created/Updated are not mandatory (persistence layer manages them)
 		if (m_gridTab != null &&  // if gridtab doesn't exist then it's not a window field (probably a process parameter field)
 				((m_vo.IsKey && m_vo.getColumnName().endsWith("_ID"))
 						|| m_vo.getColumnName().startsWith("Created") || m_vo.getColumnName().startsWith("Updated")
-						|| m_vo.getColumnName().equals("Value")
-						|| m_vo.getColumnName().equals("DocumentNo")
 						|| m_vo.getColumnName().equals("M_AttributeSetInstance_ID") 	// 0 is valid
 				))
+		{
 			return false;
-
+		}
+		
+		// DocumentNo/Value are not mandatory (persistence layer manages them)
+		if(m_gridTab != null
+				&& m_vo.isUseDocSequence()
+				&& (m_vo.getColumnName().equals("Value") || m_vo.getColumnName().equals("DocumentNo"))
+				)
+		{
+			return false;
+		}
+		
 		// Mandatory if displayed
 		return isDisplayed(checkContext);
 	}	// isMandatory
@@ -489,8 +501,8 @@ public class GridField
 		// Role Access & Column Access
 		if (checkContext)
 		{
-			int AD_Client_ID = Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Client_ID");
-			int AD_Org_ID = Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Org_ID");
+			final ClientId clientId = ClientId.ofRepoIdOrSystem(Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Client_ID"));
+			final OrgId orgId = OrgId.ofRepoIdOrAny(Env.getContextAsInt(rowCtx, m_vo.WindowNo, m_vo.TabNo, "AD_Org_ID"));
 			String keyColumn = Env.getContext(rowCtx, m_vo.WindowNo, m_vo.TabNo, GridTab.CTX_KeyColumnName);
 			if ("EntityType".equals(keyColumn))
 				keyColumn = "AD_EntityType_ID";
@@ -500,11 +512,11 @@ public class GridField
 			int AD_Table_ID = m_vo.getAD_Table_ID();
 
 			final IUserRolePermissions role = Env.getUserRolePermissions(getGridFieldContext());
-			if (!role.canUpdate(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, false))
+			if (!role.canUpdate(clientId, orgId, AD_Table_ID, Record_ID, false))
 			{
 				return false;
 			}
-			if (!role.isColumnAccess(AD_Table_ID, m_vo.getAD_Column_ID(), false))
+			if (!role.isColumnAccess(AD_Table_ID, m_vo.getAD_Column_ID(), Access.WRITE))
 			{
 				return false;
 			}
@@ -1336,7 +1348,7 @@ public class GridField
 			else
 				m_parentValue = Boolean.valueOf(m_vo.getColumnName().equals(LinkColumnName));
 			if (m_parentValue)
-				log.info(m_parentValue
+				log.debug(m_parentValue
 						+ " - Link(" + LinkColumnName + ", W=" + m_vo.WindowNo + ",T=" + m_vo.TabNo
 						+ ") = " + m_vo.getColumnName());
 			else
@@ -1730,9 +1742,6 @@ public class GridField
 					if (m_vo.getColumnName().equals(linkColumn))
 					{
 						result = true;
-						log.info(result
-								+ " - Link(" + linkColumn + ", W=" + m_vo.WindowNo + ",T=" + m_vo.TabNo
-								+ ") = " + m_vo.getColumnName());
 					}
 					currentLevel = level;
 				}

@@ -255,13 +255,12 @@ public class ESRTestBase
 			@NonNull final String invAmount,
 			final boolean invPaid,
 			@NonNull final String fullRefNo,
-			@NonNull final String refNo,
 			@NonNull final String ESR_RenderedAccountNo,
 			@NonNull final String partnerValue,
 			@NonNull final String payAmt,
 			final boolean createAllocation)
 	{
-		return setupESR_ImportLine(invDocNo, invAmount, invPaid, fullRefNo, refNo, ESR_RenderedAccountNo, partnerValue, payAmt, createAllocation, false);
+		return setupESR_ImportLine(invDocNo, invAmount, invPaid, fullRefNo, ESR_RenderedAccountNo, partnerValue, payAmt, createAllocation, false);
 	}
 
 	protected I_ESR_ImportLine setupESR_ImportLine(
@@ -269,7 +268,6 @@ public class ESRTestBase
 			@NonNull final String invAmount,
 			final boolean invPaid,
 			@NonNull final String fullRefNo,
-			@NonNull final String refNo,
 			@NonNull final String ESR_RenderedAccountNo,
 			@NonNull final String partnerValue,
 			@NonNull final String payAmt,
@@ -341,7 +339,7 @@ public class ESRTestBase
 
 		// reference no
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
-		referenceNo.setReferenceNo(refNo);
+		referenceNo.setReferenceNo(fullRefNo);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		if (differentInvoiceOrg)

@@ -10,8 +10,8 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

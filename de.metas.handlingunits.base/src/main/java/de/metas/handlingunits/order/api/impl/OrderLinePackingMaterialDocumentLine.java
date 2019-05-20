@@ -24,7 +24,6 @@ package de.metas.handlingunits.order.api.impl;
 
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -77,7 +76,6 @@ import lombok.NonNull;
 	{
 		orderLine.setQtyOrdered(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(

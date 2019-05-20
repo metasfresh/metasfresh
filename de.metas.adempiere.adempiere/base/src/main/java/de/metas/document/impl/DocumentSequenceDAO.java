@@ -1,5 +1,7 @@
 package de.metas.document.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +33,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,16 +46,25 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.JavaClassId;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class DocumentSequenceDAO implements IDocumentSequenceDAO
 {
+	private static final Logger logger = LogManager.getLogger(DocumentSequenceDAO.class);
+
 	private static final String SQL_AD_Sequence_CurrentNext = "SELECT " + I_AD_Sequence.COLUMNNAME_CurrentNext
 			+ " FROM " + I_AD_Sequence.Table_Name
 			+ " WHERE " + I_AD_Sequence.COLUMNNAME_AD_Sequence_ID + "=?";
@@ -85,19 +99,14 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			throw new AdempiereException("@NotFound@ @AD_Sequence_ID@ (@Name@: " + sequenceName + ")");
 		}
 
-		return DocumentSequenceInfo.of(adSequence);
+		return toDocumentSequenceInfo(adSequence);
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
-	public DocumentSequenceInfo retriveDocumentSequenceInfo(final int adSequenceId)
+	public DocumentSequenceInfo retriveDocumentSequenceInfo(@NonNull final DocSequenceId sequenceId)
 	{
-		if (adSequenceId <= 0)
-		{
-			return null;
-		}
-
-		final I_AD_Sequence adSequence = InterfaceWrapperHelper.create(Env.getCtx(), adSequenceId, I_AD_Sequence.class, ITrx.TRXNAME_None);
+		final I_AD_Sequence adSequence = loadOutOfTrx(sequenceId, I_AD_Sequence.class);
 		Check.assumeNotNull(adSequence, "adSequence not null");
 
 		if (!adSequence.isActive())
@@ -109,7 +118,51 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			return null;
 		}
 
-		return DocumentSequenceInfo.of(adSequence);
+		return toDocumentSequenceInfo(adSequence);
+	}
+
+	private DocumentSequenceInfo toDocumentSequenceInfo(final I_AD_Sequence record)
+	{
+		return DocumentSequenceInfo.builder()
+				.adSequenceId(record.getAD_Sequence_ID())
+				.name(record.getName())
+				//
+				.incrementNo(record.getIncrementNo())
+				.prefix(compileStringExpressionOrUseItAsIs(record.getPrefix()))
+				.suffix(compileStringExpressionOrUseItAsIs(record.getSuffix()))
+				.decimalPattern(record.getDecimalPattern())
+				.autoSequence(record.isAutoSequence())
+				.startNewYear(record.isStartNewYear())
+				.dateColumn(record.getDateColumn())
+				//
+				.customSequenceNoProvider(createCustomSequenceNoProviderOrNull(record))
+				//
+				.build();
+	}
+
+	private IStringExpression compileStringExpressionOrUseItAsIs(final String expr)
+	{
+		try
+		{
+			return StringExpressionCompiler.instance.compile(expr);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed compiling '{}' string expression. Using it as is", expr, ex);
+			return ConstantStringExpression.ofNullable(expr);
+		}
+	}
+
+	private CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
+	{
+		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)
+		{
+			return null;
+		}
+
+		final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
+		final JavaClassId javaClassId = JavaClassId.ofRepoId(adSequence.getCustomSequenceNoProvider_JavaClass_ID());
+		return javaClassBL.newInstance(javaClassId);
 	}
 
 	@Override

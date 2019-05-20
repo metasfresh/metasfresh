@@ -102,6 +102,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductPA;
+import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -430,7 +431,8 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 		newTerm.setIsSimulation(cond.isSimulation());
 
-		newTerm.setM_Product_ID(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand));
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
+		newTerm.setM_Product_ID(ProductId.toRepoId(productId));
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(olCand, newTerm);
 
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);

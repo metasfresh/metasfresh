@@ -11,6 +11,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -99,7 +100,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		{
 			return -1;
 		}
-		return Services.get(IColorRepository.class).getColorIdByName(colorName);
+		final ColorId colorId = Services.get(IColorRepository.class).getColorIdByName(colorName);
+		return ColorId.toRepoId(colorId);
 	}
 
 	@Override

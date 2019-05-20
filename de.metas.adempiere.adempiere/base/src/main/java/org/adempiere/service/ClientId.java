@@ -1,8 +1,7 @@
 package org.adempiere.service;
 
 import java.util.Objects;
-
-import org.compiere.util.Env;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -71,6 +70,27 @@ public class ClientId implements RepoIdAware
 		}
 	}
 
+	public static ClientId ofRepoIdOrSystem(final int repoId)
+	{
+		if (repoId == SYSTEM.repoId)
+		{
+			return SYSTEM;
+		}
+		else if (repoId <= 0)
+		{
+			return SYSTEM;
+		}
+		else
+		{
+			return ofRepoId(repoId);
+		}
+	}
+
+	public static Optional<ClientId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
 	public static int toRepoId(final ClientId clientId)
 	{
 		return clientId != null ? clientId.getRepoId() : -1;
@@ -87,12 +107,17 @@ public class ClientId implements RepoIdAware
 
 	private ClientId()
 	{
-		this.repoId = Env.CTXVALUE_AD_Client_ID_System;
+		this.repoId = 0;
 	}
 
 	public boolean isSystem()
 	{
-		return repoId == Env.CTXVALUE_AD_Client_ID_System;
+		return repoId == SYSTEM.repoId;
+	}
+
+	public boolean isRegular()
+	{
+		return !isSystem();
 	}
 
 	@Override

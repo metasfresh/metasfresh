@@ -2,7 +2,7 @@ package de.metas.pricing.service;
 
 import java.time.LocalDate;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 

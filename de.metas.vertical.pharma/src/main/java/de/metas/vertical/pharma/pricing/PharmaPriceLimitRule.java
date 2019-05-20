@@ -2,7 +2,7 @@ package de.metas.vertical.pharma.pricing;
 
 import java.util.Set;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.IPriceLimitRule;

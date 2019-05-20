@@ -52,6 +52,7 @@ import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -159,9 +160,10 @@ public class InterfaceWrapperHelper
 	 *            {@code #AD_Client_ID} resp. {@code #clone().AD_Org_ID}.
 	 * @return new instance
 	 */
-	public static <T> T newInstance(final Class<T> cl, final Object contextProvider, final boolean useClientOrgFromProvider)
+	public static <T> T newInstance(final Class<T> cl,
+			@NonNull final Object contextProvider,
+			final boolean useClientOrgFromProvider)
 	{
-		Check.assumeNotNull(contextProvider, "contextProvider not null");
 		final Properties ctx = getCtx(contextProvider, useClientOrgFromProvider);
 		//
 		// Get transaction name from contextProvider.
@@ -388,6 +390,11 @@ public class InterfaceWrapperHelper
 	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass)
 	{
 		return id == null ? newInstance(modelClass) : load(id.getRepoId(), modelClass);
+	}
+
+	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass, final Object contextProvider)
+	{
+		return id == null ? newInstance(modelClass, contextProvider) : load(id.getRepoId(), modelClass);
 	}
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
@@ -674,15 +681,21 @@ public class InterfaceWrapperHelper
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
-	 * @param model
-	 * @param useClientOrgFromModel
-	 * @return
+	 * @param model may be null
+	 * @param useClientOrgFromModel ignored, unless the given model is {@link ModelContextAware} or just a "normal" model. See {@link #getCtx(Object, boolean)}
 	 */
-	public static Properties getCtx(final Object model, final boolean useClientOrgFromModel)
+	public static Properties getCtx(
+			@Nullable final Object model,
+			final boolean useClientOrgFromModel)
 	{
 		if (model == null)
 		{
 			return Env.getCtx();
+		}
+		else if (model instanceof ModelContextAware)
+		{
+			// we have an IContextAware that is based on a model, so we can act on the value of the given useClientOrgFromModel
+			return ((ModelContextAware)model).getCtx(useClientOrgFromModel);
 		}
 		else if (model instanceof IContextAware)
 		{
@@ -1145,7 +1158,18 @@ public class InterfaceWrapperHelper
 		{
 			return POWrapper.hasColumnName(modelClass, columnName);
 		}
+	}
 
+	public static Optional<ClientId> getClientId(final Object model)
+	{
+		final Object clientIdObj = getValue(model, "AD_Client_ID").orElse(null);
+		if (clientIdObj == null)
+		{
+			return Optional.empty();
+		}
+
+		final int clientIdInt = NumberUtils.asInt(clientIdObj, -1);
+		return ClientId.optionalOfRepoId(clientIdInt);
 	}
 
 	public static Optional<OrgId> getOrgId(final Object model)

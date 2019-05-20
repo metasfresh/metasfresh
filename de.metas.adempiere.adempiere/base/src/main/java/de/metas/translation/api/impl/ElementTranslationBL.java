@@ -2,18 +2,15 @@ package de.metas.translation.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.element.api.AdElementId;
-import org.adempiere.ad.element.api.AdMenuId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.element.api.ElementChangedEvent;
 import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.element.api.IADElementDAO;
-import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -28,6 +25,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
+import de.metas.menu.AdMenuId;
+import de.metas.menu.IADMenuDAO;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,6 +59,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final Logger log = LogManager.getLogger(ElementTranslationBL.class);
 
 	private static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
+	private static final String FUNCTION_Update_Column_Translation_From_AD_Name_Element = "update_Column_Translation_From_AD_Element";
 	private static final String FUNCTION_Update_FieldTranslation_From_AD_Name_Element = "update_FieldTranslation_From_AD_Name_Element";
 	private static final String FUNCTION_Update_Window_Translation_From_AD_Element = "update_window_translation_from_ad_element";
 	private static final String FUNCTION_Update_Tab_Translation_From_AD_Element = "update_tab_translation_from_ad_element";
@@ -109,6 +109,14 @@ public class ElementTranslationBL implements IElementTranslationBL
 		// Add the prefix DDL so the statement will appear in the migration script
 		// Usually, the select statements are not migrated ( see org.compiere.dbPort.Convert.logMigrationScript(String, String).dontLog())
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + "," + DB.TO_STRING(adLanguage) + ") ";
+	}
+
+	@Override
+	public void updateColumnTranslationsFromElement(final AdElementId adElementId)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+
+		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Column_Translation_From_AD_Name_Element, adElementId), null);
 	}
 
 	@Override
@@ -242,9 +250,9 @@ public class ElementTranslationBL implements IElementTranslationBL
 		final IADMenuDAO adMenuDAO = Services.get(IADMenuDAO.class);
 		final IADElementDAO adElementsRepo = Services.get(IADElementDAO.class);
 
-		final List<Integer> menuIdsWithMissingADElements = adMenuDAO.retrieveMenuIdsWithMissingADElements();
+		final Set<AdMenuId> menuIdsWithMissingADElements = adMenuDAO.retrieveMenuIdsWithMissingADElements();
 
-		for (final int menuId : menuIdsWithMissingADElements)
+		for (final AdMenuId menuId : menuIdsWithMissingADElements)
 		{
 			final I_AD_Menu menu = adMenuDAO.getById(menuId);
 
@@ -256,7 +264,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.webuiNameNew(menu.getWEBUI_NameNew())
 					.webuiNameNewBreadcrumb(menu.getWEBUI_NameNewBreadcrumb()).build());
 
-			updateElementTranslationsFromMenu(elementId, AdMenuId.ofRepoIdOrNull(menuId));
+			updateElementTranslationsFromMenu(elementId, menuId);
 
 			DYNATTR_AD_Menu_UpdateTranslations.setValue(menu, false);
 

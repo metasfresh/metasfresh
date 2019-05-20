@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.TaxNoExemptFoundException;
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Tax;

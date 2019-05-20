@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -30,6 +29,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.ShipmentSchedul
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.StockSpec;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.TestSetupSpec;
 import de.metas.order.DeliveryRule;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 /*

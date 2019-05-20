@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import lombok.NonNull;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -15,7 +13,8 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersio
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,7 +40,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 
 @Service
 @Profile(ForumDatenaustauschChConstants.PROFILE)
-public class Invoice440RequestConversionService implements CrossVersionRequestConverter<RequestType>
+public class Invoice440RequestConversionService implements CrossVersionRequestConverter
 {
 	public static final String INVOICE_440_REQUEST_XSD = "http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd";
 

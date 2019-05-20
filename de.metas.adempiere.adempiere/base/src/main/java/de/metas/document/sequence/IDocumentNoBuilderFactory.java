@@ -24,6 +24,8 @@ public interface IDocumentNoBuilderFactory extends ISingletonService
 	 */
 	IDocumentNoBuilder forDocType(int C_DocType_ID, boolean useDefiniteSequence);
 
+	IDocumentNoBuilder forSequenceId(DocSequenceId sequenceId);
+
 	/**
 	 * Create a builder that shall set the given modelRecord's {@code Value} column.
 	 */

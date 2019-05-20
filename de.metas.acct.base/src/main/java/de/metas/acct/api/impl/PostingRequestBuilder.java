@@ -33,7 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -59,6 +58,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -329,7 +329,7 @@ import lombok.ToString;
 
 			//
 			// Check if PostImmediate is allowed by AD_Client configuration
-			final I_AD_Client client = clientDAO.getById(getClientId().getRepoId());
+			final I_AD_Client client = clientDAO.getById(getClientId());
 			return client.isPostImmediate();
 		}
 		else

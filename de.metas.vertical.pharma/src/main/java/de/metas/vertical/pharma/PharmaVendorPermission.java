@@ -27,4 +27,5 @@ public enum PharmaVendorPermission
 	PHARMA_AGENT, //
 	PHARMA_MANUFACTURER, //
 	PHARMA_WHOLESALE, //
+	PHARMA_NARCOTICS, //
 }

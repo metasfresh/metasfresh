@@ -10,21 +10,22 @@ package de.metas.adempiere.callout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -39,26 +40,20 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_M_Inventory;
 import de.metas.inventory.IInventoryBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Callout for {@link I_M_Inventory} table
- * 
+ *
  * @author tsa
- * 
+ *
  */
-//FIXME: adapt to webui
+// FIXME: adapt to webui
 public class M_Inventory extends CalloutEngine
 {
-	
+
 	/**
 	 * On {@link I_M_Inventory#COLUMNNAME_QuickInput_Product_ID} changes.
-	 * 
-	 * @param ctx
-	 * @param WindowNo
-	 * @param mTab
-	 * @param field
-	 * @param value
-	 * @return
 	 */
 	public String onQuickInput_Product_ID(final Properties ctx, final int WindowNo,
 			final GridTab mTab, final GridField field, final Object value)
@@ -67,9 +62,12 @@ public class M_Inventory extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
+		if (mTab == null)
+		{
+			return NO_ERROR;
+		}
 
-		evalQuickInput(ctx, WindowNo, mTab);
-
+		evalQuickInput(WindowNo, mTab);
 		selectFocus(mTab);
 
 		return NO_ERROR;
@@ -77,24 +75,24 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * On {@link I_M_Inventory#COLUMNNAME_QuickInput_QtyInternalGain} changes.
-	 * 
-	 * @param ctx
-	 * @param WindowNo
-	 * @param mTab
-	 * @param field
-	 * @param value
-	 * @return
 	 */
-	public String onQuickInput_QtyInternalUse(final Properties ctx, final int WindowNo,
-			final GridTab mTab, final GridField field, final Object value)
+	public String onQuickInput_QtyInternalUse(
+			final Properties ctx,
+			final int WindowNo,
+			@Nullable final GridTab mTab,
+			final GridField field,
+			final Object value)
 	{
 		if (isCalloutActive())
 		{
 			return NO_ERROR;
 		}
+		if (mTab == null)
+		{
+			return NO_ERROR;
+		}
 
-		evalQuickInput(ctx, WindowNo, mTab);
-
+		evalQuickInput(WindowNo, mTab);
 		selectFocus(mTab);
 
 		return NO_ERROR;
@@ -102,15 +100,12 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * Evaluates {@link I_M_Inventory} table and if possible creates a new {@link I_M_InventoryLine} and clears quick input fields
-	 * 
-	 * @param ctx
-	 * @param WindowNo
-	 * @param mTab
 	 */
-	private void evalQuickInput(final Properties ctx, final int WindowNo, final GridTab mTab)
+	private void evalQuickInput(
+			final int WindowNo,
+			@NonNull final GridTab mTab)
 	{
 		final I_M_Inventory inventory = InterfaceWrapperHelper.create(mTab, I_M_Inventory.class);
-
 		final int productId = inventory.getQuickInput_Product_ID();
 		if (productId <= 0)
 		{
@@ -136,7 +131,7 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * Creates a new inventory line
-	 * 
+	 *
 	 * @param inventory
 	 * @param productId
 	 * @param qtyPlus
@@ -156,7 +151,7 @@ public class M_Inventory extends CalloutEngine
 		// line.setInventoryType(InventoryType); // applies only for physical inventory
 		line.setM_Locator_ID(locator.getM_Locator_ID());
 		line.setM_Product_ID(productId);
-		
+
 		final BigDecimal qtyInternalUse = qtyPlus.negate();
 		line.setQtyInternalUse(qtyInternalUse);
 		line.setProcessed(false);
@@ -166,10 +161,10 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * Checks quick input fields and focus the first one which is empty (i.e. where user needs to input data).
-	 * 
+	 *
 	 * @param mTab
 	 */
-	private void selectFocus(final GridTab mTab)
+	private void selectFocus(@NonNull final GridTab mTab)
 	{
 		final I_M_Inventory inventory = InterfaceWrapperHelper.create(mTab, I_M_Inventory.class);
 
@@ -192,9 +187,9 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * Reset quick input fields.
-	 * 
+	 *
 	 * Same as {@link #clearQuickInputFields(GridTab)} but it will be done in UI's events queue thread.
-	 * 
+	 *
 	 * @param windowNo
 	 * @param mTab
 	 */
@@ -216,7 +211,7 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * Reset quick input fieldsO
-	 * 
+	 *
 	 * @param mTab
 	 */
 	public static void clearQuickInputFields(final GridTab mTab)
@@ -233,7 +228,7 @@ public class M_Inventory extends CalloutEngine
 
 	/**
 	 * Refreshes given tab and all included tabs.
-	 * 
+	 *
 	 * @param gridTab
 	 */
 	private void refreshTabAndIncludedTabs(final GridTab gridTab)

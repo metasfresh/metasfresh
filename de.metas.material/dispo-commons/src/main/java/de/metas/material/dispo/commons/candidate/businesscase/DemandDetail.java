@@ -3,13 +3,9 @@ package de.metas.material.dispo.commons.candidate.businesscase;
 import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
 import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
-
-import java.math.BigDecimal;
 
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.event.commons.DocumentLineDescriptor;
@@ -17,6 +13,9 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L

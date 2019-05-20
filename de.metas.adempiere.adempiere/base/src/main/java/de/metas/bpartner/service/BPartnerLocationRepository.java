@@ -2,7 +2,7 @@ package de.metas.bpartner.service;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.location.LocationId;
+import de.metas.location.LocationId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Repository;
 

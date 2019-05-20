@@ -40,7 +40,6 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnableAdapter;
@@ -69,11 +68,14 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
@@ -346,11 +348,10 @@ public class InvoiceCandidateWriter
 	 * @param qualityInvoiceLineGroup
 	 * @return invoice candidate; never returns <code>null</code>
 	 */
-	private I_C_Invoice_Candidate createInvoiceCandidate(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
+	private I_C_Invoice_Candidate createInvoiceCandidate(@NonNull final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
-		Check.assumeNotNull(qualityInvoiceLineGroup, "qualityInvoiceLineGroup not null");
 		final IQualityInvoiceLine invoiceableLine = qualityInvoiceLineGroup.getInvoiceableLine();
 		Check.assumeNotNull(invoiceableLine, "invoiceableLine not null");
 
@@ -369,8 +370,7 @@ public class InvoiceCandidateWriter
 		//
 		// Extract infos from invoiceable line
 		final I_M_Product product = invoiceableLine.getM_Product();
-		final I_C_UOM uom = invoiceableLine.getC_UOM();
-		final BigDecimal qtyOrdered = invoiceableLine.getQty();
+		final Quantity qty = invoiceableLine.getQty();
 		final String description = invoiceableLine.getDescription();
 		final IPricingResult pricingResult = invoiceableLine.getPrice();
 		final boolean printed = invoiceableLine.isDisplayed();
@@ -413,9 +413,13 @@ public class InvoiceCandidateWriter
 		// int chargeId = olc.getC_Charge_ID();
 		// ic.setC_Charge_ID(chargeId);
 
-		ic.setQtyOrdered(qtyOrdered);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qty, ProductId.ofRepoId(product.getM_Product_ID()));
+		ic.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
-		ic.setC_UOM(uom);
+		ic.setQtyEntered(qty.getAsBigDecimal());
+		ic.setC_UOM_ID(qty.getUOMId());
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 

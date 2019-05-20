@@ -29,6 +29,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -46,7 +47,6 @@ import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -80,6 +80,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -769,14 +770,11 @@ public final class DB
 
 	/**
 	 * Set PreparedStatement's parameter. Similar with calling <code>pstmt.setObject(index, param)</code>
-	 *
-	 * @param pstmt
-	 * @param index
-	 * @param param
-	 * @throws SQLException
 	 */
-	public static void setParameter(PreparedStatement pstmt, int index, Object param)
-			throws SQLException
+	public static void setParameter(
+			@NonNull final PreparedStatement pstmt,
+			final int index,
+			@Nullable final Object param) throws SQLException
 	{
 		if (param == null)
 			pstmt.setObject(index, null);
@@ -789,6 +787,8 @@ public final class DB
 		//
 		else if (param instanceof Timestamp)
 			pstmt.setTimestamp(index, (Timestamp)param);
+		else if (param instanceof Instant)
+			pstmt.setTimestamp(index, TimeUtil.asTimestamp(param));
 		else if (param instanceof java.util.Date) // metas: support for java.util.Date
 			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
 		else if (param instanceof LocalDateTime)
@@ -2353,6 +2353,17 @@ public final class DB
 	}
 
 	/**
+	 * @return e.g. (e.g. ColumnName IN (1, 2) OR ColumnName IS NULL)
+	 */
+	public static String buildSqlList(
+			@NonNull final String columnName,
+			@NonNull final Collection<? extends Object> paramsIn)
+	{
+		final List<Object> paramsOut = null;
+		return buildSqlList(columnName, paramsIn, paramsOut);
+	}
+
+	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
 	 * @param columnName
@@ -2361,7 +2372,10 @@ public final class DB
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
-	public static String buildSqlList(final String columnName, final Collection<? extends Object> paramsIn, final List<Object> paramsOut)
+	public static String buildSqlList(
+			@NonNull final String columnName,
+			@NonNull final Collection<? extends Object> paramsIn,
+			@Nullable final List<Object> paramsOut)
 	{
 		Check.assumeNotEmpty(paramsIn, "paramsIn not empty");
 

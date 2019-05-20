@@ -66,6 +66,7 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -322,7 +323,7 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 		{
 			M_Warehouse_ID = new Query(ctx, org.compiere.model.I_M_Warehouse.Table_Name, "", ITrx.TRXNAME_None)
 					.setClient_ID()
-					.setApplyAccessFilter(true)
+					.setRequiredAccess(Access.READ)
 					.setLimit(1)
 					.setOrderBy(org.compiere.model.I_M_Warehouse.COLUMNNAME_Name)
 					.firstId();

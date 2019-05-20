@@ -113,7 +113,7 @@ public class HUTransformService
 		return builder().build();
 	}
 
-	public static HUTransformService newInstance(@NonNull final IMutableHUContext huContext)
+	public static HUTransformService newInstance(@NonNull final IHUContext huContext)
 	{
 		return builderForHUcontext().huContext(huContext).build();
 	}

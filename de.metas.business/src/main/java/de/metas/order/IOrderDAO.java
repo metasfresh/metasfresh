@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -40,6 +41,7 @@ import org.compiere.model.X_C_Order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -145,7 +147,7 @@ public interface IOrderDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
 
-	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
+	Set<UserId> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
 	
 	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
 
@@ -157,4 +159,6 @@ public interface IOrderDAO extends ISingletonService
 	 * @return value in accounting currency
 	 */
 	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
+
+	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 }

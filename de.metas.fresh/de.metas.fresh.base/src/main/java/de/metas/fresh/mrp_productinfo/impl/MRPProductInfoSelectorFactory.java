@@ -216,11 +216,11 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		Check.assumeNotNull(params, "param 'params' is not null");
 
 		Check.errorUnless(params.hasParameter(paramPrefix + PRODUCT_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + PRODUCT_PARAM_SUFFIX, params);
-		final int productID = params.getParameterAsInt(paramPrefix + PRODUCT_PARAM_SUFFIX);
+		final int productID = params.getParameterAsInt(paramPrefix + PRODUCT_PARAM_SUFFIX, -1);
 		Check.errorIf(productID <= 0, "Params={} has {} <= 0", params, paramPrefix + PRODUCT_PARAM_SUFFIX);
 
 		Check.errorUnless(params.hasParameter(paramPrefix + ASI_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + ASI_PARAM_SUFFIX, params);
-		final int asiID = params.getParameterAsInt(paramPrefix + ASI_PARAM_SUFFIX);
+		final int asiID = params.getParameterAsInt(paramPrefix + ASI_PARAM_SUFFIX, -1);
 		Check.errorIf(asiID < 0, "Params={} has {} < 0", params, paramPrefix + ASI_PARAM_SUFFIX);
 
 		Check.errorUnless(params.hasParameter(paramPrefix + DATE_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + DATE_PARAM_SUFFIX, params);

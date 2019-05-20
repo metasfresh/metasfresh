@@ -29,7 +29,6 @@ import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
@@ -42,9 +41,9 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
@@ -60,6 +59,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -90,8 +91,11 @@ public final class VBPartner extends CDialog implements ActionListener
 		super(frame, Msg.translate(Env.getCtx(), "C_BPartner_ID"), true);
 		m_WindowNo = WindowNo;
 		m_readOnly = !Env.getUserRolePermissions().canUpdate(
-				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-				Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name), 0, false);
+				Env.getClientId(Env.getCtx()),
+				Env.getOrgId(Env.getCtx()),
+				Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name),
+				0,
+				false);
 		log.info("R/O=" + m_readOnly);
 		try
 		{
@@ -208,7 +212,8 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (!ro)
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
+					Env.getClientId(Env.getCtx()),
+					Env.getOrgId(Env.getCtx()),
 					InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class),
 					0,
 					false);
@@ -216,8 +221,11 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (!ro)
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-					MLocation.Table_ID, 0, false);
+					Env.getClientId(Env.getCtx()),
+					Env.getOrgId(Env.getCtx()),
+					InterfaceWrapperHelper.getTableId(I_C_Location.class),
+					0,
+					false);
 		}
 		fAddress = new VLocation("C_Location_ID", false, ro, true, new MLocationLookup(Env.getCtx(), m_WindowNo));
 		fAddress.setValue(null);
@@ -284,7 +292,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	private Object[] fillGreeting()
 	{
 		String sql = "SELECT C_Greeting_ID, Name FROM C_Greeting WHERE IsActive='Y' ORDER BY 2";
-		sql = Env.getUserRolePermissions().addAccessSQL(sql, "C_Greeting", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, "C_Greeting", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		return DB.getKeyNamePairs(sql, true);
 	}	// fillGreeting
 

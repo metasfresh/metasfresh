@@ -2,8 +2,8 @@ package de.metas.letter.service.async.spi.impl;
 
 import java.util.Set;
 
-import org.adempiere.location.Location;
-import org.adempiere.location.LocationRepository;
+import de.metas.location.Location;
+import de.metas.location.LocationRepository;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 

@@ -3,8 +3,6 @@
  */
 package org.adempiere.process;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -33,6 +31,7 @@ import org.adempiere.service.RolePermRevokeAccess;
 import org.compiere.model.MRolePermRequest;
 
 import de.metas.process.JavaProcess;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Services;
 
 /**

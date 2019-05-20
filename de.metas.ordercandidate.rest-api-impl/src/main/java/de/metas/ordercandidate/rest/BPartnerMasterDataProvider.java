@@ -26,15 +26,15 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerQuery.BPartnerQueryBuilder;
 import de.metas.cache.CCache;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
 import de.metas.ordercandidate.rest.exceptions.MissingPropertyException;
@@ -221,9 +221,9 @@ public class BPartnerMasterDataProvider
 
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
 
-		final BPartnerQueryBuilder query = BPartnerQuery.builder()
-				.orgId(context.getOrgId())
-				.includeAnyOrg(true)
+		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
+				.onlyOrgId(context.getOrgId())
+				.onlyOrgId(OrgId.ANY)
 				.outOfTrx(syncAdvise.isLoadReadOnly())
 				.failIfNotExists(syncAdvise.isFailIfNotExists())
 				.externalId(json.getExternalId())
@@ -232,7 +232,7 @@ public class BPartnerMasterDataProvider
 		final JsonBPartnerLocation jsonLocation = jsonBPartnerInfo.getLocation();
 		if (jsonLocation != null && jsonLocation.getGln() != null)
 		{
-			query.locatorGln(jsonLocation.getGln());
+			query.locationGln(jsonLocation.getGln());
 		}
 
 		return bpartnersRepo
@@ -485,7 +485,7 @@ public class BPartnerMasterDataProvider
 			{
 				throw new MissingPropertyException("Missing propery CountryCode; JsonBPartnerLocation={}", json);
 			}
-			final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
+			final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
 			final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
@@ -493,7 +493,7 @@ public class BPartnerMasterDataProvider
 			locationRecord.setAddress2(json.getAddress2());
 			locationRecord.setPostal(locationRecord.getPostal());
 			locationRecord.setCity(locationRecord.getCity());
-			locationRecord.setC_Country_ID(countryId);
+			locationRecord.setC_Country_ID(countryId.getRepoId());
 
 			locationsRepo.save(locationRecord);
 
@@ -521,7 +521,7 @@ public class BPartnerMasterDataProvider
 	{
 		final I_C_Location location = Check.assumeNotNull(bpLocationRecord.getC_Location(), "The given bpLocationRecord needs to have a C_Location; bpLocationRecord={}", bpLocationRecord);
 
-		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
+		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(location.getC_Country_ID()));
 
 		return JsonBPartnerLocation.builder()
 				.externalId(bpLocationRecord.getExternalId())

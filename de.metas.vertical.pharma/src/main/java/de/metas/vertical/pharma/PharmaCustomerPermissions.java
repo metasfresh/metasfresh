@@ -2,6 +2,7 @@ package de.metas.vertical.pharma;
 
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableSet;
@@ -36,13 +37,13 @@ import lombok.ToString;
 @ToString
 public final class PharmaCustomerPermissions
 {
-	public static PharmaCustomerPermissions of(final org.compiere.model.I_C_BPartner bpartner)
+	public static PharmaCustomerPermissions of(@NonNull final org.compiere.model.I_C_BPartner bpartner)
 	{
 		if (!bpartner.isCustomer())
 		{
 			return NONE;
 		}
-		
+
 		final I_C_BPartner pharmaBPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
 
 		final ImmutableSet.Builder<PharmaCustomerPermission> permissionsBuilder = ImmutableSet.builder();
@@ -66,6 +67,10 @@ public final class PharmaCustomerPermissions
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.VETERINARY_PHARMACY);
 		}
+		if (pharmaBPartner.isPharmaCustomerNarcoticsPermission())
+		{
+			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_NARCOTICS);
+		}
 
 		final ImmutableSet<PharmaCustomerPermission> permissions = permissionsBuilder.build();
 		if (permissions.isEmpty())
@@ -83,11 +88,6 @@ public final class PharmaCustomerPermissions
 	private PharmaCustomerPermissions(final Set<PharmaCustomerPermission> permissions)
 	{
 		this.permissions = ImmutableSet.copyOf(permissions);
-	}
-
-	public boolean hasNoPermissions()
-	{
-		return permissions.isEmpty();
 	}
 
 	public boolean hasAtLeastOnePermission()

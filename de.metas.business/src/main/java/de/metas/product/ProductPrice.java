@@ -1,6 +1,7 @@
 package de.metas.product;
 
 import java.math.BigDecimal;
+import java.util.function.Function;
 
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -69,5 +70,10 @@ public class ProductPrice
 				.value(Money.of(value, getCurrencyId()))
 				.uomId(uomId)
 				.build();
+	}
+
+	public <T> T transform(@NonNull final Function<ProductPrice, T> mapper)
+	{
+		return mapper.apply(this);
 	}
 }

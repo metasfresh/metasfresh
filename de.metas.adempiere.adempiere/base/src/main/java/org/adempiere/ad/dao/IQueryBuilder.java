@@ -145,17 +145,16 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, Object value);
 
 	/**
-	 * @see ICompositeQueryFilter#addSubstringFilter(String, String)
+	 * Filters using the given string as a <b>substring</b>.
+	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
+	 *
+	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
 
 	/**
 	 * See {@link #addStringLikeFilter(String, String, boolean)}.
-	 *
-	 * @param column
-	 * @param substring
-	 * @param ignoreCase
-	 * @return
 	 */
 	IQueryBuilder<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 

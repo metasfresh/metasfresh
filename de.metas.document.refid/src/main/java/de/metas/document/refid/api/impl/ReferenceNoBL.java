@@ -1,5 +1,7 @@
 package de.metas.document.refid.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+
 /*
  * #%L
  * de.metas.document.refid
@@ -28,10 +30,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -55,11 +57,8 @@ public class ReferenceNoBL implements IReferenceNoBL
 	{
 		final IReferenceNoDAO dao = Services.get(IReferenceNoDAO.class);
 
-		final Properties localCtx = Env.deriveCtx(po.getCtx());
-		Env.setContext(localCtx, "#AD_Client_ID", po.getAD_Client_ID());
-		Env.setContext(localCtx, "#AD_Org_ID", po.getAD_Org_ID());
+		final IContextAware contextAware = getContextAware(po);
 
-		final String trxName = po.get_TrxName();
 
 		final String referenceNoStr = instance.generateReferenceNo(po);
 		if (IReferenceNoGenerator.REFERENCENO_None == referenceNoStr)
@@ -68,7 +67,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 			return;
 		}
 
-		final I_C_ReferenceNo referenceNo = dao.getCreateReferenceNo(localCtx, instance.getType(), referenceNoStr, trxName);
+		final I_C_ReferenceNo referenceNo = dao.getCreateReferenceNo(instance.getType(), referenceNoStr, contextAware);
 		dao.getCreateReferenceNoDoc(referenceNo, TableRecordReference.of(po));
 
 		// 04153 : mark the reference numbers with 'referenceNoStr' created by the system with isManual = N
@@ -95,8 +94,8 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final int recordId = po.get_ID();
 		final int referenceNoTypeId = instance.getType().getC_ReferenceNo_Type_ID();
 
-		final List<I_C_ReferenceNo_Doc> assignments = dao.retrieveDocAssignments(ctx, referenceNoTypeId, tableId, recordId, trxName);
-		dao.removeDocAssignments(assignments);
+		final List<I_C_ReferenceNo_Doc> assignments = dao.retrieveAllDocAssignments(ctx, referenceNoTypeId, tableId, recordId, trxName);
+		assignments.forEach(InterfaceWrapperHelper::delete);
 	}
 
 	@Override
@@ -106,7 +105,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		final IReferenceNoDAO dao = Services.get(IReferenceNoDAO.class);
 
 		final List<IReferenceNoGeneratorInstance> result = new ArrayList<>();
-		for (I_C_ReferenceNo_Type type : dao.retrieveReferenceNoTypes(ctx))
+		for (final I_C_ReferenceNo_Type type : dao.retrieveReferenceNoTypes())
 		{
 			final IReferenceNoGeneratorInstance generatorInstance = getReferenceNoGeneratorInstance(ctx, type);
 			result.add(generatorInstance);
@@ -201,7 +200,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		}
 
 		final IReferenceNoDAO dao = Services.get(IReferenceNoDAO.class);
-		final List<I_C_ReferenceNo_Doc> fromAssignments = dao.retrieveDocAssignments(ctx,
+		final List<I_C_ReferenceNo_Doc> fromAssignments = dao.retrieveAllDocAssignments(ctx,
 				-1, // referenceNoTypeId - return all assignments
 				MTable.getTable_ID(fromTableName), // tableId
 				fromRecordId,

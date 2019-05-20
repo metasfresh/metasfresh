@@ -27,14 +27,25 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -111,20 +122,41 @@ public final class Quantity implements Comparable<Quantity>
 		return quantity.getAsBigDecimal();
 	}
 
+	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
+	{
+		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
+
+		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
+				.filter(Predicates.notNull())
+				.iterator();
+		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
+		if (uomIds2qties.isEmpty())
+		{
+			throw new AdempiereException("The given quantities may not be empty");
+		}
+
+		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
+		Check.errorIf(uomIds.size() > 1,
+				"at least two quantity instances have different uoms: {}", uomIds2qties);
+
+		return CollectionUtils.singleElement(uomIds.asList());
+	}
+
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
 
 	// NOTE to dev: all fields shall be final because this is a immutable object. Please keep that logic if u are adding more fields
 	private final BigDecimal qty;
+
+	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM uom;
 
 	private final BigDecimal sourceQty;
+
+	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM sourceUom;
 
 	/**
 	 * Constructs a quantity object without source quantity/uom. More preciselly, source quantity/uom will be set so same values as quantity/uom.
-	 *
-	 * @param qty
-	 * @param uom
 	 */
 	public Quantity(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
@@ -277,6 +309,11 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	public UomId getUomId()
+	{
+		return UomId.ofRepoId(uom.getC_UOM_ID());
+	}
+
 	public String getUOMSymbol()
 	{
 		return uom.getUOMSymbol();
@@ -357,11 +394,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity negate()
 	{
-		if(isZero())
+		if (isZero())
 		{
 			return this;
 		}
-		
+
 		return new Quantity(qty.negate(), uom, sourceQty.negate(), sourceUom);
 	}
 
@@ -615,11 +652,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity divide(@NonNull final BigDecimal divisor)
 	{
-		if(BigDecimal.ONE.compareTo(divisor) == 0)
+		if (BigDecimal.ONE.compareTo(divisor) == 0)
 		{
 			return this;
 		}
-		
+
 		return new Quantity(
 				qty.divide(divisor, uom.getStdPrecision(), RoundingMode.HALF_UP),
 				uom,

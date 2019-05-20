@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -44,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -251,13 +251,14 @@ public class GridWindowVO implements Serializable
 		if (vo != null && applyRolePermissions)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-			final Boolean windowAccess = role.checkWindowAccess(vo.getAD_Window_ID());
+			final Boolean windowAccess = role.checkWindowPermission(vo.getAD_Window_ID())
+					.getReadWriteBoolean();
 			
 			// no access 
 			if (windowAccess == null)
 			{
 				final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, adWindowId);
-				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), adWindowId, null, ex.getLocalizedMessage());
+				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getRoleId(), adWindowId, null, ex.getLocalizedMessage());
 				throw ex;
 			}
 			// read-only access
@@ -614,11 +615,6 @@ public class GridWindowVO implements Serializable
 			loadErrorMessages.append("\n");
 		}
 		loadErrorMessages.append(message);
-	}
-	
-	private String getLoadErrorMessage()
-	{
-		return loadErrorMessages == null || loadErrorMessages.length() == 0 ? null : loadErrorMessages.toString();
 	}
 	
 	public int getAD_Window_ID()

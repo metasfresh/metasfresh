@@ -95,10 +95,9 @@ public final class Params implements IParams
 	}
 
 	@Override
-	public int getParameterAsInt(final String parameterName)
+	public int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
 		final Object value = getParameterAsObject(parameterName);
-		final int defaultValue = 0;
 		return NumberUtils.asInt(value, defaultValue);
 	}
 

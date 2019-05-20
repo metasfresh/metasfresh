@@ -166,4 +166,30 @@ public class CompareQueryFilterTest
 				.as("filter=" + filter)
 				.isTrue();
 	}
+
+	@Test
+	public void testCompare_Like()
+	{
+		final I_Test model = newInstance(I_Test.class);
+		model.setDescription("abc");
+
+		performTestWithLike(model, "_b_", true);
+		performTestWithLike(model, "%b%", true);
+		performTestWithLike(model, "abc", true);
+		performTestWithLike(model, "b_", false);
+		performTestWithLike(model, "b%", false);
+		performTestWithLike(model, "abcd", false);
+	}
+
+	private void performTestWithLike(
+			final I_Test model,
+			final String value,
+			final boolean expectedResult)
+	{
+		final CompareQueryFilter<Object> filter = new CompareQueryFilter<>(I_Test.COLUMNNAME_Description, Operator.STRING_LIKE, value);
+
+		assertThat(filter.accept(model))
+				.as("filter=" + filter)
+				.isEqualTo(expectedResult);
+	}
 }

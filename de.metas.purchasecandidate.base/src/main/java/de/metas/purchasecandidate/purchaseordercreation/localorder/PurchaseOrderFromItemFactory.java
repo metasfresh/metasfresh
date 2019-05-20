@@ -25,6 +25,7 @@ import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -115,7 +116,7 @@ import lombok.NonNull;
 		purchaseItem2OrderLine
 				.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
 
-		final Set<Integer> userIdsToNotify = getUserIdsToNotify();
+		final Set<UserId> userIdsToNotify = getUserIdsToNotify();
 		if (userIdsToNotify.isEmpty())
 		{
 			return order;
@@ -194,7 +195,7 @@ import lombok.NonNull;
 		return ImmutableList.of(TableRecordReference.of(order), bpValue, bpName);
 	}
 
-	private Set<Integer> getUserIdsToNotify()
+	private Set<UserId> getUserIdsToNotify()
 	{
 		final ImmutableSet<Integer> salesOrderIds = purchaseItem2OrderLine.keySet()
 				.stream()

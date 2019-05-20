@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Requisition
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -841728184L;
+	private static final long serialVersionUID = 1500795738L;
 
     /** Standard Constructor */
     public X_M_Requisition (Properties ctx, int M_Requisition_ID, String trxName)
@@ -42,23 +25,19 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
         {
 			setAD_User_ID (0);
 			setC_DocType_ID (0);
-			setDateDoc (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setDateDoc (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setDateRequired (new Timestamp( System.currentTimeMillis() ));
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
 			setIsApproved (false);
 			setM_PriceList_ID (0);
 			setM_Requisition_ID (0);
 			setM_Warehouse_ID (0);
-			setPosted (false);
-			setPriorityRule (null);
-// 5
+			setPosted (false); // N
+			setPriorityRule (null); // 5
 			setProcessed (false);
-			setTotalLines (Env.ZERO);
+			setTotalLines (BigDecimal.ZERO);
         } */
     }
 
@@ -68,29 +47,13 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_Requisition[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -112,7 +75,7 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -186,19 +149,16 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDoc);
 	}
 
-	/** Set Date Required.
-		@param DateRequired 
-		Date when required
-	  */
+	/** Set Zieldatum.
+		@param DateRequired Zieldatum	  */
 	@Override
 	public void setDateRequired (java.sql.Timestamp DateRequired)
 	{
 		set_Value (COLUMNNAME_DateRequired, DateRequired);
 	}
 
-	/** Get Date Required.
-		@return Date when required
-	  */
+	/** Get Zieldatum.
+		@return Zieldatum	  */
 	@Override
 	public java.sql.Timestamp getDateRequired () 
 	{
@@ -228,32 +188,34 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	public static final int DOCACTION_AD_Reference_ID=135;
 	/** Complete = CO */
 	public static final String DOCACTION_Complete = "CO";
-	/** Genehmigen = AP */
-	public static final String DOCACTION_Genehmigen = "AP";
-	/** Ablehnen = RJ */
-	public static final String DOCACTION_Ablehnen = "RJ";
-	/** Buchen = PO */
-	public static final String DOCACTION_Buchen = "PO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
 	/** Void = VO */
 	public static final String DOCACTION_Void = "VO";
 	/** Close = CL */
 	public static final String DOCACTION_Close = "CL";
-	/** Stornieren - Korrektur = RC */
-	public static final String DOCACTION_Stornieren_Korrektur = "RC";
-	/** Rückbuchung = RA */
-	public static final String DOCACTION_Rueckbuchung = "RA";
-	/** Annulieren = IN */
-	public static final String DOCACTION_Annulieren = "IN";
-	/** Reaktivieren = RE */
-	public static final String DOCACTION_Reaktivieren = "RE";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
 	/** None = -- */
 	public static final String DOCACTION_None = "--";
 	/** Prepare = PR */
 	public static final String DOCACTION_Prepare = "PR";
-	/** Entsperren = XL */
-	public static final String DOCACTION_Entsperren = "XL";
-	/** Warten und fertigstellen = WC */
-	public static final String DOCACTION_WartenUndFertigstellen = "WC";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -283,10 +245,10 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	public static final String DOCSTATUS_Drafted = "DR";
 	/** Completed = CO */
 	public static final String DOCSTATUS_Completed = "CO";
-	/** Genehmigt = AP */
-	public static final String DOCSTATUS_Genehmigt = "AP";
-	/** Nicht genehmigt = NA */
-	public static final String DOCSTATUS_NichtGenehmigt = "NA";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
 	/** Invalid = IN */
@@ -295,14 +257,14 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	public static final String DOCSTATUS_Reversed = "RE";
 	/** Closed = CL */
 	public static final String DOCSTATUS_Closed = "CL";
-	/** Unbekannt = ?? */
-	public static final String DOCSTATUS_Unbekannt = "??";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
 	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Warten auf Zahlung = WP */
-	public static final String DOCSTATUS_WartenAufZahlung = "WP";
-	/** Warten auf Bestätigung = WC */
-	public static final String DOCSTATUS_WartenAufBestaetigung = "WC";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
@@ -323,7 +285,7 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -333,7 +295,7 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -341,14 +303,6 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getDocumentNo());
-    }
 
 	/** Set Kommentar/Hilfe.
 		@param Help 
@@ -638,7 +592,7 @@ public class X_M_Requisition extends org.compiere.model.PO implements I_M_Requis
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalLines);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

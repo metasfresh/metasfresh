@@ -67,12 +67,6 @@ public class CreateDBFromTemplateScript implements IScript
 	}
 
 	@Override
-	public String getModuleName()
-	{
-		return "000";
-	}
-
-	@Override
 	public String getFileName()
 	{
 

@@ -19,6 +19,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -139,7 +140,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery queueQuery = printingQueueBL.createPrintingQueueQuery();
 
-		queueQuery.setApplyAccessFilterRW(true);
+		queueQuery.setRequiredAccess(Access.WRITE);
 
 		if (p_IsSelected)
 		{
@@ -188,7 +189,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 				.addOnlyActiveRecordsFilter()
 				.filter(processQueryFilter)
 				.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.setClient_ID();
 
 		final int count = query.createSelection(selectionId);

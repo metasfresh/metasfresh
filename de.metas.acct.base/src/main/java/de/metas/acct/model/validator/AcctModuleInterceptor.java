@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
@@ -60,6 +59,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductActivityProvider;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Services;
 
 /**

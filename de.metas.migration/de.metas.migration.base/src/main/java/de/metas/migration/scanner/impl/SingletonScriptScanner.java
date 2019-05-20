@@ -45,7 +45,7 @@ public class SingletonScriptScanner extends AbstractScriptScanner
 		super(fileRef.getScriptScanner());
 		this.fileRef = fileRef;
 
-		// make sure the file exists and is aregular file
+		// make sure the file exists and is a regular file
 		if (!fileRef.getFile().exists())
 		{
 			throw new ScriptException("Script file doesn't exist: " + fileRef.getFileName());

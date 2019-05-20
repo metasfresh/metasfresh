@@ -29,6 +29,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
+import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MCash;
 import org.compiere.model.MInOut;
 import org.compiere.model.MJournal;
@@ -36,7 +37,6 @@ import org.compiere.model.MMovement;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPayment;
 import org.compiere.model.MProjectIssue;
-import org.compiere.model.MRequisition;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -235,7 +235,7 @@ public class FactAcctReset extends JavaProcess
 	//		docBaseType = "= '" + X_C_DocType.DOCBASETYPE_GLDocument + "'";
 		else if (AD_Table_ID == MMovement.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialMovement + "'";
-		else if (AD_Table_ID == MRequisition.Table_ID)
+		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Requisition.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PurchaseRequisition + "'";
 		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Inventory.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory + "'";

@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,9 +35,9 @@ import org.compiere.util.Env;
 
 /**
  * Retain only those records which had the AD_Client_ID equals with the one from Context.
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <T>
  */
 public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -65,7 +65,6 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 
 	public ContextClientQueryFilter(final Properties ctx, final boolean includeSystemClient)
 	{
-		super();
 		this.ctx = ctx;
 		this.includeSystemClient = includeSystemClient;
 		this.sql = includeSystemClient ? SQL_ADClientOrSystem : SQL_ADClient;
@@ -123,7 +122,7 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		{
 			return true;
 		}
-		
+
 		return false;
 	}
 

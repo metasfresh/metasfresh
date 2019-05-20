@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.swing.event.EventListenerList;
@@ -52,8 +51,6 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -70,7 +67,6 @@ import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
@@ -90,7 +86,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -240,8 +235,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	private final AttachmentsMap attachmentsMap;
 	/** Chats */
 	private HashMap<Integer, Integer> m_Chats = null;
-	/** Locks */
-	private final ExtendedMemorizingSupplier<Set<Integer>> lockedRecordIdsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveLockedRecordIds());
 
 	/** Current Row */
 	private int m_currentRow = -1;
@@ -1348,7 +1341,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		catch (final Exception e)
 		{
-			log.error("{} - row={}", this, m_currentRow, e);
+			log.error("dataSave: {} - row={}", this, m_currentRow, e);
 		}
 		return false;
 	}   // dataSave
@@ -1691,7 +1684,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_KeyColumnName, keyColumnName);
 
 		attachmentsMap.setKeyColumnName(keyColumnName);
-		lockedRecordIdsSupplier.forget();
 	}
 
 	/**
@@ -2558,61 +2550,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 	}	// getCM_ChatID
 
-	/** Retrieve locked recordIds for current user */
-	private Set<Integer> retrieveLockedRecordIds()
-	{
-		if (!canHaveAttachment())
-		{
-			return ImmutableSet.of();
-		}
-
-		final int adUserId = Env.getAD_User_ID(Env.getCtx());
-		return Services.get(IUserRolePermissionsDAO.class).retrievePrivateAccessRecordIds(adUserId, getAD_Table_ID());
-	}
-
-	private Set<Integer> getLockedRecordIds()
-	{
-		return lockedRecordIdsSupplier.get();
-	}
-
-	/**
-	 * @return true if the record is locked
-	 */
-	public boolean isLocked()
-	{
-		if (!Env.getUserRolePermissions(getCtx()).hasPermission(IUserRolePermissions.PERMISSION_PersonalLock))
-		{
-			return false;
-		}
-
-		return getLockedRecordIds().contains(getRecord_ID());
-	}	// isLocked
-
-	/**
-	 * Lock Record
-	 *
-	 * @param ctx context
-	 * @param recordId id
-	 * @param lock true if lock, otherwise unlock
-	 */
-	public void lock(final int recordId, final boolean lock)
-	{
-		final int adUserId = Env.getAD_User_ID(Env.getCtx());
-		final int adTableId = getAD_Table_ID();
-
-		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		if(lock)
-		{
-			permissionsDAO.createPrivateAccess(adUserId, adTableId, recordId);
-		}
-		else
-		{
-			permissionsDAO.deletePrivateAccess(adUserId, adTableId, recordId);
-		}
-
-		lockedRecordIdsSupplier.forget();
-	}
-
 	/**************************************************************************
 	 * Data Status Listener from MTable.
 	 * - get raw info and add current row information
@@ -3172,8 +3109,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return "";
 		}
-
-		log.debug(field.getColumnName() + "=" + value + " - Row=" + m_currentRow);
 
 		//
 		// Convert the given value to internal value

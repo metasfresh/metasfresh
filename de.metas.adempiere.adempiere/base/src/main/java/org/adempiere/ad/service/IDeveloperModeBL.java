@@ -13,11 +13,11 @@ package org.adempiere.ad.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -54,15 +54,4 @@ public interface IDeveloperModeBL extends ISingletonService
 	 * @param runnable
 	 */
 	void executeAsSystem(ContextRunnable runnable);
-
-	/**
-	 * Create AD_Message or AD_Element
-	 * 
-	 * @param adLanguage
-	 * @param text
-	 * @param checkMessage try creating a message (if valid)
-	 * @param checkElement try creating an element (if valid)
-	 * @return true if created or updated
-	 */
-	boolean createMessageOrElement(String adLanguage, String text, boolean checkMessage, boolean checkElement);
 }

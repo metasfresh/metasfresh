@@ -14,7 +14,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 304317719L;
+	private static final long serialVersionUID = 644045757L;
 
     /** Standard Constructor */
     public X_AD_Tab (Properties ctx, int AD_Tab_ID, String trxName)
@@ -35,6 +35,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 			setIsInsertRecord (true); // Y
 			setIsReadOnly (false);
 			setIsRefreshAllOnActivate (false); // N
+			setIsRefreshViewOnChangeEvents (false); // N
 			setIsSearchCollapsed (true); // Y
 			setIsSingleRow (false);
 			setIsSortTab (false); // N
@@ -418,16 +419,16 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		return ii.intValue();
 	}
 
-	/** Set Schnelleingabe abschalten.
-		@param AllowQuickInput Schnelleingabe abschalten	  */
+	/** Set Schnelleingabe einschalten.
+		@param AllowQuickInput Schnelleingabe einschalten	  */
 	@Override
 	public void setAllowQuickInput (boolean AllowQuickInput)
 	{
 		set_Value (COLUMNNAME_AllowQuickInput, Boolean.valueOf(AllowQuickInput));
 	}
 
-	/** Get Schnelleingabe abschalten.
-		@return Schnelleingabe abschalten	  */
+	/** Get Schnelleingabe einschalten.
+		@return Schnelleingabe einschalten	  */
 	@Override
 	public boolean isAllowQuickInput () 
 	{
@@ -864,6 +865,29 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		return false;
 	}
 
+	/** Set Refresh view on change events.
+		@param IsRefreshViewOnChangeEvents Refresh view on change events	  */
+	@Override
+	public void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents)
+	{
+		set_Value (COLUMNNAME_IsRefreshViewOnChangeEvents, Boolean.valueOf(IsRefreshViewOnChangeEvents));
+	}
+
+	/** Get Refresh view on change events.
+		@return Refresh view on change events	  */
+	@Override
+	public boolean isRefreshViewOnChangeEvents () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsRefreshViewOnChangeEvents);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Search Active.
 		@param IsSearchActive 
 		This mark activates the search button from toolbar
@@ -1014,9 +1038,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -1024,8 +1046,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

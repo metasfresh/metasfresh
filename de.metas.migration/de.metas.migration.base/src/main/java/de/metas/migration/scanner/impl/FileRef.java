@@ -13,11 +13,11 @@ package de.metas.migration.scanner.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,24 +30,30 @@ import java.io.InputStream;
 import de.metas.migration.exception.ScriptException;
 import de.metas.migration.scanner.IFileRef;
 import de.metas.migration.scanner.IScriptScanner;
+import lombok.Getter;
+import lombok.ToString;
 
+@ToString(of = { "fileName", "virtual", "localFile" })
 public class FileRef implements IFileRef
 {
-	private final IFileRef parent;
-	private final File file;
-	private final String fileName;
-	private InputStream inputStream;
-	private final boolean virtual;
+	@Getter
 	private final IScriptScanner scriptScanner;
+
+	@Getter
+	private final IFileRef parent;
+
+	@Getter
+	private final String fileName;
+
+	@Getter
+	private final boolean virtual;
+
+	private final File localFile;
+	private InputStream inputStream;
 
 	public FileRef(final File file)
 	{
-		this(IScriptScanner.NULL, null, file);
-	}
-
-	protected FileRef(final IScriptScanner scriptScanner, final File file)
-	{
-		this(scriptScanner, null, file);
+		this(IScriptScanner.NULL, /* parent */null, file);
 	}
 
 	protected FileRef(final IScriptScanner scriptScanner, final IFileRef parent, final File file)
@@ -55,7 +61,7 @@ public class FileRef implements IFileRef
 		this(scriptScanner, parent, file, true);
 	}
 
-	protected FileRef(
+	private FileRef(
 			final IScriptScanner scriptScanner,
 			final IFileRef parent,
 			final File file,
@@ -63,25 +69,28 @@ public class FileRef implements IFileRef
 	{
 		if (parent == null && createParentIfNull)
 		{
-			this.parent = new FileRef(scriptScanner, parent, file.getParentFile(), false);
+			this.parent = new FileRef(scriptScanner, null, file.getParentFile(), false);
 		}
 		else
 		{
 			this.parent = parent;
 		}
 
-		this.file = file;
+		this.localFile = file;
 		fileName = file.getName();
 		inputStream = null;
 		virtual = false;
 		this.scriptScanner = scriptScanner;
 	}
 
-	protected FileRef(final IScriptScanner scriptScanner, final IFileRef parent, final String filename, final InputStream in)
+	protected FileRef(
+			final IScriptScanner scriptScanner,
+			final IFileRef parent,
+			final String filename,
+			final InputStream in)
 	{
-		super();
 		this.parent = parent;
-		file = null;
+		localFile = null;
 		fileName = filename;
 		inputStream = in;
 		virtual = true;
@@ -89,21 +98,9 @@ public class FileRef implements IFileRef
 	}
 
 	@Override
-	public IFileRef getParent()
-	{
-		return parent;
-	}
-
-	@Override
-	public String getFileName()
-	{
-		return fileName;
-	}
-
-	@Override
 	public File getFile()
 	{
-		return file;
+		return localFile;
 	}
 
 	@Override
@@ -114,33 +111,14 @@ public class FileRef implements IFileRef
 			InputStream in;
 			try
 			{
-				in = new FileInputStream(file);
+				in = new FileInputStream(localFile);
 			}
 			catch (final FileNotFoundException e)
 			{
-				throw new ScriptException("File not found: " + file, e);
+				throw new ScriptException("File not found: " + localFile, e);
 			}
 			inputStream = in;
 		}
 		return inputStream;
 	}
-
-	@Override
-	public boolean isVirtual()
-	{
-		return virtual;
-	}
-
-	@Override
-	public IScriptScanner getScriptScanner()
-	{
-		return scriptScanner;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "FileRef [fileName=" + fileName + ", file=" + file + ", virtual=" + virtual + ", scriptScanner=" + scriptScanner + "]";
-	}
-
 }

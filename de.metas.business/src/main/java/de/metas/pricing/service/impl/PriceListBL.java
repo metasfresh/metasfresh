@@ -26,7 +26,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Iterator;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;

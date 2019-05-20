@@ -46,7 +46,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
@@ -73,6 +72,8 @@ import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -746,14 +747,14 @@ public final class AEnv
 		{
 			s_workflow = Boolean.FALSE;
 			int AD_Table_ID = 645;	// AD_WF_Process
-			if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, true))
+			if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, Access.READ))
 			{
 				s_workflow = Boolean.TRUE;
 			}
 			else
 			{
 				AD_Table_ID = 644;	// AD_WF_Activity
-				if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, true))
+				if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, Access.READ))
 				{
 					s_workflow = Boolean.TRUE;
 				}

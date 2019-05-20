@@ -2,7 +2,7 @@ package de.metas.pricing.rules.campaign_price;
 
 import java.time.LocalDate;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;

@@ -123,7 +123,7 @@ public interface I_PP_Product_BOM
 	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_UOM_ID (int C_UOM_ID);
@@ -133,7 +133,7 @@ public interface I_PP_Product_BOM
 	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
@@ -389,7 +389,6 @@ public interface I_PP_Product_BOM
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: true
@@ -399,7 +398,6 @@ public interface I_PP_Product_BOM
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: true
@@ -482,6 +480,33 @@ public interface I_PP_Product_BOM
     public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object> COLUMN_Revision = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, Object>(I_PP_Product_BOM.class, "Revision", null);
     /** Column name Revision */
     public static final String COLUMNNAME_Revision = "Revision";
+
+	/**
+	 * Set Serial No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSerialNo_Sequence_ID (int SerialNo_Sequence_ID);
+
+	/**
+	 * Get Serial No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSerialNo_Sequence_ID();
+
+	public org.compiere.model.I_AD_Sequence getSerialNo_Sequence();
+
+	public void setSerialNo_Sequence(org.compiere.model.I_AD_Sequence SerialNo_Sequence);
+
+    /** Column definition for SerialNo_Sequence_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_AD_Sequence> COLUMN_SerialNo_Sequence_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOM, org.compiere.model.I_AD_Sequence>(I_PP_Product_BOM.class, "SerialNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+    /** Column name SerialNo_Sequence_ID */
+    public static final String COLUMNNAME_SerialNo_Sequence_ID = "SerialNo_Sequence_ID";
 
 	/**
 	 * Get Aktualisiert.

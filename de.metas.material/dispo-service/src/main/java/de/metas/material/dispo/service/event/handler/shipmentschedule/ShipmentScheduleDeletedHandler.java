@@ -2,8 +2,6 @@ package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import static java.math.BigDecimal.ZERO;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -24,6 +22,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 
 /*
  * #%L

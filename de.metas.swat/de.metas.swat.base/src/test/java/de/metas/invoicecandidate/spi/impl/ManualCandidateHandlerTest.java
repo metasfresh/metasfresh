@@ -281,7 +281,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_Sofort);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_Immediate);
 		ic1.setBill_BPartner(bpartner("1"));
 		ic1.setQtyDelivered(BigDecimal.ZERO);
 		POJOWrapper.setInstanceName(ic1, "ic1");
@@ -322,7 +322,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		assertThat(manualIc3.getNetAmtToInvoice(), comparesEqualTo(new BigDecimal("50")));
 		assertThat(manualIc3.getSplitAmt(), comparesEqualTo(BigDecimal.ZERO));
 
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered);
 		InterfaceWrapperHelper.save(ic1);
 
 		invoiceCandDAO.invalidateAllCands(ctx, ITrx.TRXNAME_None);
@@ -343,7 +343,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		assertThat(manualIc3.getNetAmtToInvoice(), comparesEqualTo(new BigDecimal("50")));
 		assertThat(manualIc3.getSplitAmt(), comparesEqualTo(BigDecimal.ZERO));
 
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic1.setIsToRecompute(true);
 		invoiceCandDAO.invalidateAllCands(ctx, ITrx.TRXNAME_None);
 
@@ -389,7 +389,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
 		ic1.setC_InvoiceSchedule(schedule("1", X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily));
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
 		ic1.setBill_BPartner(bpartner("1"));
 		ic1.setQtyDelivered(ic1.getQtyOrdered());
 		POJOWrapper.setInstanceName(ic1, "ic1");
@@ -507,7 +507,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
 		ic1.setC_InvoiceSchedule(schedule("1", X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily));
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
 		ic1.setBill_BPartner(bpartner("1"));
 		ic1.setC_Order(order1);
 		ic1.setC_OrderLine(orderLine("1"));
@@ -553,7 +553,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		assertThat(manualIc3.getNetAmtToInvoice(), comparesEqualTo(new BigDecimal("50")));
 		assertThat(manualIc3.getSplitAmt(), comparesEqualTo(BigDecimal.ZERO));
 
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_AfterOrderDelivered);
 
 		invoiceCandDAO.invalidateAllCands(ctx, ITrx.TRXNAME_None);
 
@@ -582,7 +582,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		user.setC_BPartner_ID(bpartner("1").getC_BPartner_ID());
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
-		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
 		ic1.setBill_BPartner(bpartner("1"));
 		ic1.setC_Order(order("1"));
 		ic1.setC_OrderLine(orderLine("1"));
@@ -594,7 +594,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(ic1);
 
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
-		ic2.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
+		ic2.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
 		ic2.setBill_BPartner(bpartner("1"));
 		ic2.setC_Order(order("2"));
 		ic2.setC_OrderLine(orderLine("2"));

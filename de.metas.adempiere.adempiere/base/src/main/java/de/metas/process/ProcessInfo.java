@@ -20,8 +20,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -34,7 +32,6 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
-import org.adempiere.user.UserId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -61,9 +58,15 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -93,12 +96,12 @@ public final class ProcessInfo implements Serializable
 		adProcessId = builder.getAD_Process_ID();
 		pinstanceId = builder.getPInstanceId();
 
-		adClientId = builder.getAdClientId();
-		Check.assumeNotNull(adClientId, "Parameter adClientId is not null");
+		clientId = builder.getAdClientId();
+		Check.assumeNotNull(clientId, "Parameter adClientId is not null");
 
-		adOrgId = builder.getAdOrgId();
-		adUserId = builder.getAdUserId();
-		adRoleId = builder.getAD_Role_ID();
+		orgId = builder.getAdOrgId();
+		userId = builder.getAdUserId();
+		roleId = builder.getRoleId();
 
 		adWindowId = builder.getAdWindowId();
 
@@ -110,6 +113,7 @@ public final class ProcessInfo implements Serializable
 		translateExcelHeaders = builder.isTranslateExcelHeaders();
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
+		invokedByScheduler = builder.isInvokedByScheduler();
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -150,7 +154,9 @@ public final class ProcessInfo implements Serializable
 	private final Properties ctx;
 
 	/** Title of the Process/Report */
+	@Getter
 	private final String title;
+	@Getter
 	private final AdProcessId adProcessId;
 
 	/** Table ID if the Process */
@@ -160,10 +166,10 @@ public final class ProcessInfo implements Serializable
 	private final Set<TableRecordReference> selectedIncludedRecords;
 
 	private final String whereClause;
-	private final ClientId adClientId;
-	private final OrgId adOrgId;
-	private final UserId adUserId;
-	private final int adRoleId;
+	private final ClientId clientId;
+	private final OrgId orgId;
+	private final UserId userId;
+	private final RoleId roleId;
 	private final AdWindowId adWindowId;
 
 	private final int windowNo;
@@ -175,11 +181,19 @@ public final class ProcessInfo implements Serializable
 
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
+
+	@Getter
 	private final boolean translateExcelHeaders;
 	private final int adWorkflowId;
+
+	@Getter
 	private final boolean serverProcess;
 
+	@Getter
+	private final boolean invokedByScheduler;
+
 	/** Process Instance ID */
+	@Getter
 	private PInstanceId pinstanceId;
 
 	private Boolean async = null;
@@ -190,15 +204,23 @@ public final class ProcessInfo implements Serializable
 
 	//
 	// Reporting related
+
+	/** Is print preview instead of direct print ? Only relevant if this is a reporting process */
+	@Getter
 	private final boolean printPreview;
+	@Getter
 	private final boolean archiveReportData;
+	@Getter
 	private final boolean reportingProcess;
+	@Getter
 	private final Optional<String> reportTemplate;
 	private final Language reportLanguage;
+	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
 
 	/** Process result */
+	@Getter
 	private final ProcessExecutionResult result;
 
 	@Override
@@ -223,13 +245,6 @@ public final class ProcessInfo implements Serializable
 		return Env.coalesce(ctx);
 	}
 
-	/**
-	 * @return execution result
-	 */
-	public ProcessExecutionResult getResult()
-	{
-		return result;
-	}
 
 	/**
 	 * Advise if we want business logic to be executed asynchronously further down the road, or not.
@@ -243,8 +258,6 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * Shall only be called once. Intended to be called by {@link ProcessExecutor} only.
-	 *
-	 * @param async
 	 */
 	/* package */ void setAsync(final boolean async)
 	{
@@ -252,20 +265,10 @@ public final class ProcessInfo implements Serializable
 		this.async = async;
 	}
 
-	public PInstanceId getPinstanceId()
-	{
-		return pinstanceId;
-	}
-
 	public void setPInstanceId(final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
 		result.setPInstanceId(pinstanceId);
-	}
-
-	public AdProcessId getAdProcessId()
-	{
-		return adProcessId;
 	}
 
 	public String getClassName()
@@ -329,19 +332,9 @@ public final class ProcessInfo implements Serializable
 		return sqlStatement;
 	}
 
-	public boolean isTranslateExcelHeaders()
-	{
-		return translateExcelHeaders;
-	}
-
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
-	}
-
-	public boolean isServerProcess()
-	{
-		return serverProcess;
 	}
 
 	public String getTableNameOrNull()
@@ -466,17 +459,9 @@ public final class ProcessInfo implements Serializable
 		return Optional.of(record);
 	}
 
-	/**
-	 * @return process title/name
-	 */
-	public String getTitle()
-	{
-		return title;
-	}
-
 	public ClientId getClientId()
 	{
-		return adClientId;
+		return clientId;
 	}
 
 	public int getAD_Client_ID()
@@ -484,14 +469,19 @@ public final class ProcessInfo implements Serializable
 		return getClientId().getRepoId();
 	}
 
-	public int getAD_User_ID()
+	public UserId getUserId()
 	{
-		return UserId.toRepoId(adUserId);
+		return userId;
 	}
 
-	public int getAD_Role_ID()
+	public int getAD_User_ID()
 	{
-		return adRoleId;
+		return UserId.toRepoId(getUserId());
+	}
+
+	public RoleId getRoleId()
+	{
+		return roleId;
 	}
 
 	public int getAD_Window_ID()
@@ -548,32 +538,10 @@ public final class ProcessInfo implements Serializable
 		return new ProcessParams(getParameter());
 	}
 
-	/**
-	 * Is print preview instead of direct print ? Only relevant if this is a reporting process
-	 */
-	public boolean isPrintPreview()
-	{
-		return printPreview;
-	}
-
-	public boolean isArchiveReportData()
-	{
-		return archiveReportData;
-	}
-
-	/**
-	 * Is this a reporting process ?
-	 *
-	 * @return boolean
-	 */
-	public boolean isReportingProcess()
-	{
-		return reportingProcess;
-	}
 
 	public OrgId getOrgId()
 	{
-		return adOrgId;
+		return orgId;
 	}
 
 	public int getAD_Org_ID()
@@ -653,8 +621,8 @@ public final class ProcessInfo implements Serializable
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, true));
+		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, Access.WRITE));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -688,16 +656,6 @@ public final class ProcessInfo implements Serializable
 	public String getReportAD_Language()
 	{
 		return reportLanguage == null ? null : reportLanguage.getAD_Language();
-	}
-
-	public Optional<String> getReportTemplate()
-	{
-		return reportTemplate;
-	}
-
-	public boolean isReportApplySecuritySettings()
-	{
-		return reportApplySecuritySettings;
 	}
 
 	public OutputType getJRDesiredOutputType()
@@ -738,7 +696,7 @@ public final class ProcessInfo implements Serializable
 		private transient I_AD_Process _adProcess;
 		private ClientId _adClientId;
 		private UserId _adUserId;
-		private Integer _adRoleId;
+		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
 		private Optional<String> classname;
@@ -762,6 +720,8 @@ public final class ProcessInfo implements Serializable
 
 		private List<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
+		@Getter
+		private boolean invokedByScheduler = false;
 
 		private ProcessInfoBuilder()
 		{
@@ -844,16 +804,20 @@ public final class ProcessInfo implements Serializable
 
 			//
 			// AD_Role
-			int adRoleId = getAD_Role_ID();
-			if (adRoleId < 0)
+			RoleId adRoleId = getRoleId();
+			if (adRoleId == null)
 			{
 				// Use the first user role, which has access to our organization.
 				final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(processCtx, adUserId.getRepoId(), adOrgId.getRepoId())
+						.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(
+								adClientId,
+								adOrgId,
+								adUserId,
+								Env.getLocalDate(processCtx))
 						.orNull();
-				adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
+				adRoleId = role == null ? null : role.getRoleId();
 			}
-			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
+			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(adRoleId, Env.CTXVALUE_AD_Role_ID_NONE));
 
 			//
 			// Date
@@ -899,7 +863,12 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_Client_ID(final int adClientId)
 		{
-			this._adClientId = ClientId.ofRepoIdOrNull(adClientId);
+			return setClientId(ClientId.ofRepoIdOrNull(adClientId));
+		}
+
+		public ProcessInfoBuilder setClientId(final ClientId adClientId)
+		{
+			this._adClientId = adClientId;
 			return this;
 		}
 
@@ -932,29 +901,40 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_User_ID(final int adUserId)
 		{
-			this._adUserId = UserId.ofRepoIdOrNull(adUserId);
+			return setUserId(UserId.ofRepoIdOrNull(adUserId));
+		}
+
+		public ProcessInfoBuilder setUserId(final UserId adUserId)
+		{
+			this._adUserId = adUserId;
 			return this;
 		}
 
 		public ProcessInfoBuilder setAD_Role_ID(final int adRoleId)
 		{
+			return setRoleId(RoleId.ofRepoIdOrNull(adRoleId));
+		}
+
+		public ProcessInfoBuilder setRoleId(final RoleId adRoleId)
+		{
 			this._adRoleId = adRoleId;
 			return this;
 		}
 
-		private int getAD_Role_ID()
+		private RoleId getRoleId()
 		{
 			if (_adRoleId != null)
 			{
 				return _adRoleId;
 			}
+
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null)
 			{
-				return adPInstance.getAD_Role_ID();
+				return RoleId.ofRepoId(adPInstance.getAD_Role_ID());
 			}
 
-			return Env.getAD_Role_ID(getCtx());
+			return Env.getLoggedRoleId(getCtx());
 		}
 
 		public ProcessInfoBuilder setAD_Window_ID(int adWindowId)
@@ -1488,6 +1468,12 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder setInvokedByScheduler(final boolean invokedByScheduler)
+		{
+			this.invokedByScheduler = invokedByScheduler;
+			return this;
+		}
+
 		private String getWhereClause()
 		{
 			if (whereClause != null)
@@ -1649,7 +1635,7 @@ public final class ProcessInfo implements Serializable
 				if (parametersList != null && !parametersList.isEmpty())
 				{
 					final ProcessParams parameters = new ProcessParams(parametersList);
-					final int bpartnerId = parameters.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
+					final int bpartnerId = parameters.getParameterAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 					if (bpartnerId > 0)
 					{
 						final Language lang = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);

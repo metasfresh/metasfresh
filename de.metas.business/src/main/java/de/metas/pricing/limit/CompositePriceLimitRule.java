@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

@@ -20,6 +20,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -98,7 +100,7 @@ public final class ProcessClassParamInfo
 
 		this.mandatory = mandatory;
 	}
-	
+
 	public Class<?> getFieldType()
 	{
 		return fieldTypeRef.getReferencedClass();
@@ -113,10 +115,12 @@ public final class ProcessClassParamInfo
 	 * @param source
 	 * @param failIfNotValid
 	 */
-	public void loadParameterValue(final JavaProcess processInstance, final Field processField, final IRangeAwareParams source, final boolean failIfNotValid)
+	public void loadParameterValue(
+			@NonNull final JavaProcess processInstance, 
+			@NonNull final Field processField, 
+			@NonNull final IRangeAwareParams source, 
+			final boolean failIfNotValid)
 	{
-		Check.assumeNotNull(processField, "processField not null");
-
 		//
 		// Get the parameter value from source
 		final Object value = extractParameterValue(processInstance, processField, source);
@@ -136,7 +140,7 @@ public final class ProcessClassParamInfo
 					return;
 				}
 			}
-			
+
 			final Class<?> fieldType = getFieldType();
 			if (fieldType.isPrimitive())
 			{
@@ -183,7 +187,9 @@ public final class ProcessClassParamInfo
 		}
 		else if (fieldType.isAssignableFrom(int.class))
 		{
-			value = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			value = parameterTo
+					? source.getParameter_ToAsInt(parameterName, 0)
+					: source.getParameterAsInt(parameterName, 0);
 		}
 		else if (boolean.class.equals(fieldType))
 		{
@@ -221,6 +227,15 @@ public final class ProcessClassParamInfo
 		{
 			value = TimeUtil.asInstant(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
 		}
+		else if (RepoIdAware.class.isAssignableFrom(fieldType))
+		{
+			final int valueInt = parameterTo
+					? source.getParameter_ToAsInt(parameterName, -1)
+					: source.getParameterAsInt(parameterName, -1);
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
+			value = RepoIdAwares.ofRepoIdOrNull(valueInt, repoIdAwareType);
+		}
 		//
 		else if (fieldType.isAssignableFrom(String.class))
 		{
@@ -228,7 +243,9 @@ public final class ProcessClassParamInfo
 		}
 		else if (InterfaceWrapperHelper.isModelInterface(fieldType))
 		{
-			final int id = parameterTo ? source.getParameter_ToAsInt(parameterName) : source.getParameterAsInt(parameterName);
+			final int id = parameterTo
+					? source.getParameter_ToAsInt(parameterName, -1)
+					: source.getParameterAsInt(parameterName, -1);
 			if (id <= 0)
 			{
 				value = null;

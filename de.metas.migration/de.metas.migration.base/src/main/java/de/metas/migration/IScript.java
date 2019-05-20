@@ -28,8 +28,6 @@ public interface IScript
 {
 	String getProjectName();
 
-	String getModuleName();
-
 	String getFileName();
 
 	ScriptType getType();

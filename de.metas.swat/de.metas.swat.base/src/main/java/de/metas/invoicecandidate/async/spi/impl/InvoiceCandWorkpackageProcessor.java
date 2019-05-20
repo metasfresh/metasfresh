@@ -52,6 +52,7 @@ import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -106,7 +107,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 			// Generate invoices from them
 			final UserNotificationsInvoiceGenerateResult createInvoiceResults = new UserNotificationsInvoiceGenerateResult(getInvoiceGenerateResult())
-					.setNotificationRecipientUserId(workPackage.getCreatedBy()); // Events shall be sent to workpackage creator
+					.setNotificationRecipientUserId(UserId.ofRepoId(workPackage.getCreatedBy())); // Events shall be sent to workpackage creator
 			invoiceCandBL.generateInvoices()
 					.setContext(localCtx, localTrxName)
 					.setCollector(createInvoiceResults)

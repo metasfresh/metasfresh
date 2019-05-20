@@ -6,23 +6,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
+import javax.annotation.Nullable;
+
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.ordercandidate.rest.exceptions.PermissionNotGrantedException;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,7 +60,7 @@ public class PermissionService
 	private PermissionService(@Nullable final Properties ctx)
 	{
 		final Properties ctxToUse = Util.coalesceSuppliers(() -> ctx, () -> Env.getCtx());
-		this.userRolePermissionsKey = UserRolePermissionsKey.of(ctxToUse);
+		this.userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctxToUse);
 	}
 
 	public void assertCanCreateOrUpdate(final Object record)
@@ -100,22 +99,22 @@ public class PermissionService
 			return;
 		}
 
-		final IUserRolePermissions userPermissions = userRolePermissionsRepo.retrieveUserRolePermissions(userRolePermissionsKey);
+		final IUserRolePermissions userPermissions = userRolePermissionsRepo.getUserRolePermissions(userRolePermissionsKey);
 
 		final String errmsg;
 		if (request.getRecordId() >= 0)
 		{
 			errmsg = userPermissions.checkCanUpdate(
-					userPermissions.getAD_Client_ID(),
-					request.getOrgId().getRepoId(),
+					userPermissions.getClientId(),
+					request.getOrgId(),
 					request.getAdTableId(),
 					request.getRecordId());
 		}
 		else
 		{
 			errmsg = userPermissions.checkCanCreateNewRecord(
-					userPermissions.getAD_Client_ID(),
-					request.getOrgId().getRepoId(),
+					userPermissions.getClientId(),
+					request.getOrgId(),
 					request.getAdTableId());
 		}
 

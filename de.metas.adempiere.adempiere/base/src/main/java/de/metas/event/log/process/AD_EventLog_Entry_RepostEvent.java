@@ -9,6 +9,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogId;
 import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
@@ -62,7 +63,9 @@ public class AD_EventLog_Entry_RepostEvent extends JavaProcess
 		}
 
 		final ImmutableList<String> handlerToIgnore = ImmutableList.of(eventLogEntryRecord.getClassname());
-		final Event event = eventLogService.loadEventForReposting(eventLogRecord, handlerToIgnore);
+		final Event event = eventLogService.loadEventForReposting(
+				EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID()),
+				handlerToIgnore);
 
 		eventBus.postEvent(event);
 

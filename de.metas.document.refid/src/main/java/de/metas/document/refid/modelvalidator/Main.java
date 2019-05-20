@@ -10,12 +10,12 @@ package de.metas.document.refid.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
@@ -63,11 +62,11 @@ public class Main implements ModelValidator
 		engine.addModelValidator(new C_ReferenceNo(), client);
 
 		//
-		// Register all referenceNo generator instance validators
-		final Properties ctx = Env.getCtx();
-		for (final I_C_ReferenceNo_Type type : Services.get(IReferenceNoDAO.class).retrieveReferenceNoTypes(ctx))
+		// Register all referenceNo generator instance interceptors
+		final List<I_C_ReferenceNo_Type> typeRecords = Services.get(IReferenceNoDAO.class).retrieveReferenceNoTypes();
+		for (final I_C_ReferenceNo_Type typeRecord : typeRecords)
 		{
-			registerInstanceValidator(type);
+			registerInstanceValidator(typeRecord);
 		}
 
 		//

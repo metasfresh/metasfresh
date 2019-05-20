@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,7 +37,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 {
 	@Getter
-	private BigDecimal value;
+	private final BigDecimal value;
 
 	public static DataEntryRecordFieldNumber of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

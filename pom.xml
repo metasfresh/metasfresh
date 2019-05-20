@@ -52,6 +52,9 @@
 
 		<jackson.version>2.9.8</jackson.version>
 
+		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
+		<woodstox.version>5.0.3</woodstox.version>
+
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -80,7 +83,7 @@
 		<module>de.metas.aggregation</module>
 
 		<module>de.metas.business</module>
-
+		<module>de.metas.business.rest-api</module>
 
 		<module>de.metas.jax.rs</module>
 
@@ -172,6 +175,8 @@
 		<module>de.metas.vendor.gateway.api</module>
 
 		<module>de.metas.datev</module>
+
+		<module>de.metas.vertical.creditscore</module>
 
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>
@@ -680,46 +685,6 @@
 	</build>
 
 	<profiles>
-		<profile>
-			<!-- If there is a sql directory, then this profile will activate and 
-				zip up the migration SQL files in that directory. Note the property "migration-sql-basedir" 
-				needs to be defined in that case -->
-			<id>postgres</id>
-			<activation>
-				<file>
-					<exists>src/main/sql/postgresql/system</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-assembly-plugin</artifactId>
-						<dependencies>
-							<dependency>
-								<groupId>de.metas</groupId>
-								<artifactId>metasfresh-assemblies</artifactId>
-								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
-								<version>[1.0.0,10.0.0]</version>
-							</dependency>
-						</dependencies>
-						<executions>
-							<execution>
-								<id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
-								<phase>package</phase> <!-- bind to the packaging phase -->
-								<goals>
-									<goal>single</goal>
-								</goals>
-								<configuration>
-									<descriptorRefs>
-										<descriptorRef>migration_postgresql_system</descriptorRef>
-									</descriptorRefs>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 
 		<!-- If there is a "webapp" directory, this profile will activate and put 
 			the content into a zip file this was (and still is in some legacy projects!) 

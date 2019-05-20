@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -125,7 +124,7 @@ public final class ADLanguageList
 				return defaultValue;
 			}
 
-			final BiMap<String, String> adLanguage2tag = Services.get(ILanguageDAO.class).retrieveAvailableLanguages().toHttpLanguageTags();
+			final BiMap<String, String> adLanguage2tag = toHttpLanguageTags();
 
 			final String languageTag = Locale.lookupTag(languageRanges, adLanguage2tag.values());
 			if (languageTag == null)

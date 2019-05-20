@@ -1,6 +1,6 @@
 package de.metas.bpartner;
 
-import org.adempiere.location.LocationId;
+import de.metas.location.LocationId;
 
 import lombok.Builder;
 import lombok.NonNull;

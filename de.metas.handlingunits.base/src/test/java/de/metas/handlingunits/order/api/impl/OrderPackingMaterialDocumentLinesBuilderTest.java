@@ -12,6 +12,7 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,9 +60,6 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 	private I_M_Product materialProduct;
 	private I_M_Product packageProduct;
 
-	// @Mocked
-	// OrderLineBL orderLineBL;
-
 	@Before
 	public void init()
 	{
@@ -75,7 +73,11 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		}};	// @formatter:on
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 
+		final I_C_UOM packageProductUom = newInstance(I_C_UOM.class);
+		saveRecord(packageProductUom);
+
 		packageProduct = newInstance(I_M_Product.class);
+		packageProduct.setC_UOM(packageProductUom);
 		saveRecord(packageProduct);
 
 		materialProduct = newInstance(I_M_Product.class);

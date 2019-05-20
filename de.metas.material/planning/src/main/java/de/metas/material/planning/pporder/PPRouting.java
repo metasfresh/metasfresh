@@ -9,12 +9,12 @@ import java.time.temporal.TemporalUnit;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 
+import de.metas.user.UserId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.Builder.Default;

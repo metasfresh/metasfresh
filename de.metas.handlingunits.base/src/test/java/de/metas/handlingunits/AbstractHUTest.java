@@ -29,7 +29,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
@@ -51,6 +50,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.product.ProductId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 public abstract class AbstractHUTest

@@ -9,6 +9,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -114,9 +115,9 @@ public class ESRDataLoaderUtil
 
 		importLine.setESRReferenceNumber(esrReferenceNumberToMatch);
 
-		final IESRImportDAO esrImportPA = Services.get(IESRImportDAO.class);
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportPA
-				.retrieveESRInvoiceReferenceNumberDocument(Env.getCtx(), esrReferenceNumberToMatch);
+		final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportDAO
+				.retrieveESRInvoiceReferenceNumberDocument(OrgId.ofRepoIdOrAny(importLine.getAD_Org_ID()), esrReferenceNumberToMatch);
 
 		if (esrReferenceNumberDocument == null)
 		{

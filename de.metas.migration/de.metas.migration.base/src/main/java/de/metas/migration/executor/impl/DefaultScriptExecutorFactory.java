@@ -53,7 +53,6 @@ public class DefaultScriptExecutorFactory implements IScriptExecutorFactory
 
 	public DefaultScriptExecutorFactory()
 	{
-		super();
 		initDefaults();
 	}
 

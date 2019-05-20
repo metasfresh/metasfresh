@@ -244,7 +244,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			@NonNull final IAttributeSet attributeSet,
 			@Nullable final Predicate<I_M_Attribute> filter)
 	{
-
 		final I_M_AttributeSetInstance attributeSetInstance;
 		if (productId != null)
 		{

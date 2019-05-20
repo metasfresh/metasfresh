@@ -1,0 +1,62 @@
+de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
+  [
+    {
+      "id": 100013,
+      "asiId": {
+        "repoId": 100008,
+        "none": false,
+        "regular": true
+      },
+      "inventoryId": 100012,
+      "productId": 40,
+      "storageAttributesKey": "10§&§11§&§12",
+      "locatorId": {
+        "repoId": 100003,
+        "warehouseId": 100002
+      },
+      "singleHUAggregation": false,
+      "inventoryLineHUs": [
+        {
+          "id": {
+            "repoId": 100014
+          },
+          "huId": {
+            "repoId": 100
+          },
+          "qtyBook": {
+            "qty": 10,
+            "sourceQty": 10,
+            "infinite": false,
+            "zero": false
+          },
+          "qtyCount": {
+            "qty": 1,
+            "sourceQty": 1,
+            "infinite": false,
+            "zero": false
+          }
+        },
+        {
+          "id": {
+            "repoId": 100015
+          },
+          "huId": {
+            "repoId": 200
+          },
+          "qtyBook": {
+            "qty": 20,
+            "sourceQty": 20,
+            "infinite": false,
+            "zero": false
+          },
+          "qtyCount": {
+            "qty": 2,
+            "sourceQty": 2,
+            "infinite": false,
+            "zero": false
+          }
+        }
+      ]
+    }
+  ]
+]
