@@ -1,5 +1,6 @@
 package de.metas.dataentry.layout.interceptor;
 
+import de.metas.dataentry.model.I_DataEntry_Tab;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -10,7 +11,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.dataentry.model.I_DataEntry_Field;
-import de.metas.dataentry.model.I_DataEntry_Group;
+
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,6 +76,6 @@ public class DataEntry_Field
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DataEntry_Field.COLUMN_DataEntry_Line_ID, dataEntryFieldRecord.getDataEntry_Line_ID())
 				.create()
-				.maxInt(I_DataEntry_Group.COLUMNNAME_SeqNo);
+				.maxInt(I_DataEntry_Tab.COLUMNNAME_SeqNo);
 	}
 }

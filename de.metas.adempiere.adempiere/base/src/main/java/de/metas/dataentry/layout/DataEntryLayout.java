@@ -1,9 +1,14 @@
 package de.metas.dataentry.layout;
 
 import java.util.List;
+import java.util.Set;
 
-import de.metas.dataentry.DataEntrySubGroupId;
-import de.metas.i18n.ITranslatableString;
+import org.adempiere.ad.element.api.AdWindowId;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.dataentry.DataEntrySubTabId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -11,7 +16,7 @@ import lombok.Value;
 
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -19,12 +24,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,30 +37,35 @@ import lombok.Value;
  */
 
 @Value
-public class DataEntrySubGroup
+public class DataEntryLayout
 {
-	DataEntrySubGroupId id;
+	public static DataEntryLayout empty(@NonNull final AdWindowId windowId)
+	{
+		return builder().windowId(windowId).build();
+	}
 
-	ITranslatableString caption;
-	ITranslatableString description;
-
-	String internalName;
-
-	List<DataEntrySection> dataEntrySections;
+	AdWindowId windowId;
+	ImmutableList<DataEntryTab> tabs;
 
 	@Builder
-	private DataEntrySubGroup(
-			@NonNull final DataEntrySubGroupId id,
-			@NonNull final ITranslatableString caption,
-			@NonNull final ITranslatableString description,
-			@NonNull final String internalName,
-			@Singular List<DataEntrySection> dataEntrySections)
+	private DataEntryLayout(
+			@NonNull final AdWindowId windowId,
+			@NonNull @Singular final List<DataEntryTab> tabs)
 	{
-		this.id = id;
-		this.caption = caption;
-		this.description = description;
-		this.internalName = internalName;
-		this.dataEntrySections = dataEntrySections;
+		this.windowId = windowId;
+		this.tabs = ImmutableList.copyOf(tabs);
+	}
+
+	public Set<DataEntrySubTabId> getSubTabIds()
+	{
+		return tabs.stream()
+				.flatMap(DataEntryTab::streamSubTabIds)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public boolean isEmpty()
+	{
+		return tabs.isEmpty();
 	}
 
 }

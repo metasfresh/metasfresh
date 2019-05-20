@@ -48,6 +48,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
@@ -145,6 +146,25 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
+	}
+
+	@Override public BPartnerId getBPartnerIdByValue(@NonNull final String value)
+	{
+		final String valueFixed = value.trim();
+
+		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, valueFixed)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
+
+		if (bpartnerId == null)
+		{
+			throw new AdempiereException("@NotFound@ @BPValue@: " + valueFixed);
+		}
+
+		return bpartnerId;
 	}
 
 	@Override
@@ -1027,7 +1047,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	private final CCache<BPartnerLocationGLNQuery, Optional<BPartnerId>> //
-	bpartnerIdsByGLNQuery = CCache.<BPartnerLocationGLNQuery, Optional<BPartnerId>> builder()
+			bpartnerIdsByGLNQuery = CCache.<BPartnerLocationGLNQuery, Optional<BPartnerId>>builder()
 			.tableName(I_C_BPartner_Location.Table_Name)
 			.build();
 

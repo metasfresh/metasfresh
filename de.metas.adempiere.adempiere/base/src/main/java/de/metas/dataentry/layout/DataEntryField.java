@@ -2,6 +2,8 @@ package de.metas.dataentry.layout;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.FieldType;
 import de.metas.i18n.ITranslatableString;
@@ -44,8 +46,10 @@ public class DataEntryField
 
 	boolean mandatory;
 
+	boolean availableInApi;
+
 	/** empty, unless type=list */
-	List<DataEntryListValue> listValues;
+	ImmutableList<DataEntryListValue> listValues;
 
 	@Builder
 	private DataEntryField(
@@ -54,6 +58,7 @@ public class DataEntryField
 			@NonNull final ITranslatableString description,
 			@NonNull final FieldType type,
 			final boolean mandatory,
+			final boolean availableInApi,
 			@Singular final List<DataEntryListValue> listValues)
 	{
 		this.id = id;
@@ -61,7 +66,8 @@ public class DataEntryField
 		this.description = description;
 		this.type = type;
 		this.mandatory = mandatory;
-		this.listValues = listValues;
+		this.availableInApi = availableInApi;
+		this.listValues = ImmutableList.copyOf(listValues);
 	}
 
 }

@@ -37,7 +37,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldDate extends DataEntryRecordField<ZonedDateTime>
 {
 	@Getter
-	private ZonedDateTime value;
+	private final ZonedDateTime value;
 
 	public static DataEntryRecordFieldDate of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

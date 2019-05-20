@@ -56,9 +56,9 @@ public class AD_EventLog_DeleteOldRecords extends JavaProcess
 				.addCompareFilter(I_AD_EventLog.COLUMN_Updated, Operator.LESS_OR_EQUAL, maxUpdated)
 				.filter(noErrorFilter)
 				.create()
-				.deleteDirectly(); // the log entries are deleted by the DB, via an FK constraint
+				.deleteDirectly(); // this also lets the DB delete the AD_EventLog_Entries, via an FK constraint with "ON DELETE CASCADE"
 
-		addLog("Deleted {} records with a Updated <= {}", deleted, maxUpdated);
+		addLog("Deleted {} records with a Updated up to {}", deleted, maxUpdated);
 		return MSG_OK;
 	}
 

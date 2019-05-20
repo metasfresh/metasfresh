@@ -7,11 +7,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -92,7 +90,8 @@ public class EventLogService
 	{
 		final String eventString = JacksonJsonEventSerializer.instance.toString(event);
 
-		final I_AD_EventLog eventLogRecord = retrieveOrCreateRecordOutOfTrx(event.getUuid());
+		final I_AD_EventLog eventLogRecord = newInstance(I_AD_EventLog.class, PlainContextAware.newOutOfTrx());
+		eventLogRecord.setEvent_UUID(event.getUuid().toString());
 		eventLogRecord.setEventTime(Timestamp.from(event.getWhen()));
 		eventLogRecord.setEventData(eventString);
 		eventLogRecord.setEventTopicName(eventBus.getTopicName());
@@ -101,23 +100,9 @@ public class EventLogService
 		save(eventLogRecord);
 	}
 
-	private I_AD_EventLog retrieveOrCreateRecordOutOfTrx(@NonNull final UUID uuid)
-	{
-		final I_AD_EventLog eventStoreRecord = createEventLogQueryByUuidOutOfTrx(uuid)
-				.firstOnly(I_AD_EventLog.class);
-		if (eventStoreRecord != null)
-		{
-			return eventStoreRecord;
-		}
-
-		final I_AD_EventLog newEventStoreRecord = createNewRecordWithUuidOutOfTrx(uuid);
-		return newEventStoreRecord;
-
-	}
-
 	public void storeEventLogEntry(@NonNull final EventLogEntry eventLogEntry)
 	{
-		final int eventLogRecordId = retrieveOrCreateEventLogIdUsingCacheOutOfTrx(eventLogEntry.getUuid());
+		final int eventLogRecordId = retrieveEventLogIdUsingCacheOutOfTrx(eventLogEntry.getUuid());
 
 		final I_AD_EventLog_Entry eventLogEntryRecord = newInstance(I_AD_EventLog_Entry.class, PlainContextAware.newOutOfTrx());
 
@@ -132,54 +117,32 @@ public class EventLogService
 		eventLogEntryRecord.setClassname(eventLogEntry.getEventHandlerClassName());
 		save(eventLogEntryRecord);
 
-		final I_AD_EventLog eventLogRecord = eventLogEntryRecord.getAD_EventLog();
 		if (eventLogEntry.isError())
 		{
-			eventLogRecord.setIsError(true);
+			final I_AD_EventLog eventLogRecord = eventLogEntryRecord.getAD_EventLog();
+			if (!eventLogRecord.isError())
+			{
+				eventLogRecord.setIsError(true);
+				save(eventLogRecord);
+			}
 		}
-		// update eventLogRecord's client and org; they weren't known when the eventLogRecord was created
-		if (eventLogRecord.getAD_Client_ID() == 0 && eventLogEntry.getClientId() > 0)
-		{
-			setValue(eventLogRecord, I_AD_EventLog.COLUMNNAME_AD_Client_ID, eventLogEntry.getClientId());
-			eventLogRecord.setAD_Org_ID(eventLogEntry.getOrgId()); // different event log entries with different orgs: sort them out when they occur
-		}
-		save(eventLogRecord);
 	}
 
-	private int retrieveOrCreateEventLogIdUsingCacheOutOfTrx(@NonNull final UUID uuid)
+	private int retrieveEventLogIdUsingCacheOutOfTrx(@NonNull final UUID uuid)
 	{
-		final Supplier<Integer> valueInitializer = () -> retrieveOrCreateRecordIdOutOfTrx(uuid);
-		final int eventStoreRecordId = uuid2eventLogId.get(uuid, valueInitializer);
+		final int eventStoreRecordId = uuid2eventLogId.getOrLoad(uuid, this::retrieveRecordIdOutOfTrx);
 		return eventStoreRecordId;
 	}
 
-	private int retrieveOrCreateRecordIdOutOfTrx(final UUID uuid)
+	private Integer retrieveRecordIdOutOfTrx(@NonNull final UUID uuid)
 	{
-		final int eventStoreRecordId = createEventLogQueryByUuidOutOfTrx(uuid)
-				.firstIdOnly();
-		if (eventStoreRecordId > 0)
-		{
-			return eventStoreRecordId;
-		}
-
-		final I_AD_EventLog newEventStoreRecord = createNewRecordWithUuidOutOfTrx(uuid);
-		save(newEventStoreRecord);
-
-		return newEventStoreRecord.getAD_EventLog_ID();
-	}
-
-	private IQuery<I_AD_EventLog> createEventLogQueryByUuidOutOfTrx(final UUID uuid)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_EventLog.class, PlainContextAware.newOutOfTrx())
+		final int eventStoreRecordId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_EventLog.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_EventLog.COLUMN_Event_UUID, uuid.toString())
-				.create();
-	}
+				.create()
+				.firstIdOnly();
 
-	private I_AD_EventLog createNewRecordWithUuidOutOfTrx(@NonNull final UUID uuid)
-	{
-		final I_AD_EventLog newEventStoreRecord = newInstance(I_AD_EventLog.class, PlainContextAware.newOutOfTrx());
-		newEventStoreRecord.setEvent_UUID(uuid.toString());
-		return newEventStoreRecord;
+		return eventStoreRecordId;
 	}
 }

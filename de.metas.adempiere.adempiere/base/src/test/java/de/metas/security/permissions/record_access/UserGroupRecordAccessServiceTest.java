@@ -15,10 +15,16 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.event.log.EventLogService;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.record_access.handlers.RecordAccessHandler;
@@ -49,6 +55,8 @@ import lombok.NonNull;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, EventLogService.class })
 public class UserGroupRecordAccessServiceTest
 {
 	private static final Principal userId = Principal.userId(UserId.ofRepoId(1));

@@ -35,7 +35,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 {
 	@Getter
-	private String value;
+	private final String value;
 
 	public static DataEntryRecordFieldString of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
