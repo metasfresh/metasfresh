@@ -10,11 +10,13 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.adempiere.model.I_M_Inventory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
@@ -49,11 +51,20 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  * @task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
  */
-public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements IProcessPrecondition
+public class WEBUI_M_HU_Mass_Disposal extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 
 	private Set<HuId> huIdsDestroyed;
+
+	@Param(parameterName = I_M_Inventory.COLUMNNAME_C_Activity_ID)
+	private int p_C_Activity_ID;
+
+	@Param( parameterName = I_M_Inventory.COLUMNNAME_Description)
+	private String p_Description;
+
+	@Param (parameterName = "IsComplete")
+	private boolean p_IsCompleteInventory;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -87,7 +98,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		}
 
 		final Timestamp movementDate = Env.getDate(getCtx());
-		huInventoryBL.moveToGarbage(husToDestroy, movementDate, -1, null, true, true);
+		huInventoryBL.moveToGarbage(husToDestroy, movementDate, p_C_Activity_ID, p_Description, p_IsCompleteInventory, false);
 
 		huIdsDestroyed = husToDestroy
 				.stream()
