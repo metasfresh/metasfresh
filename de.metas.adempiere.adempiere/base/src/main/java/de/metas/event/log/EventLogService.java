@@ -18,8 +18,6 @@ import org.adempiere.model.PlainContextAware;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -31,13 +29,10 @@ import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.event.remote.JacksonJsonEventSerializer;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -234,29 +229,5 @@ public class EventLogService
 					return GuavaCollectors.entry(uuid, eventLogId);
 				})
 				.collect(GuavaCollectors.toImmutableMap());
-	}
-
-	@Value
-	public static final class EventLogId implements RepoIdAware
-	{
-		@JsonCreator
-		public static EventLogId ofRepoId(final int repoId)
-		{
-			return new EventLogId(repoId);
-		}
-
-		int repoId;
-
-		private EventLogId(final int repoId)
-		{
-			this.repoId = Check.assumeGreaterThanZero(repoId, "AD_EventLog_ID");
-		}
-
-		@JsonValue
-		@Override
-		public int getRepoId()
-		{
-			return repoId;
-		}
 	}
 }
