@@ -86,8 +86,8 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(getRecord_ID(), I_M_Product.class);
 
 		final StringBuffer sb = new StringBuffer();
-		sb.append("SELECT productName, CustomerLabelName, additional_produktinfos, productValue, UPC, weight, country, piName, piQty, ")
-				.append("guaranteedaysmin, warehouse_temperature, productDecription, componentName, componentIngredients, qtybatch, ")
+		sb.append("SELECT productName, CustomerLabelName, additional_produktinfos, productValue, UPC, weight, country, guaranteedaysmin, ")
+				.append("warehouse_temperature, productDecription, componentName, IsPackagingMaterial, componentIngredients, qtybatch, ")
 				.append("allergen, nutritionName, nutritionqty FROM ")
 				.append(tableName)
 				.append(" WHERE ")
@@ -107,12 +107,11 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 		columnHeaders.add("UPC");
 		columnHeaders.add("NetWeight");
 		columnHeaders.add("Country");
-		columnHeaders.add("IsPackagingMaterial");
-		columnHeaders.add("NumberOfEvents");
 		columnHeaders.add("ShelfLifeDays");
 		columnHeaders.add("Warehouse_temperature");
 		columnHeaders.add("ProductDescription");
 		columnHeaders.add("M_BOMProduct_ID");
+		columnHeaders.add("IsPackagingMaterial");
 		columnHeaders.add("Ingredients");
 		columnHeaders.add("QtyBatch");
 		columnHeaders.add("Allergen");
