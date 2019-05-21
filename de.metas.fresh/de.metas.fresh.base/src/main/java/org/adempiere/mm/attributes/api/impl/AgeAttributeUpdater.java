@@ -40,7 +40,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 public class AgeAttributeUpdater
 {
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-	private Object sourceModel;
+	private final Object sourceModel;
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
@@ -65,7 +65,6 @@ public class AgeAttributeUpdater
 		{
 			return;
 		}
-
 
 		if (asiAware.getM_Product_ID() <= 0)
 		{
