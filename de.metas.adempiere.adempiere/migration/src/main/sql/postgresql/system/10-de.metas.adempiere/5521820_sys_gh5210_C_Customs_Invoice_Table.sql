@@ -295,10 +295,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(1047) 
 ;
 
--- 2019-05-17T13:39:26.252
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
+
 
 -- 2019-05-17T13:39:26.255
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

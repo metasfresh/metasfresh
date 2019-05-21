@@ -146,7 +146,7 @@ public class CustomsInvoiceService
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-		final I_M_Product product = productDAO.getById(productId);;
+		final I_M_Product product = productDAO.getById(productId);
 
 		Quantity qty = Quantity.of(BigDecimal.ZERO, product.getC_UOM());
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
