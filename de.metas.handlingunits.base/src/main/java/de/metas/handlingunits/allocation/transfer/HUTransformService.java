@@ -276,6 +276,7 @@ public class HUTransformService
 			}
 		}
 
+		// we split even if cuOrAggregateHU's qty is equalt to qtyCU, because we want a CU without packaging; not an aggregated TU
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuOrAggregateHU);
 		HUSplitBuilderCoreEngine.builder()

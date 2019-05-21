@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.compiere.util.Util.coalesceSuppliers;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -39,7 +38,6 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -177,17 +175,14 @@ public class ShipmentScheduleWithHU
 	private final boolean adviseManualPackingMaterial;
 
 	private ShipmentScheduleWithHU(
-			final IHUContext huContext,
+			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc,
 			final boolean createManualPackingMaterial,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		this.huContext = coalesceSuppliers(
-				() -> huContext,
-				() -> handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx()));
+		this.huContext = huContext;
 
 		this.shipmentScheduleQtyPicked = shipmentScheduleAlloc;
 		this.shipmentSchedule = create(shipmentScheduleAlloc.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
@@ -207,18 +202,15 @@ public class ShipmentScheduleWithHU
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
 	 */
 	private ShipmentScheduleWithHU(
-			final IHUContext huContext,
+			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked,
 			final boolean createManualPackingMaterial,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		this.huContext = Util.coalesce(
-				huContext,
-				Services.get(IHandlingUnitsBL.class).createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx()));
+		this.huContext = huContext;
 
 		this.shipmentScheduleQtyPicked = null; // no allocation, will be created on fly when needed
-
 		this.shipmentSchedule = shipmentSchedule;
 
 		final I_C_UOM qtyPickedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
