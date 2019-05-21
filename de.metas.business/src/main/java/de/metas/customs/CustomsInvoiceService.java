@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
+import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -101,6 +102,9 @@ public class CustomsInvoiceService
 		{
 			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
+
+		CustomsInvoiceUserNotificationsProducer.newInstance()
+				.notifyGenerated(customsInvoiceRecord);
 
 		return customsInvoice;
 	}
