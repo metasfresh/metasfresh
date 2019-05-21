@@ -18,7 +18,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.CustomsInvoice;
+import de.metas.customs.CustomsInvoiceRequest;
 import de.metas.customs.CustomsInvoiceService;
+import de.metas.document.DocTypeId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -91,7 +93,22 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 
 		final LocalDate invoiceDate = Env.getLocalDate();
 
-		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(bpartnerAndLocationId, userId, currencyId, linesToExportMap, invoiceDate, p_IsComplete);
+		final DocTypeId docTypeId = customsInvoiceService.retrieveCustomsInvoiceDocTypeId();
+
+		final String documentNo = customsInvoiceService.reserveDocumentNo(docTypeId);
+
+		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
+				.bpartnerAndLocationId(bpartnerAndLocationId)
+				.userId(userId)
+				.currencyId(currencyId)
+				.linesToExportMap(linesToExportMap)
+				.invoiceDate(invoiceDate)
+				.isComplete(p_IsComplete)
+				.documentNo(documentNo)
+				.docTypeId(docTypeId)
+				.build();
+
+		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(customsInvoiceRequest);
 
 		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
 				.map(InOutAndLineId::getInOutId)

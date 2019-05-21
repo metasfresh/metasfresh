@@ -81,24 +81,15 @@ public class CustomsInvoiceService
 
 	}
 
-	public CustomsInvoice generateCustomsInvoice(final BPartnerLocationId bpartnerAndLocationId,
-			final UserId userId,
-			final CurrencyId currencyId,
-			final Map<ProductId, List<InOutAndLineId>> linesToExportMap,
-			final LocalDate invoiceDate,
-			final boolean isComplete)
+	public CustomsInvoice generateCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
 	{
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-		final DocTypeId docTypeId = customsInvoiceRepo.retrieveCustomsInvoiceDocTypeId();
-
-		final String documentNo = reserveDocumentNo(docTypeId);
-
-		final CustomsInvoice customsInvoice = createCustomsInvoice(bpartnerAndLocationId, userId, docTypeId, documentNo, currencyId, invoiceDate, linesToExportMap);
+		final CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
 
 		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
 
-		if (isComplete)
+		if (customsInvoiceRequest.isComplete())
 		{
 			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
@@ -109,14 +100,22 @@ public class CustomsInvoiceService
 		return customsInvoice;
 	}
 
-	private CustomsInvoice createCustomsInvoice(final BPartnerLocationId bpartnerAndLocationId,
-			final UserId userId,
-			final DocTypeId docTypeId,
-			final String documentNo,
-			final CurrencyId currencyId,
-			final LocalDate invoiceDate,
-			final Map<ProductId, List<InOutAndLineId>> linesToExportMap)
+	private CustomsInvoice createCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
 	{
+
+		final Map<ProductId, List<InOutAndLineId>> linesToExportMap = customsInvoiceRequest.getLinesToExportMap();
+
+		final CurrencyId currencyId = customsInvoiceRequest.getCurrencyId();
+
+		final BPartnerLocationId bpartnerAndLocationId = customsInvoiceRequest.getBpartnerAndLocationId();
+
+		final UserId userId = customsInvoiceRequest.getUserId();
+
+		final LocalDate invoiceDate = customsInvoiceRequest.getInvoiceDate();
+
+		final DocTypeId docTypeId = customsInvoiceRequest.getDocTypeId();
+
+		final String documentNo = customsInvoiceRequest.getDocumentNo();
 
 		final ImmutableList<CustomsInvoiceLine> customsInvoiceLines = linesToExportMap.keySet()
 				.stream()
@@ -235,7 +234,7 @@ public class CustomsInvoiceService
 		return quantityConverted;
 	}
 
-	private String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
+	public String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
@@ -257,6 +256,11 @@ public class CustomsInvoiceService
 		exportedShippmentIds
 				.stream()
 				.forEach(exportedShipmentId -> customsInvoiceRepo.setCustomsInvoiceToShipment(exportedShipmentId, customsInvoice));
+	}
+
+	public DocTypeId retrieveCustomsInvoiceDocTypeId()
+	{
+		return customsInvoiceRepo.retrieveCustomsInvoiceDocTypeId();
 	}
 
 }
