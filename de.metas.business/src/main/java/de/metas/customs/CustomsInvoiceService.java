@@ -164,7 +164,6 @@ public class CustomsInvoiceService
 
 		}
 
-
 		final CustomsInvoiceLine customsInvoiceLine = CustomsInvoiceLine.builder()
 				.productId(productId)
 				.lineNetAmt(lineNetAmt)
@@ -190,7 +189,7 @@ public class CustomsInvoiceService
 		if (Check.isEmpty(orderLineId))
 		{
 			// we don't have a place where to take the price from.
-			throw new AdempiereException("Can't find price for shipment line" + inoutAndLineId);
+			throw new AdempiereException("Can't find price for the shipment line " + inoutAndLineId);
 		}
 
 		final OrderLine orderLine = orderLineRepo.getById(orderLineId);
@@ -251,11 +250,9 @@ public class CustomsInvoiceService
 
 	public void setCustomsInvoiceToShipments(final ImmutableSet<InOutId> exportedShippmentIds, final CustomsInvoice customsInvoice)
 	{
-
 		exportedShippmentIds
 				.stream()
 				.forEach(exportedShipmentId -> customsInvoiceRepo.setCustomsInvoiceToShipment(exportedShipmentId, customsInvoice));
-
 	}
 
 }
