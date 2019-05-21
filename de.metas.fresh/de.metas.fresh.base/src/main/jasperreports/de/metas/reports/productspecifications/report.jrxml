@@ -89,9 +89,9 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Specification}]]></textFieldExpression>
 			</textField>
-			<image scaleImage="RealSize">
+			<image scaleImage="RealSize" onErrorType="Blank">
 				<reportElement x="0" y="93" width="115" height="29" uuid="77f7f6b1-d76b-494f-a849-f53906e0a255"/>
-				<imageExpression><![CDATA["logo.png"]]></imageExpression>
+				<imageExpression><![CDATA["de/metas/reports/productspecifications/logo.png"]]></imageExpression>
 			</image>
 			<textField>
 				<reportElement isPrintRepeatedValues="false" x="0" y="155" width="180" height="14" uuid="7070a48c-a531-4d2d-9d17-f025f0d25a8d"/>
