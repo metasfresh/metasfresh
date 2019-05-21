@@ -58,6 +58,7 @@ import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageQuery;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -233,24 +234,12 @@ public class ShipmentScheduleWithHUService
 			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
 
 			final I_C_UOM uomRecord = remainingQtyToAllocate.getUOM();
-
 			final Quantity qtyOfSourceHU = extractQtyOfHU(sourceHURecord, productId, uomRecord);
 
-			if (qtyOfSourceHU.compareTo(remainingQtyToAllocate) <= 0)
-			{
-				Loggables.get().addLog("QtyToDeliver={}; assign available M_HU_ID={} with Qty={}", qtyToDeliver, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 
-				// completely allocate the current sourceHU
-				result.add(huShipmentScheduleBL.addQtyPicked(
-						scheduleRecord,
-						qtyOfSourceHU,
-						sourceHURecord,
-						huContext));
-				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfSourceHU);
-				continue;
-			}
-
-			Loggables.get().addLog("QtyToDeliver={}; split available M_HU_ID={} with Qty={}", qtyToDeliver, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+			final ILoggable loggable = Loggables.get();
+			loggable.addLog("QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}", qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			// split a part out of the current HU
 			final HUsToNewCUsRequest request = HUsToNewCUsRequest
@@ -258,23 +247,22 @@ public class ShipmentScheduleWithHUService
 					.keepNewCUsUnderSameParent(false)
 					.onlyFromUnreservedHUs(false) // the HUs returned by the query doesn't contain HUs which are reserved to someone else
 					.productId(productId)
-					.qtyCU(remainingQtyToAllocate)
+					.qtyCU(quantityToSplit)
 					.sourceHU(sourceHURecord)
 					.build();
-			final List<I_M_HU> newHUs = HUTransformService
+			final List<I_M_HU> newHURecords = HUTransformService
 					.newInstance(huContext)
 					.husToNewCUs(request);
 
-			for (final I_M_HU newHU : newHUs)
+			for (final I_M_HU newHURecord : newHURecords)
 			{
-				final Quantity qtyOfNewHU = extractQtyOfHU(newHU, productId, uomRecord);
-
-				Loggables.get().addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHU.getM_HU_ID(), qtyOfNewHU);
+				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
+				loggable.addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
 				result.add(huShipmentScheduleBL.addQtyPicked(
 						scheduleRecord,
 						qtyOfNewHU,
-						newHU,
+						newHURecord,
 						huContext));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
 			}
