@@ -1,7 +1,6 @@
 package de.metas.customs.process;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,8 +19,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.CustomsInvoice;
 import de.metas.customs.CustomsInvoiceService;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -63,6 +60,7 @@ import lombok.NonNull;
 public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProcessPrecondition
 {
 	private final CustomsInvoiceService customsInvoiceService = Adempiere.getBean(CustomsInvoiceService.class);
+	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = Adempiere.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private int p_C_BPartner_ID;
@@ -124,46 +122,13 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean foundAtLeastOneUnregisteredShipment = context.getSelectedModels(I_M_InOut.class).stream()
+		final ImmutableList<InOutId> selectedShipments = context.getSelectedModels(I_M_InOut.class).stream()
 				.map(shipmentRecord -> InOutId.ofRepoId(shipmentRecord.getM_InOut_ID()))
-				.filter(this::isValidShipment)
-				.map(inoutId -> retrieveValidLinesToExport(inoutId))
-				.findAny()
-				.isPresent();
+				.collect(ImmutableList.toImmutableList());
+
+		final boolean foundAtLeastOneUnregisteredShipment = shipmentLinesForCustomsInvoiceRepo.foundAtLeastOneUnregisteredShipment(selectedShipments);
 
 		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnregisteredShipment);
-	}
-
-	private boolean isValidShipment(final InOutId shipmentId)
-	{
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-		final I_M_InOut shipment = inOutDAO.getById(shipmentId);
-
-		if (!shipment.isSOTrx())
-		{
-			return false;
-		}
-
-		if (inOutBL.isReversal(shipment))
-		{
-			return false;
-		}
-
-		if (!documentBL.isStatusCompletedOrClosedOrReversed(shipment.getDocStatus()))
-		{
-			return false;
-		}
-
-		if (shipment.isExportedToCustomsInvoice())
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	private List<InOutAndLineId> retrieveLinesToExport()
@@ -171,54 +136,18 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final IQueryFilter<I_M_InOut> queryFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		final ImmutableList<InOutId> shipmentsToExport = Services.get(IQueryBL.class)
+		final ImmutableList<InOutId> selectedShipments = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOut.class)
 				.filter(queryFilter)
 				.create()
 				.listIds(InOutId::ofRepoId)
 				.stream()
-				.filter(this::isValidShipment)
 				.collect(ImmutableList.toImmutableList());
 
-		List<InOutAndLineId> shipmentLinesToExport = new ArrayList<>();
-
-		shipmentsToExport
-				.stream()
-				.forEach(shipmentId -> shipmentLinesToExport.addAll(retrieveValidLinesToExport(shipmentId)));
+		List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
 
 		return shipmentLinesToExport;
 
-	}
-
-	private List<InOutAndLineId> retrieveValidLinesToExport(final InOutId shipmentId)
-	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		List<InOutAndLineId> shipmentLines = new ArrayList<>();
-
-		final ImmutableList<InOutAndLineId> shipmentLinesToExport = inOutDAO.retrieveLinesForInOutId(shipmentId)
-				.stream()
-				.filter(this::isValidLineToExport)
-				.collect(ImmutableList.toImmutableList());
-
-		shipmentLines.addAll(shipmentLinesToExport);
-
-		return shipmentLines;
-	}
-
-	private boolean isValidLineToExport(final InOutAndLineId inoutAndLineId)
-	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
-
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(inOutLineId, I_M_InOutLine.class);
-
-		if (shipmentLineRecord.isPackagingMaterial())
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 }
