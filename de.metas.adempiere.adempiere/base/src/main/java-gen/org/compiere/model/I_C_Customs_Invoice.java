@@ -102,7 +102,7 @@ public interface I_C_Customs_Invoice
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
@@ -112,7 +112,7 @@ public interface I_C_Customs_Invoice
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
@@ -160,7 +160,7 @@ public interface I_C_Customs_Invoice
 	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_Currency_ID (int C_Currency_ID);
@@ -170,7 +170,7 @@ public interface I_C_Customs_Invoice
 	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Currency_ID();
@@ -206,6 +206,35 @@ public interface I_C_Customs_Invoice
     public static final org.adempiere.model.ModelColumn<I_C_Customs_Invoice, Object> COLUMN_C_Customs_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_Customs_Invoice, Object>(I_C_Customs_Invoice.class, "C_Customs_Invoice_ID", null);
     /** Column name C_Customs_Invoice_ID */
     public static final String COLUMNNAME_C_Customs_Invoice_ID = "C_Customs_Invoice_ID";
+
+	/**
+	 * Set Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocType_ID();
+
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Customs_Invoice, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_Customs_Invoice, org.compiere.model.I_C_DocType>(I_C_Customs_Invoice.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Get Erstellt.
@@ -317,7 +346,7 @@ public interface I_C_Customs_Invoice
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setDocumentNo (java.lang.String DocumentNo);
@@ -327,7 +356,7 @@ public interface I_C_Customs_Invoice
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getDocumentNo();

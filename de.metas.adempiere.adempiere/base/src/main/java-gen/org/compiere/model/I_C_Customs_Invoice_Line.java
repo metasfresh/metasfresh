@@ -123,7 +123,7 @@ public interface I_C_Customs_Invoice_Line
 	 * Maßeinheit
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setC_UOM_ID (int C_UOM_ID);
@@ -133,7 +133,7 @@ public interface I_C_Customs_Invoice_Line
 	 * Maßeinheit
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
@@ -253,11 +253,36 @@ public interface I_C_Customs_Invoice_Line
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Position.
+	 * Zeile Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setLineNo (int LineNo);
+
+	/**
+	 * Get Position.
+	 * Zeile Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getLineNo();
+
+    /** Column definition for LineNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Customs_Invoice_Line, Object> COLUMN_LineNo = new org.adempiere.model.ModelColumn<I_C_Customs_Invoice_Line, Object>(I_C_Customs_Invoice_Line.class, "LineNo", null);
+    /** Column name LineNo */
+    public static final String COLUMNNAME_LineNo = "LineNo";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Product_ID (int M_Product_ID);
@@ -267,7 +292,7 @@ public interface I_C_Customs_Invoice_Line
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();

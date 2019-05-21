@@ -15,7 +15,7 @@ public class X_C_Customs_Invoice_Line extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 949110402L;
+	private static final long serialVersionUID = 1938936946L;
 
     /** Standard Constructor */
     public X_C_Customs_Invoice_Line (Properties ctx, int C_Customs_Invoice_Line_ID, String trxName)
@@ -24,7 +24,10 @@ public class X_C_Customs_Invoice_Line extends org.compiere.model.PO implements I
       /** if (C_Customs_Invoice_Line_ID == 0)
         {
 			setC_Customs_Invoice_Line_ID (0);
+			setC_UOM_ID (0);
 			setLineNetAmt (BigDecimal.ZERO);
+			setLineNo (0); // @SQL=SELECT COALESCE(MAX(LineNo),0)+10 AS DefaultValue FROM C_Customs_Invoice_Line WHERE C_Customs_Invoice_ID=@C_Customs_Invoice_ID@
+			setM_Product_ID (0);
         } */
     }
 
@@ -178,6 +181,28 @@ public class X_C_Customs_Invoice_Line extends org.compiere.model.PO implements I
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Position.
+		@param LineNo 
+		Zeile Nr.
+	  */
+	@Override
+	public void setLineNo (int LineNo)
+	{
+		set_Value (COLUMNNAME_LineNo, Integer.valueOf(LineNo));
+	}
+
+	/** Get Position.
+		@return Zeile Nr.
+	  */
+	@Override
+	public int getLineNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LineNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

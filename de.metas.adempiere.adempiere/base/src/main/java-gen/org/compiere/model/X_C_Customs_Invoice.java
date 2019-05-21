@@ -14,7 +14,7 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1568204483L;
+	private static final long serialVersionUID = 823033818L;
 
     /** Standard Constructor */
     public X_C_Customs_Invoice (Properties ctx, int C_Customs_Invoice_ID, String trxName)
@@ -22,9 +22,13 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
       super (ctx, C_Customs_Invoice_ID, trxName);
       /** if (C_Customs_Invoice_ID == 0)
         {
+			setC_BPartner_ID (0);
+			setC_Currency_ID (0);
 			setC_Customs_Invoice_ID (0);
+			setC_DocType_ID (0);
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
+			setDocumentNo (null);
 			setProcessed (false); // N
         } */
     }
@@ -209,6 +213,43 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
 	public int getC_Customs_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customs_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
