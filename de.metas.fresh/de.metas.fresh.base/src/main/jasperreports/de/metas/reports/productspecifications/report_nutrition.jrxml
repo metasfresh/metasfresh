@@ -27,16 +27,20 @@
 		<![CDATA[SELECT distinct
   nutritionName,
   nutritionqty,
+  nutritionseqno,
 m_product_ID
 FROM "de.metas.fresh".product_specifications_v v
 WHERE m_product_ID = $P{RECORD_ID}
-ORDER BY nutritionName;]]>
+ORDER BY nutritionseqno;]]>
 	</queryString>
 	<field name="nutritionname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="nutritionname"/>
 	</field>
 	<field name="nutritionqty" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="nutritionqty"/>
+	</field>
+	<field name="nutritionseqno" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="nutritionseqno"/>
 	</field>
 	<field name="m_product_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
