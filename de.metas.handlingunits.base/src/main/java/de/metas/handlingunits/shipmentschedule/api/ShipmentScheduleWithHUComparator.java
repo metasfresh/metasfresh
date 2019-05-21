@@ -83,12 +83,14 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 		}
 
 		//
-		// Sort by M_HU_ID - instances with no HU go last, important because when we mix instances with and without HU, the ones with HU need to "take the lead"!
+		// Sort by M_HU_ID - instances a smaller M_HU_ID go first, but instances with no HU go last;
+		// important because when we mix instances with and without HU, the ones with HU need to "take the lead"!
 		{
 			final int huId1 = getM_HU_ID(o1);
 			final int huId2 = getM_HU_ID(o2);
 			if (huId1 != huId2)
 			{
+				// o1 has a smaller M_HU_ID => result is < 0 =>  o1 is smaller and goes first
 				return huId1 - huId2;
 			}
 		}
@@ -185,13 +187,13 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 		final I_M_HU huRecord = coalesce(schedWithHU.getM_LU_HU(), schedWithHU.getM_TU_HU(), schedWithHU.getVHU());
 		if (huRecord == null)
 		{
-			return -1;
+			return Integer.MAX_VALUE;
 		}
 
 		final int huId = huRecord.getM_HU_ID();
 		if (huId <= 0)
 		{
-			return -1;
+			return Integer.MAX_VALUE;
 		}
 
 		return huId;

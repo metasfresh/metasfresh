@@ -132,7 +132,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 					.shipmentScheduleId(shipmentScheduleId)
 					.build();
 
-			final List<ShipmentScheduleWithHU> scheduleCandidates = shipmentScheduleWithHUService.createCandidates(request);
+			final List<ShipmentScheduleWithHU> scheduleCandidates = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(request);
 			candidates.addAll(scheduleCandidates);
 		}
 

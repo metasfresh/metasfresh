@@ -119,7 +119,7 @@ public class ShipmentScheduleWithHUService
 	 *
 	 * @return one single candidate if there are no {@link I_M_ShipmentSchedule_QtyPicked} for the given schedule. One candidate per {@link I_M_ShipmentSchedule_QtyPicked} otherwise.
 	 */
-	public ImmutableList<ShipmentScheduleWithHU> createCandidates(@NonNull final CreateCandidatesRequest request)
+	public ImmutableList<ShipmentScheduleWithHU> createShipmentSchedulesWithHU(@NonNull final CreateCandidatesRequest request)
 	{
 		final ImmutableList.Builder<ShipmentScheduleWithHU> candidates = ImmutableList.builder();
 
@@ -131,7 +131,7 @@ public class ShipmentScheduleWithHUService
 		switch (quantityType)
 		{
 			case TYPE_QTY_TO_DELIVER:
-				candidates.addAll(createCandidateForDeliver(scheduleRecord, quantityType, huContext));
+				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, quantityType, huContext));
 				break;
 			case TYPE_PICKED_QTY:
 				final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createAndValidateCandidatesForPick(huContext, scheduleRecord, quantityType);
@@ -139,7 +139,7 @@ public class ShipmentScheduleWithHUService
 				break;
 			case TYPE_BOTH:
 				candidates.addAll(createShipmentScheduleWithHUForPick(scheduleRecord, huContext, quantityType));
-				candidates.addAll(createCandidateForDeliver(scheduleRecord, quantityType, huContext));
+				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, quantityType, huContext));
 				break;
 			default:
 				throw new AdempiereException("Unexpected QuantityType=" + quantityType + "; CreateCandidatesRequest=" + request);
@@ -148,7 +148,7 @@ public class ShipmentScheduleWithHUService
 		return candidates.build();
 	}
 
-	private List<ShipmentScheduleWithHU> createCandidateForDeliver(
+	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			@NonNull final IHUContext huContext)
