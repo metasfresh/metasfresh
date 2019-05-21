@@ -126,7 +126,7 @@ import lombok.NonNull;
 
 	private Object attributesAggregationKey = null;
 	private OrderAndLineId orderLineId = null;
-	
+
 	private Quantity qtyEntered = null;
 	// note that we maintain both QtyEntered and MovementQty to avoid rounding/conversion issues
 	private Quantity movementQty = null;
@@ -142,7 +142,7 @@ import lombok.NonNull;
 	private Set<HuId> alreadyAssignedTUIds = null; // to be configured by called
 
 	@Getter
-	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
 
 	//
 	// Manual packing materials related:
@@ -255,9 +255,9 @@ import lombok.NonNull;
 		productId = candidate.getProductId();
 		attributeValues.addAll(candidate.getAttributeValues());
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
-		
+
 		qtyEntered = Quantity.zero(candidate.getUOM());
-		
+
 		final I_C_UOM stockingUOM = productBL.getStockingUOM(productId);
 		movementQty = Quantity.zero(stockingUOM);
 

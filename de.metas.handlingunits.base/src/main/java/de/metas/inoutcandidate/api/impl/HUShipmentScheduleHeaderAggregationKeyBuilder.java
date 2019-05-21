@@ -31,7 +31,7 @@ import de.metas.inoutcandidate.agg.key.impl.HUShipmentScheduleKeyValueHandler;
 
 /**
  * Header aggregation key builder for picked HU structures (LU-TU-VHU) of scheduled shipments.<br>
- * Note that when creating shipment lines, the method {@code ShipmentScheduleWithHU.createAttributesAggregationKey()} creates its own key!
+ * Note that when creating shipment lines, the method {@code ShipmentScheduleWithHU#getAttributesAggregationKey()} creates its own key!
 
  * @see HUShipmentScheduleKeyValueHandler for which properties go into the key.
  */

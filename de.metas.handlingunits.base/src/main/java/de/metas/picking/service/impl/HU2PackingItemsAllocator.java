@@ -515,7 +515,7 @@ public class HU2PackingItemsAllocator
 		}
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		huShipmentScheduleBL.addQtyPicked(shipmentSchedule, qtyPacked, pickFromVHU);
+		huShipmentScheduleBL.addQtyPicked(shipmentSchedule, qtyPacked, pickFromVHU, _huContext);
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
 		packFromVHUToDestination(pickFromVHU, packedPart);

@@ -1,4 +1,5 @@
--- DROP VIEW "de.metas.fresh".product_specifications_v;
+DROP VIEW "de.metas.fresh".product_specifications_v;
+
 
 CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
   select
@@ -15,7 +16,6 @@ CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
     p.description          as productDecription,
     a.Name                 as allergen,
     nf.Name                as nutritionName,
-	  pn.SeqNo as NutritionSeqNo,
     pn.nutritionqty,
     coalesce(bomProduct.CustomerLabelName, bomProduct.Name)        as componentName,
     round(bomLine.qtybatch) as qtybatch,

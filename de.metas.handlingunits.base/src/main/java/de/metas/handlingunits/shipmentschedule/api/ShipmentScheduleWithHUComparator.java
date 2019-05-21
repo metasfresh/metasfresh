@@ -1,4 +1,6 @@
-package de.metas.handlingunits.shipmentschedule.async;
+package de.metas.handlingunits.shipmentschedule.api;
+
+import static org.compiere.util.Util.coalesce;
 
 /*
  * #%L
@@ -13,26 +15,24 @@ package de.metas.handlingunits.shipmentschedule.async;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Comparator;
 
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Sort {@link IShipmentScheduleWithHU} records by
@@ -52,7 +52,6 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 
 	public ShipmentScheduleWithHUComparator()
 	{
-		super();
 	}
 
 	@Override
@@ -84,12 +83,14 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 		}
 
 		//
-		// Sort by M_HU_ID
+		// Sort by M_HU_ID - instances a smaller M_HU_ID go first, but instances with no HU go last;
+		// important because when we mix instances with and without HU, the ones with HU need to "take the lead"!
 		{
 			final int huId1 = getM_HU_ID(o1);
 			final int huId2 = getM_HU_ID(o2);
 			if (huId1 != huId2)
 			{
+				// o1 has a smaller M_HU_ID => result is < 0 =>  o1 is smaller and goes first
 				return huId1 - huId2;
 			}
 		}
@@ -178,27 +179,21 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 			aggregationKey.append(attributesAggregationKey);
 		}
 
-
 		return aggregationKey.toString();
 	}
 
-	private final int getM_HU_ID(final ShipmentScheduleWithHU schedWithHU)
+	private final int getM_HU_ID(@NonNull final ShipmentScheduleWithHU schedWithHU)
 	{
-		if (schedWithHU == null)
+		final I_M_HU huRecord = coalesce(schedWithHU.getM_LU_HU(), schedWithHU.getM_TU_HU(), schedWithHU.getVHU());
+		if (huRecord == null)
 		{
-			return -1;
-		}
-		final I_M_HU tuHU = schedWithHU.getM_TU_HU();
-		if (tuHU == null)
-		{
-			// shall not happen
-			return -1;
+			return Integer.MAX_VALUE;
 		}
 
-		final int huId = tuHU.getM_HU_ID();
+		final int huId = huRecord.getM_HU_ID();
 		if (huId <= 0)
 		{
-			return -1;
+			return Integer.MAX_VALUE;
 		}
 
 		return huId;

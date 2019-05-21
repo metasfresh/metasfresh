@@ -336,11 +336,11 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		return attributeValue;
 	}
 
-	private I_M_AttributeInstance getCreateAttributeInstanceForSubproducer(final I_M_AttributeSetInstance asi, final I_M_AttributeValue attributeValue)
+	private I_M_AttributeInstance getCreateAttributeInstanceForSubproducer(
+			@NonNull final I_M_AttributeSetInstance asi,
+			@NonNull final I_M_AttributeValue attributeValue)
 	{
-		Check.assumeNotNull(attributeValue, "attributeValue not null");
-
-		// services
+				// services
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		// M_Attribute_ID

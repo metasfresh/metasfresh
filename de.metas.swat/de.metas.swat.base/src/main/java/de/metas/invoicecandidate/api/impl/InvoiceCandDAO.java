@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -196,13 +198,42 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		final int deleteCount = Services.get(IQueryBL.class)
+		// i could do all this with "stream", but i find "old-school" easier to debug
+		int deleteCount = 0;
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
 				.create()
-				.delete();
+				.list();
+		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
+		{
+			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
+			delete(icRecordToDelete);
+			deleteCount++;
+		}
+
 		return deleteCount;
+	}
+
+	/** Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense. */
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		if (!manuallyFlaggedAsProcessed)
+		{
+			return;			// nothing to do
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		if (hasInvoiceLines)
+		{
+			return;			// nothing to do
+		}
+
+		// icToDelete was manually set to "processed" to be out of the way; in this case, we can unprocess and delete it.
+		icToDelete.setProcessed(false);
 	}
 
 	@Override

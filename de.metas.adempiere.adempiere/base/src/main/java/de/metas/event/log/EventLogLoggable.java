@@ -1,4 +1,4 @@
-package de.metas.event.log.impl;
+package de.metas.event.log;
 
 import javax.annotation.Nullable;
 
@@ -55,7 +55,7 @@ public class EventLogLoggable implements ILoggable
 				.formattedMessage(msg, msgParameters)
 				.eventHandlerClass(handlerClass)
 				.createAndStore();
-		
+
 		return this;
 	}
 

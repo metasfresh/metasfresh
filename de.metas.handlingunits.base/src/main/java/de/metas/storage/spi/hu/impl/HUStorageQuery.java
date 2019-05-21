@@ -70,7 +70,7 @@ import lombok.NonNull;
  * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff any more.
  *
  */
-/* package */class HUStorageQuery implements IStorageQuery
+public class HUStorageQuery implements IStorageQuery
 {
 	public static final HUStorageQuery cast(final IStorageQuery storageQuery)
 	{
@@ -90,8 +90,6 @@ import lombok.NonNull;
 
 	/* package */ HUStorageQuery()
 	{
-		super();
-
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();
 
 		//

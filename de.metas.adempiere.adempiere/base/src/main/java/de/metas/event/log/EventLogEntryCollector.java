@@ -1,4 +1,4 @@
-package de.metas.event.log.impl;
+package de.metas.event.log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 
 import de.metas.event.Event;
-import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService.EventLogEntryRequest;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -42,7 +41,7 @@ public class EventLogEntryCollector implements IAutoCloseable
 	@Getter
 	private final Event event;
 
-	private final List<EventLogEntry> eventLogs = new ArrayList<>();
+	private final List<EventLogEntry> eventLogEntries = new ArrayList<>();
 
 	private EventLogEntryCollector(@NonNull final Event event)
 	{
@@ -66,7 +65,6 @@ public class EventLogEntryCollector implements IAutoCloseable
 		Check.errorIf(eventLogCollector != null,
 				"An EventLogCollector was already created and not yet closed; eventLogCollector={}",
 				eventLogCollector);
-
 	}
 
 	public static EventLogEntryCollector getThreadLocal()
@@ -79,7 +77,7 @@ public class EventLogEntryCollector implements IAutoCloseable
 
 	public void addEventLog(@NonNull final EventLogEntryRequest eventLogRequest)
 	{
-		final EventLogEntry eventLog = EventLogEntry.builder().uuid(event.getUuid())
+		final EventLogEntry eventLogEntry = EventLogEntry.builder().uuid(event.getUuid())
 				.clientId(eventLogRequest.getClientId())
 				.orgId(eventLogRequest.getOrgId())
 				.processed(eventLogRequest.isProcessed())
@@ -89,23 +87,21 @@ public class EventLogEntryCollector implements IAutoCloseable
 				.eventHandlerClass(eventLogRequest.getEventHandlerClass())
 				.build();
 
-		eventLogs.add(eventLog);
+		eventLogEntries.add(eventLogEntry);
 	}
 
 	@Override
 	public void close()
 	{
 		threadLocalCollector.remove();
-		
+
 		// Avoid throwing exception because EventLogService is not available in unit tests
 		if(Adempiere.isUnitTestMode())
 		{
 			return;
 		}
-		
+
 		final EventLogService eventStoreService = Adempiere.getBean(EventLogService.class);
-		eventLogs.forEach(eventLog -> {
-			eventStoreService.storeEventLogEntry(eventLog);
-		});
+		eventStoreService.saveEventLogEntries(eventLogEntries);
 	}
 }
