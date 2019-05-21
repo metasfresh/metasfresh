@@ -7,6 +7,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.util.TimeUtil;
@@ -58,7 +59,6 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 	{
 		// checks and so on
 		final AbstractHUAttributeStorage huAttributeStorage = AbstractHUAttributeStorage.castOrNull(storage);
-		storage.setSaveOnChange(true); // TODO this may or may not be done!
 
 		final boolean storageIsAboutHUs = huAttributeStorage != null;
 		if (!storageIsAboutHUs)
@@ -82,17 +82,13 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 
 		// actual logic starts here
 		final Date productionDate = storage.getValueAsDate(HUAttributeConstants.ATTR_ProductionDate);
-
-		final long age = getAge(TimeUtil.asLocalDateTime(productionDate));
-
-
+		final long age = computeAgeInMonths(TimeUtil.asLocalDateTime(productionDate));
 		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 	}
 
-	private long getAge(final LocalDateTime start)
+	private static long computeAgeInMonths(final LocalDateTime start)
 	{
-		final LocalDateTime end = LocalDateTime.now();
-
+		final LocalDateTime end = SystemTime.asLocalDateTime();
 		return ChronoUnit.MONTHS.between(start, end);
 	}
 }

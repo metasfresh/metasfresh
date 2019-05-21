@@ -36,7 +36,7 @@ import java.util.List;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-public class HandlingUnitAgeModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
+public class AgeModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 
@@ -55,6 +55,6 @@ public class HandlingUnitAgeModelAttributeSetInstanceListener implements IModelA
 	@Override
 	public void modelChanged(Object model)
 	{
-		new AgeAttributeUpdater(model).updateASI();
+		new AgeAttributeUpdater(model).createASI();
 	}
 }

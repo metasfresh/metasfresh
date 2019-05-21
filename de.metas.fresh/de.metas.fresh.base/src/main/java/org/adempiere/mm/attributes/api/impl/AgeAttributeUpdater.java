@@ -51,12 +51,13 @@ public class AgeAttributeUpdater
 	}
 
 	/**
+	 * Note: this explanation may not be 100% correct
 	 * ASI = AttributeSetInstance
 	 * AttributeSet is the dataType
 	 * AttributeSetInstance is the instance (a new object) of an AttributeSet
 	 */
 	@SuppressWarnings("Duplicates")
-	public void updateASI()
+	public void createASI()
 	{
 		final Object sourceModel = getSourceModel();
 
@@ -97,7 +98,6 @@ public class AgeAttributeUpdater
 		}
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, ageAttribute);
-
 	}
 
 	private @NonNull Object getSourceModel()
