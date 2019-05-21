@@ -313,7 +313,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 					<subreportParameterExpression><![CDATA[$F{m_product_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["report_packagingmaterial.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_packagingmaterial.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="65" splitType="Prevent">
@@ -364,7 +364,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["report_component.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_component.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="49" splitType="Prevent">
@@ -374,7 +374,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["report_allergen.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_allergen.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="33" splitType="Prevent">
@@ -384,7 +384,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["report_nutrition.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_nutrition.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="50">
@@ -394,7 +394,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["report_microbiology.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_microbiology.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="58" splitType="Prevent">
