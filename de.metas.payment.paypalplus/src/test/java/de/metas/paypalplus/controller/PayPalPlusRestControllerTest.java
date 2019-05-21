@@ -1,17 +1,24 @@
 package de.metas.paypalplus.controller;
 
-import com.paypal.base.rest.PayPalRESTException;
-import de.metas.paypalplus.PayPalProperties;
-import de.metas.paypalplus.model.*;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.time.LocalDate;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.YearMonth;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.paypal.base.Constants;
+
+import de.metas.paypalplus.PayPalConfig;
+import de.metas.paypalplus.model.BillingAddress;
+import de.metas.paypalplus.model.CreditCard;
+import de.metas.paypalplus.model.PaymentAmount;
+import de.metas.paypalplus.model.PaymentCaptureRequest;
+import de.metas.paypalplus.model.PaymentReservationRequest;
+import de.metas.paypalplus.model.PaymentReservationResponse;
 
 /*
  * #%L
@@ -34,111 +41,91 @@ import static org.junit.Assert.fail;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 public class PayPalPlusRestControllerTest
 {
-	private static PayPalPlusRestController controller;
+	private static final String CURRENCY_EUR = "EUR";
 
-	@BeforeClass
-	public static void beforeClass()
+	private PayPalPlusService service;
+
+	@Before
+	public void before()
 	{
-		controller = new PayPalPlusRestController(PayPalProperties.CONFIG_SANDBOX_PROPERTIES);
+		final PayPalConfig config = PayPalConfig.builder()
+				.clientId("AbrU-xbGF2BJHOaAaF8yC9GZRHCSiNA6UY61kI8P7Ipz5ZZTvXBHTY-nzeIl9eh7xFtsoua1brYcNlQx")
+				.clientSecret("EObqX1HbD-LhiHQ-oI3ZdAGnDSluIekyjT2ZHxvL0L924d_c3DA3gH0Qzh8KFpShQemTo3A-qS-5X7oT")
+				.executionMode(Constants.SANDBOX)
+				.build();
 
-	}
-
-	@Test
-	public void capturePayment()
-	{
-		PayPalPlusPayment payPalPlusPayment = buildPaymentObject();
-		PaymentStatus paymentStatus = null;
-		try
-		{
-			paymentStatus = controller.capturePayment(payPalPlusPayment);
-		}
-		catch (PayPalRESTException e)
-		{
-			fail();
-			e.printStackTrace();
-		}
-		assertEquals(paymentStatus.getPaymentState(), "approved");
+		service = new PayPalPlusService(SingletonPayPalConfigProvider.of(config));
 	}
 
 	@Test
 	public void reservePayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = buildPaymentObject();
-		PaymentStatus paymentStatus = null;
-		try
-		{
-			paymentStatus = controller.authorizePayment(payPalPlusPayment);
-		}
-		catch (PayPalPlusException e)
-		{
-			fail();
-			e.printStackTrace();
-		}
-		assertEquals(paymentStatus.getPaymentState(), "approved");
+		final PaymentReservationRequest request = createPaymentReservationRequest("123.45");
+		final PaymentReservationResponse response = service.reservePayment(request);
+		assertEquals(response.getPaymentState(), "approved");
+	}
+
+	@Test
+	public void capturePayment()
+	{
+		final PaymentReservationRequest reservationRequest = createPaymentReservationRequest("101.01");
+		final PaymentReservationResponse reservationResponse = service.reservePayment(reservationRequest);
+		assertEquals(reservationResponse.getPaymentState(), "approved");
+
+		final PaymentCaptureRequest captureRequest = PaymentCaptureRequest.builder()
+				.authorizationId(reservationResponse.getAuthorizationId())
+				.currency(CURRENCY_EUR)
+				.amount(new BigDecimal("44.01"))
+				.build();
+		service.capturePayment(captureRequest);
+
 	}
 
 	@Test
 	public void cancelPayment()
 	{
-		PayPalPlusPayment payPalPlusPayment = buildPaymentObject();
-		PaymentStatus paymentStatus = null;
-		try
-		{
-			paymentStatus = controller.authorizePayment(payPalPlusPayment);
-		}
-		catch (PayPalPlusException e)
-		{
-			fail();
-			e.printStackTrace();
-		}
-		assertEquals(paymentStatus.getPaymentState(), "approved");
-		String status = "";
-		try
-		{
-			status = controller.cancelPayment(paymentStatus.getAuthorizationId(), "Cancelling reason - something");
-		}
-		catch (PayPalPlusException e)
-		{
-			fail();
-			e.printStackTrace();
-		}
-		assertEquals(status, "voided");
+		final PaymentReservationRequest reservationRequest = createPaymentReservationRequest("101.01");
+		final PaymentReservationResponse reservationReponse = service.reservePayment(reservationRequest);
+		assertEquals(reservationReponse.getPaymentState(), "approved");
+
+		final String voidResponse = service.cancelPayment(reservationReponse.getAuthorizationId());
+		assertEquals(voidResponse, "voided");
 	}
 
-	private PayPalPlusPayment buildPaymentObject()
+	private PaymentReservationRequest createPaymentReservationRequest(final String amount)
 	{
-		return PayPalPlusPayment.builder().
-				paymentAmount(PaymentAmount.builder().
-						paymentDetails(PaymentDetails.builder().
-								shippingTax("0.00").
-								subTotal("107.41").
-								tax("0.00").
-								build()).
-						total("107.41").
-						currency("EUR").
-						build()).
-				paymentCurrency("EUR").
-				paymentDate(LocalDate.now()).
-				creditCard(CreditCard.builder().
-						cardType("visa").
-						firstName("Dummy first").
-						lastName("Dummy lastname").
-						expirationMonth(11).
-						expirationYear(2019).
-						cardNumber("4417119669820331").
-						cvv2("123").
-						build()).
-				billingAddress(BillingAddress.builder().
-						address("address").
-						city("Johnstown").
-						countryCode("US").
-						postalCode("43210").
-						state("OH")
-						.build()).
-				transactionDescription("Transaction description").
-				build();
+		return PaymentReservationRequest.builder()
+				.paymentAmount(createPaymentAmount(amount))
+				.paymentDate(LocalDate.now())
+				.creditCard(CreditCard.builder()
+						.cardType("visa")
+						.firstName("Dummy first")
+						.lastName("Dummy lastname")
+						.expirationDate(YearMonth.of(2019, Month.NOVEMBER))
+						.cardNumber("4417119669820331")
+						.cvv2("123")
+						.build())
+				.billingAddress(BillingAddress.builder()
+						.address1("Franz Liszt 4")
+						.address2("ap. 5")
+						.city("Timisoara")
+						.state("Timis")
+						.countryCode("US")
+						.postalCode("43210")
+						.build())
+				.transactionDescription("Transaction description")
+				.build();
+	}
+
+	private PaymentAmount createPaymentAmount(final String amount)
+	{
+		return PaymentAmount.builder()
+				.currency(CURRENCY_EUR)
+				.subTotal(new BigDecimal(amount))
+				.shippingTax(BigDecimal.ZERO)
+				.tax(BigDecimal.ZERO)
+				.build();
 	}
 }

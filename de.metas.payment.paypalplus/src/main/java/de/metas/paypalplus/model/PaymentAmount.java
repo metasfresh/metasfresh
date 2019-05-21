@@ -1,17 +1,40 @@
 package de.metas.paypalplus.model;
 
+import java.math.BigDecimal;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
 public class PaymentAmount
 {
-	@Builder.Default private long created = System.currentTimeMillis();
-
+	@NonNull
 	String currency;
 
-	String total;
+	@NonNull
+	BigDecimal subTotal;
+	@NonNull
+	BigDecimal shippingTax;
+	@NonNull
+	BigDecimal tax;
 
-	PaymentDetails paymentDetails;
+	@NonNull
+	BigDecimal total;
+
+	@Builder
+	private PaymentAmount(
+			@NonNull final String currency,
+			@NonNull final BigDecimal subTotal,
+			@NonNull final BigDecimal shippingTax,
+			@NonNull final BigDecimal tax)
+	{
+		this.currency = currency;
+
+		this.subTotal = subTotal;
+		this.shippingTax = shippingTax;
+		this.tax = tax;
+
+		this.total = subTotal.add(shippingTax).add(tax);
+	}
 }

@@ -1,8 +1,9 @@
 package de.metas.paypalplus.controller;
 
-import de.metas.paypalplus.model.PayPalPlusException;
-import de.metas.paypalplus.model.PayPalPlusPayment;
-import de.metas.paypalplus.model.PaymentStatus;
+import de.metas.paypalplus.model.PaymentCaptureRequest;
+import de.metas.paypalplus.model.PaymentCaptureResponse;
+import de.metas.paypalplus.model.PaymentReservationRequest;
+import de.metas.paypalplus.model.PaymentReservationResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 
 /*
@@ -33,26 +34,17 @@ public interface PayPalPlusRestEndpoint
 
 	/**
 	 * Authorize a payment and reserve it for 30 days
-	 *
-	 * @return Payment
-	 * @throws PayPalPlusException
 	 */
-	PaymentStatus authorizePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
+	PaymentReservationResponse reservePayment(PaymentReservationRequest request);
 
 	/**
 	 * Capture a PayPal Plus payment: honor the payment
-	 *
-	 * @return Payment
-	 * @throws PayPalPlusException
 	 */
-	PaymentStatus capturePayment(PayPalPlusPayment payPalPlusPayment) throws PayPalPlusException;
+	PaymentCaptureResponse capturePayment(PaymentCaptureRequest request);
 
 	/**
 	 * Cancel(void) a PayPal Plus payment
-	 *
-	 * @return String
-	 * @throws PayPalPlusException
 	 */
-	String cancelPayment(String paymentId, String reason) throws PayPalPlusException;
+	String cancelPayment(String paymentId);
 
 }
