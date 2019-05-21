@@ -1,8 +1,8 @@
 package de.metas.edi.esb.pojo.common;
 
-import com.google.common.collect.Maps;
-
 import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 public enum MeasurementUnit
 {
@@ -13,6 +13,8 @@ public enum MeasurementUnit
 	CBMT("MTQ"),
 	PIEC("PCE"),
 	PACK("TU"),
+	COLI("PCE"),
+	DISP("PCE"),
 	CART("KRT");
 
 	private final String cuom;
