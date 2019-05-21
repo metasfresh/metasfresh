@@ -1,10 +1,11 @@
 package de.metas.customs;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import javax.annotation.Nullable;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,31 +28,34 @@ import de.metas.util.lang.RepoIdAware;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Value
 public class CustomsInvoiceLineId implements RepoIdAware
 {
-	@JsonCreator
-	public static CustomsInvoiceLineId ofRepoId(final int repoId)
-	{
-		return new CustomsInvoiceLineId(repoId);
-	}
-
 	int repoId;
 
-	private CustomsInvoiceLineId(final int repoId)
+	@NonNull
+	CustomsInvoiceId customsInvoiceId;
+
+	public static CustomsInvoiceLineId ofRepoId(@NonNull final CustomsInvoiceId customsInvoiceId, final int customsInvoiceLineid)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Customs_Invoice_Line_ID");
+		return new CustomsInvoiceLineId(customsInvoiceId, customsInvoiceLineid);
 	}
 
-	@Override
-	@JsonValue
-	public int getRepoId()
+	public static CustomsInvoiceLineId ofRepoId(final int customsInvoiceId, final int customsInvoiceLineId)
 	{
-		return repoId;
+		return new CustomsInvoiceLineId(CustomsInvoiceId.ofRepoId(customsInvoiceId), customsInvoiceId);
 	}
 
-	public static int toRepoId(final CustomsInvoiceLineId id)
+	public static CustomsInvoiceLineId ofRepoIdOrNull(
+			@Nullable final CustomsInvoiceId customsInvoiceId,
+			final int customsInvoiceLineId)
 	{
-		return id != null ? id.getRepoId() : -1;
+		return customsInvoiceId != null && customsInvoiceLineId > 0 ? ofRepoId(customsInvoiceId, customsInvoiceLineId) : null;
+	}
+
+	private CustomsInvoiceLineId(@NonNull final CustomsInvoiceId customsInvoiceId, final int customsInvoiceLineId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(customsInvoiceLineId, "shipmentDeclarationLineId");
+		this.customsInvoiceId = customsInvoiceId;
 	}
 }

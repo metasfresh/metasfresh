@@ -11,11 +11,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.ICurrencyBL;
+import de.metas.customs.CustomsInvoice;
 import de.metas.customs.CustomsInvoiceService;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
@@ -23,8 +26,8 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -60,7 +63,6 @@ import lombok.NonNull;
 public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProcessPrecondition
 {
 	private final CustomsInvoiceService customsInvoiceService = Adempiere.getBean(CustomsInvoiceService.class);
-	private final CurrencyRepository currencyRepo = Adempiere.getBean(CurrencyRepository.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private int p_C_BPartner_ID;
@@ -71,27 +73,33 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 	@Param(parameterName = "AD_User_ID")
 	private int p_AD_User_ID;
 
-	@Param(parameterName = "DateTo")
-	private LocalDate p_EndDate;
-
+	@Param(parameterName = "IsComplete")
+	private boolean p_IsComplete;
 
 	@Override
 	protected String doIt() throws Exception
 	{
-
+		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 		final List<InOutAndLineId> linesToExport = retrieveLinesToExport();
 
 		final Map<ProductId, List<InOutAndLineId>> linesToExportMap = linesToExport
 				.stream()
 				.collect(Collectors.groupingBy(inoutAndLineId -> getProductId(inoutAndLineId))); // we asserted earlier that each HU has a locator
 
-
 		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(p_C_BPartner_ID, p_C_BPartner_Location_ID);
 		final UserId userId = UserId.ofRepoId(p_AD_User_ID);
 
-		final CurrencyId currencyId = currencyRepo.getForBPartnerLocationId(bpartnerAndLocationId);
+		final CurrencyId currencyId = currencyBL.getBaseCurrencyId(Env.getClientId(), Env.getOrgId());
 
-		customsInvoiceService.generateCustomsInvoice(bpartnerAndLocationId, userId, currencyId, linesToExportMap);
+		final LocalDate invoiceDate = Env.getLocalDate();
+
+		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(bpartnerAndLocationId, userId, currencyId, linesToExportMap, invoiceDate, p_IsComplete);
+
+		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
+				.map(InOutAndLineId::getInOutId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice);
 
 		return MSG_OK;
 
@@ -102,7 +110,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 		final InOutLineId shipmentLineId = inoutAndLineId.getInOutLineId();
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(shipmentLineId);
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(shipmentLineId, I_M_InOutLine.class);
 
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 	}
@@ -119,6 +127,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final boolean foundAtLeastOneUnregisteredShipment = context.getSelectedModels(I_M_InOut.class).stream()
 				.map(shipmentRecord -> InOutId.ofRepoId(shipmentRecord.getM_InOut_ID()))
 				.filter(this::isValidShipment)
+				.map(inoutId -> retrieveValidLinesToExport(inoutId))
 				.findAny()
 				.isPresent();
 
@@ -157,10 +166,8 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		return true;
 	}
 
-	final List<InOutAndLineId> retrieveLinesToExport()
+	private List<InOutAndLineId> retrieveLinesToExport()
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		final IQueryFilter<I_M_InOut> queryFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
@@ -173,14 +180,45 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 				.filter(this::isValidShipment)
 				.collect(ImmutableList.toImmutableList());
 
+		List<InOutAndLineId> shipmentLinesToExport = new ArrayList<>();
+
+		shipmentsToExport
+				.stream()
+				.forEach(shipmentId -> shipmentLinesToExport.addAll(retrieveValidLinesToExport(shipmentId)));
+
+		return shipmentLinesToExport;
+
+	}
+
+	private List<InOutAndLineId> retrieveValidLinesToExport(final InOutId shipmentId)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		List<InOutAndLineId> shipmentLines = new ArrayList<>();
 
-		for (final InOutId shipmentId : shipmentsToExport)
-		{
-			shipmentLines.addAll(inOutDAO.retrieveLinesForInOutId(shipmentId));
-		}
+		final ImmutableList<InOutAndLineId> shipmentLinesToExport = inOutDAO.retrieveLinesForInOutId(shipmentId)
+				.stream()
+				.filter(this::isValidLineToExport)
+				.collect(ImmutableList.toImmutableList());
+
+		shipmentLines.addAll(shipmentLinesToExport);
 
 		return shipmentLines;
+	}
+
+	private boolean isValidLineToExport(final InOutAndLineId inoutAndLineId)
+	{
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
+
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(inOutLineId, I_M_InOutLine.class);
+
+		if (shipmentLineRecord.isPackagingMaterial())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 }

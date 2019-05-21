@@ -10,8 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
-import de.metas.inout.InOutId;
-import de.metas.shipment.ShipmentDeclarationLine;
+import de.metas.money.CurrencyId;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -56,19 +55,19 @@ public class CustomsInvoice
 	OrgId orgId;
 
 	@NonNull
-	InOutId shipmentId;
-
-	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;
 
 	@Nullable
 	UserId userId;
 
 	@NonNull
+	CurrencyId currencyId;
+
+	@NonNull
 	DocTypeId docTypeId;
 
 	@NonNull
-	LocalDate shipmentDate;
+	LocalDate invoiceDate;
 
 	@NonNull
 	String docAction;
@@ -77,7 +76,15 @@ public class CustomsInvoice
 	String docStatus;
 
 	@NonNull
-	ImmutableList<ShipmentDeclarationLine> lines;
+	ImmutableList<CustomsInvoiceLine> lines;
 
-
+	public void updateLineNos()
+	{
+		int nextLineNo = 10;
+		for (CustomsInvoiceLine line : lines)
+		{
+			line.setLineNo(nextLineNo);
+			nextLineNo += 10;
+		}
+	}
 }

@@ -1,6 +1,7 @@
 package de.metas.customs;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -11,9 +12,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.impl.CurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -21,8 +24,13 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderLine;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -30,6 +38,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -60,18 +69,23 @@ public class CustomsInvoiceService
 {
 
 	private final CustomsInvoiceRepository customsInvoiceRepo;
+	private final OrderLineRepository orderLineRepo;
 
 	public CustomsInvoiceService(
-			@NonNull final CustomsInvoiceRepository customsInvoiceRepo)
+			@NonNull final CustomsInvoiceRepository customsInvoiceRepo,
+			@NonNull final OrderLineRepository orderLineRepo)
 	{
 		this.customsInvoiceRepo = customsInvoiceRepo;
+		this.orderLineRepo = orderLineRepo;
 
 	}
 
-	public void generateCustomsInvoice(final BPartnerLocationId bpartnerAndLocationId,
+	public CustomsInvoice generateCustomsInvoice(final BPartnerLocationId bpartnerAndLocationId,
 			final UserId userId,
 			final CurrencyId currencyId,
-			final Map<ProductId, List<InOutAndLineId>> linesToExportMap)
+			final Map<ProductId, List<InOutAndLineId>> linesToExportMap,
+			final LocalDate invoiceDate,
+			final boolean isComplete)
 	{
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
@@ -79,12 +93,16 @@ public class CustomsInvoiceService
 
 		final String documentNo = reserveDocumentNo(docTypeId);
 
-		final CustomsInvoice customsInvoice = createCustomsInvoice(bpartnerAndLocationId, userId, docTypeId, documentNo, currencyId, linesToExportMap);
+		final CustomsInvoice customsInvoice = createCustomsInvoice(bpartnerAndLocationId, userId, docTypeId, documentNo, currencyId, invoiceDate, linesToExportMap);
 
 		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
 
-		documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		if (isComplete)
+		{
+			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
 
+		return customsInvoice;
 	}
 
 	private CustomsInvoice createCustomsInvoice(final BPartnerLocationId bpartnerAndLocationId,
@@ -92,80 +110,126 @@ public class CustomsInvoiceService
 			final DocTypeId docTypeId,
 			final String documentNo,
 			final CurrencyId currencyId,
+			final LocalDate invoiceDate,
 			final Map<ProductId, List<InOutAndLineId>> linesToExportMap)
 	{
 
-		for (final ProductId productId : linesToExportMap.keySet())
-		{
-			createCustomsInvoiceLine(productId, linesToExportMap.get(productId), currencyId);
-		}
+		final ImmutableList<CustomsInvoiceLine> customsInvoiceLines = linesToExportMap.keySet()
+				.stream()
+				.map(productId -> createCustomsInvoiceLine(productId, linesToExportMap.get(productId), currencyId))
+				.collect(ImmutableList.toImmutableList());
 
-		return CustomsInvoice.builder()
+		final CustomsInvoice customsInvoice = CustomsInvoice.builder()
 				.bpartnerAndLocationId(bpartnerAndLocationId)
 				.userId(userId)
+				.invoiceDate(invoiceDate)
+				.orgId(Env.getOrgId())
+				.currencyId(currencyId)
+				.docStatus(IDocument.STATUS_Drafted)
 				.docAction(IDocument.ACTION_Complete)
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
+				.lines(customsInvoiceLines)
 				.build();
+
+		customsInvoice.updateLineNos();
+
+		return customsInvoice;
 	}
 
-	private void createCustomsInvoiceLine(final ProductId productId, final List<InOutAndLineId> shipmentLinesForProducts, final CurrencyId currencyId)
+	private CustomsInvoiceLine createCustomsInvoiceLine(final ProductId productId,
+			final List<InOutAndLineId> shipmentLinesForProducts,
+			final CurrencyId currencyId)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final ICurrencyBL currencyBL = Services.get(CurrencyBL.class);
 
 		final I_M_Product product = productDAO.getById(productId);;
 
 		Quantity qty = Quantity.of(BigDecimal.ZERO, product.getC_UOM());
-		BigDecimal price = BigDecimal.ZERO;
+		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
 
 		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
 
 		for (InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
 		{
-			final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
+			final Quantity inoutLineQtyCoverted = getInOutLineQtyConverted(inoutAndLineId, uomId);
 
-			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inOutLineId);
+			qty = qty.add(inoutLineQtyCoverted.getAsBigDecimal());
 
-			final BigDecimal movementQty = inoutLineRecord.getMovementQty();
+			final Money inoutLinePriceConverted = getInOutLinePriceConverted(inoutAndLineId, currencyId);
 
-			final Quantity lineQty = Quantity.of(movementQty, inoutLineRecord.getC_UOM());
+			final Money shipmentLineNetAmt = inoutLinePriceConverted.multiply(inoutLineQtyCoverted.getAsBigDecimal());
 
-			final Quantity quantityConverted = uomConversionBL.convertQuantityTo(
-					lineQty,
-					UOMConversionContext.of(productId),
-					uomId);
-
-			qty.add(quantityConverted.getAsBigDecimal());
-
-			final BigDecimal priceActual = inoutLineRecord.getC_OrderLine().getPriceActual();
-
-			// final CurrencyId lineCurrencyId = CurrencyId.ofRepoId(inoutLineRecord.getC_OrderLine().getC_Currency_ID());
-
-			final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
-					Env.getCtx(),
-					inoutLineRecord.getC_OrderLine().getPriceActual(),
-					inoutLineRecord.getC_OrderLine().getC_Currency_ID(),
-					currencyId.getRepoId(),
-					Env.getAD_Client_ID(),
-					Env.getOrgId().getRepoId());
-
-			final BigDecimal linePrice = shipmentLinePriceConverted.multiply(quantityConverted.getAsBigDecimal());
-
-			price = price.add(linePrice);
+			lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
 
 		}
 
-		// return ShipmentDeclarationLine.builder()
-		// .orgId(OrgId.ofRepoId(shipmentLineRecord.getAD_Org_ID()))
-		// .packageSize(product.getPackageSize())
-		// .productId(productId)
-		// .quantity(Quantity.of(shipmentLineRecord.getMovementQty(), uom))
-		// .shipmentLineId(shipmentLineId)
-		// .build();
 
+		final CustomsInvoiceLine customsInvoiceLine = CustomsInvoiceLine.builder()
+				.productId(productId)
+				.lineNetAmt(lineNetAmt)
+				.quantity(qty)
+				.orgId(Env.getOrgId())
+				.uomId(uomId)
+				.build();
+
+		return customsInvoiceLine;
+	}
+
+	private Money getInOutLinePriceConverted(final InOutAndLineId inoutAndLineId, final CurrencyId currencyId)
+	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
+		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
+
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inOutLineId);
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inoutLineRecord.getC_OrderLine_ID());
+
+		if (Check.isEmpty(orderLineId))
+		{
+			// we don't have a place where to take the price from.
+			throw new AdempiereException("Can't find price for shipment line" + inoutAndLineId);
+		}
+
+		final OrderLine orderLine = orderLineRepo.getById(orderLineId);
+
+		final Money priceActual = orderLine.getPriceActual();
+
+		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
+				Env.getCtx(),
+				priceActual.getValue(),
+				priceActual.getCurrencyId().getRepoId(),
+				currencyId.getRepoId(),
+				Env.getAD_Client_ID(),
+				Env.getOrgId().getRepoId());
+
+		return Money.of(shipmentLinePriceConverted, currencyId);
+
+	}
+
+	private Quantity getInOutLineQtyConverted(final InOutAndLineId inoutAndLineId, final UomId uomId)
+	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
+
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inOutLineId);
+
+		final BigDecimal movementQty = inoutLineRecord.getMovementQty();
+
+		final Quantity lineQty = Quantity.of(movementQty, inoutLineRecord.getC_UOM());
+
+		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
+
+		final Quantity quantityConverted = uomConversionBL.convertQuantityTo(
+				lineQty,
+				UOMConversionContext.of(productId),
+				uomId);
+
+		return quantityConverted;
 	}
 
 	private String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
@@ -183,6 +247,15 @@ public class CustomsInvoiceService
 		}
 
 		return documentNo;
+	}
+
+	public void setCustomsInvoiceToShipments(final ImmutableSet<InOutId> exportedShippmentIds, final CustomsInvoice customsInvoice)
+	{
+
+		exportedShippmentIds
+				.stream()
+				.forEach(exportedShipmentId -> customsInvoiceRepo.setCustomsInvoiceToShipment(exportedShipmentId, customsInvoice));
+
 	}
 
 }

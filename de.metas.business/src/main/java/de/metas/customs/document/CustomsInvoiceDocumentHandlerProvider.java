@@ -1,18 +1,10 @@
-package de.metas.customs;
+package de.metas.customs.document;
 
-import org.adempiere.service.OrgId;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.springframework.stereotype.Component;
 
-import de.metas.money.Money;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
 
 /*
  * #%L
@@ -35,31 +27,19 @@ import lombok.experimental.NonFinal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@Builder(toBuilder = true)
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CustomsInvoiceLine
+@Component
+public class CustomsInvoiceDocumentHandlerProvider implements DocumentHandlerProvider
 {
-	@NonFinal
-	CustomsInvoiceLineId id;
 
-	@NonFinal
-	@Setter(AccessLevel.PACKAGE)
-	int lineNo;
+	@Override
+	public String getHandledTableName()
+	{
+		return I_C_Customs_Invoice.Table_Name;
+	}
 
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	Quantity quantity;
-
-	@NonNull
-	UomId uomId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	Money lineNetAmt;
-
+	@Override
+	public DocumentHandler provideForDocument(final Object model_NOTUSED)
+	{
+		return new CustomsInvoiceDocumentHandler();
+	}
 }
