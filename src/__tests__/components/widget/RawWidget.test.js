@@ -49,7 +49,9 @@ describe('RawWidget component', () => {
     });
 
     it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
-      const handlePatchSpy = jest.fn();
+      const handlePatchSpy = jest.fn(() => {
+        return Promise.resolve(true);
+      });
       const props = createDummyProps(
         {
           ...fixtures.longText.layout1,
@@ -87,7 +89,9 @@ describe('RawWidget component', () => {
     });
 
     it('doesn\'t call `handlePatch` on `{shift}{enter}` keydown', () => {
-      const handlePatchSpy = jest.fn();
+      const handlePatchSpy = jest.fn(() => {
+        return Promise.resolve(true);
+      });
       const props = createDummyProps(
         {
           ...fixtures.longText.layout1,
@@ -116,7 +120,9 @@ describe('RawWidget component', () => {
     it('correct handlers/prop functions are called on focus/blur', () => {
       jest.useFakeTimers();
 
-      const patchSpy = jest.fn();
+      const patchSpy = jest.fn(() => {
+        return Promise.resolve(true);
+      });
       const blurSpy = jest.fn();
       const focusSpy = jest.fn();
       const clickOutsideSpy = jest.fn();
@@ -198,7 +204,9 @@ describe('RawWidget component', () => {
     });
 
     it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
-      const handlePatchSpy = jest.fn();
+      const handlePatchSpy = jest.fn(() => {
+        return Promise.resolve(true);
+      });
       const props = createDummyProps(
         {
           ...fixtures.text.layout1,
@@ -238,7 +246,9 @@ describe('RawWidget component', () => {
     it('correct handlers/prop functions are called on focus/blur', () => {
       jest.useFakeTimers();
 
-      const patchSpy = jest.fn();
+      const patchSpy = jest.fn(() => {
+        return Promise.resolve(true);
+      });
       const blurSpy = jest.fn();
       const focusSpy = jest.fn();
       const clickOutsideSpy = jest.fn();
@@ -320,13 +330,15 @@ describe('RawWidget component', () => {
     });
 
     it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
-      const handlePatchSpy = jest.fn();
+      const handlePatchSpy = jest.fn(() => {
+        return Promise.resolve(true);
+      });
       const preventDefaultSpy = jest.fn();
       const props = createDummyProps(
         {
           ...fixtures.integer.layout1,
           widgetData: [{ ...fixtures.integer.data1 }],
-          handlePatch: handlePatchSpy,
+          handlePatch: handlePatchSpy
         },
       );
 
