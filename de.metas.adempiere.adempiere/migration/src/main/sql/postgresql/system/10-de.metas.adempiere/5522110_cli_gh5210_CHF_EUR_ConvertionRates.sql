@@ -23,4 +23,10 @@ UPDATE C_Conversion_Rate SET DivideRate=1.130000000000, MultiplyRate=0.884955752
 WHERE C_Conversion_Rate_ID=540003
 ;
 
+-- 2019-05-21T17:57:46.117
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Conversion_Rate SET DivideRate=0.884955752212, MultiplyRate=1.130000000000,Updated=TO_TIMESTAMP('2019-05-21 17:57:46','YYYY-MM-DD HH24:MI:SS'),
+UpdatedBy=100 WHERE C_Conversion_Rate_ID=540004
+;
+
 
