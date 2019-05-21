@@ -28,6 +28,7 @@ export class RawWidget extends Component {
 
     this.state = {
       isEdited: false,
+      isPatching: false,
       cachedValue: undefined,
       errorPopup: false,
       tooltipToggled: false,
@@ -137,10 +138,13 @@ export class RawWidget extends Component {
     if ((isForce || willPatch) && handlePatch) {
       this.setState({
         cachedValue: value,
+        isPatching: true,
         clearedFieldWarning: false,
       });
 
-      return handlePatch(property, value, id, valueTo);
+      return handlePatch(property, value, id, valueTo).then(() => {
+        this.setState({ isPatching: false });
+      });
     }
 
     return Promise.resolve(null);
@@ -256,7 +260,7 @@ export class RawWidget extends Component {
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
-    const { isEdited } = this.state;
+    const { isEdited, isPatching } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
@@ -565,7 +569,7 @@ export class RawWidget extends Component {
               }
             )}
           >
-            <input {...widgetProperties} type="text" />
+            <input {...widgetProperties} disabled={readonly || isPatching} type="text" />
             {icon && <i className="meta-icon-edit input-icon-right" />}
           </div>
         );
@@ -582,7 +586,7 @@ export class RawWidget extends Component {
               }
             )}
           >
-            <textarea {...widgetProperties} />
+            <textarea {...widgetProperties} disabled={readonly || isPatching} />
           </div>
         );
       case 'Password':
@@ -600,6 +604,7 @@ export class RawWidget extends Component {
             >
               <input
                 {...widgetProperties}
+                disabled={readonly || isPatching}
                 type="password"
                 ref={c => (this.rawWidget = c)}
               />
@@ -632,6 +637,7 @@ export class RawWidget extends Component {
             {subentity === 'quickInput' ? (
               <NumericInput
                 {...widgetProperties}
+                disabled={readonly || isPatching}
                 min={0}
                 precision={1}
                 step={subentity === 'quickInput' ? 0.1 : 1}
@@ -649,7 +655,7 @@ export class RawWidget extends Component {
               'input-focused': isEdited,
             })}
           >
-            <input {...widgetProperties} type="number" />
+            <input {...widgetProperties} disabled={readonly || isPatching} type="number" />
           </div>
         );
       case 'YesNo':
@@ -657,7 +663,7 @@ export class RawWidget extends Component {
           <Checkbox
             {...{
               widgetData,
-              disabled: readonly,
+              disabled: readonly || isPatching,
               fullScreen,
               tabIndex,
               widgetField,
@@ -691,7 +697,7 @@ export class RawWidget extends Component {
             <input
               type="checkbox"
               checked={widgetData[0].value}
-              disabled={readonly}
+              disabled={readonly || isPatching}
               tabIndex="-1"
               onChange={e =>
                 this.handlePatch(widgetField, e.target.checked, id)
