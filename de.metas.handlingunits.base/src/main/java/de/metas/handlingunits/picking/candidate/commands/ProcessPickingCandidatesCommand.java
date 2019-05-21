@@ -129,7 +129,7 @@ public class ProcessPickingCandidatesCommand
 		}
 	}
 
-	private void processInTrx(final PickingCandidate pickingCandidate)
+	private void processInTrx(@NonNull final PickingCandidate pickingCandidate)
 	{
 		shipmentSchedulesCache.clear(); // because we want to get the fresh QtyToDeliver each time!
 
@@ -142,12 +142,17 @@ public class ProcessPickingCandidatesCommand
 		}
 		else
 		{
-			final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pickingCandidate.getPickFromHuId())
+			final IAllocationSource pickFromSource = HUListAllocationSourceDestination
+					.ofHUId(pickingCandidate.getPickFromHuId())
 					.setDestroyEmptyHUs(true);
 			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
 
-			HULoader.of(pickFromSource, packToDestination)
-					.load(createPackToAllocationRequest(pickingCandidate));
+			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+
+			final IAllocationRequest request = createPackToAllocationRequest(pickingCandidate, huContext);
+			HULoader
+					.of(pickFromSource, packToDestination)
+					.load(request);
 
 			packedToHuId = packToDestination.getSingleCreatedHuId();
 			if (packedToHuId == null)
@@ -155,7 +160,11 @@ public class ProcessPickingCandidatesCommand
 				throw new AdempiereException("Nothing packed for " + pickingCandidate);
 			}
 
-			huShipmentScheduleBL.addQtyPickedAndUpdateHU(pickingCandidate.getShipmentScheduleId(), pickingCandidate.getQtyPicked(), packedToHuId);
+			huShipmentScheduleBL.addQtyPickedAndUpdateHU(
+					pickingCandidate.getShipmentScheduleId(),
+					pickingCandidate.getQtyPicked(),
+					packedToHuId,
+					huContext);
 		}
 
 		pickingCandidate.changeStatusToProcessed(packedToHuId);
@@ -183,9 +192,10 @@ public class ProcessPickingCandidatesCommand
 		return invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 	}
 
-	private IAllocationRequest createPackToAllocationRequest(final PickingCandidate pc)
+	private IAllocationRequest createPackToAllocationRequest(
+			@NonNull final PickingCandidate pc,
+			@NonNull final IHUContext huContext)
 	{
-		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(getProductId(pc))

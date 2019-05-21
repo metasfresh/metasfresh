@@ -22,6 +22,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.CreateCandidatesRequest.CreateCandidatesRequestBuilder;
@@ -108,6 +109,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = Adempiere.getBean(ShipmentScheduleWithHUService.class);
 
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+
 		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
 

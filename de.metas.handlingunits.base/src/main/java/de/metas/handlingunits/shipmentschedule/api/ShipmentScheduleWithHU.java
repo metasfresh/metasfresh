@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.compiere.util.Util.coalesceSuppliers;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -52,6 +53,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.jgoodies.common.base.Objects;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
@@ -84,7 +86,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 public class ShipmentScheduleWithHU
 {
@@ -97,25 +98,36 @@ public class ShipmentScheduleWithHU
 	}
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
+			@NonNull final IHUContext huContext)
 	{
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext, null);
+		return ofShipmentScheduleQtyPickedWithHuContext(
+				shipmentScheduleQtyPicked,
+				huContext,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was an we don't have great test coverage */);
 	}
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext,
-			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, false, qtyTypeToUse);
+		return new ShipmentScheduleWithHU(
+				huContext,
+				shipmentScheduleQtyPicked,
+				false,
+				qtyTypeToUse);
 	}
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
 	{
-		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, false, null);
+		return new ShipmentScheduleWithHU(
+				huContext,
+				shipmentScheduleQtyPicked,
+				false,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER/* just because that's how it was an we don't have great test coverage */);
 	}
 
 	/**
@@ -124,20 +136,13 @@ public class ShipmentScheduleWithHU
 	 * @param qtyPicked in this case qtyPicked can only be the quantity of an "unconfirmed" (i.e. drafted) shipment line.
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
+			@NonNull final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final Quantity qtyPicked,
-			final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		final boolean createManualPackingMaterial = true;
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked.getAsBigDecimal(), createManualPackingMaterial, qtyTypeToUse);
-	}
-
-	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final BigDecimal qtyPicked)
-	{
-		final boolean createManualPackingMaterial = true;
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, createManualPackingMaterial, null);
+		return new ShipmentScheduleWithHU(huContext, shipmentSchedule, qtyPicked.getAsBigDecimal(), createManualPackingMaterial, qtyTypeToUse);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
@@ -161,54 +166,52 @@ public class ShipmentScheduleWithHU
 	private I_M_InOutLine shipmentLine = null;
 
 	@Getter
-	@Setter
-	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER; // keep old functionality as default
+	private final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse;
+
 	/**
-	 * Tells us if the candidate is supposed to receive a manual packing material (in the case when we have a quick shipment, with no picking)
-	 * #4507 leave default as before: if nothing is specified, create the shipments based on qtyToDeliver and create the packing materials
+	 * Tells us if the candidate is supposed to receive a manual packing material (in the case when we have a quick shipment, with no picking).
+	 * <p>
+	 * <b>IMPORTANT:</b> is ignored if there is already and existing ShipmentLineBuilder and this ShipmentScheduleWithHU can be added to it.
 	 */
 	@Getter
-	@Setter
-	private boolean createManualPackingMaterial = true;
+	private final boolean adviseManualPackingMaterial;
 
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc,
 			final boolean createManualPackingMaterial,
-			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		this.huContext = Util.coalesce(
-				huContext,
-				Services.get(IHandlingUnitsBL.class).createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx()));
-		this.shipmentScheduleQtyPicked = shipmentScheduleAlloc;
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
+		this.huContext = coalesceSuppliers(
+				() -> huContext,
+				() -> handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx()));
+
+		this.shipmentScheduleQtyPicked = shipmentScheduleAlloc;
 		this.shipmentSchedule = create(shipmentScheduleAlloc.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-		
-		final I_C_UOM qtyPickedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
+
+		final I_C_UOM qtyPickedUOM = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 		this.qtyPicked = Quantity.of(shipmentScheduleAlloc.getQtyPicked(), qtyPickedUOM);
 
 		this.vhu = shipmentScheduleAlloc.getVHU_ID() > 0 ? shipmentScheduleAlloc.getVHU() : null;
 		this.tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
 		this.luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
 
-		this.setCreateManualPackingMaterial(createManualPackingMaterial);
-		this.setQtyTypeToUse(qtyTypeToUse);
-
+		this.adviseManualPackingMaterial = createManualPackingMaterial;
+		this.qtyTypeToUse = qtyTypeToUse;
 	}
 
 	/**
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
-	 *
-	 * @param huContext
-	 * @param shipmentSchedule
-	 * @param qtyPicked
 	 */
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked,
 			final boolean createManualPackingMaterial,
-			final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -217,7 +220,7 @@ public class ShipmentScheduleWithHU
 		this.shipmentScheduleQtyPicked = null; // no allocation, will be created on fly when needed
 
 		this.shipmentSchedule = shipmentSchedule;
-		
+
 		final I_C_UOM qtyPickedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
 		this.qtyPicked = Quantity.of(qtyPicked, qtyPickedUOM);
 
@@ -225,8 +228,8 @@ public class ShipmentScheduleWithHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
 
-		this.setCreateManualPackingMaterial(createManualPackingMaterial);
-		this.setQtyTypeToUse(qtyTypeToUse);
+		this.adviseManualPackingMaterial = createManualPackingMaterial;
+		this.qtyTypeToUse = qtyTypeToUse;
 	}
 
 	@Override
@@ -308,6 +311,7 @@ public class ShipmentScheduleWithHU
 
 		final ImmutableList<IAttributeValue> result = allAttributeValues.stream()
 				.filter(IAttributeValue::isUseInASI)
+				.filter(attributeValue -> !Objects.equals(attributeValue.getValue(), attributeValue.getEmptyValue())) // when comparing different shipmentScheduleWithHU instances, we want no attributes to be equal to attributes with null values
 				.filter(attributeValue -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeValue.getM_Attribute()))
 				.collect(ImmutableList.toImmutableList());
 		return result;
@@ -330,7 +334,7 @@ public class ShipmentScheduleWithHU
 	{
 		return qtyPicked;
 	}
-	
+
 	public I_C_UOM getUOM()
 	{
 		return qtyPicked.getUOM();

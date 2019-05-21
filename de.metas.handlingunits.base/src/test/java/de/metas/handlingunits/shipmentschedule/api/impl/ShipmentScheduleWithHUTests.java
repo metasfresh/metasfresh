@@ -19,6 +19,8 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,10 +30,12 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
@@ -69,6 +73,10 @@ public class ShipmentScheduleWithHUTests
 
 	private LUTUProducerDestinationTestSupport testSupport;
 
+	private IHUContext huContext;
+
+	private Quantity ninetyNine;
+
 	@Before
 	public void init()
 	{
@@ -79,6 +87,10 @@ public class ShipmentScheduleWithHUTests
 		final I_M_Product product = newInstance(I_M_Product.class);
 		saveRecord(product);
 		productId = testSupport.helper.pTomatoProductId;
+
+		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+
+		ninetyNine = Quantity.of(99, testSupport.helper.pTomato.getC_UOM());
 
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 	}
@@ -92,7 +104,11 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleWithoutHu(schedule, new BigDecimal("99"))
+				.ofShipmentScheduleWithoutHu(
+						huContext,
+						schedule,
+						ninetyNine,
+						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -110,7 +126,11 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleWithoutHu(schedule, new BigDecimal("99"))
+				.ofShipmentScheduleWithoutHu(
+						huContext,
+						schedule,
+						ninetyNine,
+						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -128,7 +148,11 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleWithoutHu(schedule, new BigDecimal("99"))
+				.ofShipmentScheduleWithoutHu(
+						huContext,
+						schedule,
+						ninetyNine,
+						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -146,7 +170,11 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleWithoutHu(schedule, new BigDecimal("99"))
+				.ofShipmentScheduleWithoutHu(
+						huContext,
+						schedule,
+						ninetyNine,
+						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -164,7 +192,11 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleWithoutHu(schedule, new BigDecimal("99"))
+				.ofShipmentScheduleWithoutHu(
+						huContext,
+						schedule,
+						ninetyNine,
+						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -185,7 +217,9 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU tu = createHU(typeTU);
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(createShipmentScheduleQtyPicked(schedule, iol, lu, tu))
+				.ofShipmentScheduleQtyPicked(
+						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
+						huContext)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -208,7 +242,9 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU tu = createHU(typeTU);
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(createShipmentScheduleQtyPicked(schedule, iol, lu, tu))
+				.ofShipmentScheduleQtyPicked(
+						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
+						huContext)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -230,7 +266,9 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU tu = luAndTU.getRight();
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(createShipmentScheduleQtyPicked(schedule, iol, lu, tu))
+				.ofShipmentScheduleQtyPicked(
+						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
+						huContext)
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -263,7 +301,11 @@ public class ShipmentScheduleWithHUTests
 		return ImmutablePair.of(lu, aggregatedTU);
 	}
 
-	private I_M_ShipmentSchedule_QtyPicked createShipmentScheduleQtyPicked(I_M_ShipmentSchedule schedule, I_M_InOutLine iol, final I_M_HU lu, final I_M_HU tu)
+	private I_M_ShipmentSchedule_QtyPicked createShipmentScheduleQtyPicked(
+			I_M_ShipmentSchedule schedule,
+			I_M_InOutLine iol,
+			final I_M_HU lu,
+			final I_M_HU tu)
 
 	{
 		final I_M_ShipmentSchedule_QtyPicked alloc = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class, contextProvider);
