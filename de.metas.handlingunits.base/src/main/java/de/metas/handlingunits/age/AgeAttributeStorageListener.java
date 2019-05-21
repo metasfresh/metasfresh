@@ -1,5 +1,6 @@
 package de.metas.handlingunits.age;
 
+import de.metas.handlingunits.age.process.M_HU_UpdateHUAgeAttributeProcess;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -7,14 +8,10 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /*
@@ -82,13 +79,7 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 
 		// actual logic starts here
 		final Date productionDate = storage.getValueAsDate(HUAttributeConstants.ATTR_ProductionDate);
-		final long age = computeAgeInMonths(TimeUtil.asLocalDateTime(productionDate));
+		final long age = M_HU_UpdateHUAgeAttributeProcess.computeAgeInMonths(productionDate);
 		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
-	}
-
-	private static long computeAgeInMonths(final LocalDateTime start)
-	{
-		final LocalDateTime end = SystemTime.asLocalDateTime();
-		return ChronoUnit.MONTHS.between(start, end);
 	}
 }
