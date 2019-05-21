@@ -569,7 +569,11 @@ export class RawWidget extends Component {
               }
             )}
           >
-            <input {...widgetProperties} disabled={readonly || isPatching} type="text" />
+            <input
+              {...widgetProperties}
+              disabled={readonly || isPatching}
+              type="text"
+            />
             {icon && <i className="meta-icon-edit input-icon-right" />}
           </div>
         );
@@ -655,7 +659,11 @@ export class RawWidget extends Component {
               'input-focused': isEdited,
             })}
           >
-            <input {...widgetProperties} disabled={readonly || isPatching} type="number" />
+            <input
+              {...widgetProperties}
+              disabled={readonly || isPatching}
+              type="number"
+            />
           </div>
         );
       case 'YesNo':
