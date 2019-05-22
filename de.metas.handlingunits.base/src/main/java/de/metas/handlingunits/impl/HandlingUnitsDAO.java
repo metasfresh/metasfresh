@@ -766,7 +766,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
 
 				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
-				.orderBy().addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, false).endOrderBy()
+				.orderByDescending(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID)
 
 				.create()
 				.first(); // get the first one (favoring the one with C_BPartner_ID = parentHU.getC_BPartner_ID() if it exists)
@@ -862,16 +862,20 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.list();
 	}
 
-	@Override
-	public List<I_M_HU> retrieveHUsForWarehousesAndProductId(final Properties ctx, final Collection<WarehouseId> warehouseIds, final int productId, final String trxName)
-	{
-		return createHUQueryBuilder()
-				.setContext(ctx, trxName)
-				.setOnlyTopLevelHUs()
-				.addOnlyInWarehouseIds(warehouseIds)
-				.addOnlyWithProductId(productId)
-				.list();
-	}
+//	@Override
+//	public List<I_M_HU> retrieveHUsForWarehousesAndProductId(
+//			final Properties ctx,
+//			final Collection<WarehouseId> warehouseIds,
+//			final int productId,
+//			final String trxName)
+//	{
+//		return createHUQueryBuilder()
+//				.setContext(ctx, trxName)
+//				.setOnlyTopLevelHUs()
+//				.addOnlyInWarehouseIds(warehouseIds)
+//				.addOnlyWithProductId(productId)
+//				.list();
+//	}
 
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
