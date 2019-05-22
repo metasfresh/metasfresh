@@ -1,9 +1,11 @@
 package de.metas.handlingunits.age;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.HUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import org.springframework.stereotype.Repository;
 
@@ -34,12 +36,18 @@ import java.util.stream.Stream;
 @Repository
 public class HUWithAgeRepository
 {
+
+	private final ImmutableList<String> validHuStatuses = ImmutableList.<String>builder()
+			.addAll(new HUStatusBL().getQtyOnHandStatuses())
+//			.add(X_M_HU.HUSTATUS_Planning)
+			.build();
+
 	public Stream<I_M_HU> getAllWhereProductionDateIsNotEmptyAndQtyOnHandStatus()
 	{
 		return Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.addOnlyWithAttributeNotNull(HUAttributeConstants.ATTR_ProductionDate)
-				.addHUStatusesToInclude(new HUStatusBL().getQtyOnHandStatuses())
+				.addHUStatusesToInclude(validHuStatuses)
 				.createQueryBuilder()
 				.create()
 				.stream();
