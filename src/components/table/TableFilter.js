@@ -16,6 +16,7 @@ class ActionButton extends Component {
     dispatch: PropTypes.func.isRequired,
     docId: PropTypes.string,
     tabIndex: PropTypes.number,
+    children: PropTypes.element,
   };
 
   handleClick = () => {
@@ -44,7 +45,7 @@ class ActionButton extends Component {
   };
 
   render() {
-    const { action, tabIndex } = this.props;
+    const { action, tabIndex, children } = this.props;
 
     return (
       <button
@@ -54,12 +55,32 @@ class ActionButton extends Component {
         title={action.description}
       >
         {action.caption}
+        {children}
       </button>
     );
   }
 }
 
 class TableFilter extends Component {
+  static propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    tabIndex: PropTypes.number.isRequired,
+    modalVisible: PropTypes.bool.isRequired,
+    forceHeight: PropTypes.number,
+    tabId: PropTypes.string,
+    docType: PropTypes.string,
+    docId: PropTypes.string,
+    openModal: PropTypes.func,
+    toggleFullScreen: PropTypes.func,
+    fullScreen: PropTypes.any,
+    wrapperHeight: PropTypes.number,
+    selected: PropTypes.array,
+    isBatchEntry: PropTypes.bool,
+    handleBatchEntryToggle: PropTypes.func,
+    supportQuickInput: PropTypes.bool,
+    allowCreateNew: PropTypes.bool,
+  };
+
   constructor(props) {
     super(props);
 
@@ -221,7 +242,13 @@ class TableFilter extends Component {
                       selected,
                     }}
                     key={`top-action-${action.processId}`}
-                  />
+                  >
+                    <Tooltips
+                      name={action.shortcut.replace('-', '+')}
+                      action={action.caption}
+                      type={''}
+                    />
+                  </ActionButton>
                 ))
               : null}
             {!isBatchEntry && actions.length ? this.generateShortcuts() : null}
@@ -270,13 +297,6 @@ class TableFilter extends Component {
     );
   }
 }
-
-TableFilter.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  tabIndex: PropTypes.number.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  forceHeight: PropTypes.number,
-};
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
