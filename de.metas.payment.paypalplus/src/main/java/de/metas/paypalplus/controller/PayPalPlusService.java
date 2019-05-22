@@ -20,7 +20,6 @@ import com.paypal.api.payments.Details;
 import com.paypal.api.payments.FundingInstrument;
 import com.paypal.api.payments.Payer;
 import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
 import com.paypal.api.payments.Transaction;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
@@ -212,28 +211,6 @@ public class PayPalPlusService implements PayPalPlusRestEndpoint
 				.setTransactions(ImmutableList.of(transaction))
 		// .setRedirectUrls(redirectUrls)
 		;
-	}
-
-	private void completePayment(
-			@NonNull final String paymentId,
-			@NonNull final String payerId)
-	{
-		final Payment payment = new Payment();
-		payment.setId(paymentId);
-
-		final PaymentExecution paymentExecution = new PaymentExecution();
-		paymentExecution.setPayerId(payerId);
-		try
-		{
-			final APIContext apiContext = createAPIContext();
-			final Payment createdAuthPayment = payment.execute(apiContext, paymentExecution);
-			final Authorization authorization = createdAuthPayment.getTransactions().get(0).getRelatedResources().get(0).getAuthorization();
-			System.out.println("auth: " + authorization);
-		}
-		catch (final PayPalRESTException e)
-		{
-			System.err.println(e.getDetails());
-		}
 	}
 
 	private static Amount createAPIAmount(@NonNull final PaymentAmount paymentAmount)
