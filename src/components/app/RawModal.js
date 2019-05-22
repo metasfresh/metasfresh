@@ -274,7 +274,8 @@ class RawModal extends Component {
                 <div className="optional">
                   {rawModal.headerProperties.entries.map((entry, idx) => (
                     <span key={idx} className="optional-name">
-                      {entry.caption}:{entry.value}
+                      <p className="caption">{entry.caption}:</p>{' '}
+                      <p className="value">{entry.value}</p>
                     </span>
                   ))}
                 </div>
