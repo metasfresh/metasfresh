@@ -34,7 +34,6 @@ import org.junit.Ignore;
 
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 
 @Ignore
@@ -48,15 +47,13 @@ public class SecurPharmClientManualTest
 	private void run()
 	{
 		final SecurPharmConfig config = getConfig();
+		System.out.println("Using config: " + config);
+
 		final SecurPharmClient client = SecurPharmClient.createAndAuthenticate(config);
 
-		// final String GS = "";
-		// final String code = "[)>\u001e06\u001d" + "9N" + "111234568408" + GS + "1T" + "47U5217" + GS + "D" + "220800" + GS + "S" + "18019731537612" + "\u001e" + "\u0004";
-		// final SecurPharmProductDataResult productData = client.decodeDataMatrix(code);
+		final String code = fromBase64("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
+		System.out.println("Sending code: " + code);
 
-		String code = "Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E";
-		code = new String(Base64.getDecoder().decode(code.getBytes()));
-		// System.out.println("code: " + new String(Base64.getDecoder().decode(code.getBytes())));
 		final SecurPharmProductDataResult productData = client.decodeDataMatrix(code);
 		System.out.println("response: " + productData);
 
@@ -69,7 +66,6 @@ public class SecurPharmClientManualTest
 			final Properties props = new Properties();
 			props.load(in);
 			return SecurPharmConfig.builder()
-					.securPharmConfigId(SecurPharmConfigId.ofRepoId(1))
 					.applicationUUID(props.getProperty("applicationUUID"))
 					.authBaseUrl(props.getProperty("authBaseUrl"))
 					.pharmaAPIBaseUrl(props.getProperty("pharmaAPIBaseUrl"))
@@ -84,4 +80,8 @@ public class SecurPharmClientManualTest
 		}
 	}
 
+	private static String fromBase64(final String s)
+	{
+		return new String(Base64.getDecoder().decode(s.getBytes()));
+	}
 }

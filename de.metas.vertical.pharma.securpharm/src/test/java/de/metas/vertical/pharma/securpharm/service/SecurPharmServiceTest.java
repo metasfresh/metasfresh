@@ -1,23 +1,23 @@
 /*
  *
- *  * #%L
- *  * %%
- *  * Copyright (C) <current year> metas GmbH
- *  * %%
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as
- *  * published by the Free Software Foundation, either version 2 of the
- *  * License, or (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public
- *  * License along with this program. If not, see
- *  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- *  * #L%
+ * * #%L
+ * * %%
+ * * Copyright (C) <current year> metas GmbH
+ * * %%
+ * * This program is free software: you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as
+ * * published by the Free Software Foundation, either version 2 of the
+ * * License, or (at your option) any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public
+ * * License along with this program. If not, see
+ * * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * * #L%
  *
  */
 
@@ -42,7 +42,6 @@ import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
@@ -67,7 +66,8 @@ public class SecurPharmServiceTest
 	private SecurPharmClient client;
 
 	@Before
-	public void initMocks() {
+	public void initMocks()
+	{
 		MockitoAnnotations.initMocks(this);
 	}
 
@@ -78,7 +78,7 @@ public class SecurPharmServiceTest
 		final HuId huId = HuId.ofRepoId(1);
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
-		SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
+		final SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
 				.responseTime(LocalDateTime.now())
 				.requestTime(LocalDateTime.now())
 				.requestUrl("url")
@@ -86,10 +86,10 @@ public class SecurPharmServiceTest
 				.clientTransactionID("id")
 				.clientTransactionID("clientid")
 				.build();
-		SecurPharmProductDataResult productDataResult = new SecurPharmProductDataResult();
+		final SecurPharmProductDataResult productDataResult = new SecurPharmProductDataResult();
 		productDataResult.setError(false);
 		productDataResult.setRequestLogData(requestLogData);
-		ProductData productData = ProductData.builder()
+		final ProductData productData = ProductData.builder()
 				.active(true)
 				.expirationDate(LocalDate.now())
 				.lot("lot")
@@ -104,8 +104,7 @@ public class SecurPharmServiceTest
 		productDataResult.setResultId(SecurPharmProductDataResultId.ofRepoId(1));
 		Mockito.when(resultService.createAndSaveResult(productDataResult)).thenReturn(productDataResult);
 
-		SecurPharmConfig config = SecurPharmConfig.builder()
-				.securPharmConfigId(SecurPharmConfigId.ofRepoId(1))
+		final SecurPharmConfig config = SecurPharmConfig.builder()
 				.applicationUUID("uuid")
 				.authBaseUrl("url")
 				.pharmaAPIBaseUrl("url")
@@ -114,9 +113,8 @@ public class SecurPharmServiceTest
 				.keystorePassword("passw").build();
 		Mockito.when(client.getConfig()).thenReturn(config);
 
-		SecurPharmProductDataResult result = underTest.getAndSaveProductData(dataMatrix, huId);
+		final SecurPharmProductDataResult result = underTest.getAndSaveProductData(dataMatrix, huId);
 		assertEquals(result, productDataResult);
-
 
 	}
 }

@@ -23,6 +23,8 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
+import javax.annotation.Nullable;
+
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -52,6 +54,6 @@ public class SecurPharmConfig
 	@NonNull
 	private UserId supportUserId;
 
-	@NonNull
-	private SecurPharmConfigId securPharmConfigId;
+	@Nullable
+	private SecurPharmConfigId id;
 }

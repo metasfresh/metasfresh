@@ -66,9 +66,8 @@ public class SecurPharmConfigRespository
 		final I_M_Securpharm_Config configRecord = queryBL
 				.createQueryBuilder(I_M_Securpharm_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_M_Securpharm_Config.COLUMNNAME_Created)
 				.create()
-				.first();
+				.firstOnly(I_M_Securpharm_Config.class);
 		if (configRecord == null)
 		{
 			return null;
@@ -82,12 +81,12 @@ public class SecurPharmConfigRespository
 	private static SecurPharmConfig ofRecord(@NonNull final I_M_Securpharm_Config config)
 	{
 		return SecurPharmConfig.builder()
+				.id(SecurPharmConfigId.ofRepoId(config.getM_Securpharm_Config_ID()))
 				.certificatePath(config.getCertificatePath())
 				.applicationUUID(config.getApplicationUUID())
 				.authBaseUrl(config.getAuthPharmaRestApiBaseURL())
 				.pharmaAPIBaseUrl(config.getPharmaRestApiBaseURL())
 				.keystorePassword(config.getTanPassword())
-				.securPharmConfigId(SecurPharmConfigId.ofRepoId(config.getM_Securpharm_Config_ID()))
 				.supportUserId(UserId.ofRepoId(config.getSupport_User_ID()))
 				.build();
 	}
