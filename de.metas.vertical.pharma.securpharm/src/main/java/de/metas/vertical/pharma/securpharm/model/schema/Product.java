@@ -23,13 +23,14 @@
 
 package de.metas.vertical.pharma.securpharm.model.schema;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.LocalDate;
 
 @Builder
 @Value
@@ -45,8 +46,9 @@ public class Product
 
 	@NonNull
 	@JsonProperty("exp")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyMMdd")
-	private LocalDate expirationDate;
+	//@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyMMdd")
+	//@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyMM00")
+	private String expirationDate;
 
 	@JsonProperty("expNMVS")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

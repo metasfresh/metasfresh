@@ -23,11 +23,11 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
+import java.time.LocalDate;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.LocalDate;
 
 @Builder
 @Value
@@ -48,7 +48,7 @@ public class ProductData
 	@NonNull
 	private String serialNumber;
 
-	private boolean isActive;
+	private boolean active;
 
 	private String inactiveReason;
 

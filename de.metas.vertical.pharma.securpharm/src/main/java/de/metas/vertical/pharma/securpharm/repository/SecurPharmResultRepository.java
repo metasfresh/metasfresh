@@ -1,43 +1,53 @@
 /*
  *
- *  * #%L
- *  * %%
- *  * Copyright (C) <current year> metas GmbH
- *  * %%
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as
- *  * published by the Free Software Foundation, either version 2 of the
- *  * License, or (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public
- *  * License along with this program. If not, see
- *  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- *  * #L%
+ * * #%L
+ * * %%
+ * * Copyright (C) <current year> metas GmbH
+ * * %%
+ * * This program is free software: you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as
+ * * published by the Free Software Foundation, either version 2 of the
+ * * License, or (at your option) any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public
+ * * License along with this program. If not, see
+ * * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * * #L%
  *
  */
 
 package de.metas.vertical.pharma.securpharm.repository;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.util.Optional;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.securpharm.model.*;
+import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
+import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result;
+import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result;
+import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
+import de.metas.vertical.pharma.securpharm.model.ProductData;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResultId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Repository
 public class SecurPharmResultRepository
@@ -46,10 +56,10 @@ public class SecurPharmResultRepository
 	public SecurPharmProductDataResult createResult(@NonNull final SecurPharmProductDataResult productDataResult)
 	{
 		final I_M_Securpharm_Productdata_Result productDataResultRecord = newInstance(I_M_Securpharm_Productdata_Result.class);
+		productDataResultRecord.setM_HU_ID(productDataResult.getHuId().getRepoId());
+		productDataResultRecord.setIsError(productDataResult.isError());
 
 		final ProductData productData = productDataResult.getProductData();
-		final SecurPharmRequestLogData logData = productDataResult.getRequestLogData();
-
 		if (productData != null)
 		{
 			productDataResultRecord.setExpirationDate(TimeUtil.asTimestamp(productData.getExpirationDate()));
@@ -60,8 +70,8 @@ public class SecurPharmResultRepository
 			productDataResultRecord.setProductCodeType(productData.getProductCodeType().name());
 			productDataResultRecord.setSerialNumber(productData.getSerialNumber());
 		}
-		productDataResultRecord.setM_HU_ID(productDataResult.getHuId().getRepoId());
-		productDataResultRecord.setIsError(productDataResult.isError());
+
+		final SecurPharmRequestLogData logData = productDataResult.getRequestLogData();
 		productDataResultRecord.setRequestUrl(logData.getRequestUrl());
 		productDataResultRecord.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
 		productDataResultRecord.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
@@ -94,28 +104,34 @@ public class SecurPharmResultRepository
 		return securPharmActionResult;
 	}
 
-	public SecurPharmActionResult getActionResultByInventoryId(@NonNull final InventoryId inventoryId, @NonNull final DecommissionAction action)
+	public SecurPharmActionResult getActionResultByInventoryId(
+			@NonNull final InventoryId inventoryId,
+			@NonNull final DecommissionAction action)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final Optional<SecurPharmActionResult> securPharmResult = queryBL
+		final SecurPharmActionResult securPharmResult = queryBL
 				.createQueryBuilder(I_M_Securpharm_Action_Result.class)
-				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_M_Inventory_ID, inventoryId.getRepoId())
-				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_Action, action.name())
+				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_Action, action.getCode())
 				.orderByDescending(I_M_Securpharm_Action_Result.COLUMNNAME_RequestStartTime)
-				.create().stream().findFirst().map(actionResultRecord -> ofRecord(inventoryId, actionResultRecord)).get();
+				.create()
+				.stream()
+				.findFirst()
+				.map(actionResultRecord -> ofRecord(inventoryId, actionResultRecord))
+				.get()
+				.orElse(null);
 
-		if (securPharmResult.isPresent())
+		if (securPharmResult != null)
 		{
-			final SecurPharmActionResult actionResult = securPharmResult.get();
+			final SecurPharmActionResult actionResult = securPharmResult;
 			final int productDataId = actionResult.getProductDataResult().getResultId().getRepoId();
-			queryBL
-					.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
+			queryBL.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
 					.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID, productDataId)
 					.create().stream().findFirst().map(productResultRecord -> {
-				final SecurPharmProductDataResult result = actionResult.getProductDataResult();
-				return ofRecord(productResultRecord, result);
-			});
+						final SecurPharmProductDataResult result = actionResult.getProductDataResult();
+						return ofRecord(productResultRecord, result);
+					});
 			return actionResult;
 		}
 		return null;
@@ -142,7 +158,9 @@ public class SecurPharmResultRepository
 		return Optional.of(securPharmActionResult);
 	}
 
-	private Optional<SecurPharmProductDataResult> ofRecord(@NonNull final I_M_Securpharm_Productdata_Result productResult, @NonNull final SecurPharmProductDataResult result)
+	private static SecurPharmProductDataResult ofRecord(
+			@NonNull final I_M_Securpharm_Productdata_Result productResult,
+			@NonNull final SecurPharmProductDataResult result)
 	{
 		result.setHuId(HuId.ofRepoId(productResult.getM_HU_ID()));
 		result.setError(productResult.isError());
@@ -154,9 +172,10 @@ public class SecurPharmResultRepository
 				.serverTransactionID(productResult.getTransactionIDServer())
 				.build();
 		result.setRequestLogData(logData);
-		if(!result.isError()){
+		if (!result.isError())
+		{
 			final ProductData productData = ProductData.builder()
-					.isActive(productResult.isActive())
+					.active(productResult.isActive())
 					.expirationDate(TimeUtil.asLocalDate(productResult.getExpirationDate()))
 					.inactiveReason(productResult.getInactiveReason())
 					.lot(productResult.getLotNumber())
@@ -166,15 +185,19 @@ public class SecurPharmResultRepository
 					.build();
 			result.setProductData(productData);
 		}
-		return Optional.of(result);
+
+		return result;
 	}
 
 	public SecurPharmProductDataResult getProductResultByInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		final Optional<HuId> huId = Services.get(IInventoryDAO.class)
+		final HuId huId = Services.get(IInventoryDAO.class)
 				.retrieveLinesForInventoryId(inventoryId.getRepoId(), I_M_InventoryLine.class)
-				.stream().findFirst().map(invLine -> HuId.ofRepoId(invLine.getM_HU_ID()));
-		if (!huId.isPresent())
+				.stream()
+				.findFirst()
+				.map(invLine -> HuId.ofRepoId(invLine.getM_HU_ID()))
+				.orElse(null);
+		if (huId == null)
 		{
 			return null;
 		}
@@ -183,11 +206,15 @@ public class SecurPharmResultRepository
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
 			return queryBL
 					.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
-					.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId.get().getRepoId())
-					.create().stream().findFirst().map(productResult -> {
+					.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId)
+					.create()
+					.stream()
+					.findFirst()
+					.map(productResult -> {
 						final SecurPharmProductDataResult result = new SecurPharmProductDataResult();
 						return ofRecord(productResult, result);
-					}).get().orElse(null);
+					})
+					.get();
 		}
 	}
 

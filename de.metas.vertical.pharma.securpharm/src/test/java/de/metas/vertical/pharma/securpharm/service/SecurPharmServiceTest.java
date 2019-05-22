@@ -23,12 +23,11 @@
 
 package de.metas.vertical.pharma.securpharm.service;
 
-import de.metas.handlingunits.HuId;
-import de.metas.vertical.pharma.securpharm.SecurPharmClient;
-import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.model.*;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
-import org.adempiere.user.UserId;
+import static org.junit.Assert.assertEquals;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -36,10 +35,18 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import static org.junit.Assert.assertEquals;
+import de.metas.handlingunits.HuId;
+import de.metas.user.UserId;
+import de.metas.vertical.pharma.securpharm.SecurPharmClient;
+import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
+import de.metas.vertical.pharma.securpharm.model.ProductData;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 
 public class SecurPharmServiceTest
 {
@@ -83,7 +90,7 @@ public class SecurPharmServiceTest
 		productDataResult.setError(false);
 		productDataResult.setRequestLogData(requestLogData);
 		ProductData productData = ProductData.builder()
-				.isActive(true)
+				.active(true)
 				.expirationDate(LocalDate.now())
 				.lot("lot")
 				.productCode("product code")
