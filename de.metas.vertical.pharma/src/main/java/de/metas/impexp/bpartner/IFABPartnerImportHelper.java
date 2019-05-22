@@ -76,7 +76,7 @@ import lombok.experimental.UtilityClass;
 		bpartner.setAD_Org_ID(importRecord.getAD_Org_ID());
 		bpartner.setCompanyName(extractCompanyName(importRecord));
 		bpartner.setIsCompany(true);
-		bpartner.setName(importRecord.getb00name1());
+		bpartner.setName(extractCompanyName(importRecord));
 		bpartner.setName2(importRecord.getb00name2());
 		bpartner.setName3(importRecord.getb00name3());
 		bpartner.setIFA_Manufacturer(importRecord.getb00adrnr());
@@ -106,6 +106,7 @@ import lombok.experimental.UtilityClass;
 		
 		return importRecord.getb00adrnr();
 	}
+
 
 	private I_C_BPartner updateExistingBPartner(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
