@@ -545,7 +545,7 @@ public class MProductImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProdCategory,' ")
-				.append("WHERE M_Product_Category_ID IS NULL AND A00SSATZ = '1'")
+				.append("WHERE M_Product_Category_ID IS NULL AND A00SSATZ = '1'") // category shall be mandatory only when is new product
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		
