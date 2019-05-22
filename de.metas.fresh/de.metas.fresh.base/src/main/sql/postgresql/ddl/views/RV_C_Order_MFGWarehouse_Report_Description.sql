@@ -3,13 +3,14 @@ create or replace view report.RV_C_Order_MFGWarehouse_Report_Description
 AS
 SELECT
 	o.POReference as POReference,
+	bp.value as bpValue,
 	trim( Coalesce(cogr.name,  '') ||
 	Coalesce(' ' || cont.title, '') ||
 	Coalesce(' ' || cont.firstName, '') ||
 	Coalesce(' ' || cont.lastName, '') ) as cont_name,
 	cont.phone	as cont_phone,
 	cont.fax	as cont_fax,
-	bpl.name as HandOverLocation,
+	bpl.address as HandOverLocation,
 	o.PreparationDate,
 	o.DocumentNo as document_no,
 	wh.Name as WarehouseName,
