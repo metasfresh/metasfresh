@@ -236,15 +236,12 @@ import lombok.experimental.UtilityClass;
 
 	private boolean isSomeBPartnerLocationDetailsFilled(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
-		if (!Check.isEmpty(importRecord.getb00email())
+		return (!Check.isEmpty(importRecord.getb00email())
 				|| !Check.isEmpty(importRecord.getb00email2())
 				|| !Check.isEmpty(importRecord.getb00tel1())
 				|| !Check.isEmpty(importRecord.getb00tel2())
 				|| !Check.isEmpty(importRecord.getb00fax1())
-				|| !Check.isEmpty(importRecord.getb00fax2()))
-			return true;
-
-		return false;
+				|| !Check.isEmpty(importRecord.getb00fax2()));
 	}
 
 	private void updateExistingBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_BPartner_Location bpartnerLocation)
