@@ -36,10 +36,8 @@ import java.util.stream.Stream;
 @Repository
 public class HUWithAgeRepository
 {
-
 	private final ImmutableList<String> validHuStatuses = ImmutableList.<String>builder()
-			.addAll(new HUStatusBL().getQtyOnHandStatuses())
-//			.add(X_M_HU.HUSTATUS_Planning)
+			.add(X_M_HU.HUSTATUS_Active)
 			.build();
 
 	public Stream<I_M_HU> getAllWhereProductionDateIsNotEmptyAndQtyOnHandStatus()
