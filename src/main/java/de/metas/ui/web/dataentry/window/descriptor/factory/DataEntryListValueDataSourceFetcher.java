@@ -64,7 +64,7 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 
 	public DataEntryListValueDataSourceFetcher(@NonNull final List<DataEntryListValue> listValues)
 	{
-		this.dataEntryFieldId = CollectionUtils.extractSingleElement(listValues, DataEntryListValue::getDataEntryFieldId);
+		this.dataEntryFieldId = CollectionUtils.extractSingleElement(listValues, DataEntryListValue::getFieldId);
 
 		final ImmutableBiMap.Builder<DataEntryListValueId, IntegerLookupValue> id2LookupValue = ImmutableBiMap.builder();
 

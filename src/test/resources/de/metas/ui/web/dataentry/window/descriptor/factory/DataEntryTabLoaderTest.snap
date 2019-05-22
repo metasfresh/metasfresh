@@ -1,19 +1,19 @@
-de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createGroupEntityDescriptors_verify_DocumentEntityDescriptor=[
+de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createTabEntityDescriptors_verify_DocumentEntityDescriptor=[
   [
     {
       "documentType" : "Window",
       "documentTypeId" : "5",
-      "id" : "Window-5-DataEntry_Group-1",
-      "internalName" : "dataEntryGroup_internalName",
+      "id" : "Window-5-DataEntry_Tab-1",
+      "internalName" : "dataEntryTab_internalName",
       "caption" : {
-        "value" : "dataEntryGroup_caption",
+        "value" : "dataEntryTab_caption",
         "anyLanguage" : false
       },
       "description" : {
-        "value" : "dataEntryGroup_description",
+        "value" : "dataEntryTab_description",
         "anyLanguage" : false
       },
-      "detailId" : "DataEntry_Group-1",
+      "detailId" : "DataEntry_Tab-1",
       "allowCreateNewLogic" : "1=0",
       "allowDeleteLogic" : "1=0",
       "readonlyLogic" : "1=0",
@@ -22,20 +22,20 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "fields" : { },
       "idFields" : [ ],
       "includedEntitiesByDetailId" : {
-        "DataEntry_SubGroup-11" : {
+        "DataEntry_SubTab-11" : {
           "documentType" : "Window",
           "documentTypeId" : "5",
-          "id" : "Window-5-DataEntry_SubGroup-11",
-          "internalName" : "dataEntrySubGroup_internalName",
+          "id" : "Window-5-DataEntry_SubTab-11",
+          "internalName" : "dataEntrySubTab_internalName",
           "caption" : {
-            "value" : "dataEntrySubGroup1_caption",
+            "value" : "dataEntrySubTab1_caption",
             "anyLanguage" : false
           },
           "description" : {
-            "value" : "dataEntrySubGroup1_description",
+            "value" : "dataEntrySubTab1_description",
             "anyLanguage" : false
           },
-          "detailId" : "DataEntry_SubGroup-11",
+          "detailId" : "DataEntry_SubTab-11",
           "allowCreateNewLogic" : "1=1",
           "allowDeleteLogic" : "1=1",
           "readonlyLogic" : "1=0",
@@ -52,7 +52,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "textField11_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -104,7 +104,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -156,7 +156,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "longTextField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -208,7 +208,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -260,7 +260,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "numberField11_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -312,7 +312,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -364,7 +364,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "dateField11_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -416,7 +416,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -468,7 +468,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "yesNoField11_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -520,7 +520,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -572,7 +572,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "listField11_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -611,11 +611,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         }
                       },
                       "dataEntryFieldId" : 1123,
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -663,7 +663,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -705,17 +705,17 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "DataEntry_SubGroup_ID" : {
-              "fieldName" : "DataEntry_SubGroup_ID",
+            "DataEntry_SubTab_ID" : {
+              "fieldName" : "DataEntry_SubTab_ID",
               "caption" : {
-                "value" : "DataEntry_SubGroup_ID",
+                "value" : "DataEntry_SubTab_ID",
                 "anyLanguage" : false
               },
               "description" : {
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -743,9 +743,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "DataEntry_SubGroup_ID",
+                  "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
-                  "fieldType" : "SUB_GROUP_ID",
+                  "fieldType" : "SUB_TAB_ID",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -766,7 +766,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : false,
               "calculated" : false,
               "parentLink" : true,
@@ -811,16 +811,16 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "idFields" : [
             {
-              "fieldName" : "DataEntry_SubGroup_ID",
+              "fieldName" : "DataEntry_SubTab_ID",
               "caption" : {
-                "value" : "DataEntry_SubGroup_ID",
+                "value" : "DataEntry_SubTab_ID",
                 "anyLanguage" : false
               },
               "description" : {
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-11",
+              "detailId" : "DataEntry_SubTab-11",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -848,9 +848,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "DataEntry_SubGroup_ID",
+                  "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
-                  "fieldType" : "SUB_GROUP_ID",
+                  "fieldType" : "SUB_TAB_ID",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -872,7 +872,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "value" : "",
               "anyLanguage" : true
             },
-            "detailId" : "DataEntry_SubGroup-11",
+            "detailId" : "DataEntry_SubTab-11",
             "key" : false,
             "calculated" : false,
             "parentLink" : true,
@@ -940,20 +940,20 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "cloneEnabled" : false,
           "printable" : false
         },
-        "DataEntry_SubGroup-12" : {
+        "DataEntry_SubTab-12" : {
           "documentType" : "Window",
           "documentTypeId" : "5",
-          "id" : "Window-5-DataEntry_SubGroup-12",
-          "internalName" : "dataEntrySubGroup_internalName",
+          "id" : "Window-5-DataEntry_SubTab-12",
+          "internalName" : "dataEntrySubTab_internalName",
           "caption" : {
-            "value" : "dataEntrySubGroup2_caption",
+            "value" : "dataEntrySubTab2_caption",
             "anyLanguage" : false
           },
           "description" : {
-            "value" : "dataEntrySubGroup2_description",
+            "value" : "dataEntrySubTab2_description",
             "anyLanguage" : false
           },
-          "detailId" : "DataEntry_SubGroup-12",
+          "detailId" : "DataEntry_SubTab-12",
           "allowCreateNewLogic" : "1=1",
           "allowDeleteLogic" : "1=1",
           "readonlyLogic" : "1=0",
@@ -970,7 +970,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "textField21_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1022,7 +1022,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1074,7 +1074,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "longTextField1_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1126,7 +1126,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1178,7 +1178,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "numberField21_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1230,7 +1230,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1282,7 +1282,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "dateField21_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1334,7 +1334,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1386,7 +1386,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "yesNoField21_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1438,7 +1438,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1490,7 +1490,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "listField21_description",
                 "anyLanguage" : false
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1529,11 +1529,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                         }
                       },
                       "dataEntryFieldId" : 1223,
-                      "cached" : true,
-                      "numericKey" : false
+                      "numericKey" : false,
+                      "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -1581,7 +1581,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
@@ -1623,17 +1623,17 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               },
               "defaultFilterField" : false
             },
-            "DataEntry_SubGroup_ID" : {
-              "fieldName" : "DataEntry_SubGroup_ID",
+            "DataEntry_SubTab_ID" : {
+              "fieldName" : "DataEntry_SubTab_ID",
               "caption" : {
-                "value" : "DataEntry_SubGroup_ID",
+                "value" : "DataEntry_SubTab_ID",
                 "anyLanguage" : false
               },
               "description" : {
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -1661,9 +1661,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "DataEntry_SubGroup_ID",
+                  "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
-                  "fieldType" : "SUB_GROUP_ID",
+                  "fieldType" : "SUB_TAB_ID",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -1684,7 +1684,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : false,
               "calculated" : false,
               "parentLink" : true,
@@ -1729,16 +1729,16 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "idFields" : [
             {
-              "fieldName" : "DataEntry_SubGroup_ID",
+              "fieldName" : "DataEntry_SubTab_ID",
               "caption" : {
-                "value" : "DataEntry_SubGroup_ID",
+                "value" : "DataEntry_SubTab_ID",
                 "anyLanguage" : false
               },
               "description" : {
                 "value" : "",
                 "anyLanguage" : true
               },
-              "detailId" : "DataEntry_SubGroup-12",
+              "detailId" : "DataEntry_SubTab-12",
               "key" : true,
               "calculated" : false,
               "parentLink" : false,
@@ -1766,9 +1766,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "mandatoryLogic" : "1=0",
               "dataBinding" : {
                 "value" : {
-                  "columnName" : "DataEntry_SubGroup_ID",
+                  "columnName" : "DataEntry_SubTab_ID",
                   "mandatory" : true,
-                  "fieldType" : "SUB_GROUP_ID",
+                  "fieldType" : "SUB_TAB_ID",
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
@@ -1790,7 +1790,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "value" : "",
               "anyLanguage" : true
             },
-            "detailId" : "DataEntry_SubGroup-12",
+            "detailId" : "DataEntry_SubTab-12",
             "key" : false,
             "calculated" : false,
             "parentLink" : true,
@@ -1892,14 +1892,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   [
     {
       "windowId" : "5",
-      "detailId" : "DataEntry_Group-1",
-      "internalName" : "dataEntryGroup_internalName",
+      "detailId" : "DataEntry_Tab-1",
+      "internalName" : "dataEntryTab_internalName",
       "caption" : {
-        "value" : "dataEntryGroup_caption",
+        "value" : "dataEntryTab_caption",
         "anyLanguage" : false
       },
       "description" : {
-        "value" : "dataEntryGroup_description",
+        "value" : "dataEntryTab_description",
         "anyLanguage" : false
       },
       "supportQuickInput" : false,
@@ -1908,14 +1908,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "subTabLayouts" : [
         {
           "windowId" : "5",
-          "detailId" : "DataEntry_SubGroup-11",
-          "internalName" : "dataEntrySubGroup_internalName",
+          "detailId" : "DataEntry_SubTab-11",
+          "internalName" : "dataEntrySubTab_internalName",
           "caption" : {
-            "value" : "dataEntrySubGroup1_caption",
+            "value" : "dataEntrySubTab1_caption",
             "anyLanguage" : false
           },
           "description" : {
-            "value" : "dataEntrySubGroup1_description",
+            "value" : "dataEntrySubTab1_description",
             "anyLanguage" : false
           },
           "singleRowLayout" : {
@@ -1931,7 +1931,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "sections" : [
               {
                 "caption" : {
-                  "value" : "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
+                  "value" : "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty",
                   "anyLanguage" : false
                 },
                 "description" : {
@@ -2374,14 +2374,14 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         },
         {
           "windowId" : "5",
-          "detailId" : "DataEntry_SubGroup-12",
-          "internalName" : "dataEntrySubGroup_internalName",
+          "detailId" : "DataEntry_SubTab-12",
+          "internalName" : "dataEntrySubTab_internalName",
           "caption" : {
-            "value" : "dataEntrySubGroup2_caption",
+            "value" : "dataEntrySubTab2_caption",
             "anyLanguage" : false
           },
           "description" : {
-            "value" : "dataEntrySubGroup2_description",
+            "value" : "dataEntrySubTab2_description",
             "anyLanguage" : false
           },
           "singleRowLayout" : {
@@ -2397,7 +2397,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "sections" : [
               {
                 "caption" : {
-                  "value" : "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
+                  "value" : "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty",
                   "anyLanguage" : false
                 },
                 "description" : {
@@ -2849,20 +2849,20 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   [
     {
       "windowId" : "5",
-      "tabId" : "DataEntry_Group-1",
-      "internalName" : "dataEntryGroup_internalName",
-      "caption" : "dataEntryGroup_caption",
-      "description" : "dataEntryGroup_description",
+      "tabId" : "DataEntry_Tab-1",
+      "internalName" : "dataEntryTab_internalName",
+      "caption" : "dataEntryTab_caption",
+      "description" : "dataEntryTab_description",
       "tabs" : [
         {
           "windowId" : "5",
-          "tabId" : "DataEntry_SubGroup-11",
-          "internalName" : "dataEntrySubGroup_internalName",
-          "caption" : "dataEntrySubGroup1_caption",
-          "description" : "dataEntrySubGroup1_description",
+          "tabId" : "DataEntry_SubTab-11",
+          "internalName" : "dataEntrySubTab_internalName",
+          "caption" : "dataEntrySubTab1_caption",
+          "description" : "dataEntrySubTab1_description",
           "sections" : [
             {
-              "title" : "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
+              "title" : "dataEntrySection11 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty",
               "description" : "dataEntrySection1_description",
               "columns" : [
                 {
@@ -3052,13 +3052,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         },
         {
           "windowId" : "5",
-          "tabId" : "DataEntry_SubGroup-12",
-          "internalName" : "dataEntrySubGroup_internalName",
-          "caption" : "dataEntrySubGroup2_caption",
-          "description" : "dataEntrySubGroup2_description",
+          "tabId" : "DataEntry_SubTab-12",
+          "internalName" : "dataEntrySubTab_internalName",
+          "caption" : "dataEntrySubTab2_caption",
+          "description" : "dataEntrySubTab2_description",
           "sections" : [
             {
-              "title" : "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementGroup with columnCount=2; 4 elementLines, the 2nd one being empty",
+              "title" : "dataEntrySection21 - section with 2 lines. The 1st line has 1 field, the 2nd line has 2 fields. Expecation: 1 elementTab with columnCount=2; 4 elementLines, the 2nd one being empty",
               "description" : "dataEntrySection1_description",
               "columns" : [
                 {

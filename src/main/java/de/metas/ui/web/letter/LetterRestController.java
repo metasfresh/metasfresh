@@ -11,7 +11,6 @@ import java.util.function.UnaryOperator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.FileUtils;
 import org.compiere.util.Env;
@@ -53,6 +52,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
@@ -102,8 +102,8 @@ public class LetterRestController
 	private final void assertReadable(final WebuiLetter letter)
 	{
 		// Make sure current logged in user is the owner
-		final int loggedUserId = userSession.getAD_User_ID();
-		if (letter.getOwnerUserId() != loggedUserId)
+		final UserId loggedUserId = userSession.getLoggedUserId();
+		if (!UserId.equals(loggedUserId, letter.getOwnerUserId()))
 		{
 			throw new AdempiereException("No credentials to read the letter")
 					.setParameter("letterId", letter.getLetterId())
@@ -147,8 +147,8 @@ public class LetterRestController
 
 		final WebuiLetter letter = lettersRepo.createNewLetter(WebuiLetter.builder()
 				.contextDocumentPath(contextDocumentPath)
-				.ownerUserId(userSession.getAD_User_ID())
-				.adOrgId(context.getAD_Org_ID(userSession.getAD_Org_ID()))
+				.ownerUserId(userSession.getLoggedUserId())
+				.adOrgId(context.getAD_Org_ID(userSession.getOrgId().getRepoId()))
 				.bpartnerId(bpartnerId)
 				.bpartnerLocationId(bpartnerLocationId)
 				.bpartnerAddress(bpartnerAddress)
@@ -245,7 +245,7 @@ public class LetterRestController
 				.body(letter.getContent())
 				.adOrgId(letter.getAdOrgId())
 				.bpartnerId(BPartnerId.ofRepoId(letter.getBpartnerId()))
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(letter.getBpartnerId()),letter.getBpartnerLocationId()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(letter.getBpartnerId()), letter.getBpartnerLocationId()))
 				.address(letter.getBpartnerAddress())
 				.userId(UserId.ofRepoId(letter.getBpartnerContactId()))
 				.build();

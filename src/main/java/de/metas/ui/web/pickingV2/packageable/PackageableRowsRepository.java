@@ -3,7 +3,6 @@ package de.metas.ui.web.pickingV2.packageable;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_User;
@@ -32,6 +31,7 @@ import de.metas.ui.web.pickingV2.packageable.PackageableRowsData.PackageableRows
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;

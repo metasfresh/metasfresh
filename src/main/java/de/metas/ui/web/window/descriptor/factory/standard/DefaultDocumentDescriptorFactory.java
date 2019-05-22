@@ -9,7 +9,7 @@ import org.compiere.model.I_AD_Window;
 import org.springframework.stereotype.Service;
 
 import de.metas.cache.CCache;
-import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubGroupBindingDescriptorBuilder;
+import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubTabBindingDescriptorBuilder;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -42,16 +42,16 @@ import lombok.NonNull;
 public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
 	@NonNull
-	final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder;
+	final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
 
 	private final CCache<WindowId, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
 
 	private final Set<WindowId> unsupportedWindowIds = new HashSet<>();
 
 	/* package */ DefaultDocumentDescriptorFactory(
-			@NonNull final DataEntrySubGroupBindingDescriptorBuilder dataEntrySubGroupBindingDescriptorBuilder)
+			@NonNull final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder)
 	{
-		this.dataEntrySubGroupBindingDescriptorBuilder = dataEntrySubGroupBindingDescriptorBuilder;
+		this.dataEntrySubTabBindingDescriptorBuilder = dataEntrySubTabBindingDescriptorBuilder;
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	{
 		return new DefaultDocumentDescriptorLoader(
 				windowId.toInt(),
-				dataEntrySubGroupBindingDescriptorBuilder);
+				dataEntrySubTabBindingDescriptorBuilder);
 	}
 
 	/**

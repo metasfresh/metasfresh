@@ -29,9 +29,9 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 /**
  * "Empty" descriptor builder. Data entry groups have no records of themselves. Only their sub groups have.
  */
-public class DataEntryGroupBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
+public class DataEntryTabBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
 {
-	public static final transient DataEntryGroupBindingDescriptorBuilder instance = new DataEntryGroupBindingDescriptorBuilder();
+	public static final transient DataEntryTabBindingDescriptorBuilder instance = new DataEntryTabBindingDescriptorBuilder();
 
 	private static final DocumentEntityDataBindingDescriptor dataBinding = new DocumentEntityDataBindingDescriptor()
 	{

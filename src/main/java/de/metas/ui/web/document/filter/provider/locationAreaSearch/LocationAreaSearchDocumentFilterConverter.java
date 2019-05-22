@@ -10,8 +10,8 @@ import org.compiere.model.I_C_Location;
 
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.location.geocoding.GeoCoordinatesProvider;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeoCoordinatesService;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDescriptor.LocationColumnNameType;
@@ -52,6 +52,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 
 	public static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
 	public static final String PARAM_Address1 = "Address1";
+	public static final String PARAM_City = "City";
 	public static final String PARAM_Postal = "Postal";
 	public static final String PARAM_CountryId = "C_Country_ID";
 	public static final String PARAM_Distance = "Distance";
@@ -88,7 +89,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 					+ " SELECT 1"
 					+ " FROM " + I_C_Location.Table_Name + " l"
 					+ " WHERE "
-					+ " l.C_Location_ID=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ " l." + I_C_Location.COLUMNNAME_C_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -97,9 +98,9 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl"
-					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l.C_Location_ID=bpl.C_Location_ID"
+					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 					+ " WHERE "
-					+ " bpl.C_BPartner_Location_ID=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -108,11 +109,11 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_BPartner.Table_Name + " bp"
-					+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON bpl.C_BPartner_Location_ID=bp.C_BPartner_Location_ID"
-					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l.C_Location_ID=bpl.C_Location_ID"
+					+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 					+ " WHERE "
-					+ " bp.C_BPartner_ID=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
-					+ " AND bpl.IsActive='Y'"
+					+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ " AND bpl." + I_C_BPartner_Location.COLUMNNAME_IsActive + "='Y'"
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -150,8 +151,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 			return Optional.empty();
 		}
 
-		final GeoCoordinatesProvider geoCoordinatesProvider = Adempiere.getBean(GeoCoordinatesProvider.class);
-		return geoCoordinatesProvider.findBestCoordinates(request);
+		final GeoCoordinatesService geoCoordinatesService = Adempiere.getBean(GeoCoordinatesService.class);
+		return geoCoordinatesService.findBestCoordinates(request);
 	}
 
 	private static Optional<GeoCoordinatesRequest> createGeoCoordinatesRequest(final DocumentFilter filter)
@@ -164,8 +165,9 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 
 		final GeoCoordinatesRequest request = GeoCoordinatesRequest.builder()
 				.countryCode2(countryCode2)
-				.postal(filter.getParameterValueAsString(PARAM_Postal, null))
-				.address(filter.getParameterValueAsString(PARAM_Address1, null))
+				.postal(filter.getParameterValueAsString(PARAM_Postal, ""))
+				.address(filter.getParameterValueAsString(PARAM_Address1, ""))
+				.city(filter.getParameterValueAsString(PARAM_City, ""))
 				.build();
 
 		return Optional.of(request);
