@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
@@ -77,7 +78,7 @@ public class CustomsInvoice
 	String docAction;
 
 	@NonNull
-	String docStatus;
+	DocStatus docStatus;
 
 	@NonNull
 	ImmutableList<CustomsInvoiceLine> lines;

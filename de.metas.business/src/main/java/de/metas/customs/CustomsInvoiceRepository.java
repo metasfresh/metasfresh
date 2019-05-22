@@ -108,7 +108,7 @@ public class CustomsInvoiceRepository
 		customsInvoiceRecord.setDateInvoiced(TimeUtil.asTimestamp(customsInvoice.getInvoiceDate()));
 
 		customsInvoiceRecord.setDocAction(customsInvoice.getDocAction());
-		customsInvoiceRecord.setDocStatus(customsInvoice.getDocStatus());
+		customsInvoiceRecord.setDocStatus(customsInvoice.getDocStatus().getCode());
 
 		customsInvoiceRecord.setC_Currency_ID(customsInvoice.getCurrencyId().getRepoId());
 

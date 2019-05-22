@@ -87,7 +87,7 @@ public class CustomsInvoiceUserNotificationsProducer
 
 	private final UserNotificationRequest createUserNotification(@NonNull final CustomsInvoice customsInvoice)
 	{
-		final TableRecordReference customsInvoiceRef = TableRecordReference.of(I_C_Customs_Invoice.Table_Name, customsInvoice.getId());
+		final TableRecordReference customsInvoiceRef = toTableRecordRef(customsInvoice);
 
 		return newUserNotificationRequest()
 				.recipientUserId(getNotificationRecipientUserId(customsInvoice))
@@ -96,6 +96,11 @@ public class CustomsInvoiceUserNotificationsProducer
 				.targetAction(TargetRecordAction.ofRecordAndWindow(customsInvoiceRef, WINDOW_CUSTOMS_INVOICE))
 				.build();
 
+	}
+
+	private static TableRecordReference toTableRecordRef(final CustomsInvoice customsInvoice)
+	{
+		return TableRecordReference.of(I_C_Customs_Invoice.Table_Name, customsInvoice.getId());
 	}
 
 	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
@@ -108,7 +113,7 @@ public class CustomsInvoiceUserNotificationsProducer
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (docActionBL.isDocumentReversedOrVoided(customsInvoice))
+		if (customsInvoice.getDocStatus().isReversedOrVoided())
 		{
 			return customsInvoice.getLastUpdatedBy();
 		}

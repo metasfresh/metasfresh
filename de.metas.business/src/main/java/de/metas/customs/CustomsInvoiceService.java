@@ -19,6 +19,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -127,7 +128,7 @@ public class CustomsInvoiceService
 				.invoiceDate(invoiceDate)
 				.orgId(Env.getOrgId())
 				.currencyId(currencyId)
-				.docStatus(IDocument.STATUS_Drafted)
+				.docStatus(DocStatus.Drafted)
 				.docAction(IDocument.ACTION_Complete)
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
