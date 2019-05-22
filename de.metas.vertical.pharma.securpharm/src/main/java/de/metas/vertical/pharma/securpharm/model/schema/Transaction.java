@@ -23,20 +23,24 @@
 
 package de.metas.vertical.pharma.securpharm.model.schema;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-@Builder
 @Data
+@NoArgsConstructor
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Transaction
 {
-	// @NonNull
+	@NonNull
 	@JsonProperty("ctx")
 	private String clientTransactionId;
 
-	// @NonNull
-	@JsonProperty("trx")
+	@NonNull
+	@JsonProperty("stx")
 	private String serverTransactionId;
 }

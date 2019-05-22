@@ -126,25 +126,25 @@ public class SecurPharmClient
 
 		try
 		{
-			final ResponseEntity<APIResponse> response = performRequest(url, HttpMethod.GET);
-			final APIResponse apiResponse = response.getBody();
+			final ResponseEntity<String> response = performRequest(url, HttpMethod.GET);
+			final APIResponse apiResponse = fromJsonString(response.getBody(), APIResponse.class);
 			logDataBuilder.responseTime(LocalDateTime.now())
 					.responseData(toJsonString(apiResponse));
 			securPharmProductDataResult.setRequestLogData(logDataBuilder.build());
 			if (response.getStatusCode() == HttpStatus.OK
-					&& apiResponse.getProduct() != null
+					&& apiResponse.getProd() != null
 					&& apiResponse.getPack() != null
-					&& apiResponse.getTransaction() != null)
+					&& apiResponse.getTx() != null)
 			{
-				logDataBuilder.serverTransactionID(apiResponse.getTransaction().getServerTransactionId());
+				logDataBuilder.serverTransactionID(apiResponse.getTx().getServerTransactionId());
 				final byte[] decodedSerialNumber = Base64.getDecoder().decode(apiResponse.getPack().getSerialNumber());
-				final byte[] decodedLot = Base64.getDecoder().decode(apiResponse.getProduct().getLot());
+				final byte[] decodedLot = Base64.getDecoder().decode(apiResponse.getProd().getLot());
 				final ProductData.ProductDataBuilder productDataBuilder = ProductData.builder()
 						.lot(new String(decodedLot))
-						.productCode(apiResponse.getProduct().getProductCode())
+						.productCode(apiResponse.getProd().getProductCode())
 						// TODO check from where to set this (response?)
 						.productCodeType(ProductCodeType.GTIN)
-						.expirationDate(apiResponse.getProduct().getExpirationDate())
+						.expirationDate(apiResponse.getProd().getExpirationDate().toLocalDate())
 						.serialNumber(new String(decodedSerialNumber));
 				if (apiResponse.getPack().getState() == State.ACTIVE)
 				{
@@ -153,9 +153,9 @@ public class SecurPharmClient
 				else
 				{
 					productDataBuilder.active(false);
-					if (apiResponse.getPack().getReason() != null)
+					if (apiResponse.getPack().getReasons() != null)
 					{
-						productDataBuilder.inactiveReason(String.join(SecurPharmConstants.DELIMITER, apiResponse.getPack().getReason()));
+						productDataBuilder.inactiveReason(String.join(SecurPharmConstants.DELIMITER, apiResponse.getPack().getReasons()));
 					}
 				}
 				securPharmProductDataResult.setError(false);
@@ -185,9 +185,23 @@ public class SecurPharmClient
 		{
 			return jsonObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			throw new AdempiereException("Failed converting object to JSON string: " + obj, e);
+		}
+	}
+
+	private <T> T fromJsonString(final String json, final Class<T> type)
+	{
+		try
+		{
+			return jsonObjectMapper.readValue(json, type);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Failed converting JSON to " + type.getSimpleName(), e)
+					.appendParametersToMessage()
+					.setParameter("json", json);
 		}
 	}
 
@@ -210,13 +224,13 @@ public class SecurPharmClient
 		result.setAction(action);
 		try
 		{
-			final ResponseEntity<APIResponse> response = performRequest(builder, HttpMethod.PUT);
-			final APIResponse apiResponse = response.getBody();
+			final ResponseEntity<String> response = performRequest(builder, HttpMethod.PUT);
+			final APIResponse apiResponse = fromJsonString(response.getBody(), APIResponse.class);
 			logDataBuilder.responseData(toJsonString(apiResponse));
-			if (response.getStatusCode() == HttpStatus.OK && apiResponse.getTransaction() != null)
+			if (response.getStatusCode() == HttpStatus.OK && apiResponse.getTx() != null)
 			{
 				result.setError(false);
-				logDataBuilder.serverTransactionID(apiResponse.getTransaction().getServerTransactionId());
+				logDataBuilder.serverTransactionID(apiResponse.getTx().getServerTransactionId());
 			}
 			else
 			{
@@ -244,7 +258,7 @@ public class SecurPharmClient
 		return getSecurPharmActionResult(action, builder);
 	}
 
-	private ResponseEntity<APIResponse> performRequest(final UriComponentsBuilder uri, final HttpMethod method)
+	private ResponseEntity<String> performRequest(final UriComponentsBuilder uri, final HttpMethod method)
 	{
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
@@ -252,7 +266,7 @@ public class SecurPharmClient
 
 		final HttpEntity<?> entity = new HttpEntity<>(httpHeaders);
 
-		return apiRestTemplate.exchange(uri.toUriString(), method, entity, APIResponse.class);
+		return apiRestTemplate.exchange(uri.toUriString(), method, entity, String.class);
 	}
 
 	private UriComponentsBuilder getDecommisionPathBuilder(
@@ -280,12 +294,12 @@ public class SecurPharmClient
 
 	private synchronized AuthResponse getAuthResponse()
 	{
-		AuthResponse authResponse = this._authResponse;
+		AuthResponse authResponse = _authResponse;
 
 		if (authResponse == null
 				|| authResponse.isExpired())
 		{
-			authResponse = this._authResponse = authenticate(config);
+			authResponse = _authResponse = authenticate(config);
 		}
 
 		return authResponse;
@@ -328,11 +342,11 @@ public class SecurPharmClient
 						.setParameter(SecurPharmConstants.ERROR_DESCRIPTION, authResponse.getErrorDescription());
 			}
 		}
-		catch (AdempiereException ex)
+		catch (final AdempiereException ex)
 		{
 			throw ex;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			final Throwable cause = AdempiereException.extractCause(ex);
 			throw new AdempiereException(SecurPharmConstants.AUTHORIZATION_FAILED_MESSAGE, cause);
