@@ -61,8 +61,10 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,9 +76,6 @@ import lombok.NonNull;
  * <ul>
  * <li>only those {@link I_C_OLCand}s are handled which have {@link InvoiceCandidate_Constants#DATA_DESTINATION_INTERNAL_NAME} as their destination datasource
  * </ul>
- *
- * @author tsa
- *
  */
 public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 {
@@ -164,18 +163,16 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setPOReference(olc.getPOReference());
 
 		// product
-		final int productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olc);
-		ic.setM_Product_ID(productId);
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olc);
+		ic.setM_Product_ID(ProductId.toRepoId(productId));
 
 		// charge
 		final int chargeId = olc.getC_Charge_ID();
 		ic.setC_Charge_ID(chargeId);
 
-		ic.setQtyOrdered(olc.getQty());
-		ic.setDateOrdered(olc.getDateCandidate());
+		setOrderedData(ic, olc);
 
 		ic.setQtyToInvoice(ZERO); // to be computed
-		ic.setC_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc));
 
 		ic.setM_PricingSystem_ID(olc.getM_PricingSystem_ID());
 		ic.setPriceActual(olc.getPriceActual());
@@ -197,7 +194,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		ic.setDescription(olc.getDescription());
 
-		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Sofort); // Immediate
+		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
 
 		// 04285: set header and footer
 
@@ -214,7 +211,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(olc.getAD_Client_ID()),
 				OrgId.ofRepoId(olc.getAD_Org_ID()),
-				ProductId.ofRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olc)));
+				productId);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -222,7 +219,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				ctx,
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olc.getC_TaxCategory_ID()),
-				productId,
+				ProductId.toRepoId(productId),
 				Util.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
@@ -239,7 +236,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void invalidateCandidatesFor(final Object model)
+	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
 		final I_C_OLCand olc = create(model, I_C_OLCand.class);
 		invalidateCandidatesForOLCand(olc);
@@ -264,7 +261,9 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	/**
 	 * <ul>
-	 * <li>QtyOrdered := C_OLCand.Qty
+	 * <li>QtyEntered := C_OLCand.Qty
+	 * <li>C_UOM_ID := C_OLCand's effective UOM
+	 * <li>QtyOrdered := C_OLCand.Qty's converted to effective product's UOM
 	 * <li>DateOrdered := C_OLCand.DateCandidate
 	 * <li>C_Order_ID: untouched
 	 * </ul>
@@ -275,9 +274,26 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
+		setOrderedData(ic, olc);
+	}
 
-		ic.setQtyOrdered(olc.getQty());
+	private void setOrderedData(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final I_C_OLCand olc)
+	{
 		ic.setDateOrdered(olc.getDateCandidate());
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+
+		final Quantity olCandQuantity = Quantity.of(olc.getQty(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
+		ic.setQtyEntered(olCandQuantity.getAsBigDecimal());
+		ic.setC_UOM_ID(olCandQuantity.getUOMId());
+
+		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olc);
+		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(olCandQuantity, productId);
+
+		ic.setQtyOrdered(qtyInProductUOM.getAsBigDecimal());
 	}
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
@@ -325,15 +341,5 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olc)));
 		ic.setBill_Location_ID(BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olc)));
 		ic.setBill_User_ID(BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olc)));
-	}
-
-	@Override
-	public void setC_UOM_ID(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-
-		final I_C_OLCand olc = getOLCand(ic);
-
-		ic.setC_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc));
 	}
 }

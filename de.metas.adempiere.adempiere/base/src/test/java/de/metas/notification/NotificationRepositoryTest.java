@@ -18,6 +18,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 
 /*
@@ -63,7 +64,7 @@ public class NotificationRepositoryTest
 
 		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
 				.topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
-				.recipientUserId(123)
+				.recipientUserId(UserId.ofRepoId(123))
 				.important(true)
 				//
 				.subjectPlain("subjectPlain")
@@ -85,7 +86,7 @@ public class NotificationRepositoryTest
 						.build())
 				.build());
 
-		final List<UserNotification> userNotifications = notificationRepo.getByUserId(123, Integer.MAX_VALUE);
+		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), Integer.MAX_VALUE);
 		final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
 		assertThat(userNotification).isEqualTo(notificationSaved);
 	}

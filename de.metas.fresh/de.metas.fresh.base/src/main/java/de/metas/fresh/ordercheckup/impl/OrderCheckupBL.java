@@ -29,7 +29,6 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_Resource;
@@ -53,6 +52,7 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderDAO;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**

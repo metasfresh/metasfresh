@@ -47,8 +47,6 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -70,7 +68,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -202,7 +199,7 @@ public class OLCandBL implements IOLCandBL
 			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 		}
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
-		pricingCtx.setProductId(ProductId.ofRepoIdOrNull(effectiveValuesBL.getM_Product_Effective_ID(olCand)));
+		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx);
 
@@ -247,9 +244,7 @@ public class OLCandBL implements IOLCandBL
 					+ "\n Pricing result: " + pricingResult);
 		}
 
-		final CurrencyPrecision currencyPrecision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
-		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, currencyPrecision.toInt());
-
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, pricingResult.getPrecision().toInt());
 		pricingResult.setPriceStd(priceActual);
 
 		pricingResult.setDisallowDiscount(false); // avoid exception

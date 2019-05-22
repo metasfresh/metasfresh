@@ -16,7 +16,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.user.api.IUserMenuFavoritesDAO;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CScrollPane;
@@ -27,6 +26,8 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserMenuFavoritesDAO;
 import de.metas.util.Services;
 
 /*
@@ -171,9 +172,9 @@ final class FavoritesGroupContainer
 		}
 	}
 	
-	private int getLoggedUserId()
+	private UserId getLoggedUserId()
 	{
-		return Env.getAD_User_ID(Env.getCtx());
+		return Env.getLoggedUserId();
 	}
 
 	public void addItem(final MTreeNode node)

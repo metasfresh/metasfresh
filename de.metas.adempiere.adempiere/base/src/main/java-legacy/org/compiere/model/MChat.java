@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.user.api.IUserDAO;
 import org.apache.ecs.xhtml.b;
 import org.apache.ecs.xhtml.hr;
 import org.apache.ecs.xhtml.p;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 
@@ -225,7 +225,7 @@ public class MChat extends X_CM_Chat
 				history.addElement(new hr());
 			//	User & Date
 			b b = new b();
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(entry.getCreatedBy());
+			final I_AD_User user = Services.get(IUserDAO.class).getById(entry.getCreatedBy());
 			b.addElement(user.getName());
 			b.addElement(" \t");
 			Timestamp created = entry.getCreated();

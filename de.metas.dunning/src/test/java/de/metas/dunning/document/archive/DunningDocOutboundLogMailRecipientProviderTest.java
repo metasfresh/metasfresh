@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Before;
@@ -27,6 +26,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.order.model.I_C_BPartner;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 /*

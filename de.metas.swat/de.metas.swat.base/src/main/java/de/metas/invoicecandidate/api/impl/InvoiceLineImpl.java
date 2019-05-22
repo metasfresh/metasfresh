@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,8 +30,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Tax;
 
@@ -41,7 +38,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
@@ -56,6 +54,9 @@ import de.metas.util.Check;
  * @author tsa
  *
  */
+
+// The excludes are here because they were this way in the former code. I'm not really sure that we really "must" include e.g. "C_PaymentTerm_ID"..
+@EqualsAndHashCode(exclude = { "activityID", "tax", "lineNo", "invoiceLineAttributes", "iciolsToUpdate", "C_PaymentTerm_ID" })
 /* package */ class InvoiceLineImpl implements IInvoiceLineRW
 {
 	private int M_Product_ID;
@@ -80,55 +81,6 @@ import de.metas.util.Check;
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(C_Charge_ID)
-				.append(C_OrderLine_ID)
-				.append(M_Product_ID)
-				.append(description)
-				.append(netLineAmt)
-				.append(priceActual)
-				.append(priceEntered)
-				.append(discount)
-				.append(qtyToInvoice)
-				.append(printed)
-				.append(iciolIds)
-				//.append(iciolsToUpdate)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final InvoiceLineImpl other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(C_Charge_ID, other.C_Charge_ID)
-				.append(C_OrderLine_ID, other.C_OrderLine_ID)
-				.append(M_Product_ID, other.M_Product_ID)
-				.append(description, other.description)
-				.append(netLineAmt, other.netLineAmt)
-				.append(priceActual, other.priceActual)
-				.append(priceEntered, other.priceEntered)
-				.append(discount, other.discount)
-				.append(qtyToInvoice, other.qtyToInvoice)
-				.append(printed, other.printed)
-				.append(iciolIds, other.iciolIds)
-				//.append(iciolsToUpdate, other.iciolsToUpdate)
-				.isEqual();
 	}
 
 	@Override
@@ -192,9 +144,8 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public final void addQtyToInvoice(final BigDecimal qtyToInvoiceToAdd)
+	public final void addQtyToInvoice(@NonNull final BigDecimal qtyToInvoiceToAdd)
 	{
-		Check.assumeNotNull(qtyToInvoiceToAdd, "qtyToInvoiceToAdd not null");
 		if (qtyToInvoiceToAdd.signum() == 0)
 		{
 			return; // nothing to add
@@ -215,16 +166,14 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public void setPriceActual(final BigDecimal priceActual)
+	public void setPriceActual(@NonNull final BigDecimal priceActual)
 	{
-		Check.assumeNotNull(priceActual, "priceActual not null");
 		this.priceActual = priceActual;
 	}
 
 	@Override
-	public void setNetLineAmt(final BigDecimal netLineAmt)
+	public void setNetLineAmt(@NonNull final BigDecimal netLineAmt)
 	{
-		Check.assumeNotNull(netLineAmt, "netLineAmt not null");
 		this.netLineAmt = netLineAmt;
 	}
 

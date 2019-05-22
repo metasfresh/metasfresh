@@ -27,17 +27,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.model.I_Fact_Acct;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
 
 /**
  * Report Model Data - ValueObject. - Build SQL from RColumn info and Retrieve Data - owned by RModel
@@ -118,7 +118,7 @@ class RModelData implements IRModelMetadata
 		if (whereClause != null && whereClause.length() > 0)
 			sql.append(" WHERE ").append(whereClause);
 		String finalSQL = Env.getUserRolePermissions(ctx).addAccessSQL(
-				sql.toString(), RModel.TABLE_ALIAS, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+				sql.toString(), RModel.TABLE_ALIAS, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 
 		//
 		// Build ORDER BY clause

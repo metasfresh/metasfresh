@@ -3,6 +3,7 @@ package org.adempiere.ad.column.autoapplyvalrule;
 import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.service.ILookupDAO;
@@ -15,6 +16,7 @@ import org.compiere.model.I_AD_Column;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -100,11 +102,17 @@ public class ValRuleAutoApplier
 	{
 		final ITableRefInfo tableRefInfo = extractTableRefInfo(column);
 
-		final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, column.getAD_Val_Rule_ID());
-		final IQuery<Object> query = Services.get(IQueryBL.class)
-				.createQueryBuilder(tableRefInfo.getTableName())
-				.filter(validationRuleQueryFilter)
-				.create();
+		final IQueryBuilder<Object> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(tableRefInfo.getTableName());
+
+		if (column.getAD_Val_Rule_ID() > 0)
+		{
+			final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, column.getAD_Val_Rule_ID());
+			queryBuilder.filter(validationRuleQueryFilter);
+		}
+		final IQuery<Object> query = queryBuilder
+				.create()
+				.setRequiredAccess(Access.READ);
 
 		final String orderByClause = tableRefInfo.getOrderByClause();
 		if (query instanceof TypedSqlQuery && !Check.isEmpty(orderByClause, true))

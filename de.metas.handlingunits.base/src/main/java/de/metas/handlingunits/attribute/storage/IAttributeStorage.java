@@ -99,6 +99,8 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	List<IAttributeValue> getAttributeValues();
 
+
+
 	/**
 	 * @return {@link IAttributeValue} for the current attribute set
 	 * @throws AttributeNotFoundException if attribute was not found

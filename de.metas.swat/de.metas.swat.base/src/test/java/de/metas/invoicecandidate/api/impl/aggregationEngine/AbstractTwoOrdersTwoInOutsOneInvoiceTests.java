@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,7 @@ import de.metas.util.Services;
 
 /**
  * In this scenario we have two invoice candidates (also referencing two orders). The first ic has two iols, the 2nd ic has one iol.
- * 
+ *
  * @author ts
  *
  */
@@ -76,7 +76,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 				.setSOTrx(config_IsSOTrx())
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
-				.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung)
+				.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery)
 				.setInvoiceRule_Override(null)
 				.setPOReference(IC_PO_REFERENCE)
 				.setDateAcct(IC_DATE_ACCT) // task 08437
@@ -90,13 +90,13 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 				.setSOTrx(config_IsSOTrx())
 				.setOrderDocNo("order2")
 				.setOrderLineDescription("orderline2_1")
-				.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung)
+				.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery)
 				.setInvoiceRule_Override(null)
 				.setPOReference(IC_PO_REFERENCE)
 				.setDateAcct(IC_DATE_ACCT) // task 08437
 				.build();
 
-		ic2.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
+		ic2.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic2.setInvoiceRule_Override(null);
 		ic2.setPOReference(IC_PO_REFERENCE);
 		ic2.setDateAcct(IC_DATE_ACCT); // task 08437

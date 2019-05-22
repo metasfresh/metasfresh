@@ -90,7 +90,7 @@ public final class SystemTime
 
 	public static ZonedDateTime asZonedDateTime()
 	{
-		return Instant.ofEpochMilli(millis()).atZone(ZoneId.systemDefault());
+		return asInstant().atZone(ZoneId.systemDefault());
 	}
 
 	/**

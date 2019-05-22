@@ -33,7 +33,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.LegacyAdapters;
@@ -56,6 +55,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -218,7 +219,7 @@ public class VLocatorDialog extends CDialog
 				sql,
 				I_M_Warehouse.Table_Name,
 				IUserRolePermissions.SQL_NOTQUALIFIED,
-				IUserRolePermissions.SQL_RO)
+				Access.READ)
 				+ " ORDER BY 2";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

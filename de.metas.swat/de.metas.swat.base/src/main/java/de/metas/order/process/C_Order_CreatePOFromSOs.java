@@ -83,9 +83,9 @@ public class C_Order_CreatePOFromSOs
 
 		p_DatePromised_From = params.getParameterAsTimestamp("DatePromised_From");
 		p_DatePromised_To = params.getParameterAsTimestamp("DatePromised_To");
-		p_C_BPartner_ID = params.getParameterAsInt("C_BPartner_ID");
-		p_Vendor_ID = params.getParameterAsInt("Vendor_ID");
-		p_C_Order_ID = params.getParameterAsInt("C_Order_ID");
+		p_C_BPartner_ID = params.getParameterAsInt("C_BPartner_ID", -1);
+		p_Vendor_ID = params.getParameterAsInt("Vendor_ID", -1);
+		p_C_Order_ID = params.getParameterAsInt("C_Order_ID", -1);
 		p_IsDropShip = params.getParameterAsBool("IsDropShip");
 		p_poReference = params.getParameterAsString("POReference");
 	}

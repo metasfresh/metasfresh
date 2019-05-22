@@ -29,10 +29,6 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.TableAccessLevel;
-import org.adempiere.ad.security.asp.IASPFiltersFactory;
-import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -45,6 +41,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.TableAccessLevel;
+import de.metas.security.permissions.Access;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -227,7 +227,7 @@ public class GridTabVO implements Evaluatee, Serializable
 					return false;
 				}	//	Used by MField.getDefault
 
-				if (!role.isTableAccess(vo.AD_Table_ID, true))
+				if (!role.isTableAccess(vo.AD_Table_ID, Access.READ))
 				{
 					vo.addLoadErrorMessage("No Table Access (AD_Table_ID="+vo.AD_Table_ID+")"); // 01934
 					logger.debug("No Table Access - AD_Tab_ID={} {}", vo.AD_Tab_ID, vo.name);
@@ -385,16 +385,6 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			sql.append(" AND AD_Language=?");
 			sqlParams.add(Env.getAD_Language(ctx));
-		}
-
-		//
-		// ASP filter
-		final String ASPFilter = Services.get(IASPFiltersFactory.class)
-				.getASPFiltersForClient(Env.getAD_Client_ID(ctx))
-				.getSQLWhereClause(I_AD_Tab.class);
-		if (!Check.isEmpty(ASPFilter, true))
-		{
-			sql.append(ASPFilter);
 		}
 
 		//

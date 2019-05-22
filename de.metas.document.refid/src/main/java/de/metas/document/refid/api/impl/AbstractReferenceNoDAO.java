@@ -44,6 +44,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -98,7 +99,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID, type.getC_ReferenceNo_Type_ID())
 				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_ReferenceNo, referenceNo)
 				.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.firstOnly(I_C_ReferenceNo.class); // there is a UC on C_ReferenceNo_Type_ID and ReferenceNo
 
 		if (reference == null)
@@ -182,7 +183,7 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, referenceNo.getC_ReferenceNo_ID())
 				.orderBy(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_Doc_ID)
 				.create()
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.list();
 		return result;
 	}

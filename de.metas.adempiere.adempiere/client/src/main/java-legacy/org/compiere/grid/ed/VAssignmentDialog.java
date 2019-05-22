@@ -34,7 +34,6 @@ import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.WindowConstants;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -53,6 +52,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.uom.LegacyUOMConversionUtils;
 
 /**
@@ -353,7 +354,7 @@ public class VAssignmentDialog extends CDialog
 				+ "uom.C_UOM_ID,uom.UOMSymbol "					//	4..5
 				+ "FROM S_Resource r, S_ResourceType rt, C_UOM uom "
 				+ "WHERE r.S_ResourceType_ID=rt.S_ResourceType_ID AND rt.C_UOM_ID=uom.C_UOM_ID",
-				"r", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+				"r", IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 			try
 			{
 				PreparedStatement pstmt = DB.prepareStatement(sql, null);

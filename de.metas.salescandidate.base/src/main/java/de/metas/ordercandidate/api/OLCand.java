@@ -11,6 +11,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -161,7 +162,7 @@ public final class OLCand implements IProductPriceAware
 
 	public int getM_Product_ID()
 	{
-		return olCandEffectiveValuesBL.getM_Product_Effective_ID(candidate);
+		return ProductId.toRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(candidate));
 	}
 
 	public int getC_UOM_ID()

@@ -60,9 +60,9 @@ import java.util.Collections;
 	}
 
 	@Override
-	public int getParameterAsInt(final String parameterName)
+	public int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
-		return 0;
+		return defaultValue;
 	}
 
 	@Override

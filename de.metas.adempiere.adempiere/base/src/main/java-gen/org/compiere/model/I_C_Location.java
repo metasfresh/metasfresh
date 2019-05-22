@@ -12,7 +12,7 @@ public interface I_C_Location
     public static final String Table_Name = "C_Location";
 
     /** AD_Table_ID=162 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -38,6 +38,35 @@ public interface I_C_Location
     public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Client>(I_C_Location.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Org>(I_C_Location.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Straße und Nr..
@@ -140,60 +169,6 @@ public interface I_C_Location
     public static final String COLUMNNAME_Address4 = "Address4";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Org>(I_C_Location.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set C/O.
-	 * In care of
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCareOf (java.lang.String CareOf);
-
-	/**
-	 * Get C/O.
-	 * In care of
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCareOf();
-
-    /** Column definition for CareOf */
-    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_CareOf = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "CareOf", null);
-    /** Column name CareOf */
-    public static final String COLUMNNAME_CareOf = "CareOf";
-
-	/**
 	 * Set Ort.
 	 * City
 	 *
@@ -252,31 +227,6 @@ public interface I_C_Location
     public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
 	/**
-	 * Set Ort.
-	 * Identifies a City
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCity (java.lang.String City);
-
-	/**
-	 * Get Ort.
-	 * Identifies a City
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCity();
-
-    /** Column definition for City */
-    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_City = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "City", null);
-    /** Column name City */
-    public static final String COLUMNNAME_City = "City";
-
-	/**
 	 * Set Anschrift.
 	 * Location or Address
 	 *
@@ -329,6 +279,85 @@ public interface I_C_Location
     public static final String COLUMNNAME_C_Postal_ID = "C_Postal_ID";
 
 	/**
+	 * Set Region.
+	 * Identifies a geographical Region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Region_ID (int C_Region_ID);
+
+	/**
+	 * Get Region.
+	 * Identifies a geographical Region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Region_ID();
+
+	public org.compiere.model.I_C_Region getC_Region();
+
+	public void setC_Region(org.compiere.model.I_C_Region C_Region);
+
+    /** Column definition for C_Region_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Region>(I_C_Location.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
+    /** Column name C_Region_ID */
+    public static final String COLUMNNAME_C_Region_ID = "C_Region_ID";
+
+	/**
+	 * Set C/O.
+	 * In care of
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCareOf (java.lang.String CareOf);
+
+	/**
+	 * Get C/O.
+	 * In care of
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCareOf();
+
+    /** Column definition for CareOf */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_CareOf = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "CareOf", null);
+    /** Column name CareOf */
+    public static final String COLUMNNAME_CareOf = "CareOf";
+
+	/**
+	 * Set Ort.
+	 * Identifies a City
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCity (java.lang.String City);
+
+	/**
+	 * Get Ort.
+	 * Identifies a City
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCity();
+
+    /** Column definition for City */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_City = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "City", null);
+    /** Column name City */
+    public static final String COLUMNNAME_City = "City";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -359,33 +388,54 @@ public interface I_C_Location
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Region.
-	 * Identifies a geographical Region
+	 * Set Geocoding Error.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Region_ID (int C_Region_ID);
+	public void setGeocoding_Issue_ID (int Geocoding_Issue_ID);
 
 	/**
-	 * Get Region.
-	 * Identifies a geographical Region
+	 * Get Geocoding Error.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Region_ID();
+	public int getGeocoding_Issue_ID();
 
-	public org.compiere.model.I_C_Region getC_Region();
+	public org.compiere.model.I_AD_Issue getGeocoding_Issue();
 
-	public void setC_Region(org.compiere.model.I_C_Region C_Region);
+	public void setGeocoding_Issue(org.compiere.model.I_AD_Issue Geocoding_Issue);
 
-    /** Column definition for C_Region_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Region>(I_C_Location.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
-    /** Column name C_Region_ID */
-    public static final String COLUMNNAME_C_Region_ID = "C_Region_ID";
+    /** Column definition for Geocoding_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Issue> COLUMN_Geocoding_Issue_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Issue>(I_C_Location.class, "Geocoding_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name Geocoding_Issue_ID */
+    public static final String COLUMNNAME_Geocoding_Issue_ID = "Geocoding_Issue_ID";
+
+	/**
+	 * Set Geocoding Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setGeocodingStatus (java.lang.String GeocodingStatus);
+
+	/**
+	 * Get Geocoding Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getGeocodingStatus();
+
+    /** Column definition for GeocodingStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_GeocodingStatus = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "GeocodingStatus", null);
+    /** Column name GeocodingStatus */
+    public static final String COLUMNNAME_GeocodingStatus = "GeocodingStatus";
 
 	/**
 	 * Set Aktiv.
@@ -441,21 +491,21 @@ public interface I_C_Location
 	 * Set Latitude.
 	 * Geographical latitude
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLatitude (java.lang.String Latitude);
+	public void setLatitude (java.math.BigDecimal Latitude);
 
 	/**
 	 * Get Latitude.
 	 * Geographical latitude
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getLatitude();
+	public java.math.BigDecimal getLatitude();
 
     /** Column definition for Latitude */
     public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Latitude = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Latitude", null);
@@ -466,21 +516,21 @@ public interface I_C_Location
 	 * Set Längengrad.
 	 * Geographical longitude
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLongitude (java.lang.String Longitude);
+	public void setLongitude (java.math.BigDecimal Longitude);
 
 	/**
 	 * Get Längengrad.
 	 * Geographical longitude
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getLongitude();
+	public java.math.BigDecimal getLongitude();
 
     /** Column definition for Longitude */
     public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Longitude = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Longitude", null);

@@ -122,7 +122,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		allSplitHUs.addAll(splitSS1LUs);
 		allSplitHUs.addAll(splitSS2LUs);
 
-		//System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
+		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
 
 		//
 		// Validate split LU/TU/VHUs
@@ -334,16 +334,12 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(3);
-
+		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
 		logger.info("shipmentLine1: {}", shipmentLine1);
 
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 		logger.info("shipmentLine2: {}", shipmentLine2);
-
-		final I_M_InOutLine shipmentLine3 = shipmentLines.get(2);
-		logger.info("shipmentLine3: {}", shipmentLine3);
 
 		//
 		// Revalidate the ShipmentSchedule_QtyPicked expectations,
@@ -351,22 +347,22 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		//@formatter:off
 		afterAggregation_ShipmentScheduleQtyPickedExpectations
 			.shipmentScheduleQtyPickedExpectation(0)
-				.inoutLine(shipmentLine2)
+				.inoutLine(shipmentLine1)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(1)
-				.inoutLine(shipmentLine1)
+			.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(2)
-				.inoutLine(shipmentLine1)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(3)
-				.inoutLine(shipmentLine1)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(4)
-				.inoutLine(shipmentLine1)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.shipmentScheduleQtyPickedExpectation(5)
-				.inoutLine(shipmentLine3)
+				.inoutLine(shipmentLine2)
 				.endExpectation()
 			.assertExpected("after shipment generated");
 		//@formatter:on

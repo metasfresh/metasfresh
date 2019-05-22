@@ -2,8 +2,6 @@ package de.metas.dataentry.data;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import lombok.EqualsAndHashCode;
@@ -38,7 +36,7 @@ import lombok.ToString;
 public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntryListValueId>
 {
 	@Getter
-	DataEntryListValueId value;
+	private final DataEntryListValueId value;
 
 	public static DataEntryRecordFieldListValue of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,

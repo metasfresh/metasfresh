@@ -165,12 +165,6 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 		// nothing to do; the value won't change
 	}
 
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do; the value won't change
-	}
-
 	/**
 	 *
 	 * @returns {@link OnInvalidateForModelAction#RECREATE_ASYNC}.

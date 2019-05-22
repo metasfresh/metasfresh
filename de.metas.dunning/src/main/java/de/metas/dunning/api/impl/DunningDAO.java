@@ -45,6 +45,7 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class DunningDAO extends AbstractDunningDAO
@@ -166,11 +167,11 @@ public class DunningDAO extends AbstractDunningDAO
 		// 04766: allowing to have no application of access filters at all
 		if (ApplyAccessFilter.ACCESS_FILTER_RW.equals(query.getApplyAccessFilter()))
 		{
-			sqlQuery.setApplyAccessFilterRW(true);
+			sqlQuery.setRequiredAccess(Access.WRITE);
 		}
 		else if (ApplyAccessFilter.ACCESS_FILTER_RO.equals(query.getApplyAccessFilter()))
 		{
-			sqlQuery.setApplyAccessFilter(true);
+			sqlQuery.setRequiredAccess(Access.READ);
 		}
 		// 04766: end
 
@@ -219,7 +220,7 @@ public class DunningDAO extends AbstractDunningDAO
 		return new Query(dunningContext.getCtx(), I_C_DunningDoc_Line_Source.Table_Name, whereClause.toString(), dunningContext.getTrxName())
 				.setParameters(params)
 				.setOrderBy(I_C_DunningDoc_Line_Source.COLUMNNAME_C_DunningDoc_Line_Source_ID)
-				.setApplyAccessFilterRW(true) // in order to write off, we need to update the C_DunningDoc_Line_Source
+				.setRequiredAccess(Access.WRITE) // in order to write off, we need to update the C_DunningDoc_Line_Source
 				.setOption(Query.OPTION_IteratorBufferSize, 1000) // reducing the number of selects by increasing the buffer/page size
 				.iterate(I_C_DunningDoc_Line_Source.class);
 	}

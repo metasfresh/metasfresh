@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -54,6 +53,8 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
 import de.metas.notification.UserNotificationsConfig;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -123,7 +124,6 @@ public class MRequest extends X_R_Request
 	/** Changed */
 	private boolean m_changed = false;
 
-
 	public MRequest(Properties ctx, int R_Request_ID, String trxName)
 	{
 		super(ctx, R_Request_ID, trxName);
@@ -179,7 +179,6 @@ public class MRequest extends X_R_Request
 	{
 		super(ctx, rs, trxName);
 	}	// MRequest
-
 
 	/**
 	 * Set Default Request Type.
@@ -575,9 +574,9 @@ public class MRequest extends X_R_Request
 				final IUserDAO userDAO = Services.get(IUserDAO.class);
 				// RequestActionTransfer - Request {} was transfered by {} from {} to {}
 				Object[] args = new Object[] { getDocumentNo(),
-						userDAO.retrieveUser(AD_User_ID),
-						userDAO.retrieveUser(oldSalesRep_ID),
-						userDAO.retrieveUser(getSalesRep_ID())
+						userDAO.getById(AD_User_ID),
+						userDAO.getById(oldSalesRep_ID),
+						userDAO.getById(getSalesRep_ID())
 				};
 				String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "RequestActionTransfer", args);
 				addToResult(msg);
@@ -764,7 +763,7 @@ public class MRequest extends X_R_Request
 			return;
 		}
 
-		final Set<Integer> userIdsToNotify = getUserIdsToNotify();
+		final Set<UserId> userIdsToNotify = getUserIdsToNotify();
 		if (userIdsToNotify.isEmpty())
 		{
 			return;
@@ -846,7 +845,7 @@ public class MRequest extends X_R_Request
 		return messageBuilder.build();
 	}
 
-	private Set<Integer> getUserIdsToNotify()
+	private Set<UserId> getUserIdsToNotify()
 	{
 		final String sql = "SELECT u.AD_User_ID, MAX(r.AD_Role_ID) as AD_Role_ID"
 				+ " FROM RV_RequestUpdates_Only ru"
@@ -863,11 +862,9 @@ public class MRequest extends X_R_Request
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			final ImmutableSet.Builder<Integer> userIds = ImmutableSet.builder();
+			final ImmutableSet.Builder<UserId> userIds = ImmutableSet.builder();
 			while (rs.next())
 			{
-				final int adUserId = rs.getInt("AD_User_ID");
-
 				rs.getInt("AD_Role_ID");
 				final boolean isInternalUser = !rs.wasNull();
 
@@ -879,6 +876,7 @@ public class MRequest extends X_R_Request
 					continue;
 				}
 
+				final UserId adUserId = UserId.ofRepoId(rs.getInt("AD_User_ID"));
 				userIds.add(adUserId);
 			}
 

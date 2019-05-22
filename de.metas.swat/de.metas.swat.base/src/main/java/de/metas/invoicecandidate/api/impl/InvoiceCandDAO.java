@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -48,7 +50,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -107,6 +108,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -196,13 +198,42 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		final int deleteCount = Services.get(IQueryBL.class)
+		// i could do all this with "stream", but i find "old-school" easier to debug
+		int deleteCount = 0;
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
 				.create()
-				.delete();
+				.list();
+		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
+		{
+			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
+			delete(icRecordToDelete);
+			deleteCount++;
+		}
+
 		return deleteCount;
+	}
+
+	/** Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense. */
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		if (!manuallyFlaggedAsProcessed)
+		{
+			return;			// nothing to do
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		if (hasInvoiceLines)
+		{
+			return;			// nothing to do
+		}
+
+		// icToDelete was manually set to "processed" to be out of the way; in this case, we can unprocess and delete it.
+		icToDelete.setProcessed(false);
 	}
 
 	@Override
@@ -331,7 +362,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return ImmutableList.of(); // no associations for new/not saved ICs
 		}
-		
+
 		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
 	}
 
@@ -741,7 +772,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCandsForBPartnerInvoiceRule(final I_C_BPartner bpartner)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveForBillPartnerQuery(bpartner)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				// Not already processed
@@ -1062,7 +1093,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, I_C_BPartner.COLUMN_C_BPartner_ID, bpartnersQuery)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				//

@@ -7,8 +7,6 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.CreatedUpdatedInfo;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.metas.dataentry.DataEntryFieldId;
@@ -48,7 +46,7 @@ public abstract class DataEntryRecordField<T>
 
 	@Getter
 	@JsonIgnore
-	private CreatedUpdatedInfo createdUpdatedInfo;
+	private final CreatedUpdatedInfo createdUpdatedInfo;
 
 	protected DataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
@@ -75,28 +73,25 @@ public abstract class DataEntryRecordField<T>
 		else if (value instanceof BigDecimal)
 		{
 			result = (DataEntryRecordField<T>)DataEntryRecordFieldNumber.of(dataEntryFieldId, createdUpdatedInfo, (BigDecimal)value);
-
 		}
 		else if (value instanceof DataEntryListValueId)
 		{
 			result = (DataEntryRecordField<T>)DataEntryRecordFieldListValue.of(dataEntryFieldId, createdUpdatedInfo, (DataEntryListValueId)value);
-
 		}
 		else if (value instanceof ZonedDateTime)
 		{
 			result = (DataEntryRecordField<T>)DataEntryRecordFieldDate.of(dataEntryFieldId, createdUpdatedInfo, (ZonedDateTime)value);
-
 		}
 		else if (value instanceof Boolean)
 		{
 			result = (DataEntryRecordField<T>)DataEntryRecordFieldYesNo.of(dataEntryFieldId, createdUpdatedInfo, (Boolean)value);
-
 		}
 		else
 		{
 			fail("Unexpected value type={}; dataEntryFieldId={}", value.getClass(), dataEntryFieldId);
 			result = null;
 		}
+		
 		return result;
 	}
 }

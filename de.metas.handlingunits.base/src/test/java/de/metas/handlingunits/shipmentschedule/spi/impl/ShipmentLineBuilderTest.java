@@ -15,6 +15,8 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -28,6 +30,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 /*
@@ -60,6 +63,9 @@ public class ShipmentLineBuilderTest
 	private I_M_InOut shipment;
 	private I_C_OrderLine orderLine;
 	private I_M_HU_PI_Item_Product piipWithCapacityEight;
+	private IHUContext huContext;
+
+	private Quantity one;
 
 	@Before
 	public void init()
@@ -73,7 +79,7 @@ public class ShipmentLineBuilderTest
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
 
-			orderLine = newInstance(I_C_OrderLine.class);
+		orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
 		orderLine.setM_Product(huTestHelper.pTomato);
 		save(orderLine);
@@ -93,6 +99,9 @@ public class ShipmentLineBuilderTest
 		shipmentSchedule.setM_HU_PI_Item_Product(piipWithCapacityEight);
 		save(shipmentSchedule);
 
+		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		one = Quantity.of(ONE, huTestHelper.pTomato.getC_UOM());
+
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 	}
@@ -100,7 +109,11 @@ public class ShipmentLineBuilderTest
 	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu()
 	{
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(shipmentSchedule, ONE);
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+				huContext,
+				shipmentSchedule,
+				one,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
 		shipmentLineBuilder.setManualPackingMaterial(true);
@@ -118,10 +131,14 @@ public class ShipmentLineBuilderTest
 	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_BothQty()
 	{
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(shipmentSchedule, ONE);
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+				huContext,
+				shipmentSchedule,
+				one,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
-		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PD);
+		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test

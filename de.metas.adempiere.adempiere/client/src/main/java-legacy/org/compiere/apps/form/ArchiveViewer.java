@@ -39,7 +39,6 @@ import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.pdf.viewer.PDFViewerBean;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
@@ -58,6 +57,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**

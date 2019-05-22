@@ -41,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.grid.CreateFrom;
 import org.compiere.minigrid.IMiniTable;
@@ -50,6 +51,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.i18n.Msg;
+import de.metas.security.permissions.Access;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.MMShipperTransportation;
@@ -77,6 +79,7 @@ public class CreateFromPackage extends CreateFrom
 	 *  Dynamic Init
 	 *  @return true if initialized
 	 */
+	@Override
 	public boolean dynInit() throws Exception
 	{
 		log.info("");
@@ -117,7 +120,7 @@ public class CreateFromPackage extends CreateFrom
 		//
 		log.debug(sql.toString());
 		
-		final String orgWhere = Env.getUserRolePermissions().getOrgWhere(false);
+		final String orgWhere = Env.getUserRolePermissions().getOrgWhere(I_M_Package.Table_Name, Access.READ);
 		if (!Check.isEmpty(orgWhere, true))
 		{
 			sql.append(" AND (p.");
@@ -223,6 +226,7 @@ public class CreateFromPackage extends CreateFrom
 		return data;
 	}
 	
+	@Override
 	public void info()
 	{
 		

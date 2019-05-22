@@ -69,6 +69,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
@@ -144,8 +145,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setM_Product_ID(orderLine.getM_Product_ID());
 		ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
 		ic.setC_Charge_ID(orderLine.getC_Charge_ID());
-		ic.setQtyOrdered(orderLine.getQtyOrdered());
-		ic.setDateOrdered(orderLine.getDateOrdered());
+
+		setOrderedData(ic, orderLine);
+
 		ic.setPriceActual(orderLine.getPriceActual());
 		ic.setPrice_UOM_ID(orderLine.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
 		ic.setPriceEntered(orderLine.getPriceEntered()); // cg : task 04917
@@ -170,7 +172,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			// because we want to invoice those right away (08408)
 			if (isNotReceivebleService(ic))
 			{
-				ic.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Sofort); // immediate
+				ic.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 			}
 		}
 
@@ -269,6 +271,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 	/**
 	 * <ul>
+	 * <li>QtyEntered := C_OrderLine.QtyEntered
+	 * <li>C_UOM_ID := C_OrderLine.C_UOM_ID
 	 * <li>QtyOrdered := C_OrderLine.QtyOrdered
 	 * <li>DateOrdered := C_OrderLine.DateOrdered
 	 * <li>C_Order_ID: C_OrderLine.C_Order_ID
@@ -278,26 +282,38 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setOrderedData(final I_C_Invoice_Candidate ic)
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+
+		setOrderedData(ic, orderLine);
+	}
+
+	private void setOrderedData(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		ic.setQtyEntered(orderLine.getQtyEntered());
+		ic.setC_UOM_ID(orderLine.getC_UOM_ID());
 
 		// we use C_OrderLine.QtyOrdered which is fine, but which is also in the product's stocking UOM
 		ic.setQtyOrdered(orderLine.getQtyOrdered());
 		ic.setDateOrdered(orderLine.getDateOrdered());
+
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
 
-		setC_PaymentTerm(ic);
+		setC_PaymentTerm(ic, orderLine);
 	}
 
-	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
+	private void setC_PaymentTerm(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		if (!ic.isSOTrx())
 		{
 			return;
 		}
 
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 		final int paymentTermId = Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId);
 	}
@@ -395,13 +411,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_Location_ID(order.getBill_Location_ID());
 		ic.setBill_User_ID(order.getBill_User_ID());
 
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-		ic.setC_UOM_ID(orderLine.getC_UOM_ID());
 	}
 
 	private void setGroupCompensationData(final I_C_Invoice_Candidate ic, final I_C_OrderLine fromOrderLine)

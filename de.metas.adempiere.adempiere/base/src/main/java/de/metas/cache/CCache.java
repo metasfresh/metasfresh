@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -52,7 +55,7 @@ import lombok.NonNull;
 import lombok.Singular;
 
 /**
- * Adempiere Cache.
+ * metasfresh Cache.
  *
  * @param <K> Key
  * @param <V> Value
@@ -72,12 +75,13 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public static final <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
 	{
-		return new CCache<>(cacheName,
-				null, // auto-detect tableName
-				null, // additionalTableNamesToResetFor
-				maxSize, // initialCapacity // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
-				expireAfterMinutes,
-				CacheMapType.LRU);
+		return CCache.<K, V> builder()
+				.cacheName(cacheName)
+				// .tableName(null) // auto-detect tableName
+				.initialCapacity(maxSize) // FIXME this is confusing because in case of LRU, initialCapacity is used as maxSize
+				.expireMinutes(expireAfterMinutes)
+				.cacheMapType(CacheMapType.LRU)
+				.build();
 	}
 
 	/**
@@ -87,12 +91,13 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
-		return new CCache<>(cacheName,
-				null, // auto-detect tableName
-				null, // additionalTableNamesToResetFor
-				initialCapacity,
-				expireAfterMinutes,
-				CacheMapType.HashMap);
+		return CCache.<K, V> builder()
+				.cacheName(cacheName)
+				// .tableName(null) // auto-detect tableName
+				.initialCapacity(initialCapacity)
+				.expireMinutes(expireAfterMinutes)
+				.cacheMapType(CacheMapType.HashMap)
+				.build();
 	}
 
 	public static enum CacheMapType
@@ -136,6 +141,9 @@ public class CCache<K, V> implements CacheInterface
 	/** Just reset */
 	private boolean m_justReset = true;
 
+	/** Can provide a collection of cache keys for a given record reference. */
+	private final Optional<CacheInvalidationKeysMapper<K>> invalidationKeysMapper;
+
 	/**
 	 * If {@link #DEBUG} is enabled, this variable contains the object's identity code (see {@link System#identityHashCode(Object)}).
 	 */
@@ -171,7 +179,9 @@ public class CCache<K, V> implements CacheInterface
 				null, // additionalTableNamesToResetFor
 				initialCapacity,
 				expireMinutes,
-				CacheMapType.HashMap);
+				CacheMapType.HashMap,
+				(CacheInvalidationKeysMapper<K>)null,
+				(CacheRemovalListener<K, V>)null);
 	}
 
 	@Builder
@@ -181,9 +191,13 @@ public class CCache<K, V> implements CacheInterface
 			@Singular("additionalTableNameToResetFor") final Set<String> additionalTableNamesToResetFor,
 			final Integer initialCapacity,
 			final Integer expireMinutes,
-			final CacheMapType cacheMapType)
+			final CacheMapType cacheMapType,
+			@Nullable final CacheInvalidationKeysMapper<K> invalidationKeysMapper,
+			@Nullable final CacheRemovalListener<K, V> removalListener)
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
+
+		this.invalidationKeysMapper = Optional.ofNullable(invalidationKeysMapper);
 
 		final String tableNameEffective;
 		if (cacheName == null)
@@ -227,7 +241,8 @@ public class CCache<K, V> implements CacheInterface
 		this.cache = buildGuavaCache(
 				cacheMapType != null ? cacheMapType : CacheMapType.HashMap,
 				initialCapacity != null ? initialCapacity : 0,
-				this.expireMinutes);
+				this.expireMinutes,
+				removalListener);
 
 		if (DEBUG)
 		{
@@ -294,7 +309,8 @@ public class CCache<K, V> implements CacheInterface
 	private static final <K, V> Cache<K, V> buildGuavaCache(
 			@NonNull final CacheMapType cacheMapType,
 			final int initialCapacity,
-			final int expireMinutes)
+			final int expireMinutes,
+			@Nullable final CacheRemovalListener<K, V> removalListener)
 	{
 		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
 		if (cacheMapType == CacheMapType.HashMap)
@@ -315,6 +331,19 @@ public class CCache<K, V> implements CacheInterface
 		if (expireMinutes > 0)
 		{
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireMinutes, TimeUnit.MINUTES);
+		}
+
+		if (removalListener != null)
+		{
+			cacheBuilder.removalListener(notif -> {
+				@SuppressWarnings("unchecked")
+				final K key = (K)notif.getKey();
+
+				@SuppressWarnings("unchecked")
+				final V value = (V)notif.getValue();
+
+				removalListener.itemRemoved(key, value);
+			});
 		}
 
 		return cacheBuilder.build();
@@ -396,10 +425,36 @@ public class CCache<K, V> implements CacheInterface
 	}	// clear
 
 	@Override
-	public long resetForRecordId(final TableRecordReference recordRef)
+	public long resetForRecordId(@NonNull final TableRecordReference recordRef)
 	{
-		// NOTE: reseting only by "key" is not supported at this level, so we are reseting everything
-		return reset();
+		if (!invalidationKeysMapper.isPresent())
+		{
+			// NOTE: reseting only by "key" is not supported, so we are reseting everything
+			return reset();
+		}
+
+		return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
+	}
+
+	private long resetForRecordIdUsingKeysMapper(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final CacheInvalidationKeysMapper<K> keysMapper)
+	{
+		if (keysMapper.isResetAll(recordRef))
+		{
+			return reset();
+		}
+
+		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
+		for (final K key : keysMapper.computeKeysToInvalidate(recordRef))
+		{
+			final boolean keyRemoved = remove(key) != null;
+			if (keyRemoved)
+			{
+				counter++;
+			}
+		}
+		return counter;
 	}
 
 	@Override
@@ -444,7 +499,7 @@ public class CCache<K, V> implements CacheInterface
 	/**
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
-	public V get(final K key)
+	@Nullable public V get(final K key)
 	{
 		return cache.getIfPresent(key);
 	}	// get

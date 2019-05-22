@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -44,25 +43,30 @@ public class JsonProductInfo
 		ITEM, SERVICE
 	}
 
-	/** This translates to {@code M_Product.Value}. */
-	@ApiModelProperty(value = "This translates to <code>M_Product.Value</code>.")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "Mandatory - This translates to `M_Product.Value`.")
 	@JsonInclude(Include.NON_NULL)
 	private String code;
 
-	/**
-	 * This translates to {@code M_Product.Name}.
-	 * If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.
-	 */
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `M_Product.Name`.\n"
+					+ "If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
 	private String name;
 
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `M_Product.ProductType`.\n"
+					+ "If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.")
 	private Type type;
 
-	/**
-	 * This translates to <code>C_UOM.X12DE355</code>.
-	 * The respective UOM needs to exist in metasfresh and it's ID is set as <code>M_Product.C_UOM_ID</code>.
-	 * If this is empty, and a product with the given <code>code</code> does not yet exist, then the request will fail.
-	 */
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `C_UOM.X12DE355`.\n"
+			+"The respective UOM needs to exist in metasfresh and then its ID is set as `M_Product.C_UOM_ID`.\n"
+			+ "If this property is empty, and a product with the given `code` does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
 	private String uomCode;
 
@@ -74,7 +78,7 @@ public class JsonProductInfo
 	private JsonProductInfo(
 			@JsonProperty("code") @Nullable final String code,
 			@JsonProperty("name") @Nullable final String name,
-			@JsonProperty("type") @NonNull final Type type,
+			@JsonProperty("type") @Nullable final Type type,
 			@JsonProperty("uomCode") @Nullable final String uomCode,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
@@ -84,5 +88,4 @@ public class JsonProductInfo
 		this.uomCode = uomCode;
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
-
 }

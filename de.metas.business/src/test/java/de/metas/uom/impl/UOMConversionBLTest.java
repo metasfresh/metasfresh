@@ -67,46 +67,46 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_adjustToUOMPrecisionWithoutRoundingIfPossible()
+	public void adjustToUOMPrecisionWithoutRoundingIfPossible()
 	{
 		final int uomPrecision = 2;
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("0.0000000000", uomPrecision, "0.00", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("0.0000000000", uomPrecision, "0.00", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-0.0000000000", uomPrecision, "0.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("0.0000000000", uomPrecision, "0.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("0.0000000000", uomPrecision, "0.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-0.0000000000", uomPrecision, "0.00", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.00000000000", uomPrecision, "12.00", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.00000000000", uomPrecision, "-12.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.00000000000", uomPrecision, "12.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.00000000000", uomPrecision, "-12.00", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("10.0", uomPrecision, "10.00", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-10.0", uomPrecision, "-10.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("10.0", uomPrecision, "10.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-10.0", uomPrecision, "-10.00", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.3", uomPrecision, "12.30", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.3", uomPrecision, "-12.30", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.3", uomPrecision, "12.30", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.3", uomPrecision, "-12.30", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.30", uomPrecision, "12.30", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.30", uomPrecision, "-12.30", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.30", uomPrecision, "12.30", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.30", uomPrecision, "-12.30", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("10.00", uomPrecision, "10.00", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-10.00", uomPrecision, "-10.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("10.00", uomPrecision, "10.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-10.00", uomPrecision, "-10.00", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.34", uomPrecision, "12.34", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.34", uomPrecision, "-12.34", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.34", uomPrecision, "12.34", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.34", uomPrecision, "-12.34", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("10.000", uomPrecision, "10.00", 2);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-10.000", uomPrecision, "-10.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("10.000", uomPrecision, "10.00", 2);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-10.000", uomPrecision, "-10.00", 2);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.345", uomPrecision, "12.345", 3);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.345", uomPrecision, "-12.345", 3);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.345", uomPrecision, "12.345", 3);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.345", uomPrecision, "-12.345", 3);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.34500", uomPrecision, "12.345", 3);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.34500", uomPrecision, "-12.345", 3);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.34500", uomPrecision, "12.345", 3);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.34500", uomPrecision, "-12.345", 3);
 
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("12.345000000000", uomPrecision, "12.345", 3);
-		test_adjustToUOMPrecisionWithoutRoundingIfPossible("-12.345000000000", uomPrecision, "-12.345", 3);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("12.345000000000", uomPrecision, "12.345", 3);
+		adjustToUOMPrecisionWithoutRoundingIfPossible("-12.345000000000", uomPrecision, "-12.345", 3);
 	}
 
-	private void test_adjustToUOMPrecisionWithoutRoundingIfPossible(
+	private void adjustToUOMPrecisionWithoutRoundingIfPossible(
 			final String qtyStr, final int uomPrecision,
 			final String qtyStrExpected,
 			final int uomPrecisionExpected)
@@ -127,7 +127,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_Convert()
+	public void convertQty()
 	{
 		// Mocking the case for Folie AB Alicesalat (1000 lm)
 		// Multiply Rate = 1500000.000000000000;
@@ -163,7 +163,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_Convert_NoProductInConversion()
+	public void convertQty_NoProductInConversion()
 	{
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
@@ -189,7 +189,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_ConvertGeneralConversion()
+	public void convert_GeneralConversion()
 	{
 		final I_C_UOM millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, "mm");
 		final I_C_UOM meter = uomConversionHelper.createUOM("Meter", 2, 0, "MTR");
@@ -210,7 +210,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_Convert_GeneralConversion()
+	public void convertQty_GeneralConversion()
 	{
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
@@ -235,7 +235,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_Convert_GeneralConversion_UseStdPrecision()
+	public void convert_GeneralConversion_UseStdPrecision()
 	{
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
@@ -259,7 +259,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_Convert_GeneralConversion_DoNotUseStdPrecision()
+	public void convert_GeneralConversion_DoNotUseStdPrecision()
 	{
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
@@ -283,7 +283,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_getTimeConversionRate()
+	public void getTimeConversionRate()
 	{
 		final I_C_UOM minute = uomConversionHelper.createUOM(
 				"Minute",
@@ -389,10 +389,41 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	/**
+	 * Convert two hours into 120 minutes.
+	 */
+	@Test
+	public void convertFromProductUOM_Minutes_To_Hour()
+	{
+		final I_C_UOM minute = uomConversionHelper.createUOM(
+				"Minute",
+				1,
+				0,
+				UOMConstants.X12_MINUTE);
+
+		final I_C_UOM hour = uomConversionHelper.createUOM(
+				"Hour",
+				1,
+				0,
+				UOMConstants.X12_HOUR);
+
+		uomConversionHelper.createUOMConversion(
+				(ProductId)null,
+				minute,
+				hour,
+				new BigDecimal("0.016666666667"),// multiply rate
+				new BigDecimal("60") // divide rate
+		);
+
+		final ProductId hourProductId = createProduct("HourProduct", hour);
+		final BigDecimal result = conversionBL.convertFromProductUOM(hourProductId, minute, new BigDecimal("2"));
+		assertThat(result).isEqualByComparingTo("120");
+	}
+
+	/**
 	 * @task http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
 	 */
 	@Test
-	public void test_convertToProductUOM_CheckProductUOMPrecisionIsUsed()
+	public void convertToProductUOM_CheckProductUOMPrecisionIsUsed()
 	{
 		final I_C_UOM uomMillimeter = uomConversionHelper.createUOM("Millimeter", 2, 4);
 		final I_C_UOM uomRolle = uomConversionHelper.createUOM("Rolle", 4, 4);
@@ -419,7 +450,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertFromProductUOM_CheckProductUOMPrecisionIsUsed()
+	public void convertFromProductUOM_CheckProductUOMPrecisionIsUsed()
 	{
 		final I_C_UOM uomMillimeter = uomConversionHelper.createUOM("Millimeter", 2, 4);
 		final I_C_UOM uomRolle = uomConversionHelper.createUOM("Rolle", 4, 4);
@@ -472,7 +503,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertFromProductUOM_DirectConversionShallBeUsed()
+	public void convertFromProductUOM_DirectConversionShallBeUsed()
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
@@ -487,7 +518,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_getRateForConversionFromProductUOM_ReverseConversionShallBeUsed()
+	public void getRateForConversionFromProductUOM_ReverseConversionShallBeUsed()
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
@@ -502,7 +533,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertToProductUOM_DirectConversionShallBeUsed()
+	public void convertToProductUOM_DirectConversionShallBeUsed()
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
@@ -517,7 +548,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertToProductUOM_ReverseConversionShallBeUsed()
+	public void convertToProductUOM_ReverseConversionShallBeUsed()
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
@@ -533,7 +564,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertTo_CurrentUOM()
+	public void convertTo_CurrentUOM()
 	{
 		final BigDecimal qty = new BigDecimal("1234");
 		final I_C_UOM uom = uomConversionHelper.createUOM("UOM1", 2);
@@ -547,7 +578,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertTo_SourceUOM()
+	public void convertTo_SourceUOM()
 	{
 		final BigDecimal qty = new BigDecimal("1234");
 		final I_C_UOM uom = uomConversionHelper.createUOM("UOM1", 2);
@@ -566,7 +597,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertTo_OtherUOM()
+	public void convertTo_OtherUOM()
 	{
 		//
 		// Create Quantity
@@ -601,7 +632,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertProductPriceToUom_1()
+	public void convertProductPriceToUom_1()
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(1);
 		final CurrencyPrecision currencyPrecision = CurrencyPrecision.ofInt(3);
@@ -637,7 +668,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	@Test
-	public void test_convertProductPriceToUom_2()
+	public void convertProductPriceToUom_2()
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(1);
 		final CurrencyPrecision currencyPrecision = CurrencyPrecision.ofInt(3);

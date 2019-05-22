@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,6 +39,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class InvoiceLineHUPackingAware implements IHUPackingAware
 {
@@ -96,12 +97,12 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setQty(final BigDecimal qty)
+	public void setQty(@NonNull final BigDecimal qtyInHUsUOM)
 	{
-		invoiceLine.setQtyEntered(qty);
+		invoiceLine.setQtyEntered(qtyInHUsUOM);
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		final BigDecimal qtyInvoiced = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, getC_UOM(), qty);
+		final BigDecimal qtyInvoiced = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, getC_UOM(), qtyInHUsUOM);
 		invoiceLine.setQtyInvoiced(qtyInvoiced);
 	}
 
@@ -121,7 +122,7 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 		{
 			return invoiceLine_PIItemProductId;
 		}
-		
+
 		//
 		// Check order line
 		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), I_C_OrderLine.class);
@@ -137,14 +138,14 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		// 
+		//
 		// In case the invoice line has an pi item product, just return it (task 08908)
 		final I_M_HU_PI_Item_Product il_piip = invoiceLine.getM_HU_PI_Item_Product();
 		if(il_piip != null)
 		{
 			return il_piip;
 		}
-		
+
 		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), I_C_OrderLine.class);
 		if (orderline == null)
 		{
