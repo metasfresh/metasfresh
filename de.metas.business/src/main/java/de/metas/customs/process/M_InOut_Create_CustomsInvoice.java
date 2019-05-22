@@ -20,6 +20,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.customs.CustomsInvoice;
 import de.metas.customs.CustomsInvoiceRequest;
 import de.metas.customs.CustomsInvoiceService;
+import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.document.DocTypeId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -111,6 +112,9 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 				.build();
 
 		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(customsInvoiceRequest);
+
+		CustomsInvoiceUserNotificationsProducer.newInstance()
+				.notifyGenerated(customsInvoice);
 
 		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
 				.map(InOutAndLineId::getInOutId)

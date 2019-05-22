@@ -23,6 +23,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.money.Money;
@@ -181,7 +182,7 @@ public class CustomsInvoiceRepository
 
 	}
 
-	public void setCustomsInvoiceToShipment(final InOutId shipmentId, final CustomsInvoice customsInvoice)
+	public void setCustomsInvoiceToShipment(@NonNull final InOutId shipmentId, @NonNull final CustomsInvoice customsInvoice)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
@@ -194,6 +195,19 @@ public class CustomsInvoiceRepository
 		shipmentRecord.setIsExportedToCustomsInvoice(true);
 
 		saveRecord(shipmentRecord);
+	}
+
+	public CustomsInvoice updateDocActionAndStatus(@NonNull final CustomsInvoice customsInvoice)
+	{
+		final I_C_Customs_Invoice customsInvoiceRecord = load(customsInvoice.getId(), I_C_Customs_Invoice.class);
+
+		final String docAction = customsInvoiceRecord.getDocAction();
+		final DocStatus docStatus = DocStatus.ofCode(customsInvoiceRecord.getDocStatus());
+
+		return customsInvoice.toBuilder()
+				.docAction(docAction)
+				.docStatus(docStatus)
+				.build();
 	}
 
 }

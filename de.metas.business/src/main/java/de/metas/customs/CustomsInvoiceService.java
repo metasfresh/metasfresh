@@ -17,7 +17,6 @@ import com.google.common.collect.SetMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
-import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -86,21 +85,21 @@ public class CustomsInvoiceService
 	{
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-		final CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
+		CustomsInvoice customsInvoice = createAndProcessCustomsInvoice(customsInvoiceRequest);
 
 		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
+
 		if (customsInvoiceRequest.isDoComplete())
 		{
 			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-		}
 
-		CustomsInvoiceUserNotificationsProducer.newInstance()
-				.notifyGenerated(customsInvoice);
+			customsInvoice = customsInvoiceRepo.updateDocActionAndStatus(customsInvoice);
+		}
 
 		return customsInvoice;
 	}
 
-	private CustomsInvoice createCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
+	private CustomsInvoice createAndProcessCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
 	{
 
 		final SetMultimap<ProductId, InOutAndLineId> linesToExportMap = customsInvoiceRequest.getLinesToExportMap();
@@ -207,6 +206,11 @@ public class CustomsInvoiceService
 				currencyId.getRepoId(),
 				Env.getAD_Client_ID(),
 				Env.getOrgId().getRepoId());
+
+		if (shipmentLinePriceConverted == null)
+		{
+			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyBL);
+		}
 
 		return Money.of(shipmentLinePriceConverted, currencyId);
 
