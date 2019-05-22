@@ -15,6 +15,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -339,7 +341,9 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final AttributeId attributeId)
+	public I_M_AttributeInstance retrieveAttributeInstance(
+			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
+			final AttributeId attributeId)
 	{
 		if (attributeSetInstance == null)
 		{

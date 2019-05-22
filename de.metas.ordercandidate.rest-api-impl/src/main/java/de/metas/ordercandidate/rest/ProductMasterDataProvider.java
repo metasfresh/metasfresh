@@ -19,10 +19,10 @@ import de.metas.ordercandidate.rest.exceptions.ProductNotFoundException;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -147,10 +147,9 @@ public class ProductMasterDataProvider
 				productType = null;
 				break;
 		}
+		productRecord.setProductType(productType);
 
 		productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
-
-		productRecord.setProductType(productType);
 
 		final UomId uomId = uomsRepo.getUomIdByX12DE355(jsonProductInfo.getUomCode());
 		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
