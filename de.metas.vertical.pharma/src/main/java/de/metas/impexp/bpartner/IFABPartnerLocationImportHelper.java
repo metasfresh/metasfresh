@@ -189,7 +189,6 @@ import lombok.experimental.UtilityClass;
 		@Builder(builderMethodName = "builder")
 		public Address(int counrytId, String city, String address1, String address2, String postal, String pobox, int bpLocationId)
 		{
-			Check.assume(counrytId > 0, "CountryId shall be greater then 0!");
 			this.counrytId = counrytId;
 			this.city = city == null ? "" : city;
 			this.address1 = address1 == null ? "" : address1;
@@ -270,7 +269,10 @@ import lombok.experimental.UtilityClass;
 		location.setAddress2(buildAddress2(importRecord));
 		location.setPostal(importRecord.getb00plzzu1());
 		location.setCity(importRecord.getb00ortzu());
-		location.setC_Country_ID(importRecord.getC_Country_ID());
+		if (importRecord.getC_Country_ID() > 0)
+		{
+			location.setC_Country_ID(importRecord.getC_Country_ID());
+		}
 		location.setPOBox(buildPOBox(importRecord));
 		InterfaceWrapperHelper.save(location);
 	}
