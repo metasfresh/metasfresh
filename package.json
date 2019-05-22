@@ -5,6 +5,7 @@
     "build-prod": "webpack --config webpack.prod.js --bail --display-error-details",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test > /dev/null",
     "lint": "eslint .",
+    "lintfix": "eslint . --fix",
     "start": "node server.js",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",

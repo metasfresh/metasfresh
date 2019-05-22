@@ -18,7 +18,7 @@ class ModalContextShortcuts extends Component {
         return true;
       }
 
-      return false;
+      return true;
     },
     CANCEL: event => {
       event.preventDefault();
