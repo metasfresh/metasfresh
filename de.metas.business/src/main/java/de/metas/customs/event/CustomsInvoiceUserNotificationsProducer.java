@@ -3,12 +3,13 @@ package de.metas.customs.event;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.customs.CustomsInvoice;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.event.Topic;
 import de.metas.event.Type;
@@ -32,11 +33,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -57,15 +58,14 @@ public class CustomsInvoiceUserNotificationsProducer
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-	/** M_Inventory internal use */
-	private static final int WINDOW_CUSTOMS_INVOICE = 540643; // FIXME: HARDCODED
+	private static final AdWindowId WINDOW_CUSTOMS_INVOICE = AdWindowId.ofRepoId(540643); // FIXME: HARDCODED
 	private static final String MSG_Event_CustomsInvoiceGenerated = "Event_CustomsInvoiceGenerated";
 
 	private CustomsInvoiceUserNotificationsProducer()
 	{
 	}
 
-	public CustomsInvoiceUserNotificationsProducer notifyGenerated(final Collection<? extends I_C_Customs_Invoice> customInvoices)
+	public CustomsInvoiceUserNotificationsProducer notifyGenerated(final Collection<CustomsInvoice> customInvoices)
 	{
 		if (customInvoices == null || customInvoices.isEmpty())
 		{
@@ -79,15 +79,15 @@ public class CustomsInvoiceUserNotificationsProducer
 		return this;
 	}
 
-	public final CustomsInvoiceUserNotificationsProducer notifyGenerated(@NonNull final I_C_Customs_Invoice customsInvoice)
+	public final CustomsInvoiceUserNotificationsProducer notifyGenerated(@NonNull final CustomsInvoice customsInvoice)
 	{
 		notifyGenerated(ImmutableList.of(customsInvoice));
 		return this;
 	}
 
-	private final UserNotificationRequest createUserNotification(@NonNull final I_C_Customs_Invoice customsInvoice)
+	private final UserNotificationRequest createUserNotification(@NonNull final CustomsInvoice customsInvoice)
 	{
-		final TableRecordReference customsInvoiceRef = TableRecordReference.of(customsInvoice);
+		final TableRecordReference customsInvoiceRef = TableRecordReference.of(I_C_Customs_Invoice.Table_Name, customsInvoice.getId());
 
 		return newUserNotificationRequest()
 				.recipientUserId(getNotificationRecipientUserId(customsInvoice))
@@ -104,25 +104,19 @@ public class CustomsInvoiceUserNotificationsProducer
 				.topic(EVENTBUS_TOPIC);
 	}
 
-	private final UserId getNotificationRecipientUserId(final I_C_Customs_Invoice customsInvoice)
+	private final UserId getNotificationRecipientUserId(final CustomsInvoice customsInvoice)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
 		if (docActionBL.isDocumentReversedOrVoided(customsInvoice))
 		{
-			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
-			if (currentUserId > 0)
-			{
-				return UserId.ofRepoId(currentUserId);
-			}
-
-			return UserId.ofRepoId(customsInvoice.getUpdatedBy()); // last updated
+			return customsInvoice.getLastUpdatedBy();
 		}
 		//
 		// Fallback: notify only the creator
 		else
 		{
-			return UserId.ofRepoId(customsInvoice.getCreatedBy());
+			return customsInvoice.getCreatedBy();
 		}
 	}
 

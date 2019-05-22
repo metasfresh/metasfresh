@@ -72,10 +72,9 @@ public class CustomsInvoiceRepository
 		return docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
 	}
 
-	public I_C_Customs_Invoice save(final CustomsInvoice customsInvoice)
+	I_C_Customs_Invoice save(@NonNull final CustomsInvoice customsInvoice)
 	{
 		final I_C_Customs_Invoice customsInvoiceRecord;
-
 		final HashMap<CustomsInvoiceLineId, I_C_Customs_Invoice_Line> existingLineRecords;
 
 		if (customsInvoice.getId() == null)
@@ -117,6 +116,8 @@ public class CustomsInvoiceRepository
 
 		final CustomsInvoiceId customsInvoiceId = CustomsInvoiceId.ofRepoId(customsInvoiceRecord.getC_Customs_Invoice_ID());
 		customsInvoice.setId(customsInvoiceId);
+		customsInvoice.setCreatedBy(UserId.ofRepoId(customsInvoiceRecord.getCreatedBy()));
+		customsInvoice.setLastUpdatedBy(UserId.ofRepoId(customsInvoiceRecord.getUpdatedBy()));
 
 		for (final CustomsInvoiceLine line : customsInvoice.getLines())
 		{

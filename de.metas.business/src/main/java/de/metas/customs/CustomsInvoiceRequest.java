@@ -1,10 +1,10 @@
 package de.metas.customs;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
+
+import com.google.common.collect.SetMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -52,7 +52,7 @@ public class CustomsInvoiceRequest
 	CurrencyId currencyId;
 
 	@NonNull
-	Map<ProductId, List<InOutAndLineId>> linesToExportMap;
+	SetMultimap<ProductId, InOutAndLineId> linesToExportMap;
 
 	@NonNull
 	LocalDate invoiceDate;
@@ -63,6 +63,5 @@ public class CustomsInvoiceRequest
 	@NonNull
 	String documentNo;
 
-	boolean isComplete;
-
+	boolean doComplete;
 }

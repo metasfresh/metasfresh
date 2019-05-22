@@ -2,8 +2,7 @@ package de.metas.customs.process;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -14,6 +13,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
@@ -82,9 +82,11 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 		final List<InOutAndLineId> linesToExport = retrieveLinesToExport();
 
-		final Map<ProductId, List<InOutAndLineId>> linesToExportMap = linesToExport
+		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
 				.stream()
-				.collect(Collectors.groupingBy(inoutAndLineId -> getProductId(inoutAndLineId))); // we asserted earlier that each HU has a locator
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						this::getProductId, // keyFunction,
+						Function.identity()));// valueFunction
 
 		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(p_C_BPartner_ID, p_C_BPartner_Location_ID);
 		final UserId userId = UserId.ofRepoId(p_AD_User_ID);
@@ -103,7 +105,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 				.currencyId(currencyId)
 				.linesToExportMap(linesToExportMap)
 				.invoiceDate(invoiceDate)
-				.isComplete(p_IsComplete)
+				.doComplete(p_IsComplete)
 				.documentNo(documentNo)
 				.docTypeId(docTypeId)
 				.build();

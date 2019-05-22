@@ -47,6 +47,10 @@ public class CustomsInvoice
 {
 	@NonFinal
 	CustomsInvoiceId id;
+	@NonFinal
+	UserId createdBy;
+	@NonFinal
+	UserId lastUpdatedBy;
 
 	@NonNull
 	String documentNo;

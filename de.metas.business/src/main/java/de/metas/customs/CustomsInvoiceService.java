@@ -2,8 +2,7 @@ package de.metas.customs;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Customs_Invoice;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
@@ -88,14 +88,13 @@ public class CustomsInvoiceService
 		final CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
 
 		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
-
-		if (customsInvoiceRequest.isComplete())
+		if (customsInvoiceRequest.isDoComplete())
 		{
 			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
-				.notifyGenerated(customsInvoiceRecord);
+				.notifyGenerated(customsInvoice);
 
 		return customsInvoice;
 	}
@@ -103,7 +102,7 @@ public class CustomsInvoiceService
 	private CustomsInvoice createCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
 	{
 
-		final Map<ProductId, List<InOutAndLineId>> linesToExportMap = customsInvoiceRequest.getLinesToExportMap();
+		final SetMultimap<ProductId, InOutAndLineId> linesToExportMap = customsInvoiceRequest.getLinesToExportMap();
 
 		final CurrencyId currencyId = customsInvoiceRequest.getCurrencyId();
 
@@ -140,8 +139,9 @@ public class CustomsInvoiceService
 		return customsInvoice;
 	}
 
-	private CustomsInvoiceLine createCustomsInvoiceLine(final ProductId productId,
-			final List<InOutAndLineId> shipmentLinesForProducts,
+	private CustomsInvoiceLine createCustomsInvoiceLine(
+			final ProductId productId,
+			final Collection<InOutAndLineId> shipmentLinesForProducts,
 			final CurrencyId currencyId)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);

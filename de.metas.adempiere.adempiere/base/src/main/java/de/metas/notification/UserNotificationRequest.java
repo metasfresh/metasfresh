@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
@@ -216,6 +217,11 @@ public class UserNotificationRequest
 		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
 		{
 			return builder().record(record).adWindowId(adWindowId).build();
+		}
+
+		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, @NonNull final AdWindowId adWindowId)
+		{
+			return builder().record(record).adWindowId(adWindowId.getRepoId()).build();
 		}
 
 		public static TargetRecordAction of(@NonNull final String tableName, final int recordId)
