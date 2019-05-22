@@ -3,7 +3,6 @@ package de.metas.handlingunits.age;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.impl.HUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;

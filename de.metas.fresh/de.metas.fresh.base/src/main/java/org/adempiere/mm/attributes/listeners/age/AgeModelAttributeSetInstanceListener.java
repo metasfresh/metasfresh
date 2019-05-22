@@ -53,7 +53,7 @@ public class AgeModelAttributeSetInstanceListener implements IModelAttributeSetI
 	}
 
 	@Override
-	public void modelChanged(Object model)
+	public void modelChanged(final Object model)
 	{
 		new AgeAttributeUpdater(model).createASI();
 	}
