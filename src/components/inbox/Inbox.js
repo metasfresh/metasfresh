@@ -109,14 +109,12 @@ class Inbox extends Component {
   };
 
   render() {
-    const { open, inbox, all, close, modalVisible, onFocus } = this.props;
+    const { open, inbox, all, close } = this.props;
 
     return (
       <div
         className="js-inbox-wrapper js-not-unselect"
         onKeyDown={e => this.handleKeyDown(e)}
-        onFocus={onFocus}
-        tabIndex={modalVisible ? -1 : 0}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -167,7 +165,6 @@ class Inbox extends Component {
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
   open: PropTypes.bool,
-  onFocus: PropTypes.func,
   modalVisible: PropTypes.bool.isRequired,
   location: PropTypes.object,
   close: PropTypes.func,
@@ -175,9 +172,7 @@ Inbox.propTypes = {
   all: PropTypes.bool,
 };
 
-Inbox.defaultProps = {
-  onFocus: () => {},
-};
+Inbox.defaultProps = {};
 
 const routerInbox = withRouter(
   connect((state, props) => ({
