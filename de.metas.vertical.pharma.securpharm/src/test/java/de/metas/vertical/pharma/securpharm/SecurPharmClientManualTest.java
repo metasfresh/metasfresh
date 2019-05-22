@@ -23,31 +23,31 @@
 
 package de.metas.vertical.pharma.securpharm;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
+import java.util.Properties;
 
-import org.junit.Test;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.Ignore;
 
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 
-public class SecurPharmClientTest
+@Ignore
+public class SecurPharmClientManualTest
 {
-	// @Ignore
-	@Test
-	public void testClient()
+	public static void main(final String[] args)
 	{
-		// get real data when testing
-		final SecurPharmConfig config = SecurPharmConfig.builder()
-				.securPharmConfigId(SecurPharmConfigId.ofRepoId(1))
-				.applicationUUID("apt1031993")
-				.authBaseUrl("https://auth.ngdalabor.de/")
-				.pharmaAPIBaseUrl("https://securpharm.ngdalabor.de/apserver/api")
-				.certificatePath("D:\\downloads\\apt1031993.p12")
-				.supportUserId(UserId.METASFRESH)
-				.keystorePassword("1lAAyn")
-				.build();
+		new SecurPharmClientManualTest().run();
+	}
+
+	private void run()
+	{
+		final SecurPharmConfig config = getConfig();
 		final SecurPharmClient client = SecurPharmClient.createAndAuthenticate(config);
 
 		// final String GS = "";
@@ -56,10 +56,32 @@ public class SecurPharmClientTest
 
 		String code = "Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E";
 		code = new String(Base64.getDecoder().decode(code.getBytes()));
-		//System.out.println("code: " + new String(Base64.getDecoder().decode(code.getBytes())));
+		// System.out.println("code: " + new String(Base64.getDecoder().decode(code.getBytes())));
 		final SecurPharmProductDataResult productData = client.decodeDataMatrix(code);
 		System.out.println("response: " + productData);
 
+	}
+
+	private SecurPharmConfig getConfig()
+	{
+		try (InputStream in = new FileInputStream("./sandbox.properties"))
+		{
+			final Properties props = new Properties();
+			props.load(in);
+			return SecurPharmConfig.builder()
+					.securPharmConfigId(SecurPharmConfigId.ofRepoId(1))
+					.applicationUUID(props.getProperty("applicationUUID"))
+					.authBaseUrl(props.getProperty("authBaseUrl"))
+					.pharmaAPIBaseUrl(props.getProperty("pharmaAPIBaseUrl"))
+					.certificatePath(props.getProperty("certificatePath"))
+					.supportUserId(UserId.METASFRESH)
+					.keystorePassword(props.getProperty("keystorePassword"))
+					.build();
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException(e);
+		}
 	}
 
 }

@@ -38,3 +38,4 @@ de.metas.report/report-service/application.properties
 #Ignore IDEA files
 *.iml
 **/.idea
+de.metas.vertical.pharma.securpharm/sandbox.properties
