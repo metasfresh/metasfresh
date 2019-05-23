@@ -39,7 +39,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 
 /**
@@ -103,7 +102,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
 	 *
 	 * @param columnName
-	 * @param values
+	 * @param values may also be {@link RepoIdAware}s
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Collection<? extends Object> values)
 	{
