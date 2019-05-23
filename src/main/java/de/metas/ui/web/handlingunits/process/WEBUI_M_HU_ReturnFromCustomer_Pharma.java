@@ -43,10 +43,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.securpharm.SecurPharmConstants;
 import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.process.M_HU_SecurpharmScan;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
@@ -58,7 +58,7 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 	@Autowired
 	private SecurPharmService securPharmService;
 
-	@Param(mandatory = true, parameterName = SecurPharmConstants.SCAN_PROCESS_DATAMATRIX_PARAM)
+	@Param(mandatory = true, parameterName = M_HU_SecurpharmScan.PARAM_DataMatrix)
 	private String dataMatrix;
 
 	@Override
