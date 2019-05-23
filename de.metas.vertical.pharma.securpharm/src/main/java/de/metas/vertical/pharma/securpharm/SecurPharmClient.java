@@ -53,6 +53,8 @@ import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData.SecurPharmRequestLogDataBuilder;
 import de.metas.vertical.pharma.securpharm.model.schema.APIResponse;
+import de.metas.vertical.pharma.securpharm.model.schema.Package;
+import de.metas.vertical.pharma.securpharm.model.schema.Product;
 import de.metas.vertical.pharma.securpharm.model.schema.State;
 import lombok.Getter;
 import lombok.NonNull;
@@ -102,7 +104,7 @@ public class SecurPharmClient
 	{
 		final String clientTrx = UUID.randomUUID().toString();
 		final UriComponentsBuilder url = UriComponentsBuilder.fromPath(API_RELATIVE_PATH_UIS)
-				.path(Base64.getEncoder().encodeToString(dataMatrix.getBytes()))
+				.path(encodeBase64(dataMatrix))
 				.queryParam(QUERY_PARAM_CTX, clientTrx)
 				.queryParam(QUERY_PARAM_SID, config.getApplicationUUID());
 
@@ -153,29 +155,39 @@ public class SecurPharmClient
 
 	private static ProductData extractProductDataFromAPIResponse(final APIResponse apiResponse)
 	{
-		final byte[] decodedSerialNumber = Base64.getDecoder().decode(apiResponse.getPack().getSerialNumber());
-		final byte[] decodedLot = Base64.getDecoder().decode(apiResponse.getProd().getLot());
+		final Product product = apiResponse.getProd();
+		final Package pack = apiResponse.getPack();
+
 		final ProductData.ProductDataBuilder productDataBuilder = ProductData.builder()
-				.lot(new String(decodedLot))
-				.productCode(apiResponse.getProd().getProductCode())
-				// TODO check from where to set this (response?)
-				.productCodeType(ProductCodeType.GTIN)
-				.expirationDate(apiResponse.getProd().getExpirationDate().toLocalDate())
-				.serialNumber(new String(decodedSerialNumber));
-		if (apiResponse.getPack().getState() == State.ACTIVE)
+				.lot(decodeBase64(product.getLot()))
+				.productCode(product.getProductCode())
+				.productCodeType(ProductCodeType.ofCode(product.getPcs()))
+				.expirationDate(product.getExpirationDate().toLocalDate())
+				.serialNumber(decodeBase64(pack.getSerialNumber()));
+		if (pack.getState() == State.ACTIVE)
 		{
 			productDataBuilder.active(true);
 		}
 		else
 		{
 			productDataBuilder.active(false);
-			if (apiResponse.getPack().getReasons() != null)
+			if (pack.getReasons() != null)
 			{
-				productDataBuilder.inactiveReason(String.join(DELIMITER, apiResponse.getPack().getReasons()));
+				productDataBuilder.inactiveReason(String.join(DELIMITER, pack.getReasons()));
 			}
 		}
 
 		return productDataBuilder.build();
+	}
+
+	private static String decodeBase64(final String str)
+	{
+		return new String(Base64.getDecoder().decode(str));
+	}
+
+	private static String encodeBase64(final String str)
+	{
+		return new String(Base64.getEncoder().encode(str.getBytes()));
 	}
 
 	private <T> T fromJsonString(final String json, final Class<T> type)
@@ -184,9 +196,9 @@ public class SecurPharmClient
 		{
 			return jsonObjectMapper.readValue(json, type);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			throw new AdempiereException("Failed converting JSON to " + type.getSimpleName(), e)
+			throw new AdempiereException("Failed converting JSON to " + type.getSimpleName(), ex)
 					.appendParametersToMessage()
 					.setParameter("json", json);
 		}
@@ -272,16 +284,13 @@ public class SecurPharmClient
 			@NonNull final ProductData productData,
 			@NonNull final DecommissionAction action)
 	{
-		final String encodedSerialNumber = Base64.getEncoder().encodeToString(productData.getSerialNumber().getBytes());
-		final String encodedLot = Base64.getEncoder().encodeToString(productData.getLot().getBytes());
-
 		return UriComponentsBuilder.fromPath(API_RELATIVE_PATH_PRODUCTS)
 				.path(productData.getProductCode())
 				.path(API_RELATIVE_PATH_PACKS)
-				.path(encodedSerialNumber)
+				.path(encodeBase64(productData.getSerialNumber()))
 				.queryParam(QUERY_PARAM_CTX, UUID.randomUUID().toString())
 				.queryParam(QUERY_PARAM_SID, config.getApplicationUUID())
-				.queryParam(QUERY_PARAM_LOT, encodedLot)
+				.queryParam(QUERY_PARAM_LOT, encodeBase64(productData.getLot()))
 				.queryParam(QUERY_PARAM_EXP, productData.getExpirationDate())
 				.queryParam(QUERY_PARAM_PCS, productData.getProductCodeType().getCode())
 				.queryParam(QUERY_PARAM_ACT, action.getCode());
