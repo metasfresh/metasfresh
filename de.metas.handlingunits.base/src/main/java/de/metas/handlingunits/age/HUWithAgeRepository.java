@@ -47,6 +47,6 @@ public class HUWithAgeRepository
 				.addHUStatusesToInclude(validHuStatuses)
 				.createQueryBuilder()
 				.create()
-				.stream();
+				.iterateAndStream();
 	}
 }

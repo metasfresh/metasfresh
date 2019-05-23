@@ -23,5 +23,5 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 UPDATE AD_Scheduler SET AD_Process_ID=541135,Updated=TO_TIMESTAMP('2019-05-21 14:41:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550053
 ;
 
--- @TheBestPessimist W/O this the scheduled process didn't work with customer data :(
-UPDATE ad_scheduler SET ad_client_id=1000000 WHERE ad_scheduler_id = 550053;
+-- [TheBestPessimist]: W/O this the scheduled process didn't work with customer data :(
+UPDATE ad_scheduler SET ad_client_id=1000000, AD_Role_ID=1000000 WHERE ad_scheduler_id = 550053;
