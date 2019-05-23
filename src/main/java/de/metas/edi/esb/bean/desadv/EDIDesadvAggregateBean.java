@@ -1,5 +1,19 @@
 package de.metas.edi.esb.bean.desadv;
 
+import static de.metas.edi.esb.commons.Util.formatNumber;
+import static de.metas.edi.esb.commons.Util.toDate;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.apache.camel.Exchange;
+import org.milyn.payload.JavaSource;
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -10,12 +24,12 @@ package de.metas.edi.esb.bean.desadv;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,26 +39,18 @@ package de.metas.edi.esb.bean.desadv;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerLocationType;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvType;
-import de.metas.edi.esb.pojo.desadv.compudata.*;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.pojo.desadv.compudata.H000;
+import de.metas.edi.esb.pojo.desadv.compudata.H100;
+import de.metas.edi.esb.pojo.desadv.compudata.P050;
+import de.metas.edi.esb.pojo.desadv.compudata.P060;
+import de.metas.edi.esb.pojo.desadv.compudata.P100;
+import de.metas.edi.esb.pojo.desadv.compudata.P102;
 import de.metas.edi.esb.pojo.desadv.compudata.join.JP060P100;
 import de.metas.edi.esb.route.exports.EDIDesadvRoute;
-import org.apache.camel.Exchange;
-import org.milyn.payload.JavaSource;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import static de.metas.edi.esb.commons.Util.formatNumber;
-import static de.metas.edi.esb.commons.Util.toDate;
 
 public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 {

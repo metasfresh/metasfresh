@@ -23,17 +23,18 @@
 
 package de.metas.edi.esb.bean.desadv;
 
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvType;
-import de.metas.edi.esb.route.exports.EDIDesadvRoute;
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
+import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.util.List;
 
-import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
+import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
+
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.route.exports.EDIDesadvRoute;
 
 public class EDIDesadvValidation
 {

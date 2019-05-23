@@ -10,12 +10,12 @@ package de.metas.edi.esb.processor.feedback.helper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,10 +36,10 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIExportStatusEnum;
-import de.metas.edi.esb.jaxb.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.ReplicationModeEnum;
-import de.metas.edi.esb.jaxb.ReplicationTypeEnum;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExportStatusEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.processor.exception.HeaderNotFoundException;
 
 public final class EDIXmlFeedbackHelper
@@ -162,9 +162,9 @@ public final class EDIXmlFeedbackHelper
 
 	/**
 	 * Log exception and stop exchange.
-	 * 
+	 *
 	 * @see {@link EDIXmlFeedbackHelper#logExceptionAndStopExchange(Exchange, Exception, String)}
-	 * 
+	 *
 	 * @param exchange
 	 * @param e
 	 */
@@ -175,7 +175,7 @@ public final class EDIXmlFeedbackHelper
 
 	/**
 	 * Log exception and stop exchange.
-	 * 
+	 *
 	 * @param exchange
 	 * @param e
 	 * @param errorMessage

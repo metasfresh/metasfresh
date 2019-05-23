@@ -10,12 +10,12 @@ package de.metas.edi.esb.route.imports;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,21 +37,21 @@ import org.apache.camel.Processor;
 import org.apache.camel.spi.DataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.XLSImpCOLCandType;
 import de.metas.edi.esb.jaxb.XLSImpCOLCandTypeBuilder;
+import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import de.metas.edi.esb.xls.XLSConfigurationContext;
 import de.metas.edi.esb.xls.XLS_OLCand_Row;
 import de.metas.edi.esb.xls.XLS_OLCand_Row_Builder;
 import de.metas.edi.esb.xls.XlsToMapListConverter;
-import org.springframework.stereotype.Component;
 
 /**
  * Camel Route for importing customer's Excel files to order candidates.
  * It reads excel files from a configured folder and sends them to ADempiere amqp endpoint as {@link XLSImpCOLCandType} messages.
- * 
+ *
  * The data flow is:
  * <ul>
  * <li>from: Excel file (from {@link #EP_OLCAND_INPUT_ORDERS})
@@ -59,7 +59,7 @@ import org.springframework.stereotype.Component;
  * <li> {@link XLSImpCOLCandType} (XML representation of an excel row/C_OLCand that will be sent to adempiere)
  * <li>to: {@link Constants#EP_AMQP_TO_AD}
  * </ul>
- * 
+ *
  * @author tsa
  * @task 08839
  */

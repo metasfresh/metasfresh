@@ -10,12 +10,12 @@ package de.metas.edi.esb.bean.invoice;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,15 +43,15 @@ import org.milyn.payload.JavaSource;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.CCreditMemoReasonEnum;
-import de.metas.edi.esb.jaxb.EDICctop000VType;
-import de.metas.edi.esb.jaxb.EDICctop111VType;
-import de.metas.edi.esb.jaxb.EDICctop119VType;
-import de.metas.edi.esb.jaxb.EDICctop120VType;
-import de.metas.edi.esb.jaxb.EDICctop140VType;
-import de.metas.edi.esb.jaxb.EDICctop901991VType;
-import de.metas.edi.esb.jaxb.EDICctopInvoic500VType;
-import de.metas.edi.esb.jaxb.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfresh.CCreditMemoReasonEnum;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop000VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop111VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop901991VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.pojo.invoice.cctop.Cctop000V;
 import de.metas.edi.esb.pojo.invoice.cctop.Cctop111V;
 import de.metas.edi.esb.pojo.invoice.cctop.Cctop119V;
@@ -71,7 +71,7 @@ public class EDICctopInvoiceBean
 	 * <li>IN: {@link EDICctopInvoicVType}</li>
 	 * <li>OUT: {@link CctopInvoice}</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param exchange
 	 */
 	public void createEDIData(final Exchange exchange)
@@ -255,7 +255,7 @@ public class EDICctopInvoiceBean
 	{
 		return str != null && !str.trim().isEmpty();
 	}
-	
+
 	private List<Cctop119V> createCctop119VList(final List<EDICctop119VType> xmlCctop119VList, final DecimalFormat decimalFormat)
 	{
 		final List<Cctop119V> cctop119VList = new ArrayList<Cctop119V>();

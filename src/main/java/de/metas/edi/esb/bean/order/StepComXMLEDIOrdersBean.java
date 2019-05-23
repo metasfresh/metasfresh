@@ -1,73 +1,86 @@
 /*
  *
- *  * #%L
- *  * %%
- *  * Copyright (C) <current year> metas GmbH
- *  * %%
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as
- *  * published by the Free Software Foundation, either version 2 of the
- *  * License, or (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public
- *  * License along with this program. If not, see
- *  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- *  * #L%
+ * * #%L
+ * * %%
+ * * Copyright (C) <current year> metas GmbH
+ * * %%
+ * * This program is free software: you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as
+ * * published by the Free Software Foundation, either version 2 of the
+ * * License, or (at your option) any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public
+ * * License along with this program. If not, see
+ * * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * * #L%
  *
  */
 
 package de.metas.edi.esb.bean.order;
 
-import de.metas.edi.esb.pojo.common.MeasurementUnit;
-import de.metas.edi.esb.pojo.order.*;
-import de.metas.edi.esb.pojo.order.compudata.H000;
-import de.metas.edi.esb.pojo.order.compudata.H100;
-import de.metas.edi.esb.pojo.order.compudata.P100;
-import de.metas.edi.esb.pojo.order.qualifier.*;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.util.CollectionUtils;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
+import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
+
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.jaxb.stepcom.order.DETAILXbest;
+import de.metas.edi.esb.jaxb.stepcom.order.DPRDE1;
+import de.metas.edi.esb.jaxb.stepcom.order.DPRIN1;
+import de.metas.edi.esb.jaxb.stepcom.order.DQUAN1;
+import de.metas.edi.esb.jaxb.stepcom.order.Document;
+import de.metas.edi.esb.jaxb.stepcom.order.HADRE1;
+import de.metas.edi.esb.jaxb.stepcom.order.HDATE1;
+import de.metas.edi.esb.jaxb.stepcom.order.HEADERXbest;
+import de.metas.edi.esb.jaxb.stepcom.order.Xbest4H;
+import de.metas.edi.esb.pojo.common.MeasurementUnit;
+import de.metas.edi.esb.pojo.order.compudata.H000;
+import de.metas.edi.esb.pojo.order.compudata.H100;
+import de.metas.edi.esb.pojo.order.compudata.P100;
+import de.metas.edi.esb.pojo.order.qualifier.AddressQual;
+import de.metas.edi.esb.pojo.order.qualifier.DateQual;
+import de.metas.edi.esb.pojo.order.qualifier.ProductDescQual;
+import de.metas.edi.esb.pojo.order.qualifier.ProductQual;
+import de.metas.edi.esb.pojo.order.qualifier.QuantityQual;
+
+public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 {
 
-	@Override protected List<OrderEDI> getEDIDocumentObjects(List<Object> orders)
+	@Override
+	protected List<OrderEDI> getEDIDocumentObjects(final List<Object> orders)
 	{
 		final List<OrderEDI> ediDocuments = new ArrayList<>();
 
 		final OrderEDI orderEDI = new OrderEDI(new H000());
 		ediDocuments.add(orderEDI);
-		Document ordersDocument = (Document)orders.get(0);
+		final Document ordersDocument = (Document)orders.get(0);
 		for (final Xbest4H order : ordersDocument.getXbest4H())
 		{
 			final HEADERXbest header = order.getHEADER();
-			H100 h100 = mapToH100(header);
+			final H100 h100 = mapToH100(header);
 
 			final OrderHeader orderHeader = new OrderHeader(h100);
 			orderEDI.addOrderHeader(orderHeader);
 			for (final DETAILXbest detail : header.getDETAIL())
 			{
-
 				final P100 p100 = mapToP100(header, detail);
 
 				final OrderLine orderLine = new OrderLine(p100);
 				orderHeader.addOrderLine(orderLine);
-
 			}
 		}
 
 		return ediDocuments;
 	}
 
-	private P100 mapToP100(HEADERXbest header, DETAILXbest detail)
+	private P100 mapToP100(final HEADERXbest header, final DETAILXbest detail)
 	{
 		final P100 p100 = new P100();
 		p100.setPositionNo(detail.getLINENUMBER());
@@ -75,6 +88,8 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		BigDecimal cutuQty = BigDecimal.ZERO;
 		BigDecimal orderQty = BigDecimal.ZERO;
 		String orderUnit = StringUtils.EMPTY;
+
+		// iterate the current line's quantity details
 		for (final DQUAN1 dquan1 : detail.getDQUAN1())
 		{
 			final QuantityQual quantityQual = QuantityQual.valueOf(dquan1.getQUANTITYQUAL());
@@ -82,18 +97,17 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 			{
 				case CUTU:
 				{
-					final String quantityStr = dquan1.getQUANTITY();
-					cutuQty = cutuQty.add(new BigDecimal(quantityStr));
+					cutuQty = cutuQty.add(Util.toBigDecimal(dquan1.getQUANTITY()));
 					break;
 				}
 				case ORDR:
 				{
-					final String quantityStr = dquan1.getQUANTITY();
-					orderQty = orderQty.add(new BigDecimal(quantityStr));
-					//using measurement unit from ORDR, supposing CUTU will not have measurement unit for now
-					MeasurementUnit measurementUnit = MeasurementUnit.valueOf(dquan1.getMEASUREMENTUNIT());
-					if (measurementUnit != null)
+					orderQty = orderQty.add(Util.toBigDecimal(dquan1.getQUANTITY()));
+
+					// using measurement unit from ORDR, supposing CUTU will not have measurement unit for now
+					if (!Util.isEmpty(dquan1.getMEASUREMENTUNIT()))
 					{
+						final MeasurementUnit measurementUnit = MeasurementUnit.valueOf(dquan1.getMEASUREMENTUNIT());
 						orderUnit = measurementUnit.getCuom();
 					}
 					break;
@@ -108,7 +122,7 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		p100.setOrderQty(orderQty.toString());
 		p100.setOrderUnit(orderUnit);
 
-		//using only first price
+		// using only first price
 		BigDecimal price = BigDecimal.ZERO;
 		if (!CollectionUtils.isEmpty(detail.getDPRIC1()))
 		{
@@ -128,7 +142,7 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		}
 
 		// Product information
-		for (DPRIN1 dprin1 : detail.getDPRIN1())
+		for (final DPRIN1 dprin1 : detail.getDPRIN1())
 		{
 			final ProductQual productQual = ProductQual.valueOf(dprin1.getPRODUCTQUAL());
 			if (productQual == ProductQual.EANT)
@@ -166,9 +180,9 @@ public class XMLEDIOrdersBean extends AbstractEDIOrdersBean
 		return p100;
 	}
 
-	private H100 mapToH100(HEADERXbest header)
+	private H100 mapToH100(final HEADERXbest header)
 	{
-		H100 h100 = new H100();
+		final H100 h100 = new H100();
 
 		for (final HADRE1 hadre1 : header.getHADRE1())
 		{

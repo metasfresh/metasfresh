@@ -10,12 +10,12 @@ package de.metas.edi.esb.bean.desadv;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,15 +43,15 @@ import org.milyn.payload.JavaSource;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerLocationType;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerProductVType;
-import de.metas.edi.esb.jaxb.EDIExpCBPartnerType;
-import de.metas.edi.esb.jaxb.EDIExpCOrderLineType;
-import de.metas.edi.esb.jaxb.EDIExpCOrderType;
-import de.metas.edi.esb.jaxb.EDIExpMIOLHUIPASSCC18VType;
-import de.metas.edi.esb.jaxb.EDIExpMInOutLineType;
-import de.metas.edi.esb.jaxb.EDIExpMInOutType;
-import de.metas.edi.esb.jaxb.EDIMInOutOverdeliveryCOrderLineVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerProductVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCOrderLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpCOrderType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpMIOLHUIPASSCC18VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpMInOutLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpMInOutType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIMInOutOverdeliveryCOrderLineVType;
 import de.metas.edi.esb.pojo.desadv.compudata.H000;
 import de.metas.edi.esb.pojo.desadv.compudata.H100;
 import de.metas.edi.esb.pojo.desadv.compudata.P050;
@@ -187,7 +187,7 @@ public class EDIDesadvSingleBean extends AbstractEDIDesadvCommonBean
 				validateString(bppList.get(0).getProductNo(), "@FillMandatory@ @C_BPartner_Product@=" + bppList.get(0).getProductNo() + " @ProductNo@"); // FIXME (get C_BPP identifier)
 				validateString(bppList.get(0).getUPC(), "@FillMandatory@ @C_BPartner_Product@=" + bppList.get(0).getProductNo() + " @UPC@");
 			}
-			
+
 			if (xmlInOutLine.getMovementQty().signum() != 0)
 			{
 				// no point checking for a SSCC if there is no HU shipped

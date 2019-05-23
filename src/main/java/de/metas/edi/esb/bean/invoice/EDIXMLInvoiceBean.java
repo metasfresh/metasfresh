@@ -23,23 +23,72 @@
 
 package de.metas.edi.esb.bean.invoice;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.*;
-import de.metas.edi.esb.pojo.common.MeasurementUnit;
-import de.metas.edi.esb.pojo.invoice.ObjectFactory;
-import de.metas.edi.esb.pojo.invoice.*;
-import de.metas.edi.esb.pojo.invoice.qualifier.*;
-import de.metas.edi.esb.route.AbstractEDIRoute;
-import de.metas.edi.esb.route.exports.XMLInvoiceRoute;
+import static de.metas.edi.esb.commons.Util.formatNumber;
+import static de.metas.edi.esb.commons.Util.isEmpty;
+import static de.metas.edi.esb.commons.Util.normalize;
+import static de.metas.edi.esb.commons.Util.toDate;
+import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
+
+import java.text.DecimalFormat;
+import java.util.Comparator;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
 import org.milyn.payload.JavaSource;
 
-import java.text.DecimalFormat;
-import java.util.Comparator;
-
-import static de.metas.edi.esb.commons.Util.*;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctop901991VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DAMOU1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DETAILXrech;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DPRDE1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DPRIC1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DPRIN1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DQUAN1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DREFE1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.DTAXI1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.Document;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HADRE1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HALCH1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HCURR1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HDATE1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HEADERXrech;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HPAYT1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HREFE1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.HRFAD1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
+import de.metas.edi.esb.jaxb.stepcom.invoice.TAMOU1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.TRAILR;
+import de.metas.edi.esb.jaxb.stepcom.invoice.TTAXI1;
+import de.metas.edi.esb.jaxb.stepcom.invoice.Xrech4H;
+import de.metas.edi.esb.pojo.common.MeasurementUnit;
+import de.metas.edi.esb.pojo.invoice.qualifier.AddressQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.AmountQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.ControlQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.CurrencyQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.DateQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.DocumentFunction;
+import de.metas.edi.esb.pojo.invoice.qualifier.DocumentType;
+import de.metas.edi.esb.pojo.invoice.qualifier.EancomLocationQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.PriceQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.PriceSpecCode;
+import de.metas.edi.esb.pojo.invoice.qualifier.ProductDescLang;
+import de.metas.edi.esb.pojo.invoice.qualifier.ProductDescQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.ProductDescType;
+import de.metas.edi.esb.pojo.invoice.qualifier.ProductQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.QuantityQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.ReferenceQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.TaxQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.TermsQual;
+import de.metas.edi.esb.pojo.invoice.qualifier.TimePeriodType;
+import de.metas.edi.esb.pojo.invoice.qualifier.TimeRelation;
+import de.metas.edi.esb.route.AbstractEDIRoute;
+import de.metas.edi.esb.route.exports.XMLInvoiceRoute;
 
 public class EDIXMLInvoiceBean
 {

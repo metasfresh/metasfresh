@@ -23,25 +23,40 @@
 
 package de.metas.edi.esb.bean.order;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.*;
-import de.metas.edi.esb.pojo.order.compudata.H000;
-import de.metas.edi.esb.pojo.order.compudata.H100;
-import de.metas.edi.esb.pojo.order.compudata.P100;
-import de.metas.edi.esb.route.imports.XMLOrderRoute;
-import org.apache.camel.Body;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExchangeProperty;
-import org.apache.camel.Message;
+import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+import static de.metas.edi.esb.commons.Util.trimString;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
-import static de.metas.edi.esb.commons.Util.trimString;
+import org.apache.camel.Body;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangeProperty;
+import org.apache.camel.Message;
+
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
+import de.metas.edi.esb.jaxb.metasfresh.EDIADOrgLookupBPLGLNVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICBPartnerLookupBPLGLNVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCBPartnerLocationLookupGLNType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCOLCandType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIMHUPIItemProductLookupUPCVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIMProductLookupUPCVType;
+import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+import de.metas.edi.esb.pojo.order.compudata.H000;
+import de.metas.edi.esb.pojo.order.compudata.H100;
+import de.metas.edi.esb.pojo.order.compudata.P100;
+import de.metas.edi.esb.route.AbstractEDIRoute;
 
 public abstract class AbstractEDIOrdersBean
 {
@@ -52,14 +67,14 @@ public abstract class AbstractEDIOrdersBean
 
 	public List<Message> createXMLDocument(@Body final List<Object> ediLines,
 			@ExchangeProperty(value = Exchange.FILE_NAME) final String CamelFileName,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_EDIMessageDatePattern) final String EDIMessageDatePattern,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_ADClientValue) final String ADClientValue,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_ADOrgID) final BigInteger ADOrgID,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_ADInputDataDestination_InternalName) final String ADInputDataDestination_InternalName,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_ADInputDataSourceID) final BigInteger ADInputDataSourceID,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_ADUserEnteredByID) final BigInteger ADUserEnteredByID,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_DELIVERY_RULE) final String DeliveryRule,
-			@ExchangeProperty(value = XMLOrderRoute.EDI_ORDER_DELIVERY_VIA_RULE) final String DeliveryViaRule)
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern) final String EDIMessageDatePattern,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADClientValue) final String ADClientValue,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADOrgID) final BigInteger ADOrgID,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADInputDataDestination_InternalName) final String ADInputDataDestination_InternalName,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADInputDataSourceID) final BigInteger ADInputDataSourceID,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADUserEnteredByID) final BigInteger ADUserEnteredByID,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_DELIVERY_RULE) final String DeliveryRule,
+			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_DELIVERY_VIA_RULE) final String DeliveryViaRule)
 	{
 		final List<OrderEDI> ediDocuments = getEDIDocumentObjects(ediLines);
 

@@ -1,5 +1,16 @@
 package de.metas.edi.esb.route.exports;
 
+import java.text.DecimalFormat;
+
+import javax.xml.namespace.QName;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
+import org.apache.camel.spi.DataFormat;
+import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
+import org.springframework.stereotype.Component;
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -27,22 +38,13 @@ import de.metas.edi.esb.bean.desadv.EDIDesadvAggregateBean;
 import de.metas.edi.esb.bean.desadv.EDIDesadvSingleBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIDesadvFeedbackType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.EDIExpMInOutType;
-import de.metas.edi.esb.jaxb.EDIInOutFeedbackType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpMInOutType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIInOutFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlSuccessFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
-import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
-import org.apache.camel.spi.DataFormat;
-import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
-import org.springframework.stereotype.Component;
-
-import javax.xml.namespace.QName;
-import java.text.DecimalFormat;
 
 @Component
 public class EDIDesadvRoute extends AbstractEDIRoute

@@ -1,5 +1,11 @@
 package de.metas.edi.esb.route.exports;
 
+import java.text.DecimalFormat;
+
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.spi.DataFormat;
+import org.springframework.stereotype.Component;
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -24,16 +30,11 @@ package de.metas.edi.esb.route.exports;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDICctopInvoicVType;
-import de.metas.edi.esb.jaxb.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.EDIExpMInOutType;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpMInOutType;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.spi.DataFormat;
-import org.springframework.stereotype.Component;
-
-import java.text.DecimalFormat;
 
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute

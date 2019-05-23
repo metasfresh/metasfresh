@@ -1,5 +1,33 @@
 package de.metas.edi.esb.commons;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.Normalizer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.apache.camel.CamelContext;
+import org.apache.camel.Message;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.component.properties.PropertiesComponent;
+import org.apache.camel.impl.DefaultMessage;
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -13,37 +41,17 @@ package de.metas.edi.esb.commons;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.ILookupValue;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Message;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.impl.DefaultMessage;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.Normalizer;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 public final class Util
 {
@@ -113,6 +121,15 @@ public final class Util
 
 		final GregorianCalendar cal = xmlCalendar.toGregorianCalendar();
 		return cal.getTime();
+	}
+
+	public static BigDecimal toBigDecimal(final String numberStr)
+	{
+		if (isEmpty(numberStr))
+		{
+			return ZERO;
+		}
+		return new BigDecimal(numberStr.trim());
 	}
 
 	/**
@@ -412,8 +429,6 @@ public final class Util
 	}
 
 	/**
-	 * @param context
-	 * @param propertyKey
 	 * @return String resolved property from context
 	 */
 	public static String resolvePropertyPlaceholders(final CamelContext context, final String propertyKey)
@@ -492,7 +507,8 @@ public final class Util
 			throw new IllegalArgumentException("Supplied lookup class does not contain " + methodName + " method", e);
 		}
 
-		@SuppressWarnings("unchecked") final T result = (T)getterMethod.invoke(object);
+		@SuppressWarnings("unchecked")
+		final T result = (T)getterMethod.invoke(object);
 		return result;
 	}
 
@@ -678,8 +694,7 @@ public final class Util
 
 	public static String mkOwnOrderNumber(final String documentNo)
 	{
-		final String sevenDigitString =
-				documentNo.length() <= 7 ? documentNo : documentNo.substring(documentNo.length() - 7);
+		final String sevenDigitString = documentNo.length() <= 7 ? documentNo : documentNo.substring(documentNo.length() - 7);
 		return "006" + lpadZero(sevenDigitString, 7);
 	}
 

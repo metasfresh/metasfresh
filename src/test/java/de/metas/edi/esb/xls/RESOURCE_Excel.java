@@ -81,7 +81,7 @@ public abstract class RESOURCE_Excel
 		return count_DataRows;
 	}
 
-	/** @return How many data rows which are also valid and can be imported to ADempiere */
+	/** @return How many data rows which are also valid and can be imported to metasfresh */
 	public int getCountValidDataRows()
 	{
 		return count_ValidDataRows;

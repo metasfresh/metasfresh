@@ -10,12 +10,12 @@ package de.metas.edi.esb.jaxb;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,12 +30,21 @@ import java.math.BigInteger;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
+import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 import de.metas.edi.esb.xls.XLSConfigurationContext;
 import de.metas.edi.esb.xls.XLS_OLCand_Row;
 
 /**
  * Builds {@link XLSImpCOLCandType}s.
- * 
+ *
  * @author tsa
  * @task 08839
  */

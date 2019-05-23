@@ -10,12 +10,12 @@ package de.metas.edi.esb.xls;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,9 +34,9 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.EDIImpCCurrencyLookupISOCodeType;
-import de.metas.edi.esb.jaxb.EDIImpCUOMLookupUOMSymbolType;
-import de.metas.edi.esb.jaxb.XLSImpCOLCandType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
+import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 
 /**
  * Defines and asserts expectations on an {@link XLS_OLCand_Row} or {@link XLSImpCOLCandType}.
@@ -236,7 +236,7 @@ public class XLS_OLCand_Row_Expectation
 
 	/**
 	 * Sets Excel row number used to identify the row
-	 * 
+	 *
 	 * @param lineNo
 	 */
 	public XLS_OLCand_Row_Expectation setLineNo(final int lineNo)

@@ -22,7 +22,7 @@ package de.metas.edi.esb.route.imports;
  * #L%
  */
 
-import de.metas.edi.esb.bean.order.EDICompudataOrdersBean;
+import de.metas.edi.esb.bean.order.CompudataEDIOrdersBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.processor.strategy.aggregation.ValidTypeAggregationStrategy;
@@ -140,7 +140,7 @@ public class EDIOrderRoute extends AbstractEDIRoute
 		// @formatter:off
 		ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
-				.split().method(EDICompudataOrdersBean.class, EDICompudataOrdersBean.METHOD_createXMLDocument)
+				.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
 					//
 					// aggregate exchanges back to List after data is sent to ADempiere so that we can move the EDI document to DONE
 					.aggregationStrategy(new EDIAggregationStrategy())

@@ -27,7 +27,7 @@ import de.metas.edi.esb.pojo.order.compudata.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EDICompudataOrdersBean extends AbstractEDIOrdersBean
+public class CompudataEDIOrdersBean extends AbstractEDIOrdersBean
 {
 
 	@Override
