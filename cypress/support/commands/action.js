@@ -1,5 +1,3 @@
-import { getTranslated } from '../utils/utils';
-
 function executeHeaderAction(actionName) {
   cy.get('.header-container .btn-square .meta-icon-more').click();
   cy.get('.subheader-container').should('exist');
@@ -7,7 +5,6 @@ function executeHeaderAction(actionName) {
 }
 
 Cypress.Commands.add('clickHeaderNav', navName => {
-  let name = getTranslated(navName);
   name = navName.toLowerCase().replace(/\s/g, '');
 
   describe('Fire header action with a certain name', function() {

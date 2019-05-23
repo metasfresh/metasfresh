@@ -63,7 +63,7 @@ describe('New sales order test', function() {
           .contains(menuOption)
           .click();
       } else {
-        cy.clickHeaderNav('New');
+        cy.clickHeaderNav(Cypress.messages.window.new);
       }
 
       cy.get('.header-breadcrumb-sitename').should('contain', '<');
