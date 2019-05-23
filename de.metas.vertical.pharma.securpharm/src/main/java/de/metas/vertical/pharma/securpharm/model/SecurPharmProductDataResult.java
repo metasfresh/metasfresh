@@ -25,26 +25,38 @@ package de.metas.vertical.pharma.securpharm.model;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import de.metas.handlingunits.HuId;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 
 @Data
-@NoArgsConstructor
+@FieldDefaults(makeFinal = true)
+@Builder
 public class SecurPharmProductDataResult
 {
 	boolean error;
-	@NonNull
-	private SecurPharmRequestLogData requestLogData;
 
 	@Nullable
 	private ProductData productData;
 
 	@NonNull
+	private SecurPharmRequestLogData requestLogData;
+
+	@Nullable
+	@NonFinal
 	private HuId huId;
 
-	@NonNull
-	private SecurPharmProductDataResultId resultId;
+	@Nullable
+	@NonFinal
+	private SecurPharmProductDataResultId id;
 
+	public TableRecordReference getRecordRef()
+	{
+		return TableRecordReference.of(I_M_Securpharm_Productdata_Result.Table_Name, getId());
+	}
 }

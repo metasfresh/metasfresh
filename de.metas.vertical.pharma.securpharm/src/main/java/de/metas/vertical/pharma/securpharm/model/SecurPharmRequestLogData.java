@@ -23,29 +23,29 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class SecurPharmRequestLogData
 {
 	@NonNull
-	private String requestUrl;
+	String requestUrl;
 
-	private String responseData;
-
-	@NonNull
-	private String clientTransactionID;
-
-	private String serverTransactionID;
+	String responseData;
 
 	@NonNull
-	private LocalDateTime requestTime;
+	String clientTransactionId;
+
+	String serverTransactionId;
 
 	@NonNull
-	private LocalDateTime responseTime;
+	Instant requestTime;
+
+	@NonNull
+	Instant responseTime;
 }

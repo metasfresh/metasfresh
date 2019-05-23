@@ -23,10 +23,10 @@
 
 package de.metas.vertical.pharma.securpharm.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -78,31 +78,38 @@ public class SecurPharmServiceTest
 		final HuId huId = HuId.ofRepoId(1);
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
-		final SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
-				.responseTime(LocalDateTime.now())
-				.requestTime(LocalDateTime.now())
-				.requestUrl("url")
-				.responseData("data")
-				.clientTransactionID("id")
-				.clientTransactionID("clientid")
+//		final SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
+//				.responseTime(Instant.now())
+//				.requestTime(Instant.now())
+//				.requestUrl("url")
+//				.responseData("data")
+//				.clientTransactionID("id")
+//				.clientTransactionID("clientid")
+//				.build();
+		final SecurPharmProductDataResult expectedResult = SecurPharmProductDataResult.builder()
+				.error(false)
+				.requestLogData(SecurPharmRequestLogData.builder()
+						.responseTime(Instant.now())
+						.requestTime(Instant.now())
+						.requestUrl("url")
+						.responseData("data")
+						.clientTransactionId("id")
+						.clientTransactionId("clientid")
+						.build())
+				.productData(ProductData.builder()
+						.active(true)
+						.expirationDate(LocalDate.now())
+						.lot("lot")
+						.productCode("product code")
+						.productCodeType(ProductCodeType.GTIN)
+						.serialNumber("serial nr")
+						.build())
 				.build();
-		final SecurPharmProductDataResult productDataResult = new SecurPharmProductDataResult();
-		productDataResult.setError(false);
-		productDataResult.setRequestLogData(requestLogData);
-		final ProductData productData = ProductData.builder()
-				.active(true)
-				.expirationDate(LocalDate.now())
-				.lot("lot")
-				.productCode("product code")
-				.productCodeType(ProductCodeType.GTIN)
-				.serialNumber("serial nr")
-				.build();
-		productDataResult.setProductData(productData);
-		Mockito.when(client.decodeDataMatrix(dataMatrix)).thenReturn(productDataResult);
+		Mockito.when(client.decodeDataMatrix(dataMatrix)).thenReturn(expectedResult);
 
-		productDataResult.setHuId(HuId.ofRepoId(1));
-		productDataResult.setResultId(SecurPharmProductDataResultId.ofRepoId(1));
-		Mockito.when(resultService.createAndSaveResult(productDataResult)).thenReturn(productDataResult);
+		expectedResult.setHuId(HuId.ofRepoId(1));
+		expectedResult.setId(SecurPharmProductDataResultId.ofRepoId(1));
+		Mockito.when(resultService.createAndSaveResult(expectedResult)).thenReturn(expectedResult);
 
 		final SecurPharmConfig config = SecurPharmConfig.builder()
 				.applicationUUID("uuid")
@@ -113,8 +120,7 @@ public class SecurPharmServiceTest
 				.keystorePassword("passw").build();
 		Mockito.when(client.getConfig()).thenReturn(config);
 
-		final SecurPharmProductDataResult result = underTest.getAndSaveProductData(dataMatrix, huId);
-		assertEquals(result, productDataResult);
-
+		final SecurPharmProductDataResult actualResult = underTest.getAndSaveProductData(dataMatrix, huId);
+		assertThat(actualResult).isEqualTo(expectedResult);
 	}
 }

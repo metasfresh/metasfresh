@@ -23,28 +23,44 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
-import de.metas.handlingunits.inventory.InventoryId;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import javax.annotation.Nullable;
 
-@Getter
-@Setter
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.handlingunits.inventory.InventoryId;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+
+@Data
+@FieldDefaults(makeFinal = true)
+@Builder
 public class SecurPharmActionResult
 {
 	boolean error;
+
+	@Nullable
+	@NonFinal
+	private SecurPharmProductDataResult productDataResult;
+
 	@NonNull
 	private SecurPharmRequestLogData requestLogData;
 
 	@NonNull
 	private DecommissionAction action;
 
-	@NonNull
+	@Nullable
+	@NonFinal
 	private InventoryId inventoryId;
 
-	@NonNull
-	private SecurPharmActionResultId resultId;
+	@Nullable
+	@NonFinal
+	private SecurPharmActionResultId id;
 
-	@NonNull
-	private SecurPharmProductDataResult productDataResult;
+	public TableRecordReference getRecordRef()
+	{
+		return TableRecordReference.of(I_M_Securpharm_Action_Result.Table_Name, getId());
+	}
 }

@@ -24,7 +24,7 @@
 package de.metas.vertical.pharma.securpharm.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Optional;
 
@@ -36,6 +36,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result;
@@ -52,144 +53,126 @@ import lombok.NonNull;
 @Repository
 public class SecurPharmResultRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public SecurPharmProductDataResult createResult(@NonNull final SecurPharmProductDataResult productDataResult)
+	public void saveNew(@NonNull final SecurPharmProductDataResult result)
 	{
-		final I_M_Securpharm_Productdata_Result productDataResultRecord = newInstance(I_M_Securpharm_Productdata_Result.class);
-		productDataResultRecord.setM_HU_ID(productDataResult.getHuId().getRepoId());
-		productDataResultRecord.setIsError(productDataResult.isError());
+		Check.assumeNull(result.getId(), "productDataResult shall not be already saved: {}", result);
 
-		final ProductData productData = productDataResult.getProductData();
+		final I_M_Securpharm_Productdata_Result record = newInstance(I_M_Securpharm_Productdata_Result.class);
+		record.setM_HU_ID(result.getHuId().getRepoId());
+		record.setIsError(result.isError());
+
+		final ProductData productData = result.getProductData();
 		if (productData != null)
 		{
-			productDataResultRecord.setExpirationDate(TimeUtil.asTimestamp(productData.getExpirationDate()));
-			productDataResultRecord.sethasActiveStatus(productData.isActive());
-			productDataResultRecord.setInactiveReason(productData.getInactiveReason());
-			productDataResultRecord.setLotNumber(productData.getLot());
-			productDataResultRecord.setProductCode(productData.getProductCode());
-			productDataResultRecord.setProductCodeType(productData.getProductCodeType().name());
-			productDataResultRecord.setSerialNumber(productData.getSerialNumber());
+			record.setExpirationDate(TimeUtil.asTimestamp(productData.getExpirationDate()));
+			record.sethasActiveStatus(productData.isActive());
+			record.setInactiveReason(productData.getInactiveReason());
+			record.setLotNumber(productData.getLot());
+			record.setProductCode(productData.getProductCode());
+			record.setProductCodeType(productData.getProductCodeType().name());
+			record.setSerialNumber(productData.getSerialNumber());
 		}
 
-		final SecurPharmRequestLogData logData = productDataResult.getRequestLogData();
-		productDataResultRecord.setRequestUrl(logData.getRequestUrl());
-		productDataResultRecord.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
-		productDataResultRecord.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
-		productDataResultRecord.setTransactionIDClient(logData.getClientTransactionID());
-		productDataResultRecord.setTransactionIDServer(logData.getServerTransactionID());
+		final SecurPharmRequestLogData logData = result.getRequestLogData();
+		record.setRequestUrl(logData.getRequestUrl());
+		record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
+		record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
+		record.setTransactionIDClient(logData.getClientTransactionId());
+		record.setTransactionIDServer(logData.getServerTransactionId());
 
-		save(productDataResultRecord);
-		productDataResult.setResultId(SecurPharmProductDataResultId.ofRepoId(productDataResultRecord.getM_Securpharm_Productdata_Result_ID()));
-		return productDataResult;
+		saveRecord(record);
+		result.setId(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()));
 	}
 
-	public SecurPharmActionResult createResult(@NonNull final SecurPharmActionResult securPharmActionResult)
+	public void saveNew(@NonNull final SecurPharmActionResult result)
 	{
-		final I_M_Securpharm_Action_Result actionResultRecord = newInstance(I_M_Securpharm_Action_Result.class);
+		Check.assumeNull(result.getId(), "productDataResult shall not be already saved: {}", result);
 
-		actionResultRecord.setAction(securPharmActionResult.getAction().name());
-		actionResultRecord.setIsError(securPharmActionResult.isError());
+		final I_M_Securpharm_Action_Result record = newInstance(I_M_Securpharm_Action_Result.class);
 
-		actionResultRecord.setM_Inventory_ID(securPharmActionResult.getInventoryId().getRepoId());
-		actionResultRecord.setM_Securpharm_Productdata_Result_ID(securPharmActionResult.getProductDataResult().getResultId().getRepoId());
-		final SecurPharmRequestLogData logData = securPharmActionResult.getRequestLogData();
-		actionResultRecord.setRequestUrl(logData.getRequestUrl());
-		actionResultRecord.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
-		actionResultRecord.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
-		actionResultRecord.setTransactionIDClient(logData.getClientTransactionID());
-		actionResultRecord.setTransactionIDServer(logData.getServerTransactionID());
+		record.setAction(result.getAction().name());
+		record.setIsError(result.isError());
 
-		save(actionResultRecord);
-		securPharmActionResult.setResultId(SecurPharmActionResultId.ofRepoId(actionResultRecord.getM_Securpharm_Action_Result_ID()));
-		return securPharmActionResult;
+		record.setM_Inventory_ID(result.getInventoryId().getRepoId());
+		record.setM_Securpharm_Productdata_Result_ID(result.getProductDataResult().getId().getRepoId());
+		final SecurPharmRequestLogData logData = result.getRequestLogData();
+		record.setRequestUrl(logData.getRequestUrl());
+		record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
+		record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
+		record.setTransactionIDClient(logData.getClientTransactionId());
+		record.setTransactionIDServer(logData.getServerTransactionId());
+
+		saveRecord(record);
+		result.setId(SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID()));
 	}
 
-	public SecurPharmActionResult getActionResultByInventoryId(
+	public Optional<SecurPharmActionResult> getActionResultByInventoryId(
 			@NonNull final InventoryId inventoryId,
 			@NonNull final DecommissionAction action)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final SecurPharmActionResult securPharmResult = queryBL
+		//
+		// Fetch Product Action Result
+		final I_M_Securpharm_Action_Result actionResultRecord = queryBL
 				.createQueryBuilder(I_M_Securpharm_Action_Result.class)
 				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_M_Inventory_ID, inventoryId)
 				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_Action, action.getCode())
 				.orderByDescending(I_M_Securpharm_Action_Result.COLUMNNAME_RequestStartTime)
 				.create()
-				.stream()
-				.findFirst()
-				.map(actionResultRecord -> ofRecord(inventoryId, actionResultRecord))
-				.get()
-				.orElse(null);
-
-		if (securPharmResult != null)
+				.first();
+		if (actionResultRecord == null)
 		{
-			final SecurPharmActionResult actionResult = securPharmResult;
-			final int productDataId = actionResult.getProductDataResult().getResultId().getRepoId();
-			queryBL.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
-					.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID, productDataId)
-					.create().stream().findFirst().map(productResultRecord -> {
-						final SecurPharmProductDataResult result = actionResult.getProductDataResult();
-						return ofRecord(productResultRecord, result);
-					});
-			return actionResult;
-		}
-		return null;
-	}
-
-	private Optional<SecurPharmActionResult> ofRecord(@NonNull InventoryId inventoryId, I_M_Securpharm_Action_Result actionResult)
-	{
-		final SecurPharmActionResult securPharmActionResult = new SecurPharmActionResult();
-		securPharmActionResult.setResultId(SecurPharmActionResultId.ofRepoId(actionResult.getM_Securpharm_Action_Result_ID()));
-		securPharmActionResult.setAction(DecommissionAction.valueOf(actionResult.getAction()));
-		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
-				.requestTime(TimeUtil.asLocalDateTime(actionResult.getRequestStartTime()))
-				.responseTime(TimeUtil.asLocalDateTime(actionResult.getRequestEndTime()))
-				.requestUrl(actionResult.getRequestUrl())
-				.clientTransactionID(actionResult.getTransactionIDClient())
-				.serverTransactionID(actionResult.getTransactionIDServer())
-				.build();
-		securPharmActionResult.setRequestLogData(logData);
-		securPharmActionResult.setError(actionResult.isError());
-		securPharmActionResult.setInventoryId(inventoryId);
-		final SecurPharmProductDataResult productDataResult = new SecurPharmProductDataResult();
-		productDataResult.setResultId(SecurPharmProductDataResultId.ofRepoId(actionResult.getM_Securpharm_Productdata_Result_ID()));
-		securPharmActionResult.setProductDataResult(productDataResult);
-		return Optional.of(securPharmActionResult);
-	}
-
-	private static SecurPharmProductDataResult ofRecord(
-			@NonNull final I_M_Securpharm_Productdata_Result productResult,
-			@NonNull final SecurPharmProductDataResult result)
-	{
-		result.setHuId(HuId.ofRepoId(productResult.getM_HU_ID()));
-		result.setError(productResult.isError());
-		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
-				.requestTime(TimeUtil.asLocalDateTime(productResult.getRequestStartTime()))
-				.responseTime(TimeUtil.asLocalDateTime(productResult.getRequestEndTime()))
-				.requestUrl(productResult.getRequestUrl())
-				.clientTransactionID(productResult.getTransactionIDClient())
-				.serverTransactionID(productResult.getTransactionIDServer())
-				.build();
-		result.setRequestLogData(logData);
-		if (!result.isError())
-		{
-			final ProductData productData = ProductData.builder()
-					.active(productResult.isActive())
-					.expirationDate(TimeUtil.asLocalDate(productResult.getExpirationDate()))
-					.inactiveReason(productResult.getInactiveReason())
-					.lot(productResult.getLotNumber())
-					.productCode(productResult.getProductCode())
-					.productCodeType(ProductCodeType.valueOf(productResult.getProductCodeType()))
-					.serialNumber(productResult.getSerialNumber())
-					.build();
-			result.setProductData(productData);
+			return Optional.empty();
 		}
 
-		return result;
+		//
+		// Retrieve Product Data Result if any
+		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(actionResultRecord.getM_Securpharm_Productdata_Result_ID());
+		final SecurPharmProductDataResult productDataResult = getProductDataResultById(productDataResultId);
+
+		final SecurPharmActionResult actionResult = toActionResult(actionResultRecord, productDataResult, inventoryId);
+		return Optional.of(actionResult);
 	}
 
-	public SecurPharmProductDataResult getProductResultByInventoryId(@NonNull final InventoryId inventoryId)
+	public SecurPharmProductDataResult getProductDataResultById(@NonNull final SecurPharmProductDataResultId productDataResultId)
+	{
+		final I_M_Securpharm_Productdata_Result productResultRecord = queryBL
+				.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
+				.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID, productDataResultId)
+				.create()
+				.firstOnlyNotNull(I_M_Securpharm_Productdata_Result.class);
+
+		return toProductDataResult(productResultRecord);
+	}
+
+	private static SecurPharmActionResult toActionResult(
+			@NonNull I_M_Securpharm_Action_Result record,
+			@NonNull final SecurPharmProductDataResult productDataResult,
+			@NonNull InventoryId inventoryId)
+	{
+		return SecurPharmActionResult.builder()
+				.error(record.isError())
+				.productDataResult(productDataResult)
+				.requestLogData(toRequestLogData(record))
+				.action(DecommissionAction.valueOf(record.getAction()))
+				.inventoryId(inventoryId)
+				.id(SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID()))
+				.build();
+	}
+
+	private static SecurPharmRequestLogData toRequestLogData(final I_M_Securpharm_Action_Result record)
+	{
+		return SecurPharmRequestLogData.builder()
+				.requestTime(TimeUtil.asInstant(record.getRequestStartTime()))
+				.responseTime(TimeUtil.asInstant(record.getRequestEndTime()))
+				.requestUrl(record.getRequestUrl())
+				.clientTransactionId(record.getTransactionIDClient())
+				.serverTransactionId(record.getTransactionIDServer())
+				.build();
+	}
+
+	public Optional<SecurPharmProductDataResult> getProductDataResultByInventoryId(@NonNull final InventoryId inventoryId)
 	{
 		final HuId huId = Services.get(IInventoryDAO.class)
 				.retrieveLinesForInventoryId(inventoryId.getRepoId(), I_M_InventoryLine.class)
@@ -199,23 +182,59 @@ public class SecurPharmResultRepository
 				.orElse(null);
 		if (huId == null)
 		{
-			return null;
+			return Optional.empty();
 		}
-		else
+
+		final I_M_Securpharm_Productdata_Result record = queryBL
+				.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
+				.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.first();
+		if (record == null)
 		{
-			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			return queryBL
-					.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
-					.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId)
-					.create()
-					.stream()
-					.findFirst()
-					.map(productResult -> {
-						final SecurPharmProductDataResult result = new SecurPharmProductDataResult();
-						return ofRecord(productResult, result);
-					})
-					.get();
+			return Optional.empty();
 		}
+
+		final SecurPharmProductDataResult result = toProductDataResult(record);
+		return Optional.of(result);
 	}
 
+	private static SecurPharmProductDataResult toProductDataResult(@NonNull final I_M_Securpharm_Productdata_Result record)
+	{
+		final boolean error = record.isError();
+		return SecurPharmProductDataResult.builder()
+				.error(error)
+				.productData(!error ? toProductData(record) : null)
+				.requestLogData(toRequestLogData(record))
+				//
+				.id(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))
+				.huId(HuId.ofRepoId(record.getM_HU_ID()))
+				//
+				.build();
+	}
+
+	private static SecurPharmRequestLogData toRequestLogData(final I_M_Securpharm_Productdata_Result record)
+	{
+		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
+				.requestTime(TimeUtil.asInstant(record.getRequestStartTime()))
+				.responseTime(TimeUtil.asInstant(record.getRequestEndTime()))
+				.requestUrl(record.getRequestUrl())
+				.clientTransactionId(record.getTransactionIDClient())
+				.serverTransactionId(record.getTransactionIDServer())
+				.build();
+		return logData;
+	}
+
+	private static ProductData toProductData(final I_M_Securpharm_Productdata_Result record)
+	{
+		return ProductData.builder()
+				.active(record.isActive())
+				.expirationDate(TimeUtil.asLocalDate(record.getExpirationDate()))
+				.inactiveReason(record.getInactiveReason())
+				.lot(record.getLotNumber())
+				.productCode(record.getProductCode())
+				.productCodeType(ProductCodeType.valueOf(record.getProductCodeType()))
+				.serialNumber(record.getSerialNumber())
+				.build();
+	}
 }

@@ -27,7 +27,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -38,12 +40,23 @@ public class APIResponse
 	@JsonProperty("res")
 	private Result res;
 
-	@JsonProperty("tx")
-	private Transaction tx;
-
 	@JsonProperty("prod")
 	private Product prod;
 
 	@JsonProperty("pack")
 	private Package pack;
+
+	@JsonProperty("tx")
+	@Getter(AccessLevel.NONE)
+	private Transaction tx;
+
+	public boolean isTransactionSet()
+	{
+		return tx != null;
+	}
+
+	public String getServerTransactionId()
+	{
+		return tx != null ? tx.getServerTransactionId() : null;
+	}
 }
