@@ -122,6 +122,8 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 
 		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice);
 
+		customsInvoiceService.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
+
 		return MSG_OK;
 
 	}

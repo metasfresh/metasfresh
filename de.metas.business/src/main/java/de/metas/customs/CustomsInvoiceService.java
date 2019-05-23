@@ -3,6 +3,7 @@ package de.metas.customs;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Customs_Invoice;
@@ -12,7 +13,9 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -85,7 +88,7 @@ public class CustomsInvoiceService
 	{
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-		CustomsInvoice customsInvoice = createAndProcessCustomsInvoice(customsInvoiceRequest);
+		CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
 
 		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
 
@@ -99,9 +102,8 @@ public class CustomsInvoiceService
 		return customsInvoice;
 	}
 
-	private CustomsInvoice createAndProcessCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
+	private CustomsInvoice createCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
 	{
-
 		final SetMultimap<ProductId, InOutAndLineId> linesToExportMap = customsInvoiceRequest.getLinesToExportMap();
 
 		final CurrencyId currencyId = customsInvoiceRequest.getCurrencyId();
@@ -267,5 +269,39 @@ public class CustomsInvoiceService
 	{
 		return customsInvoiceRepo.retrieveCustomsInvoiceDocTypeId();
 	}
+
+	public void setCustomsInvoiceLineToShipmentLines(@NonNull ImmutableSetMultimap<ProductId, InOutAndLineId> exportedLines, @NonNull CustomsInvoice customsInvoice)
+	{
+
+		final ImmutableMap<ProductId, CustomsInvoiceLine> customsInvoiceLines = customsInvoice.getLines()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						this::getProductId, // keyFunction,
+						Function.identity()));// valueFunction
+
+
+		exportedLines.keySet()
+				.stream()
+				.forEach(productId -> setCustomsInvoiceLine(exportedLines.get(productId), customsInvoiceLines.get(productId)));
+
+	}
+
+
+	private void setCustomsInvoiceLine(final ImmutableSet<InOutAndLineId> shipmentLines, final CustomsInvoiceLine customsInvoiceLine)
+	{
+
+		for(final InOutAndLineId shipmentLine : shipmentLines)
+		{
+			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLine);
+
+		}
+	}
+
+
+	private ProductId getProductId(final CustomsInvoiceLine customsInvoiceLine)
+	{
+		return customsInvoiceLine.getProductId();
+	}
+
 
 }

@@ -13,6 +13,7 @@ import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -25,6 +26,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -182,6 +184,20 @@ public class CustomsInvoiceRepository
 
 	}
 
+	public CustomsInvoice updateDocActionAndStatus(@NonNull final CustomsInvoice customsInvoice)
+	{
+		final I_C_Customs_Invoice customsInvoiceRecord = load(customsInvoice.getId(), I_C_Customs_Invoice.class);
+
+		final String docAction = customsInvoiceRecord.getDocAction();
+		final DocStatus docStatus = DocStatus.ofCode(customsInvoiceRecord.getDocStatus());
+
+		return customsInvoice.toBuilder()
+				.docAction(docAction)
+				.docStatus(docStatus)
+				.build();
+	}
+
+
 	public void setCustomsInvoiceToShipment(@NonNull final InOutId shipmentId, @NonNull final CustomsInvoice customsInvoice)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
@@ -197,17 +213,19 @@ public class CustomsInvoiceRepository
 		saveRecord(shipmentRecord);
 	}
 
-	public CustomsInvoice updateDocActionAndStatus(@NonNull final CustomsInvoice customsInvoice)
+
+	public void setCustomsInvoiceLineToShipmentLine(@NonNull final InOutAndLineId shipmentLine, @NonNull final CustomsInvoiceLine customsInvoiceLine)
 	{
-		final I_C_Customs_Invoice customsInvoiceRecord = load(customsInvoice.getId(), I_C_Customs_Invoice.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
-		final String docAction = customsInvoiceRecord.getDocAction();
-		final DocStatus docStatus = DocStatus.ofCode(customsInvoiceRecord.getDocStatus());
+		final I_M_InOutLine shipmentLineRecord = inoutDAO.getLineById(shipmentLine.getInOutLineId());
 
-		return customsInvoice.toBuilder()
-				.docAction(docAction)
-				.docStatus(docStatus)
-				.build();
+		final int customsInvoiceLineId = customsInvoiceLine.getId().getRepoId();
+
+		shipmentLineRecord.setC_Customs_Invoice_Line_ID(customsInvoiceLineId);
+
+		saveRecord(shipmentLineRecord);
+
 	}
 
 }
