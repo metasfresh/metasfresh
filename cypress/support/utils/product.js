@@ -1,4 +1,4 @@
-import { getTranslated } from './utils';
+import { getLanguageSpecific } from './utils';
 
 export class Product {
   constructor(name) {
@@ -104,7 +104,7 @@ function applyProduct(product) {
     });
 
     cy.getFieldValue('ProductType').then(productTypeValue => {
-      const productType = getTranslated(product, 'productType');
+      const productType = getLanguageSpecific(product, 'productType');
 
       if (productType != productTypeValue) {
         cy.selectInListField('ProductType', productType);
@@ -112,7 +112,7 @@ function applyProduct(product) {
     });
 
     cy.getFieldValue('C_UOM_ID').then(uomValue => {
-      const c_uom = getTranslated(product, 'c_uom');
+      const c_uom = getLanguageSpecific(product, 'c_uom');
 
       if (c_uom && c_uom != uomValue) {
         cy.selectInListField('C_UOM_ID', c_uom);
@@ -167,7 +167,7 @@ function applyProductCategory(productCategory) {
 
 function applyProductPrice(price) {
   describe(`Create new Product Price ${price.m_pricelist_version}`, function() {
-    const m_pricelist_version = getTranslated(price, 'm_pricelist_version');
+    const m_pricelist_version = getLanguageSpecific(price, 'm_pricelist_version');
 
     cy.get('#tab_M_ProductPrice').click();
     cy.pressAddNewButton();
