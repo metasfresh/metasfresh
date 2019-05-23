@@ -36,12 +36,12 @@ import java.util.Set;
 @EqualsAndHashCode
 public final class AgeValues
 {
+	private final ImmutableSet<Integer> agesInMonths;
+
 	@NonNull static AgeValues ofAgeInMonths(final Set<Integer> agesInMonths)
 	{
 		return new AgeValues(agesInMonths);
 	}
-
-	private final ImmutableSet<Integer> agesInMonths;
 
 	private AgeValues(final Set<Integer> ageInMonths)
 	{
@@ -57,7 +57,6 @@ public final class AgeValues
 		final long months = ChronoUnit.MONTHS.between(productionDate, now);
 
 		int age = 0;
-
 		for (final Integer value : agesInMonths)
 		{
 			age = value;

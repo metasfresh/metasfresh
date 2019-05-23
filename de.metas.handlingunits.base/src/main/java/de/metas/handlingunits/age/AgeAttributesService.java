@@ -33,6 +33,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class AgeAttributesService
 {
@@ -51,15 +54,42 @@ public class AgeAttributesService
 	@NonNull
 	private AgeValues retrieveAgeValues()
 	{
-		final AttributeId ageId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
-		final I_M_Attribute age = attributesRepo.getAttributeById(ageId);
-
-		final ImmutableSet<Integer> agesInMonths = attributesRepo.retrieveAttributeValues(age)
+		final List<I_M_AttributeValue> allAgeValues = getAllAgeValues();
+		final ImmutableSet<Integer> agesInMonths = allAgeValues
 				.stream()
 				.map(it -> Integer.valueOf(it.getValue()))
 				.sorted()
 				.collect(ImmutableSet.toImmutableSet());
 
 		return AgeValues.ofAgeInMonths(agesInMonths);
+	}
+
+	@SuppressWarnings("OptionalIsPresent")
+	public int computeDefaultAge()
+	{
+		final List<I_M_AttributeValue> allAgeValues = getAllAgeValues();
+
+		final Optional<I_M_AttributeValue> nullFieldValueOpt = allAgeValues.stream()
+				.filter(I_M_AttributeValue::isNullFieldValue)
+				.findFirst();
+
+		final int defaultAge;
+		if (nullFieldValueOpt.isPresent())
+		{
+			defaultAge = Integer.parseInt(nullFieldValueOpt.get().getValue());
+		}
+		else
+		{
+			defaultAge = Integer.parseInt(allAgeValues.get(0).getValue());
+		}
+		return defaultAge;
+	}
+
+	private List<I_M_AttributeValue> getAllAgeValues()
+	{
+		final AttributeId ageId = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_Age);
+		final I_M_Attribute age = attributesRepo.getAttributeById(ageId);
+
+		return attributesRepo.retrieveAttributeValues(age);
 	}
 }

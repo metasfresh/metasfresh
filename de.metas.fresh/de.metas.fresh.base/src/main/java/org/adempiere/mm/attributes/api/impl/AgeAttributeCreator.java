@@ -22,6 +22,7 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
+import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -33,21 +34,19 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
-
-import java.util.List;
-import java.util.Optional;
 
 public class AgeAttributeCreator
 {
-	public static final String DEFAULT_AGE_ATTRIBUTE_VALUE = "0";
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final transient AgeAttributesService ageAttributesService = Adempiere.getBean(AgeAttributesService.class);
+
 	private final Object sourceModel;
 
 	public AgeAttributeCreator(final @NonNull Object sourceModel)
@@ -61,7 +60,7 @@ public class AgeAttributeCreator
 	 * AttributeSet is the dataType
 	 * AttributeSetInstance is the instance (a new object) of an AttributeSet
 	 */
-	@SuppressWarnings({ "Duplicates", "OptionalIsPresent" })
+	@SuppressWarnings({ "Duplicates" })
 	public void createASI()
 	{
 		final Object sourceModel = getSourceModel();
@@ -103,22 +102,8 @@ public class AgeAttributeCreator
 		}
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, ageAttribute);
-
-		final List<I_M_AttributeValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);
-		final Optional<I_M_AttributeValue> nullFieldValueOpt = attributeValues.stream()
-				.filter(I_M_AttributeValue::isNullFieldValue)
-				.findFirst();
-
-		final Object defaultAttributeValue;
-		if (nullFieldValueOpt.isPresent())
-		{
-			defaultAttributeValue = nullFieldValueOpt.get();
-		}
-		else
-		{
-			defaultAttributeValue = DEFAULT_AGE_ATTRIBUTE_VALUE;
-		}
-		attributeSetInstanceBL.setAttributeInstanceValue(asi, ageAttribute, defaultAttributeValue);
+		final int defaultAge = ageAttributesService.computeDefaultAge();
+		attributeSetInstanceBL.setAttributeInstanceValue(asi, ageAttribute, defaultAge);
 	}
 
 	private @NonNull Object getSourceModel()
