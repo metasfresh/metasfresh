@@ -17,13 +17,14 @@ describe('Manufacturing order Test', function() {
     cy.visit('/window/53009');
 
     cy.get('.table-flex-wrapper-row')
-      .find('tbody tr').eq(0)
+      .find('tbody tr')
+      .eq(0)
       .should('exist');
 
-      cy.get('.table-flex-wrapper-row')
-        .find('tbody tr')
-        .contains('630066')
-        .click();
+    cy.get('.table-flex-wrapper-row')
+      .find('tbody tr')
+      .contains('630066')
+      .click();
 
     cy.executeQuickAction('WEBUI_PP_Order_IssueReceipt_Launcher');
     cy.get('.panel-modal-header').should('exist');
@@ -34,23 +35,18 @@ describe('Manufacturing order Test', function() {
       .contains('1000033_Gitarrensaite')
       .click();
 
-    cy.get('.panel-modal-content .document-list-included')
-      .should('not.exist');
+    cy.get('.panel-modal-content .document-list-included').should('not.exist');
     cy.executeQuickAction('WEBUI_PP_Order_HUEditor_Launcher');
-    cy.get('.panel-modal-content .document-list-included')
-      .should('exist');
+    cy.get('.panel-modal-content .document-list-included').should('exist');
 
     cy.get('.panel-modal-content .document-list-included')
       .find('.document-list-header')
       .click();
 
-    cy.get('.panel-modal-content .document-list-included')
-      .should('exist');
+    cy.get('.panel-modal-content .document-list-included').should('exist');
 
-    cy.get('.panel-modal-header')
-      .click();
+    cy.get('.panel-modal-header').click();
 
-    cy.get('.panel-modal-content .document-list-included')
-      .should('not.exist');
+    cy.get('.panel-modal-content .document-list-included').should('not.exist');
   });
 });
