@@ -36,16 +36,21 @@ import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_AttributeValue;
 
-public class AgeAttributeUpdater
+import java.util.List;
+import java.util.Optional;
+
+public class AgeAttributeCreator
 {
+	public static final String DEFAULT_AGE_ATTRIBUTE_VALUE = "0";
 	private final transient IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final Object sourceModel;
 
-	public AgeAttributeUpdater(final @NonNull Object sourceModel)
+	public AgeAttributeCreator(final @NonNull Object sourceModel)
 	{
 		this.sourceModel = sourceModel;
 	}
@@ -56,7 +61,7 @@ public class AgeAttributeUpdater
 	 * AttributeSet is the dataType
 	 * AttributeSetInstance is the instance (a new object) of an AttributeSet
 	 */
-	@SuppressWarnings("Duplicates")
+	@SuppressWarnings({ "Duplicates", "OptionalIsPresent" })
 	public void createASI()
 	{
 		final Object sourceModel = getSourceModel();
@@ -98,6 +103,22 @@ public class AgeAttributeUpdater
 		}
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, ageAttribute);
+
+		final List<I_M_AttributeValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);
+		final Optional<I_M_AttributeValue> nullFieldValueOpt = attributeValues.stream()
+				.filter(I_M_AttributeValue::isNullFieldValue)
+				.findFirst();
+
+		final Object defaultAttributeValue;
+		if (nullFieldValueOpt.isPresent())
+		{
+			defaultAttributeValue = nullFieldValueOpt.get();
+		}
+		else
+		{
+			defaultAttributeValue = DEFAULT_AGE_ATTRIBUTE_VALUE;
+		}
+		attributeSetInstanceBL.setAttributeInstanceValue(asi, ageAttribute, defaultAttributeValue);
 	}
 
 	private @NonNull Object getSourceModel()

@@ -3,7 +3,7 @@ package org.adempiere.mm.attributes.listeners.age;
 import com.google.common.collect.ImmutableList;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.mm.attributes.api.impl.AgeAttributeUpdater;
+import org.adempiere.mm.attributes.api.impl.AgeAttributeCreator;
 
 import java.util.List;
 
@@ -55,6 +55,6 @@ public class AgeModelAttributeSetInstanceListener implements IModelAttributeSetI
 	@Override
 	public void modelChanged(final Object model)
 	{
-		new AgeAttributeUpdater(model).createASI();
+		new AgeAttributeCreator(model).createASI();
 	}
 }
