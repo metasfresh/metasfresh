@@ -23,8 +23,7 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
-import java.time.LocalDate;
-
+import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,7 +41,7 @@ public class ProductData
 	private String lot;
 
 	@NonNull
-	private LocalDate expirationDate;
+	private ExpirationDate expirationDate;
 
 	@NonNull
 	private String serialNumber;

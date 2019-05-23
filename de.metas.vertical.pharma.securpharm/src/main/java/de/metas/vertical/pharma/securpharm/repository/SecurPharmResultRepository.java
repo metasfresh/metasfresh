@@ -48,6 +48,7 @@ import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResultId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
+import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
 import lombok.NonNull;
 
 @Repository
@@ -243,7 +244,7 @@ public class SecurPharmResultRepository
 	{
 		return ProductData.builder()
 				.active(record.isActive())
-				.expirationDate(TimeUtil.asLocalDate(record.getExpirationDate()))
+				.expirationDate(ExpirationDate.ofLocalDate(TimeUtil.asLocalDate(record.getExpirationDate())))
 				.inactiveReason(record.getInactiveReason())
 				.lot(record.getLotNumber())
 				.productCode(record.getProductCode())

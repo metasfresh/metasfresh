@@ -162,7 +162,7 @@ public class SecurPharmClient
 				.lot(decodeBase64(product.getLot()))
 				.productCode(product.getProductCode())
 				.productCodeType(ProductCodeType.ofCode(product.getPcs()))
-				.expirationDate(product.getExpirationDate().toLocalDate())
+				.expirationDate(product.getExpirationDate())
 				.serialNumber(decodeBase64(pack.getSerialNumber()));
 		if (pack.getState() == State.ACTIVE)
 		{
@@ -284,16 +284,23 @@ public class SecurPharmClient
 			@NonNull final ProductData productData,
 			@NonNull final DecommissionAction action)
 	{
+		return prepareProductURL(productData)
+				.queryParam(QUERY_PARAM_ACT, action.getCode());
+	}
+
+	private UriComponentsBuilder prepareProductURL(@NonNull final ProductData productData)
+	{
+		final String clientTransactionId = UUID.randomUUID().toString();
+
 		return UriComponentsBuilder.fromPath(API_RELATIVE_PATH_PRODUCTS)
 				.path(productData.getProductCode())
 				.path(API_RELATIVE_PATH_PACKS)
 				.path(encodeBase64(productData.getSerialNumber()))
-				.queryParam(QUERY_PARAM_CTX, UUID.randomUUID().toString())
+				.queryParam(QUERY_PARAM_CTX, clientTransactionId)
 				.queryParam(QUERY_PARAM_SID, config.getApplicationUUID())
 				.queryParam(QUERY_PARAM_LOT, encodeBase64(productData.getLot()))
-				.queryParam(QUERY_PARAM_EXP, productData.getExpirationDate())
-				.queryParam(QUERY_PARAM_PCS, productData.getProductCodeType().getCode())
-				.queryParam(QUERY_PARAM_ACT, action.getCode());
+				.queryParam(QUERY_PARAM_EXP, productData.getExpirationDate().toYYMMDDString())
+				.queryParam(QUERY_PARAM_PCS, productData.getProductCodeType().getCode());
 	}
 
 	private String getAuthorizationHttpHeader()

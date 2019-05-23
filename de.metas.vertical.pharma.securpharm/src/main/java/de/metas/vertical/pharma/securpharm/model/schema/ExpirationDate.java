@@ -3,6 +3,7 @@ package de.metas.vertical.pharma.securpharm.model.schema;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -39,9 +40,14 @@ import lombok.ToString;
 public final class ExpirationDate
 {
 	@JsonValue
-	public static ExpirationDate ofString(final String yyMMdd)
+	public static ExpirationDate ofString(@NonNull final String yyMMdd)
 	{
-		return new ExpirationDate(yyMMdd);
+		return new ExpirationDate(yyMMdd, toLocalDate(yyMMdd));
+	}
+
+	public static ExpirationDate ofLocalDate(@NonNull final LocalDate date)
+	{
+		return new ExpirationDate(toYYMMDD(date), date);
 	}
 
 	private static final DateTimeFormatter FORMAT_yyMMdd = DateTimeFormatter.ofPattern("yyMMdd");
@@ -50,10 +56,10 @@ public final class ExpirationDate
 	private final String yyMMdd;
 	private final LocalDate localDate;
 
-	private ExpirationDate(@NonNull final String yyMMdd)
+	private ExpirationDate(@NonNull final String yyMMdd, @NonNull final LocalDate localDate)
 	{
 		this.yyMMdd = yyMMdd;
-		localDate = toLocalDate(yyMMdd);
+		this.localDate = localDate;
 	}
 
 	private static LocalDate toLocalDate(@NonNull final String yyMMdd)
@@ -75,8 +81,26 @@ public final class ExpirationDate
 		}
 	}
 
+	private static String toYYMMDD(@NonNull final LocalDate localDate)
+	{
+		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
+		if (localDate.equals(lastDayOfMonth))
+		{
+			return FORMAT_yyMM.format(localDate) + "00";
+		}
+		else
+		{
+			return FORMAT_yyMMdd.format(localDate);
+		}
+	}
+
 	@JsonValue
 	public String toJson()
+	{
+		return toYYMMDDString();
+	}
+
+	public String toYYMMDDString()
 	{
 		return yyMMdd;
 	}

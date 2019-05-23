@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.securpharm.model.schema;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
+import java.time.Month;
+
 import org.junit.Test;
 
 /*
@@ -27,9 +32,29 @@ import org.junit.Test;
 public class ExpirationDateTest
 {
 	@Test
-	public void test()
+	public void test_ofString()
 	{
-		System.out.println(ExpirationDate.ofString("210601"));
-		System.out.println(ExpirationDate.ofString("220800"));
+		assertThat(ExpirationDate.ofString("210601").toLocalDate())
+				.isEqualTo(LocalDate.of(2021, Month.JUNE, 1));
+
+		assertThat(ExpirationDate.ofString("220830").toLocalDate())
+				.isEqualTo(LocalDate.of(2022, Month.AUGUST, 30));
+
+		assertThat(ExpirationDate.ofString("220800").toLocalDate())
+				.isEqualTo(LocalDate.of(2022, Month.AUGUST, 31));
 	}
+
+	@Test
+	public void test_ofLocalDate()
+	{
+		assertThat(ExpirationDate.ofLocalDate(LocalDate.of(2021, Month.JUNE, 1)).toJson())
+				.isEqualTo("210601");
+
+		assertThat(ExpirationDate.ofLocalDate(LocalDate.of(2022, Month.AUGUST, 30)).toJson())
+				.isEqualTo("220830");
+
+		assertThat(ExpirationDate.ofLocalDate(LocalDate.of(2022, Month.AUGUST, 31)).toJson())
+				.isEqualTo("220800");
+	}
+
 }

@@ -45,6 +45,7 @@ import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
+import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 
 public class SecurPharmServiceTest
@@ -88,7 +89,7 @@ public class SecurPharmServiceTest
 				.build();
 		final ProductData productData = ProductData.builder()
 				.active(true)
-				.expirationDate(LocalDate.now())
+				.expirationDate(ExpirationDate.ofLocalDate(LocalDate.now()))
 				.lot("lot")
 				.productCode("product code")
 				.productCodeType(ProductCodeType.GTIN)
