@@ -321,7 +321,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_BPartner_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_AD_User.class))
+		else if (parent_table_id == getTableId(I_AD_User.class))
 		{
 			rq.setAD_User_ID(parent_record_id);
 		}
@@ -337,11 +337,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Order_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+		else if (parent_table_id == getTableId(I_C_Invoice.class))
 		{
 			rq.setC_Invoice_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_M_Product.class))
+		else if (parent_table_id == getTableId(I_M_Product.class))
 		{
 			rq.setM_Product_ID(parent_record_id);
 		}
@@ -349,7 +349,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Payment_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_M_InOut.class))
+		else if (parent_table_id == getTableId(I_M_InOut.class))
 		{
 			rq.setM_InOut_ID(parent_record_id);
 		}
@@ -361,11 +361,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Campaign_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_R_Request.class))
+		else if (parent_table_id == getTableId(I_R_Request.class))
 		{
 			rq.setR_RequestRelated_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+		else if (parent_table_id == getTableId(I_C_OrderLine.class))
 		{
 			final MOrderLine oLine = new MOrderLine(Env.getCtx(), parent_record_id, null);
 			if (oLine != null)

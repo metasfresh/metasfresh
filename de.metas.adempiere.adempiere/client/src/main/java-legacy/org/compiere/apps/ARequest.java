@@ -28,7 +28,6 @@ import javax.swing.JPopupMenu;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.images.Images;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_User;
@@ -125,7 +124,7 @@ public class ARequest implements ActionListener
 			.append(")");
 		//
 
-		if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
+		if (m_AD_Table_ID == getTableId(I_AD_User.class))
 		{
 			m_where.append(" OR AD_User_ID=").append(m_Record_ID)
 				.append(" OR SalesRep_ID=").append(m_Record_ID);
@@ -138,7 +137,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR C_Order_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+		else if (m_AD_Table_ID == getTableId(I_C_Invoice.class))
 		{
 			m_where.append(" OR C_Invoice_ID=").append(m_Record_ID);
 		}
@@ -146,7 +145,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR C_Payment_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Product.class))
+		else if (m_AD_Table_ID == getTableId(I_M_Product.class))
 		{
 			m_where.append(" OR M_Product_ID=").append(m_Record_ID);
 		}
@@ -259,7 +258,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_BPartner_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_AD_User.class))
+			else if (m_AD_Table_ID == getTableId(I_AD_User.class))
 			{
 				tab.setValue("AD_User_ID", new Integer(m_Record_ID));
 			}
@@ -275,11 +274,11 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_Order_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID ==InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+			else if (m_AD_Table_ID ==getTableId(I_C_Invoice.class))
 			{
 				tab.setValue("C_Invoice_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Product.class))
+			else if (m_AD_Table_ID == getTableId(I_M_Product.class))
 			{
 				tab.setValue("M_Product_ID", new Integer(m_Record_ID));
 			}
@@ -287,7 +286,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_Payment_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_InOut.class))
+			else if (m_AD_Table_ID == getTableId(I_M_InOut.class))
 			{
 				tab.setValue("M_InOut_ID", new Integer(m_Record_ID));
 			}
@@ -299,11 +298,11 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_Campaign_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_R_Request.class))
+			else if (m_AD_Table_ID == getTableId(I_R_Request.class))
 			{
 				tab.setValue(MRequest.COLUMNNAME_R_RequestRelated_ID, new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class)) {
+			else if (m_AD_Table_ID == getTableId(I_C_OrderLine.class)) {
 				MOrderLine oLine = new MOrderLine(Env.getCtx(), m_Record_ID, null);
 				if (oLine != null) {
 					tab.setValue(MOrderLine.COLUMNNAME_C_Order_ID, new Integer(oLine.getC_Order_ID()));

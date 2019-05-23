@@ -16,13 +16,14 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
@@ -206,13 +207,13 @@ public class FactAcctReset extends JavaProcess
 		m_countReset = 0;
 		//
 		String docBaseType = null;
-		if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+		if (AD_Table_ID == getTableId(I_C_Invoice.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_APCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_ARCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARProFormaInvoice + "')";
-		else if (AD_Table_ID ==InterfaceWrapperHelper.getTableId(I_M_InOut.class))
+		else if (AD_Table_ID ==getTableId(I_M_InOut.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_MaterialDelivery
 				+ "','" + X_C_DocType.DOCBASETYPE_MaterialReceipt + "')";
 		else if (AD_Table_ID == MPayment.Table_ID)
@@ -227,7 +228,7 @@ public class FactAcctReset extends JavaProcess
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_BankStatement + "'";
 		else if (AD_Table_ID == MCash.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_CashJournal + "'";
-		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
+		else if (AD_Table_ID == getTableId(I_C_AllocationHdr.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PaymentAllocation + "'";
 		else if (AD_Table_ID == MJournal.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_GLJournal + "'";
@@ -235,9 +236,9 @@ public class FactAcctReset extends JavaProcess
 	//		docBaseType = "= '" + X_C_DocType.DOCBASETYPE_GLDocument + "'";
 		else if (AD_Table_ID == MMovement.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialMovement + "'";
-		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Requisition.class))
+		else if (AD_Table_ID == getTableId(I_M_Requisition.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PurchaseRequisition + "'";
-		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Inventory.class))
+		else if (AD_Table_ID == getTableId(I_M_Inventory.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory + "'";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_M_MatchInv.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MatchInvoice + "'";

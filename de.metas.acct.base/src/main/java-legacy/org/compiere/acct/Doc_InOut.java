@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -24,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -366,7 +367,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(InterfaceWrapperHelper.getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -388,7 +389,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(InterfaceWrapperHelper.getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}

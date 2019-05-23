@@ -16,12 +16,13 @@
  *****************************************************************************/
 package org.compiere.sla;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MSLAGoal;
 import org.compiere.model.MSLAMeasure;
@@ -73,7 +74,7 @@ public class DeliveryAccuracy extends SLACriteria
 			+ " AND NOT EXISTS "
 				+ "(SELECT * FROM PA_SLA_Measure m "
 				+ "WHERE m.PA_SLA_Goal_ID=?"
-				+ " AND m.AD_Table_ID=" + InterfaceWrapperHelper.getTableId(I_M_InOut.class)
+				+ " AND m.AD_Table_ID=" + getTableId(I_M_InOut.class)
 				+ " AND m.Record_ID=io.M_InOut_ID)";
 		int counter = 0;
 		PreparedStatement pstmt = null;
@@ -94,7 +95,7 @@ public class DeliveryAccuracy extends SLACriteria
 				{
 					MSLAMeasure measure = new MSLAMeasure(goal, MovementDate,
 						MeasureActual, Description);
-					measure.setLink(InterfaceWrapperHelper.getTableId(I_M_InOut.class), M_InOut_ID);
+					measure.setLink(getTableId(I_M_InOut.class), M_InOut_ID);
 					if (measure.save())
 						counter++;
 				}

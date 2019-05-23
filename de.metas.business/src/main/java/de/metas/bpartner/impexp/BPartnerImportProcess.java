@@ -1,5 +1,7 @@
 package de.metas.bpartner.impexp;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,7 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -274,7 +275,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
-			adTableId = InterfaceWrapperHelper.getTableId(I_M_InOut.class);
+			adTableId = getTableId(I_M_InOut.class);
 		}
 
 		final BPartnerPrintFormatRepository repo = Adempiere.getBean(BPartnerPrintFormatRepository.class);
