@@ -195,23 +195,20 @@ public class SecurPharmClient
 		}
 	}
 
-	public SecurPharmActionResult decommission(
-			@NonNull final ProductData productData,
-			@NonNull final DecommissionAction action)
+	public SecurPharmActionResult decommission(@NonNull final ProductData productData)
 	{
-		final UriComponentsBuilder uri = prepareDecommisionURL(productData, action);
-		return getSecurPharmActionResult(action, uri);
+		final UriComponentsBuilder uri = prepareDecommisionURL(productData, DecommissionAction.DESTROY);
+		return getSecurPharmActionResult(DecommissionAction.DESTROY, uri);
 	}
 
 	public SecurPharmActionResult undoDecommission(
 			@NonNull final ProductData productData,
-			@NonNull final DecommissionAction action,
 			@NonNull final String trx)
 	{
-		final UriComponentsBuilder url = prepareDecommisionURL(productData, action)
+		final UriComponentsBuilder url = prepareDecommisionURL(productData, DecommissionAction.UNDO_DISPENSE)
 				.queryParam(QUERY_PARAM_TRX, trx);
 
-		return getSecurPharmActionResult(action, url);
+		return getSecurPharmActionResult(DecommissionAction.UNDO_DISPENSE, url);
 	}
 
 	private SecurPharmActionResult getSecurPharmActionResult(

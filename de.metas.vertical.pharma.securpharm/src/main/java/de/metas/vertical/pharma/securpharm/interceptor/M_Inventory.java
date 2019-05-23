@@ -41,9 +41,7 @@ import lombok.NonNull;
 @Component("de.metas.vertical.pharma.securpharm.interceptor.M_Inventory")
 public class M_Inventory
 {
-
 	private final SecurPharmService securPharmService;
-
 	private final SecurPharmResultRepository resultRepository;
 
 	public M_Inventory(@NonNull final SecurPharmService securPharmService, @NonNull final SecurPharmResultRepository resultRepository)
@@ -52,9 +50,11 @@ public class M_Inventory
 		this.resultRepository = resultRepository;
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void beforeComplete(final I_M_Inventory inventory) throws Exception
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void beforeComplete(final I_M_Inventory inventory)
 	{
+		// TODO: fire after commit... or async?!
+
 		if (securPharmService.hasConfig())
 		{
 			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
@@ -63,7 +63,7 @@ public class M_Inventory
 					.orElse(null);
 			if (productDataResult != null && !productDataResult.isError())
 			{
-				securPharmService.decommision(productDataResult, DecommissionAction.DESTROY, inventoryId);
+				securPharmService.decommision(productDataResult, inventoryId);
 			}
 		}
 
@@ -80,7 +80,7 @@ public class M_Inventory
 					.orElse(null);
 			if (actionResult != null && !actionResult.isError())
 			{
-				securPharmService.undoDecommision(actionResult, DecommissionAction.UNDO_DISPENSE, inventoryId);
+				securPharmService.undoDecommision(actionResult, inventoryId);
 			}
 		}
 

@@ -94,7 +94,7 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 				.orElseThrow(() -> new AdempiereException("@NotFound@"));
 		if (actionResult.isError())
 		{
-			securPharmService.decommision(actionResult.getProductDataResult(), DecommissionAction.DESTROY, inventoryId);
+			securPharmService.decommision(actionResult.getProductDataResult(), inventoryId);
 		}
 		else
 		{
@@ -103,7 +103,7 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 					.orElseThrow(() -> new AdempiereException("@NotFound@"));
 			if (undoActionResult.isError())
 			{
-				securPharmService.undoDecommision(undoActionResult, DecommissionAction.UNDO_DISPENSE, inventoryId);
+				securPharmService.undoDecommision(undoActionResult, inventoryId);
 			}
 		}
 

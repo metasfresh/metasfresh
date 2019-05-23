@@ -37,7 +37,6 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
@@ -110,11 +109,10 @@ public class SecurPharmService
 	@Async
 	public SecurPharmActionResult decommision(
 			@NonNull final SecurPharmProductDataResult productDataResult,
-			@NonNull final DecommissionAction action,
 			@NonNull final InventoryId inventoryId)
 	{
 		final SecurPharmClient client = clientFactory.createClient();
-		final SecurPharmActionResult actionResult = client.decommission(productDataResult.getProductData(), action);
+		final SecurPharmActionResult actionResult = client.decommission(productDataResult.getProductData());
 
 		actionResult.setInventoryId(inventoryId);
 		actionResult.setProductDataResult(productDataResult);
@@ -127,14 +125,12 @@ public class SecurPharmService
 	@Async
 	public SecurPharmActionResult undoDecommision(
 			@NonNull final SecurPharmActionResult initialActionResult,
-			@NonNull final DecommissionAction action,
 			@NonNull final InventoryId inventoryId)
 	{
 		final SecurPharmClient client = clientFactory.createClient();
 		final SecurPharmProductDataResult productDataResult = initialActionResult.getProductDataResult();
 		final SecurPharmActionResult actionResult = client.undoDecommission(
 				productDataResult.getProductData(),
-				action,
 				initialActionResult.getRequestLogData().getServerTransactionId());
 
 		actionResult.setInventoryId(inventoryId);

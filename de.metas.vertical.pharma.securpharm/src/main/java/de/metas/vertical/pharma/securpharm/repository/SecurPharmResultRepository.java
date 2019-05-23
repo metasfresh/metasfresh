@@ -181,7 +181,7 @@ public class SecurPharmResultRepository
 				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 				.stream()
 				.findFirst()
-				.map(invLine -> HuId.ofRepoId(invLine.getM_HU_ID()))
+				.map(invLine -> HuId.ofRepoId(invLine.getM_HU_ID())) // TODO: handle multiple HUs
 				.orElse(null);
 		if (huId == null)
 		{
