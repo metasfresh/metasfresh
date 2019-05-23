@@ -862,21 +862,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.list();
 	}
 
-//	@Override
-//	public List<I_M_HU> retrieveHUsForWarehousesAndProductId(
-//			final Properties ctx,
-//			final Collection<WarehouseId> warehouseIds,
-//			final int productId,
-//			final String trxName)
-//	{
-//		return createHUQueryBuilder()
-//				.setContext(ctx, trxName)
-//				.setOnlyTopLevelHUs()
-//				.addOnlyInWarehouseIds(warehouseIds)
-//				.addOnlyWithProductId(productId)
-//				.list();
-//	}
-
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
