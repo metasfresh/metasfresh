@@ -81,7 +81,7 @@ public class CustomsInvoiceService
 
 	}
 
-	public CustomsInvoice generateCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
+	public CustomsInvoice generateCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
 	{
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
@@ -99,7 +99,7 @@ public class CustomsInvoiceService
 		return customsInvoice;
 	}
 
-	private CustomsInvoice createAndProcessCustomsInvoice(final CustomsInvoiceRequest customsInvoiceRequest)
+	private CustomsInvoice createAndProcessCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
 	{
 
 		final SetMultimap<ProductId, InOutAndLineId> linesToExportMap = customsInvoiceRequest.getLinesToExportMap();
@@ -140,9 +140,9 @@ public class CustomsInvoiceService
 	}
 
 	private CustomsInvoiceLine createCustomsInvoiceLine(
-			final ProductId productId,
-			final Collection<InOutAndLineId> shipmentLinesForProducts,
-			final CurrencyId currencyId)
+			@NonNull final ProductId productId,
+			@NonNull final Collection<InOutAndLineId> shipmentLinesForProducts,
+			@NonNull final CurrencyId currencyId)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -178,7 +178,7 @@ public class CustomsInvoiceService
 		return customsInvoiceLine;
 	}
 
-	private Money getInOutLinePriceConverted(final InOutAndLineId inoutAndLineId, final CurrencyId currencyId)
+	private Money getInOutLinePriceConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final CurrencyId currencyId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -216,7 +216,7 @@ public class CustomsInvoiceService
 
 	}
 
-	private Quantity getInOutLineQtyConverted(final InOutAndLineId inoutAndLineId, final UomId uomId)
+	private Quantity getInOutLineQtyConverted(@NonNull final InOutAndLineId inoutAndLineId, @NonNull final UomId uomId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
