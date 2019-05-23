@@ -69,10 +69,9 @@ public class SecurPharmResultService
 	{
 		if (logData.getResponseData() != null)
 		{
-			final AttachmentEntryCreateRequest responseDataAttachment = AttachmentEntryCreateRequest
-					.fromByteArray(
-							MessageFormat.format("Response_{0}", logData.getClientTransactionId()),
-							logData.getResponseData().getBytes());
+			final AttachmentEntryCreateRequest responseDataAttachment = AttachmentEntryCreateRequest.fromByteArray(
+					MessageFormat.format("Response_{0}", logData.getClientTransactionId()),
+					logData.getResponseData().getBytes());
 			attachmentEntryService.createNewAttachment(recordRef, responseDataAttachment);
 		}
 	}

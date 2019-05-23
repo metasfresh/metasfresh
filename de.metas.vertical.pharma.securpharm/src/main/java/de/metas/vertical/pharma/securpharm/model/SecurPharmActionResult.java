@@ -39,21 +39,22 @@ import lombok.experimental.NonFinal;
 @Builder
 public class SecurPharmActionResult
 {
-	boolean error;
-
-	@Nullable
-	@NonFinal
-	private SecurPharmProductDataResult productDataResult;
-
-	@NonNull
-	private SecurPharmRequestLogData requestLogData;
-
 	@NonNull
 	private DecommissionAction action;
 
 	@Nullable
+	ProductData productData;
+
+	@NonNull
+	private SecurPharmRequestLogData requestLogData;
+
+	@Nullable
 	@NonFinal
 	private InventoryId inventoryId;
+
+	@Nullable
+	@NonFinal
+	SecurPharmProductDataResultId productDataResultId;
 
 	@Nullable
 	@NonFinal
@@ -62,5 +63,15 @@ public class SecurPharmActionResult
 	public TableRecordReference getRecordRef()
 	{
 		return TableRecordReference.of(I_M_Securpharm_Action_Result.Table_Name, getId());
+	}
+
+	public boolean isError()
+	{
+		return getRequestLogData().isError();
+	}
+
+	public String getServerTransactionId()
+	{
+		return getRequestLogData().getServerTransactionId();
 	}
 }

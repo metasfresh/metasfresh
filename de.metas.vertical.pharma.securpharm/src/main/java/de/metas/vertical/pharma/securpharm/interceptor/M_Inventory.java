@@ -30,9 +30,11 @@ import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.InventoryId;
+import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.model.UndoDecommisionRequest;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
@@ -63,7 +65,11 @@ public class M_Inventory
 					.orElse(null);
 			if (productDataResult != null && !productDataResult.isError())
 			{
-				securPharmService.decommision(productDataResult, inventoryId);
+				securPharmService.decommision(DecommisionRequest.builder()
+						.productData(productDataResult.getProductData())
+						.productDataResultId(productDataResult.getId())
+						.inventoryId(inventoryId)
+						.build());
 			}
 		}
 
@@ -80,7 +86,12 @@ public class M_Inventory
 					.orElse(null);
 			if (actionResult != null && !actionResult.isError())
 			{
-				securPharmService.undoDecommision(actionResult, inventoryId);
+				securPharmService.undoDecommision(UndoDecommisionRequest.builder()
+						.productData(actionResult.getProductData())
+						.serverTransactionId(actionResult.getServerTransactionId())
+						.productDataResultId(actionResult.getProductDataResultId())
+						.inventoryId(inventoryId)
+						.build());
 			}
 		}
 

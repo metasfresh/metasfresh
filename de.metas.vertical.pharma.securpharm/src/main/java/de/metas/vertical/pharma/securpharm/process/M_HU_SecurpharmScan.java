@@ -118,9 +118,11 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 
 	private void scanAndUpdate(@NonNull final I_M_HU hu)
 	{
+		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
+		
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final SecurPharmProductDataResult result = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
-		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
+		
 		if (!result.isError() && result.getProductData() != null)
 		{
 			final ProductData productData = result.getProductData();

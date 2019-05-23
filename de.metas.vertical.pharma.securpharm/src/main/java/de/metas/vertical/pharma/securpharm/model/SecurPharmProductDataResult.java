@@ -39,8 +39,6 @@ import lombok.experimental.NonFinal;
 @Builder
 public class SecurPharmProductDataResult
 {
-	boolean error;
-
 	@Nullable
 	private ProductData productData;
 
@@ -58,5 +56,10 @@ public class SecurPharmProductDataResult
 	public TableRecordReference getRecordRef()
 	{
 		return TableRecordReference.of(I_M_Securpharm_Productdata_Result.Table_Name, getId());
+	}
+
+	public boolean isError()
+	{
+		return getRequestLogData().isError();
 	}
 }

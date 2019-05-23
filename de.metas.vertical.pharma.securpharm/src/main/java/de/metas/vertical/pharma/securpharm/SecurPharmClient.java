@@ -111,7 +111,6 @@ public class SecurPharmClient
 				.requestTime(Instant.now())
 				.requestUrl(config.getPharmaAPIBaseUrl() + url.build());
 
-		boolean error = false;
 		ProductData productData = null;
 
 		try
@@ -128,13 +127,12 @@ public class SecurPharmClient
 					&& apiResponse.getPack() != null)
 			{
 				logData.serverTransactionId(apiResponse.getServerTransactionId());
-
-				error = false;
+				logData.error(false);
 				productData = extractProductDataFromAPIResponse(apiResponse);
 			}
 			else
 			{
-				error = true;
+				logData.error(true);
 				productData = null;
 			}
 
@@ -142,13 +140,12 @@ public class SecurPharmClient
 		catch (final HttpClientErrorException ex)
 		{
 			logger.error("Got HTTP client error", ex);
-			error = true;
+			logData.error(true);
 			logData.responseData(ex.getStatusCode() + ex.getResponseBodyAsString());
 			logData.responseTime(Instant.now());
 		}
 
 		return SecurPharmProductDataResult.builder()
-				.error(error)
 				.productData(productData)
 				.requestLogData(logData.build())
 				.build();
@@ -197,29 +194,39 @@ public class SecurPharmClient
 
 	public SecurPharmActionResult decommission(@NonNull final ProductData productData)
 	{
-		final UriComponentsBuilder uri = prepareDecommisionURL(productData, DecommissionAction.DESTROY);
-		return getSecurPharmActionResult(DecommissionAction.DESTROY, uri);
+		final UriComponentsBuilder url = prepareActionURL(productData, DecommissionAction.DESTROY);
+		final SecurPharmRequestLogData logData = executeAction(url);
+
+		return SecurPharmActionResult.builder()
+				.action(DecommissionAction.DESTROY)
+				.productData(productData)
+				.requestLogData(logData)
+				.build();
 	}
 
 	public SecurPharmActionResult undoDecommission(
 			@NonNull final ProductData productData,
-			@NonNull final String trx)
+			@NonNull final String serverTransactionId)
 	{
-		final UriComponentsBuilder url = prepareDecommisionURL(productData, DecommissionAction.UNDO_DISPENSE)
-				.queryParam(QUERY_PARAM_TRX, trx);
+		final UriComponentsBuilder url = prepareActionURL(productData, DecommissionAction.UNDO_DISPENSE)
+				.queryParam(QUERY_PARAM_TRX, serverTransactionId);
 
-		return getSecurPharmActionResult(DecommissionAction.UNDO_DISPENSE, url);
+		final SecurPharmRequestLogData logData = executeAction(url);
+
+		return SecurPharmActionResult.builder()
+				.action(DecommissionAction.UNDO_DISPENSE)
+				.productData(productData)
+				.requestLogData(logData)
+				.build();
 	}
 
-	private SecurPharmActionResult getSecurPharmActionResult(
-			@NonNull final DecommissionAction action,
-			@NonNull final UriComponentsBuilder url)
+	private SecurPharmRequestLogData executeAction(final UriComponentsBuilder url)
 	{
+
 		final SecurPharmRequestLogDataBuilder logData = SecurPharmRequestLogData.builder()
 				.requestTime(Instant.now())
 				.requestUrl(config.getPharmaAPIBaseUrl() + url.build());
 
-		boolean error = false;
 		try
 		{
 			final ResponseEntity<String> response = performRequest(url, HttpMethod.PUT);
@@ -231,28 +238,23 @@ public class SecurPharmClient
 			if (response.getStatusCode() == HttpStatus.OK && apiResponse.isTransactionSet())
 			{
 				logData.serverTransactionId(apiResponse.getServerTransactionId());
-				error = true;
+				logData.error(false);
 			}
 			else
 			{
-				error = false;
+				logData.error(true);
 			}
 		}
 		catch (final HttpClientErrorException ex)
 		{
 			logger.error("Got HTTP client error", ex);
 
-			error = true;
+			logData.error(true);
 			logData.responseTime(Instant.now());
 			logData.responseData(ex.getStatusCode() + ex.getResponseBodyAsString());
 		}
 
-		return SecurPharmActionResult.builder()
-				.error(error)
-				// .productDataResult(productDataResult) // TODO
-				.requestLogData(logData.build())
-				.action(action)
-				.build();
+		return logData.build();
 	}
 
 	private ResponseEntity<String> performRequest(final UriComponentsBuilder uri, final HttpMethod method)
@@ -266,7 +268,7 @@ public class SecurPharmClient
 		return apiRestTemplate.exchange(uri.toUriString(), method, entity, String.class);
 	}
 
-	private UriComponentsBuilder prepareDecommisionURL(
+	private UriComponentsBuilder prepareActionURL(
 			@NonNull final ProductData productData,
 			@NonNull final DecommissionAction action)
 	{

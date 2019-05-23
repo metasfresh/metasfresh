@@ -87,7 +87,6 @@ public class SecurPharmServiceTest
 		// .clientTransactionID("clientid")
 		// .build();
 		final SecurPharmProductDataResult expectedResult = SecurPharmProductDataResult.builder()
-				.error(false)
 				.requestLogData(SecurPharmRequestLogData.builder()
 						.responseTime(Instant.now())
 						.requestTime(Instant.now())
@@ -95,6 +94,7 @@ public class SecurPharmServiceTest
 						.responseData("data")
 						.clientTransactionId("id")
 						.clientTransactionId("clientid")
+						.error(false)
 						.build())
 				.productData(ProductData.builder()
 						.active(true)

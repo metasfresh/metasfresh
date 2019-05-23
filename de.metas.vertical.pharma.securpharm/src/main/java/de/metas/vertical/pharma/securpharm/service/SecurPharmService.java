@@ -31,16 +31,18 @@ import org.springframework.stereotype.Service;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.i18n.IMsgBL;
-import de.metas.inventory.InventoryId;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
+import de.metas.vertical.pharma.securpharm.model.UndoDecommisionRequest;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 import lombok.NonNull;
 
@@ -68,6 +70,11 @@ public class SecurPharmService
 		return configRespository.isConfigured();
 	}
 
+	public SecurPharmProductDataResult getProductDataResultById(@NonNull final SecurPharmProductDataResultId productDataResultId)
+	{
+		return resultService.getProductDataResultById(productDataResultId);
+	}
+
 	public SecurPharmProductDataResult getAndSaveProductData(
 			@NonNull final String datamatrix,
 			@NonNull final HuId huId)
@@ -82,23 +89,23 @@ public class SecurPharmService
 		if (productDataResult.isError())
 		{
 			sendNotification(
-					client.getConfig(),
-					productDataResult.getRecordRef(),
-					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE);
+					client.getConfig().getSupportUserId(),
+					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
+					productDataResult.getRecordRef());
 		}
 
 		return productDataResult;
 	}
 
 	private void sendNotification(
-			@NonNull final SecurPharmConfig config,
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final String notificationMsgKey)
+			@NonNull final UserId recipientUserId,
+			@NonNull final String notificationADMessage,
+			@NonNull final TableRecordReference recordRef)
 	{
-		final String message = Services.get(IMsgBL.class).getMsg(Env.getCtx(), notificationMsgKey);
+		final String message = Services.get(IMsgBL.class).getMsg(Env.getCtx(), notificationADMessage);
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-				.recipientUserId(config.getSupportUserId())
+				.recipientUserId(recipientUserId)
 				.contentPlain(message)
 				.targetAction(UserNotificationRequest.TargetRecordAction.of(recordRef))
 				.build();
@@ -107,58 +114,42 @@ public class SecurPharmService
 	}
 
 	@Async
-	public SecurPharmActionResult decommision(
-			@NonNull final SecurPharmProductDataResult productDataResult,
-			@NonNull final InventoryId inventoryId)
+	public void decommision(@NonNull final DecommisionRequest request)
 	{
 		final SecurPharmClient client = clientFactory.createClient();
-		final SecurPharmActionResult actionResult = client.decommission(productDataResult.getProductData());
+		final SecurPharmActionResult actionResult = client.decommission(request.getProductData());
 
-		actionResult.setInventoryId(inventoryId);
-		actionResult.setProductDataResult(productDataResult);
+		actionResult.setInventoryId(request.getInventoryId());
+		actionResult.setProductDataResultId(request.getProductDataResultId());
 
-		handleActionResult(actionResult, inventoryId, client.getConfig());
-
-		return actionResult;
+		handleActionResult(actionResult, client.getConfig());
 	}
 
 	@Async
-	public SecurPharmActionResult undoDecommision(
-			@NonNull final SecurPharmActionResult initialActionResult,
-			@NonNull final InventoryId inventoryId)
+	public void undoDecommision(@NonNull final UndoDecommisionRequest request)
 	{
 		final SecurPharmClient client = clientFactory.createClient();
-		final SecurPharmProductDataResult productDataResult = initialActionResult.getProductDataResult();
 		final SecurPharmActionResult actionResult = client.undoDecommission(
-				productDataResult.getProductData(),
-				initialActionResult.getRequestLogData().getServerTransactionId());
+				request.getProductData(),
+				request.getServerTransactionId());
 
-		actionResult.setInventoryId(inventoryId);
-		actionResult.setProductDataResult(productDataResult);
+		actionResult.setInventoryId(request.getInventoryId());
+		actionResult.setProductDataResultId(request.getProductDataResultId());
 
-		handleActionResult(actionResult, inventoryId, client.getConfig());
-
-		return actionResult;
+		handleActionResult(actionResult, client.getConfig());
 	}
 
 	private void handleActionResult(
 			@NonNull final SecurPharmActionResult result,
-			@NonNull InventoryId inventoryId,
 			@NonNull final SecurPharmConfig config)
 	{
-		result.setInventoryId(inventoryId);
 		resultService.saveNew(result);
 		if (result.isError())
 		{
 			sendNotification(
-					config,
-					TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId),
-					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE);
+					config.getSupportUserId(),
+					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
+					TableRecordReference.of(I_M_Inventory.Table_Name, result.getInventoryId()));
 		}
-	}
-
-	public SecurPharmProductDataResult getProductDataResultById(@NonNull final SecurPharmProductDataResultId productDataResultId)
-	{
-		return resultService.getProductDataResultById(productDataResultId);
 	}
 }

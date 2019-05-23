@@ -61,7 +61,6 @@ public class SecurPharmResultRepository
 
 		final I_M_Securpharm_Productdata_Result record = newInstance(I_M_Securpharm_Productdata_Result.class);
 		record.setM_HU_ID(result.getHuId().getRepoId());
-		record.setIsError(result.isError());
 
 		final ProductData productData = result.getProductData();
 		if (productData != null)
@@ -76,6 +75,7 @@ public class SecurPharmResultRepository
 		}
 
 		final SecurPharmRequestLogData logData = result.getRequestLogData();
+		record.setIsError(logData.isError());
 		record.setRequestUrl(logData.getRequestUrl());
 		record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
 		record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
@@ -93,11 +93,11 @@ public class SecurPharmResultRepository
 		final I_M_Securpharm_Action_Result record = newInstance(I_M_Securpharm_Action_Result.class);
 
 		record.setAction(result.getAction().getCode());
-		record.setIsError(result.isError());
-
 		record.setM_Inventory_ID(result.getInventoryId().getRepoId());
-		record.setM_Securpharm_Productdata_Result_ID(result.getProductDataResult().getId().getRepoId());
+		record.setM_Securpharm_Productdata_Result_ID(result.getProductDataResultId().getRepoId());
+
 		final SecurPharmRequestLogData logData = result.getRequestLogData();
+		record.setIsError(logData.isError());
 		record.setRequestUrl(logData.getRequestUrl());
 		record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
 		record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
@@ -152,8 +152,8 @@ public class SecurPharmResultRepository
 			@NonNull InventoryId inventoryId)
 	{
 		return SecurPharmActionResult.builder()
-				.error(record.isError())
-				.productDataResult(productDataResult)
+				.productDataResultId(productDataResult.getId())
+				.productData(productDataResult.getProductData())
 				.requestLogData(toRequestLogData(record))
 				.action(DecommissionAction.ofCode(record.getAction()))
 				.inventoryId(inventoryId)
@@ -169,6 +169,7 @@ public class SecurPharmResultRepository
 				.requestUrl(record.getRequestUrl())
 				.clientTransactionId(record.getTransactionIDClient())
 				.serverTransactionId(record.getTransactionIDServer())
+				.error(record.isError())
 				.build();
 	}
 
@@ -209,11 +210,10 @@ public class SecurPharmResultRepository
 
 	private static SecurPharmProductDataResult toProductDataResult(@NonNull final I_M_Securpharm_Productdata_Result record)
 	{
-		final boolean error = record.isError();
+		final SecurPharmRequestLogData logData = toRequestLogData(record);
 		return SecurPharmProductDataResult.builder()
-				.error(error)
-				.productData(!error ? toProductData(record) : null)
-				.requestLogData(toRequestLogData(record))
+				.productData(!logData.isError() ? toProductData(record) : null)
+				.requestLogData(logData)
 				//
 				.id(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
@@ -229,6 +229,7 @@ public class SecurPharmResultRepository
 				.requestUrl(record.getRequestUrl())
 				.clientTransactionId(record.getTransactionIDClient())
 				.serverTransactionId(record.getTransactionIDServer())
+				.error(record.isError())
 				.build();
 		return logData;
 	}

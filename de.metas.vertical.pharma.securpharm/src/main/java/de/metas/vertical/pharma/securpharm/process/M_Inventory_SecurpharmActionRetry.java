@@ -31,8 +31,10 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
+import de.metas.vertical.pharma.securpharm.model.UndoDecommisionRequest;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
@@ -94,7 +96,11 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 				.orElseThrow(() -> new AdempiereException("@NotFound@"));
 		if (actionResult.isError())
 		{
-			securPharmService.decommision(actionResult.getProductDataResult(), inventoryId);
+			securPharmService.decommision(DecommisionRequest.builder()
+					.productData(actionResult.getProductData())
+					.productDataResultId(actionResult.getProductDataResultId())
+					.inventoryId(inventoryId)
+					.build());
 		}
 		else
 		{
@@ -103,7 +109,12 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 					.orElseThrow(() -> new AdempiereException("@NotFound@"));
 			if (undoActionResult.isError())
 			{
-				securPharmService.undoDecommision(undoActionResult, inventoryId);
+				securPharmService.undoDecommision(UndoDecommisionRequest.builder()
+						.productData(undoActionResult.getProductData())
+						.serverTransactionId(undoActionResult.getServerTransactionId())
+						.productDataResultId(undoActionResult.getProductDataResultId())
+						.inventoryId(inventoryId)
+						.build());
 			}
 		}
 

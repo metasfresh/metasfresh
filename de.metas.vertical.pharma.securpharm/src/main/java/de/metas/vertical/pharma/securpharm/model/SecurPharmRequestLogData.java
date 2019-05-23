@@ -48,4 +48,6 @@ public class SecurPharmRequestLogData
 
 	@NonNull
 	Instant responseTime;
+
+	boolean error;
 }
