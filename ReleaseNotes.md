@@ -27,6 +27,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#2263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2263) HU Panel too small in material receipt candidates' modal overlay
   * [#2265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2265) Notifications and user menu will not close
+  * [#2272](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2272) frontend fields readonly during (patch) request
 
 # metasfresh 5.104
 
