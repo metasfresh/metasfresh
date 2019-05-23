@@ -4,13 +4,12 @@ import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_I_BPartner_GlobalID;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -51,7 +50,10 @@ public class RepelnishmentImportTableSqlUpdater
 	public void updateReplenishmentImortTable(@NonNull final String whereClause)
 	{
 		dbUpdateProducIds(whereClause);
-
+		dbUpdateWarehouse(whereClause);
+		dbUpdateSourceWarehouse(whereClause);
+		dbUpdateLocators(whereClause);
+		
 		dbUpdateErrorMessages(whereClause);
 	}
 
@@ -71,6 +73,40 @@ public class RepelnishmentImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Found Products={}", no);
 	}
+	
+	private void dbUpdateWarehouse(@NonNull final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
+				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE w.value = ") 
+				.append(I_I_Replenish.COLUMNNAME_WarehouseValue)
+				.append(" ) WHERE M_Warehouse_ID IS NULL AND WarehouseValue IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	private void dbUpdateSourceWarehouse(@NonNull final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
+				.append("SET M_WarehouseSource_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE w.value = ") 
+				.append(I_I_Replenish.COLUMNNAME_WarehouseSourceValue)
+				.append(" ) WHERE M_WarehouseSource_ID IS NULL AND WarehouseSourceValue IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	private void dbUpdateLocators(@NonNull final String whereClause)
+	{
+		StringBuilder sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
+				.append("SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l ")
+				.append("WHERE i.LocatorValue=l.Value AND i.M_Warehouse_ID = l.M_Warehouse_ID AND i.AD_Client_ID=l.AD_Client_ID) ")
+				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
 
 	private void dbUpdateErrorMessages(final String whereClause)
 	{
@@ -78,11 +114,20 @@ public class RepelnishmentImportTableSqlUpdater
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Partner is mandatory, ' ")
-				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Product_ID + " IS NULL ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Product is mandatory, ' ")
+				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Product_ID + " IS NULL " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Value is mandatory={}", no);
+		logger.info("Product is mandatory={}", no);
+		
+		
+		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name)
+				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Wareouse is mandatory, ' ")
+				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Warehouse_ID + " IS NULL " + I_I_Replenish.COLUMNNAME_WarehouseValue + " IS NOT NULL ")
+				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Warehouse is mandatory={}", no);
 	}
 }
