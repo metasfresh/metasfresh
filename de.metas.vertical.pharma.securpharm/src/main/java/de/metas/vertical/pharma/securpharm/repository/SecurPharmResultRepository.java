@@ -127,12 +127,14 @@ public class SecurPharmResultRepository
 		}
 
 		//
-		// Retrieve Product Data Result
+		// Retrieve Product Data
 		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(actionResultRecord.getM_Securpharm_Productdata_Result_ID());
-		final SecurPharmProductDataResult productDataResult = getProductDataResultById(productDataResultId);
+		final ProductData productData = getProductDataResultById(productDataResultId).getProductData();
 
-		final SecurPharmActionResult actionResult = toActionResult(actionResultRecord, productDataResult, inventoryId);
-		return Optional.of(actionResult);
+		return Optional.of(toActionResult(
+				actionResultRecord,
+				productData,
+				inventoryId));
 	}
 
 	public SecurPharmProductDataResult getProductDataResultById(@NonNull final SecurPharmProductDataResultId productDataResultId)
@@ -147,13 +149,15 @@ public class SecurPharmResultRepository
 	}
 
 	private static SecurPharmActionResult toActionResult(
-			@NonNull I_M_Securpharm_Action_Result record,
-			@NonNull final SecurPharmProductDataResult productDataResult,
-			@NonNull InventoryId inventoryId)
+			@NonNull final I_M_Securpharm_Action_Result record,
+			@NonNull final ProductData productData,
+			@NonNull final InventoryId inventoryId)
 	{
+		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID());
+
 		return SecurPharmActionResult.builder()
-				.productDataResultId(productDataResult.getId())
-				.productData(productDataResult.getProductData())
+				.productDataResultId(productDataResultId)
+				.productData(productData)
 				.requestLogData(toRequestLogData(record))
 				.action(DecommissionAction.ofCode(record.getAction()))
 				.inventoryId(inventoryId)
@@ -215,8 +219,9 @@ public class SecurPharmResultRepository
 				.productData(!logData.isError() ? toProductData(record) : null)
 				.requestLogData(logData)
 				//
-				.id(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
+				//
+				.id(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))
 				//
 				.build();
 	}

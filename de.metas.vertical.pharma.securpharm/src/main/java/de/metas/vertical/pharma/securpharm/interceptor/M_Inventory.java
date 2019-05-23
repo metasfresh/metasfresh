@@ -81,15 +81,15 @@ public class M_Inventory
 		if (securPharmService.hasConfig())
 		{
 			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-			final SecurPharmActionResult actionResult = resultRepository
+			final SecurPharmActionResult lastDecommisionActionResult = resultRepository
 					.getActionResultByInventoryId(inventoryId, DecommissionAction.DESTROY)
 					.orElse(null);
-			if (actionResult != null && !actionResult.isError())
+			if (lastDecommisionActionResult != null && !lastDecommisionActionResult.isError())
 			{
 				securPharmService.undoDecommision(UndoDecommisionRequest.builder()
-						.productData(actionResult.getProductData())
-						.serverTransactionId(actionResult.getServerTransactionId())
-						.productDataResultId(actionResult.getProductDataResultId())
+						.productData(lastDecommisionActionResult.getProductData())
+						.serverTransactionId(lastDecommisionActionResult.getServerTransactionId())
+						.productDataResultId(lastDecommisionActionResult.getProductDataResultId())
 						.inventoryId(inventoryId)
 						.build());
 			}

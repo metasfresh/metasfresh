@@ -39,11 +39,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 
@@ -75,52 +75,53 @@ public class SecurPharmServiceTest
 	public void testGetAndSaveProductData() throws Exception
 	{
 		final String dataMatrix = "datamatrix";
-		final HuId huId = HuId.ofRepoId(1);
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
-		// final SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
-		// .responseTime(Instant.now())
-		// .requestTime(Instant.now())
-		// .requestUrl("url")
-		// .responseData("data")
-		// .clientTransactionID("id")
-		// .clientTransactionID("clientid")
-		// .build();
-		final SecurPharmProductDataResult expectedResult = SecurPharmProductDataResult.builder()
-				.requestLogData(SecurPharmRequestLogData.builder()
-						.responseTime(Instant.now())
-						.requestTime(Instant.now())
-						.requestUrl("url")
-						.responseData("data")
-						.clientTransactionId("id")
-						.clientTransactionId("clientid")
-						.error(false)
-						.build())
-				.productData(ProductData.builder()
-						.active(true)
-						.expirationDate(LocalDate.now())
-						.lot("lot")
-						.productCode("product code")
-						.productCodeType(ProductCodeType.GTIN)
-						.serialNumber("serial nr")
-						.build())
+		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
+				.responseTime(Instant.now())
+				.requestTime(Instant.now())
+				.requestUrl("url")
+				.responseData("data")
+				.clientTransactionId("id")
+				.clientTransactionId("clientid")
+				.error(false)
 				.build();
-		Mockito.when(client.decodeDataMatrix(dataMatrix)).thenReturn(expectedResult);
+		final ProductData productData = ProductData.builder()
+				.active(true)
+				.expirationDate(LocalDate.now())
+				.lot("lot")
+				.productCode("product code")
+				.productCodeType(ProductCodeType.GTIN)
+				.serialNumber("serial nr")
+				.build();
 
-		expectedResult.setHuId(HuId.ofRepoId(1));
-		expectedResult.setId(SecurPharmProductDataResultId.ofRepoId(1));
+		Mockito.when(client.decodeDataMatrix(dataMatrix))
+				.thenReturn(DecodeDataMatrixResponse.builder()
+						.logData(logData)
+						.productData(productData)
+						.build());
+
+		// expectedResult.setHuId(HuId.ofRepoId(1));
+		// expectedResult.setId(SecurPharmProductDataResultId.ofRepoId(1));
 		// Mockito.when(resultService.saveNew(expectedResult)).thenReturn(expectedResult);
 
-		final SecurPharmConfig config = SecurPharmConfig.builder()
-				.applicationUUID("uuid")
-				.authBaseUrl("url")
-				.pharmaAPIBaseUrl("url")
-				.certificatePath("path")
-				.supportUserId(UserId.METASFRESH)
-				.keystorePassword("passw").build();
-		Mockito.when(client.getConfig()).thenReturn(config);
+		Mockito.when(client.getConfig())
+				.thenReturn(SecurPharmConfig.builder()
+						.applicationUUID("uuid")
+						.authBaseUrl("url")
+						.pharmaAPIBaseUrl("url")
+						.certificatePath("path")
+						.supportUserId(UserId.METASFRESH)
+						.keystorePassword("passw")
+						.build());
 
+		final HuId huId = HuId.ofRepoId(1);
 		final SecurPharmProductDataResult actualResult = underTest.getAndSaveProductData(dataMatrix, huId);
-		assertThat(actualResult).isEqualTo(expectedResult);
+		assertThat(actualResult)
+				.isEqualTo(SecurPharmProductDataResult.builder()
+						.requestLogData(logData)
+						.productData(productData)
+						.huId(huId)
+						.build());
 	}
 }

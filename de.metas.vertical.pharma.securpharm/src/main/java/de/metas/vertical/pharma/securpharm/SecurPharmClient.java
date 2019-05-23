@@ -44,12 +44,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData.SecurPharmRequestLogDataBuilder;
 import de.metas.vertical.pharma.securpharm.model.schema.APIResponse;
@@ -98,7 +98,7 @@ public class SecurPharmClient
 		authenticator = SecurPharmClientAuthenticator.ofConfig(config);
 	}
 
-	public SecurPharmProductDataResult decodeDataMatrix(@NonNull final String dataMatrix)
+	public DecodeDataMatrixResponse decodeDataMatrix(@NonNull final String dataMatrix)
 	{
 		final String clientTrx = UUID.randomUUID().toString();
 		final UriComponentsBuilder url = UriComponentsBuilder.fromPath(API_RELATIVE_PATH_UIS)
@@ -145,9 +145,9 @@ public class SecurPharmClient
 			logData.responseTime(Instant.now());
 		}
 
-		return SecurPharmProductDataResult.builder()
+		return DecodeDataMatrixResponse.builder()
+				.logData(logData.build())
 				.productData(productData)
-				.requestLogData(logData.build())
 				.build();
 	}
 

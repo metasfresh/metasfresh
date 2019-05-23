@@ -37,6 +37,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
@@ -81,8 +82,14 @@ public class SecurPharmService
 	{
 		final SecurPharmClient client = clientFactory.createClient();
 
-		final SecurPharmProductDataResult productDataResult = client.decodeDataMatrix(datamatrix);
-		productDataResult.setHuId(huId);
+		final DecodeDataMatrixResponse decodeResult = client.decodeDataMatrix(datamatrix);
+
+		final SecurPharmProductDataResult productDataResult = SecurPharmProductDataResult.builder()
+				.requestLogData(decodeResult.getLogData())
+				.productData(decodeResult.getProductData())
+				.huId(huId)
+				// .id(null)
+				.build();
 
 		resultService.saveNew(productDataResult);
 

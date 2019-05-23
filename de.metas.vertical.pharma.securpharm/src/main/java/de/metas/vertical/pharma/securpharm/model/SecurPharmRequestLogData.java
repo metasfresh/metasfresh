@@ -29,6 +29,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+/**
+ * API communication informations
+ */
 @Value
 @Builder
 public class SecurPharmRequestLogData

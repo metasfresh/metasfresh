@@ -34,19 +34,22 @@ import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 
+/**
+ * Contains the product informations we acquired from server.
+ */
 @Data
 @FieldDefaults(makeFinal = true)
 @Builder
 public class SecurPharmProductDataResult
 {
+	/** Set if not {@link #isError()} */
 	@Nullable
 	private ProductData productData;
 
 	@NonNull
 	private SecurPharmRequestLogData requestLogData;
 
-	@Nullable
-	@NonFinal
+	@NonNull
 	private HuId huId;
 
 	@Nullable

@@ -33,8 +33,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.junit.Ignore;
 
 import de.metas.user.UserId;
+import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 
 @Ignore
 public class SecurPharmClientManualTest
@@ -54,8 +54,8 @@ public class SecurPharmClientManualTest
 		final String code = fromBase64("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
 		System.out.println("Sending code: " + code);
 
-		final SecurPharmProductDataResult productData = client.decodeDataMatrix(code);
-		System.out.println("response: " + productData);
+		final DecodeDataMatrixResponse decodeResponse = client.decodeDataMatrix(code);
+		System.out.println("response: " + decodeResponse);
 
 	}
 
