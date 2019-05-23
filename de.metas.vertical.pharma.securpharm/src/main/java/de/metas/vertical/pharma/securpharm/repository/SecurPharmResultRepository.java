@@ -92,7 +92,7 @@ public class SecurPharmResultRepository
 
 		final I_M_Securpharm_Action_Result record = newInstance(I_M_Securpharm_Action_Result.class);
 
-		record.setAction(result.getAction().name());
+		record.setAction(result.getAction().getCode());
 		record.setIsError(result.isError());
 
 		record.setM_Inventory_ID(result.getInventoryId().getRepoId());
@@ -127,7 +127,7 @@ public class SecurPharmResultRepository
 		}
 
 		//
-		// Retrieve Product Data Result if any
+		// Retrieve Product Data Result
 		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(actionResultRecord.getM_Securpharm_Productdata_Result_ID());
 		final SecurPharmProductDataResult productDataResult = getProductDataResultById(productDataResultId);
 
@@ -155,7 +155,7 @@ public class SecurPharmResultRepository
 				.error(record.isError())
 				.productDataResult(productDataResult)
 				.requestLogData(toRequestLogData(record))
-				.action(DecommissionAction.valueOf(record.getAction()))
+				.action(DecommissionAction.ofCode(record.getAction()))
 				.inventoryId(inventoryId)
 				.id(SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID()))
 				.build();
@@ -174,7 +174,10 @@ public class SecurPharmResultRepository
 
 	public Optional<SecurPharmProductDataResult> getProductDataResultByInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		final HuId huId = Services.get(IInventoryDAO.class)
+		final IInventoryDAO inventoryRepo = Services.get(IInventoryDAO.class);
+
+		// TODO: is this correct?! what if we have more HUs...
+		final HuId huId = inventoryRepo
 				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 				.stream()
 				.findFirst()
@@ -185,6 +188,11 @@ public class SecurPharmResultRepository
 			return Optional.empty();
 		}
 
+		return getProductDataResultByHuId(huId);
+	}
+
+	private Optional<SecurPharmProductDataResult> getProductDataResultByHuId(@NonNull final HuId huId)
+	{
 		final I_M_Securpharm_Productdata_Result record = queryBL
 				.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
 				.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId)
@@ -233,7 +241,7 @@ public class SecurPharmResultRepository
 				.inactiveReason(record.getInactiveReason())
 				.lot(record.getLotNumber())
 				.productCode(record.getProductCode())
-				.productCodeType(ProductCodeType.valueOf(record.getProductCodeType()))
+				.productCodeType(ProductCodeType.ofCode(record.getProductCodeType()))
 				.serialNumber(record.getSerialNumber())
 				.build();
 	}

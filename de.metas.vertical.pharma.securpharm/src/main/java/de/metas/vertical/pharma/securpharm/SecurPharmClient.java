@@ -23,21 +23,11 @@
 
 package de.metas.vertical.pharma.securpharm;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.KeyStore;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.UUID;
 
-import javax.net.ssl.SSLContext;
-
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -46,9 +36,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -66,39 +53,39 @@ import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData.SecurPharmRequestLogDataBuilder;
 import de.metas.vertical.pharma.securpharm.model.schema.APIResponse;
-import de.metas.vertical.pharma.securpharm.model.schema.AuthResponse;
 import de.metas.vertical.pharma.securpharm.model.schema.State;
 import lombok.Getter;
 import lombok.NonNull;
 
 public class SecurPharmClient
 {
-	public static SecurPharmClient createAndAuthenticate(@NonNull final SecurPharmConfig config)
+	static SecurPharmClient createAndAuthenticate(@NonNull final SecurPharmConfig config)
 	{
-		try
-		{
-			final SecurPharmClient client = new SecurPharmClient(config);
-			client.getAccessToken(); // make sure it's authenticated
-			return client;
-		}
-		catch (final AdempiereException ex)
-		{
-			throw ex;
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException(SecurPharmConstants.AUTHORIZATION_FAILED_MESSAGE, AdempiereException.extractCause(ex));
-		}
+		final SecurPharmClient client = new SecurPharmClient(config);
+		client.getAuthorizationHttpHeader(); // make sure it's authenticated
+		return client;
 	}
 
 	private static final Logger logger = LogManager.getLogger(SecurPharmClient.class);
+
+	private static final String HTTP_HEADER_AUTHORIZATION = "Authorization";
+	private static final String API_RELATIVE_PATH_UIS = "/uis/";
+	private static final String QUERY_PARAM_CTX = "ctx";
+	private static final String QUERY_PARAM_SID = "sid";
+	private static final String QUERY_PARAM_TRX = "trx";
+	private static final String QUERY_PARAM_LOT = "lot";
+	private static final String QUERY_PARAM_EXP = "exp";
+	private static final String QUERY_PARAM_PCS = "pcs";
+	private static final String QUERY_PARAM_ACT = "act";
+	private static final String API_RELATIVE_PATH_PRODUCTS = "/products";
+	private static final String API_RELATIVE_PATH_PACKS = "packs";
+	private static final String DELIMITER = ",";
 
 	@Getter
 	private final SecurPharmConfig config;
 	private final RestTemplate apiRestTemplate;
 	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
-
-	private AuthResponse _authResponse; // lazy
+	private final SecurPharmClientAuthenticator authenticator;
 
 	private SecurPharmClient(@NonNull final SecurPharmConfig config)
 	{
@@ -107,15 +94,17 @@ public class SecurPharmClient
 		apiRestTemplate = new RestTemplateBuilder()
 				.rootUri(config.getPharmaAPIBaseUrl())
 				.build();
+
+		authenticator = SecurPharmClientAuthenticator.ofConfig(config);
 	}
 
 	public SecurPharmProductDataResult decodeDataMatrix(@NonNull final String dataMatrix)
 	{
 		final String clientTrx = UUID.randomUUID().toString();
-		final UriComponentsBuilder url = UriComponentsBuilder.fromPath(SecurPharmConstants.API_RELATIVE_PATH_UIS)
+		final UriComponentsBuilder url = UriComponentsBuilder.fromPath(API_RELATIVE_PATH_UIS)
 				.path(Base64.getEncoder().encodeToString(dataMatrix.getBytes()))
-				.queryParam(SecurPharmConstants.QUERY_PARAM_CTX, clientTrx)
-				.queryParam(SecurPharmConstants.QUERY_PARAM_SID, config.getApplicationUUID());
+				.queryParam(QUERY_PARAM_CTX, clientTrx)
+				.queryParam(QUERY_PARAM_SID, config.getApplicationUUID());
 
 		final SecurPharmRequestLogDataBuilder logData = SecurPharmRequestLogData.builder()
 				.clientTransactionId(clientTrx)
@@ -185,7 +174,7 @@ public class SecurPharmClient
 			productDataBuilder.active(false);
 			if (apiResponse.getPack().getReasons() != null)
 			{
-				productDataBuilder.inactiveReason(String.join(SecurPharmConstants.DELIMITER, apiResponse.getPack().getReasons()));
+				productDataBuilder.inactiveReason(String.join(DELIMITER, apiResponse.getPack().getReasons()));
 			}
 		}
 
@@ -220,7 +209,7 @@ public class SecurPharmClient
 			@NonNull final String trx)
 	{
 		final UriComponentsBuilder url = prepareDecommisionURL(productData, action)
-				.queryParam(SecurPharmConstants.QUERY_PARAM_TRX, trx);
+				.queryParam(QUERY_PARAM_TRX, trx);
 
 		return getSecurPharmActionResult(action, url);
 	}
@@ -273,7 +262,7 @@ public class SecurPharmClient
 	{
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
-		httpHeaders.set(SecurPharmConstants.HEADER_AUTHORIZATION, SecurPharmConstants.AUTHORIZATION_TYPE_BEARER + getAccessToken());
+		httpHeaders.set(HTTP_HEADER_AUTHORIZATION, getAuthorizationHttpHeader());
 
 		final HttpEntity<?> entity = new HttpEntity<>(httpHeaders);
 
@@ -287,103 +276,20 @@ public class SecurPharmClient
 		final String encodedSerialNumber = Base64.getEncoder().encodeToString(productData.getSerialNumber().getBytes());
 		final String encodedLot = Base64.getEncoder().encodeToString(productData.getLot().getBytes());
 
-		return UriComponentsBuilder.fromPath(SecurPharmConstants.API_RELATIVE_PATH_PRODUCTS)
+		return UriComponentsBuilder.fromPath(API_RELATIVE_PATH_PRODUCTS)
 				.path(productData.getProductCode())
-				.path(SecurPharmConstants.API_RELATIVE_PATH_PACKS)
+				.path(API_RELATIVE_PATH_PACKS)
 				.path(encodedSerialNumber)
-				.queryParam(SecurPharmConstants.QUERY_PARAM_CTX, UUID.randomUUID().toString())
-				.queryParam(SecurPharmConstants.QUERY_PARAM_SID, config.getApplicationUUID())
-				.queryParam(SecurPharmConstants.QUERY_PARAM_LOT, encodedLot)
-				.queryParam(SecurPharmConstants.QUERY_PARAM_EXP, productData.getExpirationDate())
-				.queryParam(SecurPharmConstants.QUERY_PARAM_PCS, productData.getProductCodeType().name())
-				.queryParam(SecurPharmConstants.QUERY_PARAM_ACT, action.name());
+				.queryParam(QUERY_PARAM_CTX, UUID.randomUUID().toString())
+				.queryParam(QUERY_PARAM_SID, config.getApplicationUUID())
+				.queryParam(QUERY_PARAM_LOT, encodedLot)
+				.queryParam(QUERY_PARAM_EXP, productData.getExpirationDate())
+				.queryParam(QUERY_PARAM_PCS, productData.getProductCodeType().getCode())
+				.queryParam(QUERY_PARAM_ACT, action.getCode());
 	}
 
-	private String getAccessToken()
+	private String getAuthorizationHttpHeader()
 	{
-		return getAuthResponse().getAccessToken();
-	}
-
-	private synchronized AuthResponse getAuthResponse()
-	{
-		AuthResponse authResponse = _authResponse;
-
-		if (authResponse == null
-				|| authResponse.isExpired())
-		{
-			authResponse = _authResponse = authenticate(config);
-		}
-
-		return authResponse;
-	}
-
-	private static AuthResponse authenticate(@NonNull final SecurPharmConfig config)
-	{
-		try
-		{
-			final SSLContext sslContext = createSSLContext(config);
-
-			final HttpClient client = HttpClients.custom()
-					.setSSLContext(sslContext)
-					.build();
-
-			final RestTemplate restTemplate = new RestTemplate();
-			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(client));
-
-			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-			final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-			params.add(SecurPharmConstants.AUTH_PARAM_GRANT_TYPE, SecurPharmConstants.AUTH_PARAM_GRANT_TYPE_VALUE);
-			params.add(SecurPharmConstants.AUTH_PARAM_CLIENT_ID, SecurPharmConstants.AUTH_PARAM_CLIENT_ID_VALUE);
-
-			final HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-			final ResponseEntity<AuthResponse> response = restTemplate.postForEntity(config.getAuthBaseUrl() + SecurPharmConstants.AUTH_RELATIVE_PATH, request, AuthResponse.class);
-			final AuthResponse authResponse = response.getBody();
-			if (response.getStatusCode() == HttpStatus.OK)
-			{
-				return authResponse;
-			}
-			else
-			{
-				throw new AdempiereException(SecurPharmConstants.AUTHORIZATION_FAILED_MESSAGE)
-						.appendParametersToMessage()
-						.setParameter(SecurPharmConstants.HTTP_STATUS, response.getStatusCode())
-						.setParameter(SecurPharmConstants.ERROR, authResponse.getError())
-						.setParameter(SecurPharmConstants.ERROR_DESCRIPTION, authResponse.getErrorDescription());
-			}
-		}
-		catch (final AdempiereException ex)
-		{
-			throw ex;
-		}
-		catch (final Exception ex)
-		{
-			final Throwable cause = AdempiereException.extractCause(ex);
-			throw new AdempiereException(SecurPharmConstants.AUTHORIZATION_FAILED_MESSAGE, cause);
-		}
-	}
-
-	private static SSLContext createSSLContext(final SecurPharmConfig config)
-	{
-		try
-		{
-			final char[] password = config.getKeystorePassword().toCharArray();
-			final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-			final File key = new File(config.getCertificatePath());
-			try (final InputStream in = new FileInputStream(key))
-			{
-				keyStore.load(in, password);
-			}
-
-			return SSLContextBuilder.create()
-					.loadKeyMaterial(keyStore, password)
-					.loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Failed creating SSL context for " + config, ex);
-		}
+		return authenticator.getAuthorizationHttpHeader();
 	}
 }

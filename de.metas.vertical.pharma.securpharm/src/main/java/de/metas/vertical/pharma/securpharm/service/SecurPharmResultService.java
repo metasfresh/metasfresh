@@ -51,19 +51,16 @@ public class SecurPharmResultService
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	public SecurPharmProductDataResult createAndSaveResult(@NonNull final SecurPharmProductDataResult result)
+	public void saveNew(@NonNull final SecurPharmProductDataResult result)
 	{
 		resultRepository.saveNew(result);
 		addResultAttachment(result.getRecordRef(), result.getRequestLogData());
-		return result;
-
 	}
 
-	public SecurPharmActionResult createAndSaveResult(@NonNull final SecurPharmActionResult result)
+	public void saveNew(@NonNull final SecurPharmActionResult result)
 	{
 		resultRepository.saveNew(result);
 		addResultAttachment(result.getRecordRef(), result.getRequestLogData());
-		return result;
 	}
 
 	private void addResultAttachment(

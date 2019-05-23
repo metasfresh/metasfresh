@@ -28,7 +28,10 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 public enum DecommissionAction implements ReferenceListAwareEnum
 {
 	// TODO check if action for UNDO is ok
-	DESTROY, UNDO_DISPENSE;
+	// FIXME: add values to X_M_Securpharm_Action_Result.Action's list
+	DESTROY, //
+	UNDO_DISPENSE //
+	;
 
 	@Override
 	public String getCode()

@@ -44,7 +44,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.securpharm.SecurPharmConstants;
 import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
@@ -57,7 +56,8 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	protected final SecurPharmService securPharmService = Adempiere.getBean(SecurPharmService.class);
 
-	@Param(mandatory = true, parameterName = SecurPharmConstants.SCAN_PROCESS_DATAMATRIX_PARAM)
+	public static final String PARAM_DataMatrix = "dataMatrix";
+	@Param(mandatory = true, parameterName = PARAM_DataMatrix)
 	private String dataMatrix;
 
 	@Override

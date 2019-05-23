@@ -78,14 +78,14 @@ public class SecurPharmServiceTest
 		final HuId huId = HuId.ofRepoId(1);
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
-//		final SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
-//				.responseTime(Instant.now())
-//				.requestTime(Instant.now())
-//				.requestUrl("url")
-//				.responseData("data")
-//				.clientTransactionID("id")
-//				.clientTransactionID("clientid")
-//				.build();
+		// final SecurPharmRequestLogData requestLogData = SecurPharmRequestLogData.builder()
+		// .responseTime(Instant.now())
+		// .requestTime(Instant.now())
+		// .requestUrl("url")
+		// .responseData("data")
+		// .clientTransactionID("id")
+		// .clientTransactionID("clientid")
+		// .build();
 		final SecurPharmProductDataResult expectedResult = SecurPharmProductDataResult.builder()
 				.error(false)
 				.requestLogData(SecurPharmRequestLogData.builder()
@@ -109,7 +109,7 @@ public class SecurPharmServiceTest
 
 		expectedResult.setHuId(HuId.ofRepoId(1));
 		expectedResult.setId(SecurPharmProductDataResultId.ofRepoId(1));
-		Mockito.when(resultService.createAndSaveResult(expectedResult)).thenReturn(expectedResult);
+		// Mockito.when(resultService.saveNew(expectedResult)).thenReturn(expectedResult);
 
 		final SecurPharmConfig config = SecurPharmConfig.builder()
 				.applicationUUID("uuid")
