@@ -59,11 +59,11 @@ public final class AgeValues
 		int age = 0;
 		for (final Integer value : agesInMonths)
 		{
-			age = value;
-			if (months >= value)
+			if (months < value)
 			{
 				break;
 			}
+			age = value;
 		}
 
 		return age;
