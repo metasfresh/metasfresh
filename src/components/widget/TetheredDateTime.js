@@ -69,8 +69,8 @@ class TetheredDateTime extends DateTime {
     return (
       <div className={classNames}>
         <TetherComponent
-          attachment="middle right"
-          targetAttachment="middle left"
+          attachment="top left"
+          targetAttachment="bottom left"
           constraints={[
             {
               to: 'scrollParent',
