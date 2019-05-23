@@ -1,8 +1,21 @@
 import { SysConfig } from '../../support/utils/sysconfig';
+import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
+import { sysconfigs } from '../../page_objects/sysconfig';
 
-describe('purchase order Test', function() {
+describe('SysConfig Tests', function() {
+  it('Filter for a sysconfig entry', function() {
+    sysconfigs.visit();
+
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoStringField('Name', 'webui.frontend.cors.enabled', false, null, true);
+
+    applyFilters();
+
+    sysconfigs.getRows().should('have.length', 1);
+  });
+
   const timestamp = new Date().getTime(); // used in the document names, for ordering
-
   const sysConfigName = `SysConfig ${timestamp}`;
   const sysConfigValue = `Value ${timestamp}`;
   const sysConfigDescription = `Description ${timestamp}`;

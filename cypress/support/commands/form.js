@@ -1,8 +1,11 @@
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
-  const expectedPatchValue = stringValue.replace(regex, '');
-  return expectedPatchValue;
+
+  if (!(stringValue).match) {
+    return stringValue;
+  }
+  return stringValue.replace(regex, '');
 }
 
 /*
@@ -81,13 +84,15 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
  */
-Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) => {
+Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, rewriteUrl = null) => {
   describe('Click on a checkbox field', function() {
     cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchCheckBoxAliasName = `patchCheckBox-${new Date().getTime()}`;
+
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*')).as('patchCheckBox');
-    cy.route('GET', new RegExp('/rest/api/window/.*')).as('getData');
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
 
     cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
@@ -99,7 +104,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal) =
     cy.get(path)
       .find('.input-checkbox-tick')
       .click({ force: true }) // we don't care if the checkbox scrolled out of view
-      .waitForFieldValue(`@patchCheckBox`, fieldName, expectedPatchValue);
+      .waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
   });
 });
 
@@ -207,13 +212,16 @@ Cypress.Commands.add(
  *
  * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
-Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
+Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null) => {
   describe('Select value in list field', function() {
     cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
+    const patchListFieldAliasName = `patchListField-${new Date().getTime()}`;
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+
     // here we want to match URLs that don *not* end with "/NEW"
     cy.server();
-    cy.route('PATCH', new RegExp('/rest/api/window/.*[^/][^N][^E][^W]$')).as(`patchListField`);
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
@@ -226,6 +234,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal) => {
 
     cy.contains('.input-dropdown-list-option', listValue)
       .click()
-      .waitForFieldValue(`@patchListField`, fieldName, listValue);
+      .waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
   });
 });
