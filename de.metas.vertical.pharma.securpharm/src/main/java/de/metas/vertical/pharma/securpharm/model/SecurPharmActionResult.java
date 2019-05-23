@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.handlingunits.inventory.InventoryId;
+import de.metas.inventory.InventoryId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

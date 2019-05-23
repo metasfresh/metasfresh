@@ -26,7 +26,7 @@ package de.metas.vertical.pharma.securpharm.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 
-import de.metas.handlingunits.inventory.InventoryId;
+import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;

@@ -12,6 +12,7 @@ import org.compiere.model.I_M_InventoryLine;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -66,7 +67,8 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Retrieve inventory lines
-		final List<I_M_InventoryLine> linesForInventory = inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+		final List<I_M_InventoryLine> linesForInventory = inventoryDAO.retrieveLinesForInventoryId(inventoryId);
 		if (linesForInventory.isEmpty())
 		{
 			return ImmutableList.of();
@@ -104,6 +106,8 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 	private void invalidateCandidatesForInventory(final I_M_Inventory inventory)
 	{
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+		
 		//
 		// Retrieve inventory line handlers
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventory);
@@ -111,7 +115,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 		for (final IInvoiceCandidateHandler handler : inventoryLineHandlers)
 		{
-			for (final I_M_InventoryLine line : inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID()))
+			for (final I_M_InventoryLine line : inventoryDAO.retrieveLinesForInventoryId(inventoryId))
 			{
 				handler.invalidateCandidatesFor(line);
 			}

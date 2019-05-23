@@ -28,8 +28,8 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.inventory.InventoryId;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.inventory.InventoryId;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;

@@ -33,9 +33,9 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
@@ -175,7 +175,7 @@ public class SecurPharmResultRepository
 	public Optional<SecurPharmProductDataResult> getProductDataResultByInventoryId(@NonNull final InventoryId inventoryId)
 	{
 		final HuId huId = Services.get(IInventoryDAO.class)
-				.retrieveLinesForInventoryId(inventoryId.getRepoId(), I_M_InventoryLine.class)
+				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 				.stream()
 				.findFirst()
 				.map(invLine -> HuId.ofRepoId(invLine.getM_HU_ID()))

@@ -29,9 +29,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryId;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.i18n.IMsgBL;
+import de.metas.inventory.InventoryId;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;

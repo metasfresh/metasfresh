@@ -1,8 +1,5 @@
 package de.metas.inventory;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -32,24 +29,20 @@ import lombok.Value;
 @Value
 public class InventoryId implements RepoIdAware
 {
-	int repoId;
-
-	@JsonCreator
 	public static InventoryId ofRepoId(final int repoId)
 	{
 		return new InventoryId(repoId);
 	}
 
+	public static InventoryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new InventoryId(repoId) : null;
+	}
+
+	int repoId;
+
 	private InventoryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "inventoryId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Inventory_ID");
 	}
-
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
-	}
-
 }

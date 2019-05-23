@@ -38,6 +38,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -99,12 +100,14 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 	public List<I_M_InventoryLine> getLines()
 	{
-		return Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(getM_Inventory_ID());
+		return Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventoryId);
 	}
 
 	private boolean hasLines()
 	{
-		return Services.get(IInventoryDAO.class).hasLines(getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(getM_Inventory_ID());
+		return Services.get(IInventoryDAO.class).hasLines(inventoryId);
 	}
 
 	/**
@@ -187,7 +190,8 @@ public class MInventory extends X_M_Inventory implements IDocument
 		super.setProcessed(processed);
 		if (!is_new())
 		{
-			Services.get(IInventoryDAO.class).setInventoryLinesProcessed(getM_Inventory_ID(), processed);
+			final InventoryId inventoryId = InventoryId.ofRepoId(getM_Inventory_ID());
+			Services.get(IInventoryDAO.class).setInventoryLinesProcessed(inventoryId, processed);
 		}
 	}
 

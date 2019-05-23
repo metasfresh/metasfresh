@@ -30,24 +30,19 @@ import de.metas.util.ISingletonService;
 
 public interface IInventoryDAO extends ISingletonService
 {
-
 	/**
 	 * Retrieve all the active lines of the given inventory
-	 * 
-	 * @param inventory
-	 * @return
 	 */
-	<T extends I_M_InventoryLine> List<T> retrieveLinesForInventoryId(int inventoryId, Class<T> type);
-	
-	default List<I_M_InventoryLine> retrieveLinesForInventoryId(final int inventoryId)
+	<T extends I_M_InventoryLine> List<T> retrieveLinesForInventoryId(InventoryId inventoryId, Class<T> type);
+
+	default List<I_M_InventoryLine> retrieveLinesForInventoryId(final InventoryId inventoryId)
 	{
 		return retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 	}
 
+	boolean hasLines(InventoryId inventoryId);
 
-	boolean hasLines(int inventoryId);
+	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
 
-	void setInventoryLinesProcessed(int inventoryId, boolean processed);
-	
-	void save(I_M_InventoryLine inventoryLine); 
+	void save(I_M_InventoryLine inventoryLine);
 }

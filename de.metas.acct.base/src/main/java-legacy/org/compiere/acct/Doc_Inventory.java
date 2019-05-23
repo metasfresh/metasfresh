@@ -30,6 +30,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 
 /**
@@ -68,8 +69,10 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 
 	private List<DocLine_Inventory> loadLines(final I_M_Inventory inventory)
 	{
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+		
 		return Services.get(IInventoryDAO.class)
-				.retrieveLinesForInventoryId(inventory.getM_Inventory_ID())
+				.retrieveLinesForInventoryId(inventoryId)
 				.stream()
 				.map(line -> new DocLine_Inventory(line, this))
 				.filter(docLine -> !docLine.getQty().isZero())
