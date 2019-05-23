@@ -1,6 +1,5 @@
 package de.metas.handlingunits.age;
 
-import de.metas.handlingunits.age.process.M_HU_UpdateHUAgeAttributeProcess;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -10,9 +9,10 @@ import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -42,6 +42,8 @@ import java.util.Date;
 @Component
 public class AgeAttributeStorageListener implements IAttributeStorageListener
 {
+	private final transient AgeAttributesService ageAttributesService = Adempiere.getBean(AgeAttributesService.class);
+
 	public AgeAttributeStorageListener()
 	{
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
@@ -78,8 +80,8 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 		}
 
 		// actual logic starts here
-		final Date productionDate = storage.getValueAsDate(HUAttributeConstants.ATTR_ProductionDate);
-		final long age = M_HU_UpdateHUAgeAttributeProcess.computeAgeInMonthsWithHardCap(productionDate);
+		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
+		final long age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
 		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 	}
 }

@@ -22,6 +22,7 @@ package de.metas.handlingunits.age.process;
  * #L%
  */
 
+import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.age.HUWithAgeRepository;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -31,13 +32,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.compiere.Adempiere;
-import org.compiere.util.TimeUtil;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.stream.Stream;
 
 public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
@@ -45,6 +42,8 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	private final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 	private final HUWithAgeRepository huWithAgeRepository = Adempiere.getBean(HUWithAgeRepository.class);
+
+	private final AgeAttributesService ageAttributesService = Adempiere.getBean(AgeAttributesService.class);
 
 	@Override
 	@RunOutOfTrx
@@ -65,20 +64,9 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 		final IAttributeStorage storage = attributeStorageFactory.getAttributeStorage(hu);
 		storage.setSaveOnChange(true);
 
-		final Date productionDate = storage.getValueAsDate(HUAttributeConstants.ATTR_ProductionDate);
-		final long age = computeAgeInMonthsWithHardCap(productionDate);
+		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
+		final int age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
 		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 	}
 
-	/**
-	 * The age is hard capped at 12. Anything bigger than that returns 12.
-	 */
-	public static long computeAgeInMonthsWithHardCap(final Date productionDate)
-	{
-		final LocalDateTime start = TimeUtil.asLocalDateTime(productionDate);
-		final LocalDateTime end = SystemTime.asLocalDateTime();
-		long age = ChronoUnit.MONTHS.between(start, end);
-		age = Math.min(12, age);
-		return age;
-	}
 }
