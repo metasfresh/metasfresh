@@ -23,7 +23,6 @@ package de.metas.storage.spi.hu.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,10 +42,10 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
@@ -85,8 +84,6 @@ public class HUStorageQuery implements IStorageQuery
 	private final IHUQueryBuilder huQueryBuilder;
 	private ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
-	private final transient List<I_M_Product> _products = new ArrayList<>(); // needed only for summary info
-	private final transient List<I_C_BPartner> _bpartners = new ArrayList<>(); // needed only for summary info
 
 	/* package */ HUStorageQuery()
 	{
@@ -216,13 +213,14 @@ public class HUStorageQuery implements IStorageQuery
 
 		//
 		// Check if BPartner matches
-		final Set<Integer> queryBPartnerIds = getBPartnerIds();
+		final Set<BPartnerId> queryBPartnerIds = getBPartnerIds();
 		if (!queryBPartnerIds.isEmpty())
 		{
 			final I_C_BPartner bpartner = storageRecord.getC_BPartner();
-			Integer bpartnerId = bpartner == null ? null : bpartner.getC_BPartner_ID();
-			bpartnerId = bpartnerId != null && bpartnerId <= 0 ? null : bpartnerId; // make sure if is <=0 then to use NULL which means ANY
-			if (!queryBPartnerIds.contains(bpartnerId))
+			Integer bpartnerRepoId = bpartner == null ? null : bpartner.getC_BPartner_ID();
+			bpartnerRepoId = bpartnerRepoId != null && bpartnerRepoId <= 0 ? null : bpartnerRepoId; // make sure if is <=0 then to use NULL which means ANY
+			final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRepoId);
+			if (!queryBPartnerIds.contains(bPartnerId))
 			{
 				return false;
 			}
@@ -240,16 +238,10 @@ public class HUStorageQuery implements IStorageQuery
 	}
 
 	@Override
-	public IStorageQuery addProduct(@NonNull final I_M_Product product)
+	public IStorageQuery addProductId(@NonNull final ProductId productId)
 	{
-		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		if (!_productIds.add(productId))
-		{
-			return this;
-		}
-
-		_products.add(product);
-
+		_productIds.add(productId);
+		huQueryBuilder.addOnlyWithProductId(productId);
 		return this;
 	}
 
@@ -259,23 +251,13 @@ public class HUStorageQuery implements IStorageQuery
 	}
 
 	@Override
-	public IStorageQuery addPartner(final I_C_BPartner bpartner)
+	public IStorageQuery addBPartnerId(@Nullable final BPartnerId bpartnerId)
 	{
-		final Integer bpartnerId;
-		if (bpartner == null)
-		{
-			bpartnerId = null;
-		}
-		else
-		{
-			bpartnerId = bpartner.getC_BPartner_ID();
-		}
 		huQueryBuilder.addOnlyInBPartnerId(bpartnerId);
-		_bpartners.add(bpartner);
 		return this;
 	}
 
-	private final Set<Integer> getBPartnerIds()
+	private final Set<BPartnerId> getBPartnerIds()
 	{
 		return huQueryBuilder.getOnlyInBPartnerIds();
 	}

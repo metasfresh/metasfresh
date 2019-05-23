@@ -241,6 +241,8 @@ public class HUTransformService
 			@NonNull final Quantity qtyCU,
 			final boolean keepCUsUnderSameParent)
 	{
+		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0", qtyCU);
+
 		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuOrAggregateHU, qtyCU.getUOM())) >= 0;
 		final boolean huIsCU = !handlingUnitsBL.isAggregateHU(cuOrAggregateHU);
 

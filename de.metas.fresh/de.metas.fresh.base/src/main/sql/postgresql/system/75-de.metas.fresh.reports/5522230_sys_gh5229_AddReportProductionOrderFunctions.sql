@@ -1,3 +1,88 @@
+drop view if exists report.RV_C_Order_MFGWarehouse_Report_Description;
+create or replace view report.RV_C_Order_MFGWarehouse_Report_Description
+AS
+SELECT
+	o.POReference as POReference,
+	bp.value as bpValue,
+	trim( Coalesce(cogr.name,  '') ||
+	Coalesce(' ' || cont.title, '') ||
+	Coalesce(' ' || cont.firstName, '') ||
+	Coalesce(' ' || cont.lastName, '') ) as cont_name,
+	cont.phone	as cont_phone,
+	cont.fax	as cont_fax,
+	bpl.address as HandOverLocation,
+	o.PreparationDate,
+	o.DocumentNo as document_no,
+	wh.Name as WarehouseName,
+	plant.Name as PlantName,
+	(select rl.Name from AD_Ref_List rl where rl.AD_Reference_ID=540574 and rl.Value=report.DocumentType AND rl.isActive = 'Y') as ReportDocumentTypeName,
+	--
+	-- Filtering columns
+	report.C_Order_MFGWarehouse_Report_ID,
+	report.DocumentType as ReportDocumentType,
+	o.C_Order_ID,
+	report.M_Warehouse_ID,
+	report.PP_Plant_ID,
+	o.C_BPartner_ID,
+	o.DatePromised
+FROM
+	C_Order_MFGWarehouse_Report report
+	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'
+	--
+	LEFT OUTER JOIN C_BPartner bp 		ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	LEFT OUTER JOIN AD_User srep		ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100 AND srep.isActive = 'Y'
+	LEFT OUTER JOIN AD_User cont		ON o.Bill_User_ID = cont.AD_User_ID AND cont.isActive = 'Y'
+	-- HandOverLocation
+	LEFT OUTER JOIN C_BPartner_Location bpl	ON o.HandOver_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
+	-- Translatables
+	LEFT OUTER JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
+	--
+	LEFT OUTER JOIN M_Warehouse wh on (wh.M_Warehouse_ID=report.M_Warehouse_ID) AND wh.isActive = 'Y'
+	LEFT OUTER JOIN S_Resource plant on (plant.S_Resource_ID=report.PP_Plant_ID) AND plant.isActive = 'Y'
+WHERE true
+	AND report.IsActive='Y'
+;
+
+
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN record_id numeric);
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN record_id numeric)
+RETURNS TABLE 
+	(
+	bpValue character varying(50),
+	order_no character varying(30),
+	reference character varying(40),
+	preparationdate timestamp with time zone,
+	datepromised timestamp with time zone,
+	ReportDocumentTypeName character varying(40),
+	handoverlocation character varying(140),
+    warehousename character varying(60),
+    plantname character varying(60)
+	)
+AS
+$$	
+SELECT
+	r.bpValue,
+	r.document_no as order_no,
+	r.poreference as reference,
+	r.preparationdate as PreparationDate,
+	r.datepromised as DatePromised,
+	r.ReportDocumentTypeName,
+	r.handoverlocation ,
+    r.warehousename,
+    r.plantname
+	
+FROM report.RV_C_Order_MFGWarehouse_Report_Description r
+WHERE
+	r.C_Order_MFGWarehouse_Report_ID = $1
+LIMIT 1
+
+$$
+LANGUAGE sql STABLE;
+
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric)

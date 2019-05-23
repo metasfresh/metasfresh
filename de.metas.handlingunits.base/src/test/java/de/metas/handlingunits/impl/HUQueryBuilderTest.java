@@ -119,7 +119,7 @@ public class HUQueryBuilderTest
 	 * Just makes sure that {@link HUQueryBuilder#copy()} is not failing.
 	 */
 	@Test
-	public void test_copy_NotFails()
+	public void copy_NotFails()
 	{
 		final HUQueryBuilder husQueryCopy = huQueryBuilder.copy();
 

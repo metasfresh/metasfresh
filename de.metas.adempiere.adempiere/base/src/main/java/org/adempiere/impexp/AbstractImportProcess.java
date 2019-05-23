@@ -231,7 +231,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	protected final void deleteOldImported()
 	{
-		final String sql = "DELETE FROM " + getImportTableName() + "WHERE " + COLUMNNAME_I_IsImported + "='Y'" + getWhereClause();
+		final String sql = "DELETE FROM " + getImportTableName() + " WHERE " + COLUMNNAME_I_IsImported + "='Y' " + getWhereClause();
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		loggable.addLog("Deleted Old Imported =" + no);
 	}
