@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.process.IADProcessDAO;
@@ -181,7 +182,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 
 		if (key.getBpartnerId() > 0)
 		{
-			huQuery.addOnlyInBPartnerId(key.getBpartnerId());
+			huQuery.addOnlyInBPartnerId(BPartnerId.ofRepoId(key.getBpartnerId()));
 		}
 		if (key.getBpartnerLocationId() > 0)
 		{
