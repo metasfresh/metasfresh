@@ -5,7 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.time.Month;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * #%L
@@ -17,12 +20,12 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +34,14 @@ import org.junit.Test;
 
 public class ExpirationDateTest
 {
+	private ObjectMapper jsonObjectMapper;
+
+	@Before
+	public void init()
+	{
+		jsonObjectMapper = new ObjectMapper();
+	}
+
 	@Test
 	public void test_ofString()
 	{
@@ -55,6 +66,20 @@ public class ExpirationDateTest
 
 		assertThat(ExpirationDate.ofLocalDate(LocalDate.of(2022, Month.AUGUST, 31)).toJson())
 				.isEqualTo("220800");
+	}
+
+	@Test
+	public void testSerializedDeserialize() throws Exception
+	{
+		testSerializedDeserialize(ExpirationDate.ofString("210601"));
+		testSerializedDeserialize(ExpirationDate.ofString("220800"));
+	}
+
+	public void testSerializedDeserialize(final ExpirationDate date) throws Exception
+	{
+		final String json = jsonObjectMapper.writeValueAsString(date);
+		final ExpirationDate date2 = jsonObjectMapper.readValue(json, ExpirationDate.class);
+		assertThat(date2).isEqualTo(date);
 	}
 
 }

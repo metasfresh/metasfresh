@@ -7,6 +7,7 @@ import java.time.temporal.TemporalAdjusters;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.EqualsAndHashCode;
@@ -39,7 +40,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public final class ExpirationDate
 {
-	@JsonValue
+	@JsonCreator
 	public static ExpirationDate ofString(@NonNull final String yyMMdd)
 	{
 		return new ExpirationDate(yyMMdd, toLocalDate(yyMMdd));
