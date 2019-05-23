@@ -3,7 +3,6 @@ package de.metas.customs;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Customs_Invoice;
@@ -258,11 +257,11 @@ public class CustomsInvoiceService
 		return documentNo;
 	}
 
-	public void setCustomsInvoiceToShipments(final ImmutableSet<InOutId> exportedShippmentIds, final CustomsInvoice customsInvoice)
+	public void setCustomsInvoiceToShipments(final ImmutableSet<InOutId> exportedShippmentIds, final CustomsInvoiceId customsInvoiceId)
 	{
 		exportedShippmentIds
 				.stream()
-				.forEach(exportedShipmentId -> customsInvoiceRepo.setCustomsInvoiceToShipment(exportedShipmentId, customsInvoice));
+				.forEach(exportedShipmentId -> customsInvoiceRepo.setCustomsInvoiceToShipment(exportedShipmentId, customsInvoiceId));
 	}
 
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
@@ -273,12 +272,11 @@ public class CustomsInvoiceService
 	public void setCustomsInvoiceLineToShipmentLines(@NonNull ImmutableSetMultimap<ProductId, InOutAndLineId> exportedLines, @NonNull CustomsInvoice customsInvoice)
 	{
 
-		final ImmutableMap<ProductId, CustomsInvoiceLine> customsInvoiceLines = customsInvoice.getLines()
+		final ImmutableMap<ProductId, CustomsInvoiceLineId> customsInvoiceLines = customsInvoice.getLines()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						this::getProductId, // keyFunction,
-						Function.identity()));// valueFunction
-
+						CustomsInvoiceLine::getProductId, // keyFunction,
+						CustomsInvoiceLine::getId));// valueFunction
 
 		exportedLines.keySet()
 				.stream()
@@ -287,21 +285,13 @@ public class CustomsInvoiceService
 	}
 
 
-	private void setCustomsInvoiceLine(final ImmutableSet<InOutAndLineId> shipmentLines, final CustomsInvoiceLine customsInvoiceLine)
+	private void setCustomsInvoiceLine(final ImmutableSet<InOutAndLineId> shipmentLines, final CustomsInvoiceLineId customsInvoiceLineId)
 	{
 
 		for(final InOutAndLineId shipmentLine : shipmentLines)
 		{
-			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLine);
+			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId);
 
 		}
 	}
-
-
-	private ProductId getProductId(final CustomsInvoiceLine customsInvoiceLine)
-	{
-		return customsInvoiceLine.getProductId();
-	}
-
-
 }

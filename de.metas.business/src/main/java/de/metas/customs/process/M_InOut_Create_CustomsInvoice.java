@@ -78,9 +78,27 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 	private boolean p_IsComplete;
 
 	@Override
-	protected String doIt() throws Exception
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if (context.getSelectionSize() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		final ImmutableList<InOutId> selectedShipments = context.getSelectedModels(I_M_InOut.class).stream()
+				.map(shipmentRecord -> InOutId.ofRepoId(shipmentRecord.getM_InOut_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		final boolean foundAtLeastOneUnregisteredShipment = shipmentLinesForCustomsInvoiceRepo.foundAtLeastOneUnregisteredShipment(selectedShipments);
+
+		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnregisteredShipment);
+	}
+
+	@Override
+	protected String doIt()
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
 		final List<InOutAndLineId> linesToExport = retrieveLinesToExport();
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -120,7 +138,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 				.map(InOutAndLineId::getInOutId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice);
+		customsInvoiceService.setCustomsInvoiceToShipments(exportedShippmentIds, customsInvoice.getId());
 
 		customsInvoiceService.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
 
@@ -136,24 +154,6 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(shipmentLineId, I_M_InOutLine.class);
 
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
-	}
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
-	{
-
-		if (context.getSelectionSize() <= 0)
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		final ImmutableList<InOutId> selectedShipments = context.getSelectedModels(I_M_InOut.class).stream()
-				.map(shipmentRecord -> InOutId.ofRepoId(shipmentRecord.getM_InOut_ID()))
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean foundAtLeastOneUnregisteredShipment = shipmentLinesForCustomsInvoiceRepo.foundAtLeastOneUnregisteredShipment(selectedShipments);
-
-		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnregisteredShipment);
 	}
 
 	private List<InOutAndLineId> retrieveLinesToExport()

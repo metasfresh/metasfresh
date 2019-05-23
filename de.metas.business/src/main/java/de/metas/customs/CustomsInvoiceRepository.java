@@ -197,32 +197,30 @@ public class CustomsInvoiceRepository
 				.build();
 	}
 
-
-	public void setCustomsInvoiceToShipment(@NonNull final InOutId shipmentId, @NonNull final CustomsInvoice customsInvoice)
+	public void setCustomsInvoiceToShipment(
+			@NonNull final InOutId shipmentId,
+			@NonNull final CustomsInvoiceId customsInvoiceId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
-		final int customsInvoiceId = customsInvoice.getId().getRepoId();
-
 		final I_M_InOut shipmentRecord = inoutDAO.getById(shipmentId);
 
-		shipmentRecord.setC_Customs_Invoice_ID(customsInvoiceId);
+		shipmentRecord.setC_Customs_Invoice_ID(customsInvoiceId.getRepoId());
 
 		shipmentRecord.setIsExportedToCustomsInvoice(true);
 
 		saveRecord(shipmentRecord);
 	}
 
-
-	public void setCustomsInvoiceLineToShipmentLine(@NonNull final InOutAndLineId shipmentLine, @NonNull final CustomsInvoiceLine customsInvoiceLine)
+	public void setCustomsInvoiceLineToShipmentLine(
+			@NonNull final InOutAndLineId shipmentLine,
+			@NonNull final CustomsInvoiceLineId customsInvoiceLineId)
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
 		final I_M_InOutLine shipmentLineRecord = inoutDAO.getLineById(shipmentLine.getInOutLineId());
 
-		final int customsInvoiceLineId = customsInvoiceLine.getId().getRepoId();
-
-		shipmentLineRecord.setC_Customs_Invoice_Line_ID(customsInvoiceLineId);
+		shipmentLineRecord.setC_Customs_Invoice_Line_ID(customsInvoiceLineId.getRepoId());
 
 		saveRecord(shipmentLineRecord);
 

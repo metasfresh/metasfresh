@@ -43,7 +43,7 @@ public class CustomsInvoiceLineId implements RepoIdAware
 
 	public static CustomsInvoiceLineId ofRepoId(final int customsInvoiceId, final int customsInvoiceLineId)
 	{
-		return new CustomsInvoiceLineId(CustomsInvoiceId.ofRepoId(customsInvoiceId), customsInvoiceId);
+		return new CustomsInvoiceLineId(CustomsInvoiceId.ofRepoId(customsInvoiceId), customsInvoiceLineId);
 	}
 
 	public static CustomsInvoiceLineId ofRepoIdOrNull(

@@ -1,6 +1,7 @@
 package de.metas.customs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -37,7 +38,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_BPartner;
@@ -163,9 +163,11 @@ public class CustomsInvoiceServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty, priceActual);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
-		final InOutAndLineId shipmentLine1 = createInOutLine(inout1, orderLine1);
+		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
 
-		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
+		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
+
+		ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
 				.put(product1, shipmentLine1)
 				.build();
 
@@ -213,6 +215,11 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoiceLine.getQuantity(), is(qty));
 		assertThat(customsInvoiceLine.getUomId(), is(UomId.ofRepoId(uom1.getC_UOM_ID())));
 
+		service.setCustomsInvoiceLineToShipmentLines(linesToExportMap, customsInvoice);
+
+		refresh(shipmentLineRecord1);
+		assertThat(shipmentLineRecord1.getC_Customs_Invoice_Line_ID(), is(customsInvoiceLine.getId().getRepoId()));
+
 	}
 
 	@Test
@@ -228,7 +235,9 @@ public class CustomsInvoiceServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty1, priceActual1);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
-		final InOutAndLineId shipmentLine1 = createInOutLine(inout1, orderLine1);
+		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
+
+		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
 
 		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), CurrencyId.ofRepoId(chf.getC_Currency_ID()));
 
@@ -236,7 +245,9 @@ public class CustomsInvoiceServiceTest
 
 		final I_C_OrderLine orderLine2 = createOrderLine(order, product1, qty2, priceActual2);
 
-		final InOutAndLineId shipmentLine2 = createInOutLine(inout1, orderLine2);
+		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
+
+		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
 
 		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
 				.put(product1, shipmentLine1)
@@ -306,7 +317,9 @@ public class CustomsInvoiceServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty1, priceActual1);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
-		final InOutAndLineId shipmentLine1 = createInOutLine(inout1, orderLine1);
+		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
+
+		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
 
 		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), CurrencyId.ofRepoId(chf.getC_Currency_ID()));
 
@@ -314,7 +327,9 @@ public class CustomsInvoiceServiceTest
 
 		final I_C_OrderLine orderLine2 = createOrderLine(order, product1, qty2, priceActual2);
 
-		final InOutAndLineId shipmentLine2 = createInOutLine(inout1, orderLine2);
+		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
+
+		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
 
 		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
 				.put(product1, shipmentLine1)
@@ -387,7 +402,9 @@ public class CustomsInvoiceServiceTest
 		final I_C_OrderLine orderLine1 = createOrderLine(order, product1, qty1, priceActual1);
 		final InOutId inout1 = createShipment(bpartnerAndLocation2);
 
-		final InOutAndLineId shipmentLine1 = createInOutLine(inout1, orderLine1);
+		final I_M_InOutLine shipmentLineRecord1 = createInOutLine(inout1, orderLine1);
+
+		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
 
 		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), CurrencyId.ofRepoId(euro.getC_Currency_ID()));
 
@@ -395,7 +412,9 @@ public class CustomsInvoiceServiceTest
 
 		final I_C_OrderLine orderLine2 = createOrderLine(order, product1, qty2, priceActual2);
 
-		final InOutAndLineId shipmentLine2 = createInOutLine(inout1, orderLine2);
+		final I_M_InOutLine shipmentLineRecord2 = createInOutLine(inout1, orderLine2);
+
+		final InOutAndLineId shipmentLine2 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord2.getM_InOutLine_ID());
 
 		SetMultimap<ProductId, InOutAndLineId> linesToExportMap = ImmutableSetMultimap.<ProductId, InOutAndLineId> builder()
 				.put(product1, shipmentLine1)
@@ -474,7 +493,7 @@ public class CustomsInvoiceServiceTest
 		return orderLineRecord;
 	}
 
-	private InOutAndLineId createInOutLine(final InOutId inout1, final I_C_OrderLine orderLineRecord)
+	private I_M_InOutLine createInOutLine(final InOutId inout1, final I_C_OrderLine orderLineRecord)
 	{
 
 		final I_M_InOutLine shipmentLineRecord = newInstance(I_M_InOutLine.class);
@@ -488,7 +507,7 @@ public class CustomsInvoiceServiceTest
 
 		save(shipmentLineRecord);
 
-		return InOutAndLineId.of(inout1, InOutLineId.ofRepoId(shipmentLineRecord.getM_InOutLine_ID()));
+		return shipmentLineRecord;
 	}
 
 	private InOutId createShipment(final BPartnerLocationId bpartnerAndLocation)
@@ -621,6 +640,5 @@ public class CustomsInvoiceServiceTest
 	{
 		Services.get(IUOMConversionDAO.class).createUOMConversion(request);
 	}
-
 
 }

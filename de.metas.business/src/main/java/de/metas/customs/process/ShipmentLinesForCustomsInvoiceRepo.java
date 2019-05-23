@@ -126,7 +126,7 @@ public class ShipmentLinesForCustomsInvoiceRepo
 			return false;
 		}
 
-		if (documentBL.isStatusStrOneOf(shipment.getDocStatus(), DocStatus.Completed.getCode(), DocStatus.Closed.getCode()))
+		if (!documentBL.isStatusStrOneOf(shipment.getDocStatus(), DocStatus.Completed.getCode(), DocStatus.Closed.getCode()))
 		{
 			return false;
 		}
