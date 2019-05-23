@@ -66,14 +66,19 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 		storage.setSaveOnChange(true);
 
 		final Date productionDate = storage.getValueAsDate(HUAttributeConstants.ATTR_ProductionDate);
-		final long age = computeAgeInMonths(productionDate);
+		final long age = computeAgeInMonthsWithHardCap(productionDate);
 		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 	}
 
-	public static long computeAgeInMonths(final Date productionDate)
+	/**
+	 * The age is hard capped at 12. Anything bigger than that returns 12.
+	 */
+	public static long computeAgeInMonthsWithHardCap(final Date productionDate)
 	{
 		final LocalDateTime start = TimeUtil.asLocalDateTime(productionDate);
 		final LocalDateTime end = SystemTime.asLocalDateTime();
-		return ChronoUnit.MONTHS.between(start, end);
+		long age = ChronoUnit.MONTHS.between(start, end);
+		age = Math.min(12, age);
+		return age;
 	}
 }

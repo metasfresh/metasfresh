@@ -79,7 +79,7 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 
 		// actual logic starts here
 		final Date productionDate = storage.getValueAsDate(HUAttributeConstants.ATTR_ProductionDate);
-		final long age = M_HU_UpdateHUAgeAttributeProcess.computeAgeInMonths(productionDate);
+		final long age = M_HU_UpdateHUAgeAttributeProcess.computeAgeInMonthsWithHardCap(productionDate);
 		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 	}
 }
