@@ -108,7 +108,7 @@
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new String($R{BP_Value}.getBytes("ISO-8859-1"), "UTF-8")]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
 				<reportElement key="textField-3" x="423" y="139" width="150" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
