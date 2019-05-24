@@ -37,6 +37,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
@@ -77,7 +78,7 @@ public class SecurPharmService
 	}
 
 	public SecurPharmProductDataResult getAndSaveProductData(
-			@NonNull final String datamatrix,
+			@NonNull final DataMatrixCode datamatrix,
 			@NonNull final HuId huId)
 	{
 		final SecurPharmClient client = clientFactory.createClient();

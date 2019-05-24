@@ -34,6 +34,7 @@ import org.junit.Ignore;
 
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
@@ -53,7 +54,7 @@ public class SecurPharmClientManualTest
 
 		final SecurPharmClient client = SecurPharmClient.createAndAuthenticate(config);
 
-		final String code = fromBase64("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
+		final DataMatrixCode code = DataMatrixCode.ofBase64Encoded("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
 		System.out.println("Sending code: " + code);
 
 		final DecodeDataMatrixResponse decodeResponse = client.decodeDataMatrix(code);
@@ -83,10 +84,5 @@ public class SecurPharmClientManualTest
 		{
 			throw new AdempiereException(e);
 		}
-	}
-
-	private static String fromBase64(final String s)
-	{
-		return new String(Base64.getDecoder().decode(s.getBytes()));
 	}
 }

@@ -45,6 +45,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
@@ -111,9 +112,9 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		return getRecord(I_M_HU.class);
 	}
 
-	protected final String getDataMatrix()
+	protected final DataMatrixCode getDataMatrix()
 	{
-		return dataMatrix;
+		return DataMatrixCode.ofString(dataMatrix);
 	}
 
 	private void scanAndUpdate(@NonNull final I_M_HU hu)

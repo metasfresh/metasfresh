@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
@@ -104,11 +105,11 @@ public class SecurPharmClient
 		authenticator = SecurPharmClientAuthenticator.ofConfig(config);
 	}
 
-	public DecodeDataMatrixResponse decodeDataMatrix(@NonNull final String dataMatrix)
+	public DecodeDataMatrixResponse decodeDataMatrix(@NonNull final DataMatrixCode dataMatrix)
 	{
 		final String clientTransactionId = newClientTransactionId();
 		final UriComponentsBuilder url = UriComponentsBuilder.fromPath(API_RELATIVE_PATH_UIS)
-				.path(encodeBase64url(dataMatrix));
+				.path(dataMatrix.toBase64Url());
 
 		final APIReponseWithLogData responseAndLogData = getFromUrl(url, clientTransactionId);
 
