@@ -163,3 +163,19 @@ UPDATE AD_ImpFormat_Row SET AD_Column_ID=568056, Name='ReplenishType',Updated=TO
 INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,568105,540036,541279,0,TO_TIMESTAMP('2019-05-24 17:13:57','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N',0,'Y','Organisation Key',13,13,TO_TIMESTAMP('2019-05-24 17:13:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2019-05-24T17:59:21.410
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541273
+;
+
+-- 2019-05-24T17:59:30.264
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=10, StartNo=10,Updated=TO_TIMESTAMP('2019-05-24 17:59:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541277
+;
+
+-- 2019-05-24T17:59:37.377
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET SeqNo=11, StartNo=11,Updated=TO_TIMESTAMP('2019-05-24 17:59:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541279
+;
+

@@ -5,15 +5,12 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Replenish;
 
 import lombok.NonNull;
@@ -58,7 +55,7 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 	@Override
 	protected String getTargetTableName()
 	{
-		return I_C_BPartner.Table_Name;
+		return I_M_Replenish.Table_Name;
 	}
 
 	@Override
@@ -94,7 +91,7 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 		}
 		else
 		{
-			throw new AdempiereException("ProductPriceImporter.InvalidProductPriceList");
+			return ImportRecordResult.Nothing; 
 		}
 
 	}
@@ -115,7 +112,6 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 			replenishImportResult = ImportRecordResult.Updated;
 		}
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, replenish, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(replenish);
 
 		importRecord.setM_Replenish_ID(replenish.getM_Replenish_ID());

@@ -79,7 +79,7 @@ import lombok.experimental.UtilityClass;
 
 	final public I_M_Replenish uppdateReplenish(@NonNull final I_I_Replenish importRecord)
 	{
-		final I_M_Replenish replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
+		final I_M_Replenish replenish = importRecord.getM_Replenish();
 		setReplenishmenttValueFields(importRecord, replenish);
 		return replenish;
 	}
@@ -87,6 +87,7 @@ import lombok.experimental.UtilityClass;
 	private void setReplenishmenttValueFields(@NonNull final I_I_Replenish importRecord, @NonNull final I_M_Replenish replenish)
 	{
 		// mandatory fields
+		replenish.setAD_Org_ID(importRecord.getAD_Org_ID());
 		replenish.setM_Product_ID(importRecord.getM_Product_ID());
 		replenish.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
 		replenish.setLevel_Max(importRecord.getLevel_Max());

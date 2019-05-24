@@ -129,9 +129,9 @@ public class RepelnishmentImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
 				.append("SET C_Period_ID=(SELECT C_Period_ID FROM C_Period p ")
-				.append("WHERE i." + I_I_Replenish.COLUMNNAME_DateGeneral)
+				.append("WHERE to_timestamp(i." +I_I_Replenish.COLUMNNAME_DateGeneral+",'dd-mm-yyyy')")
 				.append(">=p." + I_C_Period.COLUMNNAME_StartDate)
-				.append(" AND i." + I_I_Replenish.COLUMNNAME_DateGeneral)
+				.append(" AND to_timestamp(i." +I_I_Replenish.COLUMNNAME_DateGeneral+",'dd-mm-yyyy')")
 				.append("<=p." + I_C_Period.COLUMNNAME_EndDate)
 				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
 				.append(" AND p.IsActive='Y') ")
@@ -155,6 +155,8 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("=r." + I_M_Replenish.COLUMNNAME_M_Warehouse_ID)
 				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_M_WarehouseSource_ID)
 				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_M_WarehouseSource_ID+",1)")
+				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_M_Locator_ID)
+				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_M_Locator_ID+",1)")
 				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_C_Calendar_ID)
 				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_C_Calendar_ID+",1)")
 				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_C_Period_ID)
@@ -176,7 +178,7 @@ public class RepelnishmentImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name)
 				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Product is mandatory, ' ")
-				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Product_ID + " IS NULL " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL ")
+				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Product_ID + " IS NULL AND " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -185,7 +187,7 @@ public class RepelnishmentImportTableSqlUpdater
 		
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name)
 				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Wareouse is mandatory, ' ")
-				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Warehouse_ID + " IS NULL " + I_I_Replenish.COLUMNNAME_WarehouseValue + " IS NOT NULL ")
+				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Warehouse_ID + " IS NULL AND " + I_I_Replenish.COLUMNNAME_WarehouseValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
