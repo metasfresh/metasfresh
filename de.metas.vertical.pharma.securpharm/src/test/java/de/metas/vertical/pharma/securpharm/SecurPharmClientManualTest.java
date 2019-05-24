@@ -35,6 +35,7 @@ import org.junit.Ignore;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
 
 @Ignore
 public class SecurPharmClientManualTest
@@ -55,8 +56,11 @@ public class SecurPharmClientManualTest
 		System.out.println("Sending code: " + code);
 
 		final DecodeDataMatrixResponse decodeResponse = client.decodeDataMatrix(code);
-		System.out.println("response: " + decodeResponse);
+		System.out.println("decode response: " + decodeResponse);
 
+		System.out.println("verifying product: " + decodeResponse.getProductData());
+		VerifyProductResponse verifyResponse = client.verifyProduct(decodeResponse.getProductData());
+		System.out.println("verify response: " + verifyResponse);
 	}
 
 	private SecurPharmConfig getConfig()

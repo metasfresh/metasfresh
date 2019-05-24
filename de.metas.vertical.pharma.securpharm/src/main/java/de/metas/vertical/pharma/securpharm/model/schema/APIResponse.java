@@ -38,6 +38,7 @@ import lombok.NoArgsConstructor;
 public class APIResponse
 {
 	@JsonProperty("res")
+	@Getter(AccessLevel.NONE)
 	private Result res;
 
 	@JsonProperty("prod")
@@ -49,6 +50,16 @@ public class APIResponse
 	@JsonProperty("tx")
 	@Getter(AccessLevel.NONE)
 	private Transaction tx;
+
+	public String getResultCode()
+	{
+		return res != null ? res.getCode() : null;
+	}
+
+	public String getResultMessage()
+	{
+		return res != null ? res.getMessage() : null;
+	}
 
 	public boolean isTransactionSet()
 	{
