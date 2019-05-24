@@ -50,6 +50,7 @@ public class RepelnishmentImportTableSqlUpdater
 
 	public void updateReplenishmentImortTable(@NonNull final String whereClause)
 	{
+		dbUpdateOrg(whereClause);
 		dbUpdateProducIds(whereClause);
 		dbUpdateWarehouse(whereClause);
 		dbUpdateSourceWarehouse(whereClause);
@@ -76,6 +77,17 @@ public class RepelnishmentImportTableSqlUpdater
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Found Products={}", no);
+	}
+	
+	private void dbUpdateOrg(@NonNull final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
+				.append("SET AD_Org_ID=(SELECT AD_Org_ID FROM AD_org o WHERE o.value = ") 
+				.append(I_I_Replenish.COLUMNNAME_OrgValue)
+				.append(" ) WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 	
 	private void dbUpdateWarehouse(@NonNull final String whereClause)

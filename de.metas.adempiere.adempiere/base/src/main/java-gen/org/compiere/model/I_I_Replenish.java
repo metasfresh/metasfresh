@@ -496,6 +496,31 @@ public interface I_I_Replenish
     public static final String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
 
 	/**
+	 * Set Organisations-Schlüssel.
+	 * Suchschlüssel der Organisation
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOrgValue (java.lang.String OrgValue);
+
+	/**
+	 * Get Organisations-Schlüssel.
+	 * Suchschlüssel der Organisation
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOrgValue();
+
+    /** Column definition for OrgValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Replenish, Object> COLUMN_OrgValue = new org.adempiere.model.ModelColumn<I_I_Replenish, Object>(I_I_Replenish.class, "OrgValue", null);
+    /** Column name OrgValue */
+    public static final String COLUMNNAME_OrgValue = "OrgValue";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *

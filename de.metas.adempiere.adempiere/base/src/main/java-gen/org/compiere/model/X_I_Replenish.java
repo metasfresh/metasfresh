@@ -15,7 +15,7 @@ public class X_I_Replenish extends org.compiere.model.PO implements I_I_Replenis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1678926779L;
+	private static final long serialVersionUID = 1956155821L;
 
     /** Standard Constructor */
     public X_I_Replenish (Properties ctx, int I_Replenish_ID, String trxName)
@@ -444,6 +444,25 @@ public class X_I_Replenish extends org.compiere.model.PO implements I_I_Replenis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Organisations-Schlüssel.
+		@param OrgValue 
+		Suchschlüssel der Organisation
+	  */
+	@Override
+	public void setOrgValue (java.lang.String OrgValue)
+	{
+		set_Value (COLUMNNAME_OrgValue, OrgValue);
+	}
+
+	/** Get Organisations-Schlüssel.
+		@return Suchschlüssel der Organisation
+	  */
+	@Override
+	public java.lang.String getOrgValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OrgValue);
 	}
 
 	/** Set Verarbeitet.
