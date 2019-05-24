@@ -4,7 +4,7 @@ import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -53,6 +53,7 @@ public class RepelnishmentImportTableSqlUpdater
 		dbUpdateWarehouse(whereClause);
 		dbUpdateSourceWarehouse(whereClause);
 		dbUpdateLocators(whereClause);
+		dbUpdatePeriodIds(whereClause);
 		
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -105,6 +106,25 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	private void dbUpdatePeriodIds(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
+				.append("SET C_Period_ID=(SELECT C_Period_ID FROM C_Period p ")
+				.append("WHERE i." + I_I_Replenish.COLUMNNAME_DateGeneral)
+				.append(">=p." + I_C_Period.COLUMNNAME_StartDate)
+				.append(" AND i." + I_I_Replenish.COLUMNNAME_DateGeneral)
+				.append("<=p." + I_C_Period.COLUMNNAME_EndDate)
+				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
+				.append(" AND p.IsActive='Y') ")
+				.append("WHERE " + I_I_Replenish.COLUMNNAME_DateGeneral + " IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
+				.append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Found Products={}", no);
 	}
 
 
