@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.securpharm;
+package de.metas.vertical.pharma.securpharm.client;
 
 import java.io.File;
 import java.io.FileInputStream;

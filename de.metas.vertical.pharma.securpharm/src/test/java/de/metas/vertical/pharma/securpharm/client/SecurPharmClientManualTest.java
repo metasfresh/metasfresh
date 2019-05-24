@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.vertical.pharma.securpharm;
+package de.metas.vertical.pharma.securpharm.client;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.junit.Ignore;
 
 import de.metas.user.UserId;
+import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;

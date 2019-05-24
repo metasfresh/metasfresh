@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.vertical.pharma.securpharm;
+package de.metas.vertical.pharma.securpharm.client;
 
 import org.springframework.stereotype.Service;
 

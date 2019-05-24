@@ -21,7 +21,7 @@
  *
  */
 
-package de.metas.vertical.pharma.securpharm;
+package de.metas.vertical.pharma.securpharm.client;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
