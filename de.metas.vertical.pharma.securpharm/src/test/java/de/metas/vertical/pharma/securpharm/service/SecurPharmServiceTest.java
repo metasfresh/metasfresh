@@ -39,6 +39,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductData;
@@ -75,7 +76,7 @@ public class SecurPharmServiceTest
 	@Test
 	public void testGetAndSaveProductData() throws Exception
 	{
-		final String dataMatrix = "datamatrix";
+		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
 		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
