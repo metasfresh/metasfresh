@@ -24,6 +24,9 @@
         <!-- Testing -->
 		<junit.version>4.12</junit.version>
 		<hamcrest.version>1.3</hamcrest.version>
+		
+		<!-- https://github.com/codecentric/spring-boot-admin -->
+		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -105,6 +108,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version>${spring-boot-admin.version}</version>
 		</dependency>
 
         <!-- Camel -->
