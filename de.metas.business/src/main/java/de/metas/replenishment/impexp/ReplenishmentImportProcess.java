@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -15,7 +16,6 @@ import org.compiere.model.I_M_Replenish;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Replenish;
 
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -87,43 +87,16 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 			@NonNull final I_I_Replenish importRecord,
 			final boolean isInsertOnly)
 	{
-		if (isValidRecordForImport(importRecord))
+		if (ReplenishImportHelper.isValidRecordForImport(importRecord))
 		{
 
 			return importReplenish(importRecord);
 		}
-		return null;
-
-	}
-
-	private boolean isValidRecordForImport(@NonNull final I_I_Replenish importRecord)
-	{
-		if (importRecord.getM_Product_ID() <= 0)
+		else
 		{
-			return false;
+			throw new AdempiereException("ProductPriceImporter.InvalidProductPriceList");
 		}
 
-		if (importRecord.getM_Warehouse_ID() <= 0)
-		{
-			return false;
-		}
-
-		if (importRecord.getLevel_Max() == null)
-		{
-			return false;
-		}
-
-		if (importRecord.getLevel_Min() == null)
-		{
-			return false;
-		}
-
-		if (Check.isEmpty(importRecord.getReplenishType(), true))
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	private ImportRecordResult importReplenish(@NonNull final I_I_Replenish importRecord)
@@ -133,12 +106,12 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 		final I_M_Replenish replenish;
 		if (importRecord.getM_Replenish_ID() <= 0)
 		{
-			replenish = createNewReplenish(importRecord);
+			replenish = ReplenishImportHelper.createNewReplenish(importRecord);
 			replenishImportResult = ImportRecordResult.Inserted;
 		}
 		else
 		{
-			replenish = uppdateReplenish(importRecord);
+			replenish = ReplenishImportHelper.uppdateReplenish(importRecord);
 			replenishImportResult = ImportRecordResult.Updated;
 		}
 
@@ -149,48 +122,5 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 		InterfaceWrapperHelper.save(importRecord);
 
 		return replenishImportResult;
-	}
-
-	private I_M_Replenish createNewReplenish(@NonNull final I_I_Replenish importRecord)
-	{
-		final I_M_Replenish replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
-		setReplenishmenttValueFields(importRecord, replenish);
-		return replenish;
-	}
-	
-	private I_M_Replenish uppdateReplenish(@NonNull final I_I_Replenish importRecord)
-	{
-		final I_M_Replenish replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
-		setReplenishmenttValueFields(importRecord, replenish);
-		return replenish;
-	}
-
-	private void setReplenishmenttValueFields(@NonNull final I_I_Replenish importRecord, @NonNull final I_M_Replenish replenish)
-	{
-		// mandatory fields
-		replenish.setM_Product_ID(importRecord.getM_Product_ID());
-		replenish.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
-		replenish.setLevel_Max(importRecord.getLevel_Max());
-		replenish.setLevel_Min(importRecord.getLevel_Min());
-		replenish.setReplenishType(importRecord.getReplenishType());
-		replenish.setTimeToMarket(importRecord.getTimeToMarket());
-
-		// optional fields
-		if (importRecord.getM_WarehouseSource_ID() > 0)
-		{
-			replenish.setM_WarehouseSource_ID(importRecord.getM_WarehouseSource_ID());
-		}
-		if (importRecord.getM_Locator_ID() > 0)
-		{
-			replenish.setM_Locator_ID(importRecord.getM_Locator_ID());
-		}
-		if (importRecord.getC_Calendar_ID() > 0)
-		{
-			replenish.setC_Calendar_ID(importRecord.getC_Calendar_ID());
-		}
-		if (importRecord.getC_Period_ID() > 0)
-		{
-			replenish.setC_Period_ID(importRecord.getC_Period_ID());
-		}
 	}
 }
