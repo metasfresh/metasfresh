@@ -158,3 +158,22 @@ UPDATE AD_Field SET IsDisplayed='Y', SeqNo=220,Updated=TO_TIMESTAMP('2019-05-24 
 UPDATE AD_Table SET AD_Window_ID=540618,Updated=TO_TIMESTAMP('2019-05-24 18:14:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=249
 ;
 
+-- 2019-05-24T18:42:33.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=540745,Updated=TO_TIMESTAMP('2019-05-24 18:42:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=568041
+;
+
+-- 2019-05-24T18:42:36.212
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('i_replenish','I_IsImported','CHAR(1)',null,'N')
+;
+
+-- 2019-05-24T18:42:36.300
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE I_Replenish SET I_IsImported='N' WHERE I_IsImported IS NULL
+;
+
+
+ALTER TABLE i_replenish drop CONSTRAINT i_replenish_i_isimported_check;
+ALTER TABLE i_replenish ADD CONSTRAINT i_replenish_i_isimported_check CHECK (i_isimported = ANY (ARRAY['Y'::bpchar, 'N'::bpchar, 'E'::bpchar]));
+

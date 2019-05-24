@@ -8,11 +8,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
 import org.compiere.model.X_I_Replenish;
 
+import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
+import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
 
 /*
@@ -118,5 +119,13 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 		InterfaceWrapperHelper.save(importRecord);
 
 		return replenishImportResult;
+	}
+	
+	@Override
+	protected void markImported(@NonNull final I_I_Replenish importRecord)
+	{
+		importRecord.setI_IsImported(X_I_Replenish.I_ISIMPORTED_Imported);
+		importRecord.setProcessed(true);
+		InterfaceWrapperHelper.save(importRecord);
 	}
 }
