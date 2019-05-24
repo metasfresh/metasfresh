@@ -12,8 +12,6 @@ import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
 import org.compiere.model.X_I_Replenish;
 
-import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
-import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
 
 /*
