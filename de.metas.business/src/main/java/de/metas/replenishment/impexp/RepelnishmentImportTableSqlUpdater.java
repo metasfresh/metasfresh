@@ -6,6 +6,7 @@ import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_I_Replenish;
+import org.compiere.model.I_M_Replenish;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -54,6 +55,8 @@ public class RepelnishmentImportTableSqlUpdater
 		dbUpdateSourceWarehouse(whereClause);
 		dbUpdateLocators(whereClause);
 		dbUpdatePeriodIds(whereClause);
+		//
+		dbUpdateReplenishments(whereClause);
 		
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -63,13 +66,13 @@ public class RepelnishmentImportTableSqlUpdater
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
-				.append("SET M_Product_ID=(SELECT M_Product_ID FROM M_Product_ID p ")
+				.append("SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p ")
 				.append("WHERE i." + I_I_Replenish.COLUMNNAME_ProductValue)
 				.append("=p." + I_M_Product.COLUMNNAME_Value)
 				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
 				.append(" AND p.IsActive='Y') ")
 				.append("WHERE M_Product_ID IS NULL AND " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Found Products={}", no);
@@ -121,12 +124,38 @@ public class RepelnishmentImportTableSqlUpdater
 				.append(" AND p.AD_Client_ID=i.AD_Client_ID ")
 				.append(" AND p.IsActive='Y') ")
 				.append("WHERE " + I_I_Replenish.COLUMNNAME_DateGeneral + " IS NOT NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Found Products={}", no);
 	}
 
+	
+	private void dbUpdateReplenishments(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
+				.append("SET M_Replenish_ID=(SELECT M_Replenish_ID FROM M_Replenish r ")
+				.append("WHERE i." + I_I_Replenish.COLUMNNAME_M_Product_ID)
+				.append("=r." + I_M_Replenish.COLUMNNAME_M_Product_ID)
+				.append(" AND i." + I_I_Replenish.COLUMNNAME_M_Warehouse_ID)
+				.append("=r." + I_M_Replenish.COLUMNNAME_M_Warehouse_ID)
+				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_M_WarehouseSource_ID)
+				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_M_WarehouseSource_ID+",1)")
+				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_C_Calendar_ID)
+				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_C_Calendar_ID+",1)")
+				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_C_Period_ID)
+				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_C_Period_ID+",1)")
+				.append(" AND r.AD_Client_ID=i.AD_Client_ID ")
+				.append(" AND r.IsActive='Y') ")
+				.append("WHERE M_Replenish_ID IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
+				.append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Found Products={}", no);
+	}
+	
 
 	private void dbUpdateErrorMessages(final String whereClause)
 	{
