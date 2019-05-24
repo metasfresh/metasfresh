@@ -5,7 +5,7 @@ function executeHeaderAction(actionName) {
 }
 
 Cypress.Commands.add('clickHeaderNav', navName => {
-  name = navName.toLowerCase().replace(/\s/g, '');
+  const name = navName.toLowerCase().replace(/\s/g, '');
 
   describe('Fire header action with a certain name', function() {
     cy.get('.header-container .btn-header').click();
