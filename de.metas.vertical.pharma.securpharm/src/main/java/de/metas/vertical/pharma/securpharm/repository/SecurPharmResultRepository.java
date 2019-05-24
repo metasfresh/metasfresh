@@ -68,7 +68,7 @@ public class SecurPharmResultRepository
 		final ProductData productData = result.getProductData();
 		if (productData != null)
 		{
-			record.setExpirationDate(TimeUtil.asTimestamp(productData.getExpirationDate()));
+			record.setExpirationDate(TimeUtil.asTimestamp(productData.getExpirationDate().toLocalDate()));
 			record.sethasActiveStatus(productData.isActive());
 			record.setInactiveReason(productData.getInactiveReason());
 			record.setLotNumber(productData.getLot());
