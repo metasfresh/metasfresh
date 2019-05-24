@@ -177,7 +177,7 @@ public class RepelnishmentImportTableSqlUpdater
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Product is mandatory, ' ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Product is mandatory, ' ")
 				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Product_ID + " IS NULL AND " + I_I_Replenish.COLUMNNAME_ProductValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
@@ -186,7 +186,7 @@ public class RepelnishmentImportTableSqlUpdater
 		
 		
 		sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='N', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Wareouse is mandatory, ' ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Wareouse is mandatory, ' ")
 				.append("WHERE " + I_I_Replenish.COLUMNNAME_M_Warehouse_ID + " IS NULL AND " + I_I_Replenish.COLUMNNAME_WarehouseValue + " IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(whereClause);
