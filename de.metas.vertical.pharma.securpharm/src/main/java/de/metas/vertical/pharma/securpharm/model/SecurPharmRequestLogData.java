@@ -25,6 +25,8 @@ package de.metas.vertical.pharma.securpharm.model;
 
 import java.time.Instant;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,7 +40,7 @@ public class SecurPharmRequestLogData
 {
 	@NonNull
 	String requestUrl;
-
+	HttpStatus responseCode;
 	String responseData;
 
 	@NonNull

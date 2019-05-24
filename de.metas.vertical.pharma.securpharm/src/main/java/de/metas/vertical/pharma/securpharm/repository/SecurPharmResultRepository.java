@@ -63,6 +63,8 @@ public class SecurPharmResultRepository
 		final I_M_Securpharm_Productdata_Result record = newInstance(I_M_Securpharm_Productdata_Result.class);
 		record.setM_HU_ID(result.getHuId().getRepoId());
 
+		//
+		// Product data
 		final ProductData productData = result.getProductData();
 		if (productData != null)
 		{
@@ -75,13 +77,18 @@ public class SecurPharmResultRepository
 			record.setSerialNumber(productData.getSerialNumber());
 		}
 
-		final SecurPharmRequestLogData logData = result.getRequestLogData();
-		record.setIsError(logData.isError());
-		record.setRequestUrl(logData.getRequestUrl());
-		record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
-		record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
-		record.setTransactionIDClient(logData.getClientTransactionId());
-		record.setTransactionIDServer(logData.getServerTransactionId());
+		//
+		// Protocol Log data
+		{
+			final SecurPharmRequestLogData logData = result.getRequestLogData();
+			// TODO set HTTP Response code from logData.getResponseCode()
+			record.setIsError(logData.isError());
+			record.setRequestUrl(logData.getRequestUrl());
+			record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
+			record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
+			record.setTransactionIDClient(logData.getClientTransactionId());
+			record.setTransactionIDServer(logData.getServerTransactionId());
+		}
 
 		saveRecord(record);
 		result.setId(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()));
@@ -97,13 +104,18 @@ public class SecurPharmResultRepository
 		record.setM_Inventory_ID(result.getInventoryId().getRepoId());
 		record.setM_Securpharm_Productdata_Result_ID(result.getProductDataResultId().getRepoId());
 
-		final SecurPharmRequestLogData logData = result.getRequestLogData();
-		record.setIsError(logData.isError());
-		record.setRequestUrl(logData.getRequestUrl());
-		record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
-		record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
-		record.setTransactionIDClient(logData.getClientTransactionId());
-		record.setTransactionIDServer(logData.getServerTransactionId());
+		//
+		// Protocol Log data
+		{
+			final SecurPharmRequestLogData logData = result.getRequestLogData();
+			// TODO set HTTP Response code from logData.getResponseCode()
+			record.setIsError(logData.isError());
+			record.setRequestUrl(logData.getRequestUrl());
+			record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
+			record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
+			record.setTransactionIDClient(logData.getClientTransactionId());
+			record.setTransactionIDServer(logData.getServerTransactionId());
+		}
 
 		saveRecord(record);
 		result.setId(SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID()));
