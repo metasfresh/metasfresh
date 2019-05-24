@@ -6,11 +6,17 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
+import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_Replenish;
+import org.compiere.model.I_M_Replenish;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Replenish;
 
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -77,12 +83,121 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 	 * @param isInsertOnly ignored. This import is only for updates.
 	 */
 	@Override
-	protected ImportRecordResult importRecord(IMutable<Object> state,
-			I_I_Replenish importRecord,
+	protected ImportRecordResult importRecord(@NonNull IMutable<Object> state,
+			@NonNull final I_I_Replenish importRecord,
 			final boolean isInsertOnly)
 	{
+		if (isValidRecordForImport(importRecord))
+		{
 
-		return ImportRecordResult.Nothing;
+			return importReplenish(importRecord);
+		}
+		return null;
+
+	}
+
+	private boolean isValidRecordForImport(@NonNull final I_I_Replenish importRecord)
+	{
+		if (importRecord.getM_Product_ID() <= 0)
+		{
+			return false;
+		}
+
+		if (importRecord.getM_Warehouse_ID() <= 0)
+		{
+			return false;
+		}
+
+		if (importRecord.getLevel_Max() == null)
+		{
+			return false;
+		}
+
+		if (importRecord.getLevel_Min() == null)
+		{
+			return false;
+		}
+
+		if (Check.isEmpty(importRecord.getReplenishType(), true))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private ImportRecordResult importReplenish(@NonNull final I_I_Replenish importRecord)
+	{
+		final ImportRecordResult replenishImportResult;
+
+		final I_M_Replenish replenish;
+		if (importRecord.getM_Replenish_ID() <= 0)
+		{
+			replenish = createNewReplenish(importRecord);
+			replenishImportResult = ImportRecordResult.Inserted;
+		}
+		else
+		{
+			replenish = importRecord.getM_Replenish();
+			replenishImportResult = ImportRecordResult.Updated;
+		}
+
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, replenish, IImportInterceptor.TIMING_AFTER_IMPORT);
+		InterfaceWrapperHelper.save(replenish);
+
+		importRecord.setM_Replenish_ID(replenish.getM_Replenish_ID());
+		InterfaceWrapperHelper.save(importRecord);
+
+		return replenishImportResult;
+	}
+
+	private I_M_Replenish createNewReplenish(@NonNull final I_I_Replenish importRecord)
+	{
+		final I_M_Replenish replenish;
+		if (importRecord.getM_Replenish_ID() <= 0)
+		{
+			replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
+		}
+		else
+		{
+			replenish = importRecord.getM_Replenish();
+		}
+
+		setReplenishmenttValueFields(importRecord, replenish);
+
+		InterfaceWrapperHelper.save(replenish);
+		importRecord.setM_Replenish(replenish);
+
+		return replenish;
+	}
+
+	private void setReplenishmenttValueFields(@NonNull final I_I_Replenish importRecord, @NonNull final I_M_Replenish replenish)
+	{
+		// mandatory fields
+		replenish.setM_Product_ID(importRecord.getM_Product_ID());
+		replenish.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
+		replenish.setLevel_Max(importRecord.getLevel_Max());
+		replenish.setLevel_Min(importRecord.getLevel_Min());
+		replenish.setReplenishType(importRecord.getReplenishType());
+		replenish.setTimeToMarket(importRecord.getTimeToMarket());
+
+		// optional fields
+		if (importRecord.getM_WarehouseSource_ID() > 0)
+		{
+			replenish.setM_WarehouseSource_ID(importRecord.getM_WarehouseSource_ID());
+		}
+		if (importRecord.getM_Locator_ID() > 0)
+		{
+			replenish.setM_Locator_ID(importRecord.getM_Locator_ID());
+		}
+		if (importRecord.getC_Calendar_ID() > 0)
+		{
+			replenish.setC_Calendar_ID(importRecord.getC_Calendar_ID());
+		}
+		if (importRecord.getC_Period_ID() > 0)
+		{
+			replenish.setC_Period_ID(importRecord.getC_Period_ID());
+		}
 	}
 
 }
